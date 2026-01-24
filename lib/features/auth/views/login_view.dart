@@ -14,14 +14,34 @@ class LoginView extends ConsumerStatefulWidget {
   ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
-class _LoginViewState extends ConsumerState<LoginView> {
+class _LoginViewState extends ConsumerState<LoginView>
+    with SingleTickerProviderStateMixin {
   final _phoneController = TextEditingController();
+  final _phoneFocusNode = FocusNode();
   CountryConfig _selectedCountry = SupportedCountries.defaultCountry;
   bool _isRegistering = false;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+    _animationController.forward();
+  }
 
   @override
   void dispose() {
     _phoneController.dispose();
+    _phoneFocusNode.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -37,6 +57,11 @@ class _LoginViewState extends ConsumerState<LoginView> {
           SnackBar(
             content: Text(next.error!),
             backgroundColor: AppColors.errorBase,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(AppSpacing.lg),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
           ),
         );
         ref.read(authProvider.notifier).clearError();
@@ -45,366 +70,417 @@ class _LoginViewState extends ConsumerState<LoginView> {
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  MediaQuery.of(context).padding.bottom -
-                  (AppSpacing.screenPadding * 2),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: AppSpacing.xxxl),
-
-                // Logo & Title
-                Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: AppColors.goldGradient,
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(AppRadius.xl),
-                          boxShadow: AppShadows.goldGlow,
-                        ),
-                        child: const Icon(
-                          Icons.account_balance_wallet,
-                          color: AppColors.textInverse,
-                          size: 40,
-                        ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.screenPadding,
                       ),
-                      const SizedBox(height: AppSpacing.xl),
-                      const AppText(
-                        'JoonaPay',
-                        variant: AppTextVariant.headlineLarge,
+                      child: Column(
+                        children: [
+                          const SizedBox(height: AppSpacing.giant),
+                          _buildHeader(),
+                          const SizedBox(height: AppSpacing.giant),
+                          _buildForm(authState),
+                          const SizedBox(height: AppSpacing.xxxl),
+                          _buildFooter(),
+                          const SizedBox(height: AppSpacing.xl),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        // Logo
+        Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: AppColors.goldGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            boxShadow: AppShadows.goldGlow,
+          ),
+          child: const Icon(
+            Icons.account_balance_wallet_rounded,
+            color: AppColors.textInverse,
+            size: 36,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Title
+        AppText(
+          'JoonaPay',
+          variant: AppTextVariant.headlineLarge,
+          color: AppColors.textPrimary,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // Subtitle with animation
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: AppText(
+            _isRegistering
+                ? 'Create your USDC wallet'
+                : 'Welcome back',
+            key: ValueKey(_isRegistering),
+            variant: AppTextVariant.bodyLarge,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForm(AuthState authState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Country Selector
+        _buildCountrySelector(),
+        const SizedBox(height: AppSpacing.xl),
+
+        // Phone Input
+        _buildPhoneInput(),
+        const SizedBox(height: AppSpacing.xxxl),
+
+        // Submit Button
+        AppButton(
+          label: _isRegistering ? 'Create Account' : 'Continue',
+          onPressed: _isPhoneValid() ? _submit : null,
+          variant: AppButtonVariant.primary,
+          size: AppButtonSize.large,
+          isFullWidth: true,
+          isLoading: authState.isLoading,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+
+        // Toggle Mode
+        Center(
+          child: GestureDetector(
+            onTap: () => setState(() => _isRegistering = !_isRegistering),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppText(
+                    _isRegistering
+                        ? 'Already have an account? '
+                        : "Don't have an account? ",
+                    variant: AppTextVariant.bodyMedium,
+                    color: AppColors.textSecondary,
+                  ),
+                  AppText(
+                    _isRegistering ? 'Sign in' : 'Sign up',
+                    variant: AppTextVariant.labelLarge,
+                    color: AppColors.gold500,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountrySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppText(
+          'Country',
+          variant: AppTextVariant.labelMedium,
+          color: AppColors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        GestureDetector(
+          onTap: _showCountryPicker,
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.slate,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: AppColors.borderSubtle),
+            ),
+            child: Row(
+              children: [
+                // Flag
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.elevated,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    _selectedCountry.flag,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+
+                // Country info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        _selectedCountry.name,
+                        variant: AppTextVariant.bodyLarge,
                         color: AppColors.textPrimary,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      const SizedBox(height: 2),
                       AppText(
-                        _isRegistering
-                            ? 'Create your USDC wallet'
-                            : 'Welcome back',
-                        variant: AppTextVariant.bodyLarge,
-                        color: AppColors.textSecondary,
+                        '${_selectedCountry.fullPrefix} • ${_selectedCountry.currencies.first}',
+                        variant: AppTextVariant.bodySmall,
+                        color: AppColors.textTertiary,
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.xxxl * 1.5),
-
-                // Country Selector
-                const AppText(
-                  'Country',
-                  variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _buildCountrySelector(),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Phone Input
-                const AppText(
-                  'Phone Number',
-                  variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                _buildPhoneInput(),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Phone format hint
-                AppText(
-                  'Format: ${_selectedCountry.phoneFormat ?? 'Enter your number'}',
-                  variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
-                ),
-
-                const SizedBox(height: AppSpacing.xxxl),
-
-                // Continue Button
-                AppButton(
-                  label: _isRegistering ? 'Create Account' : 'Continue',
-                  onPressed: _isPhoneValid() ? _submit : null,
-                  variant: AppButtonVariant.primary,
-                  isFullWidth: true,
-                  isLoading: authState.isLoading,
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Toggle Register/Login
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isRegistering = !_isRegistering;
-                      });
-                    },
-                    child: RichText(
-                      text: TextSpan(
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                        children: [
-                          TextSpan(
-                            text: _isRegistering
-                                ? 'Already have an account? '
-                                : "Don't have an account? ",
-                          ),
-                          TextSpan(
-                            text: _isRegistering ? 'Login' : 'Register',
-                            style: const TextStyle(
-                              color: AppColors.gold500,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                // Arrow
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AppColors.elevated,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: const Icon(
+                    Icons.unfold_more_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
                   ),
                 ),
-
-                const SizedBox(height: AppSpacing.xxxl),
-
-                // Terms
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-                    child: AppText(
-                      'By continuing, you agree to our Terms of Service and Privacy Policy',
-                      variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCountrySelector() {
-    return GestureDetector(
-      onTap: _showCountryPicker,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.slate,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
-        child: Row(
-          children: [
-            Text(
-              _selectedCountry.flag,
-              style: const TextStyle(fontSize: 24),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    _selectedCountry.name,
-                    variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textPrimary,
-                  ),
-                  AppText(
-                    _selectedCountry.fullPrefix,
-                    variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-            const Icon(
-              Icons.keyboard_arrow_down,
-              color: AppColors.textSecondary,
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
   Widget _buildPhoneInput() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: _isPhoneValid() || _phoneController.text.isEmpty
-              ? AppColors.borderSubtle
-              : AppColors.errorBase.withValues(alpha: 0.5),
+    final isValid = _isPhoneValid();
+    final hasText = _phoneController.text.isNotEmpty;
+    final showError = hasText && !isValid;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const AppText(
+          'Phone Number',
+          variant: AppTextVariant.labelMedium,
+          color: AppColors.textSecondary,
         ),
-      ),
-      child: Row(
-        children: [
-          // Prefix
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.lg,
-            ),
-            decoration: const BoxDecoration(
-              border: Border(
-                right: BorderSide(color: AppColors.borderSubtle),
-              ),
-            ),
-            child: AppText(
-              _selectedCountry.fullPrefix,
-              variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+        const SizedBox(height: AppSpacing.sm),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.slate,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: showError
+                  ? AppColors.errorBase.withValues(alpha: 0.5)
+                  : isValid && hasText
+                      ? AppColors.successBase.withValues(alpha: 0.5)
+                      : AppColors.borderSubtle,
             ),
           ),
-          // Input
-          Expanded(
-            child: TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              style: AppTypography.bodyLarge.copyWith(
-                color: AppColors.textPrimary,
-                letterSpacing: 1.5,
-              ),
-              decoration: InputDecoration(
-                hintText: _selectedCountry.phoneFormat?.replaceAll('X', '0') ?? 'Phone number',
-                hintStyle: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
+          child: Row(
+            children: [
+              // Prefix
+              Container(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.lg,
+                  vertical: AppSpacing.lg + 2,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    right: BorderSide(color: AppColors.borderSubtle),
+                  ),
+                ),
+                child: AppText(
+                  _selectedCountry.fullPrefix,
+                  variant: AppTextVariant.bodyLarge,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
-              ],
-              onChanged: (_) => setState(() {}),
-            ),
+
+              // Input
+              Expanded(
+                child: TextField(
+                  controller: _phoneController,
+                  focusNode: _phoneFocusNode,
+                  keyboardType: TextInputType.phone,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: AppColors.textPrimary,
+                    letterSpacing: 1.2,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: _getFormattedHint(),
+                    hintStyle: AppTypography.bodyLarge.copyWith(
+                      color: AppColors.textTertiary,
+                      letterSpacing: 1.2,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.lg,
+                    ),
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
+                  ],
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+
+              // Status indicator
+              if (hasText)
+                Padding(
+                  padding: const EdgeInsets.only(right: AppSpacing.md),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: isValid
+                          ? AppColors.successBase.withValues(alpha: 0.15)
+                          : AppColors.errorBase.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isValid ? Icons.check_rounded : Icons.close_rounded,
+                      color: isValid ? AppColors.successText : AppColors.errorText,
+                      size: 16,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          // Validation indicator
-          if (_phoneController.text.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.md),
-              child: Icon(
-                _isPhoneValid() ? Icons.check_circle : Icons.error_outline,
-                color: _isPhoneValid() ? AppColors.successBase : AppColors.errorBase,
-                size: 20,
+        ),
+
+        // Helper text
+        const SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Expanded(
+              child: AppText(
+                'Enter ${_selectedCountry.phoneLength} digits',
+                variant: AppTextVariant.bodySmall,
+                color: showError ? AppColors.errorText : AppColors.textTertiary,
               ),
             ),
+            if (hasText)
+              AppText(
+                '${_phoneController.text.length}/${_selectedCountry.phoneLength}',
+                variant: AppTextVariant.bodySmall,
+                color: isValid ? AppColors.successText : AppColors.textTertiary,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Column(
+        children: [
+          const AppText(
+            'By continuing, you agree to our',
+            variant: AppTextVariant.bodySmall,
+            color: AppColors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  // TODO: Open Terms
+                },
+                child: const AppText(
+                  'Terms of Service',
+                  variant: AppTextVariant.bodySmall,
+                  color: AppColors.gold500,
+                ),
+              ),
+              const AppText(
+                ' and ',
+                variant: AppTextVariant.bodySmall,
+                color: AppColors.textTertiary,
+              ),
+              GestureDetector(
+                onTap: () {
+                  // TODO: Open Privacy
+                },
+                child: const AppText(
+                  'Privacy Policy',
+                  variant: AppTextVariant.bodySmall,
+                  color: AppColors.gold500,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
+  String _getFormattedHint() {
+    final format = _selectedCountry.phoneFormat;
+    if (format == null) return '0' * _selectedCountry.phoneLength;
+    return format.replaceAll('X', '0');
+  }
+
   void _showCountryPicker() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            // Handle
-            Container(
-              margin: const EdgeInsets.only(top: AppSpacing.md),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.borderSubtle,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Title
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                children: [
-                  const AppText(
-                    'Select Country',
-                    variant: AppTextVariant.titleMedium,
-                    color: AppColors.textPrimary,
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(color: AppColors.borderSubtle, height: 1),
-            // Country list
-            Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: SupportedCountries.all.length,
-                itemBuilder: (context, index) {
-                  final country = SupportedCountries.all[index];
-                  final isSelected = country.code == _selectedCountry.code;
-                  return ListTile(
-                    leading: Text(
-                      country.flag,
-                      style: const TextStyle(fontSize: 28),
-                    ),
-                    title: AppText(
-                      country.name,
-                      variant: AppTextVariant.bodyLarge,
-                      color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
-                    ),
-                    subtitle: AppText(
-                      '${country.fullPrefix} • ${country.currencies.join(", ")}',
-                      variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
-                    ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check, color: AppColors.gold500)
-                        : null,
-                    onTap: () {
-                      setState(() {
-                        _selectedCountry = country;
-                        // Clear phone if length changed
-                        if (_phoneController.text.length > country.phoneLength) {
-                          _phoneController.clear();
-                        }
-                      });
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      builder: (context) => _CountryPickerSheet(
+        selectedCountry: _selectedCountry,
+        onSelect: (country) {
+          setState(() {
+            _selectedCountry = country;
+            if (_phoneController.text.length > country.phoneLength) {
+              _phoneController.clear();
+            }
+          });
+        },
       ),
     );
   }
@@ -415,17 +491,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   void _submit() {
-    if (!_isPhoneValid()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please enter a valid ${_selectedCountry.phoneLength}-digit phone number',
-          ),
-          backgroundColor: AppColors.errorBase,
-        ),
-      );
-      return;
-    }
+    if (!_isPhoneValid()) return;
 
     final phone = '${_selectedCountry.fullPrefix}${_phoneController.text}';
 
@@ -434,5 +500,236 @@ class _LoginViewState extends ConsumerState<LoginView> {
     } else {
       ref.read(authProvider.notifier).login(phone);
     }
+  }
+}
+
+/// Country Picker Bottom Sheet
+class _CountryPickerSheet extends StatefulWidget {
+  const _CountryPickerSheet({
+    required this.selectedCountry,
+    required this.onSelect,
+  });
+
+  final CountryConfig selectedCountry;
+  final ValueChanged<CountryConfig> onSelect;
+
+  @override
+  State<_CountryPickerSheet> createState() => _CountryPickerSheetState();
+}
+
+class _CountryPickerSheetState extends State<_CountryPickerSheet> {
+  final _searchController = TextEditingController();
+  List<CountryConfig> _filteredCountries = SupportedCountries.all;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterCountries(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredCountries = SupportedCountries.all;
+      } else {
+        final lower = query.toLowerCase();
+        _filteredCountries = SupportedCountries.all
+            .where((c) =>
+                c.name.toLowerCase().contains(lower) ||
+                c.prefix.contains(lower) ||
+                c.code.toLowerCase().contains(lower))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.graphite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            margin: const EdgeInsets.only(top: AppSpacing.md),
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.borderDefault,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                const AppText(
+                  'Select Country',
+                  variant: AppTextVariant.titleMedium,
+                  color: AppColors.textPrimary,
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.slate,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Search
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.slate,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search country...',
+                  hintStyle: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textTertiary,
+                  ),
+                  prefixIcon: const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.textTertiary,
+                    size: 20,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ),
+                ),
+                onChanged: _filterCountries,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Divider
+          const Divider(color: AppColors.borderSubtle, height: 1),
+
+          // Country list
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              itemCount: _filteredCountries.length,
+              itemBuilder: (context, index) {
+                final country = _filteredCountries[index];
+                final isSelected = country.code == widget.selectedCountry.code;
+
+                return GestureDetector(
+                  onTap: () {
+                    widget.onSelect(country);
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.gold500.withValues(alpha: 0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: isSelected
+                          ? Border.all(
+                              color: AppColors.gold500.withValues(alpha: 0.3))
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        // Flag
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.slate,
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            country.flag,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+
+                        // Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText(
+                                country.name,
+                                variant: AppTextVariant.bodyLarge,
+                                color: isSelected
+                                    ? AppColors.gold500
+                                    : AppColors.textPrimary,
+                              ),
+                              const SizedBox(height: 2),
+                              AppText(
+                                '${country.fullPrefix} • ${country.currencies.join(", ")}',
+                                variant: AppTextVariant.bodySmall,
+                                color: AppColors.textTertiary,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Check
+                        if (isSelected)
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: AppColors.gold500,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: AppColors.textInverse,
+                              size: 16,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
