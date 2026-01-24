@@ -71,13 +71,19 @@ class ThemeState {
   }
 }
 
-/// Theme notifier for managing theme state
-class ThemeNotifier extends StateNotifier<ThemeState> {
+/// Theme notifier for managing theme state (Riverpod 3.x API)
+class ThemeNotifier extends Notifier<ThemeState> {
   static const _storageKey = 'app_theme_mode';
-  final FlutterSecureStorage _storage;
 
-  ThemeNotifier(this._storage) : super(const ThemeState()) {
+  FlutterSecureStorage get _storage => const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
+  @override
+  ThemeState build() {
     _loadSavedTheme();
+    return const ThemeState();
   }
 
   /// Load theme preference from storage
@@ -116,10 +122,6 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
 }
 
 /// Theme provider
-final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeState>((ref) {
-  const storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-  );
-  return ThemeNotifier(storage);
-});
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeState>(
+  ThemeNotifier.new,
+);

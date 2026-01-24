@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
@@ -63,31 +64,21 @@ class BiometricService {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
-        options: AuthenticationOptions(
-          // SECURITY: For sensitive actions, prefer biometric only without fallback to device PIN
-          biometricOnly: sensitiveAction,
-          // SECURITY: stickyAuth keeps the authentication dialog active when app goes to background
-          stickyAuth: true,
-          // Allow device credentials (PIN/pattern) as fallback for non-sensitive operations
-          useErrorDialogs: true,
-        ),
         authMessages: const <AuthMessages>[
           AndroidAuthMessages(
             signInTitle: 'Authentication Required',
             cancelButton: 'Cancel',
-            biometricHint: 'Verify your identity',
           ),
           IOSAuthMessages(
             cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication',
+            localizedFallbackTitle: 'Use Passcode',
           ),
         ],
       );
     } on PlatformException catch (e) {
       // Log the error for debugging but don't expose details to caller
       // Common errors: NotAvailable, NotEnrolled, PasscodeNotSet
-      print('Biometric authentication error: ${e.code}');
+      debugPrint('Biometric authentication error: ${e.code}');
       return false;
     }
   }

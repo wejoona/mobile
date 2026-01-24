@@ -136,6 +136,14 @@ import CryptoKit
     }
 
     private func requestAppAttest(nonce: String, result: @escaping FlutterResult) {
+        // Check iOS version first
+        guard #available(iOS 14.0, *) else {
+            result(FlutterError(code: "NOT_SUPPORTED",
+                               message: "App Attest requires iOS 14.0 or newer",
+                               details: nil))
+            return
+        }
+
         // Check if App Attest is supported
         guard DCAppAttestService.shared.isSupported else {
             result(FlutterError(code: "NOT_SUPPORTED",
@@ -164,13 +172,16 @@ import CryptoKit
                 }
 
                 self?.attestationKeyId = keyId
-                self?.performAttestation(keyId: keyId, nonce: nonce, result: result)
+                if #available(iOS 14.0, *) {
+                    self?.performAttestation(keyId: keyId, nonce: nonce, result: result)
+                }
             }
         } else {
             performAttestation(keyId: attestationKeyId!, nonce: nonce, result: result)
         }
     }
 
+    @available(iOS 14.0, *)
     private func performAttestation(keyId: String, nonce: String, result: @escaping FlutterResult) {
         // Create hash of the nonce for attestation
         guard let nonceData = nonce.data(using: .utf8) else {

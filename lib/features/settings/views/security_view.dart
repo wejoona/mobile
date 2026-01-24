@@ -427,7 +427,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   int _calculateSecurityScore() {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
-    final biometricsOn = biometricEnabled.valueOrNull ?? false;
+    final biometricsOn = biometricEnabled.maybeWhen(
+      data: (value) => value,
+      orElse: () => false,
+    );
 
     int score = 40; // Base score for having account
     if (biometricsOn) score += 20;
@@ -446,7 +449,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   String _getScoreTip(int score) {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
-    final biometricsOn = biometricEnabled.valueOrNull ?? false;
+    final biometricsOn = biometricEnabled.maybeWhen(
+      data: (value) => value,
+      orElse: () => false,
+    );
 
     if (!_twoFactorEnabled) return 'Enable 2FA to increase your score by 25 points';
     if (!biometricsOn) return 'Enable biometrics for easier secure login';

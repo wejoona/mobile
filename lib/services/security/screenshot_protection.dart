@@ -62,20 +62,19 @@ final screenshotProtectionProvider = Provider<ScreenshotProtectionService>((ref)
   return ScreenshotProtectionService();
 });
 
-/// State notifier for screen recording status
-class ScreenRecordingNotifier extends StateNotifier<bool> {
-  final ScreenshotProtectionService _service;
-
-  ScreenRecordingNotifier(this._service) : super(false) {
-    _service.onScreenRecordingChanged = (isCaptured) {
+/// Notifier for screen recording status (Riverpod 3.x API)
+class ScreenRecordingNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    final service = ref.watch(screenshotProtectionProvider);
+    service.onScreenRecordingChanged = (isCaptured) {
       state = isCaptured;
     };
+    return false;
   }
 }
 
 /// Provider for screen recording detection
-final screenRecordingProvider =
-    StateNotifierProvider<ScreenRecordingNotifier, bool>((ref) {
-  final service = ref.watch(screenshotProtectionProvider);
-  return ScreenRecordingNotifier(service);
-});
+final screenRecordingProvider = NotifierProvider<ScreenRecordingNotifier, bool>(
+  ScreenRecordingNotifier.new,
+);
