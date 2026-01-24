@@ -209,11 +209,56 @@ class PinService {
     await clearPinToken();
   }
 
-  /// Hash PIN with salt using SHA-256
+  /// Hash PIN with salt using PBKDF2
+  /// SECURITY: PBKDF2 with high iterations to resist brute-force attacks
+  /// Since PINs are only 4 digits (10,000 combinations), we need strong KDF
   String _hashPin(String pin, String salt) {
-    final bytes = utf8.encode('$salt$pin');
-    final digest = sha256.convert(bytes);
-    return digest.toString();
+    // Use PBKDF2 with HMAC-SHA256
+    // 100,000 iterations makes brute-force significantly slower
+    const iterations = 100000;
+    const keyLength = 32; // 256 bits
+
+    final saltBytes = utf8.encode(salt);
+    final pinBytes = utf8.encode(pin);
+
+    // PBKDF2 implementation using HMAC-SHA256
+    final derivedKey = _pbkdf2(pinBytes, saltBytes, iterations, keyLength);
+    return base64.encode(derivedKey);
+  }
+
+  /// PBKDF2 key derivation function
+  /// SECURITY: Implements RFC 2898 PBKDF2 with HMAC-SHA256
+  List<int> _pbkdf2(List<int> password, List<int> salt, int iterations, int keyLength) {
+    final hmac = Hmac(sha256, password);
+    final numBlocks = (keyLength + 31) ~/ 32; // SHA256 produces 32 bytes
+    final derivedKey = <int>[];
+
+    for (var blockNum = 1; blockNum <= numBlocks; blockNum++) {
+      // Encode block number as big-endian 4-byte integer
+      final blockBytes = [
+        (blockNum >> 24) & 0xff,
+        (blockNum >> 16) & 0xff,
+        (blockNum >> 8) & 0xff,
+        blockNum & 0xff,
+      ];
+
+      // U1 = PRF(Password, Salt || INT(i))
+      var u = hmac.convert([...salt, ...blockBytes]).bytes;
+      var result = List<int>.from(u);
+
+      // Subsequent iterations: Ui = PRF(Password, U(i-1))
+      for (var i = 1; i < iterations; i++) {
+        u = hmac.convert(u).bytes;
+        // XOR with accumulated result
+        for (var j = 0; j < result.length; j++) {
+          result[j] ^= u[j];
+        }
+      }
+
+      derivedKey.addAll(result);
+    }
+
+    return derivedKey.sublist(0, keyLength);
   }
 
   /// Generate a random salt using cryptographically secure random
