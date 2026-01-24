@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -127,7 +128,7 @@ class LegalConsent {
 
 /// Legal documents service - handles fetching and consent tracking
 class LegalDocumentsService {
-  final ApiClient _apiClient;
+  final Dio _dio;
   final FlutterSecureStorage _storage;
 
   // Cache
@@ -139,7 +140,7 @@ class LegalDocumentsService {
   static const _consentKey = 'legal_consent_';
   static const _cacheDuration = Duration(hours: 24);
 
-  LegalDocumentsService(this._apiClient, this._storage);
+  LegalDocumentsService(this._dio, this._storage);
 
   /// Fetch latest Terms of Service
   Future<LegalDocument> getTermsOfService({String locale = 'en'}) async {
@@ -258,12 +259,12 @@ class LegalDocumentsService {
           ? '/legal/terms'
           : '/legal/privacy';
 
-      final response = await _apiClient.get(
+      final response = await _dio.get(
         endpoint,
         queryParameters: {'locale': locale},
       );
 
-      final document = LegalDocument.fromJson(response.data);
+      final document = LegalDocument.fromJson(response.data as Map<String, dynamic>);
 
       // Update cache
       if (type == LegalDocumentType.termsOfService) {
@@ -345,7 +346,7 @@ class LegalDocumentsService {
   }
 
   Future<void> _sendConsentToApi(LegalConsent consent) async {
-    await _apiClient.post(
+    await _dio.post(
       '/legal/consent',
       data: consent.toJson(),
     );
@@ -427,7 +428,7 @@ For the complete Privacy Policy, please visit our website.
 
 final legalDocumentsServiceProvider = Provider<LegalDocumentsService>((ref) {
   return LegalDocumentsService(
-    ref.watch(apiClientProvider),
+    ref.watch(dioProvider),
     ref.watch(secureStorageProvider),
   );
 });
