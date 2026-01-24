@@ -1,0 +1,229 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+/// API Configuration
+class ApiConfig {
+  static const String baseUrl = 'http://localhost:3000/api/v1'; // Change for production
+  static const Duration connectTimeout = Duration(seconds: 30);
+  static const Duration receiveTimeout = Duration(seconds: 30);
+}
+
+/// Secure Storage Keys
+class StorageKeys {
+  static const String accessToken = 'access_token';
+  static const String refreshToken = 'refresh_token';
+  static const String userPin = 'user_pin';
+  static const String biometricEnabled = 'biometric_enabled';
+}
+
+/// Secure Storage Provider
+final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
+  return const FlutterSecureStorage(
+    aOptions: AndroidOptions(),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+});
+
+/// Dio Client Provider
+final dioProvider = Provider<Dio>((ref) {
+  final dio = Dio(BaseOptions(
+    baseUrl: ApiConfig.baseUrl,
+    connectTimeout: ApiConfig.connectTimeout,
+    receiveTimeout: ApiConfig.receiveTimeout,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  ));
+
+  // Add interceptors
+  dio.interceptors.add(AuthInterceptor(ref));
+  dio.interceptors.add(LogInterceptor(
+    requestBody: true,
+    responseBody: true,
+    error: true,
+  ));
+
+  return dio;
+});
+
+/// Auth Interceptor - Adds JWT token to requests and handles token refresh
+class AuthInterceptor extends Interceptor {
+  final Ref _ref;
+  bool _isRefreshing = false;
+
+  AuthInterceptor(this._ref);
+
+  @override
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    // Skip auth for public endpoints
+    final publicEndpoints = ['/auth/register', '/auth/verify-otp', '/auth/login', '/auth/refresh'];
+    if (publicEndpoints.any((e) => options.path.contains(e))) {
+      return handler.next(options);
+    }
+
+    // Add token
+    final storage = _ref.read(secureStorageProvider);
+    final token = await storage.read(key: StorageKeys.accessToken);
+
+    if (token != null) {
+      options.headers['Authorization'] = 'Bearer $token';
+    }
+
+    handler.next(options);
+  }
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    // Handle 401 - Token expired, try refresh
+    if (err.response?.statusCode == 401 && !err.requestOptions.path.contains('/auth/refresh')) {
+      // Attempt to refresh token
+      final refreshed = await _refreshToken(err.requestOptions);
+
+      if (refreshed) {
+        // Retry the original request with new token
+        try {
+          final storage = _ref.read(secureStorageProvider);
+          final newToken = await storage.read(key: StorageKeys.accessToken);
+
+          final options = err.requestOptions;
+          options.headers['Authorization'] = 'Bearer $newToken';
+
+          final dio = Dio(BaseOptions(
+            baseUrl: ApiConfig.baseUrl,
+            connectTimeout: ApiConfig.connectTimeout,
+            receiveTimeout: ApiConfig.receiveTimeout,
+          ));
+
+          final response = await dio.fetch(options);
+          return handler.resolve(response);
+        } catch (e) {
+          return handler.next(err);
+        }
+      } else {
+        // Refresh failed, clear tokens
+        final storage = _ref.read(secureStorageProvider);
+        await storage.delete(key: StorageKeys.accessToken);
+        await storage.delete(key: StorageKeys.refreshToken);
+      }
+    }
+
+    handler.next(err);
+  }
+
+  Future<bool> _refreshToken(RequestOptions failedRequest) async {
+    if (_isRefreshing) {
+      // Wait for ongoing refresh
+      return false;
+    }
+
+    _isRefreshing = true;
+
+    try {
+      final storage = _ref.read(secureStorageProvider);
+      final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+
+      if (refreshToken == null) {
+        return false;
+      }
+
+      // Call refresh endpoint
+      final dio = Dio(BaseOptions(
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: ApiConfig.connectTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
+      ));
+
+      final response = await dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        await storage.write(key: StorageKeys.accessToken, value: data['accessToken']);
+        await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken']);
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+}
+
+/// API Exception
+class ApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final dynamic data;
+
+  ApiException({
+    required this.message,
+    this.statusCode,
+    this.data,
+  });
+
+  factory ApiException.fromDioError(DioException error) {
+    String message = 'An unexpected error occurred';
+    int? statusCode = error.response?.statusCode;
+
+    if (error.response?.data != null) {
+      final data = error.response?.data;
+      if (data is Map && data['message'] != null) {
+        message = data['message'].toString();
+      }
+    } else {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          message = 'Connection timed out';
+          break;
+        case DioExceptionType.connectionError:
+          message = 'No internet connection';
+          break;
+        case DioExceptionType.badResponse:
+          message = _getMessageFromStatusCode(statusCode);
+          break;
+        default:
+          message = 'An unexpected error occurred';
+      }
+    }
+
+    return ApiException(
+      message: message,
+      statusCode: statusCode,
+      data: error.response?.data,
+    );
+  }
+
+  static String _getMessageFromStatusCode(int? code) {
+    switch (code) {
+      case 400:
+        return 'Invalid request';
+      case 401:
+        return 'Unauthorized';
+      case 403:
+        return 'Access denied';
+      case 404:
+        return 'Not found';
+      case 422:
+        return 'Validation failed';
+      case 500:
+        return 'Server error';
+      default:
+        return 'An unexpected error occurred';
+    }
+  }
+
+  @override
+  String toString() => message;
+}

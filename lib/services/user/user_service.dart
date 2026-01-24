@@ -1,0 +1,107 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../api/api_client.dart';
+import '../../domain/entities/index.dart';
+
+/// User Service - mirrors backend UserController
+class UserService {
+  final Dio _dio;
+
+  UserService(this._dio);
+
+  /// GET /user/profile
+  Future<UserProfile> getProfile() async {
+    try {
+      final response = await _dio.get('/user/profile');
+      return UserProfile.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// PUT /user/profile
+  Future<UserProfile> updateProfile({
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    try {
+      final response = await _dio.put('/user/profile', data: {
+        if (firstName != null) 'firstName': firstName,
+        if (lastName != null) 'lastName': lastName,
+        if (email != null) 'email': email,
+      });
+      return UserProfile.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+}
+
+/// User Profile DTO
+class UserProfile {
+  final String id;
+  final String phone;
+  final bool phoneVerified;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String countryCode;
+  final String kycStatus;
+  final String role;
+  final String status;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+
+  const UserProfile({
+    required this.id,
+    required this.phone,
+    required this.phoneVerified,
+    this.firstName,
+    this.lastName,
+    this.email,
+    required this.countryCode,
+    required this.kycStatus,
+    required this.role,
+    required this.status,
+    required this.createdAt,
+    this.updatedAt,
+  });
+
+  String get displayName {
+    if (firstName != null && lastName != null) {
+      return '$firstName $lastName';
+    }
+    if (firstName != null) return firstName!;
+    if (lastName != null) return lastName!;
+    return phone;
+  }
+
+  bool get isKycVerified => kycStatus == 'verified';
+  bool get isKycPending => kycStatus == 'pending';
+  bool get needsKyc => kycStatus == 'none' || kycStatus == 'not_started';
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as String,
+      phone: json['phone'] as String,
+      phoneVerified: json['phoneVerified'] as bool? ?? false,
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      email: json['email'] as String?,
+      countryCode: json['countryCode'] as String? ?? 'CI',
+      kycStatus: json['kycStatus'] as String? ?? 'none',
+      role: json['role'] as String? ?? 'user',
+      status: json['status'] as String? ?? 'active',
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : null,
+    );
+  }
+}
+
+/// User Service Provider
+final userServiceProvider = Provider<UserService>((ref) {
+  return UserService(ref.watch(dioProvider));
+});
