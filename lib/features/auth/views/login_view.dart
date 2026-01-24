@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../config/countries.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../services/legal/legal_documents_service.dart';
 import '../providers/auth_provider.dart';
+import 'legal_document_view.dart';
 
 class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
@@ -429,9 +431,7 @@ class _LoginViewState extends ConsumerState<LoginView>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {
-                  // TODO: Open Terms
-                },
+                onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
                 child: const AppText(
                   'Terms of Service',
                   variant: AppTextVariant.bodySmall,
@@ -444,9 +444,7 @@ class _LoginViewState extends ConsumerState<LoginView>
                 color: AppColors.textTertiary,
               ),
               GestureDetector(
-                onTap: () {
-                  // TODO: Open Privacy
-                },
+                onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
                 child: const AppText(
                   'Privacy Policy',
                   variant: AppTextVariant.bodySmall,
@@ -456,6 +454,15 @@ class _LoginViewState extends ConsumerState<LoginView>
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void _openLegalDocument(LegalDocumentType type) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LegalDocumentView(documentType: type),
       ),
     );
   }

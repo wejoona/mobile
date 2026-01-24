@@ -9,6 +9,7 @@ class CountryConfig {
   final String flag;        // Flag emoji
   final List<String> currencies;  // Supported local currencies
   final String? phoneFormat; // Optional format hint (e.g., 'XX XX XX XX XX')
+  final bool isEnabled;     // Whether this country is currently enabled
 
   const CountryConfig({
     required this.code,
@@ -18,6 +19,7 @@ class CountryConfig {
     required this.flag,
     required this.currencies,
     this.phoneFormat,
+    this.isEnabled = false,  // Disabled by default
   });
 
   /// Full prefix with +
@@ -52,17 +54,40 @@ class CountryConfig {
 /// Supported countries for JoonaPay
 /// Focus on West/Central Africa with mobile money infrastructure
 class SupportedCountries {
-  static const List<CountryConfig> all = [
-    // West Africa - CFA Franc Zone (XOF)
+  /// All countries (including disabled ones for future expansion)
+  static const List<CountryConfig> _allCountries = [
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ENABLED COUNTRIES (Phase 1 Launch)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // United States
+    CountryConfig(
+      code: 'US',
+      name: 'United States',
+      prefix: '1',
+      phoneLength: 10,
+      flag: '\u{1F1FA}\u{1F1F8}',
+      currencies: ['USD'],
+      phoneFormat: 'XXX XXX XXXX',
+      isEnabled: true,
+    ),
+
+    // Ivory Coast (Primary African Market)
     CountryConfig(
       code: 'CI',
-      name: "Cote d'Ivoire",
+      name: "Côte d'Ivoire",
       prefix: '225',
       phoneLength: 10,
       flag: '\u{1F1E8}\u{1F1EE}',
       currencies: ['XOF', 'USD'],
       phoneFormat: 'XX XX XX XX XX',
+      isEnabled: true,
     ),
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMING SOON - West Africa CFA Franc Zone (XOF)
+    // ═══════════════════════════════════════════════════════════════════════════
+
     CountryConfig(
       code: 'SN',
       name: 'Senegal',
@@ -127,7 +152,10 @@ class SupportedCountries {
       phoneFormat: 'XXX XX XX',
     ),
 
-    // Central Africa - CFA Franc Zone (XAF)
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMING SOON - Central Africa CFA Franc Zone (XAF)
+    // ═══════════════════════════════════════════════════════════════════════════
+
     CountryConfig(
       code: 'CM',
       name: 'Cameroon',
@@ -156,7 +184,10 @@ class SupportedCountries {
       phoneFormat: 'XX XXX XXXX',
     ),
 
-    // Other African Countries
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMING SOON - Other African Countries
+    // ═══════════════════════════════════════════════════════════════════════════
+
     CountryConfig(
       code: 'GH',
       name: 'Ghana',
@@ -222,18 +253,20 @@ class SupportedCountries {
     ),
   ];
 
-  /// Default country (Ivory Coast)
-  static const CountryConfig defaultCountry = CountryConfig(
-    code: 'CI',
-    name: "Cote d'Ivoire",
-    prefix: '225',
-    phoneLength: 10,
-    flag: '\u{1F1E8}\u{1F1EE}',
-    currencies: ['XOF', 'USD'],
-    phoneFormat: 'XX XX XX XX XX',
-  );
+  /// Only enabled countries (for production use)
+  static List<CountryConfig> get all =>
+      _allCountries.where((c) => c.isEnabled).toList();
 
-  /// Find country by ISO code
+  /// All countries including disabled (for admin/debug)
+  static List<CountryConfig> get allIncludingDisabled => _allCountries;
+
+  /// Default country (Ivory Coast - primary African market)
+  static CountryConfig get defaultCountry => all.firstWhere(
+        (c) => c.code == 'CI',
+        orElse: () => all.first,
+      );
+
+  /// Find country by ISO code (only enabled countries)
   static CountryConfig? findByCode(String code) {
     try {
       return all.firstWhere((c) => c.code == code);
@@ -242,9 +275,17 @@ class SupportedCountries {
     }
   }
 
-  /// Find country by phone prefix
+  /// Find country by ISO code (including disabled)
+  static CountryConfig? findByCodeIncludingDisabled(String code) {
+    try {
+      return _allCountries.firstWhere((c) => c.code == code);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Find country by phone prefix (only enabled)
   static CountryConfig? findByPrefix(String prefix) {
-    // Remove + if present
     final cleanPrefix = prefix.startsWith('+') ? prefix.substring(1) : prefix;
     try {
       return all.firstWhere((c) => c.prefix == cleanPrefix);
@@ -253,7 +294,7 @@ class SupportedCountries {
     }
   }
 
-  /// Find country from full phone number
+  /// Find country from full phone number (only enabled)
   static CountryConfig? findByPhone(String phone) {
     final cleanPhone = phone.replaceAll(RegExp(r'[^\d]'), '');
     for (final country in all) {
@@ -262,5 +303,10 @@ class SupportedCountries {
       }
     }
     return null;
+  }
+
+  /// Check if a country is enabled
+  static bool isCountryEnabled(String code) {
+    return all.any((c) => c.code == code);
   }
 }
