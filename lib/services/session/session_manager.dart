@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../design/tokens/index.dart';
 import '../../design/components/primitives/index.dart';
+import '../pin/pin_service.dart';
 import 'session_service.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
@@ -270,7 +271,9 @@ class _LockScreen extends ConsumerStatefulWidget {
 class _LockScreenState extends ConsumerState<_LockScreen> {
   String _enteredPin = '';
   String? _error;
-  final String _correctPin = '1234'; // Mock PIN
+  bool _isVerifying = false;
+  bool _isLocked = false;
+  int? _lockRemainingSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -458,19 +461,41 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
   }
 
   void _onBiometricPressed() async {
-    // TODO: Implement biometric authentication
-    // For now, just unlock
-    _unlockSession();
+    // TODO: Implement biometric authentication using local_auth package
+    // For now, show message that biometrics need to be set up
+    setState(() {
+      _error = 'Please enter your PIN';
+    });
   }
 
-  void _verifyPin() {
-    if (_enteredPin == _correctPin) {
-      _unlockSession();
-    } else {
-      setState(() {
-        _error = 'Incorrect PIN. Please try again.';
-        _enteredPin = '';
-      });
+  void _verifyPin() async {
+    if (_isVerifying || _isLocked) return;
+
+    setState(() {
+      _isVerifying = true;
+      _error = null;
+    });
+
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinLocally(_enteredPin);
+
+      if (result.success) {
+        _unlockSession();
+      } else {
+        setState(() {
+          _error = result.message ?? 'Incorrect PIN';
+          _enteredPin = '';
+          _isLocked = result.isLocked;
+          _lockRemainingSeconds = result.lockRemainingSeconds;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isVerifying = false;
+        });
+      }
     }
   }
 

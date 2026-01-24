@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
+import '../../../services/pin/pin_service.dart';
 
 enum PinStep { current, newPin, confirm }
 
@@ -21,9 +22,6 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   String _confirmPin = '';
   String? _error;
   bool _isLoading = false;
-
-  // Mock current PIN for demo
-  final String _storedPin = '1234';
 
   @override
   Widget build(BuildContext context) {
@@ -258,15 +256,30 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     });
   }
 
-  void _validateCurrentPin() {
-    if (_currentPin == _storedPin) {
+  Future<void> _validateCurrentPin() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinLocally(_currentPin);
+
+      if (result.success) {
+        setState(() {
+          _currentStep = PinStep.newPin;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = result.message ?? 'Incorrect PIN. Please try again.';
+          _currentPin = '';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _currentStep = PinStep.newPin;
-      });
-    } else {
-      setState(() {
-        _error = 'Incorrect PIN. Please try again.';
+        _error = 'Unable to verify PIN. Please try again.';
         _currentPin = '';
+        _isLoading = false;
       });
     }
   }
@@ -326,19 +339,35 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   Future<void> _saveNewPin() async {
     setState(() => _isLoading = true);
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final success = await pinService.setPin(_newPin);
 
-    setState(() => _isLoading = false);
+      setState(() => _isLoading = false);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PIN changed successfully!'),
-          backgroundColor: AppColors.successBase,
-        ),
-      );
-      context.pop();
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('PIN changed successfully!'),
+              backgroundColor: AppColors.successBase,
+            ),
+          );
+          context.pop();
+        } else {
+          setState(() {
+            _error = 'Failed to set new PIN. Please try a different PIN.';
+            _confirmPin = '';
+            _newPin = '';
+            _currentStep = PinStep.newPin;
+          });
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = 'Failed to save PIN. Please try again.';
+      });
     }
   }
 

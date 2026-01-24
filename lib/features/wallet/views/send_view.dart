@@ -582,7 +582,7 @@ class _SendViewState extends ConsumerState<SendView>
     final phone = _selectedContact?.phone ?? '$_countryCode${_phoneController.text}';
     final recipientName = _selectedContact?.name ?? phone;
 
-    // Show PIN confirmation
+    // Show PIN confirmation - SECURITY: Verify PIN with backend for financial transactions
     final result = await PinConfirmationSheet.show(
       context: context,
       title: 'Confirm Transfer',
@@ -590,10 +590,10 @@ class _SendViewState extends ConsumerState<SendView>
       amount: amount,
       recipient: recipientName,
       onConfirm: (pin) async {
-        // TODO: Validate PIN with backend
-        // For now, accept any 4-digit PIN
-        await Future.delayed(const Duration(milliseconds: 500));
-        return pin.length == 4;
+        // SECURITY: Verify PIN with backend before authorizing transfer
+        final pinService = ref.read(pinServiceProvider);
+        final verification = await pinService.verifyPinWithBackend(pin);
+        return verification.success;
       },
     );
 
@@ -620,7 +620,7 @@ class _SendViewState extends ConsumerState<SendView>
     final address = _addressController.text;
     final shortAddress = '${address.substring(0, 6)}...${address.substring(address.length - 4)}';
 
-    // Show PIN confirmation
+    // Show PIN confirmation - SECURITY: Verify PIN with backend for financial transactions
     final result = await PinConfirmationSheet.show(
       context: context,
       title: 'Confirm Transfer',
@@ -628,9 +628,10 @@ class _SendViewState extends ConsumerState<SendView>
       amount: amount,
       recipient: shortAddress,
       onConfirm: (pin) async {
-        // TODO: Validate PIN with backend
-        await Future.delayed(const Duration(milliseconds: 500));
-        return pin.length == 4;
+        // SECURITY: Verify PIN with backend before authorizing transfer
+        final pinService = ref.read(pinServiceProvider);
+        final verification = await pinService.verifyPinWithBackend(pin);
+        return verification.success;
       },
     );
 

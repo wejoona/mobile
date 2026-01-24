@@ -17,6 +17,9 @@ export 'referrals/referrals_service.dart';
 export 'contacts/contacts_service.dart';
 export 'biometric/biometric_service.dart';
 
+// Security
+export 'pin/pin_service.dart';
+
 // Session management
 export 'session/session_service.dart';
 export 'session/session_manager.dart';

@@ -1,10 +1,18 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// API Configuration
+/// SECURITY: Use HTTPS in production, HTTP only for local development
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:3000/api/v1'; // Change for production
+  // Use environment-based configuration
+  static const String _devUrl = 'http://localhost:3000/api/v1';
+  static const String _prodUrl = 'https://api.joonapay.com/api/v1';
+
+  // SECURITY: Always use HTTPS in production
+  static String get baseUrl => kDebugMode ? _devUrl : _prodUrl;
+
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
 }
@@ -39,11 +47,18 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Add interceptors
   dio.interceptors.add(AuthInterceptor(ref));
-  dio.interceptors.add(LogInterceptor(
-    requestBody: true,
-    responseBody: true,
-    error: true,
-  ));
+
+  // SECURITY: Only add log interceptor in debug mode to prevent sensitive data leakage
+  if (kDebugMode) {
+    dio.interceptors.add(LogInterceptor(
+      requestBody: true,
+      responseBody: true,
+      error: true,
+      // Don't log headers which may contain auth tokens
+      requestHeader: false,
+      responseHeader: false,
+    ));
+  }
 
   return dio;
 });
