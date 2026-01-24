@@ -111,6 +111,26 @@ class WalletService {
     }
   }
 
+  /// POST /wallet/withdraw
+  Future<WithdrawResponse> withdraw({
+    required double amount,
+    required String destinationAddress,
+    String? network,
+    String? method,
+  }) async {
+    try {
+      final response = await _dio.post('/wallet/withdraw', data: {
+        'amount': amount,
+        'destinationAddress': destinationAddress,
+        'network': network ?? 'polygon',
+        if (method != null) 'method': method,
+      });
+      return WithdrawResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// GET /wallet/kyc/status
   Future<KycStatusResponse> getKycStatus() async {
     try {
@@ -282,6 +302,36 @@ class TransferResponse {
       transactionId: json['transactionId'] as String,
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String,
+      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      status: json['status'] as String,
+    );
+  }
+}
+
+/// Withdraw Response
+class WithdrawResponse {
+  final String transactionId;
+  final double amount;
+  final String destinationAddress;
+  final String network;
+  final double fee;
+  final String status;
+
+  const WithdrawResponse({
+    required this.transactionId,
+    required this.amount,
+    required this.destinationAddress,
+    required this.network,
+    required this.fee,
+    required this.status,
+  });
+
+  factory WithdrawResponse.fromJson(Map<String, dynamic> json) {
+    return WithdrawResponse(
+      transactionId: json['transactionId'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      destinationAddress: json['destinationAddress'] as String,
+      network: json['network'] as String? ?? 'polygon',
       fee: (json['fee'] as num?)?.toDouble() ?? 0,
       status: json['status'] as String,
     );

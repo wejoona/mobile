@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/components/composed/index.dart';
+import '../../../services/index.dart';
 import '../../../state/index.dart';
+import '../providers/wallet_provider.dart';
 
 /// Withdrawal method type
 enum WithdrawMethod {
@@ -60,6 +63,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
   WithdrawMethod? _selectedMethod;
   String? _amountError;
   double _availableBalance = 0;
+  bool _isSubmitting = false;
 
   // Mobile money fields
   final _phoneController = TextEditingController();
@@ -119,24 +123,103 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     }
   }
 
-  void _submit() {
-    // TODO: Implement withdrawal via service
-    // Refresh wallet and transactions via FSM
-    ref.read(walletStateMachineProvider.notifier).refresh();
-    ref.read(transactionStateMachineProvider.notifier).refresh();
+  Future<void> _submit() async {
+    if (_isSubmitting) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Withdrawal request submitted'),
-        backgroundColor: AppColors.successBase,
-      ),
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    String destination = '';
+    String recipientDisplay = '';
+    String method = '';
+
+    // Build destination and display based on method
+    switch (_selectedMethod!) {
+      case WithdrawMethod.mobileMoney:
+        destination = '$_countryCode${_phoneController.text}';
+        recipientDisplay = destination;
+        method = 'mobile_money';
+        break;
+      case WithdrawMethod.bankTransfer:
+        destination = _accountNumberController.text;
+        recipientDisplay = '${_bankNameController.text} - ${_accountNumberController.text}';
+        method = 'bank_transfer';
+        break;
+      case WithdrawMethod.crypto:
+        destination = _walletAddressController.text;
+        recipientDisplay = '${destination.substring(0, 6)}...${destination.substring(destination.length - 4)}';
+        method = 'crypto';
+        break;
+    }
+
+    // Show PIN confirmation
+    final result = await PinConfirmationSheet.show(
+      context: context,
+      title: 'Confirm Withdrawal',
+      subtitle: 'Enter your PIN to withdraw funds',
+      amount: amount,
+      recipient: recipientDisplay,
+      onConfirm: (pin) async {
+        // Verify PIN with backend for financial transactions
+        final pinService = ref.read(pinServiceProvider);
+        final verification = await pinService.verifyPinWithBackend(pin);
+        return verification.success;
+      },
     );
-    context.pop();
+
+    if (result == PinConfirmationResult.success) {
+      setState(() => _isSubmitting = true);
+
+      // Call withdrawal service
+      final success = await ref.read(withdrawProvider.notifier).withdraw(
+            amount: amount,
+            destinationAddress: destination,
+            network: _selectedMethod == WithdrawMethod.crypto ? 'polygon' : null,
+            method: method,
+          );
+
+      setState(() => _isSubmitting = false);
+
+      if (success) {
+        // Refresh wallet and transactions via FSM
+        ref.read(walletStateMachineProvider.notifier).refresh();
+        ref.read(transactionStateMachineProvider.notifier).refresh();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Withdrawal request submitted successfully!'),
+              backgroundColor: AppColors.successBase,
+            ),
+          );
+          context.pop();
+        }
+      } else {
+        // Error is handled by listener
+        if (mounted) {
+          final error = ref.read(withdrawProvider).error;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(error ?? 'Withdrawal failed. Please try again.'),
+              backgroundColor: AppColors.errorBase,
+            ),
+          );
+        }
+      }
+    } else if (result == PinConfirmationResult.failed) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Too many incorrect attempts. Please try again later.'),
+            backgroundColor: AppColors.errorBase,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final walletState = ref.watch(walletStateMachineProvider);
+    final withdrawState = ref.watch(withdrawProvider);
 
     // Get balance from FSM
     _availableBalance = walletState.availableBalance;
@@ -223,9 +306,10 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             // Submit Button
             AppButton(
               label: 'Withdraw',
-              onPressed: _canSubmit() ? _submit : null,
+              onPressed: _canSubmit() && !_isSubmitting ? _submit : null,
               variant: AppButtonVariant.primary,
               isFullWidth: true,
+              isLoading: _isSubmitting || withdrawState.isLoading,
             ),
 
             const SizedBox(height: AppSpacing.lg),

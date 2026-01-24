@@ -100,3 +100,83 @@ class AppColors {
   static const Color overlayDark = Color(0x80000000);     // 50% black
   static const Color overlayScrim = Color(0xCC000000);    // 80% black
 }
+
+/// Light Mode Color System
+/// Inverted palette maintaining luxury aesthetic
+class AppColorsLight {
+  AppColorsLight._();
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIGHT FOUNDATIONS (70% of UI)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color canvas = Color(0xFFFAFAF8);          // Main canvas - warm white
+  static const Color surface = Color(0xFFF5F5F2);         // Elevated surfaces
+  static const Color container = Color(0xFFFFFFFF);       // Cards, containers
+  static const Color elevated = Color(0xFFEDEDEB);        // Hover states, inputs
+  static const Color glass = Color(0xE6FFFFFF);           // Glassmorphism (90% opacity)
+
+  // Background aliases
+  static const Color backgroundPrimary = canvas;
+  static const Color backgroundSecondary = surface;
+  static const Color backgroundTertiary = container;
+  static const Color backgroundElevated = elevated;
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TEXT HIERARCHY (20% of UI)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color textPrimary = Color(0xFF1A1A1F);     // High emphasis - near black
+  static const Color textSecondary = Color(0xFF5A5A5E);   // Medium emphasis - labels
+  static const Color textTertiary = Color(0xFF8A8A8E);    // Low emphasis - hints
+  static const Color textDisabled = Color(0xFFAAAAAE);    // Disabled states
+  static const Color textInverse = Color(0xFFF5F5F0);     // On gold/dark backgrounds
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // GOLD ACCENT SYSTEM (5% of UI - High Impact)
+  // Same gold palette for brand consistency
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color gold500 = Color(0xFFB8943D);         // PRIMARY - slightly darker for contrast
+  static const Color gold600 = Color(0xFFA68535);
+  static const Color gold700 = Color(0xFF8A6E2B);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SEMANTIC COLORS (adjusted for light mode)
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color successBase = Color(0xFF1E7D52);
+  static const Color successLight = Color(0xFFE8F5ED);
+  static const Color successText = Color(0xFF1A5C3E);
+
+  static const Color warningBase = Color(0xFFB8862D);
+  static const Color warningLight = Color(0xFFFFF5E6);
+  static const Color warningText = Color(0xFF8A6420);
+
+  static const Color errorBase = Color(0xFFB83A4F);
+  static const Color errorLight = Color(0xFFFCEBED);
+  static const Color errorText = Color(0xFF8B2942);
+
+  static const Color infoBase = Color(0xFF3A6399);
+  static const Color infoLight = Color(0xFFE8F0F8);
+  static const Color infoText = Color(0xFF2B4A73);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // BORDERS & DIVIDERS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color borderSubtle = Color(0x0F000000);    // 6% black
+  static const Color borderDefault = Color(0x1A000000);   // 10% black
+  static const Color borderStrong = Color(0x26000000);    // 15% black
+  static const Color borderGold = Color(0x4DB8943D);      // 30% gold
+  static const Color borderGoldStrong = Color(0x80B8943D); // 50% gold
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // OVERLAYS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  static const Color overlayLight = Color(0x0D000000);    // 5% black
+  static const Color overlayMedium = Color(0x1A000000);   // 10% black
+  static const Color overlayDark = Color(0x80000000);     // 50% black
+  static const Color overlayScrim = Color(0xCC000000);    // 80% black
+}

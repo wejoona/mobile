@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../services/biometric/biometric_service.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -12,7 +13,6 @@ class SecurityView extends ConsumerStatefulWidget {
 }
 
 class _SecurityViewState extends ConsumerState<SecurityView> {
-  bool _biometricsEnabled = true;
   bool _twoFactorEnabled = false;
   bool _transactionPinRequired = true;
   bool _loginNotifications = true;
@@ -57,13 +57,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               onTap: () => context.push('/settings/pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildToggleOption(
-              icon: Icons.fingerprint,
-              title: 'Biometric Login',
-              subtitle: 'Use Face ID or fingerprint',
-              value: _biometricsEnabled,
-              onChanged: (value) => setState(() => _biometricsEnabled = value),
-            ),
+            _buildBiometricToggle(),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
               icon: Icons.security,
@@ -352,9 +346,91 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
+  Widget _buildBiometricToggle() {
+    final biometricAvailable = ref.watch(biometricAvailableProvider);
+    final biometricEnabled = ref.watch(biometricEnabledProvider);
+
+    return biometricAvailable.when(
+      data: (available) {
+        if (!available) {
+          return _buildToggleOption(
+            icon: Icons.fingerprint,
+            title: 'Biometric Login',
+            subtitle: 'Not available on this device',
+            value: false,
+            onChanged: (_) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Biometric authentication is not available on this device'),
+                  backgroundColor: AppColors.warningBase,
+                ),
+              );
+            },
+          );
+        }
+
+        return biometricEnabled.when(
+          data: (enabled) => _buildToggleOption(
+            icon: Icons.fingerprint,
+            title: 'Biometric Login',
+            subtitle: 'Use Face ID or fingerprint',
+            value: enabled,
+            onChanged: (value) async {
+              final biometricService = ref.read(biometricServiceProvider);
+              if (value) {
+                // Verify biometric before enabling
+                final authenticated = await biometricService.authenticate(
+                  reason: 'Verify to enable biometric login',
+                );
+                if (authenticated) {
+                  await biometricService.enableBiometric();
+                  ref.invalidate(biometricEnabledProvider);
+                }
+              } else {
+                await biometricService.disableBiometric();
+                ref.invalidate(biometricEnabledProvider);
+              }
+            },
+          ),
+          loading: () => _buildToggleOption(
+            icon: Icons.fingerprint,
+            title: 'Biometric Login',
+            subtitle: 'Loading...',
+            value: false,
+            onChanged: (_) {},
+          ),
+          error: (_, __) => _buildToggleOption(
+            icon: Icons.fingerprint,
+            title: 'Biometric Login',
+            subtitle: 'Error loading state',
+            value: false,
+            onChanged: (_) {},
+          ),
+        );
+      },
+      loading: () => _buildToggleOption(
+        icon: Icons.fingerprint,
+        title: 'Biometric Login',
+        subtitle: 'Checking availability...',
+        value: false,
+        onChanged: (_) {},
+      ),
+      error: (_, __) => _buildToggleOption(
+        icon: Icons.fingerprint,
+        title: 'Biometric Login',
+        subtitle: 'Error checking availability',
+        value: false,
+        onChanged: (_) {},
+      ),
+    );
+  }
+
   int _calculateSecurityScore() {
+    final biometricEnabled = ref.watch(biometricEnabledProvider);
+    final biometricsOn = biometricEnabled.valueOrNull ?? false;
+
     int score = 40; // Base score for having account
-    if (_biometricsEnabled) score += 20;
+    if (biometricsOn) score += 20;
     if (_twoFactorEnabled) score += 25;
     if (_transactionPinRequired) score += 10;
     if (_loginNotifications) score += 5;
@@ -369,8 +445,11 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   String _getScoreTip(int score) {
+    final biometricEnabled = ref.watch(biometricEnabledProvider);
+    final biometricsOn = biometricEnabled.valueOrNull ?? false;
+
     if (!_twoFactorEnabled) return 'Enable 2FA to increase your score by 25 points';
-    if (!_biometricsEnabled) return 'Enable biometrics for easier secure login';
+    if (!biometricsOn) return 'Enable biometrics for easier secure login';
     if (!_transactionPinRequired) return 'Require PIN for transactions for extra safety';
     return 'Enable all notifications for maximum security';
   }

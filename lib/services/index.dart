@@ -19,6 +19,11 @@ export 'biometric/biometric_service.dart';
 
 // Security
 export 'pin/pin_service.dart';
+export 'security/certificate_pinning.dart';
+export 'security/device_security.dart';
+export 'security/device_attestation.dart';
+export 'security/security_gate.dart';
+export 'security/screenshot_protection.dart';
 
 // Session management
 export 'session/session_service.dart';

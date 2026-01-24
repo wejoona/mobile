@@ -117,10 +117,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Verify OTP
   Future<bool> verifyOtp(String otp) async {
-    debugPrint('verifyOtp called with otp: $otp');
-
     if (state.phone == null) {
-      debugPrint('ERROR: Phone number not found in state');
       state = state.copyWith(
         status: AuthStatus.error,
         error: 'Phone number not found',
@@ -128,44 +125,36 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
 
-    debugPrint('Verifying OTP for phone: ${state.phone}');
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
-      debugPrint('Calling authService.verifyOtp...');
       final response = await _authService.verifyOtp(
         phone: state.phone!,
         otp: otp,
       );
-      debugPrint('OTP verification response received: accessToken=${response.accessToken.substring(0, 20)}...');
 
       // Store token
       await _storage.write(
         key: StorageKeys.accessToken,
         value: response.accessToken,
       );
-      debugPrint('Token stored in secure storage');
 
       // Start session
       await ref.read(sessionServiceProvider.notifier).startSession(
         accessToken: response.accessToken,
         tokenValidity: const Duration(hours: 1), // Default token validity
       );
-      debugPrint('Session started');
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
       );
-      debugPrint('State updated to authenticated');
 
       return true;
     } on ApiException catch (e) {
-      debugPrint('ApiException during verifyOtp: ${e.message}');
       state = state.copyWith(status: AuthStatus.error, error: e.message);
       return false;
     } catch (e) {
-      debugPrint('Unexpected error during verifyOtp: $e');
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
       return false;
     }

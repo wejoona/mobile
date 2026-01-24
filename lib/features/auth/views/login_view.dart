@@ -112,7 +112,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
               // Continue Button
               AppButton(
                 label: _isRegistering ? 'Create Account' : 'Continue',
-                onPressed: _phoneController.text.length >= 8
+                onPressed: _phoneController.text.length >= 9
                     ? () => _submit()
                     : null,
                 variant: AppButtonVariant.primary,
@@ -149,12 +149,36 @@ class _LoginViewState extends ConsumerState<LoginView> {
   }
 
   void _submit() {
-    final phone = '$_countryCode${_phoneController.text}';
+    final phoneNumber = _phoneController.text;
+
+    // SECURITY: Validate phone number format
+    if (!_isValidPhoneNumber(phoneNumber)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid phone number (9-15 digits)'),
+          backgroundColor: AppColors.errorBase,
+        ),
+      );
+      return;
+    }
+
+    final phone = '$_countryCode$phoneNumber';
 
     if (_isRegistering) {
       ref.read(authProvider.notifier).register(phone, 'CI');
     } else {
       ref.read(authProvider.notifier).login(phone);
     }
+  }
+
+  /// Validate phone number format
+  /// SECURITY: International format validation - 9-15 digits, numbers only
+  bool _isValidPhoneNumber(String phoneNumber) {
+    // Remove any whitespace
+    final cleaned = phoneNumber.replaceAll(RegExp(r'\s+'), '');
+
+    // Check if only digits and length between 9-15
+    final phoneRegex = RegExp(r'^\d{9,15}$');
+    return phoneRegex.hasMatch(cleaned);
   }
 }

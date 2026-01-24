@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -125,8 +126,13 @@ class PinService {
     );
   }
 
+  // Storage key for PIN token
+  static const _pinTokenKey = 'pin_verification_token';
+  static const _pinTokenExpiryKey = 'pin_token_expiry';
+
   /// Verify PIN with backend (for sensitive operations like transfers)
   /// SECURITY: Always verify with backend for financial transactions
+  /// Returns a PIN token that must be included in transfer requests
   Future<PinVerificationResult> verifyPinWithBackend(String pin) async {
     try {
       final response = await _dio.post('/wallet/pin/verify', data: {'pin': pin});
@@ -134,7 +140,21 @@ class PinService {
       if (response.statusCode == 200) {
         final data = response.data;
         if (data['valid'] == true) {
-          return PinVerificationResult(success: true);
+          // Store the PIN token for subsequent transfer operations
+          final pinToken = data['pinToken'] as String?;
+          final expiresIn = data['expiresIn'] as int? ?? 300;
+
+          if (pinToken != null) {
+            await _storage.write(key: _pinTokenKey, value: pinToken);
+            final expiry = DateTime.now().add(Duration(seconds: expiresIn));
+            await _storage.write(key: _pinTokenExpiryKey, value: expiry.toIso8601String());
+          }
+
+          return PinVerificationResult(
+            success: true,
+            pinToken: pinToken,
+            expiresIn: expiresIn,
+          );
         }
       }
 
@@ -186,6 +206,7 @@ class PinService {
     await _storage.delete(key: _pinSaltKey);
     await _storage.delete(key: _pinAttemptsKey);
     await _storage.delete(key: _pinLockedUntilKey);
+    await clearPinToken();
   }
 
   /// Hash PIN with salt using SHA-256
@@ -195,12 +216,43 @@ class PinService {
     return digest.toString();
   }
 
-  /// Generate a random salt
+  /// Generate a random salt using cryptographically secure random
+  /// SECURITY: Use Random.secure() for cryptographic operations
   String _generateSalt() {
-    final random = DateTime.now().microsecondsSinceEpoch.toString();
-    final bytes = utf8.encode(random);
-    final digest = sha256.convert(bytes);
-    return digest.toString().substring(0, 16);
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (i) => random.nextInt(256));
+    return base64.encode(bytes).substring(0, 16);
+  }
+
+  /// Get stored PIN token for transfer operations
+  /// Returns null if no token or if expired
+  Future<String?> getPinToken() async {
+    final token = await _storage.read(key: _pinTokenKey);
+    if (token == null) return null;
+
+    final expiryStr = await _storage.read(key: _pinTokenExpiryKey);
+    if (expiryStr != null) {
+      final expiry = DateTime.parse(expiryStr);
+      if (DateTime.now().isAfter(expiry)) {
+        // Token expired, clear it
+        await clearPinToken();
+        return null;
+      }
+    }
+
+    return token;
+  }
+
+  /// Check if a valid PIN token exists
+  Future<bool> hasValidPinToken() async {
+    final token = await getPinToken();
+    return token != null;
+  }
+
+  /// Clear the PIN token (after use or on logout)
+  Future<void> clearPinToken() async {
+    await _storage.delete(key: _pinTokenKey);
+    await _storage.delete(key: _pinTokenExpiryKey);
   }
 
   /// Check for weak PINs
@@ -255,6 +307,8 @@ class PinVerificationResult {
   final int? remainingAttempts;
   final int? lockRemainingSeconds;
   final String? message;
+  final String? pinToken;
+  final int? expiresIn;
 
   PinVerificationResult({
     required this.success,
@@ -262,6 +316,8 @@ class PinVerificationResult {
     this.remainingAttempts,
     this.lockRemainingSeconds,
     this.message,
+    this.pinToken,
+    this.expiresIn,
   });
 }
 

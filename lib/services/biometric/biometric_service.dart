@@ -55,25 +55,49 @@ class BiometricService {
   }
 
   /// Authenticate with biometrics
+  /// [sensitiveAction] - If true, uses stricter options (biometric only, no device credential fallback)
   Future<bool> authenticate({
     String reason = 'Please authenticate to continue',
+    bool sensitiveAction = false,
   }) async {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
+        options: AuthenticationOptions(
+          // SECURITY: For sensitive actions, prefer biometric only without fallback to device PIN
+          biometricOnly: sensitiveAction,
+          // SECURITY: stickyAuth keeps the authentication dialog active when app goes to background
+          stickyAuth: true,
+          // Allow device credentials (PIN/pattern) as fallback for non-sensitive operations
+          useErrorDialogs: true,
+        ),
         authMessages: const <AuthMessages>[
           AndroidAuthMessages(
             signInTitle: 'Authentication Required',
             cancelButton: 'Cancel',
+            biometricHint: 'Verify your identity',
           ),
           IOSAuthMessages(
             cancelButton: 'Cancel',
+            goToSettingsButton: 'Settings',
+            goToSettingsDescription: 'Please set up biometric authentication',
           ),
         ],
       );
-    } on PlatformException {
+    } on PlatformException catch (e) {
+      // Log the error for debugging but don't expose details to caller
+      // Common errors: NotAvailable, NotEnrolled, PasscodeNotSet
+      print('Biometric authentication error: ${e.code}');
       return false;
     }
+  }
+
+  /// Authenticate for sensitive operations (transfers, PIN change, etc.)
+  /// Uses stricter biometric-only authentication
+  Future<bool> authenticateSensitive({
+    String reason = 'Confirm your identity to proceed',
+  }) async {
+    return authenticate(reason: reason, sensitiveAction: true);
   }
 
   /// Check if biometric login is enabled

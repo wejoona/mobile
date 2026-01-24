@@ -224,3 +224,71 @@ final transferProvider =
     NotifierProvider.autoDispose<TransferNotifier, TransferState>(
   TransferNotifier.new,
 );
+
+/// Withdraw State
+class WithdrawState {
+  final bool isLoading;
+  final WithdrawResponse? response;
+  final String? error;
+
+  const WithdrawState({
+    this.isLoading = false,
+    this.response,
+    this.error,
+  });
+
+  WithdrawState copyWith({
+    bool? isLoading,
+    WithdrawResponse? response,
+    String? error,
+  }) {
+    return WithdrawState(
+      isLoading: isLoading ?? this.isLoading,
+      response: response ?? this.response,
+      error: error,
+    );
+  }
+}
+
+/// Withdraw Notifier
+class WithdrawNotifier extends Notifier<WithdrawState> {
+  @override
+  WithdrawState build() {
+    return const WithdrawState();
+  }
+
+  WalletService get _service => ref.read(walletServiceProvider);
+
+  Future<bool> withdraw({
+    required double amount,
+    required String destinationAddress,
+    String? network,
+    String? method,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final response = await _service.withdraw(
+        amount: amount,
+        destinationAddress: destinationAddress,
+        network: network,
+        method: method,
+      );
+
+      state = state.copyWith(isLoading: false, response: response);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+      return false;
+    }
+  }
+
+  void reset() {
+    state = const WithdrawState();
+  }
+}
+
+final withdrawProvider =
+    NotifierProvider.autoDispose<WithdrawNotifier, WithdrawState>(
+  WithdrawNotifier.new,
+);

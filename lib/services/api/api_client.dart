@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../security/certificate_pinning.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
@@ -45,6 +47,9 @@ final dioProvider = Provider<Dio>((ref) {
     },
   ));
 
+  // SECURITY: Enable certificate pinning in production
+  dio.enableCertificatePinning();
+
   // Add interceptors
   dio.interceptors.add(AuthInterceptor(ref));
 
@@ -66,7 +71,7 @@ final dioProvider = Provider<Dio>((ref) {
 /// Auth Interceptor - Adds JWT token to requests and handles token refresh
 class AuthInterceptor extends Interceptor {
   final Ref _ref;
-  bool _isRefreshing = false;
+  Completer<bool>? _refreshCompleter;
 
   AuthInterceptor(this._ref);
 
@@ -130,19 +135,23 @@ class AuthInterceptor extends Interceptor {
     handler.next(err);
   }
 
+  /// Refresh token with race condition protection
+  /// SECURITY: Use Completer to queue concurrent refresh requests
   Future<bool> _refreshToken(RequestOptions failedRequest) async {
-    if (_isRefreshing) {
-      // Wait for ongoing refresh
-      return false;
+    // If refresh is already in progress, wait for it
+    if (_refreshCompleter != null) {
+      return await _refreshCompleter!.future;
     }
 
-    _isRefreshing = true;
+    // Create new completer for this refresh operation
+    _refreshCompleter = Completer<bool>();
 
     try {
       final storage = _ref.read(secureStorageProvider);
       final refreshToken = await storage.read(key: StorageKeys.refreshToken);
 
       if (refreshToken == null) {
+        _refreshCompleter!.complete(false);
         return false;
       }
 
@@ -162,14 +171,20 @@ class AuthInterceptor extends Interceptor {
         final data = response.data;
         await storage.write(key: StorageKeys.accessToken, value: data['accessToken']);
         await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken']);
+        _refreshCompleter!.complete(true);
         return true;
       }
 
+      _refreshCompleter!.complete(false);
       return false;
     } catch (e) {
+      _refreshCompleter!.complete(false);
       return false;
     } finally {
-      _isRefreshing = false;
+      // Clear the completer after a short delay to allow waiting requests to complete
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _refreshCompleter = null;
+      });
     }
   }
 }

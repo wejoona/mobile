@@ -1,0 +1,217 @@
+# Mobile App CI/CD Pipeline with Security Scanning
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  # Security scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check for outdated packages
+        run: flutter pub outdated
+        continue-on-error: true
+
+      - name: Run pub audit
+        run: flutter pub audit
+        continue-on-error: true
+
+      - name: Check for secrets in code
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified
+
+  # Analyze and format check
+  analyze:
+    name: Analyze & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Run analyzer
+        run: flutter analyze --fatal-infos
+
+  # Unit tests
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [analyze]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+  # Build Android APK
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK with obfuscation
+        run: |
+          flutter build apk --release \
+            --obfuscate \
+            --split-debug-info=build/debug-info
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-info
+          path: build/debug-info
+          retention-days: 90
+
+  # Build iOS (only on main)
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    needs: [test, security]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS (no codesign)
+        run: |
+          flutter build ios --release \
+            --no-codesign \
+            --obfuscate \
+            --split-debug-info=build/debug-info
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-debug-info
+          path: build/debug-info
+          retention-days: 90
+
+  # Android App Bundle (for Play Store)
+  build-android-bundle:
+    name: Build Android Bundle
+    runs-on: ubuntu-latest
+    needs: [build-android]
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Decode keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo $KEYSTORE_BASE64 | base64 --decode > android/app/release-keystore.jks
+          fi
+
+      - name: Build App Bundle with obfuscation
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          flutter build appbundle --release \
+            --obfuscate \
+            --split-debug-info=build/debug-info-bundle
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 14

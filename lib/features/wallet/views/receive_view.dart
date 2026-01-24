@@ -301,11 +301,17 @@ class ReceiveView extends ConsumerWidget {
 
   void _copyAddress(BuildContext context, String address) {
     Clipboard.setData(ClipboardData(text: address));
+
+    // SECURITY: Auto-clear clipboard after 60 seconds
+    Future.delayed(const Duration(seconds: 60), () {
+      Clipboard.setData(const ClipboardData(text: ''));
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Address copied to clipboard'),
+        content: Text('Address copied to clipboard (auto-clears in 60s)'),
         backgroundColor: AppColors.successBase,
-        duration: Duration(seconds: 2),
+        duration: Duration(seconds: 3),
       ),
     );
   }

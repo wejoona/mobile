@@ -31,6 +31,7 @@ class _SendViewState extends ConsumerState<SendView>
 
   // Validation
   String? _amountError;
+  String? _addressError;
   double _availableBalance = 0;
 
   @override
@@ -362,10 +363,25 @@ class _SendViewState extends ConsumerState<SendView>
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          AppInput(
-            controller: _addressController,
-            hint: '0x...',
-            prefixIcon: Icons.account_balance_wallet,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppInput(
+                controller: _addressController,
+                hint: '0x...',
+                prefixIcon: Icons.account_balance_wallet,
+                onChanged: (_) => _validateAddress(),
+              ),
+              if (_addressError != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.sm),
+                  child: AppText(
+                    _addressError!,
+                    variant: AppTextVariant.bodySmall,
+                    color: AppColors.errorBase,
+                  ),
+                ),
+            ],
           ),
 
           const SizedBox(height: AppSpacing.xxl),
@@ -557,6 +573,24 @@ class _SendViewState extends ConsumerState<SendView>
     });
   }
 
+  void _validateAddress() {
+    final address = _addressController.text;
+
+    setState(() {
+      if (address.isEmpty) {
+        _addressError = null;
+      } else if (!address.startsWith('0x')) {
+        _addressError = 'Address must start with 0x';
+      } else if (address.length != 42) {
+        _addressError = 'Address must be exactly 42 characters';
+      } else if (!_isValidEthereumAddress(address)) {
+        _addressError = 'Invalid Ethereum address format';
+      } else {
+        _addressError = null;
+      }
+    });
+  }
+
   void _setAmount(double amount) {
     _amountController.text = amount.toStringAsFixed(2);
     _validateAmount();
@@ -564,17 +598,38 @@ class _SendViewState extends ConsumerState<SendView>
 
   bool _canSendInternal() {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final hasRecipient = _selectedContact != null || _phoneController.text.length >= 8;
+    final phoneNumber = _phoneController.text.replaceAll(RegExp(r'\s+'), '');
+    final hasRecipient = _selectedContact != null || _isValidPhoneNumber(phoneNumber);
     return amount > 0 && amount <= _availableBalance && hasRecipient && _amountError == null;
+  }
+
+  /// Validate phone number format (9-15 digits)
+  /// SECURITY: International phone number validation
+  bool _isValidPhoneNumber(String phoneNumber) {
+    final phoneRegex = RegExp(r'^\d{9,15}$');
+    return phoneRegex.hasMatch(phoneNumber);
   }
 
   bool _canSendExternal() {
     final amount = double.tryParse(_amountController.text) ?? 0;
     return amount > 0 &&
            amount <= _availableBalance &&
-           _addressController.text.startsWith('0x') &&
-           _addressController.text.length >= 42 &&
+           _isValidEthereumAddress(_addressController.text) &&
            _amountError == null;
+  }
+
+  /// Validate Ethereum address format
+  /// SECURITY: Check for valid Ethereum address format (0x + 40 hex chars = 42 total)
+  bool _isValidEthereumAddress(String address) {
+    // Must start with 0x and be exactly 42 characters
+    if (!address.startsWith('0x') || address.length != 42) {
+      return false;
+    }
+
+    // Check if remaining 40 characters are valid hexadecimal
+    final hexPart = address.substring(2);
+    final hexRegex = RegExp(r'^[0-9a-fA-F]{40}$');
+    return hexRegex.hasMatch(hexPart);
   }
 
   Future<void> _sendInternal() async {
