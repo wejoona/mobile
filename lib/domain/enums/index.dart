@@ -45,4 +45,31 @@ enum NotificationType {
   promotion,
   lowBalance,
   general,
+  // Enhanced notification types
+  newDeviceLogin,
+  largeTransaction,
+  withdrawalPending,
+  addressWhitelisted,
+  priceAlert,
+  weeklySpendingSummary,
+  // Transaction monitoring alert types
+  unusualLocation,
+  rapidTransactions,
+  newRecipient,
+  suspiciousPattern,
+  failedAttempts,
+  accountChange,
+  balanceThreshold,
+  externalWithdrawal,
+  timeAnomaly,
+  roundAmount,
+  cumulativeDaily,
+  velocityLimit,
+}
+
+/// Alert severity enum - mirrors backend
+enum AlertSeverity {
+  info,
+  warning,
+  critical,
 }

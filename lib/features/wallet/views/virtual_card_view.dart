@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
-import '../../../state/index.dart';
 
 class VirtualCardView extends ConsumerStatefulWidget {
   const VirtualCardView({super.key});

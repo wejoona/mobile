@@ -50,8 +50,10 @@ class PinService {
     await _storage.delete(key: _pinLockedUntilKey);
 
     // Also set PIN on backend if authenticated
+    // SECURITY: Hash PIN before transmission to prevent plaintext exposure
     try {
-      await _dio.post('/wallet/pin/set', data: {'pin': pin});
+      final hashedPin = _hashPinForTransmission(pin);
+      await _dio.post('/wallet/pin/set', data: {'pin': hashedPin});
     } catch (e) {
       // Backend call failed, but local PIN is set
       // This will be synced later
@@ -135,7 +137,9 @@ class PinService {
   /// Returns a PIN token that must be included in transfer requests
   Future<PinVerificationResult> verifyPinWithBackend(String pin) async {
     try {
-      final response = await _dio.post('/wallet/pin/verify', data: {'pin': pin});
+      // SECURITY: Hash PIN before transmission to prevent plaintext exposure
+      final hashedPin = _hashPinForTransmission(pin);
+      final response = await _dio.post('/wallet/pin/verify', data: {'pin': hashedPin});
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -207,6 +211,25 @@ class PinService {
     await _storage.delete(key: _pinAttemptsKey);
     await _storage.delete(key: _pinLockedUntilKey);
     await clearPinToken();
+  }
+
+  /// Hash PIN for transmission to backend
+  /// SECURITY: Use PBKDF2 with a fixed client-side salt to prevent plaintext transmission
+  /// The backend will re-hash with its own salt for storage
+  /// This provides defense-in-depth: even if network traffic is intercepted,
+  /// the PIN cannot be recovered without knowing the salt and performing brute-force
+  String _hashPinForTransmission(String pin) {
+    // Use PBKDF2 with a fixed client-side salt
+    // 10,000 iterations is enough for transmission (backend will re-hash)
+    const clientSalt = 'joonapay_client_salt_v1';
+    const iterations = 10000;
+    const keyLength = 32; // 256 bits
+
+    final saltBytes = utf8.encode(clientSalt);
+    final pinBytes = utf8.encode(pin);
+
+    final derivedKey = _pbkdf2(pinBytes, saltBytes, iterations, keyLength);
+    return base64.encode(derivedKey);
   }
 
   /// Hash PIN with salt using PBKDF2

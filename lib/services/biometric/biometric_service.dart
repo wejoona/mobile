@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:local_auth_android/local_auth_android.dart';
-import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
 
@@ -64,16 +62,10 @@ class BiometricService {
     try {
       return await _auth.authenticate(
         localizedReason: reason,
-        authMessages: const <AuthMessages>[
-          AndroidAuthMessages(
-            signInTitle: 'Authentication Required',
-            cancelButton: 'Cancel',
-          ),
-          IOSAuthMessages(
-            cancelButton: 'Cancel',
-            localizedFallbackTitle: 'Use Passcode',
-          ),
-        ],
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+        ),
       );
     } on PlatformException catch (e) {
       // Log the error for debugging but don't expose details to caller
@@ -152,4 +144,76 @@ final biometricEnabledProvider = FutureProvider<bool>((ref) async {
 final primaryBiometricTypeProvider = FutureProvider<BiometricType>((ref) async {
   final service = ref.watch(biometricServiceProvider);
   return service.getPrimaryBiometricType();
+});
+
+/// Biometric Guard for sensitive operations
+/// Throws [BiometricRequiredException] if biometric check fails
+class BiometricGuard {
+  final BiometricService _biometricService;
+
+  BiometricGuard(this._biometricService);
+
+  /// Threshold for requiring biometric confirmation on external transfers
+  static const double externalTransferThreshold = 100.0;
+
+  /// Check if biometric confirmation is required for transfer
+  bool requiresConfirmation({
+    required double amount,
+    required bool isExternal,
+  }) {
+    // External transfers over threshold require biometric
+    if (isExternal && amount >= externalTransferThreshold) {
+      return true;
+    }
+    return false;
+  }
+
+  /// Require biometric confirmation for sensitive action
+  /// Returns true if confirmed, throws if denied or fails
+  Future<bool> confirmSensitiveAction({
+    required String reason,
+  }) async {
+    final isEnabled = await _biometricService.isBiometricEnabled();
+    if (!isEnabled) {
+      // If biometric not enabled, allow action (user chose not to use biometric)
+      return true;
+    }
+
+    final success = await _biometricService.authenticateSensitive(reason: reason);
+    if (!success) {
+      throw BiometricRequiredException('Biometric confirmation required');
+    }
+    return true;
+  }
+
+  /// Guard for external transfer
+  Future<bool> guardExternalTransfer(double amount) async {
+    if (!requiresConfirmation(amount: amount, isExternal: true)) {
+      return true;
+    }
+    return confirmSensitiveAction(
+      reason: 'Confirm external transfer of \$${amount.toStringAsFixed(2)}',
+    );
+  }
+
+  /// Guard for PIN change
+  Future<bool> guardPinChange() async {
+    return confirmSensitiveAction(
+      reason: 'Confirm your identity to change PIN',
+    );
+  }
+}
+
+/// Exception thrown when biometric confirmation is required but not provided
+class BiometricRequiredException implements Exception {
+  final String message;
+  BiometricRequiredException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+/// Biometric Guard Provider
+final biometricGuardProvider = Provider<BiometricGuard>((ref) {
+  return BiometricGuard(ref.watch(biometricServiceProvider));
 });

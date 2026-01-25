@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../tokens/index.dart';
 import '../primitives/index.dart';
+import '../../../domain/enums/index.dart';
 
 /// Transaction Types
 enum TransactionDisplayType {
@@ -20,6 +21,7 @@ class TransactionRow extends StatelessWidget {
     required this.amount,
     required this.date,
     required this.type,
+    this.status,
     this.icon,
     this.iconUrl,
     this.onTap,
@@ -30,6 +32,7 @@ class TransactionRow extends StatelessWidget {
   final double amount;
   final DateTime date;
   final TransactionDisplayType type;
+  final TransactionStatus? status;
   final IconData? icon;
   final String? iconUrl;
   final VoidCallback? onTap;
@@ -57,12 +60,22 @@ class TransactionRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      title,
-                      variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: AppText(
+                            title,
+                            variant: AppTextVariant.bodyLarge,
+                            color: AppColors.textPrimary,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (_showStatusBadge) ...[
+                          const SizedBox(width: AppSpacing.sm),
+                          _buildStatusBadge(),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
@@ -94,6 +107,53 @@ class TransactionRow extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  bool get _showStatusBadge =>
+      status != null &&
+      (status == TransactionStatus.pending ||
+          status == TransactionStatus.processing ||
+          status == TransactionStatus.failed);
+
+  Widget _buildStatusBadge() {
+    Color backgroundColor;
+    Color textColor;
+    String label;
+
+    switch (status) {
+      case TransactionStatus.pending:
+      case TransactionStatus.processing:
+        backgroundColor = AppColors.warningBase.withOpacity(0.15);
+        textColor = AppColors.warningText;
+        label = status == TransactionStatus.pending ? 'Pending' : 'Processing';
+        break;
+      case TransactionStatus.failed:
+        backgroundColor = AppColors.errorBase.withOpacity(0.15);
+        textColor = AppColors.errorText;
+        label = 'Failed';
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -146,6 +206,17 @@ class TransactionRow extends StatelessWidget {
   }
 
   Color _getIconColor() {
+    // Show muted color for failed transactions
+    if (status == TransactionStatus.failed) {
+      return AppColors.errorText;
+    }
+
+    // Show pending color for pending transactions
+    if (status == TransactionStatus.pending ||
+        status == TransactionStatus.processing) {
+      return AppColors.warningText;
+    }
+
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
@@ -158,6 +229,17 @@ class TransactionRow extends StatelessWidget {
   }
 
   Color _getAmountColor() {
+    // Show muted color for failed transactions
+    if (status == TransactionStatus.failed) {
+      return AppColors.errorText.withOpacity(0.6);
+    }
+
+    // Show pending color for pending transactions
+    if (status == TransactionStatus.pending ||
+        status == TransactionStatus.processing) {
+      return AppColors.warningText;
+    }
+
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
@@ -170,7 +252,7 @@ class TransactionRow extends StatelessWidget {
   }
 
   String _formatAmount() {
-    final sign = _isPositive() ? '+' : '−';
+    final sign = _isPositive() ? '+' : '-';
     final absAmount = amount.abs();
     return '$sign \$${absAmount.toStringAsFixed(2)}';
   }

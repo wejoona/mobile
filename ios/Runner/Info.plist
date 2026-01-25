@@ -55,5 +55,31 @@
 	<string>JoonaPay needs access to save your QR code to the photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>JoonaPay needs access to your photo library to save QR codes</string>
+	<!-- SECURITY: Enforce HTTPS for all network connections -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<!-- Allow localhost for development only -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
+	</dict>
+	<!-- Push Notifications -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<!-- Firebase Messaging Auto-init -->
+	<key>FirebaseMessagingAutoInitEnabled</key>
+	<true/>
 </dict>
 </plist>

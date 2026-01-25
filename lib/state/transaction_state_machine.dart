@@ -2,20 +2,30 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/entities/index.dart';
 import '../domain/enums/index.dart';
 import '../services/index.dart';
+import '../features/transactions/providers/transactions_provider.dart';
 import 'app_state.dart';
 import 'wallet_state_machine.dart';
 
 /// Transaction State Machine - manages transaction list globally
+/// Now supports server-side filtering via TransactionFilter
 class TransactionStateMachine extends Notifier<TransactionListState> {
   static const int _pageSize = 20;
 
   @override
   TransactionListState build() {
+    // Listen to filter changes and reload
+    ref.listen(transactionFilterProvider, (previous, next) {
+      if (previous != next) {
+        fetch();
+      }
+    });
+
     _autoFetch();
     return const TransactionListState();
   }
 
   TransactionsService get _service => ref.read(transactionsServiceProvider);
+  TransactionFilter get _filter => ref.read(transactionFilterProvider);
 
   void _autoFetch() {
     Future.microtask(() => fetch());
@@ -28,7 +38,11 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
     state = state.copyWith(status: TransactionListStatus.loading);
 
     try {
-      final page = await _service.getTransactions(page: 1, pageSize: _pageSize);
+      final page = await _service.getTransactions(
+        page: 1,
+        pageSize: _pageSize,
+        filter: _filter,
+      );
 
       state = state.copyWith(
         status: TransactionListStatus.loaded,
@@ -58,7 +72,11 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
     state = state.copyWith(status: TransactionListStatus.refreshing);
 
     try {
-      final page = await _service.getTransactions(page: 1, pageSize: _pageSize);
+      final page = await _service.getTransactions(
+        page: 1,
+        pageSize: _pageSize,
+        filter: _filter,
+      );
 
       state = state.copyWith(
         status: TransactionListStatus.loaded,
@@ -87,6 +105,7 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
       final page = await _service.getTransactions(
         page: nextPage,
         pageSize: _pageSize,
+        filter: _filter,
       );
 
       state = state.copyWith(

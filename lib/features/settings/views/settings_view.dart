@@ -367,45 +367,28 @@ class _KycTile extends ConsumerWidget {
 }
 
 class _BiometricTile extends ConsumerWidget {
+  const _BiometricTile();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final biometricAvailable = ref.watch(biometricAvailableProvider);
-    final biometricEnabled = ref.watch(biometricEnabledProvider);
     final biometricType = ref.watch(primaryBiometricTypeProvider);
+    final biometricEnabled = ref.watch(biometricEnabledProvider);
 
-    return biometricAvailable.when(
-      data: (available) {
-        if (!available) {
-          return _SettingsTile(
-            icon: Icons.fingerprint,
-            title: 'Biometric Login',
-            subtitle: 'Not available',
-            onTap: () {},
-          );
+    return biometricType.when(
+      data: (type) {
+        if (type == BiometricType.none) {
+          return const SizedBox.shrink();
         }
 
         return biometricEnabled.when(
           data: (enabled) => _SettingsTile(
-            icon: biometricType.when(
-              data: (type) => type == BiometricType.faceId
-                  ? Icons.face
-                  : Icons.fingerprint,
-              loading: () => Icons.fingerprint,
-              error: (_, __) => Icons.fingerprint,
-            ),
-            title: biometricType.when(
-              data: (type) => type == BiometricType.faceId
-                  ? 'Face ID'
-                  : 'Touch ID',
-              loading: () => 'Biometric Login',
-              error: (_, __) => 'Biometric Login',
-            ),
+            icon: type == BiometricType.faceId ? Icons.face : Icons.fingerprint,
+            title: type == BiometricType.faceId ? 'Face ID' : 'Touch ID',
             trailing: Switch(
               value: enabled,
               onChanged: (value) async {
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
-                  // Authenticate before enabling
                   final authenticated = await service.authenticate(
                     reason: 'Authenticate to enable biometric login',
                   );

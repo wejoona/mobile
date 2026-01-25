@@ -1,28 +1,53 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/index.dart';
 import '../../../domain/entities/index.dart';
 
-/// Wallet Balance Provider
+/// Wallet Balance Provider with TTL-based caching
+/// Cache duration: 30 seconds
 final walletBalanceProvider =
-    FutureProvider.autoDispose<WalletBalanceResponse>((ref) async {
+    FutureProvider<WalletBalanceResponse>((ref) async {
   final service = ref.watch(walletServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 30 seconds
+  Timer(const Duration(seconds: 30), () {
+    link.close();
+  });
+
   return service.getBalance();
 });
 
-/// Deposit Channels Provider
+/// Deposit Channels Provider with TTL-based caching
+/// Cache duration: 30 minutes (channels rarely change)
 final depositChannelsProvider =
-    FutureProvider.autoDispose.family<List<DepositChannel>, String?>((
+    FutureProvider.family<List<DepositChannel>, String?>((
   ref,
   currency,
 ) async {
   final service = ref.watch(walletServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 30 minutes
+  Timer(const Duration(minutes: 30), () {
+    link.close();
+  });
+
   return service.getDepositChannels(currency: currency);
 });
 
-/// Exchange Rate Provider
-final exchangeRateProvider = FutureProvider.autoDispose
+/// Exchange Rate Provider with TTL-based caching
+/// Cache duration: 30 seconds (rates change frequently)
+final exchangeRateProvider = FutureProvider
     .family<ExchangeRate, ExchangeRateParams>((ref, params) async {
   final service = ref.watch(walletServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 30 seconds
+  Timer(const Duration(seconds: 30), () {
+    link.close();
+  });
+
   return service.getRate(
     sourceCurrency: params.sourceCurrency,
     targetCurrency: params.targetCurrency,
@@ -62,10 +87,18 @@ class ExchangeRateParams {
       direction.hashCode;
 }
 
-/// KYC Status Provider
+/// KYC Status Provider with TTL-based caching
+/// Cache duration: 5 minutes (KYC status doesn't change often)
 final kycStatusProvider =
-    FutureProvider.autoDispose<KycStatusResponse>((ref) async {
+    FutureProvider<KycStatusResponse>((ref) async {
   final service = ref.watch(walletServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 5 minutes
+  Timer(const Duration(minutes: 5), () {
+    link.close();
+  });
+
   return service.getKycStatus();
 });
 

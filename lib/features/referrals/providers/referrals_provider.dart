@@ -1,31 +1,64 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/index.dart';
 import '../../../domain/entities/index.dart';
 
-/// Referral Code Provider
-final referralCodeProvider = FutureProvider.autoDispose<String>((ref) async {
+/// Referral Code Provider with TTL-based caching
+/// Cache duration: 1 hour (referral code rarely changes)
+final referralCodeProvider = FutureProvider<String>((ref) async {
   final service = ref.watch(referralsServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 1 hour
+  Timer(const Duration(hours: 1), () {
+    link.close();
+  });
+
   return service.getReferralCode();
 });
 
-/// Referral Stats Provider
+/// Referral Stats Provider with TTL-based caching
+/// Cache duration: 2 minutes (stats update relatively slowly)
 final referralStatsProvider =
-    FutureProvider.autoDispose<ReferralStats>((ref) async {
+    FutureProvider<ReferralStats>((ref) async {
   final service = ref.watch(referralsServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 2 minutes
+  Timer(const Duration(minutes: 2), () {
+    link.close();
+  });
+
   return service.getStats();
 });
 
-/// Referral History Provider
+/// Referral History Provider with TTL-based caching
+/// Cache duration: 5 minutes (history doesn't change frequently)
 final referralHistoryProvider =
-    FutureProvider.autoDispose<List<Referral>>((ref) async {
+    FutureProvider<List<Referral>>((ref) async {
   final service = ref.watch(referralsServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 5 minutes
+  Timer(const Duration(minutes: 5), () {
+    link.close();
+  });
+
   return service.getHistory();
 });
 
-/// Leaderboard Provider
+/// Leaderboard Provider with TTL-based caching
+/// Cache duration: 5 minutes (leaderboard updates periodically)
 final leaderboardProvider =
-    FutureProvider.autoDispose<List<LeaderboardEntry>>((ref) async {
+    FutureProvider<List<LeaderboardEntry>>((ref) async {
   final service = ref.watch(referralsServiceProvider);
+  final link = ref.keepAlive();
+
+  // Auto-invalidate after 5 minutes
+  Timer(const Duration(minutes: 5), () {
+    link.close();
+  });
+
   return service.getLeaderboard();
 });
 

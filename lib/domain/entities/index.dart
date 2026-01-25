@@ -1,6 +1,10 @@
 export 'user.dart';
 export 'wallet.dart';
 export 'transaction.dart';
+export 'transaction_filter.dart';
 export 'transfer.dart';
 export 'notification.dart';
+export 'notification_preferences.dart';
 export 'referral.dart';
+export 'contact.dart';
+export 'whitelisted_address.dart';

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,75 +8,8 @@ import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../domain/entities/index.dart';
-import '../../../state/index.dart';
-
-/// Filter state for transactions
-enum TransactionFilter {
-  all,
-  deposits,
-  withdrawals,
-  transfersIn,
-  transfersOut,
-}
-
-extension TransactionFilterExt on TransactionFilter {
-  String get label {
-    switch (this) {
-      case TransactionFilter.all:
-        return 'All';
-      case TransactionFilter.deposits:
-        return 'Deposits';
-      case TransactionFilter.withdrawals:
-        return 'Withdrawals';
-      case TransactionFilter.transfersIn:
-        return 'Received';
-      case TransactionFilter.transfersOut:
-        return 'Sent';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case TransactionFilter.all:
-        return Icons.all_inclusive;
-      case TransactionFilter.deposits:
-        return Icons.arrow_downward;
-      case TransactionFilter.withdrawals:
-        return Icons.arrow_upward;
-      case TransactionFilter.transfersIn:
-        return Icons.call_received;
-      case TransactionFilter.transfersOut:
-        return Icons.send;
-    }
-  }
-}
-
-/// Local filter state notifier
-class TransactionFilterNotifier extends Notifier<TransactionFilter> {
-  @override
-  TransactionFilter build() => TransactionFilter.all;
-
-  void setFilter(TransactionFilter filter) => state = filter;
-}
-
-final transactionFilterProvider =
-    NotifierProvider<TransactionFilterNotifier, TransactionFilter>(
-  TransactionFilterNotifier.new,
-);
-
-/// Search state notifier
-class TransactionSearchNotifier extends Notifier<String> {
-  @override
-  String build() => '';
-
-  void setSearch(String query) => state = query;
-  void clear() => state = '';
-}
-
-final transactionSearchProvider =
-    NotifierProvider<TransactionSearchNotifier, String>(
-  TransactionSearchNotifier.new,
-);
+import '../providers/transactions_provider.dart';
+import '../widgets/filter_bottom_sheet.dart';
 
 class TransactionsView extends ConsumerStatefulWidget {
   const TransactionsView({super.key});
@@ -86,31 +20,40 @@ class TransactionsView extends ConsumerStatefulWidget {
 
 class _TransactionsViewState extends ConsumerState<TransactionsView> {
   final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
   bool _showSearch = false;
+  Timer? _debounce;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
+    _debounce?.cancel();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      ref.read(transactionFilterProvider.notifier).setSearch(query);
+    });
+  }
+
+  void _showFilterSheet() {
+    FilterBottomSheet.show(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(transactionStateMachineProvider);
+    final state = ref.watch(filteredPaginatedTransactionsProvider);
     final filter = ref.watch(transactionFilterProvider);
-    final searchQuery = ref.watch(transactionSearchProvider);
-
-    // Filter transactions
-    final filteredTransactions = _filterTransactions(
-      state.transactions,
-      filter,
-      searchQuery,
-    );
+    final activeFilterCount = filter.activeFilterCount;
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        elevation: 0,
         title: _showSearch
             ? _buildSearchField()
             : const AppText(
@@ -124,7 +67,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               setState(() {
                 _showSearch = false;
                 _searchController.clear();
-                ref.read(transactionSearchProvider.notifier).clear();
+                ref.read(transactionFilterProvider.notifier).setSearch(null);
               });
             } else {
               context.pop();
@@ -132,18 +75,57 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           },
         ),
         actions: [
+          // Search toggle
           IconButton(
             icon: Icon(_showSearch ? Icons.close : Icons.search),
             onPressed: () {
               setState(() {
                 _showSearch = !_showSearch;
-                if (!_showSearch) {
+                if (_showSearch) {
+                  _searchFocusNode.requestFocus();
+                } else {
                   _searchController.clear();
-                  ref.read(transactionSearchProvider.notifier).clear();
+                  ref.read(transactionFilterProvider.notifier).setSearch(null);
                 }
               });
             },
           ),
+          // Filter button with badge
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: _showFilterSheet,
+                tooltip: 'Filter',
+              ),
+              if (activeFilterCount > 0)
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.gold500,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 18,
+                      minHeight: 18,
+                    ),
+                    child: Text(
+                      '$activeFilterCount',
+                      style: const TextStyle(
+                        color: AppColors.obsidian,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          // Export button
           IconButton(
             icon: const Icon(Icons.download_outlined),
             onPressed: () => context.push('/transactions/export'),
@@ -153,32 +135,33 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       ),
       body: Column(
         children: [
-          // Filter chips
-          _buildFilterChips(filter),
+          // Active filters indicator
+          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter),
 
           // Transactions list
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
                 await ref
-                    .read(transactionStateMachineProvider.notifier)
+                    .read(filteredPaginatedTransactionsProvider.notifier)
                     .refresh();
               },
               color: AppColors.gold500,
               backgroundColor: AppColors.slate,
               child: state.isLoading && state.transactions.isEmpty
                   ? const Center(
-                      child:
-                          CircularProgressIndicator(color: AppColors.gold500),
+                      child: CircularProgressIndicator(color: AppColors.gold500),
                     )
-                  : filteredTransactions.isEmpty
-                      ? _buildEmptyState(filter, searchQuery)
-                      : _buildTransactionsList(
-                          context,
-                          filteredTransactions,
-                          state,
-                          ref,
-                        ),
+                  : state.error != null
+                      ? _buildErrorState(state.error!)
+                      : state.transactions.isEmpty
+                          ? _buildEmptyState(filter)
+                          : _buildTransactionsList(
+                              context,
+                              state.transactions,
+                              state,
+                              ref,
+                            ),
             ),
           ),
         ],
@@ -189,7 +172,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   Widget _buildSearchField() {
     return TextField(
       controller: _searchController,
-      autofocus: true,
+      focusNode: _searchFocusNode,
       style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
       decoration: InputDecoration(
         hintText: 'Search transactions...',
@@ -197,119 +180,219 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           color: AppColors.textTertiary,
         ),
         border: InputBorder.none,
+        prefixIcon: const Icon(
+          Icons.search,
+          color: AppColors.textTertiary,
+        ),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: AppColors.textTertiary),
+                onPressed: () {
+                  _searchController.clear();
+                  ref.read(transactionFilterProvider.notifier).setSearch(null);
+                },
+              )
+            : null,
       ),
-      onChanged: (value) {
-        ref.read(transactionSearchProvider.notifier).setSearch(value);
-      },
+      onChanged: _onSearchChanged,
     );
   }
 
-  Widget _buildFilterChips(TransactionFilter currentFilter) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+  Widget _buildActiveFiltersBar(TransactionFilter filter) {
+    final chips = <Widget>[];
+
+    if (filter.type != null) {
+      chips.add(_buildFilterChip(
+        label: _getTypeName(filter.type!),
+        onRemove: () => ref.read(transactionFilterProvider.notifier).setType(null),
+      ));
+    }
+
+    if (filter.status != null) {
+      chips.add(_buildFilterChip(
+        label: _capitalize(filter.status!),
+        onRemove: () => ref.read(transactionFilterProvider.notifier).setStatus(null),
+      ));
+    }
+
+    if (filter.startDate != null || filter.endDate != null) {
+      final dateFormat = DateFormat('MMM d');
+      String label;
+      if (filter.startDate != null && filter.endDate != null) {
+        label = '${dateFormat.format(filter.startDate!)} - ${dateFormat.format(filter.endDate!)}';
+      } else if (filter.startDate != null) {
+        label = 'From ${dateFormat.format(filter.startDate!)}';
+      } else {
+        label = 'Until ${dateFormat.format(filter.endDate!)}';
+      }
+      chips.add(_buildFilterChip(
+        label: label,
+        onRemove: () => ref.read(transactionFilterProvider.notifier).setDateRange(null, null),
+      ));
+    }
+
+    if (filter.minAmount != null || filter.maxAmount != null) {
+      String label;
+      if (filter.minAmount != null && filter.maxAmount != null) {
+        label = '\$${filter.minAmount!.toInt()} - \$${filter.maxAmount!.toInt()}';
+      } else if (filter.minAmount != null) {
+        label = '>\$${filter.minAmount!.toInt()}';
+      } else {
+        label = '<\$${filter.maxAmount!.toInt()}';
+      }
+      chips.add(_buildFilterChip(
+        label: label,
+        onRemove: () => ref.read(transactionFilterProvider.notifier).setAmountRange(null, null),
+      ));
+    }
+
+    return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.screenPadding,
         vertical: AppSpacing.sm,
       ),
       child: Row(
-        children: TransactionFilter.values.map((filter) {
-          final isSelected = filter == currentFilter;
-          return Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: FilterChip(
-              selected: isSelected,
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    filter.icon,
-                    size: 16,
-                    color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(filter.label),
-                ],
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: chips,
               ),
-              labelStyle: TextStyle(
-                color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-              backgroundColor: AppColors.slate,
-              selectedColor: AppColors.gold500,
-              checkmarkColor: AppColors.obsidian,
-              showCheckmark: false,
-              side: BorderSide(
-                color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
-              ),
-              onSelected: (_) {
-                ref.read(transactionFilterProvider.notifier).setFilter(filter);
-              },
             ),
-          );
-        }).toList(),
+          ),
+          TextButton(
+            onPressed: () {
+              ref.read(transactionFilterProvider.notifier).clearAll();
+            },
+            child: const Text(
+              'Clear all',
+              style: TextStyle(
+                color: AppColors.gold500,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  List<Transaction> _filterTransactions(
-    List<Transaction> transactions,
-    TransactionFilter filter,
-    String searchQuery,
-  ) {
-    var filtered = transactions;
-
-    // Apply type filter
-    switch (filter) {
-      case TransactionFilter.all:
-        break;
-      case TransactionFilter.deposits:
-        filtered = filtered
-            .where((tx) => tx.type == TransactionType.deposit)
-            .toList();
-        break;
-      case TransactionFilter.withdrawals:
-        filtered = filtered
-            .where((tx) => tx.type == TransactionType.withdrawal)
-            .toList();
-        break;
-      case TransactionFilter.transfersIn:
-        filtered = filtered
-            .where((tx) => tx.type == TransactionType.transferInternal)
-            .toList();
-        break;
-      case TransactionFilter.transfersOut:
-        filtered = filtered
-            .where((tx) => tx.type == TransactionType.transferExternal)
-            .toList();
-        break;
-    }
-
-    // Apply search query
-    if (searchQuery.isNotEmpty) {
-      final query = searchQuery.toLowerCase();
-      filtered = filtered.where((tx) {
-        final description = tx.description?.toLowerCase() ?? '';
-        final reference = tx.reference.toLowerCase();
-        final amount = tx.amount.toString();
-        return description.contains(query) ||
-            reference.contains(query) ||
-            amount.contains(query);
-      }).toList();
-    }
-
-    return filtered;
+  Widget _buildFilterChip({
+    required String label,
+    required VoidCallback onRemove,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(right: AppSpacing.sm),
+      child: Chip(
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 12,
+          ),
+        ),
+        deleteIcon: const Icon(
+          Icons.close,
+          size: 16,
+          color: AppColors.textSecondary,
+        ),
+        onDeleted: onRemove,
+        backgroundColor: AppColors.elevated,
+        side: const BorderSide(color: AppColors.borderSubtle),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.full),
+        ),
+      ),
+    );
   }
 
-  Widget _buildEmptyState(TransactionFilter filter, String searchQuery) {
-    String message;
-    if (searchQuery.isNotEmpty) {
-      message = 'No transactions matching "$searchQuery"';
-    } else if (filter != TransactionFilter.all) {
-      message = 'No ${filter.label.toLowerCase()} found';
-    } else {
-      message = 'Your transaction history will appear here';
+  String _getTypeName(String type) {
+    switch (type) {
+      case 'deposit':
+        return 'Deposits';
+      case 'withdrawal':
+        return 'Withdrawals';
+      case 'transfer_internal':
+        return 'Received';
+      case 'transfer_external':
+        return 'Sent';
+      default:
+        return type;
     }
+  }
 
+  String _capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
+  Widget _buildEmptyState(TransactionFilter filter) {
+    final hasFilters = filter.hasActiveFilters || filter.hasSearchQuery;
+
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.slate,
+                borderRadius: BorderRadius.circular(AppRadius.xl),
+              ),
+              child: Icon(
+                hasFilters ? Icons.search_off : Icons.receipt_long_outlined,
+                color: AppColors.textTertiary,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            AppText(
+              hasFilters ? 'No Results Found' : 'No Transactions',
+              variant: AppTextVariant.titleMedium,
+              color: AppColors.textPrimary,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+              child: AppText(
+                hasFilters
+                    ? 'Try adjusting your filters or search query to find what you\'re looking for.'
+                    : 'Your transaction history will appear here once you make your first deposit or transfer.',
+                variant: AppTextVariant.bodyMedium,
+                color: AppColors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            if (hasFilters) ...[
+              const SizedBox(height: AppSpacing.xxl),
+              OutlinedButton.icon(
+                onPressed: () {
+                  _searchController.clear();
+                  ref.read(transactionFilterProvider.notifier).clearAll();
+                },
+                icon: const Icon(Icons.filter_alt_off),
+                label: const Text('Clear Filters'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.gold500,
+                  side: const BorderSide(color: AppColors.gold500),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.md,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -318,18 +401,18 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: AppColors.errorBase.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: const Icon(
-              Icons.receipt_long_outlined,
-              color: AppColors.textTertiary,
+              Icons.error_outline,
+              color: AppColors.errorText,
               size: 40,
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
           const AppText(
-            'No Transactions',
+            'Something Went Wrong',
             variant: AppTextVariant.titleMedium,
             color: AppColors.textPrimary,
           ),
@@ -337,10 +420,22 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
             child: AppText(
-              message,
+              error,
               variant: AppTextVariant.bodyMedium,
               color: AppColors.textSecondary,
               textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          ElevatedButton.icon(
+            onPressed: () {
+              ref.read(filteredPaginatedTransactionsProvider.notifier).refresh();
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.gold500,
+              foregroundColor: AppColors.obsidian,
             ),
           ),
         ],
@@ -351,7 +446,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   Widget _buildTransactionsList(
     BuildContext context,
     List<Transaction> transactions,
-    TransactionListState state,
+    FilteredPaginatedTransactionsState state,
     WidgetRef ref,
   ) {
     // Group transactions by date
@@ -362,7 +457,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
         if (notification is ScrollEndNotification) {
           final metrics = notification.metrics;
           if (metrics.pixels >= metrics.maxScrollExtent - 200) {
-            ref.read(transactionStateMachineProvider.notifier).loadMore();
+            ref.read(filteredPaginatedTransactionsProvider.notifier).loadMore();
           }
         }
         return false;
@@ -382,6 +477,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
           final entry = grouped.entries.elementAt(index);
           return _TransactionGroup(
+            key: ValueKey('${entry.key}_${entry.value.first.id}'),
             date: entry.key,
             transactions: entry.value,
             onTransactionTap: (tx) =>
@@ -425,6 +521,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
 class _TransactionGroup extends StatelessWidget {
   const _TransactionGroup({
+    super.key,
     required this.date,
     required this.transactions,
     required this.onTransactionTap,
@@ -448,11 +545,13 @@ class _TransactionGroup extends StatelessWidget {
           ),
         ),
         ...transactions.map((tx) => TransactionRow(
+              key: ValueKey(tx.id),
               title: _getTransactionTitle(tx.type, tx.description),
               subtitle: tx.description ?? _getTransactionSubtitle(tx.type),
               amount: tx.amount,
               date: tx.createdAt,
               type: _mapTransactionType(tx.type),
+              status: tx.status,
               onTap: () => onTransactionTap(tx),
             )),
       ],

@@ -3,82 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
-
-/// Saved recipient model
-class SavedRecipient {
-  final String id;
-  final String name;
-  final String phone;
-  final String? email;
-  final String? walletAddress;
-  final bool isJoonaPayUser;
-  final bool isFavorite;
-  final DateTime lastUsed;
-  final int transferCount;
-
-  const SavedRecipient({
-    required this.id,
-    required this.name,
-    required this.phone,
-    this.email,
-    this.walletAddress,
-    this.isJoonaPayUser = false,
-    this.isFavorite = false,
-    required this.lastUsed,
-    this.transferCount = 0,
-  });
-}
-
-// Mock data
-final _mockRecipients = [
-  SavedRecipient(
-    id: '1',
-    name: 'Mom',
-    phone: '+225 07 12 34 56',
-    isJoonaPayUser: true,
-    isFavorite: true,
-    lastUsed: DateTime.now().subtract(const Duration(days: 2)),
-    transferCount: 15,
-  ),
-  SavedRecipient(
-    id: '2',
-    name: 'John Doe',
-    phone: '+225 05 98 76 54',
-    email: 'john@example.com',
-    isJoonaPayUser: true,
-    isFavorite: true,
-    lastUsed: DateTime.now().subtract(const Duration(days: 5)),
-    transferCount: 8,
-  ),
-  SavedRecipient(
-    id: '3',
-    name: 'Landlord',
-    phone: '+225 01 23 45 67',
-    isJoonaPayUser: false,
-    isFavorite: false,
-    lastUsed: DateTime.now().subtract(const Duration(days: 30)),
-    transferCount: 12,
-  ),
-  SavedRecipient(
-    id: '4',
-    name: 'Crypto Wallet',
-    phone: '',
-    walletAddress: '0x1234...abcd',
-    isJoonaPayUser: false,
-    isFavorite: false,
-    lastUsed: DateTime.now().subtract(const Duration(days: 60)),
-    transferCount: 3,
-  ),
-  SavedRecipient(
-    id: '5',
-    name: 'Sister',
-    phone: '+225 07 11 22 33',
-    isJoonaPayUser: true,
-    isFavorite: false,
-    lastUsed: DateTime.now().subtract(const Duration(days: 14)),
-    transferCount: 6,
-  ),
-];
+import '../../../domain/entities/contact.dart';
+import '../providers/contacts_provider.dart';
 
 class SavedRecipientsView extends ConsumerStatefulWidget {
   const SavedRecipientsView({super.key});
@@ -91,15 +17,12 @@ class SavedRecipientsView extends ConsumerStatefulWidget {
 class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<SavedRecipient> _recipients = [];
-  bool _isLoading = true;
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadRecipients();
   }
 
   @override
@@ -108,40 +31,15 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     super.dispose();
   }
 
-  Future<void> _loadRecipients() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    setState(() {
-      _recipients = List.from(_mockRecipients);
-      _isLoading = false;
-    });
-  }
-
-  List<SavedRecipient> get _filteredRecipients {
-    var list = _recipients;
-
-    // Filter by search
-    if (_searchQuery.isNotEmpty) {
-      list = list.where((r) {
-        return r.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            r.phone.contains(_searchQuery) ||
-            (r.email?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
-      }).toList();
-    }
-
-    return list;
-  }
-
-  List<SavedRecipient> get _favorites =>
-      _filteredRecipients.where((r) => r.isFavorite).toList();
-
-  List<SavedRecipient> get _recent {
-    final sorted = List<SavedRecipient>.from(_filteredRecipients);
-    sorted.sort((a, b) => b.lastUsed.compareTo(a.lastUsed));
-    return sorted.take(10).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final contactsAsync = ref.watch(contactsProvider);
+    final favoritesAsync = ref.watch(favoritesProvider);
+    final recentsAsync = ref.watch(recentsProvider);
+    final searchResultsAsync = _searchQuery.isNotEmpty
+        ? ref.watch(searchContactsProvider(_searchQuery))
+        : null;
+
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
@@ -166,8 +64,18 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           labelColor: AppColors.gold500,
           unselectedLabelColor: AppColors.textTertiary,
           tabs: [
-            Tab(text: 'All (${_filteredRecipients.length})'),
-            Tab(text: 'Favorites (${_favorites.length})'),
+            Tab(
+              text: contactsAsync.maybeWhen(
+                data: (contacts) => 'All (${_filterContacts(contacts).length})',
+                orElse: () => 'All',
+              ),
+            ),
+            Tab(
+              text: favoritesAsync.maybeWhen(
+                data: (favorites) => 'Favorites (${_filterContacts(favorites).length})',
+                orElse: () => 'Favorites',
+              ),
+            ),
             const Tab(text: 'Recent'),
           ],
         ),
@@ -197,16 +105,14 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
 
           // Content
           Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.gold500),
-                  )
+            child: _searchQuery.isNotEmpty
+                ? _buildSearchResults(searchResultsAsync!)
                 : TabBarView(
                     controller: _tabController,
                     children: [
-                      _buildRecipientsList(_filteredRecipients),
-                      _buildRecipientsList(_favorites),
-                      _buildRecipientsList(_recent),
+                      _buildContactsList(contactsAsync),
+                      _buildContactsList(favoritesAsync),
+                      _buildContactsList(recentsAsync),
                     ],
                   ),
           ),
@@ -215,93 +121,244 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     );
   }
 
-  Widget _buildRecipientsList(List<SavedRecipient> recipients) {
-    if (recipients.isEmpty) {
-      return Center(
+  /// Filter contacts by search query (client-side filter)
+  List<Contact> _filterContacts(List<Contact> contacts) {
+    if (_searchQuery.isEmpty) return contacts;
+
+    return contacts.where((c) {
+      return c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          (c.phone?.contains(_searchQuery) ?? false) ||
+          (c.username?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
+          (c.walletAddress?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+    }).toList();
+  }
+
+  Widget _buildSearchResults(AsyncValue<List<Contact>> searchResultsAsync) {
+    return searchResultsAsync.when(
+      data: (results) {
+        if (results.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.search_off,
+                  size: 64,
+                  color: AppColors.textTertiary,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                const AppText(
+                  'No results found',
+                  variant: AppTextVariant.bodyMedium,
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+          itemCount: results.length,
+          itemBuilder: (context, index) {
+            final contact = results[index];
+            return _RecipientCard(
+              contact: contact,
+              onTap: () => _sendToRecipient(contact),
+              onFavoriteToggle: () => _toggleFavorite(contact.id),
+              onDelete: () => _deleteRecipient(contact),
+            );
+          },
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.gold500),
+      ),
+      error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.people_outline,
+              Icons.error_outline,
               size: 64,
-              color: AppColors.textTertiary,
+              color: AppColors.errorBase,
             ),
             const SizedBox(height: AppSpacing.lg),
-            const AppText(
-              'No recipients found',
+            AppText(
+              'Error: ${error.toString()}',
               variant: AppTextVariant.bodyMedium,
               color: AppColors.textSecondary,
             ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: 'Retry',
+              onPressed: () {
+                ref.invalidate(searchContactsProvider(_searchQuery));
+              },
+              variant: AppButtonVariant.secondary,
+            ),
           ],
         ),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      itemCount: recipients.length,
-      itemBuilder: (context, index) {
-        final recipient = recipients[index];
-        return _RecipientCard(
-          recipient: recipient,
-          onTap: () => _sendToRecipient(recipient),
-          onFavoriteToggle: () => _toggleFavorite(recipient.id),
-          onDelete: () => _deleteRecipient(recipient.id),
-        );
-      },
+      ),
     );
   }
 
-  void _sendToRecipient(SavedRecipient recipient) {
-    // Navigate to send view with pre-filled recipient
-    context.push('/send');
-    // TODO: Pass recipient data
+  Widget _buildContactsList(AsyncValue<List<Contact>> contactsAsync) {
+    return contactsAsync.when(
+      data: (contacts) {
+        final filteredContacts = _filterContacts(contacts);
+
+        if (filteredContacts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.people_outline,
+                  size: 64,
+                  color: AppColors.textTertiary,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                const AppText(
+                  'No recipients found',
+                  variant: AppTextVariant.bodyMedium,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppButton(
+                  label: 'Add Recipient',
+                  onPressed: _showAddRecipient,
+                  variant: AppButtonVariant.secondary,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(contactsProvider);
+            ref.invalidate(favoritesProvider);
+            ref.invalidate(recentsProvider);
+          },
+          color: AppColors.gold500,
+          backgroundColor: AppColors.slate,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            itemCount: filteredContacts.length,
+            itemBuilder: (context, index) {
+              final contact = filteredContacts[index];
+              return _RecipientCard(
+                contact: contact,
+                onTap: () => _sendToRecipient(contact),
+                onFavoriteToggle: () => _toggleFavorite(contact.id),
+                onDelete: () => _deleteRecipient(contact),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.gold500),
+      ),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppColors.errorBase,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              'Failed to load contacts',
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: 'Retry',
+              onPressed: () {
+                ref.invalidate(contactsProvider);
+                ref.invalidate(favoritesProvider);
+                ref.invalidate(recentsProvider);
+              },
+              variant: AppButtonVariant.secondary,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  void _toggleFavorite(String id) {
-    setState(() {
-      final index = _recipients.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        final recipient = _recipients[index];
-        _recipients[index] = SavedRecipient(
-          id: recipient.id,
-          name: recipient.name,
-          phone: recipient.phone,
-          email: recipient.email,
-          walletAddress: recipient.walletAddress,
-          isJoonaPayUser: recipient.isJoonaPayUser,
-          isFavorite: !recipient.isFavorite,
-          lastUsed: recipient.lastUsed,
-          transferCount: recipient.transferCount,
+  void _sendToRecipient(Contact contact) {
+    // Navigate to send view with pre-filled recipient
+    context.push('/send', extra: contact);
+  }
+
+  Future<void> _toggleFavorite(String id) async {
+    final success = await ref.read(contactProvider.notifier).toggleFavorite(id);
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Favorite updated'),
+            backgroundColor: AppColors.successBase,
+          ),
+        );
+      } else {
+        final error = ref.read(contactProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Failed to update favorite'),
+            backgroundColor: AppColors.errorBase,
+          ),
         );
       }
-    });
+    }
   }
 
-  void _deleteRecipient(String id) {
+  void _deleteRecipient(Contact contact) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.slate,
-        title: const Text('Delete Recipient?'),
-        content: const Text('This recipient will be removed from your saved list.'),
+        title: const Text('Delete Recipient?', style: TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          'Remove ${contact.name} from your saved recipients?',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                _recipients.removeWhere((r) => r.id == id);
-              });
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Recipient removed'),
-                  backgroundColor: AppColors.successBase,
-                ),
-              );
+
+              final success = await ref.read(contactProvider.notifier).deleteContact(contact.id);
+
+              if (mounted) {
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Recipient removed'),
+                      backgroundColor: AppColors.successBase,
+                    ),
+                  );
+                } else {
+                  final error = ref.read(contactProvider).error;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(error ?? 'Failed to delete contact'),
+                      backgroundColor: AppColors.errorBase,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text('Delete', style: TextStyle(color: AppColors.errorBase)),
           ),
@@ -323,10 +380,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: _AddRecipientSheet(
-          onAdded: (recipient) {
-            setState(() {
-              _recipients.insert(0, recipient);
-            });
+          onAdded: () {
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -343,13 +397,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
 
 class _RecipientCard extends StatelessWidget {
   const _RecipientCard({
-    required this.recipient,
+    required this.contact,
     required this.onTap,
     required this.onFavoriteToggle,
     required this.onDelete,
   });
 
-  final SavedRecipient recipient;
+  final Contact contact;
   final VoidCallback onTap;
   final VoidCallback onFavoriteToggle;
   final VoidCallback onDelete;
@@ -357,8 +411,32 @@ class _RecipientCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dismissible(
-      key: Key(recipient.id),
+      key: Key(contact.id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (_) async {
+        // Show confirmation dialog
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppColors.slate,
+            title: const Text('Delete Recipient?', style: TextStyle(color: AppColors.textPrimary)),
+            content: Text(
+              'Remove ${contact.name} from your saved recipients?',
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Delete', style: TextStyle(color: AppColors.errorBase)),
+              ),
+            ],
+          ),
+        ) ?? false;
+      },
       onDismissed: (_) => onDelete(),
       background: Container(
         alignment: Alignment.centerRight,
@@ -385,21 +463,21 @@ class _RecipientCard extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: recipient.isJoonaPayUser
+                  color: contact.isJoonaPayUser
                       ? AppColors.gold500.withValues(alpha: 0.2)
                       : AppColors.slate,
                   shape: BoxShape.circle,
                 ),
-                child: recipient.walletAddress != null
+                child: contact.walletAddress != null && contact.phone == null
                     ? const Icon(
                         Icons.account_balance_wallet,
                         color: AppColors.textSecondary,
                       )
                     : Center(
                         child: AppText(
-                          _getInitials(recipient.name),
+                          _getInitials(contact.name),
                           variant: AppTextVariant.titleMedium,
-                          color: recipient.isJoonaPayUser
+                          color: contact.isJoonaPayUser
                               ? AppColors.gold500
                               : AppColors.textSecondary,
                         ),
@@ -414,12 +492,14 @@ class _RecipientCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        AppText(
-                          recipient.name,
-                          variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textPrimary,
+                        Flexible(
+                          child: AppText(
+                            contact.name,
+                            variant: AppTextVariant.bodyLarge,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                        if (recipient.isJoonaPayUser) ...[
+                        if (contact.isJoonaPayUser) ...[
                           const SizedBox(width: AppSpacing.xs),
                           const Icon(
                             Icons.verified,
@@ -431,14 +511,14 @@ class _RecipientCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
-                      recipient.walletAddress ?? recipient.phone,
+                      contact.displayIdentifier,
                       variant: AppTextVariant.bodySmall,
                       color: AppColors.textSecondary,
                     ),
-                    if (recipient.transferCount > 0) ...[
+                    if (contact.transactionCount > 0) ...[
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
-                        '${recipient.transferCount} transfers',
+                        '${contact.transactionCount} transfers',
                         variant: AppTextVariant.bodySmall,
                         color: AppColors.textTertiary,
                       ),
@@ -453,8 +533,8 @@ class _RecipientCard extends StatelessWidget {
                   GestureDetector(
                     onTap: onFavoriteToggle,
                     child: Icon(
-                      recipient.isFavorite ? Icons.star : Icons.star_border,
-                      color: recipient.isFavorite
+                      contact.isFavorite ? Icons.star : Icons.star_border,
+                      color: contact.isFavorite
                           ? AppColors.gold500
                           : AppColors.textTertiary,
                     ),
@@ -493,26 +573,29 @@ class _RecipientCard extends StatelessWidget {
   }
 }
 
-class _AddRecipientSheet extends StatefulWidget {
+class _AddRecipientSheet extends ConsumerStatefulWidget {
   const _AddRecipientSheet({required this.onAdded});
 
-  final ValueChanged<SavedRecipient> onAdded;
+  final VoidCallback onAdded;
 
   @override
-  State<_AddRecipientSheet> createState() => _AddRecipientSheetState();
+  ConsumerState<_AddRecipientSheet> createState() => _AddRecipientSheetState();
 }
 
-class _AddRecipientSheetState extends State<_AddRecipientSheet> {
+class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  bool _isWalletAddress = false;
+  final _usernameController = TextEditingController();
+  final _walletController = TextEditingController();
+  String _recipientType = 'phone'; // 'phone', 'username', 'wallet'
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _phoneController.dispose();
-    _emailController.dispose();
+    _usernameController.dispose();
+    _walletController.dispose();
     super.dispose();
   }
 
@@ -545,50 +628,26 @@ class _AddRecipientSheetState extends State<_AddRecipientSheet> {
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isWalletAddress = false),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: !_isWalletAddress
-                          ? AppColors.gold500
-                          : AppColors.elevated,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    child: Center(
-                      child: AppText(
-                        'Phone',
-                        variant: AppTextVariant.labelMedium,
-                        color: !_isWalletAddress
-                            ? AppColors.obsidian
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
+                child: _TypeButton(
+                  label: 'Phone',
+                  isSelected: _recipientType == 'phone',
+                  onTap: () => setState(() => _recipientType = 'phone'),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isWalletAddress = true),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: _isWalletAddress
-                          ? AppColors.gold500
-                          : AppColors.elevated,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    child: Center(
-                      child: AppText(
-                        'Wallet',
-                        variant: AppTextVariant.labelMedium,
-                        color: _isWalletAddress
-                            ? AppColors.obsidian
-                            : AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
+                child: _TypeButton(
+                  label: 'Username',
+                  isSelected: _recipientType == 'username',
+                  onTap: () => setState(() => _recipientType = 'username'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _TypeButton(
+                  label: 'Wallet',
+                  isSelected: _recipientType == 'wallet',
+                  onTap: () => setState(() => _recipientType = 'wallet'),
                 ),
               ),
             ],
@@ -610,34 +669,42 @@ class _AddRecipientSheetState extends State<_AddRecipientSheet> {
 
           const SizedBox(height: AppSpacing.lg),
 
-          // Phone or Wallet
-          AppText(
-            _isWalletAddress ? 'Wallet Address' : 'Phone Number',
-            variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          AppInput(
-            controller: _phoneController,
-            hint: _isWalletAddress ? '0x...' : '+225 XX XX XX XX',
-            keyboardType:
-                _isWalletAddress ? TextInputType.text : TextInputType.phone,
-          ),
-
-          if (!_isWalletAddress) ...[
-            const SizedBox(height: AppSpacing.lg),
-
-            // Email (optional)
+          // Type-specific field
+          if (_recipientType == 'phone') ...[
             const AppText(
-              'Email (Optional)',
+              'Phone Number',
               variant: AppTextVariant.labelMedium,
               color: AppColors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
-              controller: _emailController,
-              hint: 'email@example.com',
-              keyboardType: TextInputType.emailAddress,
+              controller: _phoneController,
+              hint: '+225 XX XX XX XX',
+              keyboardType: TextInputType.phone,
+            ),
+          ] else if (_recipientType == 'username') ...[
+            const AppText(
+              'JoonaPay Username',
+              variant: AppTextVariant.labelMedium,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppInput(
+              controller: _usernameController,
+              hint: '@username',
+              prefixIcon: Icons.alternate_email,
+            ),
+          ] else ...[
+            const AppText(
+              'Wallet Address',
+              variant: AppTextVariant.labelMedium,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppInput(
+              controller: _walletController,
+              hint: '0x...',
+              keyboardType: TextInputType.text,
             ),
           ],
 
@@ -649,6 +716,7 @@ class _AddRecipientSheetState extends State<_AddRecipientSheet> {
             onPressed: _canAdd() ? _add : null,
             variant: AppButtonVariant.primary,
             isFullWidth: true,
+            isLoading: _isSubmitting,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -658,20 +726,93 @@ class _AddRecipientSheetState extends State<_AddRecipientSheet> {
   }
 
   bool _canAdd() {
-    return _nameController.text.isNotEmpty && _phoneController.text.length >= 5;
+    if (_nameController.text.isEmpty) return false;
+
+    switch (_recipientType) {
+      case 'phone':
+        return _phoneController.text.isNotEmpty;
+      case 'username':
+        return _usernameController.text.isNotEmpty;
+      case 'wallet':
+        return _walletController.text.isNotEmpty;
+      default:
+        return false;
+    }
   }
 
-  void _add() {
-    widget.onAdded(SavedRecipient(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: _nameController.text,
-      phone: _isWalletAddress ? '' : _phoneController.text,
-      email: _emailController.text.isEmpty ? null : _emailController.text,
-      walletAddress: _isWalletAddress ? _phoneController.text : null,
-      isJoonaPayUser: false,
-      isFavorite: false,
-      lastUsed: DateTime.now(),
-      transferCount: 0,
-    ));
+  Future<void> _add() async {
+    setState(() => _isSubmitting = true);
+
+    String? phone;
+    String? username;
+    String? walletAddress;
+
+    switch (_recipientType) {
+      case 'phone':
+        phone = _phoneController.text;
+        break;
+      case 'username':
+        username = _usernameController.text.replaceFirst('@', '');
+        break;
+      case 'wallet':
+        walletAddress = _walletController.text;
+        break;
+    }
+
+    final success = await ref.read(contactProvider.notifier).createContact(
+          name: _nameController.text,
+          phone: phone,
+          username: username,
+          walletAddress: walletAddress,
+        );
+
+    setState(() => _isSubmitting = false);
+
+    if (mounted) {
+      if (success) {
+        widget.onAdded();
+      } else {
+        final error = ref.read(contactProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Failed to add recipient'),
+            backgroundColor: AppColors.errorBase,
+          ),
+        );
+      }
+    }
+  }
+}
+
+class _TypeButton extends StatelessWidget {
+  const _TypeButton({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold500 : AppColors.elevated,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Center(
+          child: AppText(
+            label,
+            variant: AppTextVariant.labelMedium,
+            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'design/theme/app_theme.dart';
 import 'design/theme/theme_provider.dart';
 import 'router/app_router.dart';
@@ -10,6 +11,14 @@ import 'services/security/device_security.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase (gracefully handle missing/invalid config for development)
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+    debugPrint('Push notifications will be disabled. Configure Firebase for production.');
+  }
 
   // Lock orientation to portrait
   await SystemChrome.setPreferredOrientations([

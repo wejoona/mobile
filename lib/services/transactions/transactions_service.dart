@@ -9,22 +9,33 @@ class TransactionsService {
 
   TransactionsService(this._dio);
 
-  /// GET /wallet/transactions
+  /// GET /wallet/transactions with advanced filtering
   Future<TransactionPage> getTransactions({
     int page = 1,
     int pageSize = 20,
     String? type,
     String? status,
+    TransactionFilter? filter,
   }) async {
     try {
+      // Build query parameters
+      final queryParameters = <String, dynamic>{
+        'limit': pageSize,
+        'offset': (page - 1) * pageSize,
+      };
+
+      // Apply filter parameters if provided
+      if (filter != null) {
+        queryParameters.addAll(filter.toQueryParams());
+      } else {
+        // Legacy support for simple type/status filters
+        if (type != null) queryParameters['type'] = type;
+        if (status != null) queryParameters['status'] = status;
+      }
+
       final response = await _dio.get(
         '/wallet/transactions',
-        queryParameters: {
-          'page': page,
-          'pageSize': pageSize,
-          if (type != null) 'type': type,
-          if (status != null) 'status': status,
-        },
+        queryParameters: queryParameters,
       );
       return TransactionPage.fromJson(response.data);
     } on DioException catch (e) {

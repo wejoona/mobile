@@ -123,6 +123,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -138,6 +139,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenAnswer((_) async => false);
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -153,6 +155,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -163,6 +166,7 @@ void main() {
       verify(() => mockAuth.authenticate(
             localizedReason: 'Custom reason',
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).called(1);
     });
   });
@@ -173,6 +177,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenThrow(PlatformException(code: 'NotEnrolled'));
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -188,6 +193,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenThrow(PlatformException(code: 'NotAvailable'));
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -367,6 +373,7 @@ void main() {
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
 
@@ -378,6 +385,7 @@ void main() {
       verify(() => mockAuth.authenticate(
             localizedReason: 'Confirm your identity to proceed',
             authMessages: any(named: 'authMessages'),
+            options: any(named: 'options'),
           )).called(1);
     });
   });

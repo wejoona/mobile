@@ -1,8 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import '../api/api_client.dart';
+import '../../domain/entities/contact.dart' as domain;
 
 /// Contact with app status
 class AppContact {
@@ -180,4 +182,123 @@ final savedContactsProvider = FutureProvider<List<AppContact>>((ref) async {
 final recentContactsProvider = FutureProvider<List<AppContact>>((ref) async {
   final service = ref.watch(contactsServiceProvider);
   return service.getRecentContacts();
+});
+
+// ============================================
+// API-BACKED CONTACTS SERVICE
+// ============================================
+
+/// JoonaPay Contacts Service - syncs with backend
+class JoonaPayContactsService {
+  final Dio _dio;
+
+  JoonaPayContactsService(this._dio);
+
+  /// Get all saved contacts from backend
+  Future<List<domain.Contact>> getContacts() async {
+    final response = await _dio.get('/contacts');
+    final data = response.data as Map<String, dynamic>;
+    final contacts = data['contacts'] as List;
+    return contacts
+        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Get favorite contacts
+  Future<List<domain.Contact>> getFavorites() async {
+    final response = await _dio.get('/contacts/favorites');
+    final data = response.data as Map<String, dynamic>;
+    final contacts = data['contacts'] as List;
+    return contacts
+        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Get recent contacts (last transactions)
+  Future<List<domain.Contact>> getRecents() async {
+    final response = await _dio.get('/contacts/recents');
+    final data = response.data as Map<String, dynamic>;
+    final contacts = data['contacts'] as List;
+    return contacts
+        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Search contacts by name or username
+  Future<List<domain.Contact>> searchContacts(String query) async {
+    final response = await _dio.get('/contacts/search', queryParameters: {
+      'query': query,
+    });
+    final data = response.data as Map<String, dynamic>;
+    final contacts = data['contacts'] as List;
+    return contacts
+        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// Create a new contact
+  Future<domain.Contact> createContact({
+    required String name,
+    String? phone,
+    String? walletAddress,
+    String? username,
+  }) async {
+    final response = await _dio.post('/contacts', data: {
+      'name': name,
+      if (phone != null) 'phone': phone,
+      if (walletAddress != null) 'walletAddress': walletAddress,
+      if (username != null) 'username': username,
+    });
+    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Update contact
+  Future<domain.Contact> updateContact({
+    required String contactId,
+    String? name,
+    bool? isFavorite,
+  }) async {
+    final response = await _dio.put('/contacts/$contactId', data: {
+      if (name != null) 'name': name,
+      if (isFavorite != null) 'isFavorite': isFavorite,
+    });
+    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Toggle favorite status
+  Future<domain.Contact> toggleFavorite(String contactId) async {
+    final response = await _dio.put('/contacts/$contactId/favorite');
+    return domain.Contact.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Delete contact
+  Future<void> deleteContact(String contactId) async {
+    await _dio.delete('/contacts/$contactId');
+  }
+}
+
+/// JoonaPay Contacts Service Provider
+final joonaPayContactsServiceProvider = Provider<JoonaPayContactsService>((ref) {
+  return JoonaPayContactsService(ref.watch(dioProvider));
+});
+
+/// All JoonaPay Contacts Provider
+final joonaPayContactsProvider =
+    FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
+  final service = ref.watch(joonaPayContactsServiceProvider);
+  return service.getContacts();
+});
+
+/// Favorite Contacts Provider
+final favoriteContactsProvider =
+    FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
+  final service = ref.watch(joonaPayContactsServiceProvider);
+  return service.getFavorites();
+});
+
+/// Recent JoonaPay Contacts Provider
+final recentJoonaPayContactsProvider =
+    FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
+  final service = ref.watch(joonaPayContactsServiceProvider);
+  return service.getRecents();
 });

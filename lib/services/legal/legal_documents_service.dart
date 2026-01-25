@@ -136,7 +136,6 @@ class LegalDocumentsService {
   LegalDocument? _cachedPrivacy;
   DateTime? _lastFetch;
 
-  static const _cacheKey = 'legal_documents_cache';
   static const _consentKey = 'legal_consent_';
   static const _cacheDuration = Duration(hours: 24);
 

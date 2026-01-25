@@ -8,8 +8,10 @@ import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../services/index.dart';
 import '../../../services/contacts/contacts_service.dart';
+import '../../../domain/entities/contact.dart' as domain;
 import '../../../state/index.dart';
 import '../providers/wallet_provider.dart';
+import '../providers/contacts_provider.dart';
 
 class SendView extends ConsumerStatefulWidget {
   const SendView({super.key});
@@ -26,8 +28,11 @@ class _SendViewState extends ConsumerState<SendView>
   final _amountController = TextEditingController();
   String _countryCode = '+225';
 
-  // Selected contact
+  // Selected contact (device contacts)
   AppContact? _selectedContact;
+
+  // Selected saved recipient (backend contacts)
+  domain.Contact? _selectedSavedContact;
 
   // Validation
   String? _amountError;
@@ -216,7 +221,17 @@ class _SendViewState extends ConsumerState<SendView>
                   color: AppColors.textSecondary,
                 ),
               ),
-              // Open Contacts Button
+              // Open Saved Recipients Button
+              TextButton.icon(
+                onPressed: _openSavedRecipients,
+                icon: const Icon(Icons.people, size: 18, color: AppColors.gold500),
+                label: const AppText(
+                  'Saved',
+                  variant: AppTextVariant.labelMedium,
+                  color: AppColors.gold500,
+                ),
+              ),
+              // Open Device Contacts Button
               TextButton.icon(
                 onPressed: _openContacts,
                 icon: const Icon(Icons.contacts, size: 18, color: AppColors.gold500),
@@ -231,7 +246,17 @@ class _SendViewState extends ConsumerState<SendView>
           const SizedBox(height: AppSpacing.sm),
 
           // Selected contact or phone input
-          if (_selectedContact != null)
+          if (_selectedSavedContact != null)
+            _SelectedSavedContactCard(
+              contact: _selectedSavedContact!,
+              onClear: () {
+                setState(() {
+                  _selectedSavedContact = null;
+                  _phoneController.clear();
+                });
+              },
+            )
+          else if (_selectedContact != null)
             _SelectedContactCard(
               contact: _selectedContact!,
               onClear: () {
@@ -439,9 +464,41 @@ class _SendViewState extends ConsumerState<SendView>
     );
   }
 
+  void _selectSavedContact(domain.Contact contact) {
+    setState(() {
+      _selectedSavedContact = contact;
+      _selectedContact = null;
+
+      // Pre-fill phone if available
+      if (contact.phone != null) {
+        final phone = contact.phone!;
+        if (phone.startsWith('+')) {
+          final parts = phone.split(RegExp(r'(?<=^\+\d{3})'));
+          if (parts.length > 1) {
+            _phoneController.text = parts[1];
+          } else {
+            _phoneController.text = phone.substring(4);
+          }
+        } else {
+          _phoneController.text = phone;
+        }
+      } else {
+        _phoneController.clear();
+      }
+
+      // Pre-fill wallet address if available
+      if (contact.walletAddress != null) {
+        _addressController.text = contact.walletAddress!;
+        _tabController.animateTo(1); // Switch to wallet tab
+      }
+    });
+  }
+
   void _selectContact(AppContact contact) {
     setState(() {
       _selectedContact = contact;
+      _selectedSavedContact = null;
+
       // Extract phone without country code if present
       final phone = contact.phone;
       if (phone.startsWith('+')) {
@@ -455,6 +512,32 @@ class _SendViewState extends ConsumerState<SendView>
         _phoneController.text = phone;
       }
     });
+  }
+
+  Future<void> _openSavedRecipients() async {
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.slate,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => _SavedRecipientsSheet(
+          scrollController: scrollController,
+          onContactSelected: (contact) {
+            _selectSavedContact(contact);
+            Navigator.pop(context);
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _openContacts() async {
@@ -634,8 +717,12 @@ class _SendViewState extends ConsumerState<SendView>
 
   Future<void> _sendInternal() async {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final phone = _selectedContact?.phone ?? '$_countryCode${_phoneController.text}';
-    final recipientName = _selectedContact?.name ?? phone;
+    final phone = _selectedSavedContact?.phone ??
+        _selectedContact?.phone ??
+        '$_countryCode${_phoneController.text}';
+    final recipientName = _selectedSavedContact?.name ??
+        _selectedContact?.name ??
+        phone;
 
     // Show PIN confirmation - SECURITY: Verify PIN with backend for financial transactions
     final result = await PinConfirmationSheet.show(
@@ -653,11 +740,17 @@ class _SendViewState extends ConsumerState<SendView>
     );
 
     if (result == PinConfirmationResult.success) {
-      ref.read(transferProvider.notifier).internalTransfer(
+      // Perform the transfer
+      final success = await ref.read(transferProvider.notifier).internalTransfer(
             toPhone: phone,
             amount: amount,
             currency: 'USD',
           );
+
+      // If successful and using a non-saved contact, offer to save it
+      if (success && _selectedSavedContact == null && mounted) {
+        _offerToSaveContact(recipientName, phone, null);
+      }
     } else if (result == PinConfirmationResult.failed) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -691,12 +784,18 @@ class _SendViewState extends ConsumerState<SendView>
     );
 
     if (result == PinConfirmationResult.success) {
-      ref.read(transferProvider.notifier).externalTransfer(
+      // Perform the transfer
+      final success = await ref.read(transferProvider.notifier).externalTransfer(
             toAddress: address,
             amount: amount,
             currency: 'USD',
             network: 'MATIC',
           );
+
+      // If successful and using a non-saved contact, offer to save it
+      if (success && _selectedSavedContact == null && mounted) {
+        _offerToSaveContact(shortAddress, null, address);
+      }
     } else if (result == PinConfirmationResult.failed) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -707,6 +806,115 @@ class _SendViewState extends ConsumerState<SendView>
         );
       }
     }
+  }
+
+  /// Offer to save a contact after successful transfer
+  void _offerToSaveContact(String defaultName, String? phone, String? walletAddress) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.slate,
+        title: const Text(
+          'Save Recipient?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          'Would you like to save this recipient for future transfers?',
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Not Now',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              // Show input dialog for name
+              final nameController = TextEditingController(text: defaultName);
+              final shouldSave = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: AppColors.slate,
+                  title: const Text(
+                    'Save Recipient',
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const AppText(
+                        'Enter a name for this recipient',
+                        variant: AppTextVariant.bodySmall,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppInput(
+                        controller: nameController,
+                        hint: 'Name',
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(color: AppColors.gold500),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (shouldSave == true && nameController.text.isNotEmpty) {
+                final success = await ref.read(contactProvider.notifier).createContact(
+                      name: nameController.text,
+                      phone: phone,
+                      walletAddress: walletAddress,
+                    );
+
+                if (mounted) {
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Recipient saved'),
+                        backgroundColor: AppColors.successBase,
+                      ),
+                    );
+                  } else {
+                    final error = ref.read(contactProvider).error;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(error ?? 'Failed to save recipient'),
+                        backgroundColor: AppColors.errorBase,
+                      ),
+                    );
+                  }
+                }
+              }
+
+              nameController.dispose();
+            },
+            child: const Text(
+              'Save',
+              style: TextStyle(color: AppColors.gold500),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -966,6 +1174,254 @@ class _QuickAmountChip extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _SelectedSavedContactCard extends StatelessWidget {
+  const _SelectedSavedContactCard({
+    required this.contact,
+    required this.onClear,
+  });
+
+  final domain.Contact contact;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.slate,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.gold500),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.gold500.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: AppText(
+                _getInitials(contact.name),
+                variant: AppTextVariant.titleMedium,
+                color: AppColors.gold500,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    AppText(
+                      contact.name,
+                      variant: AppTextVariant.bodyLarge,
+                      color: AppColors.textPrimary,
+                    ),
+                    if (contact.isJoonaPayUser) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      const Icon(Icons.verified, color: AppColors.gold500, size: 14),
+                    ],
+                  ],
+                ),
+                AppText(
+                  contact.displayIdentifier,
+                  variant: AppTextVariant.bodySmall,
+                  color: AppColors.textTertiary,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: onClear,
+            icon: const Icon(Icons.close, color: AppColors.textTertiary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
+  }
+}
+
+class _SavedRecipientsSheet extends ConsumerStatefulWidget {
+  const _SavedRecipientsSheet({
+    required this.scrollController,
+    required this.onContactSelected,
+  });
+
+  final ScrollController scrollController;
+  final ValueChanged<domain.Contact> onContactSelected;
+
+  @override
+  ConsumerState<_SavedRecipientsSheet> createState() => _SavedRecipientsSheetState();
+}
+
+class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
+  String _searchQuery = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final contactsAsync = _searchQuery.isEmpty
+        ? ref.watch(contactsProvider)
+        : ref.watch(searchContactsProvider(_searchQuery));
+
+    return Column(
+      children: [
+        const SizedBox(height: AppSpacing.lg),
+        Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: AppColors.textTertiary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+        const AppText(
+          'Select Saved Recipient',
+          variant: AppTextVariant.titleMedium,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Search
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Search recipients...',
+              hintStyle: const TextStyle(color: AppColors.textTertiary),
+              prefixIcon: const Icon(Icons.search, color: AppColors.textTertiary),
+              filled: true,
+              fillColor: AppColors.elevated,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: (value) => setState(() => _searchQuery = value),
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // Contacts list
+        Expanded(
+          child: contactsAsync.when(
+            data: (contacts) {
+              if (contacts.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_outline,
+                        size: 64,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      const AppText(
+                        'No saved recipients',
+                        variant: AppTextVariant.bodyMedium,
+                        color: AppColors.textSecondary,
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                controller: widget.scrollController,
+                itemCount: contacts.length,
+                itemBuilder: (context, index) {
+                  final contact = contacts[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: contact.isJoonaPayUser
+                          ? AppColors.gold500.withValues(alpha: 0.2)
+                          : AppColors.elevated,
+                      child: contact.walletAddress != null && contact.phone == null
+                          ? const Icon(
+                              Icons.account_balance_wallet,
+                              color: AppColors.textSecondary,
+                              size: 20,
+                            )
+                          : Text(
+                              _getInitials(contact.name),
+                              style: TextStyle(
+                                color: contact.isJoonaPayUser
+                                    ? AppColors.gold500
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                    ),
+                    title: Row(
+                      children: [
+                        AppText(
+                          contact.name,
+                          variant: AppTextVariant.bodyLarge,
+                        ),
+                        if (contact.isJoonaPayUser) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          const Icon(Icons.verified, color: AppColors.gold500, size: 14),
+                        ],
+                      ],
+                    ),
+                    subtitle: AppText(
+                      contact.displayIdentifier,
+                      variant: AppTextVariant.bodySmall,
+                      color: AppColors.textTertiary,
+                    ),
+                    onTap: () => widget.onContactSelected(contact),
+                  );
+                },
+              );
+            },
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: AppColors.gold500),
+            ),
+            error: (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: AppColors.errorBase,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const AppText(
+                    'Failed to load recipients',
+                    variant: AppTextVariant.bodyMedium,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getInitials(String name) {
+    final parts = name.split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return name.substring(0, name.length >= 2 ? 2 : 1).toUpperCase();
   }
 }
 

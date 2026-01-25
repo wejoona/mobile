@@ -4,6 +4,7 @@ import '../enums/index.dart';
 class User {
   final String id;
   final String phone;
+  final String? username;
   final String? firstName;
   final String? lastName;
   final String? email;
@@ -17,6 +18,7 @@ class User {
   const User({
     required this.id,
     required this.phone,
+    this.username,
     this.firstName,
     this.lastName,
     this.email,
@@ -28,12 +30,16 @@ class User {
     required this.updatedAt,
   });
 
+  /// Returns @username if set
+  String? get usernameDisplay => username != null ? '@$username' : null;
+
   String get fullName {
     if (firstName == null && lastName == null) return '';
     return '${firstName ?? ''} ${lastName ?? ''}'.trim();
   }
 
   String get displayName {
+    if (username != null) return '@$username';
     if (fullName.isNotEmpty) return fullName;
     return phone;
   }
@@ -42,6 +48,7 @@ class User {
     return User(
       id: json['id'] as String,
       phone: json['phone'] as String,
+      username: json['username'] as String?,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
@@ -69,6 +76,7 @@ class User {
     return {
       'id': id,
       'phone': phone,
+      'username': username,
       'firstName': firstName,
       'lastName': lastName,
       'email': email,

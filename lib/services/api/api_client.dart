@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../security/certificate_pinning.dart';
+import 'cache_interceptor.dart';
+import 'deduplication_interceptor.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
@@ -35,6 +37,16 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   );
 });
 
+/// Cache Interceptor Provider
+final cacheInterceptorProvider = Provider<CacheInterceptor>((ref) {
+  return CacheInterceptor();
+});
+
+/// Request Deduplication Interceptor Provider
+final deduplicationInterceptorProvider = Provider<RequestDeduplicationInterceptor>((ref) {
+  return RequestDeduplicationInterceptor();
+});
+
 /// Dio Client Provider
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(BaseOptions(
@@ -50,7 +62,13 @@ final dioProvider = Provider<Dio>((ref) {
   // SECURITY: Enable certificate pinning in production
   dio.enableCertificatePinning();
 
-  // Add interceptors
+  // PERFORMANCE: Add request deduplication (must be first)
+  dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
+
+  // PERFORMANCE: Add HTTP response caching (must be before auth)
+  dio.interceptors.add(ref.read(cacheInterceptorProvider));
+
+  // Add auth interceptor
   dio.interceptors.add(AuthInterceptor(ref));
 
   // SECURITY: Only add log interceptor in debug mode to prevent sensitive data leakage

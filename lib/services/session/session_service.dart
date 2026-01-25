@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -346,15 +347,33 @@ class SessionService extends Notifier<SessionState> {
     if (refreshToken == null) return;
 
     try {
-      // TODO: Call API to refresh token
-      // final response = await authService.refreshToken(refreshToken);
-      // await startSession(
-      //   accessToken: response.accessToken,
-      //   refreshToken: response.refreshToken,
-      //   tokenValidity: response.expiresIn,
-      // );
+      // Import Dio at the top of the file
+      final dio = Dio(BaseOptions(
+        baseUrl: 'https://api.joonapay.com/api/v1', // Use ApiConfig.baseUrl if available
+        connectTimeout: const Duration(seconds: 30),
+      ));
 
-      debugPrint('Token refresh would happen here');
+      final response = await dio.post('/auth/refresh', data: {
+        'refreshToken': refreshToken,
+      });
+
+      if (response.statusCode == 200) {
+        final newAccessToken = response.data['accessToken'];
+        final newRefreshToken = response.data['refreshToken'];
+        final expiresIn = response.data['expiresIn'] as int?; // seconds
+
+        await _storage.write(key: _accessTokenKey, value: newAccessToken);
+        await _storage.write(key: _refreshTokenKey, value: newRefreshToken);
+
+        if (expiresIn != null) {
+          final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
+          await _storage.write(key: _tokenExpiryKey, value: expiresAt.toIso8601String());
+          state = state.copyWith(tokenExpiresAt: expiresAt);
+        }
+
+        debugPrint('Token refreshed successfully');
+        _startTokenRefreshTimer();
+      }
     } catch (e) {
       debugPrint('Token refresh failed: $e');
       // If refresh fails, session will eventually expire

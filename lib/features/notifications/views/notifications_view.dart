@@ -394,6 +394,79 @@ class _NotificationCard extends StatelessWidget {
         icon = Icons.info;
         color = AppColors.infoBase;
         break;
+      case NotificationType.newDeviceLogin:
+        icon = Icons.devices;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.largeTransaction:
+        icon = Icons.attach_money;
+        color = AppColors.infoBase;
+        break;
+      case NotificationType.withdrawalPending:
+        icon = Icons.hourglass_empty;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.addressWhitelisted:
+        icon = Icons.verified_user;
+        color = AppColors.successBase;
+        break;
+      case NotificationType.priceAlert:
+        icon = Icons.trending_up;
+        color = AppColors.gold500;
+        break;
+      case NotificationType.weeklySpendingSummary:
+        icon = Icons.bar_chart;
+        color = AppColors.infoBase;
+        break;
+      // Transaction monitoring alert types
+      case NotificationType.unusualLocation:
+        icon = Icons.location_off;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.rapidTransactions:
+        icon = Icons.speed;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.newRecipient:
+        icon = Icons.person_add;
+        color = AppColors.infoBase;
+        break;
+      case NotificationType.suspiciousPattern:
+        icon = Icons.warning_amber;
+        color = AppColors.errorBase;
+        break;
+      case NotificationType.failedAttempts:
+        icon = Icons.error_outline;
+        color = AppColors.errorBase;
+        break;
+      case NotificationType.accountChange:
+        icon = Icons.manage_accounts;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.balanceThreshold:
+        icon = Icons.account_balance;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.externalWithdrawal:
+        icon = Icons.output;
+        color = AppColors.infoBase;
+        break;
+      case NotificationType.timeAnomaly:
+        icon = Icons.access_time;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.roundAmount:
+        icon = Icons.monetization_on;
+        color = AppColors.infoBase;
+        break;
+      case NotificationType.cumulativeDaily:
+        icon = Icons.today;
+        color = AppColors.warningBase;
+        break;
+      case NotificationType.velocityLimit:
+        icon = Icons.speed;
+        color = AppColors.errorBase;
+        break;
     }
 
     return Container(

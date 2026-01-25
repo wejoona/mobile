@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 
 /// Device Security Service
 /// SECURITY: Detects rooted/jailbroken devices and other security threats

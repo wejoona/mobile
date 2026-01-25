@@ -38,6 +38,20 @@ import '../features/wallet/views/virtual_card_view.dart';
 import '../features/wallet/views/split_bill_view.dart';
 import '../features/wallet/views/budget_view.dart';
 import '../features/transactions/views/export_transactions_view.dart';
+import '../features/merchant_pay/views/scan_qr_view.dart';
+import '../features/merchant_pay/views/payment_receipt_view.dart';
+import '../features/merchant_pay/views/merchant_dashboard_view.dart';
+import '../features/merchant_pay/views/merchant_qr_view.dart';
+import '../features/merchant_pay/views/create_payment_request_view.dart';
+import '../features/merchant_pay/views/merchant_transactions_view.dart';
+import '../features/merchant_pay/services/merchant_service.dart';
+import '../features/bill_payments/views/bill_payments_view.dart';
+import '../features/bill_payments/views/bill_payment_form_view.dart';
+import '../features/bill_payments/views/bill_payment_success_view.dart';
+import '../features/bill_payments/views/bill_payment_history_view.dart';
+import '../features/alerts/views/alerts_list_view.dart';
+import '../features/alerts/views/alert_detail_view.dart';
+import '../features/alerts/views/alert_preferences_view.dart';
 import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
 import '../services/feature_flags/feature_flags_service.dart';
@@ -369,6 +383,106 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/budget',
         builder: (context, state) => const BudgetView(),
+      ),
+
+      // Merchant Pay Routes
+      GoRoute(
+        path: '/scan-to-pay',
+        builder: (context, state) => const ScanQrView(),
+      ),
+      GoRoute(
+        path: '/payment-receipt',
+        builder: (context, state) {
+          final response = state.extra as PaymentResponse?;
+          if (response != null) {
+            return PaymentReceiptView(payment: response);
+          }
+          return const _PlaceholderPage(title: 'Payment Not Found');
+        },
+      ),
+      GoRoute(
+        path: '/merchant-dashboard',
+        builder: (context, state) => const MerchantDashboardView(),
+      ),
+      GoRoute(
+        path: '/merchant-qr',
+        builder: (context, state) {
+          final merchant = state.extra as MerchantResponse?;
+          if (merchant != null) {
+            return MerchantQrView(merchant: merchant);
+          }
+          return const _PlaceholderPage(title: 'Merchant Not Found');
+        },
+      ),
+      GoRoute(
+        path: '/create-payment-request',
+        builder: (context, state) {
+          final merchant = state.extra as MerchantResponse?;
+          if (merchant != null) {
+            return CreatePaymentRequestView(merchant: merchant);
+          }
+          return const _PlaceholderPage(title: 'Merchant Not Found');
+        },
+      ),
+      GoRoute(
+        path: '/merchant-transactions',
+        builder: (context, state) {
+          final merchantId = state.extra as String?;
+          if (merchantId != null) {
+            return MerchantTransactionsView(merchantId: merchantId);
+          }
+          return const _PlaceholderPage(title: 'Merchant Not Found');
+        },
+      ),
+
+      // Bill Payments Routes
+      GoRoute(
+        path: '/bill-payments',
+        builder: (context, state) => const BillPaymentsView(),
+      ),
+      GoRoute(
+        path: '/bill-payments/form/:providerId',
+        builder: (context, state) {
+          final providerId = state.pathParameters['providerId'];
+          if (providerId != null) {
+            return BillPaymentFormView(providerId: providerId);
+          }
+          return const _PlaceholderPage(title: 'Provider Not Found');
+        },
+      ),
+      GoRoute(
+        path: '/bill-payments/success/:paymentId',
+        builder: (context, state) {
+          final paymentId = state.pathParameters['paymentId'];
+          if (paymentId != null) {
+            return BillPaymentSuccessView(paymentId: paymentId);
+          }
+          return const _PlaceholderPage(title: 'Payment Not Found');
+        },
+      ),
+      GoRoute(
+        path: '/bill-payments/history',
+        builder: (context, state) => const BillPaymentHistoryView(),
+      ),
+
+      // Alerts Routes (Transaction Monitoring)
+      GoRoute(
+        path: '/alerts',
+        builder: (context, state) => const AlertsListView(),
+      ),
+      GoRoute(
+        path: '/alerts/preferences',
+        builder: (context, state) => const AlertPreferencesView(),
+      ),
+      GoRoute(
+        path: '/alerts/:id',
+        builder: (context, state) {
+          final alertId = state.pathParameters['id'];
+          if (alertId != null) {
+            return AlertDetailView(alertId: alertId);
+          }
+          return const _PlaceholderPage(title: 'Alert Not Found');
+        },
       ),
     ],
   );

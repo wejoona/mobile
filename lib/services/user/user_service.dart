@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
-import '../../domain/entities/index.dart';
 
 /// User Service - mirrors backend UserController
 class UserService {

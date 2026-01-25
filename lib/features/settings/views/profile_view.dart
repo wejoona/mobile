@@ -5,6 +5,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../state/index.dart';
+import '../../../services/api/api_client.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -23,10 +24,20 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   @override
   void initState() {
     super.initState();
-    final userState = ref.read(userStateMachineProvider);
-    _firstNameController = TextEditingController(text: userState.firstName ?? '');
-    _lastNameController = TextEditingController(text: userState.lastName ?? '');
-    _emailController = TextEditingController(text: userState.email ?? '');
+    // Initialize controllers with empty values
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+
+    // Populate controllers after first frame using post-frame callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final userState = ref.read(userStateMachineProvider);
+        _firstNameController.text = userState.firstName ?? '';
+        _lastNameController.text = userState.lastName ?? '';
+        _emailController.text = userState.email ?? '';
+      }
+    });
   }
 
   @override
@@ -404,32 +415,52 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Future<void> _saveProfile() async {
     setState(() => _isSaving = true);
 
-    // Update profile via state machine
-    ref.read(userStateMachineProvider.notifier).updateProfile(
-          firstName: _firstNameController.text.isEmpty
-              ? null
-              : _firstNameController.text,
-          lastName: _lastNameController.text.isEmpty
-              ? null
-              : _lastNameController.text,
-          email: _emailController.text.isEmpty ? null : _emailController.text,
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.put('/user/profile', data: {
+        'firstName': _firstNameController.text.isEmpty
+            ? null
+            : _firstNameController.text,
+        'lastName':
+            _lastNameController.text.isEmpty ? null : _lastNameController.text,
+        'email': _emailController.text.isEmpty ? null : _emailController.text,
+      });
+
+      // Update profile via state machine
+      ref.read(userStateMachineProvider.notifier).updateProfile(
+            firstName: _firstNameController.text.isEmpty
+                ? null
+                : _firstNameController.text,
+            lastName: _lastNameController.text.isEmpty
+                ? null
+                : _lastNameController.text,
+            email: _emailController.text.isEmpty ? null : _emailController.text,
+          );
+
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _isEditing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully'),
+            backgroundColor: AppColors.successBase,
+          ),
         );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
 
-    // TODO: Call API to persist changes
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    setState(() {
-      _isSaving = false;
-      _isEditing = false;
-    });
-
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile updated successfully'),
-          backgroundColor: AppColors.successBase,
-        ),
-      );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update profile: $e'),
+            backgroundColor: AppColors.errorBase,
+          ),
+        );
+      }
     }
   }
 }

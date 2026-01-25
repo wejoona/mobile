@@ -1,0 +1,686 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../domain/entities/index.dart';
+import '../providers/transactions_provider.dart';
+
+/// Bottom sheet for advanced transaction filtering
+class FilterBottomSheet extends ConsumerStatefulWidget {
+  const FilterBottomSheet({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const FilterBottomSheet(),
+    );
+  }
+
+  @override
+  ConsumerState<FilterBottomSheet> createState() => _FilterBottomSheetState();
+}
+
+class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
+  // Local state for editing filters before applying
+  late String? _selectedType;
+  late String? _selectedStatus;
+  late DateRangeOption? _selectedDateRange;
+  late DateTime? _customStartDate;
+  late DateTime? _customEndDate;
+  late RangeValues _amountRange;
+  late String _sortBy;
+  late String _sortOrder;
+
+  // Amount range boundaries
+  static const double _minAmount = 0;
+  static const double _maxAmount = 10000;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with default values
+    _selectedType = null;
+    _selectedStatus = null;
+    _selectedDateRange = null;
+    _customStartDate = null;
+    _customEndDate = null;
+    _amountRange = const RangeValues(_minAmount, _maxAmount);
+    _sortBy = 'createdAt';
+    _sortOrder = 'DESC';
+
+    // Populate from current filter after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final filter = ref.read(transactionFilterProvider);
+        setState(() {
+          _selectedType = filter.type;
+          _selectedStatus = filter.status;
+          _selectedDateRange = _getDateRangeOption(filter);
+          _customStartDate = filter.startDate;
+          _customEndDate = filter.endDate;
+          _amountRange = RangeValues(
+            filter.minAmount ?? _minAmount,
+            filter.maxAmount ?? _maxAmount,
+          );
+          _sortBy = filter.sortBy;
+          _sortOrder = filter.sortOrder;
+        });
+      }
+    });
+  }
+
+  DateRangeOption? _getDateRangeOption(TransactionFilter filter) {
+    if (filter.startDate == null && filter.endDate == null) return null;
+    // Could be improved to detect predefined ranges
+    return DateRangeOption.custom;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.slate,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.borderDefault,
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+          ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const AppText(
+                  'Filter Transactions',
+                  variant: AppTextVariant.titleLarge,
+                ),
+                TextButton(
+                  onPressed: _resetFilters,
+                  child: const Text(
+                    'Reset',
+                    style: TextStyle(color: AppColors.gold500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Scrollable content
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Transaction Type
+                  _buildSectionTitle('Transaction Type'),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildTypeChips(),
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Status
+                  _buildSectionTitle('Status'),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildStatusChips(),
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Date Range
+                  _buildSectionTitle('Date Range'),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildDateRangeChips(),
+                  if (_selectedDateRange == DateRangeOption.custom) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    _buildCustomDatePickers(),
+                  ],
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Amount Range
+                  _buildSectionTitle('Amount Range'),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildAmountRangeSlider(),
+                  const SizedBox(height: AppSpacing.xxl),
+
+                  // Sort Options
+                  _buildSectionTitle('Sort By'),
+                  const SizedBox(height: AppSpacing.sm),
+                  _buildSortOptions(),
+                  const SizedBox(height: AppSpacing.xxxl),
+                ],
+              ),
+            ),
+          ),
+
+          // Apply button
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.gold500,
+                  foregroundColor: AppColors.obsidian,
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ),
+                ),
+                onPressed: _applyFilters,
+                child: Text(
+                  'Apply Filters${_getActiveFilterCount() > 0 ? ' (${_getActiveFilterCount()})' : ''}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom safe area
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return AppText(
+      title,
+      variant: AppTextVariant.labelLarge,
+      color: AppColors.textSecondary,
+    );
+  }
+
+  Widget _buildTypeChips() {
+    final types = [
+      (null, 'All'),
+      ('deposit', 'Deposits'),
+      ('withdrawal', 'Withdrawals'),
+      ('transfer_internal', 'Received'),
+      ('transfer_external', 'Sent'),
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: types.map((type) {
+        final isSelected = _selectedType == type.$1;
+        return FilterChip(
+          selected: isSelected,
+          label: Text(type.$2),
+          labelStyle: TextStyle(
+            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+          backgroundColor: AppColors.elevated,
+          selectedColor: AppColors.gold500,
+          showCheckmark: false,
+          side: BorderSide(
+            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+          ),
+          onSelected: (_) {
+            setState(() => _selectedType = type.$1);
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatusChips() {
+    final statuses = [
+      (null, 'All'),
+      ('completed', 'Completed'),
+      ('pending', 'Pending'),
+      ('processing', 'Processing'),
+      ('failed', 'Failed'),
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: statuses.map((status) {
+        final isSelected = _selectedStatus == status.$1;
+        return FilterChip(
+          selected: isSelected,
+          label: Text(status.$2),
+          labelStyle: TextStyle(
+            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+          backgroundColor: AppColors.elevated,
+          selectedColor: _getStatusColor(status.$1),
+          showCheckmark: false,
+          side: BorderSide(
+            color: isSelected
+                ? _getStatusColor(status.$1)
+                : AppColors.borderSubtle,
+          ),
+          onSelected: (_) {
+            setState(() => _selectedStatus = status.$1);
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status) {
+      case 'completed':
+        return AppColors.successText;
+      case 'pending':
+      case 'processing':
+        return AppColors.warningText;
+      case 'failed':
+        return AppColors.errorText;
+      default:
+        return AppColors.gold500;
+    }
+  }
+
+  Widget _buildDateRangeChips() {
+    final options = [
+      (null, 'All Time'),
+      (DateRangeOption.today, 'Today'),
+      (DateRangeOption.thisWeek, 'This Week'),
+      (DateRangeOption.thisMonth, 'This Month'),
+      (DateRangeOption.last3Months, '3 Months'),
+      (DateRangeOption.custom, 'Custom'),
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: options.map((option) {
+        final isSelected = _selectedDateRange == option.$1;
+        return FilterChip(
+          selected: isSelected,
+          label: Text(option.$2),
+          labelStyle: TextStyle(
+            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+          backgroundColor: AppColors.elevated,
+          selectedColor: AppColors.gold500,
+          showCheckmark: false,
+          side: BorderSide(
+            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+          ),
+          onSelected: (_) {
+            setState(() {
+              _selectedDateRange = option.$1;
+              if (option.$1 != null && option.$1 != DateRangeOption.custom) {
+                final range = option.$1!.dateRange;
+                _customStartDate = range.start;
+                _customEndDate = range.end;
+              }
+            });
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildCustomDatePickers() {
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    return Row(
+      children: [
+        Expanded(
+          child: _DatePickerButton(
+            label: 'From',
+            date: _customStartDate,
+            dateFormat: dateFormat,
+            onTap: () => _selectDate(isStart: true),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _DatePickerButton(
+            label: 'To',
+            date: _customEndDate,
+            dateFormat: dateFormat,
+            onTap: () => _selectDate(isStart: false),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _selectDate({required bool isStart}) async {
+    final initialDate = isStart
+        ? (_customStartDate ?? DateTime.now())
+        : (_customEndDate ?? DateTime.now());
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.gold500,
+              onPrimary: AppColors.obsidian,
+              surface: AppColors.slate,
+              onSurface: AppColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          _customStartDate = picked;
+        } else {
+          _customEndDate = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            23,
+            59,
+            59,
+          );
+        }
+      });
+    }
+  }
+
+  Widget _buildAmountRangeSlider() {
+    final hasRange = _amountRange.start > _minAmount ||
+        _amountRange.end < _maxAmount;
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              '\$${_amountRange.start.toInt()}',
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+            ),
+            if (hasRange)
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _amountRange = const RangeValues(_minAmount, _maxAmount);
+                  });
+                },
+                child: const Text(
+                  'Clear',
+                  style: TextStyle(color: AppColors.gold500, fontSize: 12),
+                ),
+              ),
+            AppText(
+              _amountRange.end >= _maxAmount
+                  ? '\$${_maxAmount.toInt()}+'
+                  : '\$${_amountRange.end.toInt()}',
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderThemeData(
+            activeTrackColor: AppColors.gold500,
+            inactiveTrackColor: AppColors.elevated,
+            thumbColor: AppColors.gold500,
+            overlayColor: AppColors.gold500.withOpacity(0.2),
+            rangeThumbShape: const RoundRangeSliderThumbShape(
+              enabledThumbRadius: 10,
+            ),
+            rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
+          ),
+          child: RangeSlider(
+            values: _amountRange,
+            min: _minAmount,
+            max: _maxAmount,
+            divisions: 100,
+            onChanged: (values) {
+              setState(() => _amountRange = values);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSortOptions() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildSortByDropdown(),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        _buildSortOrderToggle(),
+      ],
+    );
+  }
+
+  Widget _buildSortByDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: _sortBy,
+          isExpanded: true,
+          dropdownColor: AppColors.elevated,
+          style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+          items: const [
+            DropdownMenuItem(
+              value: 'createdAt',
+              child: Text('Date'),
+            ),
+            DropdownMenuItem(
+              value: 'amount',
+              child: Text('Amount'),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _sortBy = value);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOrderToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.elevated,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _SortOrderButton(
+            icon: Icons.arrow_downward,
+            tooltip: 'Newest/Highest first',
+            isSelected: _sortOrder == 'DESC',
+            onTap: () => setState(() => _sortOrder = 'DESC'),
+          ),
+          _SortOrderButton(
+            icon: Icons.arrow_upward,
+            tooltip: 'Oldest/Lowest first',
+            isSelected: _sortOrder == 'ASC',
+            onTap: () => setState(() => _sortOrder = 'ASC'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _getActiveFilterCount() {
+    int count = 0;
+    if (_selectedType != null) count++;
+    if (_selectedStatus != null) count++;
+    if (_selectedDateRange != null) count++;
+    if (_amountRange.start > _minAmount || _amountRange.end < _maxAmount) {
+      count++;
+    }
+    return count;
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _selectedType = null;
+      _selectedStatus = null;
+      _selectedDateRange = null;
+      _customStartDate = null;
+      _customEndDate = null;
+      _amountRange = const RangeValues(_minAmount, _maxAmount);
+      _sortBy = 'createdAt';
+      _sortOrder = 'DESC';
+    });
+  }
+
+  void _applyFilters() {
+    final filter = TransactionFilter(
+      type: _selectedType,
+      status: _selectedStatus,
+      startDate: _selectedDateRange != null ? _customStartDate : null,
+      endDate: _selectedDateRange != null ? _customEndDate : null,
+      minAmount: _amountRange.start > _minAmount ? _amountRange.start : null,
+      maxAmount: _amountRange.end < _maxAmount ? _amountRange.end : null,
+      sortBy: _sortBy,
+      sortOrder: _sortOrder,
+    );
+
+    ref.read(transactionFilterProvider.notifier).setFilter(filter);
+    Navigator.of(context).pop();
+  }
+}
+
+/// Date picker button widget
+class _DatePickerButton extends StatelessWidget {
+  const _DatePickerButton({
+    required this.label,
+    required this.date,
+    required this.dateFormat,
+    required this.onTap,
+  });
+
+  final String label;
+  final DateTime? date;
+  final DateFormat dateFormat;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: AppColors.elevated,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.calendar_today,
+              size: 16,
+              color: AppColors.textTertiary,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    label,
+                    variant: AppTextVariant.labelSmall,
+                    color: AppColors.textTertiary,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  AppText(
+                    date != null ? dateFormat.format(date!) : 'Select',
+                    variant: AppTextVariant.bodyMedium,
+                    color: date != null
+                        ? AppColors.textPrimary
+                        : AppColors.textTertiary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Sort order toggle button
+class _SortOrderButton extends StatelessWidget {
+  const _SortOrderButton({
+    required this.icon,
+    required this.tooltip,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isSelected ? AppColors.obsidian : AppColors.textTertiary,
+          ),
+        ),
+      ),
+    );
+  }
+}

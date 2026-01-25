@@ -6,6 +6,8 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../services/biometric/biometric_service.dart';
+import '../../../services/api/api_client.dart';
+import '../../../services/session/session_service.dart';
 import '../providers/auth_provider.dart';
 
 class OtpView extends ConsumerStatefulWidget {
@@ -251,16 +253,88 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
   Future<void> _authenticateWithBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
+    final storage = ref.read(secureStorageProvider);
 
+    // Check if there's a stored refresh token (user has logged in before)
+    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+    if (refreshToken == null) {
+      setState(() {
+        _hasError = true;
+      });
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _hasError = false;
+          });
+        }
+      });
+      return;
+    }
+
+    // Authenticate with biometric
     final authenticated = await biometricService.authenticate(
       reason: 'Authenticate to access JoonaPay',
     );
 
     if (authenticated) {
-      // If biometric auth successful, we can skip OTP for returning users
-      // This requires a stored token check
-      final authNotifier = ref.read(authProvider.notifier);
-      await authNotifier.checkAuth();
+      // Use refresh token to get new access token
+      try {
+        final dio = ref.read(dioProvider);
+        final response = await dio.post('/auth/refresh', data: {
+          'refreshToken': refreshToken,
+        });
+
+        if (response.statusCode == 200) {
+          final data = response.data;
+
+          // Store new tokens
+          await storage.write(
+            key: StorageKeys.accessToken,
+            value: data['accessToken'],
+          );
+          if (data['refreshToken'] != null) {
+            await storage.write(
+              key: StorageKeys.refreshToken,
+              value: data['refreshToken'],
+            );
+          }
+
+          // Start session
+          await ref.read(sessionServiceProvider.notifier).startSession(
+            accessToken: data['accessToken'],
+            tokenValidity: const Duration(hours: 1),
+          );
+
+          // Navigate to home - the auth state will be updated by session start
+          if (mounted) {
+            context.go('/home');
+          }
+        }
+      } catch (e) {
+        // Refresh token invalid or expired, clear it and show error
+        await storage.delete(key: StorageKeys.refreshToken);
+        setState(() {
+          _hasError = true;
+        });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            setState(() {
+              _hasError = false;
+            });
+          }
+        });
+      }
+    } else {
+      setState(() {
+        _hasError = true;
+      });
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _hasError = false;
+          });
+        }
+      });
     }
   }
 }

@@ -5,6 +5,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../services/pin/pin_service.dart';
+import '../../../services/biometric/biometric_service.dart';
 
 enum PinStep { current, newPin, confirm }
 
@@ -260,6 +261,20 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     setState(() => _isLoading = true);
 
     try {
+      // First require biometric confirmation if enabled
+      final biometricGuard = ref.read(biometricGuardProvider);
+      final biometricConfirmed = await biometricGuard.guardPinChange();
+
+      if (!biometricConfirmed) {
+        setState(() {
+          _error = 'Biometric confirmation required';
+          _currentPin = '';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Then verify current PIN
       final pinService = ref.read(pinServiceProvider);
       final result = await pinService.verifyPinLocally(_currentPin);
 
@@ -275,6 +290,12 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           _isLoading = false;
         });
       }
+    } on BiometricRequiredException catch (e) {
+      setState(() {
+        _error = e.message;
+        _currentPin = '';
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
         _error = 'Unable to verify PIN. Please try again.';

@@ -1,0 +1,14 @@
+# SECURITY: Android Release Signing Configuration
+# Copy this file to key.properties and fill in your values
+# NEVER commit key.properties to version control!
+#
+# To generate a keystore:
+# keytool -genkey -v -keystore joonapay-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias joonapay
+#
+# Store your keystore securely (password manager, secure backup)
+# For CI/CD, use secrets management (GitHub Secrets, AWS Secrets Manager, etc.)
+
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=joonapay
+storeFile=../keystore/joonapay-release-key.jks

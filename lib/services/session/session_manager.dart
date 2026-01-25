@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../design/tokens/index.dart';
 import '../../design/components/primitives/index.dart';
+import '../biometric/biometric_service.dart';
 import '../pin/pin_service.dart';
 import 'session_service.dart';
 
@@ -460,12 +461,30 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
     });
   }
 
-  void _onBiometricPressed() async {
-    // TODO: Implement biometric authentication using local_auth package
-    // For now, show message that biometrics need to be set up
-    setState(() {
-      _error = 'Please enter your PIN';
-    });
+  Future<void> _onBiometricPressed() async {
+    final biometricService = ref.read(biometricServiceProvider);
+
+    // Check if biometric is enabled for this user
+    final isEnabled = await biometricService.isBiometricEnabled();
+    if (!isEnabled) {
+      setState(() {
+        _error = 'Biometric not enabled';
+      });
+      return;
+    }
+
+    // Authenticate with biometric
+    final success = await biometricService.authenticate(
+      reason: 'Unlock your JoonaPay wallet',
+    );
+
+    if (success) {
+      _unlockSession();
+    } else {
+      setState(() {
+        _error = 'Biometric authentication failed';
+      });
+    }
   }
 
   void _verifyPin() async {

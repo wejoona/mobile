@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
@@ -48,15 +47,25 @@ class CertificatePinning {
   /// Include at least 2 fingerprints:
   /// - Current production certificate
   /// - Backup/rotation certificate
+  ///
+  /// To generate fingerprints for your production domain:
+  /// ```bash
+  /// openssl s_client -servername api.joonapay.com -connect api.joonapay.com:443 </dev/null 2>/dev/null | \
+  ///   openssl x509 -pubkey -noout | \
+  ///   openssl pkey -pubin -outform der | \
+  ///   openssl dgst -sha256 -binary | \
+  ///   openssl enc -base64
+  /// ```
   static const List<String> _trustedFingerprints = [
-    // TODO: Replace with actual production API certificate fingerprint
     // Production API certificate - api.joonapay.com
+    // DEPLOYMENT: Run the openssl command above and replace this value
     // Generated: [DATE] - Expires: [DATE]
-    'REPLACE_WITH_ACTUAL_FINGERPRINT_1',
+    String.fromEnvironment('CERT_PIN_1', defaultValue: 'REPLACE_WITH_ACTUAL_FINGERPRINT_1'),
 
     // Backup certificate for rotation
+    // DEPLOYMENT: Generate a backup certificate and add its fingerprint here
     // Generated: [DATE] - Expires: [DATE]
-    'REPLACE_WITH_ACTUAL_FINGERPRINT_2',
+    String.fromEnvironment('CERT_PIN_2', defaultValue: 'REPLACE_WITH_ACTUAL_FINGERPRINT_2'),
   ];
 
   /// Trusted hosts that require certificate pinning

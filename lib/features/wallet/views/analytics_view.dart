@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../state/index.dart';
-import '../../../domain/enums/index.dart';
 
 /// Time period for analytics
 enum AnalyticsPeriod {
@@ -100,8 +99,6 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
 
   @override
   Widget build(BuildContext context) {
-    final walletState = ref.watch(walletStateMachineProvider);
-
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(

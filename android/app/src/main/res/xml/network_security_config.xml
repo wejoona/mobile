@@ -4,6 +4,17 @@
     - Disables cleartext (HTTP) traffic in release builds
     - Allows localhost for development only
     - Enforces HTTPS for all production traffic
+    - Certificate pinning for production API
+
+    DEPLOYMENT: Before production release:
+    1. Generate certificate pins using:
+       openssl s_client -servername api.joonapay.com -connect api.joonapay.com:443 </dev/null 2>/dev/null | \
+         openssl x509 -pubkey -noout | \
+         openssl pkey -pubin -outform der | \
+         openssl dgst -sha256 -binary | \
+         openssl enc -base64
+    2. Replace REPLACE_WITH_ACTUAL_PIN values with generated pins
+    3. Update expiration date to 1 year from certificate expiry
 -->
 <network-security-config>
     <!-- Base configuration for all domains -->
@@ -21,14 +32,18 @@
     </domain-config>
 
     <!-- Production API domain with certificate pinning -->
-    <!-- TODO: Update these pins with actual certificate fingerprints before production -->
-    <!--
+    <!-- DEPLOYMENT: Update pins with actual certificate pins before production release -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">api.joonapay.com</domain>
-        <pin-set expiration="2027-01-01">
-            <pin digest="SHA-256">REPLACE_WITH_ACTUAL_PIN_1</pin>
-            <pin digest="SHA-256">REPLACE_WITH_BACKUP_PIN_2</pin>
+        <domain includeSubdomains="true">joonapay.com</domain>
+        <pin-set expiration="2027-01-25">
+            <!-- Primary certificate pin - TODO: Replace with actual pin before production -->
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <!-- Backup certificate pin for rotation - TODO: Replace with actual pin -->
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
         </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
     </domain-config>
-    -->
 </network-security-config>

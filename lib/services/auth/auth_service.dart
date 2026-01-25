@@ -78,11 +78,13 @@ class OtpResponse {
 /// Auth Response DTO
 class AuthResponse {
   final String accessToken;
+  final String? refreshToken;
   final User user;
   final bool walletCreated;
 
   const AuthResponse({
     required this.accessToken,
+    this.refreshToken,
     required this.user,
     required this.walletCreated,
   });
@@ -90,6 +92,7 @@ class AuthResponse {
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       walletCreated: json['walletCreated'] as bool? ?? false,
     );

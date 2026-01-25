@@ -1,8 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/index.dart';
-import '../../../services/session/session_service.dart';
 import '../../../domain/entities/index.dart';
 
 /// Auth State
@@ -133,11 +131,19 @@ class AuthNotifier extends Notifier<AuthState> {
         otp: otp,
       );
 
-      // Store token
+      // Store tokens
       await _storage.write(
         key: StorageKeys.accessToken,
         value: response.accessToken,
       );
+
+      // Store refresh token if provided for biometric login on next session
+      if (response.refreshToken != null) {
+        await _storage.write(
+          key: StorageKeys.refreshToken,
+          value: response.refreshToken!,
+        );
+      }
 
       // Start session
       await ref.read(sessionServiceProvider.notifier).startSession(

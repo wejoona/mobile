@@ -347,6 +347,7 @@ class _LoginViewState extends ConsumerState<LoginView>
                     color: AppColors.textPrimary,
                     letterSpacing: 1.2,
                   ),
+                  cursorColor: AppColors.gold500,
                   decoration: InputDecoration(
                     hintText: _getFormattedHint(),
                     hintStyle: AppTypography.bodyLarge.copyWith(
@@ -354,6 +355,9 @@ class _LoginViewState extends ConsumerState<LoginView>
                       letterSpacing: 1.2,
                     ),
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.lg,
                       vertical: AppSpacing.lg,
@@ -618,6 +622,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 style: AppTypography.bodyMedium.copyWith(
                   color: AppColors.textPrimary,
                 ),
+                cursorColor: AppColors.gold500,
                 decoration: InputDecoration(
                   hintText: 'Search country...',
                   hintStyle: AppTypography.bodyMedium.copyWith(
@@ -629,6 +634,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     size: 20,
                   ),
                   border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  filled: false,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.md,
