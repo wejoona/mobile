@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../providers/merchant_provider.dart';
 import '../services/merchant_service.dart';
 
@@ -447,27 +449,27 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            const AppText(
               'Analytics',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              variant: AppTextVariant.titleMedium,
             ),
-            DropdownButton<String>(
-              value: _selectedPeriod,
-              underline: const SizedBox(),
-              items: const [
-                DropdownMenuItem(value: 'day', child: Text('Today')),
-                DropdownMenuItem(value: 'week', child: Text('This Week')),
-                DropdownMenuItem(value: 'month', child: Text('This Month')),
-                DropdownMenuItem(value: 'year', child: Text('This Year')),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => _selectedPeriod = value);
-                }
-              },
+            SizedBox(
+              width: 140,
+              child: AppSelect<String>(
+                value: _selectedPeriod,
+                items: const [
+                  AppSelectItem(value: 'day', label: 'Today', icon: Icons.today),
+                  AppSelectItem(value: 'week', label: 'This Week', icon: Icons.date_range),
+                  AppSelectItem(value: 'month', label: 'This Month', icon: Icons.calendar_month),
+                  AppSelectItem(value: 'year', label: 'This Year', icon: Icons.calendar_today),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedPeriod = value);
+                  }
+                },
+                showCheckmark: false,
+              ),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../domain/enums/index.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../state/index.dart';
 
 /// Simplified Home View - Focus on essential wallet features only
@@ -66,14 +67,15 @@ class HomeView extends ConsumerWidget {
   }
 
   Widget _buildHeader(BuildContext context, String userName) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppText(
-              'Welcome back',
+            AppText(
+              l10n.home_welcomeBack,
               variant: AppTextVariant.bodyMedium,
               color: AppColors.textSecondary,
             ),
@@ -108,6 +110,7 @@ class HomeView extends ConsumerWidget {
   }
 
   Widget _buildBalanceCard(BuildContext context, WalletState walletState) {
+    final l10n = AppLocalizations.of(context)!;
     // Handle null/empty wallet state
     if (walletState.status == WalletStatus.initial) {
       return _buildLoadingCard();
@@ -115,7 +118,7 @@ class HomeView extends ConsumerWidget {
 
     if (walletState.hasError) {
       return _buildErrorCard(
-        walletState.error ?? 'Failed to load balance',
+        walletState.error ?? l10n.error_failedToLoadBalance,
         onRetry: () {
           // Access context through builder pattern if needed
         },

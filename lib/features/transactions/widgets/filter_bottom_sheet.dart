@@ -482,39 +482,26 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildSortByDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.elevated,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _sortBy,
-          isExpanded: true,
-          dropdownColor: AppColors.elevated,
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
-          items: const [
-            DropdownMenuItem(
-              value: 'createdAt',
-              child: Text('Date'),
-            ),
-            DropdownMenuItem(
-              value: 'amount',
-              child: Text('Amount'),
-            ),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              setState(() => _sortBy = value);
-            }
-          },
+    return AppSelect<String>(
+      value: _sortBy,
+      items: const [
+        AppSelectItem(
+          value: 'createdAt',
+          label: 'Date',
+          icon: Icons.calendar_today,
         ),
-      ),
+        AppSelectItem(
+          value: 'amount',
+          label: 'Amount',
+          icon: Icons.attach_money,
+        ),
+      ],
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => _sortBy = value);
+        }
+      },
+      showCheckmark: false,
     );
   }
 

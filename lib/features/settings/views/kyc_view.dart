@@ -839,50 +839,32 @@ class _KycViewState extends ConsumerState<KycView> {
   }
 
   Widget _buildIdTypeDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const AppText(
-          'ID Type',
-          variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
+    return AppSelect<String>(
+      label: 'ID Type',
+      value: _selectedIdType,
+      items: const [
+        AppSelectItem(
+          value: 'national_id',
+          label: 'National ID',
+          icon: Icons.credit_card,
         ),
-        const SizedBox(height: AppSpacing.sm),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.slate,
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: DropdownButton<String>(
-            value: _selectedIdType,
-            isExpanded: true,
-            underline: const SizedBox(),
-            dropdownColor: AppColors.slate,
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
-            items: const [
-              DropdownMenuItem(
-                value: 'national_id',
-                child: AppText('National ID', variant: AppTextVariant.bodyMedium),
-              ),
-              DropdownMenuItem(
-                value: 'passport',
-                child: AppText('Passport', variant: AppTextVariant.bodyMedium),
-              ),
-              DropdownMenuItem(
-                value: 'drivers_license',
-                child: AppText("Driver's License", variant: AppTextVariant.bodyMedium),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                setState(() => _selectedIdType = value);
-              }
-            },
-          ),
+        AppSelectItem(
+          value: 'passport',
+          label: 'Passport',
+          icon: Icons.menu_book,
+        ),
+        AppSelectItem(
+          value: 'drivers_license',
+          label: "Driver's License",
+          icon: Icons.drive_eta,
         ),
       ],
+      onChanged: (value) {
+        if (value != null) {
+          setState(() => _selectedIdType = value);
+        }
+      },
+      hint: 'Select ID type',
     );
   }
 

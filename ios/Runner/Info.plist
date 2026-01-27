@@ -81,5 +81,17 @@
 	<!-- Firebase Messaging Auto-init -->
 	<key>FirebaseMessagingAutoInitEnabled</key>
 	<true/>
+	<!-- Deep Links: Custom URL scheme (joonapay://) -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.joonapay.wallet</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>joonapay</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

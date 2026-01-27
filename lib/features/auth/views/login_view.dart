@@ -6,6 +6,7 @@ import '../../../config/countries.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/legal/legal_documents_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'legal_document_view.dart';
 
@@ -112,6 +113,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         // Logo
@@ -137,7 +139,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
         // Title
         AppText(
-          'JoonaPay',
+          l10n.appName,
           variant: AppTextVariant.headlineLarge,
           color: AppColors.textPrimary,
         ),
@@ -148,8 +150,8 @@ class _LoginViewState extends ConsumerState<LoginView>
           duration: const Duration(milliseconds: 200),
           child: AppText(
             _isRegistering
-                ? 'Create your USDC wallet'
-                : 'Welcome back',
+                ? l10n.auth_createWallet
+                : l10n.auth_welcomeBack,
             key: ValueKey(_isRegistering),
             variant: AppTextVariant.bodyLarge,
             color: AppColors.textSecondary,
@@ -160,6 +162,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Widget _buildForm(AuthState authState) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -173,7 +176,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
         // Submit Button
         AppButton(
-          label: _isRegistering ? 'Create Account' : 'Continue',
+          label: _isRegistering ? l10n.auth_createAccount : l10n.action_continue,
           onPressed: _isPhoneValid() ? _submit : null,
           variant: AppButtonVariant.primary,
           size: AppButtonSize.large,
@@ -193,13 +196,13 @@ class _LoginViewState extends ConsumerState<LoginView>
                 children: [
                   AppText(
                     _isRegistering
-                        ? 'Already have an account? '
-                        : "Don't have an account? ",
+                        ? l10n.auth_alreadyHaveAccount
+                        : l10n.auth_dontHaveAccount,
                     variant: AppTextVariant.bodyMedium,
                     color: AppColors.textSecondary,
                   ),
                   AppText(
-                    _isRegistering ? 'Sign in' : 'Sign up',
+                    _isRegistering ? l10n.auth_signIn : l10n.auth_signUp,
                     variant: AppTextVariant.labelLarge,
                     color: AppColors.gold500,
                   ),
@@ -213,11 +216,12 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Widget _buildCountrySelector() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
-          'Country',
+        AppText(
+          l10n.auth_country,
           variant: AppTextVariant.labelMedium,
           color: AppColors.textSecondary,
         ),
@@ -292,6 +296,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Widget _buildPhoneInput() {
+    final l10n = AppLocalizations.of(context)!;
     final isValid = _isPhoneValid();
     final hasText = _phoneController.text.isNotEmpty;
     final showError = hasText && !isValid;
@@ -299,8 +304,8 @@ class _LoginViewState extends ConsumerState<LoginView>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
-          'Phone Number',
+        AppText(
+          l10n.auth_phoneNumber,
           variant: AppTextVariant.labelMedium,
           color: AppColors.textSecondary,
         ),
@@ -402,7 +407,7 @@ class _LoginViewState extends ConsumerState<LoginView>
           children: [
             Expanded(
               child: AppText(
-                'Enter ${_selectedCountry.phoneLength} digits',
+                l10n.auth_enterDigits(_selectedCountry.phoneLength),
                 variant: AppTextVariant.bodySmall,
                 color: showError ? AppColors.errorText : AppColors.textTertiary,
               ),
@@ -420,12 +425,13 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   Widget _buildFooter() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Column(
         children: [
-          const AppText(
-            'By continuing, you agree to our',
+          AppText(
+            l10n.auth_termsPrompt,
             variant: AppTextVariant.bodySmall,
             color: AppColors.textTertiary,
             textAlign: TextAlign.center,
@@ -436,21 +442,21 @@ class _LoginViewState extends ConsumerState<LoginView>
             children: [
               GestureDetector(
                 onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
-                child: const AppText(
-                  'Terms of Service',
+                child: AppText(
+                  l10n.auth_termsOfService,
                   variant: AppTextVariant.bodySmall,
                   color: AppColors.gold500,
                 ),
               ),
-              const AppText(
-                ' and ',
+              AppText(
+                l10n.auth_and,
                 variant: AppTextVariant.bodySmall,
                 color: AppColors.textTertiary,
               ),
               GestureDetector(
                 onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
-                child: const AppText(
-                  'Privacy Policy',
+                child: AppText(
+                  l10n.auth_privacyPolicy,
                   variant: AppTextVariant.bodySmall,
                   color: AppColors.gold500,
                 ),
@@ -556,6 +562,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -583,8 +590,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
-                const AppText(
-                  'Select Country',
+                AppText(
+                  l10n.auth_selectCountry,
                   variant: AppTextVariant.titleMedium,
                   color: AppColors.textPrimary,
                 ),
@@ -624,7 +631,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 ),
                 cursorColor: AppColors.gold500,
                 decoration: InputDecoration(
-                  hintText: 'Search country...',
+                  hintText: l10n.auth_searchCountry,
                   hintStyle: AppTypography.bodyMedium.copyWith(
                     color: AppColors.textTertiary,
                   ),

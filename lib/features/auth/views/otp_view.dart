@@ -8,6 +8,7 @@ import '../../../design/components/composed/index.dart';
 import '../../../services/biometric/biometric_service.dart';
 import '../../../services/api/api_client.dart';
 import '../../../services/session/session_service.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 class OtpView extends ConsumerStatefulWidget {
@@ -55,6 +56,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final biometricAvailable = ref.watch(biometricAvailableProvider);
     final biometricEnabled = ref.watch(biometricEnabledProvider);
@@ -116,8 +118,8 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
               const SizedBox(height: AppSpacing.xxl),
 
               // Title
-              const AppText(
-                'Secure Login',
+              AppText(
+                l10n.auth_secureLogin,
                 variant: AppTextVariant.headlineMedium,
                 color: AppColors.textPrimary,
               ),
@@ -126,7 +128,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
               // Subtitle
               AppText(
-                'Enter the 6-digit code sent to ${authState.phone ?? "your phone"}',
+                l10n.auth_otpMessage(authState.phone ?? "your phone"),
                 variant: AppTextVariant.bodyMedium,
                 color: AppColors.textSecondary,
                 textAlign: TextAlign.center,
@@ -146,7 +148,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       AppText(
-                        'Waiting for SMS...',
+                        l10n.auth_waitingForSms,
                         variant: AppTextVariant.bodySmall,
                         color: AppColors.gold500.withValues(alpha: 0.7),
                       ),
@@ -212,8 +214,8 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                               .login(authState.phone!);
                         }
                       },
-                child: const AppText(
-                  'Resend Code',
+                child: AppText(
+                  l10n.auth_resendCode,
                   variant: AppTextVariant.bodyMedium,
                   color: AppColors.gold500,
                 ),

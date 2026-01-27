@@ -76,6 +76,41 @@
     "description": "Edit action button"
   },
 
+  "action_copy": "Copy",
+  "@action_copy": {
+    "description": "Copy action button"
+  },
+
+  "action_share": "Share",
+  "@action_share": {
+    "description": "Share action button"
+  },
+
+  "action_scan": "Scan",
+  "@action_scan": {
+    "description": "Scan action button"
+  },
+
+  "action_retry": "Retry",
+  "@action_retry": {
+    "description": "Retry action button"
+  },
+
+  "action_clearAll": "Clear all",
+  "@action_clearAll": {
+    "description": "Clear all filters action"
+  },
+
+  "action_clearFilters": "Clear Filters",
+  "@action_clearFilters": {
+    "description": "Clear filters button"
+  },
+
+  "action_tryAgain": "Try Again",
+  "@action_tryAgain": {
+    "description": "Try again button"
+  },
+
   "auth_login": "Login",
   "@auth_login": {
     "description": "Login label"
@@ -111,6 +146,113 @@
     "description": "Logout confirmation message"
   },
 
+  "auth_welcomeBack": "Welcome back",
+  "@auth_welcomeBack": {
+    "description": "Welcome back message"
+  },
+
+  "auth_createWallet": "Create your USDC wallet",
+  "@auth_createWallet": {
+    "description": "Create wallet subtitle"
+  },
+
+  "auth_createAccount": "Create Account",
+  "@auth_createAccount": {
+    "description": "Create account button"
+  },
+
+  "auth_alreadyHaveAccount": "Already have an account? ",
+  "@auth_alreadyHaveAccount": {
+    "description": "Already have account prompt"
+  },
+
+  "auth_dontHaveAccount": "Don't have an account? ",
+  "@auth_dontHaveAccount": {
+    "description": "Don't have account prompt"
+  },
+
+  "auth_signIn": "Sign in",
+  "@auth_signIn": {
+    "description": "Sign in link"
+  },
+
+  "auth_signUp": "Sign up",
+  "@auth_signUp": {
+    "description": "Sign up link"
+  },
+
+  "auth_country": "Country",
+  "@auth_country": {
+    "description": "Country label"
+  },
+
+  "auth_selectCountry": "Select Country",
+  "@auth_selectCountry": {
+    "description": "Select country title"
+  },
+
+  "auth_searchCountry": "Search country...",
+  "@auth_searchCountry": {
+    "description": "Search country placeholder"
+  },
+
+  "auth_enterDigits": "Enter {count} digits",
+  "@auth_enterDigits": {
+    "description": "Enter digits helper text",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "9"
+      }
+    }
+  },
+
+  "auth_termsPrompt": "By continuing, you agree to our",
+  "@auth_termsPrompt": {
+    "description": "Terms agreement prompt"
+  },
+
+  "auth_termsOfService": "Terms of Service",
+  "@auth_termsOfService": {
+    "description": "Terms of service link"
+  },
+
+  "auth_privacyPolicy": "Privacy Policy",
+  "@auth_privacyPolicy": {
+    "description": "Privacy policy link"
+  },
+
+  "auth_and": " and ",
+  "@auth_and": {
+    "description": "And conjunction"
+  },
+
+  "auth_secureLogin": "Secure Login",
+  "@auth_secureLogin": {
+    "description": "Secure login title"
+  },
+
+  "auth_otpMessage": "Enter the 6-digit code sent to {phone}",
+  "@auth_otpMessage": {
+    "description": "OTP verification message",
+    "placeholders": {
+      "phone": {
+        "type": "String",
+        "example": "+225 1234567890"
+      }
+    }
+  },
+
+  "auth_waitingForSms": "Waiting for SMS...",
+  "@auth_waitingForSms": {
+    "description": "Waiting for SMS indicator"
+  },
+
+  "auth_resendCode": "Resend Code",
+  "@auth_resendCode": {
+    "description": "Resend code button"
+  },
+
   "wallet_balance": "Balance",
   "@wallet_balance": {
     "description": "Wallet balance label"
@@ -134,6 +276,593 @@
   "wallet_availableBalance": "Available Balance",
   "@wallet_availableBalance": {
     "description": "Available balance label"
+  },
+
+  "wallet_totalBalance": "Total Balance",
+  "@wallet_totalBalance": {
+    "description": "Total balance label"
+  },
+
+  "wallet_usdBalance": "USD",
+  "@wallet_usdBalance": {
+    "description": "USD balance label"
+  },
+
+  "wallet_usdcBalance": "USDC",
+  "@wallet_usdcBalance": {
+    "description": "USDC balance label"
+  },
+
+  "wallet_fiatBalance": "Fiat Balance",
+  "@wallet_fiatBalance": {
+    "description": "Fiat balance subtitle"
+  },
+
+  "wallet_stablecoin": "Stablecoin",
+  "@wallet_stablecoin": {
+    "description": "Stablecoin subtitle"
+  },
+
+  "wallet_createWallet": "Create Wallet",
+  "@wallet_createWallet": {
+    "description": "Create wallet button"
+  },
+
+  "wallet_noWalletFound": "No Wallet Found",
+  "@wallet_noWalletFound": {
+    "description": "No wallet found title"
+  },
+
+  "wallet_createWalletMessage": "Create your wallet to start sending and receiving money",
+  "@wallet_createWalletMessage": {
+    "description": "Create wallet message"
+  },
+
+  "wallet_loadingWallet": "Loading wallet...",
+  "@wallet_loadingWallet": {
+    "description": "Loading wallet message"
+  },
+
+  "home_welcomeBack": "Welcome back",
+  "@home_welcomeBack": {
+    "description": "Welcome back greeting"
+  },
+
+  "home_allServices": "All Services",
+  "@home_allServices": {
+    "description": "All services link"
+  },
+
+  "home_viewAllFeatures": "View all available features",
+  "@home_viewAllFeatures": {
+    "description": "View all features subtitle"
+  },
+
+  "home_recentTransactions": "Recent Transactions",
+  "@home_recentTransactions": {
+    "description": "Recent transactions title"
+  },
+
+  "home_noTransactionsYet": "No Transactions Yet",
+  "@home_noTransactionsYet": {
+    "description": "No transactions yet title"
+  },
+
+  "home_transactionsWillAppear": "Your recent transactions will appear here",
+  "@home_transactionsWillAppear": {
+    "description": "Transactions will appear message"
+  },
+
+  "send_title": "Send Money",
+  "@send_title": {
+    "description": "Send money page title"
+  },
+
+  "send_toPhone": "To Phone",
+  "@send_toPhone": {
+    "description": "To phone tab"
+  },
+
+  "send_toWallet": "To Wallet",
+  "@send_toWallet": {
+    "description": "To wallet tab"
+  },
+
+  "send_recent": "Recent",
+  "@send_recent": {
+    "description": "Recent contacts label"
+  },
+
+  "send_recipient": "Recipient",
+  "@send_recipient": {
+    "description": "Recipient label"
+  },
+
+  "send_saved": "Saved",
+  "@send_saved": {
+    "description": "Saved recipients button"
+  },
+
+  "send_contacts": "Contacts",
+  "@send_contacts": {
+    "description": "Contacts button"
+  },
+
+  "send_amountUsd": "Amount (USD)",
+  "@send_amountUsd": {
+    "description": "Amount in USD label"
+  },
+
+  "send_walletAddress": "Wallet Address",
+  "@send_walletAddress": {
+    "description": "Wallet address label"
+  },
+
+  "send_networkInfo": "External transfers are on the Polygon network. Network fees apply.",
+  "@send_networkInfo": {
+    "description": "Network info message"
+  },
+
+  "send_transferSuccess": "Transfer successful!",
+  "@send_transferSuccess": {
+    "description": "Transfer success message"
+  },
+
+  "send_invalidAmount": "Enter a valid amount",
+  "@send_invalidAmount": {
+    "description": "Invalid amount error"
+  },
+
+  "send_insufficientBalance": "Insufficient balance",
+  "@send_insufficientBalance": {
+    "description": "Insufficient balance error"
+  },
+
+  "send_addressMustStartWith0x": "Address must start with 0x",
+  "@send_addressMustStartWith0x": {
+    "description": "Address format error"
+  },
+
+  "send_addressLength": "Address must be exactly 42 characters",
+  "@send_addressLength": {
+    "description": "Address length error"
+  },
+
+  "send_invalidEthereumAddress": "Invalid Ethereum address format",
+  "@send_invalidEthereumAddress": {
+    "description": "Invalid Ethereum address error"
+  },
+
+  "send_saveRecipientPrompt": "Save Recipient?",
+  "@send_saveRecipientPrompt": {
+    "description": "Save recipient dialog title"
+  },
+
+  "send_saveRecipientMessage": "Would you like to save this recipient for future transfers?",
+  "@send_saveRecipientMessage": {
+    "description": "Save recipient dialog message"
+  },
+
+  "send_notNow": "Not Now",
+  "@send_notNow": {
+    "description": "Not now button"
+  },
+
+  "send_saveRecipientTitle": "Save Recipient",
+  "@send_saveRecipientTitle": {
+    "description": "Save recipient input title"
+  },
+
+  "send_enterRecipientName": "Enter a name for this recipient",
+  "@send_enterRecipientName": {
+    "description": "Enter recipient name prompt"
+  },
+
+  "send_name": "Name",
+  "@send_name": {
+    "description": "Name input placeholder"
+  },
+
+  "send_recipientSaved": "Recipient saved",
+  "@send_recipientSaved": {
+    "description": "Recipient saved success message"
+  },
+
+  "send_failedToSaveRecipient": "Failed to save recipient",
+  "@send_failedToSaveRecipient": {
+    "description": "Failed to save recipient error"
+  },
+
+  "send_selectSavedRecipient": "Select Saved Recipient",
+  "@send_selectSavedRecipient": {
+    "description": "Select saved recipient sheet title"
+  },
+
+  "send_selectContact": "Select Contact",
+  "@send_selectContact": {
+    "description": "Select contact sheet title"
+  },
+
+  "send_searchRecipients": "Search recipients...",
+  "@send_searchRecipients": {
+    "description": "Search recipients placeholder"
+  },
+
+  "send_searchContacts": "Search contacts...",
+  "@send_searchContacts": {
+    "description": "Search contacts placeholder"
+  },
+
+  "send_noSavedRecipients": "No saved recipients",
+  "@send_noSavedRecipients": {
+    "description": "No saved recipients message"
+  },
+
+  "send_failedToLoadRecipients": "Failed to load recipients",
+  "@send_failedToLoadRecipients": {
+    "description": "Failed to load recipients error"
+  },
+
+  "send_joonaPayUser": "JoonaPay user",
+  "@send_joonaPayUser": {
+    "description": "JoonaPay user badge"
+  },
+
+  "send_tooManyAttempts": "Too many incorrect attempts. Please try again later.",
+  "@send_tooManyAttempts": {
+    "description": "Too many PIN attempts error"
+  },
+
+  "receive_title": "Receive USDC",
+  "@receive_title": {
+    "description": "Receive USDC page title"
+  },
+
+  "receive_receiveUsdc": "Receive USDC",
+  "@receive_receiveUsdc": {
+    "description": "Receive USDC info title"
+  },
+
+  "receive_onlySendUsdc": "Only send USDC on {network} network",
+  "@receive_onlySendUsdc": {
+    "description": "Only send USDC warning",
+    "placeholders": {
+      "network": {
+        "type": "String",
+        "example": "Polygon"
+      }
+    }
+  },
+
+  "receive_yourWalletAddress": "Your Wallet Address",
+  "@receive_yourWalletAddress": {
+    "description": "Your wallet address label"
+  },
+
+  "receive_walletNotAvailable": "Wallet address not available",
+  "@receive_walletNotAvailable": {
+    "description": "Wallet address not available message"
+  },
+
+  "receive_addressCopied": "Address copied to clipboard (auto-clears in 60s)",
+  "@receive_addressCopied": {
+    "description": "Address copied success message"
+  },
+
+  "receive_shareMessage": "Send USDC to my wallet on {network}:\n\n{address}",
+  "@receive_shareMessage": {
+    "description": "Share wallet address message",
+    "placeholders": {
+      "network": {
+        "type": "String",
+        "example": "Polygon"
+      },
+      "address": {
+        "type": "String",
+        "example": "0x1234..."
+      }
+    }
+  },
+
+  "receive_shareSubject": "My USDC Wallet Address",
+  "@receive_shareSubject": {
+    "description": "Share subject"
+  },
+
+  "receive_important": "Important",
+  "@receive_important": {
+    "description": "Important warning label"
+  },
+
+  "receive_warningMessage": "Only send USDC on the {network} network to this address. Sending other tokens or using a different network may result in permanent loss of funds.",
+  "@receive_warningMessage": {
+    "description": "Important warning message",
+    "placeholders": {
+      "network": {
+        "type": "String",
+        "example": "Polygon"
+      }
+    }
+  },
+
+  "transactions_title": "Transactions",
+  "@transactions_title": {
+    "description": "Transactions page title"
+  },
+
+  "transactions_searchPlaceholder": "Search transactions...",
+  "@transactions_searchPlaceholder": {
+    "description": "Search transactions placeholder"
+  },
+
+  "transactions_noResultsFound": "No Results Found",
+  "@transactions_noResultsFound": {
+    "description": "No results found title"
+  },
+
+  "transactions_noTransactions": "No Transactions",
+  "@transactions_noTransactions": {
+    "description": "No transactions title"
+  },
+
+  "transactions_adjustFilters": "Try adjusting your filters or search query to find what you're looking for.",
+  "@transactions_adjustFilters": {
+    "description": "Adjust filters message"
+  },
+
+  "transactions_historyMessage": "Your transaction history will appear here once you make your first deposit or transfer.",
+  "@transactions_historyMessage": {
+    "description": "Transaction history message"
+  },
+
+  "transactions_somethingWentWrong": "Something Went Wrong",
+  "@transactions_somethingWentWrong": {
+    "description": "Something went wrong title"
+  },
+
+  "transactions_today": "Today",
+  "@transactions_today": {
+    "description": "Today label"
+  },
+
+  "transactions_yesterday": "Yesterday",
+  "@transactions_yesterday": {
+    "description": "Yesterday label"
+  },
+
+  "transactions_deposit": "Deposit",
+  "@transactions_deposit": {
+    "description": "Deposit transaction type"
+  },
+
+  "transactions_withdrawal": "Withdrawal",
+  "@transactions_withdrawal": {
+    "description": "Withdrawal transaction type"
+  },
+
+  "transactions_transferReceived": "Transfer Received",
+  "@transactions_transferReceived": {
+    "description": "Transfer received transaction type"
+  },
+
+  "transactions_transferSent": "Transfer Sent",
+  "@transactions_transferSent": {
+    "description": "Transfer sent transaction type"
+  },
+
+  "transactions_mobileMoneyDeposit": "Mobile Money Deposit",
+  "@transactions_mobileMoneyDeposit": {
+    "description": "Mobile money deposit subtitle"
+  },
+
+  "transactions_mobileMoneyWithdrawal": "Mobile Money Withdrawal",
+  "@transactions_mobileMoneyWithdrawal": {
+    "description": "Mobile money withdrawal subtitle"
+  },
+
+  "transactions_fromJoonaPayUser": "From JoonaPay User",
+  "@transactions_fromJoonaPayUser": {
+    "description": "From JoonaPay user subtitle"
+  },
+
+  "transactions_externalWallet": "External Wallet",
+  "@transactions_externalWallet": {
+    "description": "External wallet subtitle"
+  },
+
+  "transactions_deposits": "Deposits",
+  "@transactions_deposits": {
+    "description": "Deposits filter"
+  },
+
+  "transactions_withdrawals": "Withdrawals",
+  "@transactions_withdrawals": {
+    "description": "Withdrawals filter"
+  },
+
+  "transactions_receivedFilter": "Received",
+  "@transactions_receivedFilter": {
+    "description": "Received filter"
+  },
+
+  "transactions_sentFilter": "Sent",
+  "@transactions_sentFilter": {
+    "description": "Sent filter"
+  },
+
+  "services_title": "Services",
+  "@services_title": {
+    "description": "Services page title"
+  },
+
+  "services_coreServices": "Core Services",
+  "@services_coreServices": {
+    "description": "Core services section"
+  },
+
+  "services_financialServices": "Financial Services",
+  "@services_financialServices": {
+    "description": "Financial services section"
+  },
+
+  "services_billsPayments": "Bills & Payments",
+  "@services_billsPayments": {
+    "description": "Bills and payments section"
+  },
+
+  "services_toolsAnalytics": "Tools & Analytics",
+  "@services_toolsAnalytics": {
+    "description": "Tools and analytics section"
+  },
+
+  "services_sendMoney": "Send Money",
+  "@services_sendMoney": {
+    "description": "Send money service"
+  },
+
+  "services_sendMoneyDesc": "Transfer to any wallet",
+  "@services_sendMoneyDesc": {
+    "description": "Send money description"
+  },
+
+  "services_receiveMoney": "Receive Money",
+  "@services_receiveMoney": {
+    "description": "Receive money service"
+  },
+
+  "services_receiveMoneyDesc": "Get your wallet address",
+  "@services_receiveMoneyDesc": {
+    "description": "Receive money description"
+  },
+
+  "services_requestMoney": "Request Money",
+  "@services_requestMoney": {
+    "description": "Request money service"
+  },
+
+  "services_requestMoneyDesc": "Create payment request",
+  "@services_requestMoneyDesc": {
+    "description": "Request money description"
+  },
+
+  "services_scanQr": "Scan QR",
+  "@services_scanQr": {
+    "description": "Scan QR service"
+  },
+
+  "services_scanQrDesc": "Scan to pay or receive",
+  "@services_scanQrDesc": {
+    "description": "Scan QR description"
+  },
+
+  "services_recipients": "Recipients",
+  "@services_recipients": {
+    "description": "Recipients service"
+  },
+
+  "services_recipientsDesc": "Manage saved contacts",
+  "@services_recipientsDesc": {
+    "description": "Recipients description"
+  },
+
+  "services_scheduledTransfers": "Scheduled Transfers",
+  "@services_scheduledTransfers": {
+    "description": "Scheduled transfers service"
+  },
+
+  "services_scheduledTransfersDesc": "Manage recurring payments",
+  "@services_scheduledTransfersDesc": {
+    "description": "Scheduled transfers description"
+  },
+
+  "services_virtualCard": "Virtual Card",
+  "@services_virtualCard": {
+    "description": "Virtual card service"
+  },
+
+  "services_virtualCardDesc": "Online shopping card",
+  "@services_virtualCardDesc": {
+    "description": "Virtual card description"
+  },
+
+  "services_savingsGoals": "Savings Goals",
+  "@services_savingsGoals": {
+    "description": "Savings goals service"
+  },
+
+  "services_savingsGoalsDesc": "Track your savings",
+  "@services_savingsGoalsDesc": {
+    "description": "Savings goals description"
+  },
+
+  "services_budget": "Budget",
+  "@services_budget": {
+    "description": "Budget service"
+  },
+
+  "services_budgetDesc": "Manage spending limits",
+  "@services_budgetDesc": {
+    "description": "Budget description"
+  },
+
+  "services_currencyConverter": "Currency Converter",
+  "@services_currencyConverter": {
+    "description": "Currency converter service"
+  },
+
+  "services_currencyConverterDesc": "Convert currencies",
+  "@services_currencyConverterDesc": {
+    "description": "Currency converter description"
+  },
+
+  "services_billPayments": "Bill Payments",
+  "@services_billPayments": {
+    "description": "Bill payments service"
+  },
+
+  "services_billPaymentsDesc": "Pay utility bills",
+  "@services_billPaymentsDesc": {
+    "description": "Bill payments description"
+  },
+
+  "services_buyAirtime": "Buy Airtime",
+  "@services_buyAirtime": {
+    "description": "Buy airtime service"
+  },
+
+  "services_buyAirtimeDesc": "Mobile top-up",
+  "@services_buyAirtimeDesc": {
+    "description": "Buy airtime description"
+  },
+
+  "services_splitBills": "Split Bills",
+  "@services_splitBills": {
+    "description": "Split bills service"
+  },
+
+  "services_splitBillsDesc": "Share expenses",
+  "@services_splitBillsDesc": {
+    "description": "Split bills description"
+  },
+
+  "services_analytics": "Analytics",
+  "@services_analytics": {
+    "description": "Analytics service"
+  },
+
+  "services_analyticsDesc": "View spending insights",
+  "@services_analyticsDesc": {
+    "description": "Analytics description"
+  },
+
+  "services_referrals": "Referrals",
+  "@services_referrals": {
+    "description": "Referrals service"
+  },
+
+  "services_referralsDesc": "Invite and earn",
+  "@services_referralsDesc": {
+    "description": "Referrals description"
   },
 
   "settings_profile": "Profile",
@@ -290,6 +1019,16 @@
   "error_network": "Network error. Please check your connection.",
   "@error_network": {
     "description": "Network error message"
+  },
+
+  "error_failedToLoadBalance": "Failed to load balance",
+  "@error_failedToLoadBalance": {
+    "description": "Failed to load balance error"
+  },
+
+  "error_failedToLoadTransactions": "Failed to load transactions",
+  "@error_failedToLoadTransactions": {
+    "description": "Failed to load transactions error"
   },
 
   "language_english": "English",

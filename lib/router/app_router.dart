@@ -58,6 +58,7 @@ import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
 import '../services/feature_flags/feature_flags_service.dart';
 import '../state/index.dart';
+import 'page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
 class MainShell extends ConsumerWidget {
@@ -197,303 +198,457 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      // Splash Screen
+      // Splash Screen (no transition)
       GoRoute(
         path: '/',
-        builder: (context, state) => const SplashView(),
+        pageBuilder: (context, state) => AppPageTransitions.none(
+          state: state,
+          child: const SplashView(),
+        ),
       ),
 
-      // Onboarding Route
+      // Onboarding Route (fade)
       GoRoute(
         path: '/onboarding',
-        builder: (context, state) => const OnboardingView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const OnboardingView(),
+        ),
       ),
 
-      // Auth Routes
+      // Auth Routes (fade for smooth transitions)
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const LoginView(),
+        ),
       ),
       GoRoute(
         path: '/otp',
-        builder: (context, state) => const OtpView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const OtpView(),
+        ),
       ),
 
-      // Main App Routes (with bottom nav)
+      // Main App Routes (with bottom nav - horizontal slide for tab switching)
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(
             path: '/home',
-            builder: (context, state) => const HomeView(),
+            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+              state: state,
+              child: const HomeView(),
+            ),
           ),
           GoRoute(
             path: '/transactions',
-            builder: (context, state) => const TransactionsView(),
+            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+              state: state,
+              child: const TransactionsView(),
+            ),
           ),
           GoRoute(
             path: '/referrals',
-            builder: (context, state) => const ReferralsView(),
+            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+              state: state,
+              child: const ReferralsView(),
+            ),
           ),
           GoRoute(
             path: '/settings',
-            builder: (context, state) => const SettingsView(),
+            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+              state: state,
+              child: const SettingsView(),
+            ),
           ),
         ],
       ),
 
-      // Full-screen routes (no bottom nav)
+      // Full-screen routes (no bottom nav - vertical slide for modals)
       GoRoute(
         path: '/deposit',
-        builder: (context, state) => const DepositView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const DepositView(),
+        ),
       ),
       GoRoute(
         path: '/send',
-        builder: (context, state) => const SendView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const SendView(),
+        ),
       ),
       GoRoute(
         path: '/withdraw',
-        builder: (context, state) => const WithdrawView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const WithdrawView(),
+        ),
       ),
       GoRoute(
         path: '/scan',
-        builder: (context, state) => const ScanView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ScanView(),
+        ),
       ),
       GoRoute(
         path: '/receive',
-        builder: (context, state) => const ReceiveView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ReceiveView(),
+        ),
       ),
       GoRoute(
         path: '/transfer/success',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
+          Widget child;
           if (extra != null) {
-            return TransferSuccessView(
+            child = TransferSuccessView(
               amount: extra['amount'] as double,
               recipient: extra['recipient'] as String,
               transactionId: extra['transactionId'] as String,
               note: extra['note'] as String?,
             );
+          } else {
+            // Fallback - go home
+            child = const TransferSuccessView(
+              amount: 0,
+              recipient: 'Unknown',
+              transactionId: 'N/A',
+            );
           }
-          // Fallback - go home
-          return const TransferSuccessView(
-            amount: 0,
-            recipient: 'Unknown',
-            transactionId: 'N/A',
-          );
+          // Scale and fade for success screens
+          return createSuccessTransition(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/notifications',
-        builder: (context, state) => const NotificationsView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const NotificationsView(),
+        ),
       ),
       GoRoute(
         path: '/transactions/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final transaction = state.extra as Transaction?;
+          Widget child;
           if (transaction != null) {
-            return TransactionDetailView(transaction: transaction);
+            child = TransactionDetailView(transaction: transaction);
+          } else {
+            // If no transaction passed, go back to transactions list
+            child = const _PlaceholderPage(title: 'Transaction Not Found');
           }
-          // If no transaction passed, go back to transactions list
-          return const _PlaceholderPage(title: 'Transaction Not Found');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/deposit/instructions',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final response = state.extra as DepositResponse?;
+          Widget child;
           if (response != null) {
-            return DepositInstructionsView(response: response);
+            child = DepositInstructionsView(response: response);
+          } else {
+            child = const _PlaceholderPage(title: 'No Deposit Info');
           }
-          return const _PlaceholderPage(title: 'No Deposit Info');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/settings/profile',
-        builder: (context, state) => const ProfileView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ProfileView(),
+        ),
       ),
       GoRoute(
         path: '/settings/pin',
-        builder: (context, state) => const ChangePinView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ChangePinView(),
+        ),
       ),
       GoRoute(
         path: '/settings/kyc',
-        builder: (context, state) => const KycView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const KycView(),
+        ),
       ),
       GoRoute(
         path: '/settings/notifications',
-        builder: (context, state) => const NotificationSettingsView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const NotificationSettingsView(),
+        ),
       ),
       GoRoute(
         path: '/settings/security',
-        builder: (context, state) => const SecurityView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SecurityView(),
+        ),
       ),
       GoRoute(
         path: '/settings/limits',
-        builder: (context, state) => const LimitsView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const LimitsView(),
+        ),
       ),
       GoRoute(
         path: '/settings/help',
-        builder: (context, state) => const HelpView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const HelpView(),
+        ),
       ),
       GoRoute(
         path: '/settings/language',
-        builder: (context, state) => const LanguageView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const LanguageView(),
+        ),
       ),
 
-      // Services Page - centralized view of all features
+      // Services Page - centralized view of all features (fade)
       GoRoute(
         path: '/services',
-        builder: (context, state) => const ServicesView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ServicesView(),
+        ),
       ),
 
       // Feature routes
       GoRoute(
         path: '/request',
-        builder: (context, state) => const RequestMoneyView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const RequestMoneyView(),
+        ),
       ),
       GoRoute(
         path: '/scheduled',
-        builder: (context, state) => const ScheduledTransfersView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ScheduledTransfersView(),
+        ),
       ),
       GoRoute(
         path: '/analytics',
-        builder: (context, state) => const AnalyticsView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const AnalyticsView(),
+        ),
       ),
       GoRoute(
         path: '/recipients',
-        builder: (context, state) => const SavedRecipientsView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SavedRecipientsView(),
+        ),
       ),
       GoRoute(
         path: '/converter',
-        builder: (context, state) => const CurrencyConverterView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const CurrencyConverterView(),
+        ),
       ),
       GoRoute(
         path: '/transactions/export',
-        builder: (context, state) => const ExportTransactionsView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ExportTransactionsView(),
+        ),
       ),
       GoRoute(
         path: '/bills',
-        builder: (context, state) => const BillPayView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BillPayView(),
+        ),
       ),
       GoRoute(
         path: '/airtime',
-        builder: (context, state) => const BuyAirtimeView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BuyAirtimeView(),
+        ),
       ),
       GoRoute(
         path: '/savings',
-        builder: (context, state) => const SavingsGoalsView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SavingsGoalsView(),
+        ),
       ),
       GoRoute(
         path: '/card',
-        builder: (context, state) => const VirtualCardView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const VirtualCardView(),
+        ),
       ),
       GoRoute(
         path: '/split',
-        builder: (context, state) => const SplitBillView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const SplitBillView(),
+        ),
       ),
       GoRoute(
         path: '/budget',
-        builder: (context, state) => const BudgetView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BudgetView(),
+        ),
       ),
 
       // Merchant Pay Routes
       GoRoute(
         path: '/scan-to-pay',
-        builder: (context, state) => const ScanQrView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ScanQrView(),
+        ),
       ),
       GoRoute(
         path: '/payment-receipt',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final response = state.extra as PaymentResponse?;
+          Widget child;
           if (response != null) {
-            return PaymentReceiptView(payment: response);
+            child = PaymentReceiptView(payment: response);
+          } else {
+            child = const _PlaceholderPage(title: 'Payment Not Found');
           }
-          return const _PlaceholderPage(title: 'Payment Not Found');
+          return createSuccessTransition(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/merchant-dashboard',
-        builder: (context, state) => const MerchantDashboardView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const MerchantDashboardView(),
+        ),
       ),
       GoRoute(
         path: '/merchant-qr',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final merchant = state.extra as MerchantResponse?;
+          Widget child;
           if (merchant != null) {
-            return MerchantQrView(merchant: merchant);
+            child = MerchantQrView(merchant: merchant);
+          } else {
+            child = const _PlaceholderPage(title: 'Merchant Not Found');
           }
-          return const _PlaceholderPage(title: 'Merchant Not Found');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/create-payment-request',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final merchant = state.extra as MerchantResponse?;
+          Widget child;
           if (merchant != null) {
-            return CreatePaymentRequestView(merchant: merchant);
+            child = CreatePaymentRequestView(merchant: merchant);
+          } else {
+            child = const _PlaceholderPage(title: 'Merchant Not Found');
           }
-          return const _PlaceholderPage(title: 'Merchant Not Found');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/merchant-transactions',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final merchantId = state.extra as String?;
+          Widget child;
           if (merchantId != null) {
-            return MerchantTransactionsView(merchantId: merchantId);
+            child = MerchantTransactionsView(merchantId: merchantId);
+          } else {
+            child = const _PlaceholderPage(title: 'Merchant Not Found');
           }
-          return const _PlaceholderPage(title: 'Merchant Not Found');
+          return AppPageTransitions.fade(state: state, child: child);
         },
       ),
 
       // Bill Payments Routes
       GoRoute(
         path: '/bill-payments',
-        builder: (context, state) => const BillPaymentsView(),
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BillPaymentsView(),
+        ),
       ),
       GoRoute(
         path: '/bill-payments/form/:providerId',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final providerId = state.pathParameters['providerId'];
+          Widget child;
           if (providerId != null) {
-            return BillPaymentFormView(providerId: providerId);
+            child = BillPaymentFormView(providerId: providerId);
+          } else {
+            child = const _PlaceholderPage(title: 'Provider Not Found');
           }
-          return const _PlaceholderPage(title: 'Provider Not Found');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/bill-payments/success/:paymentId',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final paymentId = state.pathParameters['paymentId'];
+          Widget child;
           if (paymentId != null) {
-            return BillPaymentSuccessView(paymentId: paymentId);
+            child = BillPaymentSuccessView(paymentId: paymentId);
+          } else {
+            child = const _PlaceholderPage(title: 'Payment Not Found');
           }
-          return const _PlaceholderPage(title: 'Payment Not Found');
+          return createSuccessTransition(state: state, child: child);
         },
       ),
       GoRoute(
         path: '/bill-payments/history',
-        builder: (context, state) => const BillPaymentHistoryView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BillPaymentHistoryView(),
+        ),
       ),
 
       // Alerts Routes (Transaction Monitoring)
       GoRoute(
         path: '/alerts',
-        builder: (context, state) => const AlertsListView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const AlertsListView(),
+        ),
       ),
       GoRoute(
         path: '/alerts/preferences',
-        builder: (context, state) => const AlertPreferencesView(),
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const AlertPreferencesView(),
+        ),
       ),
       GoRoute(
         path: '/alerts/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final alertId = state.pathParameters['id'];
+          Widget child;
           if (alertId != null) {
-            return AlertDetailView(alertId: alertId);
+            child = AlertDetailView(alertId: alertId);
+          } else {
+            child = const _PlaceholderPage(title: 'Alert Not Found');
           }
-          return const _PlaceholderPage(title: 'Alert Not Found');
+          return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
     ],

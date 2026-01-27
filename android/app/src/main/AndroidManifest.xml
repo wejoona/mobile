@@ -30,6 +30,25 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!-- Deep Links: Custom scheme (joonapay://) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="joonapay"/>
+            </intent-filter>
+
+            <!-- App Links: HTTPS scheme for web fallback -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="app.joonapay.com"
+                    android:pathPrefix="/"/>
+            </intent-filter>
         </activity>
 
         <!-- Firebase Cloud Messaging Service -->
