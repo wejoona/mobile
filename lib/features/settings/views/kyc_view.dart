@@ -144,7 +144,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
       ),
@@ -1271,7 +1271,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
       ),
@@ -1324,7 +1324,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
       ),

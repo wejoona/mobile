@@ -6,8 +6,12 @@ import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../state/index.dart';
-import '../../../services/feature_flags/feature_flags_service.dart';
 
+/// Simplified Home View - Focus on essential wallet features only
+/// - Prominent balance display
+/// - Quick actions (Send, Receive, Scan)
+/// - Recent transactions preview
+/// - Link to Services page for additional features
 class HomeView extends ConsumerWidget {
   const HomeView({super.key});
 
@@ -15,7 +19,6 @@ class HomeView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final walletState = ref.watch(walletStateMachineProvider);
     final txState = ref.watch(transactionStateMachineProvider);
-    final flags = ref.watch(featureFlagsProvider);
     final userName = ref.watch(userDisplayNameProvider);
 
     return Scaffold(
@@ -38,22 +41,19 @@ class HomeView extends ConsumerWidget {
                 _buildHeader(context, userName),
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Balance Card - using FSM state
+                // Balance Card
                 _buildBalanceCard(context, walletState),
-
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Quick Actions
-                _buildQuickActions(context, flags),
-
-                const SizedBox(height: AppSpacing.md),
-
-                // Secondary Actions
-                _buildSecondaryActions(context, flags),
-
+                // Quick Actions - Only 3 essential actions
+                _buildQuickActions(context),
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Recent Transactions - using FSM state
+                // Services Link
+                _buildServicesLink(context),
+                const SizedBox(height: AppSpacing.xxl),
+
+                // Recent Transactions Preview
                 _buildTransactionList(context, txState),
 
                 const SizedBox(height: AppSpacing.xxl),
@@ -107,196 +107,26 @@ class HomeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, FeatureFlags flags) {
-    // Core MVP actions (always visible)
-    final coreActions = <Widget>[
-      if (flags.canDeposit)
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.arrow_downward,
-            label: 'Deposit',
-            onTap: () => context.push('/deposit'),
-          ),
-        ),
-      if (flags.canSend) ...[
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.send,
-            label: 'Send',
-            onTap: () => context.push('/send'),
-          ),
-        ),
-      ],
-      if (flags.canReceive) ...[
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.call_received,
-            label: 'Receive',
-            onTap: () => context.push('/receive'),
-          ),
-        ),
-      ],
-      if (flags.canWithdraw) ...[
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.arrow_upward,
-            label: 'Withdraw',
-            onTap: () => context.push('/withdraw'),
-          ),
-        ),
-      ],
-    ];
-
-    // Secondary quick actions
-    final secondaryActions = <Widget>[];
-
-    // Scan is always available
-    secondaryActions.add(
-      Expanded(
-        child: _QuickActionButton(
-          icon: Icons.qr_code_scanner,
-          label: 'Scan',
-          onTap: () => context.push('/scan'),
-        ),
-      ),
-    );
-
-    if (flags.canRequestMoney) {
-      secondaryActions.add(const SizedBox(width: AppSpacing.md));
-      secondaryActions.add(
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.qr_code,
-            label: 'Request',
-            onTap: () => context.push('/request'),
-          ),
-        ),
-      );
-    }
-
-    if (flags.canScheduleTransfers) {
-      secondaryActions.add(const SizedBox(width: AppSpacing.md));
-      secondaryActions.add(
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.schedule,
-            label: 'Scheduled',
-            onTap: () => context.push('/scheduled'),
-          ),
-        ),
-      );
-    }
-
-    if (flags.canUseSavedRecipients) {
-      secondaryActions.add(const SizedBox(width: AppSpacing.md));
-      secondaryActions.add(
-        Expanded(
-          child: _QuickActionButton(
-            icon: Icons.people_outline,
-            label: 'Recipients',
-            onTap: () => context.push('/recipients'),
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      children: [
-        Row(children: coreActions),
-        if (secondaryActions.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.md),
-          Row(children: secondaryActions),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildSecondaryActions(BuildContext context, FeatureFlags flags) {
-    // Collect enabled services
-    final services = <_ServiceAction>[];
-
-    if (flags.canPayBills) {
-      services.add(_ServiceAction(Icons.receipt_long, 'Bills', '/bills'));
-    }
-    if (flags.canBuyAirtime) {
-      services.add(_ServiceAction(Icons.phone_android, 'Airtime', '/airtime'));
-    }
-    if (flags.canViewAnalytics) {
-      services.add(_ServiceAction(Icons.analytics_outlined, 'Analytics', '/analytics'));
-    }
-    if (flags.canUseCurrencyConverter) {
-      services.add(_ServiceAction(Icons.currency_exchange, 'Convert', '/converter'));
-    }
-    if (flags.canSetSavingsGoals) {
-      services.add(_ServiceAction(Icons.savings, 'Savings', '/savings'));
-    }
-    if (flags.canUseVirtualCards) {
-      services.add(_ServiceAction(Icons.credit_card, 'Card', '/card'));
-    }
-    if (flags.canSplitBills) {
-      services.add(_ServiceAction(Icons.group, 'Split', '/split'));
-    }
-    if (flags.canUseBudget) {
-      services.add(_ServiceAction(Icons.pie_chart, 'Budget', '/budget'));
-    }
-    if (flags.canUseReferrals) {
-      services.add(_ServiceAction(Icons.card_giftcard, 'Refer', '/referrals'));
-    }
-
-    // If no services enabled, don't show section
-    if (services.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // Build rows of 4 items each
-    final rows = <Widget>[];
-    for (var i = 0; i < services.length; i += 4) {
-      final rowItems = services.skip(i).take(4).toList();
-      final rowWidgets = <Widget>[];
-
-      for (var j = 0; j < rowItems.length; j++) {
-        if (j > 0) rowWidgets.add(const SizedBox(width: AppSpacing.md));
-        rowWidgets.add(
-          Expanded(
-            child: _QuickActionButton(
-              icon: rowItems[j].icon,
-              label: rowItems[j].label,
-              onTap: () => context.push(rowItems[j].route),
-            ),
-          ),
-        );
-      }
-
-      // Pad remaining slots with empty expanded
-      while (rowWidgets.length < 7) { // 4 items + 3 spacers
-        rowWidgets.add(const SizedBox(width: AppSpacing.md));
-        rowWidgets.add(const Expanded(child: SizedBox()));
-      }
-
-      rows.add(Row(children: rowWidgets));
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const AppText(
-          'Services',
-          variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        ...rows.expand((row) => [row, const SizedBox(height: AppSpacing.md)]).toList()
-          ..removeLast(),
-      ],
-    );
-  }
-
   Widget _buildBalanceCard(BuildContext context, WalletState walletState) {
+    // Handle null/empty wallet state
+    if (walletState.status == WalletStatus.initial) {
+      return _buildLoadingCard();
+    }
+
     if (walletState.hasError) {
-      return _buildErrorCard(walletState.error ?? 'Failed to load balance');
+      return _buildErrorCard(
+        walletState.error ?? 'Failed to load balance',
+        onRetry: () {
+          // Access context through builder pattern if needed
+        },
+      );
+    }
+
+    // Check if wallet exists (wallet ID is not empty)
+    final hasWallet = walletState.walletId.isNotEmpty;
+
+    if (!hasWallet && !walletState.isLoading) {
+      return _buildCreateWalletCard(context);
     }
 
     return Column(
@@ -366,6 +196,171 @@ class HomeView extends ConsumerWidget {
     );
   }
 
+  Widget _buildLoadingCard() {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(
+            color: AppColors.gold500,
+            strokeWidth: 2,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const AppText(
+            'Loading wallet...',
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCreateWalletCard(BuildContext context) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.gold500.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: const Icon(
+              Icons.account_balance_wallet_outlined,
+              color: AppColors.gold500,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const AppText(
+            'No Wallet Found',
+            variant: AppTextVariant.titleLarge,
+            color: AppColors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const AppText(
+            'Create your wallet to start sending and receiving money',
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                // TODO: Navigate to wallet creation flow
+                context.push('/settings/kyc');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.gold500,
+                foregroundColor: AppColors.obsidian,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+              ),
+              child: const AppText(
+                'Create Wallet',
+                variant: AppTextVariant.labelLarge,
+                color: AppColors.obsidian,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _QuickActionButton(
+            icon: Icons.send,
+            label: 'Send',
+            onTap: () => context.push('/send'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _QuickActionButton(
+            icon: Icons.call_received,
+            label: 'Receive',
+            onTap: () => context.push('/receive'),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _QuickActionButton(
+            icon: Icons.qr_code_scanner,
+            label: 'Scan',
+            onTap: () => context.push('/scan'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServicesLink(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/services'),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.slate,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.gold500.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: const Icon(
+                Icons.apps,
+                color: AppColors.gold500,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    'All Services',
+                    variant: AppTextVariant.labelLarge,
+                    color: AppColors.textPrimary,
+                  ),
+                  SizedBox(height: AppSpacing.xxs),
+                  AppText(
+                    'View all available features',
+                    variant: AppTextVariant.bodySmall,
+                    color: AppColors.textTertiary,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: AppColors.textTertiary,
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTransactionList(BuildContext context, TransactionListState txState) {
     if (txState.status == TransactionListStatus.error) {
       return _buildErrorCard(txState.error ?? 'Failed to load transactions');
@@ -378,6 +373,11 @@ class HomeView extends ConsumerWidget {
       );
     }
 
+    if (txState.transactions.isEmpty) {
+      return _buildEmptyTransactions();
+    }
+
+    // Show only 3-5 recent transactions
     return TransactionList(
       title: 'Recent Transactions',
       onViewAllTap: () => context.push('/transactions'),
@@ -394,7 +394,48 @@ class HomeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorCard(String error) {
+  Widget _buildEmptyTransactions() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: AppColors.slate,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.borderSubtle),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.textTertiary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              color: AppColors.textTertiary,
+              size: 32,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const AppText(
+            'No Transactions Yet',
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          const AppText(
+            'Your recent transactions will appear here',
+            variant: AppTextVariant.bodySmall,
+            color: AppColors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(String error, {VoidCallback? onRetry}) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Center(
@@ -412,6 +453,17 @@ class HomeView extends ConsumerWidget {
               color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
+            if (onRetry != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: onRetry,
+                child: const AppText(
+                  'Retry',
+                  variant: AppTextVariant.labelMedium,
+                  color: AppColors.gold500,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -527,15 +579,7 @@ class _BalanceCard extends StatelessWidget {
   }
 }
 
-/// Helper class for service actions
-class _ServiceAction {
-  final IconData icon;
-  final String label;
-  final String route;
-
-  const _ServiceAction(this.icon, this.label, this.route);
-}
-
+/// Quick action button component - simplified
 class _QuickActionButton extends StatelessWidget {
   const _QuickActionButton({
     required this.icon,

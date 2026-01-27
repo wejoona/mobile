@@ -25,6 +25,7 @@ import '../features/settings/views/notification_settings_view.dart';
 import '../features/settings/views/security_view.dart';
 import '../features/settings/views/limits_view.dart';
 import '../features/settings/views/help_view.dart';
+import '../features/settings/views/language_view.dart';
 import '../features/notifications/views/notifications_view.dart';
 import '../features/wallet/views/request_money_view.dart';
 import '../features/wallet/views/scheduled_transfers_view.dart';
@@ -52,6 +53,7 @@ import '../features/bill_payments/views/bill_payment_history_view.dart';
 import '../features/alerts/views/alerts_list_view.dart';
 import '../features/alerts/views/alert_detail_view.dart';
 import '../features/alerts/views/alert_preferences_view.dart';
+import '../features/services/views/services_view.dart';
 import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
 import '../services/feature_flags/feature_flags_service.dart';
@@ -333,6 +335,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/help',
         builder: (context, state) => const HelpView(),
+      ),
+      GoRoute(
+        path: '/settings/language',
+        builder: (context, state) => const LanguageView(),
+      ),
+
+      // Services Page - centralized view of all features
+      GoRoute(
+        path: '/services',
+        builder: (context, state) => const ServicesView(),
       ),
 
       // Feature routes

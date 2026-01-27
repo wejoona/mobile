@@ -3,26 +3,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_provider.dart';
 import '../../../domain/enums/index.dart';
 import '../../../services/biometric/biometric_service.dart';
+import '../../../services/localization/language_provider.dart';
 import '../../../state/index.dart';
 import '../../auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final localeState = ref.watch(localeProvider);
+    final currentLanguageName = ref
+        .read(localeProvider.notifier)
+        .getLanguageName(localeState.locale.languageCode);
+
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Settings',
+        title: AppText(
+          l10n.navigation_settings,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
       ),
@@ -55,18 +64,18 @@ class SettingsView extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.lg),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText(
-                          'Profile',
+                          l10n.settings_profile,
                           variant: AppTextVariant.titleMedium,
                           color: AppColors.textPrimary,
                         ),
-                        SizedBox(height: AppSpacing.xxs),
+                        const SizedBox(height: AppSpacing.xxs),
                         AppText(
-                          'Manage your personal information',
+                          l10n.settings_profileDescription,
                           variant: AppTextVariant.bodySmall,
                           color: AppColors.textSecondary,
                         ),
@@ -84,66 +93,67 @@ class SettingsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // Security Section
-            const AppText(
-              'Security',
+            AppText(
+              l10n.settings_security,
               variant: AppTextVariant.labelMedium,
               color: AppColors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.security,
-              title: 'Security Settings',
-              subtitle: 'PIN, 2FA, biometrics',
+              title: l10n.settings_securitySettings,
+              subtitle: l10n.settings_securityDescription,
               onTap: () => context.push('/settings/security'),
             ),
             _KycTile(onTap: () => context.push('/settings/kyc')),
             _SettingsTile(
               icon: Icons.speed,
-              title: 'Transaction Limits',
-              subtitle: 'View & increase limits',
+              title: l10n.settings_transactionLimits,
+              subtitle: l10n.settings_limitsDescription,
               onTap: () => context.push('/settings/limits'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Preferences Section
-            const AppText(
-              'Preferences',
+            AppText(
+              l10n.settings_preferences,
               variant: AppTextVariant.labelMedium,
               color: AppColors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.notifications_outlined,
-              title: 'Notifications',
+              title: l10n.settings_notifications,
               onTap: () => context.push('/settings/notifications'),
             ),
             _SettingsTile(
               icon: Icons.language,
-              title: 'Language',
-              subtitle: 'English',
-              onTap: () {},
+              title: l10n.settings_language,
+              subtitle: currentLanguageName,
+              onTap: () => context.push('/settings/language'),
             ),
+            const _ThemeTile(),
             _SettingsTile(
               icon: Icons.attach_money,
-              title: 'Default Currency',
-              subtitle: 'USD',
+              title: l10n.settings_defaultCurrency,
+              subtitle: 'USDC',
               onTap: () {},
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Support Section
-            const AppText(
-              'Support',
+            AppText(
+              l10n.settings_support,
               variant: AppTextVariant.labelMedium,
               color: AppColors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.help_outline,
-              title: 'Help & Support',
-              subtitle: 'FAQs, chat, contact',
+              title: l10n.settings_helpSupport,
+              subtitle: l10n.settings_helpDescription,
               onTap: () => context.push('/settings/help'),
             ),
 
@@ -168,18 +178,18 @@ class SettingsView extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText(
-                          'Refer & Earn',
+                          l10n.settings_referEarn,
                           variant: AppTextVariant.titleSmall,
                           color: AppColors.gold500,
                         ),
-                        SizedBox(height: AppSpacing.xxs),
+                        const SizedBox(height: AppSpacing.xxs),
                         AppText(
-                          'Invite friends and earn rewards',
+                          l10n.settings_referDescription,
                           variant: AppTextVariant.bodySmall,
                           color: AppColors.textSecondary,
                         ),
@@ -198,7 +208,7 @@ class SettingsView extends ConsumerWidget {
 
             // Logout Button
             AppButton(
-              label: 'Log Out',
+              label: l10n.auth_logout,
               onPressed: () => _showLogoutDialog(context, ref),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
@@ -207,9 +217,9 @@ class SettingsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // Version
-            const Center(
+            Center(
               child: AppText(
-                'Version 1.0.0',
+                l10n.settings_version('1.0.0'),
                 variant: AppTextVariant.labelSmall,
                 color: AppColors.textTertiary,
               ),
@@ -223,24 +233,25 @@ class SettingsView extends ConsumerWidget {
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.slate,
-        title: const AppText(
-          'Log Out',
+        title: AppText(
+          l10n.auth_logout,
           variant: AppTextVariant.titleMedium,
         ),
-        content: const AppText(
-          'Are you sure you want to log out?',
+        content: AppText(
+          l10n.auth_logoutConfirm,
           variant: AppTextVariant.bodyMedium,
           color: AppColors.textSecondary,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const AppText(
-              'Cancel',
+            child: AppText(
+              l10n.action_cancel,
               variant: AppTextVariant.labelLarge,
               color: AppColors.textSecondary,
             ),
@@ -251,8 +262,8 @@ class SettingsView extends ConsumerWidget {
               ref.read(authProvider.notifier).logout();
               context.go('/login');
             },
-            child: const AppText(
-              'Log Out',
+            child: AppText(
+              l10n.auth_logout,
               variant: AppTextVariant.labelLarge,
               color: AppColors.errorText,
             ),
@@ -331,6 +342,7 @@ class _KycTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final kycStatus = ref.watch(kycStatusProvider);
 
     String subtitle;
@@ -339,26 +351,26 @@ class _KycTile extends ConsumerWidget {
 
     switch (kycStatus) {
       case KycStatus.verified:
-        subtitle = 'Verified';
+        subtitle = l10n.kyc_verified;
         subtitleColor = AppColors.successText;
         icon = Icons.verified_user;
       case KycStatus.pending:
-        subtitle = 'Pending Review';
+        subtitle = l10n.kyc_pending;
         subtitleColor = AppColors.warningBase;
         icon = Icons.hourglass_top;
       case KycStatus.rejected:
-        subtitle = 'Rejected - Retry';
+        subtitle = l10n.kyc_rejected;
         subtitleColor = AppColors.errorText;
         icon = Icons.error_outline;
       case KycStatus.none:
-        subtitle = 'Not Started';
+        subtitle = l10n.kyc_notStarted;
         subtitleColor = AppColors.textTertiary;
         icon = Icons.verified_user_outlined;
     }
 
     return _SettingsTile(
       icon: icon,
-      title: 'KYC Verification',
+      title: l10n.settings_kycVerification,
       subtitle: subtitle,
       subtitleColor: subtitleColor,
       onTap: onTap,
@@ -438,6 +450,140 @@ class _BiometricTile extends ConsumerWidget {
         title: 'Biometric Login',
         subtitle: 'Error',
         onTap: () {},
+      ),
+    );
+  }
+}
+
+/// Theme selector tile with Light/Dark/System options
+class _ThemeTile extends ConsumerWidget {
+  const _ThemeTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeState = ref.watch(themeProvider);
+
+    String getThemeLabel(AppThemeMode mode) {
+      switch (mode) {
+        case AppThemeMode.light:
+          return 'Light';
+        case AppThemeMode.dark:
+          return 'Dark';
+        case AppThemeMode.system:
+          return 'System';
+      }
+    }
+
+    return _SettingsTile(
+      icon: Icons.brightness_6,
+      title: 'Theme',
+      subtitle: getThemeLabel(themeState.mode),
+      onTap: () => _showThemeDialog(context, ref, themeState.mode),
+    );
+  }
+
+  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.slate,
+        title: const AppText(
+          'Select Theme',
+          variant: AppTextVariant.titleMedium,
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ThemeOption(
+              mode: AppThemeMode.light,
+              currentMode: currentMode,
+              icon: Icons.light_mode,
+              label: 'Light',
+              onTap: () {
+                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
+                Navigator.pop(context);
+              },
+            ),
+            _ThemeOption(
+              mode: AppThemeMode.dark,
+              currentMode: currentMode,
+              icon: Icons.dark_mode,
+              label: 'Dark',
+              onTap: () {
+                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
+                Navigator.pop(context);
+              },
+            ),
+            _ThemeOption(
+              mode: AppThemeMode.system,
+              currentMode: currentMode,
+              icon: Icons.brightness_auto,
+              label: 'System',
+              onTap: () {
+                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  const _ThemeOption({
+    required this.mode,
+    required this.currentMode,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final AppThemeMode mode;
+  final AppThemeMode currentMode;
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = mode == currentMode;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                size: 24,
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: AppText(
+                  label,
+                  variant: AppTextVariant.bodyLarge,
+                  color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle,
+                  color: AppColors.gold500,
+                  size: 20,
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

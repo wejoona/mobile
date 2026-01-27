@@ -1,0 +1,314 @@
+{
+  "@@locale": "en",
+
+  "appName": "JoonaPay",
+  "@appName": {
+    "description": "Application name"
+  },
+
+  "navigation_home": "Home",
+  "@navigation_home": {
+    "description": "Home navigation label"
+  },
+
+  "navigation_settings": "Settings",
+  "@navigation_settings": {
+    "description": "Settings navigation label"
+  },
+
+  "navigation_send": "Send",
+  "@navigation_send": {
+    "description": "Send navigation label"
+  },
+
+  "navigation_receive": "Receive",
+  "@navigation_receive": {
+    "description": "Receive navigation label"
+  },
+
+  "navigation_transactions": "Transactions",
+  "@navigation_transactions": {
+    "description": "Transactions navigation label"
+  },
+
+  "navigation_services": "Services",
+  "@navigation_services": {
+    "description": "Services navigation label"
+  },
+
+  "action_continue": "Continue",
+  "@action_continue": {
+    "description": "Continue action button"
+  },
+
+  "action_cancel": "Cancel",
+  "@action_cancel": {
+    "description": "Cancel action button"
+  },
+
+  "action_confirm": "Confirm",
+  "@action_confirm": {
+    "description": "Confirm action button"
+  },
+
+  "action_back": "Back",
+  "@action_back": {
+    "description": "Back action button"
+  },
+
+  "action_submit": "Submit",
+  "@action_submit": {
+    "description": "Submit action button"
+  },
+
+  "action_done": "Done",
+  "@action_done": {
+    "description": "Done action button"
+  },
+
+  "action_save": "Save",
+  "@action_save": {
+    "description": "Save action button"
+  },
+
+  "action_edit": "Edit",
+  "@action_edit": {
+    "description": "Edit action button"
+  },
+
+  "auth_login": "Login",
+  "@auth_login": {
+    "description": "Login label"
+  },
+
+  "auth_verify": "Verify",
+  "@auth_verify": {
+    "description": "Verify label"
+  },
+
+  "auth_enterOtp": "Enter OTP",
+  "@auth_enterOtp": {
+    "description": "Enter OTP label"
+  },
+
+  "auth_phoneNumber": "Phone Number",
+  "@auth_phoneNumber": {
+    "description": "Phone number label"
+  },
+
+  "auth_pin": "PIN",
+  "@auth_pin": {
+    "description": "PIN label"
+  },
+
+  "auth_logout": "Log Out",
+  "@auth_logout": {
+    "description": "Logout label"
+  },
+
+  "auth_logoutConfirm": "Are you sure you want to log out?",
+  "@auth_logoutConfirm": {
+    "description": "Logout confirmation message"
+  },
+
+  "wallet_balance": "Balance",
+  "@wallet_balance": {
+    "description": "Wallet balance label"
+  },
+
+  "wallet_sendMoney": "Send Money",
+  "@wallet_sendMoney": {
+    "description": "Send money label"
+  },
+
+  "wallet_receiveMoney": "Receive Money",
+  "@wallet_receiveMoney": {
+    "description": "Receive money label"
+  },
+
+  "wallet_transactionHistory": "Transaction History",
+  "@wallet_transactionHistory": {
+    "description": "Transaction history label"
+  },
+
+  "wallet_availableBalance": "Available Balance",
+  "@wallet_availableBalance": {
+    "description": "Available balance label"
+  },
+
+  "settings_profile": "Profile",
+  "@settings_profile": {
+    "description": "Profile settings label"
+  },
+
+  "settings_profileDescription": "Manage your personal information",
+  "@settings_profileDescription": {
+    "description": "Profile settings description"
+  },
+
+  "settings_security": "Security",
+  "@settings_security": {
+    "description": "Security settings section label"
+  },
+
+  "settings_securitySettings": "Security Settings",
+  "@settings_securitySettings": {
+    "description": "Security settings label"
+  },
+
+  "settings_securityDescription": "PIN, 2FA, biometrics",
+  "@settings_securityDescription": {
+    "description": "Security settings description"
+  },
+
+  "settings_language": "Language",
+  "@settings_language": {
+    "description": "Language settings label"
+  },
+
+  "settings_theme": "Theme",
+  "@settings_theme": {
+    "description": "Theme settings label"
+  },
+
+  "settings_notifications": "Notifications",
+  "@settings_notifications": {
+    "description": "Notifications settings label"
+  },
+
+  "settings_preferences": "Preferences",
+  "@settings_preferences": {
+    "description": "Preferences section label"
+  },
+
+  "settings_defaultCurrency": "Default Currency",
+  "@settings_defaultCurrency": {
+    "description": "Default currency label"
+  },
+
+  "settings_support": "Support",
+  "@settings_support": {
+    "description": "Support section label"
+  },
+
+  "settings_helpSupport": "Help & Support",
+  "@settings_helpSupport": {
+    "description": "Help and support label"
+  },
+
+  "settings_helpDescription": "FAQs, chat, contact",
+  "@settings_helpDescription": {
+    "description": "Help and support description"
+  },
+
+  "settings_kycVerification": "KYC Verification",
+  "@settings_kycVerification": {
+    "description": "KYC verification label"
+  },
+
+  "settings_transactionLimits": "Transaction Limits",
+  "@settings_transactionLimits": {
+    "description": "Transaction limits label"
+  },
+
+  "settings_limitsDescription": "View & increase limits",
+  "@settings_limitsDescription": {
+    "description": "Transaction limits description"
+  },
+
+  "settings_referEarn": "Refer & Earn",
+  "@settings_referEarn": {
+    "description": "Refer and earn label"
+  },
+
+  "settings_referDescription": "Invite friends and earn rewards",
+  "@settings_referDescription": {
+    "description": "Refer and earn description"
+  },
+
+  "settings_version": "Version {version}",
+  "@settings_version": {
+    "description": "App version label",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "1.0.0"
+      }
+    }
+  },
+
+  "kyc_verified": "Verified",
+  "@kyc_verified": {
+    "description": "KYC verified status"
+  },
+
+  "kyc_pending": "Pending Review",
+  "@kyc_pending": {
+    "description": "KYC pending status"
+  },
+
+  "kyc_rejected": "Rejected - Retry",
+  "@kyc_rejected": {
+    "description": "KYC rejected status"
+  },
+
+  "kyc_notStarted": "Not Started",
+  "@kyc_notStarted": {
+    "description": "KYC not started status"
+  },
+
+  "transaction_sent": "Sent",
+  "@transaction_sent": {
+    "description": "Transaction sent label"
+  },
+
+  "transaction_received": "Received",
+  "@transaction_received": {
+    "description": "Transaction received label"
+  },
+
+  "transaction_pending": "Pending",
+  "@transaction_pending": {
+    "description": "Transaction pending status"
+  },
+
+  "transaction_failed": "Failed",
+  "@transaction_failed": {
+    "description": "Transaction failed status"
+  },
+
+  "transaction_completed": "Completed",
+  "@transaction_completed": {
+    "description": "Transaction completed status"
+  },
+
+  "error_generic": "Something went wrong. Please try again.",
+  "@error_generic": {
+    "description": "Generic error message"
+  },
+
+  "error_network": "Network error. Please check your connection.",
+  "@error_network": {
+    "description": "Network error message"
+  },
+
+  "language_english": "English",
+  "@language_english": {
+    "description": "English language name"
+  },
+
+  "language_french": "French",
+  "@language_french": {
+    "description": "French language name"
+  },
+
+  "language_selectLanguage": "Select Language",
+  "@language_selectLanguage": {
+    "description": "Select language label"
+  },
+
+  "language_changeLanguage": "Change Language",
+  "@language_changeLanguage": {
+    "description": "Change language label"
+  }
+}

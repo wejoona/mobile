@@ -21,8 +21,26 @@ enum AppInputVariant {
   search,
 }
 
-/// Luxury Wallet Input Component
-class AppInput extends StatelessWidget {
+/// Input Field State (for visual styling)
+enum AppInputState {
+  /// Default/idle state
+  idle,
+
+  /// Field is focused
+  focused,
+
+  /// Field has value (filled)
+  filled,
+
+  /// Field has error
+  error,
+
+  /// Field is disabled
+  disabled,
+}
+
+/// Luxury Wallet Input Component with Complete State Definitions
+class AppInput extends StatefulWidget {
   const AppInput({
     super.key,
     this.controller,
@@ -77,60 +95,260 @@ class AppInput extends StatelessWidget {
   final String? Function(String?)? validator;
 
   @override
+  State<AppInput> createState() => _AppInputState();
+}
+
+class _AppInputState extends State<AppInput> {
+  late FocusNode _focusNode;
+  bool _isFocused = false;
+  bool _hasValue = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode ?? FocusNode();
+    _focusNode.addListener(_onFocusChange);
+
+    // Check initial value
+    if (widget.controller != null) {
+      _hasValue = widget.controller!.text.isNotEmpty;
+      widget.controller!.addListener(_onTextChange);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.focusNode == null) {
+      _focusNode.dispose();
+    } else {
+      _focusNode.removeListener(_onFocusChange);
+    }
+    widget.controller?.removeListener(_onTextChange);
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
+
+  void _onTextChange() {
+    setState(() {
+      _hasValue = widget.controller?.text.isNotEmpty ?? false;
+    });
+  }
+
+  AppInputState _getCurrentState() {
+    if (!widget.enabled) return AppInputState.disabled;
+    if (widget.error != null) return AppInputState.error;
+    if (_isFocused) return AppInputState.focused;
+    if (_hasValue) return AppInputState.filled;
+    return AppInputState.idle;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final currentState = _getCurrentState();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (label != null) ...[
+        if (widget.label != null) ...[
           AppText(
-            label!,
+            widget.label!,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: _getLabelColor(currentState, isDark),
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
         TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          obscureText: obscureText,
-          enabled: enabled,
-          readOnly: readOnly,
-          autofocus: autofocus,
-          maxLines: maxLines,
-          maxLength: maxLength,
+          controller: widget.controller,
+          focusNode: _focusNode,
+          obscureText: widget.obscureText,
+          enabled: widget.enabled,
+          readOnly: widget.readOnly,
+          autofocus: widget.autofocus,
+          maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
           keyboardType: _getKeyboardType(),
-          textInputAction: textInputAction,
+          textInputAction: widget.textInputAction,
           inputFormatters: _getInputFormatters(),
-          onChanged: onChanged,
-          onFieldSubmitted: onSubmitted,
-          onTap: onTap,
-          validator: validator,
-          style: _getTextStyle(),
+          onChanged: (value) {
+            widget.onChanged?.call(value);
+            _onTextChange();
+          },
+          onFieldSubmitted: widget.onSubmitted,
+          onTap: widget.onTap,
+          validator: widget.validator,
+          style: _getTextStyle(currentState, isDark),
           textAlign: _getTextAlign(),
           decoration: InputDecoration(
-            hintText: hint,
-            errorText: error,
-            helperText: helper,
-            prefix: prefix,
-            suffix: suffix,
-            prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, color: AppColors.textTertiary, size: 20)
+            hintText: widget.hint,
+            errorText: widget.error,
+            helperText: widget.helper,
+            prefix: widget.prefix,
+            suffix: widget.suffix,
+            prefixIcon: widget.prefixIcon != null
+                ? Icon(
+                    widget.prefixIcon,
+                    color: _getIconColor(currentState, isDark),
+                    size: 20,
+                  )
                 : null,
-            suffixIcon: suffixIcon != null
-                ? Icon(suffixIcon, color: AppColors.textTertiary, size: 20)
+            suffixIcon: widget.suffixIcon != null
+                ? Icon(
+                    widget.suffixIcon,
+                    color: _getIconColor(currentState, isDark),
+                    size: 20,
+                  )
                 : null,
             counterText: '',
+            filled: true,
+            fillColor: _getFillColor(currentState, isDark),
+            hintStyle: _getHintStyle(isDark),
+            errorStyle: AppTypography.bodySmall.copyWith(
+              color: isDark ? AppColors.errorText : AppColorsLight.errorText,
+            ),
+            helperStyle: AppTypography.bodySmall.copyWith(
+              color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.lg,
+              vertical: AppSpacing.lg,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: _getBorderSide(currentState, isDark),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: _getBorderSide(AppInputState.idle, isDark),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: _getBorderSide(AppInputState.focused, isDark),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: _getBorderSide(AppInputState.error, isDark),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.errorBase : AppColorsLight.errorBase,
+                width: 2,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: _getBorderSide(AppInputState.disabled, isDark),
+            ),
           ),
         ),
       ],
     );
   }
 
-  TextInputType? _getKeyboardType() {
-    if (keyboardType != null) return keyboardType;
+  /// Get fill color based on state
+  Color _getFillColor(AppInputState state, bool isDark) {
+    switch (state) {
+      case AppInputState.disabled:
+        return isDark
+            ? AppColors.elevated.withOpacity(0.5)
+            : AppColorsLight.elevated.withOpacity(0.5);
+      case AppInputState.error:
+        return isDark
+            ? AppColors.errorBase.withOpacity(0.05)
+            : AppColorsLight.errorLight;
+      case AppInputState.focused:
+        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+      case AppInputState.filled:
+        // Subtle tint when field has value
+        return isDark
+            ? AppColors.elevated.withOpacity(0.8)
+            : AppColorsLight.container;
+      case AppInputState.idle:
+        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+    }
+  }
 
-    switch (variant) {
+  /// Get border side based on state
+  BorderSide _getBorderSide(AppInputState state, bool isDark) {
+    switch (state) {
+      case AppInputState.disabled:
+        return BorderSide(
+          color: isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle,
+          width: 1,
+        );
+      case AppInputState.error:
+        return BorderSide(
+          color: isDark ? AppColors.errorBase : AppColorsLight.errorBase,
+          width: 1,
+        );
+      case AppInputState.focused:
+        // Gold highlight on focus
+        return BorderSide(
+          color: isDark ? AppColors.gold500 : AppColorsLight.gold500,
+          width: 2,
+        );
+      case AppInputState.filled:
+        return BorderSide(
+          color: isDark ? AppColors.borderDefault : AppColorsLight.borderDefault,
+          width: 1,
+        );
+      case AppInputState.idle:
+        return BorderSide(
+          color: isDark ? AppColors.borderDefault : AppColorsLight.borderDefault,
+          width: 1,
+        );
+    }
+  }
+
+  /// Get text color based on state
+  Color _getTextColor(AppInputState state, bool isDark) {
+    switch (state) {
+      case AppInputState.disabled:
+        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+      default:
+        return isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
+    }
+  }
+
+  /// Get label color based on state
+  Color _getLabelColor(AppInputState state, bool isDark) {
+    switch (state) {
+      case AppInputState.disabled:
+        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+      case AppInputState.error:
+        return isDark ? AppColors.errorText : AppColorsLight.errorText;
+      case AppInputState.focused:
+        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+      default:
+        return isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+    }
+  }
+
+  /// Get icon color based on state
+  Color _getIconColor(AppInputState state, bool isDark) {
+    switch (state) {
+      case AppInputState.disabled:
+        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+      case AppInputState.error:
+        return isDark ? AppColors.errorBase : AppColorsLight.errorBase;
+      case AppInputState.focused:
+        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+      default:
+        return isDark ? AppColors.textTertiary : AppColorsLight.textTertiary;
+    }
+  }
+
+  TextInputType? _getKeyboardType() {
+    if (widget.keyboardType != null) return widget.keyboardType;
+
+    switch (widget.variant) {
       case AppInputVariant.phone:
         return TextInputType.phone;
       case AppInputVariant.pin:
@@ -145,9 +363,9 @@ class AppInput extends StatelessWidget {
   }
 
   List<TextInputFormatter>? _getInputFormatters() {
-    if (inputFormatters != null) return inputFormatters;
+    if (widget.inputFormatters != null) return widget.inputFormatters;
 
-    switch (variant) {
+    switch (widget.variant) {
       case AppInputVariant.phone:
         return [FilteringTextInputFormatter.digitsOnly];
       case AppInputVariant.pin:
@@ -162,19 +380,23 @@ class AppInput extends StatelessWidget {
     }
   }
 
-  TextStyle _getTextStyle() {
-    switch (variant) {
-      case AppInputVariant.amount:
-        return AppTypography.monoLarge;
-      case AppInputVariant.pin:
-        return AppTypography.monoLarge;
-      default:
-        return AppTypography.bodyLarge;
-    }
+  TextStyle _getTextStyle(AppInputState state, bool isDark) {
+    final baseStyle = widget.variant == AppInputVariant.amount ||
+            widget.variant == AppInputVariant.pin
+        ? AppTypography.monoLarge
+        : AppTypography.bodyLarge;
+
+    return baseStyle.copyWith(color: _getTextColor(state, isDark));
+  }
+
+  TextStyle _getHintStyle(bool isDark) {
+    return AppTypography.bodyMedium.copyWith(
+      color: isDark ? AppColors.textTertiary : AppColorsLight.textTertiary,
+    );
   }
 
   TextAlign _getTextAlign() {
-    switch (variant) {
+    switch (widget.variant) {
       case AppInputVariant.amount:
       case AppInputVariant.pin:
         return TextAlign.center;
@@ -205,6 +427,8 @@ class PhoneInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -213,7 +437,7 @@ class PhoneInput extends StatelessWidget {
           AppText(
             label!,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
@@ -228,9 +452,13 @@ class PhoneInput extends StatelessWidget {
                   vertical: AppSpacing.lg,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: isDark ? AppColors.elevated : AppColorsLight.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
-                  border: Border.all(color: AppColors.borderDefault),
+                  border: Border.all(
+                    color: isDark
+                        ? AppColors.borderDefault
+                        : AppColorsLight.borderDefault,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -238,13 +466,17 @@ class PhoneInput extends StatelessWidget {
                     AppText(
                       countryCode,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.textPrimary
+                          : AppColorsLight.textPrimary,
                     ),
                     const SizedBox(width: AppSpacing.xs),
-                    const Icon(
+                    Icon(
                       Icons.keyboard_arrow_down,
                       size: 20,
-                      color: AppColors.textTertiary,
+                      color: isDark
+                          ? AppColors.textTertiary
+                          : AppColorsLight.textTertiary,
                     ),
                   ],
                 ),

@@ -35,7 +35,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () {
             if (_currentStep == PinStep.current) {
               context.pop();

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'design/theme/app_theme.dart';
 import 'design/theme/theme_provider.dart';
 import 'router/app_router.dart';
 import 'services/session/session_manager.dart';
 import 'services/security/security_gate.dart';
 import 'services/security/device_security.dart';
+import 'services/localization/language_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +45,7 @@ class JoonaPayApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);
+    final localeState = ref.watch(localeProvider);
     final systemBrightness = MediaQuery.platformBrightnessOf(context);
 
     // Update system UI overlay based on theme
@@ -57,6 +61,17 @@ class JoonaPayApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _getThemeMode(themeState.mode),
+      locale: localeState.locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'),
+        Locale('fr'),
+      ],
       routerConfig: router,
       builder: (context, child) {
         // Wrap with SessionManager to handle session lifecycle

@@ -27,7 +27,7 @@ enum AppButtonSize {
 }
 
 /// Luxury Wallet Button Component
-/// Pure presentational component - no business logic
+/// Enhanced with proper text alignment and overflow handling
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -57,6 +57,9 @@ class AppButton extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
       width: isFullWidth ? double.infinity : null,
+      constraints: isFullWidth
+          ? const BoxConstraints(minHeight: 48)
+          : const BoxConstraints(minWidth: 88, minHeight: 40),
       decoration: _buildDecoration(isDisabled),
       child: Material(
         color: Colors.transparent,
@@ -66,7 +69,9 @@ class AppButton extends StatelessWidget {
           splashColor: _getSplashColor(),
           child: Padding(
             padding: _getPadding(),
-            child: _buildContent(),
+            child: Center(
+              child: _buildContent(),
+            ),
           ),
         ),
       ),
@@ -196,15 +201,22 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    final textWidget = Text(
-      label,
-      style: AppTypography.button.copyWith(
-        color: textColor,
-        fontSize: _getFontSize(),
+    // Text widget with proper overflow handling
+    final textWidget = Flexible(
+      child: Text(
+        label,
+        style: AppTypography.button.copyWith(
+          color: textColor,
+          fontSize: _getFontSize(),
+        ),
+        textAlign: TextAlign.center,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
     );
 
     if (icon == null) {
+      // No icon - just center the text
       return textWidget;
     }
 
@@ -214,12 +226,21 @@ class AppButton extends StatelessWidget {
       color: textColor,
     );
 
+    // With icon - ensure proper spacing and alignment
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: iconPosition == IconPosition.left
-          ? [iconWidget, const SizedBox(width: AppSpacing.sm), textWidget]
-          : [textWidget, const SizedBox(width: AppSpacing.sm), iconWidget],
+          ? [
+              iconWidget,
+              const SizedBox(width: AppSpacing.sm),
+              textWidget,
+            ]
+          : [
+              textWidget,
+              const SizedBox(width: AppSpacing.sm),
+              iconWidget,
+            ],
     );
   }
 }
