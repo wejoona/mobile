@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../security/certificate_pinning.dart';
 import 'cache_interceptor.dart';
 import 'deduplication_interceptor.dart';
+import '../../mocks/index.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
@@ -59,10 +60,21 @@ final dioProvider = Provider<Dio>((ref) {
     },
   ));
 
-  // SECURITY: Enable certificate pinning in production
-  dio.enableCertificatePinning();
+  // SECURITY: Enable certificate pinning in production (skip if using mocks)
+  if (!MockConfig.useMocks) {
+    dio.enableCertificatePinning();
+  }
 
-  // PERFORMANCE: Add request deduplication (must be first)
+  // MOCKING: Add mock interceptor first if mocks are enabled
+  if (MockConfig.useMocks) {
+    MockRegistry.initialize();
+    dio.interceptors.add(MockRegistry.interceptor);
+    if (kDebugMode) {
+      print('[API] Mock interceptor enabled - using mock API responses');
+    }
+  }
+
+  // PERFORMANCE: Add request deduplication
   dio.interceptors.add(ref.read(deduplicationInterceptorProvider));
 
   // PERFORMANCE: Add HTTP response caching (must be before auth)
