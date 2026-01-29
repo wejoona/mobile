@@ -2233,6 +2233,11 @@
     "description": "Generic error message"
   },
 
+  "common_requiredField": "This field is required",
+  "@common_requiredField": {
+    "description": "Required field validation message"
+  },
+
   "pin_createTitle": "Create Your PIN",
   "@pin_createTitle": {
     "description": "Create PIN screen title"
@@ -4364,5 +4369,395 @@
   "common_error": "An error occurred",
   "@common_error": {
     "description": "Generic error message"
+  },
+
+  "limits_title": "Transaction Limits",
+  "@limits_title": {
+    "description": "Limits screen title"
+  },
+
+  "limits_dailyLimits": "Daily Limits",
+  "@limits_dailyLimits": {
+    "description": "Daily limits section title"
+  },
+
+  "limits_monthlyLimits": "Monthly Limits",
+  "@limits_monthlyLimits": {
+    "description": "Monthly limits section title"
+  },
+
+  "limits_dailyTransactions": "Daily Transactions",
+  "@limits_dailyTransactions": {
+    "description": "Daily transactions limit label"
+  },
+
+  "limits_monthlyTransactions": "Monthly Transactions",
+  "@limits_monthlyTransactions": {
+    "description": "Monthly transactions limit label"
+  },
+
+  "limits_remaining": "remaining",
+  "@limits_remaining": {
+    "description": "Remaining limit text"
+  },
+
+  "limits_of": "of",
+  "@limits_of": {
+    "description": "Of text in limit display"
+  },
+
+  "limits_upgradeTitle": "Need higher limits?",
+  "@limits_upgradeTitle": {
+    "description": "Upgrade prompt title"
+  },
+
+  "limits_upgradeDescription": "Verify your identity to unlock premium limits",
+  "@limits_upgradeDescription": {
+    "description": "Upgrade prompt description"
+  },
+
+  "limits_upgradeToTier": "Upgrade to",
+  "@limits_upgradeToTier": {
+    "description": "Upgrade to tier text"
+  },
+
+  "limits_day": "day",
+  "@limits_day": {
+    "description": "Day text for limits"
+  },
+
+  "limits_month": "month",
+  "@limits_month": {
+    "description": "Month text for limits"
+  },
+
+  "limits_aboutTitle": "About Limits",
+  "@limits_aboutTitle": {
+    "description": "About limits info card title"
+  },
+
+  "limits_aboutDescription": "Limits reset at midnight UTC. Complete KYC verification to increase your limits.",
+  "@limits_aboutDescription": {
+    "description": "About limits info card description"
+  },
+
+  "limits_kycPrompt": "Complete KYC for higher limits",
+  "@limits_kycPrompt": {
+    "description": "KYC prompt text"
+  },
+
+  "limits_maxTier": "You have the highest tier",
+  "@limits_maxTier": {
+    "description": "Max tier reached text"
+  },
+
+  "limits_noData": "No limit data available",
+  "@limits_noData": {
+    "description": "No data message"
+  },
+
+  "limits_limitReached": "Limit Reached",
+  "@limits_limitReached": {
+    "description": "Limit reached warning title"
+  },
+
+  "limits_dailyLimitReached": "You have reached your daily transaction limit of",
+  "@limits_dailyLimitReached": {
+    "description": "Daily limit reached message"
+  },
+
+  "limits_monthlyLimitReached": "You have reached your monthly transaction limit of",
+  "@limits_monthlyLimitReached": {
+    "description": "Monthly limit reached message"
+  },
+
+  "limits_upgradeToIncrease": "Upgrade your account to increase limits",
+  "@limits_upgradeToIncrease": {
+    "description": "Upgrade to increase limits text"
+  },
+
+  "limits_approachingLimit": "Approaching Limit",
+  "@limits_approachingLimit": {
+    "description": "Approaching limit warning"
+  },
+
+  "limits_remainingToday": "remaining today",
+  "@limits_remainingToday": {
+    "description": "Remaining today text"
+  },
+
+  "limits_remainingThisMonth": "remaining this month",
+  "@limits_remainingThisMonth": {
+    "description": "Remaining this month text"
+  },
+
+  "paymentLinks_title": "Payment Links",
+  "@paymentLinks_title": {
+    "description": "Payment Links feature title"
+  },
+
+  "paymentLinks_createLink": "Create Payment Link",
+  "@paymentLinks_createLink": {
+    "description": "Create payment link button"
+  },
+
+  "paymentLinks_createNew": "Create New",
+  "@paymentLinks_createNew": {
+    "description": "Create new payment link button"
+  },
+
+  "paymentLinks_createDescription": "Generate a shareable payment link to receive money from anyone",
+  "@paymentLinks_createDescription": {
+    "description": "Create payment link description"
+  },
+
+  "paymentLinks_amount": "Amount",
+  "@paymentLinks_amount": {
+    "description": "Amount label"
+  },
+
+  "paymentLinks_description": "Description",
+  "@paymentLinks_description": {
+    "description": "Description label"
+  },
+
+  "paymentLinks_descriptionHint": "What is this payment for? (optional)",
+  "@paymentLinks_descriptionHint": {
+    "description": "Description hint text"
+  },
+
+  "paymentLinks_expiresIn": "Link expires in",
+  "@paymentLinks_expiresIn": {
+    "description": "Expiry label"
+  },
+
+  "paymentLinks_6hours": "6 hours",
+  "@paymentLinks_6hours": {
+    "description": "6 hours option"
+  },
+
+  "paymentLinks_24hours": "24 hours",
+  "@paymentLinks_24hours": {
+    "description": "24 hours option"
+  },
+
+  "paymentLinks_3days": "3 days",
+  "@paymentLinks_3days": {
+    "description": "3 days option"
+  },
+
+  "paymentLinks_7days": "7 days",
+  "@paymentLinks_7days": {
+    "description": "7 days option"
+  },
+
+  "paymentLinks_info": "Anyone with this link can pay you. Link expires automatically.",
+  "@paymentLinks_info": {
+    "description": "Payment link info message"
+  },
+
+  "paymentLinks_invalidAmount": "Please enter a valid amount",
+  "@paymentLinks_invalidAmount": {
+    "description": "Invalid amount error"
+  },
+
+  "paymentLinks_minimumAmount": "Minimum amount is CFA 100",
+  "@paymentLinks_minimumAmount": {
+    "description": "Minimum amount error"
+  },
+
+  "paymentLinks_linkCreated": "Link Created",
+  "@paymentLinks_linkCreated": {
+    "description": "Link created title"
+  },
+
+  "paymentLinks_linkReadyTitle": "Your payment link is ready!",
+  "@paymentLinks_linkReadyTitle": {
+    "description": "Link ready title"
+  },
+
+  "paymentLinks_linkReadyDescription": "Share this link with anyone to receive payment",
+  "@paymentLinks_linkReadyDescription": {
+    "description": "Link ready description"
+  },
+
+  "paymentLinks_requestedAmount": "Requested Amount",
+  "@paymentLinks_requestedAmount": {
+    "description": "Requested amount label"
+  },
+
+  "paymentLinks_shareLink": "Share Link",
+  "@paymentLinks_shareLink": {
+    "description": "Share link button"
+  },
+
+  "paymentLinks_viewDetails": "View Details",
+  "@paymentLinks_viewDetails": {
+    "description": "View details button"
+  },
+
+  "paymentLinks_copyLink": "Copy Link",
+  "@paymentLinks_copyLink": {
+    "description": "Copy link option"
+  },
+
+  "paymentLinks_shareWhatsApp": "Share on WhatsApp",
+  "@paymentLinks_shareWhatsApp": {
+    "description": "Share on WhatsApp option"
+  },
+
+  "paymentLinks_shareSMS": "Share via SMS",
+  "@paymentLinks_shareSMS": {
+    "description": "Share via SMS option"
+  },
+
+  "paymentLinks_shareOther": "Share Other Way",
+  "@paymentLinks_shareOther": {
+    "description": "Share other way option"
+  },
+
+  "paymentLinks_linkCopied": "Link copied to clipboard",
+  "@paymentLinks_linkCopied": {
+    "description": "Link copied message"
+  },
+
+  "paymentLinks_paymentRequest": "Payment Request",
+  "@paymentLinks_paymentRequest": {
+    "description": "Payment request subject"
+  },
+
+  "paymentLinks_emptyTitle": "No payment links yet",
+  "@paymentLinks_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "paymentLinks_emptyDescription": "Create your first payment link to start receiving money easily",
+  "@paymentLinks_emptyDescription": {
+    "description": "Empty state description"
+  },
+
+  "paymentLinks_createFirst": "Create Your First Link",
+  "@paymentLinks_createFirst": {
+    "description": "Create first link button"
+  },
+
+  "paymentLinks_activeLinks": "Active Links",
+  "@paymentLinks_activeLinks": {
+    "description": "Active links stat label"
+  },
+
+  "paymentLinks_paidLinks": "Paid Links",
+  "@paymentLinks_paidLinks": {
+    "description": "Paid links stat label"
+  },
+
+  "paymentLinks_filterAll": "All",
+  "@paymentLinks_filterAll": {
+    "description": "All filter option"
+  },
+
+  "paymentLinks_filterPending": "Pending",
+  "@paymentLinks_filterPending": {
+    "description": "Pending filter option"
+  },
+
+  "paymentLinks_filterViewed": "Viewed",
+  "@paymentLinks_filterViewed": {
+    "description": "Viewed filter option"
+  },
+
+  "paymentLinks_filterPaid": "Paid",
+  "@paymentLinks_filterPaid": {
+    "description": "Paid filter option"
+  },
+
+  "paymentLinks_filterExpired": "Expired",
+  "@paymentLinks_filterExpired": {
+    "description": "Expired filter option"
+  },
+
+  "paymentLinks_noLinksWithFilter": "No links match this filter",
+  "@paymentLinks_noLinksWithFilter": {
+    "description": "No links with filter message"
+  },
+
+  "paymentLinks_linkDetails": "Link Details",
+  "@paymentLinks_linkDetails": {
+    "description": "Link details title"
+  },
+
+  "paymentLinks_linkCode": "Link Code",
+  "@paymentLinks_linkCode": {
+    "description": "Link code label"
+  },
+
+  "paymentLinks_linkUrl": "Link URL",
+  "@paymentLinks_linkUrl": {
+    "description": "Link URL label"
+  },
+
+  "paymentLinks_viewCount": "View Count",
+  "@paymentLinks_viewCount": {
+    "description": "View count label"
+  },
+
+  "paymentLinks_created": "Created",
+  "@paymentLinks_created": {
+    "description": "Created label"
+  },
+
+  "paymentLinks_expires": "Expires",
+  "@paymentLinks_expires": {
+    "description": "Expires label"
+  },
+
+  "paymentLinks_paidBy": "Paid By",
+  "@paymentLinks_paidBy": {
+    "description": "Paid by label"
+  },
+
+  "paymentLinks_paidAt": "Paid At",
+  "@paymentLinks_paidAt": {
+    "description": "Paid at label"
+  },
+
+  "paymentLinks_cancelLink": "Cancel Link",
+  "@paymentLinks_cancelLink": {
+    "description": "Cancel link button"
+  },
+
+  "paymentLinks_cancelConfirmTitle": "Cancel Link?",
+  "@paymentLinks_cancelConfirmTitle": {
+    "description": "Cancel confirmation title"
+  },
+
+  "paymentLinks_cancelConfirmMessage": "Are you sure you want to cancel this payment link? This action cannot be undone.",
+  "@paymentLinks_cancelConfirmMessage": {
+    "description": "Cancel confirmation message"
+  },
+
+  "paymentLinks_linkCancelled": "Payment link cancelled",
+  "@paymentLinks_linkCancelled": {
+    "description": "Link cancelled message"
+  },
+
+  "paymentLinks_viewTransaction": "View Transaction",
+  "@paymentLinks_viewTransaction": {
+    "description": "View transaction button"
+  },
+
+  "common_done": "Done",
+  "@common_done": {
+    "description": "Done button"
+  },
+
+  "common_yes": "Yes",
+  "@common_yes": {
+    "description": "Yes button"
+  },
+
+  "common_no": "No",
+  "@common_no": {
+    "description": "No button"
   }
 }

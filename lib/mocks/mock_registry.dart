@@ -28,6 +28,8 @@ import 'services/external_transfer/external_transfer_mock.dart';
 import 'services/savings_pots/savings_pots_mock.dart';
 import 'services/contacts/contacts_sync_mock.dart';
 import 'services/recurring_transfers/recurring_transfers_mock.dart';
+import 'services/limits/limits_mock.dart';
+import 'services/payment_links/payment_links_mock.dart';
 
 /// Mock Registry
 ///
@@ -67,6 +69,8 @@ class MockRegistry {
     SavingsPotsMock.register(_interceptor);
     ContactsSyncMock.register(_interceptor);
     RecurringTransfersMock.register(_interceptor);
+    LimitsMock.register(_interceptor);
+    PaymentLinksMock.register(_interceptor);
 
     // Add more mock services here as they are created:
     // MerchantMock.register(_interceptor);

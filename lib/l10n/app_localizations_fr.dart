@@ -1425,6 +1425,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get common_error => 'Une erreur s\'est produite';
 
   @override
+  String get common_requiredField => 'Ce champ est obligatoire';
+
+  @override
   String get pin_createTitle => 'Créer votre code PIN';
 
   @override
@@ -2767,4 +2770,251 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get common_tomorrow => 'Demain';
+
+  @override
+  String get limits_title => 'Limites de transaction';
+
+  @override
+  String get limits_dailyLimits => 'Limites quotidiennes';
+
+  @override
+  String get limits_monthlyLimits => 'Limites mensuelles';
+
+  @override
+  String get limits_dailyTransactions => 'Transactions quotidiennes';
+
+  @override
+  String get limits_monthlyTransactions => 'Transactions mensuelles';
+
+  @override
+  String get limits_remaining => 'restant';
+
+  @override
+  String get limits_of => 'sur';
+
+  @override
+  String get limits_upgradeTitle => 'Besoin de limites plus élevées?';
+
+  @override
+  String get limits_upgradeDescription =>
+      'Vérifiez votre identité pour débloquer des limites premium';
+
+  @override
+  String get limits_upgradeToTier => 'Passer à';
+
+  @override
+  String get limits_day => 'jour';
+
+  @override
+  String get limits_month => 'mois';
+
+  @override
+  String get limits_aboutTitle => 'À propos des limites';
+
+  @override
+  String get limits_aboutDescription =>
+      'Les limites sont réinitialisées à minuit UTC. Complétez la vérification KYC pour augmenter vos limites.';
+
+  @override
+  String get limits_kycPrompt =>
+      'Complétez le KYC pour des limites plus élevées';
+
+  @override
+  String get limits_maxTier => 'Vous avez le niveau le plus élevé';
+
+  @override
+  String get limits_noData => 'Aucune donnée de limite disponible';
+
+  @override
+  String get limits_limitReached => 'Limite atteinte';
+
+  @override
+  String get limits_dailyLimitReached =>
+      'Vous avez atteint votre limite de transaction quotidienne de';
+
+  @override
+  String get limits_monthlyLimitReached =>
+      'Vous avez atteint votre limite de transaction mensuelle de';
+
+  @override
+  String get limits_upgradeToIncrease =>
+      'Mettez à niveau votre compte pour augmenter les limites';
+
+  @override
+  String get limits_approachingLimit => 'Limite approchée';
+
+  @override
+  String get limits_remainingToday => 'restant aujourd\'hui';
+
+  @override
+  String get limits_remainingThisMonth => 'restant ce mois-ci';
+
+  @override
+  String get paymentLinks_title => 'Liens de Paiement';
+
+  @override
+  String get paymentLinks_createLink => 'Créer un Lien de Paiement';
+
+  @override
+  String get paymentLinks_createNew => 'Créer Nouveau';
+
+  @override
+  String get paymentLinks_createDescription =>
+      'Générez un lien de paiement partageable pour recevoir de l\'argent de n\'importe qui';
+
+  @override
+  String get paymentLinks_amount => 'Montant';
+
+  @override
+  String get paymentLinks_description => 'Description';
+
+  @override
+  String get paymentLinks_descriptionHint =>
+      'À quoi sert ce paiement ? (facultatif)';
+
+  @override
+  String get paymentLinks_expiresIn => 'Le lien expire dans';
+
+  @override
+  String get paymentLinks_6hours => '6 heures';
+
+  @override
+  String get paymentLinks_24hours => '24 heures';
+
+  @override
+  String get paymentLinks_3days => '3 jours';
+
+  @override
+  String get paymentLinks_7days => '7 jours';
+
+  @override
+  String get paymentLinks_info =>
+      'Toute personne possédant ce lien peut vous payer. Le lien expire automatiquement.';
+
+  @override
+  String get paymentLinks_invalidAmount => 'Veuillez saisir un montant valide';
+
+  @override
+  String get paymentLinks_minimumAmount => 'Le montant minimum est de CFA 100';
+
+  @override
+  String get paymentLinks_linkCreated => 'Lien Créé';
+
+  @override
+  String get paymentLinks_linkReadyTitle => 'Votre lien de paiement est prêt !';
+
+  @override
+  String get paymentLinks_linkReadyDescription =>
+      'Partagez ce lien avec n\'importe qui pour recevoir un paiement';
+
+  @override
+  String get paymentLinks_requestedAmount => 'Montant Demandé';
+
+  @override
+  String get paymentLinks_shareLink => 'Partager le Lien';
+
+  @override
+  String get paymentLinks_viewDetails => 'Voir les Détails';
+
+  @override
+  String get paymentLinks_copyLink => 'Copier le Lien';
+
+  @override
+  String get paymentLinks_shareWhatsApp => 'Partager sur WhatsApp';
+
+  @override
+  String get paymentLinks_shareSMS => 'Partager par SMS';
+
+  @override
+  String get paymentLinks_shareOther => 'Partager Autrement';
+
+  @override
+  String get paymentLinks_linkCopied => 'Lien copié dans le presse-papiers';
+
+  @override
+  String get paymentLinks_paymentRequest => 'Demande de Paiement';
+
+  @override
+  String get paymentLinks_emptyTitle => 'Aucun lien de paiement pour le moment';
+
+  @override
+  String get paymentLinks_emptyDescription =>
+      'Créez votre premier lien de paiement pour commencer à recevoir de l\'argent facilement';
+
+  @override
+  String get paymentLinks_createFirst => 'Créer Votre Premier Lien';
+
+  @override
+  String get paymentLinks_activeLinks => 'Liens Actifs';
+
+  @override
+  String get paymentLinks_paidLinks => 'Liens Payés';
+
+  @override
+  String get paymentLinks_filterAll => 'Tous';
+
+  @override
+  String get paymentLinks_filterPending => 'En attente';
+
+  @override
+  String get paymentLinks_filterViewed => 'Vue';
+
+  @override
+  String get paymentLinks_filterPaid => 'Payé';
+
+  @override
+  String get paymentLinks_filterExpired => 'Expiré';
+
+  @override
+  String get paymentLinks_noLinksWithFilter =>
+      'Aucun lien ne correspond à ce filtre';
+
+  @override
+  String get paymentLinks_linkDetails => 'Détails du Lien';
+
+  @override
+  String get paymentLinks_linkCode => 'Code du Lien';
+
+  @override
+  String get paymentLinks_linkUrl => 'URL du Lien';
+
+  @override
+  String get paymentLinks_viewCount => 'Nombre de Vues';
+
+  @override
+  String get paymentLinks_created => 'Créé';
+
+  @override
+  String get paymentLinks_expires => 'Expire';
+
+  @override
+  String get paymentLinks_paidBy => 'Payé Par';
+
+  @override
+  String get paymentLinks_paidAt => 'Payé Le';
+
+  @override
+  String get paymentLinks_cancelLink => 'Annuler le Lien';
+
+  @override
+  String get paymentLinks_cancelConfirmTitle => 'Annuler le lien ?';
+
+  @override
+  String get paymentLinks_cancelConfirmMessage =>
+      'Êtes-vous sûr de vouloir annuler ce lien de paiement ? Cette action ne peut pas être annulée.';
+
+  @override
+  String get paymentLinks_linkCancelled => 'Lien de paiement annulé';
+
+  @override
+  String get paymentLinks_viewTransaction => 'Voir la Transaction';
+
+  @override
+  String get common_done => 'Terminé';
+
+  @override
+  String get common_yes => 'Oui';
+
+  @override
+  String get common_no => 'Non';
 }

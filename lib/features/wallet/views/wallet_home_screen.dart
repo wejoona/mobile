@@ -10,6 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../state/index.dart';
 import '../../../services/currency/currency_provider.dart';
 import '../../../services/api/api_client.dart';
+import '../../limits/providers/limits_provider.dart';
+import '../../limits/widgets/limit_warning_banner.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -50,6 +52,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         curve: Curves.easeOutCubic,
       ),
     );
+    // Fetch limits on init
+    Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits());
   }
 
   @override
@@ -131,6 +135,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
                 // KYC Banner (conditional)
                 _buildKycBanner(context, ref, l10n, colors),
+
+                // Limits Warning Banner (conditional)
+                _buildLimitsWarningBanner(context, ref, l10n),
 
                 // Recent Transactions
                 _buildTransactionList(context, txState, l10n, colors),
@@ -512,6 +519,32 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLimitsWarningBanner(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    final limitsState = ref.watch(limitsProvider);
+
+    // Don't show if loading or no data
+    if (limitsState.isLoading || limitsState.limits == null) {
+      return const SizedBox.shrink();
+    }
+
+    final limits = limitsState.limits!;
+
+    // Only show if approaching or at limit
+    if (!limits.isDailyNearLimit && !limits.isDailyAtLimit &&
+        !limits.isMonthlyNearLimit && !limits.isMonthlyAtLimit) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+      child: LimitWarningBanner(limits: limits),
     );
   }
 

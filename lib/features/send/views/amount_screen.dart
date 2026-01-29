@@ -7,6 +7,8 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../utils/formatters.dart';
 import '../providers/send_provider.dart';
+import '../../limits/providers/limits_provider.dart';
+import '../../limits/widgets/limit_warning_banner.dart';
 
 class AmountScreen extends ConsumerStatefulWidget {
   const AmountScreen({super.key});
@@ -22,6 +24,12 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => ref.read(limitsProvider.notifier).fetchLimits());
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _noteController.dispose();
@@ -32,6 +40,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
+    final limitsState = ref.watch(limitsProvider);
 
     if (state.recipient == null) {
       // Navigate back if no recipient
@@ -111,6 +120,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                       ],
                     ),
                     SizedBox(height: AppSpacing.md),
+
+                    // Limits warning banner
+                    if (limitsState.limits != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: LimitWarningBanner(limits: limitsState.limits!),
+                      ),
 
                     // Amount input
                     AppInput(
@@ -243,6 +259,24 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     final state = ref.read(sendMoneyProvider);
     if (amount > state.availableBalance) {
       return l10n.error_insufficientBalance;
+    }
+
+    // Check against daily limit
+    final limitsState = ref.read(limitsProvider);
+    if (limitsState.limits != null) {
+      final limits = limitsState.limits!;
+      if (limits.isDailyAtLimit) {
+        return '${l10n.limits_dailyLimitReached} \$${limits.dailyLimit.toStringAsFixed(0)}';
+      }
+      if (amount > limits.dailyRemaining) {
+        return '${l10n.limits_remaining}: \$${limits.dailyRemaining.toStringAsFixed(2)}';
+      }
+      if (limits.isMonthlyAtLimit) {
+        return '${l10n.limits_monthlyLimitReached} \$${limits.monthlyLimit.toStringAsFixed(0)}';
+      }
+      if (amount > limits.monthlyRemaining) {
+        return '${l10n.limits_remaining}: \$${limits.monthlyRemaining.toStringAsFixed(2)}';
+      }
     }
 
     return null;

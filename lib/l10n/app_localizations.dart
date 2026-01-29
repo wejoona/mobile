@@ -2696,6 +2696,12 @@ abstract class AppLocalizations {
   /// **'An error occurred'**
   String get common_error;
 
+  /// Required field validation message
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get common_requiredField;
+
   /// Create PIN screen title
   ///
   /// In en, this message translates to:
@@ -5143,6 +5149,474 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tomorrow'**
   String get common_tomorrow;
+
+  /// Limits screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Limits'**
+  String get limits_title;
+
+  /// Daily limits section title
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Limits'**
+  String get limits_dailyLimits;
+
+  /// Monthly limits section title
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Limits'**
+  String get limits_monthlyLimits;
+
+  /// Daily transactions limit label
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Transactions'**
+  String get limits_dailyTransactions;
+
+  /// Monthly transactions limit label
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Transactions'**
+  String get limits_monthlyTransactions;
+
+  /// Remaining limit text
+  ///
+  /// In en, this message translates to:
+  /// **'remaining'**
+  String get limits_remaining;
+
+  /// Of text in limit display
+  ///
+  /// In en, this message translates to:
+  /// **'of'**
+  String get limits_of;
+
+  /// Upgrade prompt title
+  ///
+  /// In en, this message translates to:
+  /// **'Need higher limits?'**
+  String get limits_upgradeTitle;
+
+  /// Upgrade prompt description
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to unlock premium limits'**
+  String get limits_upgradeDescription;
+
+  /// Upgrade to tier text
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade to'**
+  String get limits_upgradeToTier;
+
+  /// Day text for limits
+  ///
+  /// In en, this message translates to:
+  /// **'day'**
+  String get limits_day;
+
+  /// Month text for limits
+  ///
+  /// In en, this message translates to:
+  /// **'month'**
+  String get limits_month;
+
+  /// About limits info card title
+  ///
+  /// In en, this message translates to:
+  /// **'About Limits'**
+  String get limits_aboutTitle;
+
+  /// About limits info card description
+  ///
+  /// In en, this message translates to:
+  /// **'Limits reset at midnight UTC. Complete KYC verification to increase your limits.'**
+  String get limits_aboutDescription;
+
+  /// KYC prompt text
+  ///
+  /// In en, this message translates to:
+  /// **'Complete KYC for higher limits'**
+  String get limits_kycPrompt;
+
+  /// Max tier reached text
+  ///
+  /// In en, this message translates to:
+  /// **'You have the highest tier'**
+  String get limits_maxTier;
+
+  /// No data message
+  ///
+  /// In en, this message translates to:
+  /// **'No limit data available'**
+  String get limits_noData;
+
+  /// Limit reached warning title
+  ///
+  /// In en, this message translates to:
+  /// **'Limit Reached'**
+  String get limits_limitReached;
+
+  /// Daily limit reached message
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached your daily transaction limit of'**
+  String get limits_dailyLimitReached;
+
+  /// Monthly limit reached message
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached your monthly transaction limit of'**
+  String get limits_monthlyLimitReached;
+
+  /// Upgrade to increase limits text
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade your account to increase limits'**
+  String get limits_upgradeToIncrease;
+
+  /// Approaching limit warning
+  ///
+  /// In en, this message translates to:
+  /// **'Approaching Limit'**
+  String get limits_approachingLimit;
+
+  /// Remaining today text
+  ///
+  /// In en, this message translates to:
+  /// **'remaining today'**
+  String get limits_remainingToday;
+
+  /// Remaining this month text
+  ///
+  /// In en, this message translates to:
+  /// **'remaining this month'**
+  String get limits_remainingThisMonth;
+
+  /// Payment Links feature title
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Links'**
+  String get paymentLinks_title;
+
+  /// Create payment link button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Payment Link'**
+  String get paymentLinks_createLink;
+
+  /// Create new payment link button
+  ///
+  /// In en, this message translates to:
+  /// **'Create New'**
+  String get paymentLinks_createNew;
+
+  /// Create payment link description
+  ///
+  /// In en, this message translates to:
+  /// **'Generate a shareable payment link to receive money from anyone'**
+  String get paymentLinks_createDescription;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get paymentLinks_amount;
+
+  /// Description label
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get paymentLinks_description;
+
+  /// Description hint text
+  ///
+  /// In en, this message translates to:
+  /// **'What is this payment for? (optional)'**
+  String get paymentLinks_descriptionHint;
+
+  /// Expiry label
+  ///
+  /// In en, this message translates to:
+  /// **'Link expires in'**
+  String get paymentLinks_expiresIn;
+
+  /// 6 hours option
+  ///
+  /// In en, this message translates to:
+  /// **'6 hours'**
+  String get paymentLinks_6hours;
+
+  /// 24 hours option
+  ///
+  /// In en, this message translates to:
+  /// **'24 hours'**
+  String get paymentLinks_24hours;
+
+  /// 3 days option
+  ///
+  /// In en, this message translates to:
+  /// **'3 days'**
+  String get paymentLinks_3days;
+
+  /// 7 days option
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get paymentLinks_7days;
+
+  /// Payment link info message
+  ///
+  /// In en, this message translates to:
+  /// **'Anyone with this link can pay you. Link expires automatically.'**
+  String get paymentLinks_info;
+
+  /// Invalid amount error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get paymentLinks_invalidAmount;
+
+  /// Minimum amount error
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum amount is CFA 100'**
+  String get paymentLinks_minimumAmount;
+
+  /// Link created title
+  ///
+  /// In en, this message translates to:
+  /// **'Link Created'**
+  String get paymentLinks_linkCreated;
+
+  /// Link ready title
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment link is ready!'**
+  String get paymentLinks_linkReadyTitle;
+
+  /// Link ready description
+  ///
+  /// In en, this message translates to:
+  /// **'Share this link with anyone to receive payment'**
+  String get paymentLinks_linkReadyDescription;
+
+  /// Requested amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Requested Amount'**
+  String get paymentLinks_requestedAmount;
+
+  /// Share link button
+  ///
+  /// In en, this message translates to:
+  /// **'Share Link'**
+  String get paymentLinks_shareLink;
+
+  /// View details button
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get paymentLinks_viewDetails;
+
+  /// Copy link option
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get paymentLinks_copyLink;
+
+  /// Share on WhatsApp option
+  ///
+  /// In en, this message translates to:
+  /// **'Share on WhatsApp'**
+  String get paymentLinks_shareWhatsApp;
+
+  /// Share via SMS option
+  ///
+  /// In en, this message translates to:
+  /// **'Share via SMS'**
+  String get paymentLinks_shareSMS;
+
+  /// Share other way option
+  ///
+  /// In en, this message translates to:
+  /// **'Share Other Way'**
+  String get paymentLinks_shareOther;
+
+  /// Link copied message
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard'**
+  String get paymentLinks_linkCopied;
+
+  /// Payment request subject
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Request'**
+  String get paymentLinks_paymentRequest;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No payment links yet'**
+  String get paymentLinks_emptyTitle;
+
+  /// Empty state description
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first payment link to start receiving money easily'**
+  String get paymentLinks_emptyDescription;
+
+  /// Create first link button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your First Link'**
+  String get paymentLinks_createFirst;
+
+  /// Active links stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Active Links'**
+  String get paymentLinks_activeLinks;
+
+  /// Paid links stat label
+  ///
+  /// In en, this message translates to:
+  /// **'Paid Links'**
+  String get paymentLinks_paidLinks;
+
+  /// All filter option
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get paymentLinks_filterAll;
+
+  /// Pending filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get paymentLinks_filterPending;
+
+  /// Viewed filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Viewed'**
+  String get paymentLinks_filterViewed;
+
+  /// Paid filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Paid'**
+  String get paymentLinks_filterPaid;
+
+  /// Expired filter option
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get paymentLinks_filterExpired;
+
+  /// No links with filter message
+  ///
+  /// In en, this message translates to:
+  /// **'No links match this filter'**
+  String get paymentLinks_noLinksWithFilter;
+
+  /// Link details title
+  ///
+  /// In en, this message translates to:
+  /// **'Link Details'**
+  String get paymentLinks_linkDetails;
+
+  /// Link code label
+  ///
+  /// In en, this message translates to:
+  /// **'Link Code'**
+  String get paymentLinks_linkCode;
+
+  /// Link URL label
+  ///
+  /// In en, this message translates to:
+  /// **'Link URL'**
+  String get paymentLinks_linkUrl;
+
+  /// View count label
+  ///
+  /// In en, this message translates to:
+  /// **'View Count'**
+  String get paymentLinks_viewCount;
+
+  /// Created label
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get paymentLinks_created;
+
+  /// Expires label
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get paymentLinks_expires;
+
+  /// Paid by label
+  ///
+  /// In en, this message translates to:
+  /// **'Paid By'**
+  String get paymentLinks_paidBy;
+
+  /// Paid at label
+  ///
+  /// In en, this message translates to:
+  /// **'Paid At'**
+  String get paymentLinks_paidAt;
+
+  /// Cancel link button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Link'**
+  String get paymentLinks_cancelLink;
+
+  /// Cancel confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Link?'**
+  String get paymentLinks_cancelConfirmTitle;
+
+  /// Cancel confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel this payment link? This action cannot be undone.'**
+  String get paymentLinks_cancelConfirmMessage;
+
+  /// Link cancelled message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment link cancelled'**
+  String get paymentLinks_linkCancelled;
+
+  /// View transaction button
+  ///
+  /// In en, this message translates to:
+  /// **'View Transaction'**
+  String get paymentLinks_viewTransaction;
+
+  /// Done button
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get common_done;
+
+  /// Yes button
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get common_yes;
+
+  /// No button
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get common_no;
 }
 
 class _AppLocalizationsDelegate

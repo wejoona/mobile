@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../../domain/entities/index.dart';
+import '../../features/limits/models/transaction_limits.dart';
 
 /// Wallet Service - mirrors backend WalletController
 class WalletService {
@@ -164,6 +165,16 @@ class WalletService {
         if (address != null) 'address': address,
       });
       return KycStatusResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// GET /wallet/limits
+  Future<TransactionLimitsResponse> getTransactionLimits() async {
+    try {
+      final response = await _dio.get('/wallet/limits');
+      return TransactionLimitsResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -363,6 +374,39 @@ class KycStatusResponse {
           ? DateTime.parse(json['verifiedAt'] as String)
           : null,
       message: json['message'] as String?,
+    );
+  }
+}
+
+/// Transaction Limits Response
+class TransactionLimitsResponse extends TransactionLimits {
+  const TransactionLimitsResponse({
+    required super.dailyLimit,
+    required super.monthlyLimit,
+    required super.dailyUsed,
+    required super.monthlyUsed,
+    required super.kycTier,
+    required super.tierName,
+    super.nextTierName,
+    super.nextTierDailyLimit,
+    super.nextTierMonthlyLimit,
+  });
+
+  factory TransactionLimitsResponse.fromJson(Map<String, dynamic> json) {
+    return TransactionLimitsResponse(
+      dailyLimit: (json['dailyLimit'] as num).toDouble(),
+      monthlyLimit: (json['monthlyLimit'] as num).toDouble(),
+      dailyUsed: (json['dailyUsed'] as num).toDouble(),
+      monthlyUsed: (json['monthlyUsed'] as num).toDouble(),
+      kycTier: json['kycTier'] as int,
+      tierName: json['tierName'] as String,
+      nextTierName: json['nextTierName'] as String?,
+      nextTierDailyLimit: json['nextTierDailyLimit'] != null
+          ? (json['nextTierDailyLimit'] as num).toDouble()
+          : null,
+      nextTierMonthlyLimit: json['nextTierMonthlyLimit'] != null
+          ? (json['nextTierMonthlyLimit'] as num).toDouble()
+          : null,
     );
   }
 }

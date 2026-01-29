@@ -84,6 +84,10 @@ import '../features/alerts/views/alert_preferences_view.dart';
 import '../features/services/views/services_view.dart';
 import '../features/beneficiaries/views/beneficiaries_screen.dart';
 import '../features/beneficiaries/views/add_beneficiary_screen.dart';
+import '../features/payment_links/views/payment_links_list_view.dart';
+import '../features/payment_links/views/create_link_view.dart';
+import '../features/payment_links/views/link_created_view.dart';
+import '../features/payment_links/views/link_detail_view.dart';
 import '../features/send/views/recipient_screen.dart';
 import '../features/send/views/amount_screen.dart';
 import '../features/send/views/confirm_screen.dart';
@@ -987,6 +991,48 @@ final routerProvider = Provider<GoRouter>((ref) {
             child = const _PlaceholderPage(title: 'Alert Not Found');
           }
           return AppPageTransitions.verticalSlide(state: state, child: child);
+        },
+      ),
+
+      // Payment Links Routes
+      GoRoute(
+        path: '/payment-links',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const PaymentLinksListView(),
+        ),
+      ),
+      GoRoute(
+        path: '/payment-links/create',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const CreateLinkView(),
+        ),
+      ),
+      GoRoute(
+        path: '/payment-links/created/:id',
+        pageBuilder: (context, state) {
+          final linkId = state.pathParameters['id'];
+          Widget child;
+          if (linkId != null) {
+            child = LinkCreatedView(linkId: linkId);
+          } else {
+            child = const _PlaceholderPage(title: 'Link Not Found');
+          }
+          return AppPageTransitions.fade(state: state, child: child);
+        },
+      ),
+      GoRoute(
+        path: '/payment-links/detail/:id',
+        pageBuilder: (context, state) {
+          final linkId = state.pathParameters['id'];
+          Widget child;
+          if (linkId != null) {
+            child = LinkDetailView(linkId: linkId);
+          } else {
+            child = const _PlaceholderPage(title: 'Link Not Found');
+          }
+          return AppPageTransitions.horizontalSlide(state: state, child: child);
         },
       ),
 
