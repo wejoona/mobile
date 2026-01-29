@@ -217,7 +217,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
 
               // Daily limit info
               AppCard(
-                variant: AppCardVariant.outline,
+                variant: AppCardVariant.subtle,
                 padding: EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [

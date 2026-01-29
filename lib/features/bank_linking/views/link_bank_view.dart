@@ -93,7 +93,6 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
                       label: l10n.bankLinking_accountHolderName,
                       controller: _accountHolderNameController,
                       keyboardType: TextInputType.name,
-                      textCapitalization: TextCapitalization.words,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return l10n.bankLinking_accountHolderNameRequired;

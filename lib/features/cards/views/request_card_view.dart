@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../domain/enums/index.dart';
 import '../../../state/user_state_machine.dart';
 import '../providers/cards_provider.dart';
 
@@ -28,9 +29,9 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     super.initState();
     // Pre-fill cardholder name from user profile
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userState = ref.read(userStateProvider);
-      if (userState.user?.fullName != null) {
-        _nameController.text = userState.user!.fullName;
+      final userState = ref.read(userStateMachineProvider);
+      if (userState.firstName != null) {
+        _nameController.text = '${userState.firstName} ${userState.lastName ?? ''}'.trim();
       }
     });
   }
@@ -46,11 +47,10 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final userState = ref.watch(userStateProvider);
+    final userState = ref.watch(userStateMachineProvider);
 
-    // Check KYC level
-    final kycLevel = userState.user?.kycLevel ?? 0;
-    final canRequestCard = kycLevel >= 2;
+    // Check KYC level (tier 2+ = verified or higher)
+    final canRequestCard = userState.kycStatus == KycStatus.verified;
 
     return Scaffold(
       backgroundColor: colors.canvas,

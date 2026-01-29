@@ -153,7 +153,6 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
             child: AppText(
               'phone,amount,description',
               variant: AppTextVariant.bodySmall,
-              fontFamily: 'monospace',
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -218,7 +217,6 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
               '+2250707654321,75.00,Bonus\n'
               '+2250708888888,100.00,Payment',
               variant: AppTextVariant.bodySmall,
-              fontFamily: 'monospace',
             ),
           ),
         ],

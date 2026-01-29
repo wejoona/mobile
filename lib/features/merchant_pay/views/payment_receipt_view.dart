@@ -73,14 +73,15 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
 
     // Convert to ReceiptData for the ReceiptWidget
     final receiptData = ReceiptData(
-      id: widget.payment.paymentId,
+      transactionId: widget.payment.paymentId,
       referenceNumber: receipt.reference,
       amount: receipt.amount,
       fee: receipt.fee,
+      total: receipt.amount + receipt.fee,
       currency: 'USDC',
       date: receipt.timestamp,
       status: TransactionStatus.completed,
-      type: TransactionType.merchantPayment,
+      type: TransactionType.transferExternal,
       recipientName: receipt.merchantName,
       description: receipt.merchantCategory,
     );
@@ -111,7 +112,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.black.withValues(alpha: 0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),

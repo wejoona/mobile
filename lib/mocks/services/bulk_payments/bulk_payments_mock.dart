@@ -1,27 +1,28 @@
 import '../../../features/bulk_payments/models/bulk_batch.dart';
 import '../../../features/bulk_payments/models/bulk_payment.dart';
+import '../../base/api_contract.dart';
 import '../../base/mock_interceptor.dart';
 
 class BulkPaymentsMock {
   static void register(MockInterceptor interceptor) {
     // GET /bulk-payments/batches
-    interceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'GET',
-      pathPattern: r'^/bulk-payments/batches$',
-      handler: (options) {
+      path: r'^/bulk-payments/batches$',
+      handler: (options) async {
         return MockResponse.success({
           'batches': BulkPaymentsMockState.batches
               .map((batch) => batch.toJson())
               .toList(),
         });
       },
-    ));
+    );
 
     // POST /bulk-payments/batches
-    interceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'POST',
-      pathPattern: r'^/bulk-payments/batches$',
-      handler: (options) {
+      path: r'^/bulk-payments/batches$',
+      handler: (options) async {
         final data = options.data as Map<String, dynamic>;
         final name = data['name'] as String;
         final payments = (data['payments'] as List)
@@ -49,13 +50,13 @@ class BulkPaymentsMock {
 
         return MockResponse.success(batch.toJson());
       },
-    ));
+    );
 
     // GET /bulk-payments/batches/:id
-    interceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'GET',
-      pathPattern: r'^/bulk-payments/batches/[\w-]+$',
-      handler: (options) {
+      path: r'^/bulk-payments/batches/[\w-]+$',
+      handler: (options) async {
         final batchId = options.path.split('/').last;
         final batch = BulkPaymentsMockState.batches.firstWhere(
           (b) => b.id == batchId,
@@ -64,13 +65,13 @@ class BulkPaymentsMock {
 
         return MockResponse.success(batch.toJson());
       },
-    ));
+    );
 
     // GET /bulk-payments/batches/:id/failed-report
-    interceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'GET',
-      pathPattern: r'^/bulk-payments/batches/[\w-]+/failed-report$',
-      handler: (options) {
+      path: r'^/bulk-payments/batches/[\w-]+/failed-report$',
+      handler: (options) async {
         final batchId = options.path.split('/')[3];
         final batch = BulkPaymentsMockState.batches.firstWhere(
           (b) => b.id == batchId,
@@ -89,7 +90,7 @@ class BulkPaymentsMock {
 
         return MockResponse.success({'csv': csv.toString()});
       },
-    ));
+    );
   }
 
   static void _processBatch(String batchId) {

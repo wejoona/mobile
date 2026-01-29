@@ -7303,5 +7303,1121 @@
   "changePin_errorFailedToSave": "Failed to save PIN. Please try again.",
   "@changePin_errorFailedToSave": {
     "description": "Failed to save PIN error"
+  },
+
+  "notifications_email": "Email Notifications",
+  "@notifications_email": {
+    "description": "Email notifications section"
+  },
+
+  "notifications_emailReceipts": "Email Receipts",
+  "@notifications_emailReceipts": {
+    "description": "Email receipts option"
+  },
+
+  "notifications_emailReceiptsDescription": "Receive transaction receipts by email",
+  "@notifications_emailReceiptsDescription": {
+    "description": "Email receipts description"
+  },
+
+  "notifications_loadError": "Failed to load notification settings",
+  "@notifications_loadError": {
+    "description": "Error loading notification settings"
+  },
+
+  "notifications_marketing": "Marketing",
+  "@notifications_marketing": {
+    "description": "Marketing notifications option"
+  },
+
+  "notifications_marketingDescription": "Promotional offers and updates",
+  "@notifications_marketingDescription": {
+    "description": "Marketing notifications description"
+  },
+
+  "notifications_monthlyStatement": "Monthly Statement",
+  "@notifications_monthlyStatement": {
+    "description": "Monthly statement option"
+  },
+
+  "notifications_monthlyStatementDescription": "Receive monthly account statement",
+  "@notifications_monthlyStatementDescription": {
+    "description": "Monthly statement description"
+  },
+
+  "notifications_newsletter": "Newsletter",
+  "@notifications_newsletter": {
+    "description": "Newsletter option"
+  },
+
+  "notifications_newsletterDescription": "Product news and updates",
+  "@notifications_newsletterDescription": {
+    "description": "Newsletter description"
+  },
+
+  "notifications_push": "Push Notifications",
+  "@notifications_push": {
+    "description": "Push notifications section"
+  },
+
+  "notifications_required": "Required",
+  "@notifications_required": {
+    "description": "Required notification indicator"
+  },
+
+  "notifications_saveError": "Failed to save preferences",
+  "@notifications_saveError": {
+    "description": "Error saving notification preferences"
+  },
+
+  "notifications_savePreferences": "Save Preferences",
+  "@notifications_savePreferences": {
+    "description": "Save preferences button"
+  },
+
+  "notifications_saveSuccess": "Preferences saved successfully",
+  "@notifications_saveSuccess": {
+    "description": "Success saving preferences"
+  },
+
+  "notifications_security": "Security Alerts",
+  "@notifications_security": {
+    "description": "Security alerts option"
+  },
+
+  "notifications_securityCodes": "Security Codes",
+  "@notifications_securityCodes": {
+    "description": "Security codes option"
+  },
+
+  "notifications_securityCodesDescription": "Receive login and verification codes",
+  "@notifications_securityCodesDescription": {
+    "description": "Security codes description"
+  },
+
+  "notifications_securityDescription": "Account security notifications",
+  "@notifications_securityDescription": {
+    "description": "Security notifications description"
+  },
+
+  "notifications_securityNote": "Security notifications cannot be disabled",
+  "@notifications_securityNote": {
+    "description": "Security notification note"
+  },
+
+  "notifications_sms": "SMS Notifications",
+  "@notifications_sms": {
+    "description": "SMS notifications section"
+  },
+
+  "notifications_smsTransactions": "Transaction Alerts",
+  "@notifications_smsTransactions": {
+    "description": "SMS transaction alerts option"
+  },
+
+  "notifications_smsTransactionsDescription": "Receive SMS for transactions",
+  "@notifications_smsTransactionsDescription": {
+    "description": "SMS transaction alerts description"
+  },
+
+  "notifications_transactions": "Transactions",
+  "@notifications_transactions": {
+    "description": "Transaction notifications option"
+  },
+
+  "notifications_transactionsDescription": "Receive notifications for transfers and payments",
+  "@notifications_transactionsDescription": {
+    "description": "Transaction notifications description"
+  },
+
+  "notifications_unsavedChanges": "Unsaved Changes",
+  "@notifications_unsavedChanges": {
+    "description": "Unsaved changes dialog title"
+  },
+
+  "notifications_unsavedChangesMessage": "You have unsaved changes. Discard them?",
+  "@notifications_unsavedChangesMessage": {
+    "description": "Unsaved changes dialog message"
+  },
+
+  "help_callUs": "Call Us",
+  "@help_callUs": {
+    "description": "Call us button"
+  },
+
+  "help_emailUs": "Email Us",
+  "@help_emailUs": {
+    "description": "Email us button"
+  },
+
+  "help_getHelp": "Get Help",
+  "@help_getHelp": {
+    "description": "Get help title"
+  },
+
+  "help_results": "Results",
+  "@help_results": {
+    "description": "Search results label"
+  },
+
+  "help_searchPlaceholder": "Search help articles...",
+  "@help_searchPlaceholder": {
+    "description": "Help search placeholder"
+  },
+
+  "action_discard": "Discard",
+  "@action_discard": {
+    "description": "Discard action"
+  },
+
+  "common_comingSoon": "Coming Soon",
+  "@common_comingSoon": {
+    "description": "Coming soon label"
+  },
+
+  "common_maybeLater": "Maybe Later",
+  "@common_maybeLater": {
+    "description": "Maybe later button"
+  },
+
+  "common_optional": "Optional",
+  "@common_optional": {
+    "description": "Optional field indicator"
+  },
+
+  "common_share": "Share",
+  "@common_share": {
+    "description": "Share action"
+  },
+
+  "error_invalidNumber": "Invalid number",
+  "@error_invalidNumber": {
+    "description": "Invalid number error"
+  },
+
+  "export_title": "Export",
+  "@export_title": {
+    "description": "Export title"
+  },
+
+  "bankLinking_accountDetails": "Account Details",
+  "@bankLinking_accountDetails": {
+    "description": "Account details header"
+  },
+
+  "bankLinking_accountHolderName": "Account Holder Name",
+  "@bankLinking_accountHolderName": {
+    "description": "Account holder name field"
+  },
+
+  "bankLinking_accountHolderNameRequired": "Account holder name is required",
+  "@bankLinking_accountHolderNameRequired": {
+    "description": "Account holder name validation error"
+  },
+
+  "bankLinking_accountNumber": "Account Number",
+  "@bankLinking_accountNumber": {
+    "description": "Account number field"
+  },
+
+  "bankLinking_accountNumberRequired": "Account number is required",
+  "@bankLinking_accountNumberRequired": {
+    "description": "Account number validation error"
+  },
+
+  "bankLinking_amount": "Amount",
+  "@bankLinking_amount": {
+    "description": "Amount field"
+  },
+
+  "bankLinking_amountRequired": "Amount is required",
+  "@bankLinking_amountRequired": {
+    "description": "Amount validation error"
+  },
+
+  "bankLinking_balance": "Balance",
+  "@bankLinking_balance": {
+    "description": "Balance label"
+  },
+
+  "bankLinking_balanceCheck": "Balance Check",
+  "@bankLinking_balanceCheck": {
+    "description": "Balance check action"
+  },
+
+  "bankLinking_confirmDeposit": "Confirm Deposit",
+  "@bankLinking_confirmDeposit": {
+    "description": "Confirm deposit button"
+  },
+
+  "bankLinking_confirmWithdraw": "Confirm Withdrawal",
+  "@bankLinking_confirmWithdraw": {
+    "description": "Confirm withdrawal button"
+  },
+
+  "bankLinking_deposit": "Deposit",
+  "@bankLinking_deposit": {
+    "description": "Deposit action"
+  },
+
+  "bankLinking_depositConfirmation": "Deposit {amount} from your bank?",
+  "@bankLinking_depositConfirmation": {
+    "description": "Deposit confirmation message",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "bankLinking_depositFromBank": "Deposit from Bank",
+  "@bankLinking_depositFromBank": {
+    "description": "Deposit from bank action"
+  },
+
+  "bankLinking_depositInfo": "Funds will be credited within 24 hours",
+  "@bankLinking_depositInfo": {
+    "description": "Deposit information message"
+  },
+
+  "bankLinking_depositSuccess": "Deposit successful",
+  "@bankLinking_depositSuccess": {
+    "description": "Deposit success message"
+  },
+
+  "bankLinking_devOtpHint": "Dev OTP: 123456",
+  "@bankLinking_devOtpHint": {
+    "description": "Development OTP hint"
+  },
+
+  "bankLinking_directDebit": "Direct Debit",
+  "@bankLinking_directDebit": {
+    "description": "Direct debit label"
+  },
+
+  "bankLinking_enterAmount": "Enter amount",
+  "@bankLinking_enterAmount": {
+    "description": "Enter amount placeholder"
+  },
+
+  "bankLinking_failed": "Failed",
+  "@bankLinking_failed": {
+    "description": "Failed status"
+  },
+
+  "bankLinking_invalidAmount": "Invalid amount",
+  "@bankLinking_invalidAmount": {
+    "description": "Invalid amount error"
+  },
+
+  "bankLinking_invalidOtp": "Invalid OTP",
+  "@bankLinking_invalidOtp": {
+    "description": "Invalid OTP error"
+  },
+
+  "bankLinking_linkAccount": "Link Account",
+  "@bankLinking_linkAccount": {
+    "description": "Link account action"
+  },
+
+  "bankLinking_linkAccountDesc": "Link your bank account for easy transfers",
+  "@bankLinking_linkAccountDesc": {
+    "description": "Link account description"
+  },
+
+  "bankLinking_linkedAccounts": "Linked Accounts",
+  "@bankLinking_linkedAccounts": {
+    "description": "Linked accounts title"
+  },
+
+  "bankLinking_linkFailed": "Failed to link account",
+  "@bankLinking_linkFailed": {
+    "description": "Link failed error message"
+  },
+
+  "bankLinking_linkNewAccount": "Link New Account",
+  "@bankLinking_linkNewAccount": {
+    "description": "Link new account action"
+  },
+
+  "bankLinking_noLinkedAccounts": "No linked accounts",
+  "@bankLinking_noLinkedAccounts": {
+    "description": "No linked accounts message"
+  },
+
+  "bankLinking_otpCode": "OTP Code",
+  "@bankLinking_otpCode": {
+    "description": "OTP code field"
+  },
+
+  "bankLinking_otpResent": "OTP resent",
+  "@bankLinking_otpResent": {
+    "description": "OTP resent confirmation"
+  },
+
+  "bankLinking_pending": "Pending",
+  "@bankLinking_pending": {
+    "description": "Pending status"
+  },
+
+  "bankLinking_primary": "Primary",
+  "@bankLinking_primary": {
+    "description": "Primary account label"
+  },
+
+  "bankLinking_primaryAccountSet": "Primary account set",
+  "@bankLinking_primaryAccountSet": {
+    "description": "Primary account set confirmation"
+  },
+
+  "bankLinking_resendOtp": "Resend OTP",
+  "@bankLinking_resendOtp": {
+    "description": "Resend OTP action"
+  },
+
+  "bankLinking_resendOtpIn": "Resend OTP in {seconds}s",
+  "@bankLinking_resendOtpIn": {
+    "description": "Resend OTP countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+
+  "bankLinking_selectBank": "Select Bank",
+  "@bankLinking_selectBank": {
+    "description": "Select bank action"
+  },
+
+  "bankLinking_selectBankDesc": "Choose your bank to link",
+  "@bankLinking_selectBankDesc": {
+    "description": "Select bank description"
+  },
+
+  "bankLinking_selectBankTitle": "Select Your Bank",
+  "@bankLinking_selectBankTitle": {
+    "description": "Select bank title"
+  },
+
+  "bankLinking_suspended": "Suspended",
+  "@bankLinking_suspended": {
+    "description": "Suspended status"
+  },
+
+  "bankLinking_verificationDesc": "Enter the OTP sent to your phone",
+  "@bankLinking_verificationDesc": {
+    "description": "Verification description"
+  },
+
+  "bankLinking_verificationFailed": "Verification failed",
+  "@bankLinking_verificationFailed": {
+    "description": "Verification failed error"
+  },
+
+  "bankLinking_verificationRequired": "Verification Required",
+  "@bankLinking_verificationRequired": {
+    "description": "Verification required title"
+  },
+
+  "bankLinking_verificationSuccess": "Account verified",
+  "@bankLinking_verificationSuccess": {
+    "description": "Verification success message"
+  },
+
+  "bankLinking_verificationTitle": "Verify Account",
+  "@bankLinking_verificationTitle": {
+    "description": "Verify account title"
+  },
+
+  "bankLinking_verified": "Verified",
+  "@bankLinking_verified": {
+    "description": "Verified status"
+  },
+
+  "bankLinking_verify": "Verify",
+  "@bankLinking_verify": {
+    "description": "Verify action"
+  },
+
+  "bankLinking_verifyAccount": "Verify Account",
+  "@bankLinking_verifyAccount": {
+    "description": "Verify account action"
+  },
+
+  "bankLinking_withdraw": "Withdraw",
+  "@bankLinking_withdraw": {
+    "description": "Withdraw action"
+  },
+
+  "bankLinking_withdrawConfirmation": "Withdraw {amount} to your bank?",
+  "@bankLinking_withdrawConfirmation": {
+    "description": "Withdraw confirmation message",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "bankLinking_withdrawInfo": "Funds will arrive in 1-3 business days",
+  "@bankLinking_withdrawInfo": {
+    "description": "Withdraw information message"
+  },
+
+  "bankLinking_withdrawSuccess": "Withdrawal successful",
+  "@bankLinking_withdrawSuccess": {
+    "description": "Withdrawal success message"
+  },
+
+  "bankLinking_withdrawTime": "Processing time: 1-3 business days",
+  "@bankLinking_withdrawTime": {
+    "description": "Withdrawal processing time"
+  },
+
+  "bankLinking_withdrawToBank": "Withdraw to Bank",
+  "@bankLinking_withdrawToBank": {
+    "description": "Withdraw to bank action"
+  },
+
+  "common_confirm": "Confirm",
+  "@common_confirm": {
+    "description": "Confirm button text"
+  },
+
+  "expenses_totalAmount": "Total Amount",
+  "@expenses_totalAmount": {
+    "description": "Total amount label for expenses"
+  },
+
+  "kyc_additionalDocs_title": "Additional Documents",
+  "@kyc_additionalDocs_title": {
+    "description": "Additional documents screen title"
+  },
+
+  "kyc_additionalDocs_description": "Provide additional information for verification",
+  "@kyc_additionalDocs_description": {
+    "description": "Additional documents screen description"
+  },
+
+  "kyc_additionalDocs_employment_title": "Employment Information",
+  "@kyc_additionalDocs_employment_title": {
+    "description": "Employment section title"
+  },
+
+  "kyc_additionalDocs_occupation": "Occupation",
+  "@kyc_additionalDocs_occupation": {
+    "description": "Occupation field label"
+  },
+
+  "kyc_additionalDocs_employer": "Employer",
+  "@kyc_additionalDocs_employer": {
+    "description": "Employer field label"
+  },
+
+  "kyc_additionalDocs_monthlyIncome": "Monthly Income",
+  "@kyc_additionalDocs_monthlyIncome": {
+    "description": "Monthly income field label"
+  },
+
+  "kyc_additionalDocs_sourceOfFunds_title": "Source of Funds",
+  "@kyc_additionalDocs_sourceOfFunds_title": {
+    "description": "Source of funds section title"
+  },
+
+  "kyc_additionalDocs_sourceOfFunds_description": "Tell us about your source of funds",
+  "@kyc_additionalDocs_sourceOfFunds_description": {
+    "description": "Source of funds section description"
+  },
+
+  "kyc_additionalDocs_sourceDetails": "Source Details",
+  "@kyc_additionalDocs_sourceDetails": {
+    "description": "Source details field label"
+  },
+
+  "kyc_additionalDocs_supportingDocs_title": "Supporting Documents",
+  "@kyc_additionalDocs_supportingDocs_title": {
+    "description": "Supporting documents section title"
+  },
+
+  "kyc_additionalDocs_supportingDocs_description": "Upload documents to verify your information",
+  "@kyc_additionalDocs_supportingDocs_description": {
+    "description": "Supporting documents section description"
+  },
+
+  "kyc_additionalDocs_takePhoto": "Take Photo",
+  "@kyc_additionalDocs_takePhoto": {
+    "description": "Take photo button text"
+  },
+
+  "kyc_additionalDocs_uploadFile": "Upload File",
+  "@kyc_additionalDocs_uploadFile": {
+    "description": "Upload file button text"
+  },
+
+  "kyc_additionalDocs_error": "Failed to submit documents",
+  "@kyc_additionalDocs_error": {
+    "description": "Error message when document submission fails"
+  },
+
+  "kyc_additionalDocs_info_title": "Why we need this",
+  "@kyc_additionalDocs_info_title": {
+    "description": "Info section title"
+  },
+
+  "kyc_additionalDocs_info_description": "This helps us verify your identity",
+  "@kyc_additionalDocs_info_description": {
+    "description": "Info section description"
+  },
+
+  "kyc_additionalDocs_submit": "Submit Documents",
+  "@kyc_additionalDocs_submit": {
+    "description": "Submit documents button text"
+  },
+
+  "kyc_additionalDocs_sourceType_salary": "Salary",
+  "@kyc_additionalDocs_sourceType_salary": {
+    "description": "Salary source type"
+  },
+
+  "kyc_additionalDocs_sourceType_business": "Business Income",
+  "@kyc_additionalDocs_sourceType_business": {
+    "description": "Business income source type"
+  },
+
+  "kyc_additionalDocs_sourceType_investments": "Investments",
+  "@kyc_additionalDocs_sourceType_investments": {
+    "description": "Investments source type"
+  },
+
+  "kyc_additionalDocs_sourceType_savings": "Savings",
+  "@kyc_additionalDocs_sourceType_savings": {
+    "description": "Savings source type"
+  },
+
+  "kyc_additionalDocs_sourceType_inheritance": "Inheritance",
+  "@kyc_additionalDocs_sourceType_inheritance": {
+    "description": "Inheritance source type"
+  },
+
+  "kyc_additionalDocs_sourceType_gift": "Gift",
+  "@kyc_additionalDocs_sourceType_gift": {
+    "description": "Gift source type"
+  },
+
+  "kyc_additionalDocs_sourceType_other": "Other",
+  "@kyc_additionalDocs_sourceType_other": {
+    "description": "Other source type"
+  },
+
+  "kyc_additionalDocs_suggestion_paySlip": "Pay slip",
+  "@kyc_additionalDocs_suggestion_paySlip": {
+    "description": "Pay slip document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_bankStatement": "Bank statement",
+  "@kyc_additionalDocs_suggestion_bankStatement": {
+    "description": "Bank statement document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_businessReg": "Business registration",
+  "@kyc_additionalDocs_suggestion_businessReg": {
+    "description": "Business registration document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_taxReturn": "Tax return",
+  "@kyc_additionalDocs_suggestion_taxReturn": {
+    "description": "Tax return document suggestion"
+  },
+
+  "kyc_address_title": "Address Verification",
+  "@kyc_address_title": {
+    "description": "Address verification screen title"
+  },
+
+  "kyc_address_description": "Verify your residential address",
+  "@kyc_address_description": {
+    "description": "Address verification screen description"
+  },
+
+  "kyc_address_form_title": "Your Address",
+  "@kyc_address_form_title": {
+    "description": "Address form section title"
+  },
+
+  "kyc_address_addressLine1": "Address Line 1",
+  "@kyc_address_addressLine1": {
+    "description": "Address line 1 field label"
+  },
+
+  "kyc_address_addressLine2": "Address Line 2",
+  "@kyc_address_addressLine2": {
+    "description": "Address line 2 field label"
+  },
+
+  "kyc_address_city": "City",
+  "@kyc_address_city": {
+    "description": "City field label"
+  },
+
+  "kyc_address_state": "State/Region",
+  "@kyc_address_state": {
+    "description": "State/Region field label"
+  },
+
+  "kyc_address_postalCode": "Postal Code",
+  "@kyc_address_postalCode": {
+    "description": "Postal code field label"
+  },
+
+  "kyc_address_country": "Country",
+  "@kyc_address_country": {
+    "description": "Country field label"
+  },
+
+  "kyc_address_proofDocument_title": "Proof of Address",
+  "@kyc_address_proofDocument_title": {
+    "description": "Proof of address section title"
+  },
+
+  "kyc_address_proofDocument_description": "Upload a document showing your address",
+  "@kyc_address_proofDocument_description": {
+    "description": "Proof of address section description"
+  },
+
+  "kyc_address_takePhoto": "Take Photo",
+  "@kyc_address_takePhoto": {
+    "description": "Take photo button text"
+  },
+
+  "kyc_address_retakePhoto": "Retake Photo",
+  "@kyc_address_retakePhoto": {
+    "description": "Retake photo button text"
+  },
+
+  "kyc_address_chooseFile": "Choose File",
+  "@kyc_address_chooseFile": {
+    "description": "Choose file button text"
+  },
+
+  "kyc_address_changeFile": "Change File",
+  "@kyc_address_changeFile": {
+    "description": "Change file button text"
+  },
+
+  "kyc_address_uploadDocument": "Upload Document",
+  "@kyc_address_uploadDocument": {
+    "description": "Upload document button text"
+  },
+
+  "kyc_address_submit": "Submit Address",
+  "@kyc_address_submit": {
+    "description": "Submit address button text"
+  },
+
+  "kyc_address_error": "Failed to submit address",
+  "@kyc_address_error": {
+    "description": "Error message when address submission fails"
+  },
+
+  "kyc_address_info_title": "Accepted Documents",
+  "@kyc_address_info_title": {
+    "description": "Accepted documents info title"
+  },
+
+  "kyc_address_info_description": "Documents must be dated within 3 months",
+  "@kyc_address_info_description": {
+    "description": "Accepted documents info description"
+  },
+
+  "kyc_address_docType_utilityBill": "Utility Bill",
+  "@kyc_address_docType_utilityBill": {
+    "description": "Utility bill document type"
+  },
+
+  "kyc_address_docType_utilityBill_description": "Electricity, water, or gas bill",
+  "@kyc_address_docType_utilityBill_description": {
+    "description": "Utility bill document type description"
+  },
+
+  "kyc_address_docType_bankStatement": "Bank Statement",
+  "@kyc_address_docType_bankStatement": {
+    "description": "Bank statement document type"
+  },
+
+  "kyc_address_docType_bankStatement_description": "Recent bank statement",
+  "@kyc_address_docType_bankStatement_description": {
+    "description": "Bank statement document type description"
+  },
+
+  "kyc_address_docType_governmentLetter": "Government Letter",
+  "@kyc_address_docType_governmentLetter": {
+    "description": "Government letter document type"
+  },
+
+  "kyc_address_docType_governmentLetter_description": "Official government correspondence",
+  "@kyc_address_docType_governmentLetter_description": {
+    "description": "Government letter document type description"
+  },
+
+  "kyc_address_docType_rentalAgreement": "Rental Agreement",
+  "@kyc_address_docType_rentalAgreement": {
+    "description": "Rental agreement document type"
+  },
+
+  "kyc_address_docType_rentalAgreement_description": "Signed rental or lease agreement",
+  "@kyc_address_docType_rentalAgreement_description": {
+    "description": "Rental agreement document type description"
+  },
+
+  "kyc_video_title": "Video Verification",
+  "@kyc_video_title": {
+    "description": "Video verification screen title"
+  },
+
+  "kyc_video_instructions_title": "Before You Start",
+  "@kyc_video_instructions_title": {
+    "description": "Video instructions section title"
+  },
+
+  "kyc_video_instructions_description": "Follow these guidelines for best results",
+  "@kyc_video_instructions_description": {
+    "description": "Video instructions section description"
+  },
+
+  "kyc_video_instruction_lighting_title": "Good Lighting",
+  "@kyc_video_instruction_lighting_title": {
+    "description": "Lighting instruction title"
+  },
+
+  "kyc_video_instruction_lighting_description": "Find a well-lit area",
+  "@kyc_video_instruction_lighting_description": {
+    "description": "Lighting instruction description"
+  },
+
+  "kyc_video_instruction_position_title": "Face Position",
+  "@kyc_video_instruction_position_title": {
+    "description": "Face position instruction title"
+  },
+
+  "kyc_video_instruction_position_description": "Keep your face in the frame",
+  "@kyc_video_instruction_position_description": {
+    "description": "Face position instruction description"
+  },
+
+  "kyc_video_instruction_quiet_title": "Quiet Environment",
+  "@kyc_video_instruction_quiet_title": {
+    "description": "Quiet environment instruction title"
+  },
+
+  "kyc_video_instruction_quiet_description": "Find a quiet place",
+  "@kyc_video_instruction_quiet_description": {
+    "description": "Quiet environment instruction description"
+  },
+
+  "kyc_video_instruction_solo_title": "Be Alone",
+  "@kyc_video_instruction_solo_title": {
+    "description": "Solo instruction title"
+  },
+
+  "kyc_video_instruction_solo_description": "Only you should be in the frame",
+  "@kyc_video_instruction_solo_description": {
+    "description": "Solo instruction description"
+  },
+
+  "kyc_video_actions_title": "Follow Instructions",
+  "@kyc_video_actions_title": {
+    "description": "Video actions section title"
+  },
+
+  "kyc_video_actions_description": "Complete each action as prompted",
+  "@kyc_video_actions_description": {
+    "description": "Video actions section description"
+  },
+
+  "kyc_video_action_lookStraight": "Look straight",
+  "@kyc_video_action_lookStraight": {
+    "description": "Look straight action"
+  },
+
+  "kyc_video_action_turnLeft": "Turn left",
+  "@kyc_video_action_turnLeft": {
+    "description": "Turn left action"
+  },
+
+  "kyc_video_action_turnRight": "Turn right",
+  "@kyc_video_action_turnRight": {
+    "description": "Turn right action"
+  },
+
+  "kyc_video_action_smile": "Smile",
+  "@kyc_video_action_smile": {
+    "description": "Smile action"
+  },
+
+  "kyc_video_action_blink": "Blink",
+  "@kyc_video_action_blink": {
+    "description": "Blink action"
+  },
+
+  "kyc_video_startRecording": "Start Recording",
+  "@kyc_video_startRecording": {
+    "description": "Start recording button text"
+  },
+
+  "kyc_video_continue": "Continue",
+  "@kyc_video_continue": {
+    "description": "Continue button text"
+  },
+
+  "kyc_video_preview_title": "Preview",
+  "@kyc_video_preview_title": {
+    "description": "Video preview section title"
+  },
+
+  "kyc_video_preview_description": "Review your video",
+  "@kyc_video_preview_description": {
+    "description": "Video preview section description"
+  },
+
+  "kyc_video_preview_videoRecorded": "Video recorded",
+  "@kyc_video_preview_videoRecorded": {
+    "description": "Video recorded status message"
+  },
+
+  "kyc_video_retake": "Retake",
+  "@kyc_video_retake": {
+    "description": "Retake video button text"
+  },
+
+  "kyc_upgrade_title": "Upgrade Verification",
+  "@kyc_upgrade_title": {
+    "description": "Upgrade verification screen title"
+  },
+
+  "kyc_upgrade_selectTier": "Select Tier",
+  "@kyc_upgrade_selectTier": {
+    "description": "Select tier section title"
+  },
+
+  "kyc_upgrade_selectTier_description": "Choose your verification level",
+  "@kyc_upgrade_selectTier_description": {
+    "description": "Select tier section description"
+  },
+
+  "kyc_upgrade_currentTier": "Current Tier",
+  "@kyc_upgrade_currentTier": {
+    "description": "Current tier label"
+  },
+
+  "kyc_upgrade_recommended": "Recommended",
+  "@kyc_upgrade_recommended": {
+    "description": "Recommended tier badge"
+  },
+
+  "kyc_upgrade_perTransaction": "Per Transaction",
+  "@kyc_upgrade_perTransaction": {
+    "description": "Per transaction limit label"
+  },
+
+  "kyc_upgrade_dailyLimit": "Daily Limit",
+  "@kyc_upgrade_dailyLimit": {
+    "description": "Daily limit label"
+  },
+
+  "kyc_upgrade_monthlyLimit": "Monthly Limit",
+  "@kyc_upgrade_monthlyLimit": {
+    "description": "Monthly limit label"
+  },
+
+  "kyc_upgrade_andMore": "and more",
+  "@kyc_upgrade_andMore": {
+    "description": "And more features text"
+  },
+
+  "kyc_upgrade_requirements_title": "Requirements",
+  "@kyc_upgrade_requirements_title": {
+    "description": "Requirements section title"
+  },
+
+  "kyc_upgrade_requirement_idDocument": "ID Document",
+  "@kyc_upgrade_requirement_idDocument": {
+    "description": "ID document requirement"
+  },
+
+  "kyc_upgrade_requirement_selfie": "Selfie",
+  "@kyc_upgrade_requirement_selfie": {
+    "description": "Selfie requirement"
+  },
+
+  "kyc_upgrade_requirement_addressProof": "Address Proof",
+  "@kyc_upgrade_requirement_addressProof": {
+    "description": "Address proof requirement"
+  },
+
+  "kyc_upgrade_requirement_sourceOfFunds": "Source of Funds",
+  "@kyc_upgrade_requirement_sourceOfFunds": {
+    "description": "Source of funds requirement"
+  },
+
+  "kyc_upgrade_requirement_videoVerification": "Video Verification",
+  "@kyc_upgrade_requirement_videoVerification": {
+    "description": "Video verification requirement"
+  },
+
+  "kyc_upgrade_startVerification": "Start Verification",
+  "@kyc_upgrade_startVerification": {
+    "description": "Start verification button text"
+  },
+
+  "kyc_upgrade_reason_title": "Why upgrade?",
+  "@kyc_upgrade_reason_title": {
+    "description": "Why upgrade section title"
+  },
+
+  "settings_deviceTrustedSuccess": "Device marked as trusted",
+  "@settings_deviceTrustedSuccess": {
+    "description": "Success message when device is marked as trusted"
+  },
+
+  "settings_deviceTrustError": "Failed to trust device",
+  "@settings_deviceTrustError": {
+    "description": "Error message when device trust fails"
+  },
+
+  "settings_deviceRemovedSuccess": "Device removed successfully",
+  "@settings_deviceRemovedSuccess": {
+    "description": "Success message when device is removed"
+  },
+
+  "settings_deviceRemoveError": "Failed to remove device",
+  "@settings_deviceRemoveError": {
+    "description": "Error message when device removal fails"
+  },
+
+  "settings_help": "Help & Support",
+  "@settings_help": {
+    "description": "Help and support settings option"
+  },
+
+  "action_copiedToClipboard": "Copied to clipboard",
+  "@action_copiedToClipboard": {
+    "description": "Message shown when text is copied to clipboard"
+  },
+
+  "transfer_successTitle": "Transfer Successful!",
+  "@transfer_successTitle": {
+    "description": "Title for successful transfer screen"
+  },
+
+  "transfer_successMessage": "Your transfer of {amount} was successful",
+  "@transfer_successMessage": {
+    "description": "Message for successful transfer",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$100.00"
+      }
+    }
+  },
+
+  "transactions_transactionId": "Transaction ID",
+  "@transactions_transactionId": {
+    "description": "Transaction ID label"
+  },
+
+  "common_amount": "Amount",
+  "@common_amount": {
+    "description": "Amount label"
+  },
+
+  "transactions_status": "Status",
+  "@transactions_status": {
+    "description": "Transaction status label"
+  },
+
+  "transactions_completed": "Completed",
+  "@transactions_completed": {
+    "description": "Completed transaction status"
+  },
+
+  "common_note": "Note",
+  "@common_note": {
+    "description": "Note label"
+  },
+
+  "action_shareReceipt": "Share Receipt",
+  "@action_shareReceipt": {
+    "description": "Share receipt button text"
+  },
+
+  "withdraw_mobileMoney": "Mobile Money",
+  "@withdraw_mobileMoney": {
+    "description": "Mobile Money withdrawal method"
+  },
+
+  "withdraw_bankTransfer": "Bank Transfer",
+  "@withdraw_bankTransfer": {
+    "description": "Bank transfer withdrawal method"
+  },
+
+  "withdraw_crypto": "Crypto Wallet",
+  "@withdraw_crypto": {
+    "description": "Crypto wallet withdrawal method"
+  },
+
+  "withdraw_mobileMoneyDesc": "Withdraw to Orange Money, MTN, Wave",
+  "@withdraw_mobileMoneyDesc": {
+    "description": "Mobile Money withdrawal description"
+  },
+
+  "withdraw_bankDesc": "Transfer to your bank account",
+  "@withdraw_bankDesc": {
+    "description": "Bank transfer withdrawal description"
+  },
+
+  "withdraw_cryptoDesc": "Send to external wallet",
+  "@withdraw_cryptoDesc": {
+    "description": "Crypto withdrawal description"
+  },
+
+  "navigation_withdraw": "Withdraw",
+  "@navigation_withdraw": {
+    "description": "Withdraw navigation item"
+  },
+
+  "withdraw_method": "Withdrawal Method",
+  "@withdraw_method": {
+    "description": "Withdrawal method label"
+  },
+
+  "withdraw_processingInfo": "Processing times vary by method",
+  "@withdraw_processingInfo": {
+    "description": "Withdrawal processing time info"
+  },
+
+  "withdraw_amountLabel": "Amount to Withdraw",
+  "@withdraw_amountLabel": {
+    "description": "Withdrawal amount label"
+  },
+
+  "withdraw_mobileNumber": "Mobile Money Number",
+  "@withdraw_mobileNumber": {
+    "description": "Mobile Money number input label"
+  },
+
+  "withdraw_bankDetails": "Bank Details",
+  "@withdraw_bankDetails": {
+    "description": "Bank details input label"
+  },
+
+  "withdraw_walletAddress": "Wallet Address",
+  "@withdraw_walletAddress": {
+    "description": "Crypto wallet address input label"
+  },
+
+  "withdraw_networkWarning": "Make sure you are sending to a Solana USDC address",
+  "@withdraw_networkWarning": {
+    "description": "Warning about network compatibility"
   }
 }

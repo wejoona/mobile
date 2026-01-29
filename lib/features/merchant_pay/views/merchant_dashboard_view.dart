@@ -197,7 +197,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return AppCard(
-      variant: AppCardVariant.gradient,
+      variant: AppCardVariant.goldAccent,
       padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,7 +366,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: AppCard(
-        variant: AppCardVariant.outline,
+        variant: AppCardVariant.subtle,
         padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
@@ -437,7 +437,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             ),
           ),
           error: (_, __) => AppCard(
-            variant: AppCardVariant.outline,
+            variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
             child: AppText('Failed to load analytics', color: AppColors.error),
           ),
@@ -493,7 +493,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     Color color,
   ) {
     return AppCard(
-      variant: AppCardVariant.filled,
+      variant: AppCardVariant.elevated,
       padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,14 +549,14 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             ),
           ),
           error: (_, __) => AppCard(
-            variant: AppCardVariant.outline,
+            variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
             child: AppText('Failed to load transactions', color: AppColors.error),
           ),
           data: (response) {
             if (response.transactions.isEmpty) {
               return AppCard(
-                variant: AppCardVariant.filled,
+                variant: AppCardVariant.elevated,
                 padding: EdgeInsets.all(AppSpacing.xl),
                 child: Center(
                   child: Column(
@@ -582,7 +582,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
 
   Widget _buildTransactionItem(MerchantTransaction tx) {
     return AppCard(
-      variant: AppCardVariant.outline,
+      variant: AppCardVariant.subtle,
       padding: EdgeInsets.all(AppSpacing.md),
       margin: EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(

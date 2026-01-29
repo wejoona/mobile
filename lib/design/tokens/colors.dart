@@ -90,6 +90,7 @@ class AppColors {
   // Additional legacy aliases
   static const Color charcoal = graphite;
   static const Color silver = textSecondary;
+  static const Color white = Color(0xFFFFFFFF);  // Pure white for high contrast
 
   // ═══════════════════════════════════════════════════════════════════════════
   // BORDERS & DIVIDERS
@@ -100,6 +101,9 @@ class AppColors {
   static const Color borderStrong = Color(0x26FFFFFF);    // 15% white
   static const Color borderGold = Color(0x4DC9A962);      // 30% gold
   static const Color borderGoldStrong = Color(0x80C9A962); // 50% gold
+
+  // Alias for common usage
+  static const Color border = borderDefault;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // OVERLAYS

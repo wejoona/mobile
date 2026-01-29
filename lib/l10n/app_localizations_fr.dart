@@ -4741,4 +4741,712 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get changePin_errorFailedToSave =>
       'Échec de l\'enregistrement du code PIN. Veuillez réessayer.';
+
+  @override
+  String get notifications_email => 'Notifications par email';
+
+  @override
+  String get notifications_emailReceipts => 'Reçus par email';
+
+  @override
+  String get notifications_emailReceiptsDescription =>
+      'Recevoir les reçus de transaction par email';
+
+  @override
+  String get notifications_loadError =>
+      'Échec du chargement des paramètres de notification';
+
+  @override
+  String get notifications_marketing => 'Marketing';
+
+  @override
+  String get notifications_marketingDescription =>
+      'Offres promotionnelles et mises à jour';
+
+  @override
+  String get notifications_monthlyStatement => 'Relevé mensuel';
+
+  @override
+  String get notifications_monthlyStatementDescription =>
+      'Recevoir le relevé de compte mensuel';
+
+  @override
+  String get notifications_newsletter => 'Newsletter';
+
+  @override
+  String get notifications_newsletterDescription =>
+      'Actualités et mises à jour des produits';
+
+  @override
+  String get notifications_push => 'Notifications push';
+
+  @override
+  String get notifications_required => 'Requis';
+
+  @override
+  String get notifications_saveError =>
+      'Échec de l\'enregistrement des préférences';
+
+  @override
+  String get notifications_savePreferences => 'Enregistrer les préférences';
+
+  @override
+  String get notifications_saveSuccess =>
+      'Préférences enregistrées avec succès';
+
+  @override
+  String get notifications_security => 'Alertes de sécurité';
+
+  @override
+  String get notifications_securityCodes => 'Codes de sécurité';
+
+  @override
+  String get notifications_securityCodesDescription =>
+      'Recevoir les codes de connexion et de vérification';
+
+  @override
+  String get notifications_securityDescription =>
+      'Notifications de sécurité du compte';
+
+  @override
+  String get notifications_securityNote =>
+      'Les notifications de sécurité ne peuvent pas être désactivées';
+
+  @override
+  String get notifications_sms => 'Notifications SMS';
+
+  @override
+  String get notifications_smsTransactions => 'Alertes de transaction';
+
+  @override
+  String get notifications_smsTransactionsDescription =>
+      'Recevoir des SMS pour les transactions';
+
+  @override
+  String get notifications_transactions => 'Transactions';
+
+  @override
+  String get notifications_transactionsDescription =>
+      'Recevoir des notifications pour les transferts et paiements';
+
+  @override
+  String get notifications_unsavedChanges => 'Modifications non enregistrées';
+
+  @override
+  String get notifications_unsavedChangesMessage =>
+      'Vous avez des modifications non enregistrées. Les ignorer ?';
+
+  @override
+  String get help_callUs => 'Appelez-nous';
+
+  @override
+  String get help_emailUs => 'Envoyez-nous un email';
+
+  @override
+  String get help_getHelp => 'Obtenir de l\'aide';
+
+  @override
+  String get help_results => 'Résultats';
+
+  @override
+  String get help_searchPlaceholder => 'Rechercher des articles d\'aide...';
+
+  @override
+  String get action_discard => 'Ignorer';
+
+  @override
+  String get common_comingSoon => 'Bientôt disponible';
+
+  @override
+  String get common_maybeLater => 'Peut-être plus tard';
+
+  @override
+  String get common_optional => 'Optionnel';
+
+  @override
+  String get common_share => 'Partager';
+
+  @override
+  String get error_invalidNumber => 'Numéro invalide';
+
+  @override
+  String get export_title => 'Exporter';
+
+  @override
+  String get bankLinking_accountDetails => 'Détails du compte';
+
+  @override
+  String get bankLinking_accountHolderName => 'Nom du titulaire';
+
+  @override
+  String get bankLinking_accountHolderNameRequired =>
+      'Le nom du titulaire est requis';
+
+  @override
+  String get bankLinking_accountNumber => 'Numéro de compte';
+
+  @override
+  String get bankLinking_accountNumberRequired =>
+      'Le numéro de compte est requis';
+
+  @override
+  String get bankLinking_amount => 'Montant';
+
+  @override
+  String get bankLinking_amountRequired => 'Le montant est requis';
+
+  @override
+  String get bankLinking_balance => 'Solde';
+
+  @override
+  String get bankLinking_balanceCheck => 'Vérification du solde';
+
+  @override
+  String get bankLinking_confirmDeposit => 'Confirmer le dépôt';
+
+  @override
+  String get bankLinking_confirmWithdraw => 'Confirmer le retrait';
+
+  @override
+  String get bankLinking_deposit => 'Dépôt';
+
+  @override
+  String bankLinking_depositConfirmation(String amount) {
+    return 'Déposer $amount depuis votre banque ?';
+  }
+
+  @override
+  String get bankLinking_depositFromBank => 'Dépôt depuis la banque';
+
+  @override
+  String get bankLinking_depositInfo =>
+      'Les fonds seront crédités sous 24 heures';
+
+  @override
+  String get bankLinking_depositSuccess => 'Dépôt réussi';
+
+  @override
+  String get bankLinking_devOtpHint => 'OTP dev: 123456';
+
+  @override
+  String get bankLinking_directDebit => 'Prélèvement automatique';
+
+  @override
+  String get bankLinking_enterAmount => 'Entrez le montant';
+
+  @override
+  String get bankLinking_failed => 'Échoué';
+
+  @override
+  String get bankLinking_invalidAmount => 'Montant invalide';
+
+  @override
+  String get bankLinking_invalidOtp => 'OTP invalide';
+
+  @override
+  String get bankLinking_linkAccount => 'Lier le compte';
+
+  @override
+  String get bankLinking_linkAccountDesc =>
+      'Liez votre compte bancaire pour des transferts faciles';
+
+  @override
+  String get bankLinking_linkedAccounts => 'Comptes liés';
+
+  @override
+  String get bankLinking_linkFailed => 'Échec de la liaison du compte';
+
+  @override
+  String get bankLinking_linkNewAccount => 'Lier un nouveau compte';
+
+  @override
+  String get bankLinking_noLinkedAccounts => 'Aucun compte lié';
+
+  @override
+  String get bankLinking_otpCode => 'Code OTP';
+
+  @override
+  String get bankLinking_otpResent => 'OTP renvoyé';
+
+  @override
+  String get bankLinking_pending => 'En attente';
+
+  @override
+  String get bankLinking_primary => 'Principal';
+
+  @override
+  String get bankLinking_primaryAccountSet => 'Compte principal défini';
+
+  @override
+  String get bankLinking_resendOtp => 'Renvoyer l\'OTP';
+
+  @override
+  String bankLinking_resendOtpIn(int seconds) {
+    return 'Renvoyer l\'OTP dans ${seconds}s';
+  }
+
+  @override
+  String get bankLinking_selectBank => 'Sélectionner une banque';
+
+  @override
+  String get bankLinking_selectBankDesc => 'Choisissez votre banque à lier';
+
+  @override
+  String get bankLinking_selectBankTitle => 'Sélectionnez votre banque';
+
+  @override
+  String get bankLinking_suspended => 'Suspendu';
+
+  @override
+  String get bankLinking_verificationDesc =>
+      'Entrez l\'OTP envoyé sur votre téléphone';
+
+  @override
+  String get bankLinking_verificationFailed => 'Vérification échouée';
+
+  @override
+  String get bankLinking_verificationRequired => 'Vérification requise';
+
+  @override
+  String get bankLinking_verificationSuccess => 'Compte vérifié';
+
+  @override
+  String get bankLinking_verificationTitle => 'Vérifier le compte';
+
+  @override
+  String get bankLinking_verified => 'Vérifié';
+
+  @override
+  String get bankLinking_verify => 'Vérifier';
+
+  @override
+  String get bankLinking_verifyAccount => 'Vérifier le compte';
+
+  @override
+  String get bankLinking_withdraw => 'Retrait';
+
+  @override
+  String bankLinking_withdrawConfirmation(String amount) {
+    return 'Retirer $amount vers votre banque ?';
+  }
+
+  @override
+  String get bankLinking_withdrawInfo =>
+      'Les fonds arriveront sous 1-3 jours ouvrés';
+
+  @override
+  String get bankLinking_withdrawSuccess => 'Retrait réussi';
+
+  @override
+  String get bankLinking_withdrawTime =>
+      'Délai de traitement: 1-3 jours ouvrés';
+
+  @override
+  String get bankLinking_withdrawToBank => 'Retrait vers la banque';
+
+  @override
+  String get common_confirm => 'Confirmer';
+
+  @override
+  String get expenses_totalAmount => 'Montant total';
+
+  @override
+  String get kyc_additionalDocs_title => 'Documents supplémentaires';
+
+  @override
+  String get kyc_additionalDocs_description =>
+      'Fournir des informations supplémentaires pour vérification';
+
+  @override
+  String get kyc_additionalDocs_employment_title => 'Informations d\'emploi';
+
+  @override
+  String get kyc_additionalDocs_occupation => 'Profession';
+
+  @override
+  String get kyc_additionalDocs_employer => 'Employeur';
+
+  @override
+  String get kyc_additionalDocs_monthlyIncome => 'Revenu mensuel';
+
+  @override
+  String get kyc_additionalDocs_sourceOfFunds_title => 'Source des fonds';
+
+  @override
+  String get kyc_additionalDocs_sourceOfFunds_description =>
+      'Parlez-nous de votre source de fonds';
+
+  @override
+  String get kyc_additionalDocs_sourceDetails => 'Détails de la source';
+
+  @override
+  String get kyc_additionalDocs_supportingDocs_title =>
+      'Documents justificatifs';
+
+  @override
+  String get kyc_additionalDocs_supportingDocs_description =>
+      'Télécharger des documents pour vérifier vos informations';
+
+  @override
+  String get kyc_additionalDocs_takePhoto => 'Prendre une photo';
+
+  @override
+  String get kyc_additionalDocs_uploadFile => 'Télécharger un fichier';
+
+  @override
+  String get kyc_additionalDocs_error => 'Échec de la soumission des documents';
+
+  @override
+  String get kyc_additionalDocs_info_title => 'Pourquoi nous en avons besoin';
+
+  @override
+  String get kyc_additionalDocs_info_description =>
+      'Cela nous aide à vérifier votre identité';
+
+  @override
+  String get kyc_additionalDocs_submit => 'Soumettre les documents';
+
+  @override
+  String get kyc_additionalDocs_sourceType_salary => 'Salaire';
+
+  @override
+  String get kyc_additionalDocs_sourceType_business => 'Revenu d\'entreprise';
+
+  @override
+  String get kyc_additionalDocs_sourceType_investments => 'Investissements';
+
+  @override
+  String get kyc_additionalDocs_sourceType_savings => 'Épargne';
+
+  @override
+  String get kyc_additionalDocs_sourceType_inheritance => 'Héritage';
+
+  @override
+  String get kyc_additionalDocs_sourceType_gift => 'Don';
+
+  @override
+  String get kyc_additionalDocs_sourceType_other => 'Autre';
+
+  @override
+  String get kyc_additionalDocs_suggestion_paySlip => 'Bulletin de salaire';
+
+  @override
+  String get kyc_additionalDocs_suggestion_bankStatement => 'Relevé bancaire';
+
+  @override
+  String get kyc_additionalDocs_suggestion_businessReg =>
+      'Enregistrement d\'entreprise';
+
+  @override
+  String get kyc_additionalDocs_suggestion_taxReturn => 'Déclaration d\'impôts';
+
+  @override
+  String get kyc_address_title => 'Vérification d\'adresse';
+
+  @override
+  String get kyc_address_description => 'Vérifiez votre adresse résidentielle';
+
+  @override
+  String get kyc_address_form_title => 'Votre adresse';
+
+  @override
+  String get kyc_address_addressLine1 => 'Adresse ligne 1';
+
+  @override
+  String get kyc_address_addressLine2 => 'Adresse ligne 2';
+
+  @override
+  String get kyc_address_city => 'Ville';
+
+  @override
+  String get kyc_address_state => 'État/Région';
+
+  @override
+  String get kyc_address_postalCode => 'Code postal';
+
+  @override
+  String get kyc_address_country => 'Pays';
+
+  @override
+  String get kyc_address_proofDocument_title => 'Justificatif de domicile';
+
+  @override
+  String get kyc_address_proofDocument_description =>
+      'Télécharger un document indiquant votre adresse';
+
+  @override
+  String get kyc_address_takePhoto => 'Prendre une photo';
+
+  @override
+  String get kyc_address_retakePhoto => 'Reprendre une photo';
+
+  @override
+  String get kyc_address_chooseFile => 'Choisir un fichier';
+
+  @override
+  String get kyc_address_changeFile => 'Changer de fichier';
+
+  @override
+  String get kyc_address_uploadDocument => 'Télécharger le document';
+
+  @override
+  String get kyc_address_submit => 'Soumettre l\'adresse';
+
+  @override
+  String get kyc_address_error => 'Échec de la soumission de l\'adresse';
+
+  @override
+  String get kyc_address_info_title => 'Documents acceptés';
+
+  @override
+  String get kyc_address_info_description =>
+      'Les documents doivent être datés de moins de 3 mois';
+
+  @override
+  String get kyc_address_docType_utilityBill => 'Facture de services publics';
+
+  @override
+  String get kyc_address_docType_utilityBill_description =>
+      'Facture d\'électricité, d\'eau ou de gaz';
+
+  @override
+  String get kyc_address_docType_bankStatement => 'Relevé bancaire';
+
+  @override
+  String get kyc_address_docType_bankStatement_description =>
+      'Relevé bancaire récent';
+
+  @override
+  String get kyc_address_docType_governmentLetter => 'Lettre du gouvernement';
+
+  @override
+  String get kyc_address_docType_governmentLetter_description =>
+      'Correspondance officielle du gouvernement';
+
+  @override
+  String get kyc_address_docType_rentalAgreement => 'Contrat de location';
+
+  @override
+  String get kyc_address_docType_rentalAgreement_description =>
+      'Contrat de location ou de bail signé';
+
+  @override
+  String get kyc_video_title => 'Vérification vidéo';
+
+  @override
+  String get kyc_video_instructions_title => 'Avant de commencer';
+
+  @override
+  String get kyc_video_instructions_description =>
+      'Suivez ces directives pour de meilleurs résultats';
+
+  @override
+  String get kyc_video_instruction_lighting_title => 'Bon éclairage';
+
+  @override
+  String get kyc_video_instruction_lighting_description =>
+      'Trouvez un endroit bien éclairé';
+
+  @override
+  String get kyc_video_instruction_position_title => 'Position du visage';
+
+  @override
+  String get kyc_video_instruction_position_description =>
+      'Gardez votre visage dans le cadre';
+
+  @override
+  String get kyc_video_instruction_quiet_title => 'Environnement calme';
+
+  @override
+  String get kyc_video_instruction_quiet_description =>
+      'Trouvez un endroit calme';
+
+  @override
+  String get kyc_video_instruction_solo_title => 'Soyez seul';
+
+  @override
+  String get kyc_video_instruction_solo_description =>
+      'Seul vous devez être dans le cadre';
+
+  @override
+  String get kyc_video_actions_title => 'Suivez les instructions';
+
+  @override
+  String get kyc_video_actions_description =>
+      'Complétez chaque action comme demandé';
+
+  @override
+  String get kyc_video_action_lookStraight => 'Regardez droit';
+
+  @override
+  String get kyc_video_action_turnLeft => 'Tournez à gauche';
+
+  @override
+  String get kyc_video_action_turnRight => 'Tournez à droite';
+
+  @override
+  String get kyc_video_action_smile => 'Souriez';
+
+  @override
+  String get kyc_video_action_blink => 'Clignez des yeux';
+
+  @override
+  String get kyc_video_startRecording => 'Commencer l\'enregistrement';
+
+  @override
+  String get kyc_video_continue => 'Continuer';
+
+  @override
+  String get kyc_video_preview_title => 'Aperçu';
+
+  @override
+  String get kyc_video_preview_description => 'Examinez votre vidéo';
+
+  @override
+  String get kyc_video_preview_videoRecorded => 'Vidéo enregistrée';
+
+  @override
+  String get kyc_video_retake => 'Recommencer';
+
+  @override
+  String get kyc_upgrade_title => 'Mise à niveau de vérification';
+
+  @override
+  String get kyc_upgrade_selectTier => 'Sélectionner le niveau';
+
+  @override
+  String get kyc_upgrade_selectTier_description =>
+      'Choisissez votre niveau de vérification';
+
+  @override
+  String get kyc_upgrade_currentTier => 'Niveau actuel';
+
+  @override
+  String get kyc_upgrade_recommended => 'Recommandé';
+
+  @override
+  String get kyc_upgrade_perTransaction => 'Par transaction';
+
+  @override
+  String get kyc_upgrade_dailyLimit => 'Limite quotidienne';
+
+  @override
+  String get kyc_upgrade_monthlyLimit => 'Limite mensuelle';
+
+  @override
+  String get kyc_upgrade_andMore => 'et plus';
+
+  @override
+  String get kyc_upgrade_requirements_title => 'Exigences';
+
+  @override
+  String get kyc_upgrade_requirement_idDocument => 'Document d\'identité';
+
+  @override
+  String get kyc_upgrade_requirement_selfie => 'Selfie';
+
+  @override
+  String get kyc_upgrade_requirement_addressProof => 'Justificatif de domicile';
+
+  @override
+  String get kyc_upgrade_requirement_sourceOfFunds => 'Source des fonds';
+
+  @override
+  String get kyc_upgrade_requirement_videoVerification => 'Vérification vidéo';
+
+  @override
+  String get kyc_upgrade_startVerification => 'Commencer la vérification';
+
+  @override
+  String get kyc_upgrade_reason_title => 'Pourquoi mettre à niveau?';
+
+  @override
+  String get settings_deviceTrustedSuccess => 'Appareil marqué comme fiable';
+
+  @override
+  String get settings_deviceTrustError =>
+      'Échec de la confiance de l\'appareil';
+
+  @override
+  String get settings_deviceRemovedSuccess => 'Appareil supprimé avec succès';
+
+  @override
+  String get settings_deviceRemoveError =>
+      'Échec de la suppression de l\'appareil';
+
+  @override
+  String get settings_help => 'Aide et support';
+
+  @override
+  String get action_copiedToClipboard => 'Copié dans le presse-papiers';
+
+  @override
+  String get transfer_successTitle => 'Transfert réussi!';
+
+  @override
+  String transfer_successMessage(String amount) {
+    return 'Votre transfert de $amount a réussi';
+  }
+
+  @override
+  String get transactions_transactionId => 'ID de transaction';
+
+  @override
+  String get common_amount => 'Montant';
+
+  @override
+  String get transactions_status => 'Statut';
+
+  @override
+  String get transactions_completed => 'Terminé';
+
+  @override
+  String get common_note => 'Note';
+
+  @override
+  String get action_shareReceipt => 'Partager le reçu';
+
+  @override
+  String get withdraw_mobileMoney => 'Mobile Money';
+
+  @override
+  String get withdraw_bankTransfer => 'Virement bancaire';
+
+  @override
+  String get withdraw_crypto => 'Portefeuille crypto';
+
+  @override
+  String get withdraw_mobileMoneyDesc => 'Retirer vers Orange Money, MTN, Wave';
+
+  @override
+  String get withdraw_bankDesc => 'Transférer vers votre compte bancaire';
+
+  @override
+  String get withdraw_cryptoDesc => 'Envoyer vers un portefeuille externe';
+
+  @override
+  String get navigation_withdraw => 'Retirer';
+
+  @override
+  String get withdraw_method => 'Méthode de retrait';
+
+  @override
+  String get withdraw_processingInfo =>
+      'Les délais de traitement varient selon la méthode';
+
+  @override
+  String get withdraw_amountLabel => 'Montant à retirer';
+
+  @override
+  String get withdraw_mobileNumber => 'Numéro Mobile Money';
+
+  @override
+  String get withdraw_bankDetails => 'Coordonnées bancaires';
+
+  @override
+  String get withdraw_walletAddress => 'Adresse du portefeuille';
+
+  @override
+  String get withdraw_networkWarning =>
+      'Assurez-vous d\'envoyer vers une adresse Solana USDC';
 }

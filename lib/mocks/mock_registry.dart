@@ -79,7 +79,7 @@ class MockRegistry {
     LimitsMock.register(_interceptor);
     PaymentLinksMock.register(_interceptor);
     BeneficiariesMock.register(_interceptor);
-    BusinessMock.register();
+    BusinessMock.register(_interceptor);
     BulkPaymentsMock.register(_interceptor);
     SubBusinessMock.register(_interceptor);
     CardsMock.register(_interceptor);

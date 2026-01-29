@@ -113,7 +113,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             AppButton(
               label: l10n.expenses_addManually,
               onPressed: () => context.push('/expenses/add'),
-              variant: ButtonVariant.secondary,
+              variant: AppButtonVariant.secondary,
             ),
           ],
         ),

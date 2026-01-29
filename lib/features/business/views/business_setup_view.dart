@@ -81,21 +81,20 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 label: l10n.business_registrationNumber,
                 controller: _registrationNumberController,
                 keyboardType: TextInputType.text,
-                helperText: l10n.common_optional,
+                helper: 'Optional',
               ),
               const SizedBox(height: AppSpacing.lg),
 
               // Business Type
-              AppText(
-                l10n.business_businessType,
-                variant: AppTextVariant.labelMedium,
-                color: colors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
               AppSelect<BusinessType>(
+                label: l10n.business_businessType,
                 value: _selectedBusinessType,
-                items: BusinessType.values,
-                itemBuilder: (type) => type.displayName,
+                items: BusinessType.values
+                    .map((type) => AppSelectItem(
+                          value: type,
+                          label: type.displayName,
+                        ))
+                    .toList(),
                 onChanged: (type) {
                   if (type != null) {
                     setState(() => _selectedBusinessType = type);
@@ -110,7 +109,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 controller: _businessAddressController,
                 keyboardType: TextInputType.streetAddress,
                 maxLines: 3,
-                helperText: l10n.common_optional,
+                helper: 'Optional',
               ),
               const SizedBox(height: AppSpacing.lg),
 
@@ -119,13 +118,13 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
                 label: l10n.business_taxId,
                 controller: _taxIdController,
                 keyboardType: TextInputType.text,
-                helperText: l10n.common_optional,
+                helper: 'Optional',
               ),
               const SizedBox(height: AppSpacing.xxl),
 
               // Info Box
               AppCard(
-                variant: AppCardVariant.outlined,
+                variant: AppCardVariant.subtle,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

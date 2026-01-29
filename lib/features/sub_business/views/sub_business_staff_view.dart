@@ -190,7 +190,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                 label: l10n.subBusiness_phoneLabel,
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
-                placeholder: '+225 XX XX XX XX',
+                hint: '+225 XX XX XX XX',
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
@@ -406,7 +406,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
           AppButton(
             label: l10n.subBusiness_removeButton,
             onPressed: () => Navigator.pop(context, true),
-            variant: AppButtonVariant.error,
+            variant: AppButtonVariant.danger,
             size: AppButtonSize.small,
           ),
         ],

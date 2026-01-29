@@ -442,7 +442,7 @@ class _NotificationCard extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     AppText(
-                      _formatTime(notification.createdAt),
+                      _formatTime(context, notification.createdAt),
                       variant: AppTextVariant.bodySmall,
                       color: AppColors.textTertiary,
                     ),
@@ -580,7 +580,7 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dateTime) {
+  String _formatTime(BuildContext context, DateTime dateTime) {
     final now = DateTime.now();
     final diff = now.difference(dateTime);
     final l10n = AppLocalizations.of(context)!;

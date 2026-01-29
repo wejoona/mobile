@@ -51,6 +51,6 @@ class BusinessService {
 
 /// Provider
 final businessServiceProvider = Provider<BusinessService>((ref) {
-  final dio = ref.watch(apiClientProvider);
+  final dio = ref.watch(dioProvider);
   return BusinessService(dio);
 });

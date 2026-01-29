@@ -174,7 +174,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
               label: l10n.expenses_exportCsv,
               onPressed: () => _generateCsvReport(context, l10n, expenses),
               icon: Icons.table_chart,
-              variant: ButtonVariant.secondary,
+              variant: AppButtonVariant.secondary,
             ),
           ],
         ),

@@ -103,9 +103,9 @@ import '../features/expenses/views/capture_receipt_view.dart';
 import '../features/expenses/views/expense_detail_view.dart';
 import '../features/expenses/views/expense_reports_view.dart';
 import '../features/expenses/models/expense.dart';
-import '../features/payment_links/views/payment_links_view.dart';
-import '../features/payment_links/views/create_payment_link_view.dart';
-import '../features/payment_links/views/payment_link_detail_view.dart';
+import '../features/payment_links/views/payment_links_list_view.dart';
+import '../features/payment_links/views/create_link_view.dart';
+import '../features/payment_links/views/link_detail_view.dart';
 import '../features/payment_links/views/link_created_view.dart';
 import '../features/payment_links/views/pay_link_view.dart';
 import '../features/bank_linking/views/linked_accounts_view.dart';
@@ -1163,14 +1163,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/payment-links',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const PaymentLinksView(),
+          child: const PaymentLinksListView(),
         ),
       ),
       GoRoute(
         path: '/payment-links/create',
         pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
           state: state,
-          child: const CreatePaymentLinkView(),
+          child: const CreateLinkView(),
         ),
       ),
       GoRoute(
@@ -1179,7 +1179,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return AppPageTransitions.fade(
             state: state,
-            child: PaymentLinkDetailView(linkId: id),
+            child: LinkDetailView(linkId: id),
           );
         },
       ),

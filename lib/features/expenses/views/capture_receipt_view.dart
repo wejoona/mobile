@@ -227,7 +227,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                           _ocrResult = null;
                           _isProcessing = false;
                         }),
-                        variant: ButtonVariant.secondary,
+                        variant: AppButtonVariant.secondary,
                       ),
                     ],
                   ),
@@ -327,7 +327,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                 label: l10n.expenses_category,
                 value: _selectedCategory,
                 items: ExpenseCategory.all.map((category) {
-                  return SelectItem(
+                  return AppSelectItem(
                     value: category,
                     label: _getCategoryLabel(l10n, category),
                     icon: _getCategoryIcon(category),
@@ -344,7 +344,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                 label: l10n.expenses_amount,
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                prefixText: 'XOF ',
+                prefix: const Text('XOF '),
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return l10n.expenses_errorAmountRequired;
@@ -359,7 +359,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
               AppInput(
                 label: l10n.expenses_vendor,
                 controller: _vendorController,
-                textCapitalization: TextCapitalization.words,
               ),
               SizedBox(height: AppSpacing.md),
               AppInput(
@@ -376,7 +375,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                 label: l10n.expenses_description,
                 controller: _descriptionController,
                 maxLines: 3,
-                textCapitalization: TextCapitalization.sentences,
               ),
               SizedBox(height: AppSpacing.xl),
               AppButton(

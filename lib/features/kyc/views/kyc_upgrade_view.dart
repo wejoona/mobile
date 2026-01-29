@@ -283,7 +283,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                 if (tier.features.length > 4) ...[
                   SizedBox(height: AppSpacing.xs),
                   AppText(
-                    l10n.kyc_upgrade_andMore(tier.features.length - 4),
+                    '+${tier.features.length - 4} ${l10n.kyc_upgrade_andMore}',
                     variant: AppTextVariant.bodySmall,
                     color: AppColors.textSecondary,
                   ),

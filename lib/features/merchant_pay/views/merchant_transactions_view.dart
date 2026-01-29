@@ -180,7 +180,7 @@ class _MerchantTransactionsViewState
     }
 
     return AppCard(
-      variant: AppCardVariant.outline,
+      variant: AppCardVariant.subtle,
       padding: EdgeInsets.all(AppSpacing.md),
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       onTap: () => _showTransactionDetails(tx),

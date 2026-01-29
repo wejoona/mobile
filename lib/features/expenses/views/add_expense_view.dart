@@ -61,7 +61,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
                 label: l10n.expenses_category,
                 value: _selectedCategory,
                 items: ExpenseCategory.all.map((category) {
-                  return SelectItem(
+                  return AppSelectItem(
                     value: category,
                     label: _getCategoryLabel(l10n, category),
                     icon: _getCategoryIcon(category),
@@ -78,7 +78,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
                 label: l10n.expenses_amount,
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                prefixText: 'XOF ',
+                prefix: const Text('XOF '),
                 validator: (value) {
                   if (value?.isEmpty ?? true) {
                     return l10n.expenses_errorAmountRequired;
@@ -93,7 +93,6 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
               AppInput(
                 label: l10n.expenses_vendor,
                 controller: _vendorController,
-                textCapitalization: TextCapitalization.words,
               ),
               SizedBox(height: AppSpacing.md),
               AppInput(
@@ -110,7 +109,6 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
                 label: l10n.expenses_description,
                 controller: _descriptionController,
                 maxLines: 3,
-                textCapitalization: TextCapitalization.sentences,
               ),
               SizedBox(height: AppSpacing.xl),
               AppButton(

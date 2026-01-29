@@ -3,6 +3,7 @@ library;
 
 import '../../../features/bank_linking/models/bank.dart';
 import '../../../features/bank_linking/models/linked_bank_account.dart';
+import '../../base/api_contract.dart';
 import '../../base/mock_interceptor.dart';
 
 /// Bank Linking Mock State

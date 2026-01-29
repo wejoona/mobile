@@ -156,7 +156,7 @@ class ExpenseDetailView extends ConsumerWidget {
               label: l10n.common_share,
               onPressed: () => _shareExpense(context, l10n),
               icon: Icons.share,
-              variant: ButtonVariant.secondary,
+              variant: AppButtonVariant.secondary,
             ),
           ],
         ),
@@ -221,7 +221,7 @@ class ExpenseDetailView extends ConsumerWidget {
           AppButton(
             label: l10n.common_delete,
             onPressed: () => Navigator.pop(context, true),
-            variant: ButtonVariant.danger,
+            variant: AppButtonVariant.danger,
             size: AppButtonSize.small,
           ),
         ],

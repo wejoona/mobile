@@ -157,7 +157,7 @@ Powered by JoonaPay
         children: [
           // Merchant info card
           AppCard(
-            variant: AppCardVariant.filled,
+            variant: AppCardVariant.elevated,
             padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
@@ -465,7 +465,7 @@ Powered by JoonaPay
 
           // Instructions
           AppCard(
-            variant: AppCardVariant.outline,
+            variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [

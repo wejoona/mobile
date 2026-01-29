@@ -8731,6 +8731,1320 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save PIN. Please try again.'**
   String get changePin_errorFailedToSave;
+
+  /// Email notifications section
+  ///
+  /// In en, this message translates to:
+  /// **'Email Notifications'**
+  String get notifications_email;
+
+  /// Email receipts option
+  ///
+  /// In en, this message translates to:
+  /// **'Email Receipts'**
+  String get notifications_emailReceipts;
+
+  /// Email receipts description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive transaction receipts by email'**
+  String get notifications_emailReceiptsDescription;
+
+  /// Error loading notification settings
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notification settings'**
+  String get notifications_loadError;
+
+  /// Marketing notifications option
+  ///
+  /// In en, this message translates to:
+  /// **'Marketing'**
+  String get notifications_marketing;
+
+  /// Marketing notifications description
+  ///
+  /// In en, this message translates to:
+  /// **'Promotional offers and updates'**
+  String get notifications_marketingDescription;
+
+  /// Monthly statement option
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Statement'**
+  String get notifications_monthlyStatement;
+
+  /// Monthly statement description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive monthly account statement'**
+  String get notifications_monthlyStatementDescription;
+
+  /// Newsletter option
+  ///
+  /// In en, this message translates to:
+  /// **'Newsletter'**
+  String get notifications_newsletter;
+
+  /// Newsletter description
+  ///
+  /// In en, this message translates to:
+  /// **'Product news and updates'**
+  String get notifications_newsletterDescription;
+
+  /// Push notifications section
+  ///
+  /// In en, this message translates to:
+  /// **'Push Notifications'**
+  String get notifications_push;
+
+  /// Required notification indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get notifications_required;
+
+  /// Error saving notification preferences
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save preferences'**
+  String get notifications_saveError;
+
+  /// Save preferences button
+  ///
+  /// In en, this message translates to:
+  /// **'Save Preferences'**
+  String get notifications_savePreferences;
+
+  /// Success saving preferences
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences saved successfully'**
+  String get notifications_saveSuccess;
+
+  /// Security alerts option
+  ///
+  /// In en, this message translates to:
+  /// **'Security Alerts'**
+  String get notifications_security;
+
+  /// Security codes option
+  ///
+  /// In en, this message translates to:
+  /// **'Security Codes'**
+  String get notifications_securityCodes;
+
+  /// Security codes description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive login and verification codes'**
+  String get notifications_securityCodesDescription;
+
+  /// Security notifications description
+  ///
+  /// In en, this message translates to:
+  /// **'Account security notifications'**
+  String get notifications_securityDescription;
+
+  /// Security notification note
+  ///
+  /// In en, this message translates to:
+  /// **'Security notifications cannot be disabled'**
+  String get notifications_securityNote;
+
+  /// SMS notifications section
+  ///
+  /// In en, this message translates to:
+  /// **'SMS Notifications'**
+  String get notifications_sms;
+
+  /// SMS transaction alerts option
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Alerts'**
+  String get notifications_smsTransactions;
+
+  /// SMS transaction alerts description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive SMS for transactions'**
+  String get notifications_smsTransactionsDescription;
+
+  /// Transaction notifications option
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions'**
+  String get notifications_transactions;
+
+  /// Transaction notifications description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive notifications for transfers and payments'**
+  String get notifications_transactionsDescription;
+
+  /// Unsaved changes dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved Changes'**
+  String get notifications_unsavedChanges;
+
+  /// Unsaved changes dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. Discard them?'**
+  String get notifications_unsavedChangesMessage;
+
+  /// Call us button
+  ///
+  /// In en, this message translates to:
+  /// **'Call Us'**
+  String get help_callUs;
+
+  /// Email us button
+  ///
+  /// In en, this message translates to:
+  /// **'Email Us'**
+  String get help_emailUs;
+
+  /// Get help title
+  ///
+  /// In en, this message translates to:
+  /// **'Get Help'**
+  String get help_getHelp;
+
+  /// Search results label
+  ///
+  /// In en, this message translates to:
+  /// **'Results'**
+  String get help_results;
+
+  /// Help search placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search help articles...'**
+  String get help_searchPlaceholder;
+
+  /// Discard action
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get action_discard;
+
+  /// Coming soon label
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get common_comingSoon;
+
+  /// Maybe later button
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get common_maybeLater;
+
+  /// Optional field indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get common_optional;
+
+  /// Share action
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get common_share;
+
+  /// Invalid number error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid number'**
+  String get error_invalidNumber;
+
+  /// Export title
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export_title;
+
+  /// Account details header
+  ///
+  /// In en, this message translates to:
+  /// **'Account Details'**
+  String get bankLinking_accountDetails;
+
+  /// Account holder name field
+  ///
+  /// In en, this message translates to:
+  /// **'Account Holder Name'**
+  String get bankLinking_accountHolderName;
+
+  /// Account holder name validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Account holder name is required'**
+  String get bankLinking_accountHolderNameRequired;
+
+  /// Account number field
+  ///
+  /// In en, this message translates to:
+  /// **'Account Number'**
+  String get bankLinking_accountNumber;
+
+  /// Account number validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Account number is required'**
+  String get bankLinking_accountNumberRequired;
+
+  /// Amount field
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get bankLinking_amount;
+
+  /// Amount validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Amount is required'**
+  String get bankLinking_amountRequired;
+
+  /// Balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get bankLinking_balance;
+
+  /// Balance check action
+  ///
+  /// In en, this message translates to:
+  /// **'Balance Check'**
+  String get bankLinking_balanceCheck;
+
+  /// Confirm deposit button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Deposit'**
+  String get bankLinking_confirmDeposit;
+
+  /// Confirm withdrawal button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Withdrawal'**
+  String get bankLinking_confirmWithdraw;
+
+  /// Deposit action
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get bankLinking_deposit;
+
+  /// Deposit confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit {amount} from your bank?'**
+  String bankLinking_depositConfirmation(String amount);
+
+  /// Deposit from bank action
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit from Bank'**
+  String get bankLinking_depositFromBank;
+
+  /// Deposit information message
+  ///
+  /// In en, this message translates to:
+  /// **'Funds will be credited within 24 hours'**
+  String get bankLinking_depositInfo;
+
+  /// Deposit success message
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit successful'**
+  String get bankLinking_depositSuccess;
+
+  /// Development OTP hint
+  ///
+  /// In en, this message translates to:
+  /// **'Dev OTP: 123456'**
+  String get bankLinking_devOtpHint;
+
+  /// Direct debit label
+  ///
+  /// In en, this message translates to:
+  /// **'Direct Debit'**
+  String get bankLinking_directDebit;
+
+  /// Enter amount placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount'**
+  String get bankLinking_enterAmount;
+
+  /// Failed status
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get bankLinking_failed;
+
+  /// Invalid amount error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get bankLinking_invalidAmount;
+
+  /// Invalid OTP error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP'**
+  String get bankLinking_invalidOtp;
+
+  /// Link account action
+  ///
+  /// In en, this message translates to:
+  /// **'Link Account'**
+  String get bankLinking_linkAccount;
+
+  /// Link account description
+  ///
+  /// In en, this message translates to:
+  /// **'Link your bank account for easy transfers'**
+  String get bankLinking_linkAccountDesc;
+
+  /// Linked accounts title
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Accounts'**
+  String get bankLinking_linkedAccounts;
+
+  /// Link failed error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to link account'**
+  String get bankLinking_linkFailed;
+
+  /// Link new account action
+  ///
+  /// In en, this message translates to:
+  /// **'Link New Account'**
+  String get bankLinking_linkNewAccount;
+
+  /// No linked accounts message
+  ///
+  /// In en, this message translates to:
+  /// **'No linked accounts'**
+  String get bankLinking_noLinkedAccounts;
+
+  /// OTP code field
+  ///
+  /// In en, this message translates to:
+  /// **'OTP Code'**
+  String get bankLinking_otpCode;
+
+  /// OTP resent confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'OTP resent'**
+  String get bankLinking_otpResent;
+
+  /// Pending status
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get bankLinking_pending;
+
+  /// Primary account label
+  ///
+  /// In en, this message translates to:
+  /// **'Primary'**
+  String get bankLinking_primary;
+
+  /// Primary account set confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Primary account set'**
+  String get bankLinking_primaryAccountSet;
+
+  /// Resend OTP action
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get bankLinking_resendOtp;
+
+  /// Resend OTP countdown
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP in {seconds}s'**
+  String bankLinking_resendOtpIn(int seconds);
+
+  /// Select bank action
+  ///
+  /// In en, this message translates to:
+  /// **'Select Bank'**
+  String get bankLinking_selectBank;
+
+  /// Select bank description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your bank to link'**
+  String get bankLinking_selectBankDesc;
+
+  /// Select bank title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Your Bank'**
+  String get bankLinking_selectBankTitle;
+
+  /// Suspended status
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended'**
+  String get bankLinking_suspended;
+
+  /// Verification description
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the OTP sent to your phone'**
+  String get bankLinking_verificationDesc;
+
+  /// Verification failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get bankLinking_verificationFailed;
+
+  /// Verification required title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Required'**
+  String get bankLinking_verificationRequired;
+
+  /// Verification success message
+  ///
+  /// In en, this message translates to:
+  /// **'Account verified'**
+  String get bankLinking_verificationSuccess;
+
+  /// Verify account title
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get bankLinking_verificationTitle;
+
+  /// Verified status
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get bankLinking_verified;
+
+  /// Verify action
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get bankLinking_verify;
+
+  /// Verify account action
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get bankLinking_verifyAccount;
+
+  /// Withdraw action
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get bankLinking_withdraw;
+
+  /// Withdraw confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw {amount} to your bank?'**
+  String bankLinking_withdrawConfirmation(String amount);
+
+  /// Withdraw information message
+  ///
+  /// In en, this message translates to:
+  /// **'Funds will arrive in 1-3 business days'**
+  String get bankLinking_withdrawInfo;
+
+  /// Withdrawal success message
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal successful'**
+  String get bankLinking_withdrawSuccess;
+
+  /// Withdrawal processing time
+  ///
+  /// In en, this message translates to:
+  /// **'Processing time: 1-3 business days'**
+  String get bankLinking_withdrawTime;
+
+  /// Withdraw to bank action
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw to Bank'**
+  String get bankLinking_withdrawToBank;
+
+  /// Confirm button text
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get common_confirm;
+
+  /// Total amount label for expenses
+  ///
+  /// In en, this message translates to:
+  /// **'Total Amount'**
+  String get expenses_totalAmount;
+
+  /// Additional documents screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Documents'**
+  String get kyc_additionalDocs_title;
+
+  /// Additional documents screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Provide additional information for verification'**
+  String get kyc_additionalDocs_description;
+
+  /// Employment section title
+  ///
+  /// In en, this message translates to:
+  /// **'Employment Information'**
+  String get kyc_additionalDocs_employment_title;
+
+  /// Occupation field label
+  ///
+  /// In en, this message translates to:
+  /// **'Occupation'**
+  String get kyc_additionalDocs_occupation;
+
+  /// Employer field label
+  ///
+  /// In en, this message translates to:
+  /// **'Employer'**
+  String get kyc_additionalDocs_employer;
+
+  /// Monthly income field label
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Income'**
+  String get kyc_additionalDocs_monthlyIncome;
+
+  /// Source of funds section title
+  ///
+  /// In en, this message translates to:
+  /// **'Source of Funds'**
+  String get kyc_additionalDocs_sourceOfFunds_title;
+
+  /// Source of funds section description
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your source of funds'**
+  String get kyc_additionalDocs_sourceOfFunds_description;
+
+  /// Source details field label
+  ///
+  /// In en, this message translates to:
+  /// **'Source Details'**
+  String get kyc_additionalDocs_sourceDetails;
+
+  /// Supporting documents section title
+  ///
+  /// In en, this message translates to:
+  /// **'Supporting Documents'**
+  String get kyc_additionalDocs_supportingDocs_title;
+
+  /// Supporting documents section description
+  ///
+  /// In en, this message translates to:
+  /// **'Upload documents to verify your information'**
+  String get kyc_additionalDocs_supportingDocs_description;
+
+  /// Take photo button text
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get kyc_additionalDocs_takePhoto;
+
+  /// Upload file button text
+  ///
+  /// In en, this message translates to:
+  /// **'Upload File'**
+  String get kyc_additionalDocs_uploadFile;
+
+  /// Error message when document submission fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit documents'**
+  String get kyc_additionalDocs_error;
+
+  /// Info section title
+  ///
+  /// In en, this message translates to:
+  /// **'Why we need this'**
+  String get kyc_additionalDocs_info_title;
+
+  /// Info section description
+  ///
+  /// In en, this message translates to:
+  /// **'This helps us verify your identity'**
+  String get kyc_additionalDocs_info_description;
+
+  /// Submit documents button text
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Documents'**
+  String get kyc_additionalDocs_submit;
+
+  /// Salary source type
+  ///
+  /// In en, this message translates to:
+  /// **'Salary'**
+  String get kyc_additionalDocs_sourceType_salary;
+
+  /// Business income source type
+  ///
+  /// In en, this message translates to:
+  /// **'Business Income'**
+  String get kyc_additionalDocs_sourceType_business;
+
+  /// Investments source type
+  ///
+  /// In en, this message translates to:
+  /// **'Investments'**
+  String get kyc_additionalDocs_sourceType_investments;
+
+  /// Savings source type
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get kyc_additionalDocs_sourceType_savings;
+
+  /// Inheritance source type
+  ///
+  /// In en, this message translates to:
+  /// **'Inheritance'**
+  String get kyc_additionalDocs_sourceType_inheritance;
+
+  /// Gift source type
+  ///
+  /// In en, this message translates to:
+  /// **'Gift'**
+  String get kyc_additionalDocs_sourceType_gift;
+
+  /// Other source type
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get kyc_additionalDocs_sourceType_other;
+
+  /// Pay slip document suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Pay slip'**
+  String get kyc_additionalDocs_suggestion_paySlip;
+
+  /// Bank statement document suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Bank statement'**
+  String get kyc_additionalDocs_suggestion_bankStatement;
+
+  /// Business registration document suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Business registration'**
+  String get kyc_additionalDocs_suggestion_businessReg;
+
+  /// Tax return document suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Tax return'**
+  String get kyc_additionalDocs_suggestion_taxReturn;
+
+  /// Address verification screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Address Verification'**
+  String get kyc_address_title;
+
+  /// Address verification screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your residential address'**
+  String get kyc_address_description;
+
+  /// Address form section title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Address'**
+  String get kyc_address_form_title;
+
+  /// Address line 1 field label
+  ///
+  /// In en, this message translates to:
+  /// **'Address Line 1'**
+  String get kyc_address_addressLine1;
+
+  /// Address line 2 field label
+  ///
+  /// In en, this message translates to:
+  /// **'Address Line 2'**
+  String get kyc_address_addressLine2;
+
+  /// City field label
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get kyc_address_city;
+
+  /// State/Region field label
+  ///
+  /// In en, this message translates to:
+  /// **'State/Region'**
+  String get kyc_address_state;
+
+  /// Postal code field label
+  ///
+  /// In en, this message translates to:
+  /// **'Postal Code'**
+  String get kyc_address_postalCode;
+
+  /// Country field label
+  ///
+  /// In en, this message translates to:
+  /// **'Country'**
+  String get kyc_address_country;
+
+  /// Proof of address section title
+  ///
+  /// In en, this message translates to:
+  /// **'Proof of Address'**
+  String get kyc_address_proofDocument_title;
+
+  /// Proof of address section description
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a document showing your address'**
+  String get kyc_address_proofDocument_description;
+
+  /// Take photo button text
+  ///
+  /// In en, this message translates to:
+  /// **'Take Photo'**
+  String get kyc_address_takePhoto;
+
+  /// Retake photo button text
+  ///
+  /// In en, this message translates to:
+  /// **'Retake Photo'**
+  String get kyc_address_retakePhoto;
+
+  /// Choose file button text
+  ///
+  /// In en, this message translates to:
+  /// **'Choose File'**
+  String get kyc_address_chooseFile;
+
+  /// Change file button text
+  ///
+  /// In en, this message translates to:
+  /// **'Change File'**
+  String get kyc_address_changeFile;
+
+  /// Upload document button text
+  ///
+  /// In en, this message translates to:
+  /// **'Upload Document'**
+  String get kyc_address_uploadDocument;
+
+  /// Submit address button text
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Address'**
+  String get kyc_address_submit;
+
+  /// Error message when address submission fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit address'**
+  String get kyc_address_error;
+
+  /// Accepted documents info title
+  ///
+  /// In en, this message translates to:
+  /// **'Accepted Documents'**
+  String get kyc_address_info_title;
+
+  /// Accepted documents info description
+  ///
+  /// In en, this message translates to:
+  /// **'Documents must be dated within 3 months'**
+  String get kyc_address_info_description;
+
+  /// Utility bill document type
+  ///
+  /// In en, this message translates to:
+  /// **'Utility Bill'**
+  String get kyc_address_docType_utilityBill;
+
+  /// Utility bill document type description
+  ///
+  /// In en, this message translates to:
+  /// **'Electricity, water, or gas bill'**
+  String get kyc_address_docType_utilityBill_description;
+
+  /// Bank statement document type
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Statement'**
+  String get kyc_address_docType_bankStatement;
+
+  /// Bank statement document type description
+  ///
+  /// In en, this message translates to:
+  /// **'Recent bank statement'**
+  String get kyc_address_docType_bankStatement_description;
+
+  /// Government letter document type
+  ///
+  /// In en, this message translates to:
+  /// **'Government Letter'**
+  String get kyc_address_docType_governmentLetter;
+
+  /// Government letter document type description
+  ///
+  /// In en, this message translates to:
+  /// **'Official government correspondence'**
+  String get kyc_address_docType_governmentLetter_description;
+
+  /// Rental agreement document type
+  ///
+  /// In en, this message translates to:
+  /// **'Rental Agreement'**
+  String get kyc_address_docType_rentalAgreement;
+
+  /// Rental agreement document type description
+  ///
+  /// In en, this message translates to:
+  /// **'Signed rental or lease agreement'**
+  String get kyc_address_docType_rentalAgreement_description;
+
+  /// Video verification screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Video Verification'**
+  String get kyc_video_title;
+
+  /// Video instructions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Before You Start'**
+  String get kyc_video_instructions_title;
+
+  /// Video instructions section description
+  ///
+  /// In en, this message translates to:
+  /// **'Follow these guidelines for best results'**
+  String get kyc_video_instructions_description;
+
+  /// Lighting instruction title
+  ///
+  /// In en, this message translates to:
+  /// **'Good Lighting'**
+  String get kyc_video_instruction_lighting_title;
+
+  /// Lighting instruction description
+  ///
+  /// In en, this message translates to:
+  /// **'Find a well-lit area'**
+  String get kyc_video_instruction_lighting_description;
+
+  /// Face position instruction title
+  ///
+  /// In en, this message translates to:
+  /// **'Face Position'**
+  String get kyc_video_instruction_position_title;
+
+  /// Face position instruction description
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your face in the frame'**
+  String get kyc_video_instruction_position_description;
+
+  /// Quiet environment instruction title
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet Environment'**
+  String get kyc_video_instruction_quiet_title;
+
+  /// Quiet environment instruction description
+  ///
+  /// In en, this message translates to:
+  /// **'Find a quiet place'**
+  String get kyc_video_instruction_quiet_description;
+
+  /// Solo instruction title
+  ///
+  /// In en, this message translates to:
+  /// **'Be Alone'**
+  String get kyc_video_instruction_solo_title;
+
+  /// Solo instruction description
+  ///
+  /// In en, this message translates to:
+  /// **'Only you should be in the frame'**
+  String get kyc_video_instruction_solo_description;
+
+  /// Video actions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Follow Instructions'**
+  String get kyc_video_actions_title;
+
+  /// Video actions section description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete each action as prompted'**
+  String get kyc_video_actions_description;
+
+  /// Look straight action
+  ///
+  /// In en, this message translates to:
+  /// **'Look straight'**
+  String get kyc_video_action_lookStraight;
+
+  /// Turn left action
+  ///
+  /// In en, this message translates to:
+  /// **'Turn left'**
+  String get kyc_video_action_turnLeft;
+
+  /// Turn right action
+  ///
+  /// In en, this message translates to:
+  /// **'Turn right'**
+  String get kyc_video_action_turnRight;
+
+  /// Smile action
+  ///
+  /// In en, this message translates to:
+  /// **'Smile'**
+  String get kyc_video_action_smile;
+
+  /// Blink action
+  ///
+  /// In en, this message translates to:
+  /// **'Blink'**
+  String get kyc_video_action_blink;
+
+  /// Start recording button text
+  ///
+  /// In en, this message translates to:
+  /// **'Start Recording'**
+  String get kyc_video_startRecording;
+
+  /// Continue button text
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get kyc_video_continue;
+
+  /// Video preview section title
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get kyc_video_preview_title;
+
+  /// Video preview section description
+  ///
+  /// In en, this message translates to:
+  /// **'Review your video'**
+  String get kyc_video_preview_description;
+
+  /// Video recorded status message
+  ///
+  /// In en, this message translates to:
+  /// **'Video recorded'**
+  String get kyc_video_preview_videoRecorded;
+
+  /// Retake video button text
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get kyc_video_retake;
+
+  /// Upgrade verification screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade Verification'**
+  String get kyc_upgrade_title;
+
+  /// Select tier section title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Tier'**
+  String get kyc_upgrade_selectTier;
+
+  /// Select tier section description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your verification level'**
+  String get kyc_upgrade_selectTier_description;
+
+  /// Current tier label
+  ///
+  /// In en, this message translates to:
+  /// **'Current Tier'**
+  String get kyc_upgrade_currentTier;
+
+  /// Recommended tier badge
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get kyc_upgrade_recommended;
+
+  /// Per transaction limit label
+  ///
+  /// In en, this message translates to:
+  /// **'Per Transaction'**
+  String get kyc_upgrade_perTransaction;
+
+  /// Daily limit label
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Limit'**
+  String get kyc_upgrade_dailyLimit;
+
+  /// Monthly limit label
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Limit'**
+  String get kyc_upgrade_monthlyLimit;
+
+  /// And more features text
+  ///
+  /// In en, this message translates to:
+  /// **'and more'**
+  String get kyc_upgrade_andMore;
+
+  /// Requirements section title
+  ///
+  /// In en, this message translates to:
+  /// **'Requirements'**
+  String get kyc_upgrade_requirements_title;
+
+  /// ID document requirement
+  ///
+  /// In en, this message translates to:
+  /// **'ID Document'**
+  String get kyc_upgrade_requirement_idDocument;
+
+  /// Selfie requirement
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie'**
+  String get kyc_upgrade_requirement_selfie;
+
+  /// Address proof requirement
+  ///
+  /// In en, this message translates to:
+  /// **'Address Proof'**
+  String get kyc_upgrade_requirement_addressProof;
+
+  /// Source of funds requirement
+  ///
+  /// In en, this message translates to:
+  /// **'Source of Funds'**
+  String get kyc_upgrade_requirement_sourceOfFunds;
+
+  /// Video verification requirement
+  ///
+  /// In en, this message translates to:
+  /// **'Video Verification'**
+  String get kyc_upgrade_requirement_videoVerification;
+
+  /// Start verification button text
+  ///
+  /// In en, this message translates to:
+  /// **'Start Verification'**
+  String get kyc_upgrade_startVerification;
+
+  /// Why upgrade section title
+  ///
+  /// In en, this message translates to:
+  /// **'Why upgrade?'**
+  String get kyc_upgrade_reason_title;
+
+  /// Success message when device is marked as trusted
+  ///
+  /// In en, this message translates to:
+  /// **'Device marked as trusted'**
+  String get settings_deviceTrustedSuccess;
+
+  /// Error message when device trust fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to trust device'**
+  String get settings_deviceTrustError;
+
+  /// Success message when device is removed
+  ///
+  /// In en, this message translates to:
+  /// **'Device removed successfully'**
+  String get settings_deviceRemovedSuccess;
+
+  /// Error message when device removal fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove device'**
+  String get settings_deviceRemoveError;
+
+  /// Help and support settings option
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get settings_help;
+
+  /// Message shown when text is copied to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get action_copiedToClipboard;
+
+  /// Title for successful transfer screen
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Successful!'**
+  String get transfer_successTitle;
+
+  /// Message for successful transfer
+  ///
+  /// In en, this message translates to:
+  /// **'Your transfer of {amount} was successful'**
+  String transfer_successMessage(String amount);
+
+  /// Transaction ID label
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction ID'**
+  String get transactions_transactionId;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get common_amount;
+
+  /// Transaction status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get transactions_status;
+
+  /// Completed transaction status
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get transactions_completed;
+
+  /// Note label
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get common_note;
+
+  /// Share receipt button text
+  ///
+  /// In en, this message translates to:
+  /// **'Share Receipt'**
+  String get action_shareReceipt;
+
+  /// Mobile Money withdrawal method
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money'**
+  String get withdraw_mobileMoney;
+
+  /// Bank transfer withdrawal method
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Transfer'**
+  String get withdraw_bankTransfer;
+
+  /// Crypto wallet withdrawal method
+  ///
+  /// In en, this message translates to:
+  /// **'Crypto Wallet'**
+  String get withdraw_crypto;
+
+  /// Mobile Money withdrawal description
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw to Orange Money, MTN, Wave'**
+  String get withdraw_mobileMoneyDesc;
+
+  /// Bank transfer withdrawal description
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer to your bank account'**
+  String get withdraw_bankDesc;
+
+  /// Crypto withdrawal description
+  ///
+  /// In en, this message translates to:
+  /// **'Send to external wallet'**
+  String get withdraw_cryptoDesc;
+
+  /// Withdraw navigation item
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get navigation_withdraw;
+
+  /// Withdrawal method label
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal Method'**
+  String get withdraw_method;
+
+  /// Withdrawal processing time info
+  ///
+  /// In en, this message translates to:
+  /// **'Processing times vary by method'**
+  String get withdraw_processingInfo;
+
+  /// Withdrawal amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to Withdraw'**
+  String get withdraw_amountLabel;
+
+  /// Mobile Money number input label
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money Number'**
+  String get withdraw_mobileNumber;
+
+  /// Bank details input label
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Details'**
+  String get withdraw_bankDetails;
+
+  /// Crypto wallet address input label
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Address'**
+  String get withdraw_walletAddress;
+
+  /// Warning about network compatibility
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure you are sending to a Solana USDC address'**
+  String get withdraw_networkWarning;
 }
 
 class _AppLocalizationsDelegate

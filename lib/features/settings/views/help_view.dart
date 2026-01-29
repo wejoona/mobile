@@ -90,6 +90,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(

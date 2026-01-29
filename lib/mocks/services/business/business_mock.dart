@@ -3,34 +3,34 @@ import '../../base/api_contract.dart';
 
 /// Business Mock - mock business account operations
 class BusinessMock {
-  static void register() {
+  static void register(MockInterceptor interceptor) {
     // GET /users/me/account-type - get account type
-    MockInterceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'GET',
-      pathPattern: '/users/me/account-type',
-      handler: (options) => MockResponse.success({
+      path: '/users/me/account-type',
+      handler: (options) async => MockResponse.success({
         'accountType': 'personal', // Default to personal
       }),
-    ));
+    );
 
     // POST /users/me/account-type - switch account type
-    MockInterceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'POST',
-      pathPattern: '/users/me/account-type',
-      handler: (options) {
+      path: '/users/me/account-type',
+      handler: (options) async {
         final accountType = options.data['accountType'] as String;
         return MockResponse.success({
           'accountType': accountType,
           'updatedAt': DateTime.now().toIso8601String(),
         });
       },
-    ));
+    );
 
     // GET /business/profile - get business profile
-    MockInterceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'GET',
-      pathPattern: '/business/profile',
-      handler: (options) => MockResponse.success({
+      path: '/business/profile',
+      handler: (options) async => MockResponse.success({
         'id': 'biz-123',
         'userId': 'user-456',
         'businessName': 'Amadou Trading Ltd',
@@ -42,13 +42,13 @@ class BusinessMock {
         'createdAt': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
         'updatedAt': DateTime.now().toIso8601String(),
       }),
-    ));
+    );
 
     // POST /business/profile - create/update business profile
-    MockInterceptor.register(MockEndpoint(
+    interceptor.register(
       method: 'POST',
-      pathPattern: '/business/profile',
-      handler: (options) {
+      path: '/business/profile',
+      handler: (options) async {
         final data = options.data as Map<String, dynamic>;
         return MockResponse.success({
           'id': 'biz-${DateTime.now().millisecondsSinceEpoch}',
@@ -63,6 +63,6 @@ class BusinessMock {
           'updatedAt': DateTime.now().toIso8601String(),
         });
       },
-    ));
+    );
   }
 }

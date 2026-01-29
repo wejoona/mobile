@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/feature_flags/feature_flags_provider.dart';
+import '../../../services/feature_flags/feature_flags_service.dart';
 import '../providers/cards_provider.dart';
 import '../widgets/virtual_card_widget.dart';
 
@@ -35,7 +36,8 @@ class _CardsListViewState extends ConsumerState<CardsListView> {
     final featureFlags = ref.watch(featureFlagsProvider);
 
     // Check feature flag
-    if (!featureFlags.virtualCards) {
+    final virtualCardsEnabled = featureFlags[FeatureFlagKeys.virtualCards] ?? false;
+    if (!virtualCardsEnabled) {
       return Scaffold(
         backgroundColor: colors.canvas,
         appBar: AppBar(

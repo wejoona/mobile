@@ -69,9 +69,8 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               AppInput(
                 label: l10n.onboarding_profile_firstName,
                 controller: _firstNameController,
-                placeholder: l10n.onboarding_profile_firstNameHint,
+                hint: l10n.onboarding_profile_firstNameHint,
                 prefixIcon: Icons.person_outline,
-                textCapitalization: TextCapitalization.words,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return l10n.onboarding_profile_firstNameRequired;
@@ -84,9 +83,8 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               AppInput(
                 label: l10n.onboarding_profile_lastName,
                 controller: _lastNameController,
-                placeholder: l10n.onboarding_profile_lastNameHint,
+                hint: l10n.onboarding_profile_lastNameHint,
                 prefixIcon: Icons.person_outline,
-                textCapitalization: TextCapitalization.words,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return l10n.onboarding_profile_lastNameRequired;
@@ -99,7 +97,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               AppInput(
                 label: l10n.onboarding_profile_email,
                 controller: _emailController,
-                placeholder: l10n.onboarding_profile_emailHint,
+                hint: l10n.onboarding_profile_emailHint,
                 prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {

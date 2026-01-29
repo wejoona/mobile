@@ -89,8 +89,13 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
   /// Load pending transfer count
   Future<void> _loadPendingCount() async {
     try {
-      final queueProvider = ref.read(pendingTransferQueueFutureProvider);
-      _queue = await queueProvider.future;
+      final queueAsyncValue = ref.read(pendingTransferQueueFutureProvider);
+      // Get the value from AsyncValue
+      _queue = queueAsyncValue.when(
+        data: (queue) => queue,
+        loading: () => null,
+        error: (_, __) => null,
+      );
       final count = _queue?.getPendingCount() ?? 0;
       state = state.copyWith(pendingCount: count);
     } catch (e) {

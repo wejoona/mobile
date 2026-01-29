@@ -366,7 +366,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
   IconData _getStatusIcon(BatchStatus status) {
     switch (status) {
       case BatchStatus.draft:
-        return Icons.draft;
+        return Icons.drafts;
       case BatchStatus.pending:
         return Icons.schedule;
       case BatchStatus.processing:

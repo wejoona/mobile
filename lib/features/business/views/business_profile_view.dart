@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../domain/enums/account_type.dart';
 import '../providers/business_provider.dart';
 
 /// Business Profile View - view and edit business info
@@ -68,7 +69,7 @@ class BusinessProfileView extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    AppColorScheme colors,
+    ThemeColors colors,
     BusinessState state,
   ) {
     final profile = state.businessProfile!;
@@ -79,10 +80,20 @@ class BusinessProfileView extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Verification Status
-          AppCard(
-            variant: profile.isVerified
-                ? AppCardVariant.success
-                : AppCardVariant.warning,
+          Container(
+            decoration: BoxDecoration(
+              color: profile.isVerified
+                  ? colors.successBg
+                  : colors.warningBg,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(
+                color: profile.isVerified
+                    ? colors.success
+                    : colors.warning,
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.all(AppSpacing.cardPadding),
             child: Row(
               children: [
                 Icon(
@@ -90,8 +101,8 @@ class BusinessProfileView extends ConsumerWidget {
                       ? Icons.verified
                       : Icons.hourglass_top,
                   color: profile.isVerified
-                      ? AppColors.successBase
-                      : AppColors.warningBase,
+                      ? colors.success
+                      : colors.warning,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -171,7 +182,7 @@ class BusinessProfileView extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: colors.gold.withOpacity(0.2),
+                      color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(

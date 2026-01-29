@@ -79,7 +79,6 @@ class VirtualCardWidget extends StatelessWidget {
                 showFullNumber ? _formatCardNumber(card.cardNumber) : card.maskedNumber,
                 variant: AppTextVariant.headlineSmall,
                 color: AppColors.textInverse,
-                letterSpacing: 2,
               ),
             ),
 

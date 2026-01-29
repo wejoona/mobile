@@ -109,7 +109,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                 label: l10n.onboarding_phoneInput_label,
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                placeholder: _selectedCountry.phoneFormat,
+                hint: _selectedCountry.phoneFormat,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   _PhoneNumberFormatter(_selectedCountry.phoneFormat),
