@@ -223,90 +223,91 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
-      color: AppColors.obsidian,
+      color: colors.canvas,
       child: SafeArea(
         child: Column(
           children: [
             // Header
-            _buildHeader(),
+            _buildHeader(colors),
 
             // Camera preview or status
             Expanded(
-              child: _buildContent(),
+              child: _buildContent(colors),
             ),
 
             // Instructions and progress
             if (_state == LivenessCheckState.ready ||
                 _state == LivenessCheckState.processing)
-              _buildInstructions(),
+              _buildInstructions(colors),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const AppText(
+          AppText(
             'Liveness Check',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           if (_state != LivenessCheckState.completed)
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onCancel,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
         ],
       ),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(ThemeColors colors) {
     switch (_state) {
       case LivenessCheckState.initializing:
-        return _buildLoadingView('Initializing camera...');
+        return _buildLoadingView('Initializing camera...', colors);
 
       case LivenessCheckState.ready:
       case LivenessCheckState.processing:
-        return _buildCameraPreview();
+        return _buildCameraPreview(colors);
 
       case LivenessCheckState.completed:
-        return _buildSuccessView();
+        return _buildSuccessView(colors);
 
       case LivenessCheckState.failed:
-        return _buildErrorView();
+        return _buildErrorView(colors);
     }
   }
 
-  Widget _buildLoadingView(String message) {
+  Widget _buildLoadingView(String message, ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            color: AppColors.gold500,
+          CircularProgressIndicator(
+            color: colors.gold,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             message,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCameraPreview() {
+  Widget _buildCameraPreview(ThemeColors colors) {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return _buildLoadingView('Starting camera...');
+      return _buildLoadingView('Starting camera...', colors);
     }
 
     return Stack(
@@ -327,8 +328,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             decoration: BoxDecoration(
               border: Border.all(
                 color: _state == LivenessCheckState.processing
-                    ? AppColors.gold500
-                    : AppColors.textPrimary.withOpacity(0.5),
+                    ? colors.gold
+                    : colors.textPrimary.withOpacity(0.5),
                 width: 3,
               ),
               borderRadius: BorderRadius.circular(AppRadius.xxl),
@@ -349,13 +350,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withOpacity(0.9),
+                  color: colors.gold.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
-                child: const AppText(
+                child: AppText(
                   'Processing...',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.obsidian,
+                  color: colors.canvas,
                 ),
               ),
             ),
@@ -364,7 +365,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     );
   }
 
-  Widget _buildInstructions() {
+  Widget _buildInstructions(ThemeColors colors) {
     if (_currentChallenge == null) return const SizedBox();
 
     final progress = _allChallenges.isNotEmpty
@@ -373,9 +374,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xxl),
-      decoration: const BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.vertical(
+      decoration: BoxDecoration(
+        color: colors.container,
+        borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppRadius.xxl),
         ),
       ),
@@ -392,8 +393,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   color: index <= _currentChallengeIndex
-                      ? AppColors.gold500
-                      : AppColors.borderSubtle,
+                      ? colors.gold
+                      : colors.borderSubtle,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -405,7 +406,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           AppText(
             _currentChallenge!.instruction,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -414,7 +415,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           AppText(
             'Step $progress',
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -432,7 +433,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               AppText(
                 'Position your face in the frame',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -441,7 +442,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     );
   }
 
-  Widget _buildSuccessView() {
+  Widget _buildSuccessView(ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -460,23 +461,23 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'Liveness Check Complete',
             variant: AppTextVariant.headlineSmall,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
-          const AppText(
+          AppText(
             'Your identity has been verified',
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorView() {
+  Widget _buildErrorView(ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -497,16 +498,16 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'Liveness Check Failed',
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
               _errorMessage ?? 'Please try again',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),

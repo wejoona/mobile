@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,17 +24,42 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
   bool _hasError = false;
   bool _isListeningForSms = false;
 
+  // Resend timer
+  static const int _resendCooldown = 30; // seconds
+  int _resendTimerSeconds = 0;
+  Timer? _resendTimer;
+
   @override
   void initState() {
     super.initState();
     _startListeningForSms();
+    _startResendTimer();
   }
 
   @override
   void dispose() {
     cancel();
+    _resendTimer?.cancel();
     super.dispose();
   }
+
+  void _startResendTimer() {
+    setState(() {
+      _resendTimerSeconds = _resendCooldown;
+    });
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_resendTimerSeconds > 0) {
+        setState(() {
+          _resendTimerSeconds--;
+        });
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  bool get _canResend => _resendTimerSeconds == 0;
 
   void _startListeningForSms() async {
     try {
@@ -56,6 +82,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final biometricAvailable = ref.watch(biometricAvailableProvider);
@@ -84,7 +111,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -104,13 +131,13 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderDefault),
+                  border: Border.all(color: colors.border),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.security,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 40,
                 ),
               ),
@@ -121,7 +148,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
               AppText(
                 l10n.auth_secureLogin,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
 
               const SizedBox(height: AppSpacing.sm),
@@ -130,7 +157,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
               AppText(
                 l10n.auth_otpMessage(authState.phone ?? "your phone"),
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
@@ -144,13 +171,13 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                       Icon(
                         Icons.sms,
                         size: 16,
-                        color: AppColors.gold500.withValues(alpha: 0.7),
+                        color: colors.gold.withValues(alpha: 0.7),
                       ),
                       const SizedBox(width: AppSpacing.xs),
                       AppText(
                         l10n.auth_waitingForSms,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.gold500.withValues(alpha: 0.7),
+                        color: colors.gold.withValues(alpha: 0.7),
                       ),
                     ],
                   ),
@@ -203,27 +230,55 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
               const SizedBox(height: AppSpacing.xxl),
 
-              // Resend code
-              TextButton(
-                onPressed: authState.isLoading
-                    ? null
-                    : () {
-                        if (authState.phone != null) {
-                          ref
-                              .read(authProvider.notifier)
-                              .login(authState.phone!);
-                        }
-                      },
-                child: AppText(
-                  l10n.auth_resendCode,
-                  variant: AppTextVariant.bodyMedium,
-                  color: AppColors.gold500,
-                ),
-              ),
+              // Resend code with timer
+              _buildResendButton(colors, authState, l10n),
 
               const SizedBox(height: AppSpacing.lg),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResendButton(ThemeColors colors, AuthState authState, AppLocalizations l10n) {
+    final isDisabled = !_canResend || authState.isLoading;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      child: TextButton(
+        onPressed: isDisabled
+            ? null
+            : () {
+                if (authState.phone != null) {
+                  ref.read(authProvider.notifier).login(authState.phone!);
+                  _startResendTimer();
+                }
+              },
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AppText(
+              _canResend
+                  ? l10n.auth_resendCode
+                  : '${l10n.auth_resendCode} ($_resendTimerSeconds s)',
+              variant: AppTextVariant.bodyMedium,
+              color: isDisabled ? colors.textDisabled : colors.gold,
+            ),
+            if (!_canResend) ...[
+              const SizedBox(width: AppSpacing.sm),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  value: _resendTimerSeconds / _resendCooldown,
+                  strokeWidth: 2,
+                  color: colors.gold.withValues(alpha: 0.5),
+                  backgroundColor: colors.borderSubtle,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

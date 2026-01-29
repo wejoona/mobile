@@ -52,11 +52,12 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final walletState = ref.watch(walletStateMachineProvider);
     final totalSaved = _goals.fold(0.0, (sum, goal) => sum + goal.savedAmount);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -80,44 +81,44 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Summary Card
-            _buildSummaryCard(totalSaved, walletState),
+            _buildSummaryCard(totalSaved, walletState, colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Goals List
-            const AppText(
+            AppText(
               'Your Goals',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
 
             if (_goals.isEmpty)
-              _buildEmptyState()
+              _buildEmptyState(colors)
             else
-              ..._goals.map((goal) => _buildGoalCard(goal)),
+              ..._goals.map((goal) => _buildGoalCard(goal, colors)),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Tips Card
-            _buildTipsCard(),
+            _buildTipsCard(colors),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreateGoalSheet(),
-        backgroundColor: AppColors.gold500,
-        icon: const Icon(Icons.add, color: AppColors.obsidian),
-        label: const AppText(
+        backgroundColor: colors.gold,
+        icon: Icon(Icons.add, color: colors.canvas),
+        label: AppText(
           'New Goal',
           variant: AppTextVariant.labelMedium,
-          color: AppColors.obsidian,
+          color: colors.canvas,
         ),
       ),
     );
   }
 
-  Widget _buildSummaryCard(double totalSaved, WalletState walletState) {
+  Widget _buildSummaryCard(double totalSaved, WalletState walletState, ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
@@ -128,16 +129,16 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.gold500, AppColors.gold600],
+                  gradient: LinearGradient(
+                    colors: [colors.gold, AppColors.gold600],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.savings,
-                  color: AppColors.obsidian,
+                  color: colors.canvas,
                   size: 28,
                 ),
               ),
@@ -146,15 +147,15 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppText(
+                    AppText(
                       'Total Saved',
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     AppText(
                       '\$${totalSaved.toStringAsFixed(2)}',
                       variant: AppTextVariant.headlineSmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ],
                 ),
@@ -162,34 +163,36 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const AppText(
+                  AppText(
                     'Available',
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   AppText(
                     '\$${walletState.availableBalance.toStringAsFixed(2)}',
                     variant: AppTextVariant.titleMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 ],
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          const Divider(color: AppColors.borderSubtle),
+          Divider(color: colors.borderSubtle),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildSummaryItem('${_goals.length}', 'Active Goals'),
+              _buildSummaryItem('${_goals.length}', 'Active Goals', colors),
               _buildSummaryItem(
                 '${_goals.where((g) => g.autoSaveEnabled).length}',
                 'Auto-Saving',
+                colors,
               ),
               _buildSummaryItem(
                 '\$${_goals.fold(0.0, (sum, g) => sum + g.autoSaveAmount).toStringAsFixed(0)}',
                 'Monthly',
+                colors,
               ),
             ],
           ),
@@ -198,24 +201,24 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
     );
   }
 
-  Widget _buildSummaryItem(String value, String label) {
+  Widget _buildSummaryItem(String value, String label, ThemeColors colors) {
     return Column(
       children: [
         AppText(
           value,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         AppText(
           label,
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
       ],
     );
   }
 
-  Widget _buildGoalCard(_SavingsGoal goal) {
+  Widget _buildGoalCard(_SavingsGoal goal, ThemeColors colors) {
     final progress = goal.savedAmount / goal.targetAmount;
     final remaining = goal.targetAmount - goal.savedAmount;
     final daysLeft = goal.deadline.difference(DateTime.now()).inDays;
@@ -249,7 +252,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                           AppText(
                             goal.name,
                             variant: AppTextVariant.labelLarge,
-                            color: AppColors.textPrimary,
+                            color: colors.textPrimary,
                           ),
                           if (goal.autoSaveEnabled) ...[
                             const SizedBox(width: AppSpacing.sm),
@@ -281,13 +284,13 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       AppText(
                         '$daysLeft days left',
                         variant: AppTextVariant.bodySmall,
-                        color: daysLeft < 30 ? AppColors.warningBase : AppColors.textSecondary,
+                        color: daysLeft < 30 ? AppColors.warningBase : colors.textSecondary,
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.add_circle_outline, color: AppColors.gold500),
+                  icon: Icon(Icons.add_circle_outline, color: colors.gold),
                   onPressed: () => _showAddFundsSheet(goal),
                 ),
               ],
@@ -298,7 +301,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               borderRadius: BorderRadius.circular(AppRadius.xs),
               child: LinearProgressIndicator(
                 value: progress.clamp(0.0, 1.0),
-                backgroundColor: AppColors.borderSubtle,
+                backgroundColor: colors.borderSubtle,
                 valueColor: AlwaysStoppedAnimation<Color>(goal.color),
                 minHeight: 8,
               ),
@@ -315,7 +318,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 AppText(
                   '\$${remaining.toStringAsFixed(2)} to go',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -323,7 +326,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
             AppText(
               'Target: \$${goal.targetAmount.toStringAsFixed(2)}',
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
           ],
         ),
@@ -331,7 +334,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -341,26 +344,26 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.savings_outlined,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
                 size: 40,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
-            const AppText(
+            AppText(
               'No Savings Goals Yet',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const AppText(
+            AppText(
               'Start saving for your dreams!\nCreate your first goal to get started.',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -369,33 +372,33 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
     );
   }
 
-  Widget _buildTipsCard() {
+  Widget _buildTipsCard(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.lightbulb_outline, color: AppColors.gold500, size: 20),
-              SizedBox(width: AppSpacing.sm),
+              Icon(Icons.lightbulb_outline, color: colors.gold, size: 20),
+              const SizedBox(width: AppSpacing.sm),
               AppText(
                 'Savings Tips',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildTipItem('Enable auto-save to reach goals faster'),
-          _buildTipItem('Start with small, achievable goals'),
-          _buildTipItem('Review and adjust goals monthly'),
+          _buildTipItem('Enable auto-save to reach goals faster', colors),
+          _buildTipItem('Start with small, achievable goals', colors),
+          _buildTipItem('Review and adjust goals monthly', colors),
         ],
       ),
     );
   }
 
-  Widget _buildTipItem(String tip) {
+  Widget _buildTipItem(String tip, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -407,7 +410,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
             child: AppText(
               tip,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -416,16 +419,17 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
   }
 
   void _showCreateGoalSheet() {
+    final colors = context.colors;
     final nameController = TextEditingController();
     final targetController = TextEditingController();
     IconData selectedIcon = Icons.savings;
-    Color selectedColor = AppColors.gold500;
+    Color selectedColor = colors.gold;
     bool autoSave = false;
     double autoSaveAmount = 25;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -450,10 +454,10 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Goal Name
-                const AppText(
+                AppText(
                   'Goal Name',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppInput(
@@ -464,10 +468,10 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 const SizedBox(height: AppSpacing.lg),
 
                 // Target Amount
-                const AppText(
+                AppText(
                   'Target Amount',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppInput(
@@ -479,10 +483,10 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 const SizedBox(height: AppSpacing.lg),
 
                 // Icon Selection
-                const AppText(
+                AppText(
                   'Choose Icon',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
@@ -505,15 +509,15 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: isSelected ? selectedColor.withValues(alpha: 0.1) : AppColors.elevated,
+                          color: isSelected ? selectedColor.withValues(alpha: 0.1) : colors.elevated,
                           borderRadius: BorderRadius.circular(AppRadius.md),
                           border: Border.all(
-                            color: isSelected ? selectedColor : AppColors.borderSubtle,
+                            color: isSelected ? selectedColor : colors.borderSubtle,
                           ),
                         ),
                         child: Icon(
                           icon,
-                          color: isSelected ? selectedColor : AppColors.textSecondary,
+                          color: isSelected ? selectedColor : colors.textSecondary,
                         ),
                       ),
                     );
@@ -527,21 +531,21 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                   variant: AppCardVariant.subtle,
                   child: Row(
                     children: [
-                      const Icon(Icons.autorenew, color: AppColors.gold500),
+                      Icon(Icons.autorenew, color: colors.gold),
                       const SizedBox(width: AppSpacing.md),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AppText(
                               'Auto-Save',
                               variant: AppTextVariant.labelMedium,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                             AppText(
                               'Automatically save each month',
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                             ),
                           ],
                         ),
@@ -549,7 +553,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       Switch(
                         value: autoSave,
                         onChanged: (value) => setModalState(() => autoSave = value),
-                        activeColor: AppColors.gold500,
+                        activeColor: colors.gold,
                       ),
                     ],
                   ),
@@ -606,9 +610,10 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
   }
 
   void _showGoalDetails(_SavingsGoal goal) {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -635,9 +640,9 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildDetailItem('Saved', '\$${goal.savedAmount.toStringAsFixed(2)}'),
-                _buildDetailItem('Target', '\$${goal.targetAmount.toStringAsFixed(2)}'),
-                _buildDetailItem('Progress', '${(goal.savedAmount / goal.targetAmount * 100).toStringAsFixed(0)}%'),
+                _buildDetailItem('Saved', '\$${goal.savedAmount.toStringAsFixed(2)}', colors),
+                _buildDetailItem('Target', '\$${goal.targetAmount.toStringAsFixed(2)}', colors),
+                _buildDetailItem('Progress', '${(goal.savedAmount / goal.targetAmount * 100).toStringAsFixed(0)}%', colors),
               ],
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -684,29 +689,30 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
     );
   }
 
-  Widget _buildDetailItem(String label, String value) {
+  Widget _buildDetailItem(String label, String value, ThemeColors colors) {
     return Column(
       children: [
         AppText(
           value,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.gold500,
+          color: colors.gold,
         ),
         AppText(
           label,
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
       ],
     );
   }
 
   void _showAddFundsSheet(_SavingsGoal goal) {
+    final colors = context.colors;
     final amountController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -745,13 +751,13 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       vertical: AppSpacing.sm,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.elevated,
+                      color: colors.elevated,
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: AppText(
                       '\$$amount',
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ),
                 );
@@ -794,20 +800,21 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
   }
 
   void _deleteGoal(_SavingsGoal goal) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: colors.container,
         title: const AppText('Delete Goal?', variant: AppTextVariant.titleMedium),
         content: AppText(
           'Are you sure you want to delete "${goal.name}"? Any saved funds will be returned to your wallet.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel', color: AppColors.textSecondary),
+            child: AppText('Cancel', color: colors.textSecondary),
           ),
           TextButton(
             onPressed: () {

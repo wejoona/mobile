@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/enums/index.dart';
+import '../../../domain/entities/index.dart';
+import '../../../services/sdk/usdc_wallet_sdk.dart';
 
 /// Notification item model
 class NotificationItem {
@@ -26,55 +28,54 @@ class NotificationItem {
     this.actionRoute,
     this.metadata,
   });
-}
 
-/// Mock notifications for demo
-final _mockNotifications = [
-  NotificationItem(
-    id: '1',
-    type: NotificationType.transactionComplete,
-    title: 'Deposit Successful',
-    message: 'Your deposit of \$50.00 has been credited to your wallet.',
-    createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
-    isRead: false,
-    actionRoute: '/transactions/1',
-  ),
-  NotificationItem(
-    id: '2',
-    type: NotificationType.promotion,
-    title: 'Refer & Earn',
-    message: 'Invite friends and earn \$5 for each successful referral!',
-    createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    isRead: false,
-    actionRoute: '/referrals',
-  ),
-  NotificationItem(
-    id: '3',
-    type: NotificationType.transactionComplete,
-    title: 'Transfer Received',
-    message: 'You received \$25.00 from +225 07 XX XX XX',
-    createdAt: DateTime.now().subtract(const Duration(hours: 5)),
-    isRead: true,
-    actionRoute: '/transactions/2',
-  ),
-  NotificationItem(
-    id: '4',
-    type: NotificationType.securityAlert,
-    title: 'New Login Detected',
-    message: 'A new login was detected on iPhone 16e',
-    createdAt: DateTime.now().subtract(const Duration(days: 1)),
-    isRead: true,
-  ),
-  NotificationItem(
-    id: '5',
-    type: NotificationType.lowBalance,
-    title: 'Low Balance Alert',
-    message: 'Your wallet balance is below \$10.00. Top up now!',
-    createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    isRead: true,
-    actionRoute: '/deposit',
-  ),
-];
+  /// Create NotificationItem from AppNotification entity
+  factory NotificationItem.fromAppNotification(AppNotification notification) {
+    // Extract action route from notification data if available
+    String? actionRoute;
+    if (notification.data != null) {
+      // Check for transaction-related notifications
+      if (notification.data!.containsKey('transactionId')) {
+        actionRoute = '/transactions/${notification.data!['transactionId']}';
+      }
+      // Check for custom route in data
+      else if (notification.data!.containsKey('route')) {
+        actionRoute = notification.data!['route'] as String?;
+      }
+    }
+
+    // Fallback to default routes based on type
+    actionRoute ??= _defaultActionRoute(notification.type);
+
+    return NotificationItem(
+      id: notification.id,
+      type: notification.type,
+      title: notification.title,
+      message: notification.body,
+      createdAt: notification.createdAt,
+      isRead: notification.isRead,
+      actionRoute: actionRoute,
+      metadata: notification.data,
+    );
+  }
+
+  /// Get default action route based on notification type
+  static String? _defaultActionRoute(NotificationType type) {
+    switch (type) {
+      case NotificationType.transactionComplete:
+      case NotificationType.transactionFailed:
+      case NotificationType.withdrawalPending:
+      case NotificationType.largeTransaction:
+        return '/transactions';
+      case NotificationType.promotion:
+        return '/referrals';
+      case NotificationType.lowBalance:
+        return '/deposit';
+      default:
+        return null;
+    }
+  }
+}
 
 class NotificationsView extends ConsumerStatefulWidget {
   const NotificationsView({super.key});
@@ -86,6 +87,7 @@ class NotificationsView extends ConsumerStatefulWidget {
 class _NotificationsViewState extends ConsumerState<NotificationsView> {
   List<NotificationItem> _notifications = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -94,20 +96,40 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
   }
 
   Future<void> _loadNotifications() async {
-    // Simulate API call
-    await Future.delayed(const Duration(milliseconds: 500));
     setState(() {
-      _notifications = List.from(_mockNotifications);
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      final sdk = ref.read(sdkProvider);
+      final apiNotifications = await sdk.notifications.getNotifications();
+
+      if (mounted) {
+        setState(() {
+          _notifications = apiNotifications
+              .map((n) => NotificationItem.fromAppNotification(n))
+              .toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
@@ -124,13 +146,13 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   '$unreadCount',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.obsidian,
+                  color: colors.canvas,
                 ),
               ),
             ],
@@ -144,41 +166,44 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           if (unreadCount > 0)
             TextButton(
               onPressed: _markAllAsRead,
-              child: const AppText(
+              child: AppText(
                 'Mark all read',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.gold500),
+          ? Center(
+              child: CircularProgressIndicator(color: colors.gold),
             )
-          : _notifications.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadNotifications,
-                  color: AppColors.gold500,
-                  backgroundColor: AppColors.slate,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(AppSpacing.screenPadding),
-                    itemCount: _notifications.length,
-                    itemBuilder: (context, index) {
-                      final notification = _notifications[index];
-                      return _NotificationCard(
-                        notification: notification,
-                        onTap: () => _handleNotificationTap(notification),
-                        onDismiss: () => _dismissNotification(notification.id),
-                      );
-                    },
-                  ),
-                ),
+          : _errorMessage != null
+              ? _buildErrorState(colors)
+              : _notifications.isEmpty
+                  ? _buildEmptyState(colors)
+                  : RefreshIndicator(
+                      onRefresh: _loadNotifications,
+                      color: colors.gold,
+                      backgroundColor: colors.container,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+                        itemCount: _notifications.length,
+                        itemBuilder: (context, index) {
+                          final notification = _notifications[index];
+                          return _NotificationCard(
+                            notification: notification,
+                            colors: colors,
+                            onTap: () => _handleNotificationTap(notification),
+                            onDismiss: () => _dismissNotification(notification.id),
+                          );
+                        },
+                      ),
+                    ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -187,88 +212,165 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_off_outlined,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 40,
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'No Notifications',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          const AppText(
+          AppText(
             "You're all caught up!",
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  void _handleNotificationTap(NotificationItem notification) {
-    // Mark as read
-    setState(() {
-      final index = _notifications.indexWhere((n) => n.id == notification.id);
-      if (index != -1) {
-        _notifications[index] = NotificationItem(
-          id: notification.id,
-          type: notification.type,
-          title: notification.title,
-          message: notification.message,
-          createdAt: notification.createdAt,
-          isRead: true,
-          actionRoute: notification.actionRoute,
-          metadata: notification.metadata,
-        );
+  Widget _buildErrorState(ThemeColors colors) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: colors.container,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            child: Icon(
+              Icons.error_outline,
+              color: AppColors.errorBase,
+              size: 40,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          AppText(
+            'Failed to Load',
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            _errorMessage ?? 'An error occurred',
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            label: 'Retry',
+            variant: AppButtonVariant.primary,
+            onPressed: _loadNotifications,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleNotificationTap(NotificationItem notification) async {
+    // Mark as read locally first for instant UI feedback
+    if (!notification.isRead) {
+      setState(() {
+        final index = _notifications.indexWhere((n) => n.id == notification.id);
+        if (index != -1) {
+          _notifications[index] = NotificationItem(
+            id: notification.id,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            createdAt: notification.createdAt,
+            isRead: true,
+            actionRoute: notification.actionRoute,
+            metadata: notification.metadata,
+          );
+        }
+      });
+
+      // Mark as read on backend
+      try {
+        final sdk = ref.read(sdkProvider);
+        await sdk.notifications.markAsRead(notification.id);
+      } catch (e) {
+        // Silent fail - notification is already marked as read locally
+        debugPrint('Failed to mark notification as read: $e');
       }
-    });
+    }
 
     // Navigate if action route exists
-    if (notification.actionRoute != null) {
+    if (notification.actionRoute != null && mounted) {
       context.push(notification.actionRoute!);
     }
   }
 
-  void _dismissNotification(String id) {
+  Future<void> _dismissNotification(String id) async {
+    // Remove from UI immediately
     setState(() {
       _notifications.removeWhere((n) => n.id == id);
     });
+
+    // Note: Backend doesn't have a delete endpoint yet
+    // When available, add: await sdk.notifications.deleteNotification(id);
   }
 
-  void _markAllAsRead() {
-    setState(() {
-      _notifications = _notifications.map((n) {
-        return NotificationItem(
-          id: n.id,
-          type: n.type,
-          title: n.title,
-          message: n.message,
-          createdAt: n.createdAt,
-          isRead: true,
-          actionRoute: n.actionRoute,
-          metadata: n.metadata,
+  Future<void> _markAllAsRead() async {
+    try {
+      final sdk = ref.read(sdkProvider);
+      await sdk.notifications.markAllAsRead();
+
+      // Update local state
+      if (mounted) {
+        setState(() {
+          _notifications = _notifications.map((n) {
+            return NotificationItem(
+              id: n.id,
+              type: n.type,
+              title: n.title,
+              message: n.message,
+              createdAt: n.createdAt,
+              isRead: true,
+              actionRoute: n.actionRoute,
+              metadata: n.metadata,
+            );
+          }).toList();
+        });
+      }
+    } catch (e) {
+      // Show error snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to mark all as read: $e'),
+            backgroundColor: AppColors.errorBase,
+          ),
         );
-      }).toList();
-    });
+      }
+    }
   }
 }
 
 class _NotificationCard extends StatelessWidget {
   const _NotificationCard({
     required this.notification,
+    required this.colors,
     required this.onTap,
     required this.onDismiss,
   });
 
   final NotificationItem notification;
+  final ThemeColors colors;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
 
@@ -293,12 +395,12 @@ class _NotificationCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: notification.isRead ? AppColors.slate : AppColors.elevated,
+            color: notification.isRead ? colors.container : colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
               color: notification.isRead
-                  ? AppColors.borderSubtle
-                  : AppColors.gold500.withValues(alpha: 0.3),
+                  ? colors.borderSubtle
+                  : colors.gold.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -317,16 +419,16 @@ class _NotificationCard extends StatelessWidget {
                             notification.title,
                             variant: AppTextVariant.bodyLarge,
                             color: notification.isRead
-                                ? AppColors.textSecondary
-                                : AppColors.textPrimary,
+                                ? colors.textSecondary
+                                : colors.textPrimary,
                           ),
                         ),
                         if (!notification.isRead)
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.gold500,
+                            decoration: BoxDecoration(
+                              color: colors.gold,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -336,7 +438,7 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       notification.message,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -344,17 +446,17 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       _formatTime(notification.createdAt),
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
               ),
               if (notification.actionRoute != null)
-                const Padding(
-                  padding: EdgeInsets.only(left: AppSpacing.sm),
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.sm),
                   child: Icon(
                     Icons.chevron_right,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                     size: 20,
                   ),
                 ),
@@ -384,7 +486,7 @@ class _NotificationCard extends StatelessWidget {
         break;
       case NotificationType.promotion:
         icon = Icons.local_offer;
-        color = AppColors.gold500;
+        color = colors.gold;
         break;
       case NotificationType.lowBalance:
         icon = Icons.account_balance_wallet;
@@ -412,7 +514,7 @@ class _NotificationCard extends StatelessWidget {
         break;
       case NotificationType.priceAlert:
         icon = Icons.trending_up;
-        color = AppColors.gold500;
+        color = colors.gold;
         break;
       case NotificationType.weeklySpendingSummary:
         icon = Icons.bar_chart;

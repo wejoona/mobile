@@ -95,8 +95,10 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -128,6 +130,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 setState(() => _fromCurrency = currency);
               },
               isEditable: true,
+              colors: colors,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -140,19 +143,19 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500,
+                    color: colors.gold,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.gold500.withValues(alpha: 0.3),
+                        color: colors.gold.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.swap_vert,
-                    color: AppColors.obsidian,
+                    color: colors.canvas,
                     size: 24,
                   ),
                 ),
@@ -170,44 +173,45 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 setState(() => _toCurrency = currency);
               },
               isEditable: false,
+              colors: colors,
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Exchange Rate Info
-            _buildExchangeRateCard(),
+            _buildExchangeRateCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Quick Amount Buttons
-            const AppText(
+            AppText(
               'Quick Amounts',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                _buildQuickAmountButton(10),
+                _buildQuickAmountButton(10, colors),
                 const SizedBox(width: AppSpacing.sm),
-                _buildQuickAmountButton(50),
+                _buildQuickAmountButton(50, colors),
                 const SizedBox(width: AppSpacing.sm),
-                _buildQuickAmountButton(100),
+                _buildQuickAmountButton(100, colors),
                 const SizedBox(width: AppSpacing.sm),
-                _buildQuickAmountButton(500),
+                _buildQuickAmountButton(500, colors),
               ],
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Popular Currencies
-            const AppText(
+            AppText(
               'Popular Currencies',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildPopularCurrencies(),
+            _buildPopularCurrencies(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -217,22 +221,22 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
-                      SizedBox(width: AppSpacing.sm),
+                      const Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+                      const SizedBox(width: AppSpacing.sm),
                       AppText(
                         'Rate Information',
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  const AppText(
+                  AppText(
                     'Exchange rates are for informational purposes only and may differ from actual transaction rates. Rates are updated every hour.',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -250,6 +254,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     required String currency,
     required ValueChanged<String> onCurrencyChanged,
     required bool isEditable,
+    required ThemeColors colors,
   }) {
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -259,7 +264,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           AppText(
             label,
             variant: AppTextVariant.labelSmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -273,47 +278,47 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                           FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                         ],
                         style: AppTypography.headlineMedium.copyWith(
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: '0.00',
-                          hintStyle: TextStyle(color: AppColors.textTertiary),
+                          hintStyle: TextStyle(color: colors.textTertiary),
                         ),
                         onChanged: (_) => setState(() {}),
                       )
                     : AppText(
                         _formatAmount(amount ?? 0),
                         variant: AppTextVariant.headlineMedium,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
               ),
               const SizedBox(width: AppSpacing.md),
               GestureDetector(
-                onTap: () => _showCurrencyPicker(currency, onCurrencyChanged),
+                onTap: () => _showCurrencyPicker(currency, onCurrencyChanged, colors),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.borderSubtle),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     children: [
-                      _buildCurrencyFlag(currency),
+                      _buildCurrencyFlag(currency, colors),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
                         currency,
                         variant: AppTextVariant.labelLarge,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                       const SizedBox(width: AppSpacing.xxs),
-                      const Icon(
+                      Icon(
                         Icons.expand_more,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         size: 20,
                       ),
                     ],
@@ -326,18 +331,18 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           AppText(
             '${_currencySymbols[currency] ?? ''}${_currencyNames[currency] ?? currency}',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCurrencyFlag(String currency) {
+  Widget _buildCurrencyFlag(String currency, ThemeColors colors) {
     // Simple colored circle as placeholder for actual flags
-    final colors = {
+    final flagColors = {
       'USD': Colors.green,
-      'USDC': AppColors.gold500,
+      'USDC': colors.gold,
       'EUR': Colors.blue,
       'GBP': Colors.purple,
       'NGN': Colors.green.shade800,
@@ -357,7 +362,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       width: 24,
       height: 24,
       decoration: BoxDecoration(
-        color: colors[currency] ?? AppColors.textTertiary,
+        color: flagColors[currency] ?? colors.textTertiary,
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -370,20 +375,20 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  Widget _buildExchangeRateCard() {
+  Widget _buildExchangeRateCard(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.gold500.withValues(alpha: 0.15),
-            AppColors.gold600.withValues(alpha: 0.05),
+            colors.gold.withValues(alpha: 0.15),
+            colors.gold.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.gold500.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -393,7 +398,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               AppText(
                 '1 $_fromCurrency = ${_formatAmount(_exchangeRate)} $_toCurrency',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ],
           ),
@@ -401,14 +406,14 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           AppText(
             'Updated just now',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickAmountButton(int amount) {
+  Widget _buildQuickAmountButton(int amount, ThemeColors colors) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
@@ -419,15 +424,15 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: colors.container,
             borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Center(
             child: AppText(
               '\$$amount',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ),
@@ -435,7 +440,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  Widget _buildPopularCurrencies() {
+  Widget _buildPopularCurrencies(ThemeColors colors) {
     final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'KES'];
 
     return Column(
@@ -452,7 +457,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
             },
             child: Row(
               children: [
-                _buildCurrencyFlag(currency),
+                _buildCurrencyFlag(currency, colors),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
@@ -461,12 +466,12 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                       AppText(
                         currency,
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                       AppText(
                         _currencyNames[currency] ?? currency,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),
@@ -477,12 +482,12 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                     AppText(
                       '${_currencySymbols[currency]}${_formatAmount(usdcRate)}',
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
-                    const AppText(
+                    AppText(
                       'per USDC',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
@@ -494,10 +499,10 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  void _showCurrencyPicker(String currentCurrency, ValueChanged<String> onChanged) {
+  void _showCurrencyPicker(String currentCurrency, ValueChanged<String> onChanged, ThemeColors colors) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -525,7 +530,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 ],
               ),
             ),
-            const Divider(color: AppColors.borderSubtle),
+            Divider(color: colors.borderSubtle),
             Expanded(
               child: ListView.builder(
                 controller: scrollController,
@@ -535,19 +540,19 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                   final isSelected = currency == currentCurrency;
 
                   return ListTile(
-                    leading: _buildCurrencyFlag(currency),
+                    leading: _buildCurrencyFlag(currency, colors),
                     title: AppText(
                       currency,
                       variant: AppTextVariant.labelMedium,
-                      color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                      color: isSelected ? colors.gold : colors.textPrimary,
                     ),
                     subtitle: AppText(
                       _currencyNames[currency] ?? currency,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     trailing: isSelected
-                        ? const Icon(Icons.check, color: AppColors.gold500)
+                        ? Icon(Icons.check, color: colors.gold)
                         : null,
                     onTap: () {
                       onChanged(currency);

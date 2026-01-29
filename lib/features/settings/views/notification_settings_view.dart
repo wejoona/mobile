@@ -23,10 +23,11 @@ class _NotificationSettingsViewState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final prefsState = ref.watch(notificationPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -34,7 +35,7 @@ class _NotificationSettingsViewState
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => _handleBack(),
         ),
       ),
@@ -43,16 +44,17 @@ class _NotificationSettingsViewState
   }
 
   Widget _buildBody(NotificationPreferencesState state) {
+    final colors = context.colors;
     // Show loading state
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.gold500),
+      return Center(
+        child: CircularProgressIndicator(color: colors.gold),
       );
     }
 
     // Show error state
     if (state.error != null && state.preferences == null) {
-      return _buildErrorState(state.error!);
+      return _buildErrorState(state.error!, colors);
     }
 
     // Initialize local state from loaded preferences
@@ -61,7 +63,7 @@ class _NotificationSettingsViewState
     }
 
     if (state.preferences == null) {
-      return _buildErrorState('Failed to load preferences');
+      return _buildErrorState('Failed to load preferences', colors);
     }
 
     final prefs = _localPrefs ?? state.preferences!;
@@ -76,6 +78,7 @@ class _NotificationSettingsViewState
             children: [
               // Push Notifications Section
               _buildSectionHeader(
+                colors: colors,
                 icon: Icons.notifications,
                 title: 'Push Notifications',
                 enabled: prefs.pushEnabled,
@@ -90,6 +93,7 @@ class _NotificationSettingsViewState
               ),
               if (prefs.pushEnabled) ...[
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Transaction Alerts',
                   subtitle:
                       'Get notified for deposits, transfers, and withdrawals',
@@ -99,6 +103,7 @@ class _NotificationSettingsViewState
                   ),
                 ),
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Security Alerts',
                   subtitle: 'Login attempts and account changes',
                   value: prefs.pushSecurity,
@@ -107,6 +112,7 @@ class _NotificationSettingsViewState
                   ),
                 ),
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Promotions & Updates',
                   subtitle: 'Special offers and new features',
                   value: prefs.pushMarketing,
@@ -120,6 +126,7 @@ class _NotificationSettingsViewState
 
               // Email Notifications Section
               _buildSectionHeader(
+                colors: colors,
                 icon: Icons.email,
                 title: 'Email Notifications',
                 enabled: prefs.emailEnabled,
@@ -136,6 +143,7 @@ class _NotificationSettingsViewState
               ),
               if (prefs.emailEnabled) ...[
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Transaction Receipts',
                   subtitle: 'Receive email receipts for transactions',
                   value: prefs.emailTransactions,
@@ -144,6 +152,7 @@ class _NotificationSettingsViewState
                   ),
                 ),
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Monthly Statements',
                   subtitle: 'Get a monthly summary of your account',
                   value: prefs.emailMonthlyStatement,
@@ -152,6 +161,7 @@ class _NotificationSettingsViewState
                   ),
                 ),
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Promotions & Newsletter',
                   subtitle: 'Product updates and special offers',
                   value: prefs.emailMarketing,
@@ -165,6 +175,7 @@ class _NotificationSettingsViewState
 
               // SMS Notifications Section
               _buildSectionHeader(
+                colors: colors,
                 icon: Icons.sms,
                 title: 'SMS Notifications',
                 enabled: prefs.smsEnabled,
@@ -178,6 +189,7 @@ class _NotificationSettingsViewState
               ),
               if (prefs.smsEnabled) ...[
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Transaction Alerts',
                   subtitle: 'SMS for large transactions',
                   value: prefs.smsTransactions,
@@ -186,6 +198,7 @@ class _NotificationSettingsViewState
                   ),
                 ),
                 _buildSettingTile(
+                  colors: colors,
                   title: 'Security Codes',
                   subtitle: 'OTP and security verification codes',
                   value: prefs.smsSecurity,
@@ -205,11 +218,11 @@ class _NotificationSettingsViewState
                     const Icon(Icons.info_outline,
                         color: AppColors.infoBase, size: 20),
                     const SizedBox(width: AppSpacing.sm),
-                    const Expanded(
+                    Expanded(
                       child: AppText(
                         'Security SMS notifications cannot be disabled. They are required for account protection.',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ],
@@ -242,7 +255,7 @@ class _NotificationSettingsViewState
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(String error, ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -251,16 +264,16 @@ class _NotificationSettingsViewState
           children: [
             const Icon(Icons.error_outline, color: AppColors.errorBase, size: 64),
             const SizedBox(height: AppSpacing.lg),
-            const AppText(
+            AppText(
               'Failed to load preferences',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
@@ -278,6 +291,7 @@ class _NotificationSettingsViewState
   }
 
   Widget _buildSectionHeader({
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required bool enabled,
@@ -287,7 +301,7 @@ class _NotificationSettingsViewState
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -297,13 +311,13 @@ class _NotificationSettingsViewState
             height: 44,
             decoration: BoxDecoration(
               color: enabled
-                  ? AppColors.gold500.withValues(alpha: 0.2)
-                  : AppColors.elevated,
+                  ? colors.gold.withValues(alpha: 0.2)
+                  : colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
               icon,
-              color: enabled ? AppColors.gold500 : AppColors.textTertiary,
+              color: enabled ? colors.gold : colors.textTertiary,
             ),
           ),
           const SizedBox(width: AppSpacing.md),
@@ -311,14 +325,14 @@ class _NotificationSettingsViewState
             child: AppText(
               title,
               variant: AppTextVariant.titleSmall,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
           Switch.adaptive(
             value: enabled,
             onChanged: onChanged,
-            activeTrackColor: AppColors.gold500.withValues(alpha: 0.5),
-            activeColor: AppColors.gold500,
+            activeTrackColor: colors.gold.withValues(alpha: 0.5),
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -326,6 +340,7 @@ class _NotificationSettingsViewState
   }
 
   Widget _buildSettingTile({
+    required ThemeColors colors,
     required String title,
     required String subtitle,
     required bool value,
@@ -339,7 +354,7 @@ class _NotificationSettingsViewState
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -353,7 +368,7 @@ class _NotificationSettingsViewState
                     AppText(
                       title,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     if (isRequired) ...[
                       const SizedBox(width: AppSpacing.xs),
@@ -379,7 +394,7 @@ class _NotificationSettingsViewState
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -387,8 +402,8 @@ class _NotificationSettingsViewState
           Switch.adaptive(
             value: isRequired ? true : value,
             onChanged: isRequired ? null : onChanged,
-            activeTrackColor: AppColors.gold500.withValues(alpha: 0.5),
-            activeColor: AppColors.gold500,
+            activeTrackColor: colors.gold.withValues(alpha: 0.5),
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -451,10 +466,11 @@ class _NotificationSettingsViewState
 
   void _handleBack() {
     if (_hasUnsavedChanges) {
+      final colors = context.colors;
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.elevated,
+          backgroundColor: colors.elevated,
           title: const AppText(
             'Unsaved Changes',
             variant: AppTextVariant.titleMedium,

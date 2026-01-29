@@ -39,6 +39,7 @@ class TransactionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -52,7 +53,7 @@ class TransactionRow extends StatelessWidget {
           child: Row(
             children: [
               // Icon
-              _buildIcon(),
+              _buildIcon(colors),
               const SizedBox(width: AppSpacing.md),
 
               // Title and subtitle
@@ -66,14 +67,14 @@ class TransactionRow extends StatelessWidget {
                           child: AppText(
                             title,
                             variant: AppTextVariant.bodyLarge,
-                            color: AppColors.textPrimary,
+                            color: colors.textPrimary,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (_showStatusBadge) ...[
                           const SizedBox(width: AppSpacing.sm),
-                          _buildStatusBadge(),
+                          _buildStatusBadge(colors),
                         ],
                       ],
                     ),
@@ -81,7 +82,7 @@ class TransactionRow extends StatelessWidget {
                     AppText(
                       subtitle,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
@@ -94,14 +95,14 @@ class TransactionRow extends StatelessWidget {
                   AppText(
                     _formatAmount(),
                     variant: AppTextVariant.bodyLarge,
-                    color: _getAmountColor(),
+                    color: _getAmountColor(colors),
                     fontWeight: FontWeight.w500,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     _formatDate(),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
@@ -118,7 +119,7 @@ class TransactionRow extends StatelessWidget {
           status == TransactionStatus.processing ||
           status == TransactionStatus.failed);
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusBadge(ThemeColors colors) {
     Color backgroundColor;
     Color textColor;
     String label;
@@ -126,13 +127,13 @@ class TransactionRow extends StatelessWidget {
     switch (status) {
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        backgroundColor = AppColors.warningBase.withOpacity(0.15);
-        textColor = AppColors.warningText;
+        backgroundColor = colors.warning.withOpacity(0.15);
+        textColor = colors.warningText;
         label = status == TransactionStatus.pending ? 'Pending' : 'Processing';
         break;
       case TransactionStatus.failed:
-        backgroundColor = AppColors.errorBase.withOpacity(0.15);
-        textColor = AppColors.errorText;
+        backgroundColor = colors.error.withOpacity(0.15);
+        textColor = colors.errorText;
         label = 'Failed';
         break;
       default:
@@ -159,12 +160,12 @@ class TransactionRow extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(ThemeColors colors) {
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       alignment: Alignment.center,
@@ -175,17 +176,17 @@ class TransactionRow extends StatelessWidget {
                 iconUrl!,
                 width: 24,
                 height: 24,
-                errorBuilder: (_, __, ___) => _buildFallbackIcon(),
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(colors),
               ),
             )
-          : _buildFallbackIcon(),
+          : _buildFallbackIcon(colors),
     );
   }
 
-  Widget _buildFallbackIcon() {
+  Widget _buildFallbackIcon(ThemeColors colors) {
     return Icon(
       icon ?? _getDefaultIcon(),
-      color: _getIconColor(),
+      color: _getIconColor(colors),
       size: 22,
     );
   }
@@ -205,49 +206,49 @@ class TransactionRow extends StatelessWidget {
     }
   }
 
-  Color _getIconColor() {
+  Color _getIconColor(ThemeColors colors) {
     // Show muted color for failed transactions
     if (status == TransactionStatus.failed) {
-      return AppColors.errorText;
+      return colors.errorText;
     }
 
     // Show pending color for pending transactions
     if (status == TransactionStatus.pending ||
         status == TransactionStatus.processing) {
-      return AppColors.warningText;
+      return colors.warningText;
     }
 
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
       case TransactionDisplayType.reward:
-        return AppColors.successText;
+        return colors.successText;
       case TransactionDisplayType.withdrawal:
       case TransactionDisplayType.transferOut:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
     }
   }
 
-  Color _getAmountColor() {
+  Color _getAmountColor(ThemeColors colors) {
     // Show muted color for failed transactions
     if (status == TransactionStatus.failed) {
-      return AppColors.errorText.withOpacity(0.6);
+      return colors.errorText.withOpacity(0.6);
     }
 
     // Show pending color for pending transactions
     if (status == TransactionStatus.pending ||
         status == TransactionStatus.processing) {
-      return AppColors.warningText;
+      return colors.warningText;
     }
 
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
       case TransactionDisplayType.reward:
-        return AppColors.successText;
+        return colors.successText;
       case TransactionDisplayType.withdrawal:
       case TransactionDisplayType.transferOut:
-        return AppColors.textPrimary;
+        return colors.textPrimary;
     }
   }
 
@@ -306,6 +307,7 @@ class TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
@@ -323,12 +325,12 @@ class TransactionList extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.xs),
                       decoration: BoxDecoration(
-                        color: AppColors.gold500.withOpacity(0.1),
+                        color: colors.gold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.receipt_long_outlined,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                         size: 16,
                       ),
                     ),
@@ -336,16 +338,16 @@ class TransactionList extends StatelessWidget {
                     AppText(
                       title,
                       variant: AppTextVariant.cardLabel,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
                 if (onViewAllTap != null)
                   GestureDetector(
                     onTap: onViewAllTap,
-                    child: const Icon(
+                    child: Icon(
                       Icons.more_horiz,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                       size: 20,
                     ),
                   ),
@@ -356,9 +358,9 @@ class TransactionList extends StatelessWidget {
 
           // Transaction list
           if (isLoading)
-            _buildLoadingState()
+            _buildLoadingState(colors)
           else if (transactions.isEmpty)
-            _buildEmptyState()
+            _buildEmptyState(colors)
           else
             ...transactions,
         ],
@@ -366,7 +368,7 @@ class TransactionList extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -379,7 +381,7 @@ class TransactionList extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                 ),
@@ -392,7 +394,7 @@ class TransactionList extends StatelessWidget {
                         width: 120,
                         height: 16,
                         decoration: BoxDecoration(
-                          color: AppColors.elevated,
+                          color: colors.elevated,
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                       ),
@@ -401,7 +403,7 @@ class TransactionList extends StatelessWidget {
                         width: 80,
                         height: 12,
                         decoration: BoxDecoration(
-                          color: AppColors.elevated,
+                          color: colors.elevated,
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                       ),
@@ -416,22 +418,22 @@ class TransactionList extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
-    return const Padding(
-      padding: EdgeInsets.all(AppSpacing.xl),
+  Widget _buildEmptyState(ThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Center(
         child: Column(
           children: [
             Icon(
               Icons.receipt_long_outlined,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 48,
             ),
             SizedBox(height: AppSpacing.md),
             AppText(
               'No transactions yet',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
           ],
         ),

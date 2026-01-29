@@ -16,17 +16,18 @@ class LegalDocumentView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final documentAsync = documentType == LegalDocumentType.termsOfService
         ? ref.watch(termsOfServiceProvider)
         : ref.watch(privacyPolicyProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.graphite,
+        backgroundColor: colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded, color: AppColors.textPrimary),
+          icon: Icon(Icons.close_rounded, color: colors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: AppText(
@@ -34,37 +35,37 @@ class LegalDocumentView extends ConsumerWidget {
               ? 'Terms of Service'
               : 'Privacy Policy',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         centerTitle: true,
       ),
       body: documentAsync.when(
-        data: (document) => _buildContent(context, document),
-        loading: () => const Center(
+        data: (document) => _buildContent(context, document, colors),
+        loading: () => Center(
           child: CircularProgressIndicator(
-            color: AppColors.gold500,
+            color: colors.gold,
           ),
         ),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline_rounded,
-                color: AppColors.errorBase,
+                color: colors.error,
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.lg),
               AppText(
                 'Failed to load document',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
                 'Please try again later',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -73,7 +74,7 @@ class LegalDocumentView extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, LegalDocument document) {
+  Widget _buildContent(BuildContext context, LegalDocument document, ThemeColors colors) {
     return Column(
       children: [
         // Version info bar
@@ -83,7 +84,7 @@ class LegalDocumentView extends ConsumerWidget {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.md,
           ),
-          color: AppColors.slate,
+          color: colors.container,
           child: Row(
             children: [
               Container(
@@ -92,13 +93,13 @@ class LegalDocumentView extends ConsumerWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.15),
+                  color: colors.gold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppRadius.xs),
                 ),
                 child: AppText(
                   'v${document.version}',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
@@ -106,7 +107,7 @@ class LegalDocumentView extends ConsumerWidget {
                 child: AppText(
                   'Effective: ${_formatDate(document.effectiveDate)}',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ),
             ],
@@ -126,10 +127,10 @@ class LegalDocumentView extends ConsumerWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.infoBase.withValues(alpha: 0.1),
+                      color: colors.info.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                       border: Border.all(
-                        color: AppColors.infoBase.withValues(alpha: 0.3),
+                        color: colors.info.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Column(
@@ -139,14 +140,14 @@ class LegalDocumentView extends ConsumerWidget {
                           children: [
                             Icon(
                               Icons.info_outline_rounded,
-                              color: AppColors.infoText,
+                              color: colors.infoText,
                               size: 18,
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             AppText(
                               'What\'s New',
                               variant: AppTextVariant.labelLarge,
-                              color: AppColors.infoText,
+                              color: colors.infoText,
                             ),
                           ],
                         ),
@@ -154,7 +155,7 @@ class LegalDocumentView extends ConsumerWidget {
                         AppText(
                           document.summary!,
                           variant: AppTextVariant.bodyMedium,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ],
                     ),
@@ -166,13 +167,17 @@ class LegalDocumentView extends ConsumerWidget {
                 HtmlWidget(
                   document.contentHtml,
                   textStyle: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     height: 1.6,
                   ),
                   customStylesBuilder: (element) {
+                    // Theme-aware colors
+                    final headingColor = colors.isDark ? '#F5F5F0' : '#1A1A1F';
+                    final goldColor = colors.isDark ? '#C9A962' : '#B8943D';
+
                     if (element.localName == 'h1') {
                       return {
-                        'color': '#F5F5F0',
+                        'color': headingColor,
                         'font-size': '24px',
                         'font-weight': '600',
                         'margin-top': '24px',
@@ -181,7 +186,7 @@ class LegalDocumentView extends ConsumerWidget {
                     }
                     if (element.localName == 'h2') {
                       return {
-                        'color': '#F5F5F0',
+                        'color': headingColor,
                         'font-size': '20px',
                         'font-weight': '600',
                         'margin-top': '20px',
@@ -190,7 +195,7 @@ class LegalDocumentView extends ConsumerWidget {
                     }
                     if (element.localName == 'h3') {
                       return {
-                        'color': '#F5F5F0',
+                        'color': headingColor,
                         'font-size': '16px',
                         'font-weight': '600',
                         'margin-top': '16px',
@@ -199,14 +204,14 @@ class LegalDocumentView extends ConsumerWidget {
                     }
                     if (element.localName == 'a') {
                       return {
-                        'color': '#C9A962',
+                        'color': goldColor,
                         'text-decoration': 'underline',
                       };
                     }
                     if (element.localName == 'strong' ||
                         element.localName == 'b') {
                       return {
-                        'color': '#F5F5F0',
+                        'color': headingColor,
                         'font-weight': '600',
                       };
                     }
@@ -252,6 +257,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final termsAsync = ref.watch(termsOfServiceProvider);
     final privacyAsync = ref.watch(privacyPolicyProvider);
 
@@ -261,8 +267,8 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.7,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.graphite,
+      decoration: BoxDecoration(
+        color: colors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
       child: Column(
@@ -274,7 +280,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
             width: 36,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.borderDefault,
+              color: colors.border,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -288,33 +294,33 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500.withValues(alpha: 0.15),
+                    color: colors.gold.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.description_outlined,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                     size: 28,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const AppText(
+                AppText(
                   'Legal Agreements',
                   variant: AppTextVariant.titleLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                const AppText(
+                AppText(
                   'Please review and accept our terms to continue',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ],
             ),
           ),
 
-          const Divider(color: AppColors.borderSubtle, height: 1),
+          Divider(color: colors.borderSubtle, height: 1),
 
           // Documents list
           Padding(
@@ -334,6 +340,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                     LegalDocumentType.termsOfService,
                     () => setState(() => _termsRead = true),
                   ),
+                  colors: colors,
                 ),
                 const SizedBox(height: AppSpacing.md),
 
@@ -350,6 +357,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                     LegalDocumentType.privacyPolicy,
                     () => setState(() => _privacyRead = true),
                   ),
+                  colors: colors,
                 ),
               ],
             ),
@@ -368,7 +376,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                 AppText(
                   'By tapping Accept, you agree to our Terms of Service and acknowledge our Privacy Policy',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -393,18 +401,19 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
     required String version,
     required bool isRead,
     required VoidCallback onTap,
+    required ThemeColors colors,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isRead
                 ? AppColors.successBase.withValues(alpha: 0.5)
-                : AppColors.borderSubtle,
+                : colors.borderSubtle,
           ),
         ),
         child: Row(
@@ -416,12 +425,12 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
               decoration: BoxDecoration(
                 color: isRead
                     ? AppColors.successBase.withValues(alpha: 0.15)
-                    : AppColors.elevated,
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 isRead ? Icons.check_rounded : Icons.article_outlined,
-                color: isRead ? AppColors.successText : AppColors.textSecondary,
+                color: isRead ? AppColors.successText : colors.textSecondary,
                 size: 20,
               ),
             ),
@@ -435,14 +444,14 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                   AppText(
                     title,
                     variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   if (version.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     AppText(
                       version,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ],
@@ -452,7 +461,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
             // Status/Arrow
             Icon(
               isRead ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
-              color: isRead ? AppColors.successText : AppColors.textTertiary,
+              color: isRead ? AppColors.successText : colors.textTertiary,
               size: 24,
             ),
           ],

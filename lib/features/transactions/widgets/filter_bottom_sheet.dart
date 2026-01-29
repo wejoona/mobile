@@ -80,12 +80,13 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.slate,
+      decoration: BoxDecoration(
+        color: colors.container,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
       child: Column(
@@ -97,7 +98,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             height: 4,
             margin: const EdgeInsets.only(top: AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.borderDefault,
+              color: colors.border,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
           ),
@@ -114,9 +115,9 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 ),
                 TextButton(
                   onPressed: _resetFilters,
-                  child: const Text(
+                  child: Text(
                     'Reset',
-                    style: TextStyle(color: AppColors.gold500),
+                    style: TextStyle(color: colors.gold),
                   ),
                 ),
               ],
@@ -133,21 +134,21 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Transaction Type
-                  _buildSectionTitle('Transaction Type'),
+                  _buildSectionTitle('Transaction Type', colors),
                   const SizedBox(height: AppSpacing.sm),
-                  _buildTypeChips(),
+                  _buildTypeChips(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Status
-                  _buildSectionTitle('Status'),
+                  _buildSectionTitle('Status', colors),
                   const SizedBox(height: AppSpacing.sm),
-                  _buildStatusChips(),
+                  _buildStatusChips(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Date Range
-                  _buildSectionTitle('Date Range'),
+                  _buildSectionTitle('Date Range', colors),
                   const SizedBox(height: AppSpacing.sm),
-                  _buildDateRangeChips(),
+                  _buildDateRangeChips(colors),
                   if (_selectedDateRange == DateRangeOption.custom) ...[
                     const SizedBox(height: AppSpacing.md),
                     _buildCustomDatePickers(),
@@ -155,15 +156,15 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Amount Range
-                  _buildSectionTitle('Amount Range'),
+                  _buildSectionTitle('Amount Range', colors),
                   const SizedBox(height: AppSpacing.sm),
-                  _buildAmountRangeSlider(),
+                  _buildAmountRangeSlider(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Sort Options
-                  _buildSectionTitle('Sort By'),
+                  _buildSectionTitle('Sort By', colors),
                   const SizedBox(height: AppSpacing.sm),
-                  _buildSortOptions(),
+                  _buildSortOptions(colors),
                   const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
@@ -177,8 +178,8 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold500,
-                  foregroundColor: AppColors.obsidian,
+                  backgroundColor: colors.gold,
+                  foregroundColor: colors.canvas,
                   padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -203,15 +204,15 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title, ThemeColors colors) {
     return AppText(
       title,
       variant: AppTextVariant.labelLarge,
-      color: AppColors.textSecondary,
+      color: colors.textSecondary,
     );
   }
 
-  Widget _buildTypeChips() {
+  Widget _buildTypeChips(ThemeColors colors) {
     final types = [
       (null, 'All'),
       ('deposit', 'Deposits'),
@@ -229,14 +230,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           selected: isSelected,
           label: Text(type.$2),
           labelStyle: TextStyle(
-            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            color: isSelected ? colors.canvas : colors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
-          backgroundColor: AppColors.elevated,
-          selectedColor: AppColors.gold500,
+          backgroundColor: colors.elevated,
+          selectedColor: colors.gold,
           showCheckmark: false,
           side: BorderSide(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
           ),
           onSelected: (_) {
             setState(() => _selectedType = type.$1);
@@ -246,7 +247,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Widget _buildStatusChips() {
+  Widget _buildStatusChips(ThemeColors colors) {
     final statuses = [
       (null, 'All'),
       ('completed', 'Completed'),
@@ -264,16 +265,16 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           selected: isSelected,
           label: Text(status.$2),
           labelStyle: TextStyle(
-            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            color: isSelected ? colors.canvas : colors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
-          backgroundColor: AppColors.elevated,
-          selectedColor: _getStatusColor(status.$1),
+          backgroundColor: colors.elevated,
+          selectedColor: _getStatusColor(status.$1, colors),
           showCheckmark: false,
           side: BorderSide(
             color: isSelected
-                ? _getStatusColor(status.$1)
-                : AppColors.borderSubtle,
+                ? _getStatusColor(status.$1, colors)
+                : colors.borderSubtle,
           ),
           onSelected: (_) {
             setState(() => _selectedStatus = status.$1);
@@ -283,7 +284,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Color _getStatusColor(String? status) {
+  Color _getStatusColor(String? status, ThemeColors colors) {
     switch (status) {
       case 'completed':
         return AppColors.successText;
@@ -293,11 +294,11 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       case 'failed':
         return AppColors.errorText;
       default:
-        return AppColors.gold500;
+        return colors.gold;
     }
   }
 
-  Widget _buildDateRangeChips() {
+  Widget _buildDateRangeChips(ThemeColors colors) {
     final options = [
       (null, 'All Time'),
       (DateRangeOption.today, 'Today'),
@@ -316,14 +317,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           selected: isSelected,
           label: Text(option.$2),
           labelStyle: TextStyle(
-            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            color: isSelected ? colors.canvas : colors.textSecondary,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
           ),
-          backgroundColor: AppColors.elevated,
-          selectedColor: AppColors.gold500,
+          backgroundColor: colors.elevated,
+          selectedColor: colors.gold,
           showCheckmark: false,
           side: BorderSide(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
           ),
           onSelected: (_) {
             setState(() {
@@ -377,13 +378,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final colors = context.colors;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              onPrimary: AppColors.obsidian,
-              surface: AppColors.slate,
-              onSurface: AppColors.textPrimary,
+            colorScheme: ColorScheme.dark(
+              primary: colors.gold,
+              onPrimary: colors.canvas,
+              surface: colors.container,
+              onSurface: colors.textPrimary,
             ),
           ),
           child: child!,
@@ -409,7 +411,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     }
   }
 
-  Widget _buildAmountRangeSlider() {
+  Widget _buildAmountRangeSlider(ThemeColors colors) {
     final hasRange = _amountRange.start > _minAmount ||
         _amountRange.end < _maxAmount;
 
@@ -421,7 +423,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             AppText(
               '\$${_amountRange.start.toInt()}',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             if (hasRange)
               TextButton(
@@ -430,9 +432,9 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                     _amountRange = const RangeValues(_minAmount, _maxAmount);
                   });
                 },
-                child: const Text(
+                child: Text(
                   'Clear',
-                  style: TextStyle(color: AppColors.gold500, fontSize: 12),
+                  style: TextStyle(color: colors.gold, fontSize: 12),
                 ),
               ),
             AppText(
@@ -440,16 +442,16 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   ? '\$${_maxAmount.toInt()}+'
                   : '\$${_amountRange.end.toInt()}',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
         SliderTheme(
           data: SliderThemeData(
-            activeTrackColor: AppColors.gold500,
-            inactiveTrackColor: AppColors.elevated,
-            thumbColor: AppColors.gold500,
-            overlayColor: AppColors.gold500.withOpacity(0.2),
+            activeTrackColor: colors.gold,
+            inactiveTrackColor: colors.elevated,
+            thumbColor: colors.gold,
+            overlayColor: colors.gold.withOpacity(0.2),
             rangeThumbShape: const RoundRangeSliderThumbShape(
               enabledThumbRadius: 10,
             ),
@@ -469,14 +471,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Widget _buildSortOptions() {
+  Widget _buildSortOptions(ThemeColors colors) {
     return Row(
       children: [
         Expanded(
           child: _buildSortByDropdown(),
         ),
         const SizedBox(width: AppSpacing.md),
-        _buildSortOrderToggle(),
+        _buildSortOrderToggle(colors),
       ],
     );
   }
@@ -505,12 +507,12 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Widget _buildSortOrderToggle() {
+  Widget _buildSortOrderToggle(ThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -520,12 +522,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             tooltip: 'Newest/Highest first',
             isSelected: _sortOrder == 'DESC',
             onTap: () => setState(() => _sortOrder = 'DESC'),
+            colors: colors,
           ),
           _SortOrderButton(
             icon: Icons.arrow_upward,
             tooltip: 'Oldest/Lowest first',
             isSelected: _sortOrder == 'ASC',
             onTap: () => setState(() => _sortOrder = 'ASC'),
+            colors: colors,
           ),
         ],
       ),
@@ -589,22 +593,23 @@ class _DatePickerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.calendar_today,
               size: 16,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
@@ -614,15 +619,15 @@ class _DatePickerButton extends StatelessWidget {
                   AppText(
                     label,
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     date != null ? dateFormat.format(date!) : 'Select',
                     variant: AppTextVariant.bodyMedium,
                     color: date != null
-                        ? AppColors.textPrimary
-                        : AppColors.textTertiary,
+                        ? colors.textPrimary
+                        : colors.textTertiary,
                   ),
                 ],
               ),
@@ -641,12 +646,14 @@ class _SortOrderButton extends StatelessWidget {
     required this.tooltip,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final IconData icon;
   final String tooltip;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -658,13 +665,13 @@ class _SortOrderButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? colors.gold : Colors.transparent,
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: Icon(
             icon,
             size: 20,
-            color: isSelected ? AppColors.obsidian : AppColors.textTertiary,
+            color: isSelected ? colors.canvas : colors.textTertiary,
           ),
         ),
       ),

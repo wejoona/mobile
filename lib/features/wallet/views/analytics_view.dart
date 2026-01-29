@@ -99,8 +99,9 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -139,6 +140,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                     iconColor: AppColors.successBase,
                     trend: '+12.5%',
                     trendPositive: true,
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -150,6 +152,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                     iconColor: AppColors.errorBase,
                     trend: '-5.2%',
                     trendPositive: true,
+                    colors: colors,
                   ),
                 ),
               ],
@@ -163,46 +166,46 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Spending Chart (simplified bar representation)
-            const AppText(
+            AppText(
               'Spending by Category',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildSpendingChart(),
+            _buildSpendingChart(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Category Breakdown
-            const AppText(
+            AppText(
               'Category Details',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            ..._categories.map((category) => _CategoryCard(category: category)),
+            ..._categories.map((category) => _CategoryCard(category: category, colors: colors)),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Transaction Frequency
-            const AppText(
+            AppText(
               'Transaction Frequency',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildFrequencyChart(),
+            _buildFrequencyChart(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Insights
-            const AppText(
+            AppText(
               'Insights',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildInsights(),
+            _buildInsights(colors),
 
             const SizedBox(height: AppSpacing.xxl),
           ],
@@ -212,6 +215,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
   }
 
   Widget _buildPeriodSelector() {
+    final colors = context.colors;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -227,16 +231,16 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.gold500 : AppColors.slate,
+                  color: isSelected ? colors.gold : colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   border: Border.all(
-                    color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+                    color: isSelected ? colors.gold : colors.borderSubtle,
                   ),
                 ),
                 child: AppText(
                   period.label,
                   variant: AppTextVariant.labelMedium,
-                  color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+                  color: isSelected ? colors.canvas : colors.textSecondary,
                 ),
               ),
             ),
@@ -325,11 +329,11 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildSpendingChart() {
+  Widget _buildSpendingChart(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
@@ -357,14 +361,14 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                             AppText(
                               category.name,
                               variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                           ],
                         ),
                         AppText(
                           '${category.percentage.toStringAsFixed(1)}%',
                           variant: AppTextVariant.labelMedium,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ],
                     ),
@@ -374,7 +378,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                         Container(
                           height: 8,
                           decoration: BoxDecoration(
-                            color: AppColors.elevated,
+                            color: colors.elevated,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -398,7 +402,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildFrequencyChart() {
+  Widget _buildFrequencyChart(ThemeColors colors) {
     // Mock weekly data
     final weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final values = [3, 5, 2, 8, 4, 6, 1];
@@ -407,7 +411,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Row(
@@ -421,7 +425,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                 width: 32,
                 height: height,
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.3 + (values[index] / maxValue) * 0.7),
+                  color: colors.gold.withValues(alpha: 0.3 + (values[index] / maxValue) * 0.7),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
@@ -429,7 +433,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
               AppText(
                 weekDays[index],
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ],
           );
@@ -438,7 +442,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildInsights() {
+  Widget _buildInsights(ThemeColors colors) {
     return Column(
       children: [
         _InsightCard(
@@ -446,13 +450,15 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           iconColor: AppColors.successBase,
           title: 'Spending Down',
           description: 'Your spending is 5.2% lower than last month. Great job!',
+          colors: colors,
         ),
         const SizedBox(height: AppSpacing.md),
         _InsightCard(
           icon: Icons.savings,
-          iconColor: AppColors.gold500,
+          iconColor: colors.gold,
           title: 'Savings Opportunity',
           description: 'You could save \$50/month by reducing withdrawal fees.',
+          colors: colors,
         ),
         const SizedBox(height: AppSpacing.md),
         _InsightCard(
@@ -460,6 +466,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           iconColor: AppColors.infoBase,
           title: 'Peak Activity',
           description: 'Most of your transactions happen on Thursdays.',
+          colors: colors,
         ),
       ],
     );
@@ -484,6 +491,7 @@ class _StatCard extends StatelessWidget {
     required this.iconColor,
     required this.trend,
     required this.trendPositive,
+    required this.colors,
   });
 
   final String label;
@@ -492,13 +500,14 @@ class _StatCard extends StatelessWidget {
   final Color iconColor;
   final String trend;
   final bool trendPositive;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
@@ -539,13 +548,13 @@ class _StatCard extends StatelessWidget {
           AppText(
             label,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.xxs),
           AppText(
             '\$${amount.toStringAsFixed(2)}',
             variant: AppTextVariant.titleLarge,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ],
       ),
@@ -554,9 +563,10 @@ class _StatCard extends StatelessWidget {
 }
 
 class _CategoryCard extends StatelessWidget {
-  const _CategoryCard({required this.category});
+  const _CategoryCard({required this.category, required this.colors});
 
   final SpendingCategory category;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -564,7 +574,7 @@ class _CategoryCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -586,12 +596,12 @@ class _CategoryCard extends StatelessWidget {
                 AppText(
                   category.name,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   '${category.count} transactions',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -602,12 +612,12 @@ class _CategoryCard extends StatelessWidget {
               AppText(
                 '\$${category.amount.toStringAsFixed(2)}',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               AppText(
                 '${category.percentage.toStringAsFixed(1)}%',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -623,21 +633,23 @@ class _InsightCard extends StatelessWidget {
     required this.iconColor,
     required this.title,
     required this.description,
+    required this.colors,
   });
 
   final IconData icon;
   final Color iconColor;
   final String title;
   final String description;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -659,13 +671,13 @@ class _InsightCard extends StatelessWidget {
                 AppText(
                   title,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   description,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),

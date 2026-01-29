@@ -123,20 +123,21 @@ class _KycViewState extends ConsumerState<KycView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
 
     // If already verified, show status
     if (userState.kycStatus == KycStatus.verified) {
-      return _buildVerifiedView();
+      return _buildVerifiedView(colors);
     }
 
     // If pending, show pending status
     if (userState.kycStatus == KycStatus.pending) {
-      return _buildPendingView();
+      return _buildPendingView(colors);
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -144,50 +145,50 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
       body: Column(
         children: [
           // Progress Indicator
-          _buildProgressBar(),
+          _buildProgressBar(colors),
 
           // Content
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: _buildCurrentStep(),
+              child: _buildCurrentStep(colors),
             ),
           ),
 
           // Bottom Actions
-          _buildBottomActions(),
+          _buildBottomActions(colors),
         ],
       ),
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
-          _buildStepIndicator(0, 'Info'),
-          Expanded(child: _buildStepLine(0)),
-          _buildStepIndicator(1, 'Document'),
-          Expanded(child: _buildStepLine(1)),
-          _buildStepIndicator(2, 'Photos'),
-          Expanded(child: _buildStepLine(2)),
-          _buildStepIndicator(3, 'Selfie'),
-          Expanded(child: _buildStepLine(3)),
-          _buildStepIndicator(4, 'Review'),
+          _buildStepIndicator(0, 'Info', colors),
+          Expanded(child: _buildStepLine(0, colors)),
+          _buildStepIndicator(1, 'Document', colors),
+          Expanded(child: _buildStepLine(1, colors)),
+          _buildStepIndicator(2, 'Photos', colors),
+          Expanded(child: _buildStepLine(2, colors)),
+          _buildStepIndicator(3, 'Selfie', colors),
+          Expanded(child: _buildStepLine(3, colors)),
+          _buildStepIndicator(4, 'Review', colors),
         ],
       ),
     );
   }
 
-  Widget _buildStepIndicator(int step, String label) {
+  Widget _buildStepIndicator(int step, String label, ThemeColors colors) {
     final isCompleted = _currentStep > step;
     final isCurrent = _currentStep == step;
 
@@ -198,21 +199,21 @@ class _KycViewState extends ConsumerState<KycView> {
           height: 32,
           decoration: BoxDecoration(
             color: isCompleted || isCurrent
-                ? AppColors.gold500
-                : AppColors.elevated,
+                ? colors.gold
+                : colors.elevated,
             shape: BoxShape.circle,
             border: Border.all(
-              color: isCurrent ? AppColors.gold500 : Colors.transparent,
+              color: isCurrent ? colors.gold : Colors.transparent,
               width: 2,
             ),
           ),
           child: Center(
             child: isCompleted
-                ? const Icon(Icons.check, color: AppColors.obsidian, size: 18)
+                ? Icon(Icons.check, color: colors.canvas, size: 18)
                 : AppText(
                     '${step + 1}',
                     variant: AppTextVariant.labelMedium,
-                    color: isCurrent ? AppColors.obsidian : AppColors.textTertiary,
+                    color: isCurrent ? colors.canvas : colors.textTertiary,
                   ),
           ),
         ),
@@ -220,53 +221,53 @@ class _KycViewState extends ConsumerState<KycView> {
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
-          color: isCurrent ? AppColors.gold500 : AppColors.textTertiary,
+          color: isCurrent ? colors.gold : colors.textTertiary,
         ),
       ],
     );
   }
 
-  Widget _buildStepLine(int afterStep) {
+  Widget _buildStepLine(int afterStep, ThemeColors colors) {
     final isCompleted = _currentStep > afterStep;
 
     return Container(
       height: 2,
       margin: const EdgeInsets.only(bottom: 20),
-      color: isCompleted ? AppColors.gold500 : AppColors.borderSubtle,
+      color: isCompleted ? colors.gold : colors.borderSubtle,
     );
   }
 
-  Widget _buildCurrentStep() {
+  Widget _buildCurrentStep(ThemeColors colors) {
     switch (_currentStep) {
       case 0:
-        return _buildPersonalInfoStep();
+        return _buildPersonalInfoStep(colors);
       case 1:
-        return _buildDocumentTypeStep();
+        return _buildDocumentTypeStep(colors);
       case 2:
-        return _buildDocumentPhotosStep();
+        return _buildDocumentPhotosStep(colors);
       case 3:
-        return _buildSelfieStep();
+        return _buildSelfieStep(colors);
       case 4:
-        return _buildReviewStep();
+        return _buildReviewStep(colors);
       default:
         return const SizedBox();
     }
   }
 
-  Widget _buildPersonalInfoStep() {
+  Widget _buildPersonalInfoStep(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Personal Information',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const AppText(
+        AppText(
           'Please provide your personal details as they appear on your ID document.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
 
@@ -327,15 +328,15 @@ class _KycViewState extends ConsumerState<KycView> {
         // Info
         AppCard(
           variant: AppCardVariant.subtle,
-          child: const Row(
+          child: Row(
             children: [
               Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
                   'Your information must match the ID document you will upload in the next steps.',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -345,20 +346,20 @@ class _KycViewState extends ConsumerState<KycView> {
     );
   }
 
-  Widget _buildDocumentTypeStep() {
+  Widget _buildDocumentTypeStep(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Select Document Type',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const AppText(
+        AppText(
           'Choose the type of government-issued ID you want to use for verification.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
         ...KycDocumentType.values.map((type) => Padding(
@@ -367,21 +368,22 @@ class _KycViewState extends ConsumerState<KycView> {
                 type: type,
                 isSelected: _selectedDocType == type,
                 onTap: () => setState(() => _selectedDocType = type),
+                colors: colors,
               ),
             )),
         const SizedBox(height: AppSpacing.lg),
         // Info
         AppCard(
           variant: AppCardVariant.subtle,
-          child: const Row(
+          child: Row(
             children: [
               Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
                   'Make sure your document is valid and not expired. We accept documents from most countries.',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -391,20 +393,20 @@ class _KycViewState extends ConsumerState<KycView> {
     );
   }
 
-  Widget _buildDocumentPhotosStep() {
+  Widget _buildDocumentPhotosStep(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
           'Upload ${_selectedDocType?.label ?? "Document"} Photos',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const AppText(
+        AppText(
           'Take clear photos of the front and back of your document.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
         // Front Photo
@@ -414,6 +416,7 @@ class _KycViewState extends ConsumerState<KycView> {
           isUploaded: _frontUploaded,
           imageFile: _frontImage,
           onTap: () => _showImageSourceDialog('front'),
+          colors: colors,
         ),
         const SizedBox(height: AppSpacing.md),
         // Back Photo
@@ -423,36 +426,37 @@ class _KycViewState extends ConsumerState<KycView> {
           isUploaded: _backUploaded,
           imageFile: _backImage,
           onTap: () => _showImageSourceDialog('back'),
+          colors: colors,
         ),
         const SizedBox(height: AppSpacing.xxl),
         // Tips
-        const AppText(
+        AppText(
           'Photo Tips',
           variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.md),
-        _buildTip(Icons.wb_sunny, 'Use good lighting'),
-        _buildTip(Icons.crop_free, 'Capture all corners'),
-        _buildTip(Icons.blur_off, 'Avoid blur and glare'),
+        _buildTip(Icons.wb_sunny, 'Use good lighting', colors),
+        _buildTip(Icons.crop_free, 'Capture all corners', colors),
+        _buildTip(Icons.blur_off, 'Avoid blur and glare', colors),
       ],
     );
   }
 
-  Widget _buildSelfieStep() {
+  Widget _buildSelfieStep(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Liveness Check & Selfie',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const AppText(
+        AppText(
           'Complete a liveness check to verify you are a real person, then take a selfie.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
 
@@ -477,20 +481,20 @@ class _KycViewState extends ConsumerState<KycView> {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
                             'Liveness Check Required',
                             variant: AppTextVariant.bodyLarge,
-                            color: AppColors.textPrimary,
+                            color: colors.textPrimary,
                           ),
-                          SizedBox(height: AppSpacing.xxs),
+                          const SizedBox(height: AppSpacing.xxs),
                           AppText(
                             'Follow on-screen instructions',
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ],
                       ),
@@ -526,20 +530,20 @@ class _KycViewState extends ConsumerState<KycView> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
                         'Liveness Check Passed',
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
-                      SizedBox(height: AppSpacing.xxs),
+                      const SizedBox(height: AppSpacing.xxs),
                       AppText(
                         'You can now take your selfie',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),
@@ -557,12 +561,12 @@ class _KycViewState extends ConsumerState<KycView> {
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: _selfieUploaded
                         ? AppColors.successBase
-                        : AppColors.borderSubtle,
+                        : colors.borderSubtle,
                     width: 3,
                   ),
                 ),
@@ -580,14 +584,14 @@ class _KycViewState extends ConsumerState<KycView> {
                         children: [
                           Icon(
                             Icons.camera_alt,
-                            color: AppColors.textTertiary,
+                            color: colors.textTertiary,
                             size: 48,
                           ),
                           const SizedBox(height: AppSpacing.md),
-                          const AppText(
+                          AppText(
                             'Tap to take selfie',
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ],
                       ),
@@ -597,48 +601,49 @@ class _KycViewState extends ConsumerState<KycView> {
           const SizedBox(height: AppSpacing.xxxl),
 
           // Tips
-          const AppText(
+          AppText(
             'Selfie Tips',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildTip(Icons.face, 'Look directly at the camera'),
-          _buildTip(Icons.wb_sunny, 'Ensure your face is well-lit'),
-          _buildTip(Icons.close, 'No sunglasses or hats'),
+          _buildTip(Icons.face, 'Look directly at the camera', colors),
+          _buildTip(Icons.wb_sunny, 'Ensure your face is well-lit', colors),
+          _buildTip(Icons.close, 'No sunglasses or hats', colors),
         ],
       ],
     );
   }
 
-  Widget _buildReviewStep() {
+  Widget _buildReviewStep(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Review & Submit',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        const AppText(
+        AppText(
           'Please review your submission before submitting.',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.xxl),
 
         // Personal Information Section
-        const AppText(
+        AppText(
           'Personal Information',
           variant: AppTextVariant.labelLarge,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         _ReviewItem(
           icon: Icons.person,
           label: 'Full Name',
           value: '${_firstNameController.text} ${_lastNameController.text}',
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.cake,
@@ -646,17 +651,20 @@ class _KycViewState extends ConsumerState<KycView> {
           value: _dateOfBirth != null
               ? DateFormat('MMM dd, yyyy').format(_dateOfBirth!)
               : 'Not set',
-          valueColor: _dateOfBirth != null ? AppColors.textPrimary : AppColors.errorBase,
+          valueColor: _dateOfBirth != null ? colors.textPrimary : AppColors.errorBase,
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.public,
           label: 'Country',
           value: _selectedCountry?.name ?? 'Not selected',
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.badge,
           label: 'ID Type',
           value: _getIdTypeName(_selectedIdType),
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.numbers,
@@ -665,41 +673,46 @@ class _KycViewState extends ConsumerState<KycView> {
               ? _idNumberController.text
               : 'Not provided',
           valueColor: _idNumberController.text.isNotEmpty
-              ? AppColors.textPrimary
+              ? colors.textPrimary
               : AppColors.errorBase,
+          colors: colors,
         ),
 
         const SizedBox(height: AppSpacing.xl),
 
         // Documents Section
-        const AppText(
+        AppText(
           'Documents',
           variant: AppTextVariant.labelLarge,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         _ReviewItem(
           icon: Icons.credit_card,
           label: 'Document Type',
           value: _selectedDocType?.label ?? 'Not selected',
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.photo,
           label: 'Front Photo',
           value: _frontUploaded ? 'Uploaded' : 'Missing',
           valueColor: _frontUploaded ? AppColors.successBase : AppColors.errorBase,
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.photo,
           label: 'Back Photo',
           value: _backUploaded ? 'Uploaded' : 'Missing',
           valueColor: _backUploaded ? AppColors.successBase : AppColors.errorBase,
+          colors: colors,
         ),
         _ReviewItem(
           icon: Icons.face,
           label: 'Selfie',
           value: _selfieUploaded ? 'Uploaded' : 'Missing',
           valueColor: _selfieUploaded ? AppColors.successBase : AppColors.errorBase,
+          colors: colors,
         ),
 
         const SizedBox(height: AppSpacing.xxl),
@@ -707,18 +720,18 @@ class _KycViewState extends ConsumerState<KycView> {
         // Disclaimer
         AppCard(
           variant: AppCardVariant.subtle,
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
                 'By submitting, you confirm that:',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
-              SizedBox(height: AppSpacing.md),
-              _DisclaimerItem(text: 'The information provided is accurate'),
-              _DisclaimerItem(text: 'The documents belong to you'),
-              _DisclaimerItem(text: 'You agree to our Terms of Service'),
+              const SizedBox(height: AppSpacing.md),
+              _DisclaimerItem(text: 'The information provided is accurate', colors: colors),
+              _DisclaimerItem(text: 'The documents belong to you', colors: colors),
+              _DisclaimerItem(text: 'You agree to our Terms of Service', colors: colors),
             ],
           ),
         ),
@@ -739,30 +752,30 @@ class _KycViewState extends ConsumerState<KycView> {
     }
   }
 
-  Widget _buildTip(IconData icon, String text) {
+  Widget _buildTip(IconData icon, String text, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.gold500, size: 20),
+          Icon(icon, color: colors.gold, size: 20),
           const SizedBox(width: AppSpacing.sm),
           AppText(
             text,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomActions() {
+  Widget _buildBottomActions(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
-      decoration: const BoxDecoration(
-        color: AppColors.slate,
+      decoration: BoxDecoration(
+        color: colors.container,
         border: Border(
-          top: BorderSide(color: AppColors.borderSubtle),
+          top: BorderSide(color: colors.borderSubtle),
         ),
       ),
       child: SafeArea(
@@ -869,6 +882,7 @@ class _KycViewState extends ConsumerState<KycView> {
   }
 
   Future<void> _selectDateOfBirth() async {
+    final colors = context.colors;
     final now = DateTime.now();
     final eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
     final hundredYearsAgo = DateTime(now.year - 100, now.month, now.day);
@@ -881,11 +895,11 @@ class _KycViewState extends ConsumerState<KycView> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              onPrimary: AppColors.obsidian,
-              surface: AppColors.slate,
-              onSurface: AppColors.textPrimary,
+            colorScheme: ColorScheme.dark(
+              primary: colors.gold,
+              onPrimary: colors.canvas,
+              surface: colors.container,
+              onSurface: colors.textPrimary,
             ),
           ),
           child: child!,
@@ -901,55 +915,58 @@ class _KycViewState extends ConsumerState<KycView> {
   void _showCountryPicker() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: const AppText(
-                'Select Country',
-                variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+      builder: (context) {
+        final colors = context.colors;
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: AppText(
+                  'Select Country',
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
               ),
-            ),
-            const Divider(color: AppColors.borderSubtle),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: SupportedCountries.allIncludingDisabled.length,
-                itemBuilder: (context, index) {
-                  final country = SupportedCountries.allIncludingDisabled[index];
-                  final isSelected = _selectedCountry?.code == country.code;
+              Divider(color: colors.borderSubtle),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: SupportedCountries.allIncludingDisabled.length,
+                  itemBuilder: (context, index) {
+                    final country = SupportedCountries.allIncludingDisabled[index];
+                    final isSelected = _selectedCountry?.code == country.code;
 
-                  return ListTile(
-                    leading: AppText(
-                      country.flag,
-                      variant: AppTextVariant.titleMedium,
-                    ),
-                    title: AppText(
-                      country.name,
-                      variant: AppTextVariant.bodyMedium,
-                      color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
-                    ),
-                    trailing: isSelected
-                        ? const Icon(Icons.check, color: AppColors.gold500)
-                        : null,
-                    onTap: () {
-                      setState(() => _selectedCountry = country);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
+                    return ListTile(
+                      leading: AppText(
+                        country.flag,
+                        variant: AppTextVariant.titleMedium,
+                      ),
+                      title: AppText(
+                        country.name,
+                        variant: AppTextVariant.bodyMedium,
+                        color: isSelected ? colors.gold : colors.textPrimary,
+                      ),
+                      trailing: isSelected
+                          ? Icon(Icons.check, color: colors.gold)
+                          : null,
+                      onTap: () {
+                        setState(() => _selectedCountry = country);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -957,51 +974,56 @@ class _KycViewState extends ConsumerState<KycView> {
   void _showImageSourceDialog(String type) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const AppText(
-                'Choose Image Source',
-                variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Row(
-                children: [
-                  Expanded(
-                    child: _SourceOption(
-                      icon: Icons.camera_alt,
-                      label: 'Camera',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImage(ImageSource.camera, type);
-                      },
+      builder: (context) {
+        final colors = context.colors;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  'Choose Image Source',
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _SourceOption(
+                        icon: Icons.camera_alt,
+                        label: 'Camera',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.camera, type);
+                        },
+                        colors: colors,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _SourceOption(
-                      icon: Icons.photo_library,
-                      label: 'Gallery',
-                      onTap: () {
-                        Navigator.pop(context);
-                        _pickImage(ImageSource.gallery, type);
-                      },
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: _SourceOption(
+                        icon: Icons.photo_library,
+                        label: 'Gallery',
+                        onTap: () {
+                          Navigator.pop(context);
+                          _pickImage(ImageSource.gallery, type);
+                        },
+                        colors: colors,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -1243,9 +1265,9 @@ class _KycViewState extends ConsumerState<KycView> {
     });
   }
 
-  Widget _buildVerifiedView() {
+  Widget _buildVerifiedView(ThemeColors colors) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -1253,7 +1275,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -1275,18 +1297,18 @@ class _KycViewState extends ConsumerState<KycView> {
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'Identity Verified',
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: AppText(
                 'Your identity has been successfully verified. You can now use all features of JoonaPay.',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -1296,9 +1318,9 @@ class _KycViewState extends ConsumerState<KycView> {
     );
   }
 
-  Widget _buildPendingView() {
+  Widget _buildPendingView(ThemeColors colors) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -1306,7 +1328,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -1328,18 +1350,18 @@ class _KycViewState extends ConsumerState<KycView> {
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'Verification In Progress',
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: AppText(
                 'We are reviewing your documents. This usually takes 1-2 business days. You will be notified once completed.',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -1355,11 +1377,13 @@ class _DocumentTypeCard extends StatelessWidget {
     required this.type,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final KycDocumentType type;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1369,11 +1393,11 @@ class _DocumentTypeCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.gold500.withValues(alpha: 0.1)
-              : AppColors.slate,
+              ? colors.gold.withValues(alpha: 0.1)
+              : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? colors.gold : Colors.transparent,
             width: 2,
           ),
         ),
@@ -1384,13 +1408,13 @@ class _DocumentTypeCard extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold500.withValues(alpha: 0.2)
-                    : AppColors.elevated,
+                    ? colors.gold.withValues(alpha: 0.2)
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 type.icon,
-                color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                color: isSelected ? colors.gold : colors.textSecondary,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -1398,11 +1422,11 @@ class _DocumentTypeCard extends StatelessWidget {
               child: AppText(
                 type.label,
                 variant: AppTextVariant.bodyLarge,
-                color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                color: isSelected ? colors.gold : colors.textPrimary,
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle, color: AppColors.gold500),
+              Icon(Icons.check_circle, color: colors.gold),
           ],
         ),
       ),
@@ -1416,6 +1440,7 @@ class _UploadCard extends StatelessWidget {
     required this.description,
     required this.isUploaded,
     required this.onTap,
+    required this.colors,
     this.imageFile,
   });
 
@@ -1424,6 +1449,7 @@ class _UploadCard extends StatelessWidget {
   final bool isUploaded;
   final VoidCallback onTap;
   final File? imageFile;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1432,10 +1458,10 @@ class _UploadCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isUploaded ? AppColors.successBase : AppColors.borderSubtle,
+            color: isUploaded ? AppColors.successBase : colors.borderSubtle,
             width: isUploaded ? 2 : 1,
           ),
         ),
@@ -1447,7 +1473,7 @@ class _UploadCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isUploaded
                     ? AppColors.successBase.withValues(alpha: 0.2)
-                    : AppColors.elevated,
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: isUploaded && imageFile != null
@@ -1462,7 +1488,7 @@ class _UploadCard extends StatelessWidget {
                     )
                   : Icon(
                       isUploaded ? Icons.check : Icons.add_a_photo,
-                      color: isUploaded ? AppColors.successBase : AppColors.textTertiary,
+                      color: isUploaded ? AppColors.successBase : colors.textTertiary,
                       size: 28,
                     ),
             ),
@@ -1474,20 +1500,20 @@ class _UploadCard extends StatelessWidget {
                   AppText(
                     title,
                     variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     isUploaded ? 'Tap to change' : description,
                     variant: AppTextVariant.bodySmall,
-                    color: isUploaded ? AppColors.successBase : AppColors.textSecondary,
+                    color: isUploaded ? AppColors.successBase : colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               isUploaded ? Icons.edit : Icons.chevron_right,
-              color: isUploaded ? AppColors.successBase : AppColors.textTertiary,
+              color: isUploaded ? AppColors.successBase : colors.textTertiary,
             ),
           ],
         ),
@@ -1502,11 +1528,13 @@ class _SourceOption extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    required this.colors,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1515,22 +1543,22 @@ class _SourceOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              color: AppColors.gold500,
+              color: colors.gold,
               size: 40,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ],
         ),
@@ -1544,6 +1572,7 @@ class _ReviewItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.colors,
     this.valueColor,
   });
 
@@ -1551,6 +1580,7 @@ class _ReviewItem extends StatelessWidget {
   final String label;
   final String value;
   final Color? valueColor;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1558,19 +1588,19 @@ class _ReviewItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textTertiary, size: 20),
+          Icon(icon, color: colors.textTertiary, size: 20),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(
               label,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           AppText(
             value,
             variant: AppTextVariant.bodyMedium,
-            color: valueColor ?? AppColors.textPrimary,
+            color: valueColor ?? colors.textPrimary,
           ),
         ],
       ),
@@ -1579,9 +1609,13 @@ class _ReviewItem extends StatelessWidget {
 }
 
 class _DisclaimerItem extends StatelessWidget {
-  const _DisclaimerItem({required this.text});
+  const _DisclaimerItem({
+    required this.text,
+    required this.colors,
+  });
 
   final String text;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1590,13 +1624,13 @@ class _DisclaimerItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check, color: AppColors.gold500, size: 16),
+          Icon(Icons.check, color: colors.gold, size: 16),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
               text,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ],

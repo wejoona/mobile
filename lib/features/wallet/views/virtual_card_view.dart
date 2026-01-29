@@ -65,8 +65,10 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -81,7 +83,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
           IconButton(
             icon: Icon(
               _cardFrozen ? Icons.ac_unit : Icons.settings,
-              color: _cardFrozen ? AppColors.infoBase : null,
+              color: _cardFrozen ? AppColors.infoBase : colors.textPrimary,
             ),
             onPressed: () => _showCardSettings(),
           ),
@@ -107,11 +109,11 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                     alignment: Alignment.center,
                     transform: transform,
                     child: angle < math.pi / 2
-                        ? _buildCardFront()
+                        ? _buildCardFront(colors)
                         : Transform(
                             alignment: Alignment.center,
                             transform: Matrix4.identity()..rotateY(math.pi),
-                            child: _buildCardBack(),
+                            child: _buildCardBack(colors),
                           ),
                   );
                 },
@@ -123,7 +125,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
               child: AppText(
                 'Tap card to ${_showBack ? 'hide' : 'show'} details',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ),
 
@@ -162,6 +164,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                     icon: Icons.add,
                     label: 'Add Funds',
                     onTap: () => _showAddFunds(),
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -170,6 +173,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                     icon: _cardFrozen ? Icons.play_arrow : Icons.pause,
                     label: _cardFrozen ? 'Unfreeze' : 'Freeze',
                     onTap: () => _toggleFreeze(),
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -178,6 +182,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                     icon: Icons.copy,
                     label: 'Copy',
                     onTap: () => _copyCardDetails(),
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -186,6 +191,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                     icon: Icons.settings,
                     label: 'Settings',
                     onTap: () => _showCardSettings(),
+                    colors: colors,
                   ),
                 ),
               ],
@@ -194,7 +200,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
             const SizedBox(height: AppSpacing.xxl),
 
             // Spending Summary
-            _buildSpendingSummary(),
+            _buildSpendingSummary(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -202,35 +208,35 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
+                AppText(
                   'Recent Transactions',
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 TextButton(
                   onPressed: () {},
-                  child: const AppText(
+                  child: AppText(
                     'See All',
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
-            ..._recentTransactions.map((tx) => _buildTransactionItem(tx)),
+            ..._recentTransactions.map((tx) => _buildTransactionItem(tx, colors)),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Card Benefits
-            _buildBenefitsCard(),
+            _buildBenefitsCard(colors),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCardFront() {
+  Widget _buildCardFront(ThemeColors colors) {
     return Container(
       height: 200,
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -336,7 +342,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     );
   }
 
-  Widget _buildCardBack() {
+  Widget _buildCardBack(ThemeColors colors) {
     return Container(
       height: 200,
       decoration: BoxDecoration(
@@ -409,24 +415,25 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     required IconData icon,
     required String label,
     required VoidCallback onTap,
+    required ThemeColors colors,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.gold500, size: 24),
+            Icon(icon, color: colors.gold, size: 24),
             const SizedBox(height: AppSpacing.xs),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
@@ -434,7 +441,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     );
   }
 
-  Widget _buildSpendingSummary() {
+  Widget _buildSpendingSummary(ThemeColors colors) {
     final percentUsed = _card.spentThisMonth / _card.spendLimit;
 
     return AppCard(
@@ -442,10 +449,10 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Monthly Spending',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -454,12 +461,12 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
               AppText(
                 '\$${_card.spentThisMonth.toStringAsFixed(2)}',
                 variant: AppTextVariant.headlineSmall,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               AppText(
                 'of \$${_card.spendLimit.toStringAsFixed(0)} limit',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -468,9 +475,9 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
             borderRadius: BorderRadius.circular(AppRadius.xs),
             child: LinearProgressIndicator(
               value: percentUsed.clamp(0.0, 1.0),
-              backgroundColor: AppColors.borderSubtle,
+              backgroundColor: colors.borderSubtle,
               valueColor: AlwaysStoppedAnimation<Color>(
-                percentUsed > 0.8 ? AppColors.errorBase : AppColors.gold500,
+                percentUsed > 0.8 ? AppColors.errorBase : colors.gold,
               ),
               minHeight: 8,
             ),
@@ -482,12 +489,12 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
               AppText(
                 '\$${(_card.spendLimit - _card.spentThisMonth).toStringAsFixed(2)} remaining',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               AppText(
                 '${(percentUsed * 100).toStringAsFixed(0)}% used',
                 variant: AppTextVariant.bodySmall,
-                color: percentUsed > 0.8 ? AppColors.warningBase : AppColors.textTertiary,
+                color: percentUsed > 0.8 ? AppColors.warningBase : colors.textTertiary,
               ),
             ],
           ),
@@ -496,7 +503,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     );
   }
 
-  Widget _buildTransactionItem(_CardTransaction tx) {
+  Widget _buildTransactionItem(_CardTransaction tx, ThemeColors colors) {
     final isNegative = tx.amount < 0;
 
     return Padding(
@@ -509,12 +516,12 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 _getCategoryIcon(tx.category),
-                color: AppColors.gold500,
+                color: colors.gold,
                 size: 22,
               ),
             ),
@@ -526,12 +533,12 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                   AppText(
                     tx.merchant,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     tx.category,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -542,12 +549,12 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
                 AppText(
                   '${isNegative ? '-' : '+'}\$${tx.amount.abs().toStringAsFixed(2)}',
                   variant: AppTextVariant.labelMedium,
-                  color: isNegative ? AppColors.textPrimary : AppColors.successBase,
+                  color: isNegative ? colors.textPrimary : AppColors.successBase,
                 ),
                 AppText(
                   _formatDate(tx.date),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ],
             ),
@@ -557,34 +564,34 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     );
   }
 
-  Widget _buildBenefitsCard() {
+  Widget _buildBenefitsCard(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.star, color: AppColors.gold500, size: 20),
-              SizedBox(width: AppSpacing.sm),
+              Icon(Icons.star, color: colors.gold, size: 20),
+              const SizedBox(width: AppSpacing.sm),
               AppText(
                 'Card Benefits',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildBenefitItem(Icons.lock, 'Instant freeze & unfreeze'),
-          _buildBenefitItem(Icons.notifications, 'Real-time transaction alerts'),
-          _buildBenefitItem(Icons.percent, '1% cashback on all purchases'),
-          _buildBenefitItem(Icons.shield, 'Zero liability fraud protection'),
+          _buildBenefitItem(Icons.lock, 'Instant freeze & unfreeze', colors),
+          _buildBenefitItem(Icons.notifications, 'Real-time transaction alerts', colors),
+          _buildBenefitItem(Icons.percent, '1% cashback on all purchases', colors),
+          _buildBenefitItem(Icons.shield, 'Zero liability fraud protection', colors),
         ],
       ),
     );
   }
 
-  Widget _buildBenefitItem(IconData icon, String text) {
+  Widget _buildBenefitItem(IconData icon, String text, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -594,7 +601,7 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
           AppText(
             text,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
@@ -627,9 +634,10 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
   }
 
   void _showAddFunds() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -689,9 +697,10 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
   }
 
   void _showCardSettings() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -711,24 +720,28 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
               'Spending Limit',
               '\$${_card.spendLimit.toStringAsFixed(0)}/month',
               () {},
+              colors,
             ),
             _buildSettingItem(
               Icons.notifications,
               'Transaction Alerts',
               'Enabled',
               () {},
+              colors,
             ),
             _buildSettingItem(
               Icons.language,
               'Online Payments',
               'Enabled',
               () {},
+              colors,
             ),
             _buildSettingItem(
               Icons.contactless,
               'Contactless Payments',
               'Enabled',
               () {},
+              colors,
             ),
             const SizedBox(height: AppSpacing.lg),
             AppButton(
@@ -745,15 +758,15 @@ class _VirtualCardViewState extends ConsumerState<VirtualCardView>
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String title, String value, VoidCallback onTap) {
+  Widget _buildSettingItem(IconData icon, String title, String value, VoidCallback onTap, ThemeColors colors) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.gold500),
+      leading: Icon(icon, color: colors.gold),
       title: AppText(title, variant: AppTextVariant.labelMedium),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppText(value, variant: AppTextVariant.bodySmall, color: AppColors.textSecondary),
-          const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+          AppText(value, variant: AppTextVariant.bodySmall, color: colors.textSecondary),
+          Icon(Icons.chevron_right, color: colors.textTertiary),
         ],
       ),
       onTap: onTap,

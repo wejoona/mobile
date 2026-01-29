@@ -49,11 +49,12 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(alertsProvider);
     final filteredAlerts = _filterAlerts(state.alerts);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
@@ -70,13 +71,13 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   '${state.unreadCount}',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.obsidian,
+                  color: colors.canvas,
                 ),
               ),
             ],
@@ -90,10 +91,10 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           if (state.unreadCount > 0)
             TextButton(
               onPressed: () => ref.read(alertsProvider.notifier).markAllAsRead(),
-              child: const AppText(
+              child: AppText(
                 'Mark all read',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           IconButton(
@@ -106,34 +107,34 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
       body: Column(
         children: [
           // Statistics summary
-          if (state.statistics != null) _buildStatisticsSummary(state.statistics!),
+          if (state.statistics != null) _buildStatisticsSummary(state.statistics!, colors),
 
           // Filter chips
-          _buildFilterChips(),
+          _buildFilterChips(colors),
 
           // Alerts list
           Expanded(
             child: state.isLoading && state.alerts.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.gold500),
+                ? Center(
+                    child: CircularProgressIndicator(color: colors.gold),
                   )
                 : filteredAlerts.isEmpty
-                    ? _buildEmptyState()
+                    ? _buildEmptyState(colors)
                     : RefreshIndicator(
                         onRefresh: () => ref.read(alertsProvider.notifier).loadAlerts(refresh: true),
-                        color: AppColors.gold500,
-                        backgroundColor: AppColors.slate,
+                        color: colors.gold,
+                        backgroundColor: colors.container,
                         child: ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.all(AppSpacing.screenPadding),
                           itemCount: filteredAlerts.length + (state.isLoadingMore ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == filteredAlerts.length) {
-                              return const Center(
+                              return Center(
                                 child: Padding(
-                                  padding: EdgeInsets.all(AppSpacing.lg),
+                                  padding: const EdgeInsets.all(AppSpacing.lg),
                                   child: CircularProgressIndicator(
-                                    color: AppColors.gold500,
+                                    color: colors.gold,
                                   ),
                                 ),
                               );
@@ -156,28 +157,28 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
     );
   }
 
-  Widget _buildStatisticsSummary(AlertStatistics stats) {
+  Widget _buildStatisticsSummary(AlertStatistics stats, ThemeColors colors) {
     return Container(
       margin: const EdgeInsets.all(AppSpacing.screenPadding),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('Total', stats.total, AppColors.textSecondary),
-          _buildStatItem('Unread', stats.unread, AppColors.gold500),
-          _buildStatItem('Critical', stats.critical, AppColors.errorBase),
-          _buildStatItem('Action', stats.actionRequired, AppColors.warningBase),
+          _buildStatItem('Total', stats.total, colors.textSecondary, colors),
+          _buildStatItem('Unread', stats.unread, colors.gold, colors),
+          _buildStatItem('Critical', stats.critical, AppColors.errorBase, colors),
+          _buildStatItem('Action', stats.actionRequired, AppColors.warningBase, colors),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, int value, Color color) {
+  Widget _buildStatItem(String label, int value, Color color, ThemeColors colors) {
     return Column(
       children: [
         AppText(
@@ -189,13 +190,13 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
         AppText(
           label,
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
       ],
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterChips(ThemeColors colors) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
@@ -213,6 +214,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                 _filterType = null;
               });
             },
+            colors: colors,
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
@@ -226,6 +228,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                     : AlertSeverity.critical;
               });
             },
+            colors: colors,
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
@@ -239,6 +242,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                     : AlertSeverity.warning;
               });
             },
+            colors: colors,
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
@@ -251,6 +255,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                     : AlertType.largeTransaction;
               });
             },
+            colors: colors,
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
@@ -263,6 +268,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                     : AlertType.loginNewDevice;
               });
             },
+            colors: colors,
           ),
         ],
       ),
@@ -273,6 +279,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
+    required ThemeColors colors,
     Color? color,
   }) {
     return GestureDetector(
@@ -284,27 +291,27 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? (color ?? AppColors.gold500).withValues(alpha: 0.2)
-              : AppColors.slate,
+              ? (color ?? colors.gold).withValues(alpha: 0.2)
+              : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
             color: isSelected
-                ? (color ?? AppColors.gold500)
-                : AppColors.borderSubtle,
+                ? (color ?? colors.gold)
+                : colors.borderSubtle,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
           color: isSelected
-              ? (color ?? AppColors.gold500)
-              : AppColors.textSecondary,
+              ? (color ?? colors.gold)
+              : colors.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -313,20 +320,20 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_off_outlined,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 40,
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'No Alerts',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
@@ -334,7 +341,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                 ? 'No alerts match your filter'
                 : "You're all caught up!",
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           if (_filterSeverity != null || _filterType != null) ...[
             const SizedBox(height: AppSpacing.lg),
@@ -345,10 +352,10 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                   _filterType = null;
                 });
               },
-              child: const AppText(
+              child: AppText(
                 'Clear filters',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           ],

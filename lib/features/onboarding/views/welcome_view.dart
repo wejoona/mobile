@@ -1,0 +1,188 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../providers/onboarding_provider.dart';
+
+/// Welcome screen with onboarding slides
+class WelcomeView extends ConsumerStatefulWidget {
+  const WelcomeView({super.key});
+
+  @override
+  ConsumerState<WelcomeView> createState() => _WelcomeViewState();
+}
+
+class _WelcomeViewState extends ConsumerState<WelcomeView> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // App logo placeholder
+                  Text(
+                    l10n.appName,
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: AppColors.gold500,
+                    ),
+                  ),
+                  // Skip button
+                  if (_currentPage < 2)
+                    TextButton(
+                      onPressed: () {
+                        _pageController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                        );
+                      },
+                      child: Text(
+                        l10n.onboarding_skip,
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() => _currentPage = index);
+                },
+                children: [
+                  _buildSlide(
+                    l10n.onboarding_slide1_title,
+                    l10n.onboarding_slide1_description,
+                    Icons.send_rounded,
+                  ),
+                  _buildSlide(
+                    l10n.onboarding_slide2_title,
+                    l10n.onboarding_slide2_description,
+                    Icons.receipt_long_rounded,
+                  ),
+                  _buildSlide(
+                    l10n.onboarding_slide3_title,
+                    l10n.onboarding_slide3_description,
+                    Icons.savings_rounded,
+                  ),
+                ],
+              ),
+            ),
+            // Page indicator
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  3,
+                  (index) => _buildPageIndicator(index == _currentPage),
+                ),
+              ),
+            ),
+            // Bottom action
+            Padding(
+              padding: EdgeInsets.all(AppSpacing.xl),
+              child: _currentPage == 2
+                  ? AppButton(
+                      label: l10n.onboarding_getStarted,
+                      onPressed: _handleGetStarted,
+                      isFullWidth: true,
+                    )
+                  : AppButton(
+                      label: l10n.action_continue,
+                      onPressed: _handleNext,
+                      isFullWidth: true,
+                      variant: AppButtonVariant.secondary,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlide(String title, String description, IconData icon) {
+    return Padding(
+      padding: EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Illustration placeholder
+          Container(
+            width: 200,
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.elevated,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+            ),
+            child: Icon(
+              icon,
+              size: 100,
+              color: AppColors.gold500,
+            ),
+          ),
+          SizedBox(height: AppSpacing.xxl),
+          Text(
+            title,
+            style: AppTypography.headlineLarge,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: AppSpacing.md),
+          Text(
+            description,
+            style: AppTypography.bodyLarge.copyWith(
+              color: AppColors.textSecondary,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(bool isActive) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+      width: isActive ? 24 : 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: isActive ? AppColors.gold500 : AppColors.textTertiary,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+
+  void _handleNext() {
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _handleGetStarted() {
+    context.go('/onboarding/phone');
+  }
+}

@@ -11,13 +11,14 @@ class ReferralsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final authState = ref.watch(authProvider);
     final phone = authState.user?.phone ?? '';
     // Generate a simple referral code from phone
     final referralCode = _generateReferralCode(phone);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -25,16 +26,16 @@ class ReferralsView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Header
-              const AppText(
+              AppText(
                 'Refer & Earn',
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const AppText(
+              AppText(
                 'Invite friends and earn rewards together',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
 
               const SizedBox(height: AppSpacing.xxl),
@@ -63,16 +64,16 @@ class ReferralsView extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
-                    const AppText(
+                    AppText(
                       'Earn \$5',
                       variant: AppTextVariant.displaySmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    const AppText(
+                    AppText(
                       'for each friend who signs up and makes their first deposit',
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -87,10 +88,10 @@ class ReferralsView extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppText(
+                    AppText(
                       'Your Referral Code',
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Row(
@@ -99,10 +100,10 @@ class ReferralsView extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(AppSpacing.lg),
                             decoration: BoxDecoration(
-                              color: AppColors.elevated,
+                              color: colors.elevated,
                               borderRadius: BorderRadius.circular(AppRadius.md),
                               border: Border.all(
-                                color: AppColors.gold500.withOpacity(0.3),
+                                color: colors.gold.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -110,7 +111,7 @@ class ReferralsView extends ConsumerWidget {
                               child: AppText(
                                 referralCode,
                                 variant: AppTextVariant.titleLarge,
-                                color: AppColors.gold500,
+                                color: colors.gold,
                               ),
                             ),
                           ),
@@ -121,12 +122,12 @@ class ReferralsView extends ConsumerWidget {
                           icon: Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: AppColors.gold500.withOpacity(0.1),
+                              color: colors.gold.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(AppRadius.md),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.copy,
-                              color: AppColors.gold500,
+                              color: colors.gold,
                             ),
                           ),
                         ),
@@ -164,10 +165,10 @@ class ReferralsView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxxl),
 
               // Stats
-              const AppText(
+              AppText(
                 'Your Rewards',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
 
@@ -175,6 +176,7 @@ class ReferralsView extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: _StatCard(
+                      colors: colors,
                       icon: Icons.people_outline,
                       value: '0',
                       label: 'Friends Invited',
@@ -183,6 +185,7 @@ class ReferralsView extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _StatCard(
+                      colors: colors,
                       icon: Icons.attach_money,
                       value: '\$0.00',
                       label: 'Total Earned',
@@ -194,29 +197,33 @@ class ReferralsView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxxl),
 
               // How it works
-              const AppText(
+              AppText(
                 'How it works',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.lg),
 
               _HowItWorksStep(
+                colors: colors,
                 number: '1',
                 title: 'Share your code',
                 description: 'Send your referral code or link to friends',
               ),
               _HowItWorksStep(
+                colors: colors,
                 number: '2',
                 title: 'Friend signs up',
                 description: 'They create an account using your code',
               ),
               _HowItWorksStep(
+                colors: colors,
                 number: '3',
                 title: 'First deposit',
                 description: 'They make their first deposit of \$10 or more',
               ),
               _HowItWorksStep(
+                colors: colors,
                 number: '4',
                 title: 'You both earn!',
                 description: 'You get \$5, and your friend gets \$5 too',
@@ -226,34 +233,34 @@ class ReferralsView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xxxl),
 
               // Referral History
-              const AppText(
+              AppText(
                 'Referral History',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
 
               AppCard(
                 variant: AppCardVariant.subtle,
-                child: const Center(
+                child: Center(
                   child: Column(
                     children: [
                       Icon(
                         Icons.history,
                         size: 48,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                       ),
-                      SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.md),
                       AppText(
                         'No referrals yet',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
-                      SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.xs),
                       AppText(
                         'Start inviting friends to see your rewards here',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -278,11 +285,12 @@ class ReferralsView extends ConsumerWidget {
   }
 
   void _copyCode(BuildContext context, String code) {
+    final colors = context.colors;
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Referral code copied!'),
-        backgroundColor: AppColors.successBase,
+      SnackBar(
+        content: const Text('Referral code copied!'),
+        backgroundColor: colors.success,
       ),
     );
   }
@@ -295,11 +303,12 @@ class ReferralsView extends ConsumerWidget {
   }
 
   void _inviteContacts(BuildContext context) {
+    final colors = context.colors;
     // TODO: Open contacts picker
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Contact invite coming soon'),
-        backgroundColor: AppColors.gold500,
+      SnackBar(
+        content: const Text('Contact invite coming soon'),
+        backgroundColor: colors.gold,
       ),
     );
   }
@@ -307,11 +316,13 @@ class ReferralsView extends ConsumerWidget {
 
 class _StatCard extends StatelessWidget {
   const _StatCard({
+    required this.colors,
     required this.icon,
     required this.value,
     required this.label,
   });
 
+  final ThemeColors colors;
   final IconData icon;
   final String value;
   final String label;
@@ -322,18 +333,18 @@ class _StatCard extends StatelessWidget {
       variant: AppCardVariant.elevated,
       child: Column(
         children: [
-          Icon(icon, color: AppColors.gold500, size: 28),
+          Icon(icon, color: colors.gold, size: 28),
           const SizedBox(height: AppSpacing.md),
           AppText(
             value,
             variant: AppTextVariant.titleLarge,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.xs),
           AppText(
             label,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
@@ -343,12 +354,14 @@ class _StatCard extends StatelessWidget {
 
 class _HowItWorksStep extends StatelessWidget {
   const _HowItWorksStep({
+    required this.colors,
     required this.number,
     required this.title,
     required this.description,
     this.isLast = false,
   });
 
+  final ThemeColors colors;
   final String number;
   final String title;
   final String description;
@@ -384,7 +397,7 @@ class _HowItWorksStep extends StatelessWidget {
               Container(
                 width: 2,
                 height: 40,
-                color: AppColors.gold500.withOpacity(0.3),
+                color: colors.gold.withOpacity(0.3),
               ),
           ],
         ),
@@ -398,13 +411,13 @@ class _HowItWorksStep extends StatelessWidget {
                 AppText(
                   title,
                   variant: AppTextVariant.titleSmall,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),

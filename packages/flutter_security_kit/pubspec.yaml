@@ -1,0 +1,18 @@
+name: flutter_security_kit
+description: Security utilities for Flutter apps - device security checks (root/jailbreak detection), device attestation (Play Integrity/App Attest), and screenshot protection.
+version: 1.0.0
+homepage: https://github.com/joonapay/flutter_security_kit
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  crypto: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0

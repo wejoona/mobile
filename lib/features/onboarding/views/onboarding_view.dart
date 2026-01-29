@@ -67,8 +67,10 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Column(
           children: [
@@ -77,10 +79,10 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: _completeOnboarding,
-                child: const AppText(
+                child: AppText(
                   'Skip',
                   variant: AppTextVariant.labelLarge,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ),
@@ -94,7 +96,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
                 },
                 itemCount: _pages.length,
                 itemBuilder: (context, index) {
-                  return _buildPage(_pages[index]);
+                  return _buildPage(_pages[index], colors);
                 },
               ),
             ),
@@ -106,7 +108,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
                   _pages.length,
-                  (index) => _PageDot(isActive: index == _currentPage),
+                  (index) => _PageDot(isActive: index == _currentPage, colors: colors),
                 ),
               ),
             ),
@@ -127,7 +129,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
     );
   }
 
-  Widget _buildPage(_OnboardingPage page) {
+  Widget _buildPage(_OnboardingPage page, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -153,7 +155,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
           AppText(
             page.title,
             variant: AppTextVariant.headlineMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -164,7 +166,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
             child: AppText(
               page.description,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -207,9 +209,10 @@ class _OnboardingPage {
 }
 
 class _PageDot extends StatelessWidget {
-  const _PageDot({required this.isActive});
+  const _PageDot({required this.isActive, required this.colors});
 
   final bool isActive;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -219,7 +222,7 @@ class _PageDot extends StatelessWidget {
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.gold500 : AppColors.textTertiary,
+        color: isActive ? colors.gold : colors.textTertiary,
         borderRadius: BorderRadius.circular(4),
       ),
     );

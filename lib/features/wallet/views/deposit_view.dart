@@ -83,6 +83,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final channelsAsync = ref.watch(depositChannelsProvider(_selectedCurrency));
     final depositState = ref.watch(depositProvider);
 
@@ -103,7 +104,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -121,24 +122,24 @@ class _DepositViewState extends ConsumerState<DepositView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Amount Input Card
-            _buildAmountCard(),
+            _buildAmountCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Payment Methods by Universe
-            const AppText(
+            AppText(
               'Select Payment Method',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
 
             channelsAsync.when(
-              data: (channels) => _buildGroupedChannels(channels),
-              loading: () => const Center(
+              data: (channels) => _buildGroupedChannels(channels, colors),
+              loading: () => Center(
                 child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.xxl),
-                  child: CircularProgressIndicator(color: AppColors.gold500),
+                  padding: const EdgeInsets.all(AppSpacing.xxl),
+                  child: CircularProgressIndicator(color: colors.gold),
                 ),
               ),
               error: (err, _) => Center(
@@ -168,16 +169,16 @@ class _DepositViewState extends ConsumerState<DepositView> {
     );
   }
 
-  Widget _buildAmountCard() {
+  Widget _buildAmountCard(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Amount to deposit',
             variant: AppTextVariant.cardLabel,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
@@ -192,7 +193,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Row(
@@ -200,12 +201,12 @@ class _DepositViewState extends ConsumerState<DepositView> {
                       AppText(
                         _selectedCurrency,
                         variant: AppTextVariant.titleMedium,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
+                      Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         size: 20,
                       ),
                     ],
@@ -231,14 +232,14 @@ class _DepositViewState extends ConsumerState<DepositView> {
                       style: AppTypography.displaySmall.copyWith(
                         color: _amountError != null
                             ? AppColors.errorBase
-                            : AppColors.textPrimary,
+                            : colors.textPrimary,
                       ),
                       textAlign: TextAlign.right,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '0.00',
                         hintStyle: TextStyle(
-                          color: AppColors.textTertiary,
+                          color: colors.textTertiary,
                         ),
                       ),
                       onChanged: (_) => _validateAmount(),
@@ -265,13 +266,13 @@ class _DepositViewState extends ConsumerState<DepositView> {
               AppText(
                 'Min: ${_formatAmount(_minAmount)}',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               const Spacer(),
               AppText(
                 'Max: ${_formatAmount(_maxAmount)}',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ],
           ),
@@ -284,24 +285,28 @@ class _DepositViewState extends ConsumerState<DepositView> {
                 amount: 5000,
                 currency: _selectedCurrency,
                 onTap: () => _setAmount(5000),
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
                 amount: 10000,
                 currency: _selectedCurrency,
                 onTap: () => _setAmount(10000),
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
                 amount: 25000,
                 currency: _selectedCurrency,
                 onTap: () => _setAmount(25000),
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
                 amount: 50000,
                 currency: _selectedCurrency,
                 onTap: () => _setAmount(50000),
+                colors: colors,
               ),
             ],
           ),
@@ -310,7 +315,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
     );
   }
 
-  Widget _buildGroupedChannels(List<DepositChannel> channels) {
+  Widget _buildGroupedChannels(List<DepositChannel> channels, ThemeColors colors) {
     // Group channels by type/universe
     final grouped = <PaymentUniverse, List<DepositChannel>>{};
 
@@ -336,6 +341,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
           channels: universeChannels,
           isExpanded: isExpanded,
           selectedChannelId: _selectedChannelId,
+          colors: colors,
           onToggle: () {
             setState(() {
               _expandedUniverse = isExpanded ? null : universe;
@@ -430,9 +436,11 @@ class _DepositViewState extends ConsumerState<DepositView> {
       ('GHS', 'Ghanaian Cedi', 'Ghana'),
     ];
 
+    final colors = context.colors;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
@@ -444,7 +452,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -459,14 +467,14 @@ class _DepositViewState extends ConsumerState<DepositView> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Center(
                     child: AppText(
                       c.$1.substring(0, 2),
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                 ),
@@ -474,10 +482,10 @@ class _DepositViewState extends ConsumerState<DepositView> {
                 subtitle: AppText(
                   c.$3,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 trailing: _selectedCurrency == c.$1
-                    ? const Icon(Icons.check, color: AppColors.gold500)
+                    ? Icon(Icons.check, color: colors.gold)
                     : null,
                 onTap: () {
                   setState(() {
@@ -522,11 +530,13 @@ class _QuickAmountButton extends StatelessWidget {
     required this.amount,
     required this.currency,
     required this.onTap,
+    required this.colors,
   });
 
   final double amount;
   final String currency;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -543,15 +553,15 @@ class _QuickAmountButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.elevated,
+            color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Center(
             child: AppText(
               label,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ),
@@ -566,6 +576,7 @@ class _PaymentUniverseSection extends StatelessWidget {
     required this.channels,
     required this.isExpanded,
     required this.selectedChannelId,
+    required this.colors,
     required this.onToggle,
     required this.onChannelSelected,
   });
@@ -574,6 +585,7 @@ class _PaymentUniverseSection extends StatelessWidget {
   final List<DepositChannel> channels;
   final bool isExpanded;
   final String? selectedChannelId;
+  final ThemeColors colors;
   final VoidCallback onToggle;
   final ValueChanged<String> onChannelSelected;
 
@@ -585,12 +597,12 @@ class _PaymentUniverseSection extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: hasSelectedInUniverse
-              ? AppColors.gold500
-              : AppColors.borderSubtle,
+              ? colors.gold
+              : colors.borderSubtle,
           width: hasSelectedInUniverse ? 2 : 1,
         ),
       ),
@@ -625,12 +637,12 @@ class _PaymentUniverseSection extends StatelessWidget {
                         AppText(
                           universe.label,
                           variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
                         AppText(
                           _getProvidersList(),
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textTertiary,
+                          color: colors.textTertiary,
                         ),
                       ],
                     ),
@@ -639,7 +651,7 @@ class _PaymentUniverseSection extends StatelessWidget {
                     isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
@@ -648,7 +660,7 @@ class _PaymentUniverseSection extends StatelessWidget {
 
           // Expanded channels
           if (isExpanded) ...[
-            const Divider(color: AppColors.borderSubtle, height: 1),
+            Divider(color: colors.borderSubtle, height: 1),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: channels.isEmpty
@@ -659,6 +671,7 @@ class _PaymentUniverseSection extends StatelessWidget {
                                 channel: channel,
                                 isSelected: selectedChannelId == channel.id,
                                 onTap: () => onChannelSelected(channel.id),
+                                colors: colors,
                               ))
                           .toList(),
                     ),
@@ -679,7 +692,7 @@ class _PaymentUniverseSection extends StatelessWidget {
         case PaymentUniverse.card:
           return 'Visa, Mastercard';
         case PaymentUniverse.crypto:
-          return 'USDC on Polygon';
+          return 'USDC';
       }
     }
     return channels.map((c) => c.provider).take(3).join(', ');
@@ -709,7 +722,7 @@ class _PaymentUniverseSection extends StatelessWidget {
         break;
       case PaymentUniverse.crypto:
         mockChannels.addAll([
-          {'id': 'crypto_usdc', 'name': 'USDC (Polygon)', 'fee': '0%'},
+          {'id': 'crypto_usdc', 'name': 'USDC', 'fee': '0%'},
         ]);
         break;
     }
@@ -722,6 +735,7 @@ class _PaymentUniverseSection extends StatelessWidget {
                 fee: m['fee'] as String,
                 isSelected: selectedChannelId == m['id'],
                 onTap: () => onChannelSelected(m['id'] as String),
+                colors: colors,
               ))
           .toList(),
     );
@@ -733,11 +747,13 @@ class _ChannelOption extends StatelessWidget {
     required this.channel,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final DepositChannel channel;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -747,10 +763,10 @@ class _ChannelOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : AppColors.elevated,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? colors.gold : Colors.transparent,
           ),
         ),
         child: Row(
@@ -759,17 +775,17 @@ class _ChannelOption extends StatelessWidget {
               child: AppText(
                 channel.name,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
             AppText(
               '${channel.fee}% fee',
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
             if (isSelected) ...[
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.check_circle, color: AppColors.gold500, size: 20),
+              Icon(Icons.check_circle, color: colors.gold, size: 20),
             ],
           ],
         ),
@@ -785,6 +801,7 @@ class _MockChannelOption extends StatelessWidget {
     required this.fee,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final String id;
@@ -792,6 +809,7 @@ class _MockChannelOption extends StatelessWidget {
   final String fee;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -801,10 +819,10 @@ class _MockChannelOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : AppColors.elevated,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? colors.gold : Colors.transparent,
           ),
         ),
         child: Row(
@@ -813,17 +831,17 @@ class _MockChannelOption extends StatelessWidget {
               child: AppText(
                 name,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
             AppText(
               '$fee fee',
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
             if (isSelected) ...[
               const SizedBox(width: AppSpacing.sm),
-              const Icon(Icons.check_circle, color: AppColors.gold500, size: 20),
+              Icon(Icons.check_circle, color: colors.gold, size: 20),
             ],
           ],
         ),

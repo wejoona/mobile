@@ -45,17 +45,18 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(filteredPaginatedTransactionsProvider);
     final filter = ref.watch(transactionFilterProvider);
     final activeFilterCount = filter.activeFilterCount;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: _showSearch
-            ? _buildSearchField()
+            ? _buildSearchField(colors)
             : const AppText(
                 'Transactions',
                 variant: AppTextVariant.titleLarge,
@@ -104,8 +105,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   top: 6,
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.gold500,
+                    decoration: BoxDecoration(
+                      color: colors.gold,
                       shape: BoxShape.circle,
                     ),
                     constraints: const BoxConstraints(
@@ -114,8 +115,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                     ),
                     child: Text(
                       '$activeFilterCount',
-                      style: const TextStyle(
-                        color: AppColors.obsidian,
+                      style: TextStyle(
+                        color: colors.canvas,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
@@ -136,7 +137,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       body: Column(
         children: [
           // Active filters indicator
-          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter),
+          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter, colors),
 
           // Transactions list
           Expanded(
@@ -146,21 +147,22 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                     .read(filteredPaginatedTransactionsProvider.notifier)
                     .refresh();
               },
-              color: AppColors.gold500,
-              backgroundColor: AppColors.slate,
+              color: colors.gold,
+              backgroundColor: colors.container,
               child: state.isLoading && state.transactions.isEmpty
-                  ? const Center(
-                      child: CircularProgressIndicator(color: AppColors.gold500),
+                  ? Center(
+                      child: CircularProgressIndicator(color: colors.gold),
                     )
                   : state.error != null
-                      ? _buildErrorState(state.error!)
+                      ? _buildErrorState(state.error!, colors)
                       : state.transactions.isEmpty
-                          ? _buildEmptyState(filter)
+                          ? _buildEmptyState(filter, colors)
                           : _buildTransactionsList(
                               context,
                               state.transactions,
                               state,
                               ref,
+                              colors,
                             ),
             ),
           ),
@@ -169,24 +171,24 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ThemeColors colors) {
     return TextField(
       controller: _searchController,
       focusNode: _searchFocusNode,
-      style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+      style: AppTypography.bodyLarge.copyWith(color: colors.textPrimary),
       decoration: InputDecoration(
         hintText: 'Search transactions...',
         hintStyle: AppTypography.bodyLarge.copyWith(
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
         border: InputBorder.none,
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.search,
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
         suffixIcon: _searchController.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, color: AppColors.textTertiary),
+                icon: Icon(Icons.clear, color: colors.textTertiary),
                 onPressed: () {
                   _searchController.clear();
                   ref.read(transactionFilterProvider.notifier).setSearch(null);
@@ -198,13 +200,14 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildActiveFiltersBar(TransactionFilter filter) {
+  Widget _buildActiveFiltersBar(TransactionFilter filter, ThemeColors colors) {
     final chips = <Widget>[];
 
     if (filter.type != null) {
       chips.add(_buildFilterChip(
         label: _getTypeName(filter.type!),
         onRemove: () => ref.read(transactionFilterProvider.notifier).setType(null),
+        colors: colors,
       ));
     }
 
@@ -212,6 +215,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       chips.add(_buildFilterChip(
         label: _capitalize(filter.status!),
         onRemove: () => ref.read(transactionFilterProvider.notifier).setStatus(null),
+        colors: colors,
       ));
     }
 
@@ -228,6 +232,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       chips.add(_buildFilterChip(
         label: label,
         onRemove: () => ref.read(transactionFilterProvider.notifier).setDateRange(null, null),
+        colors: colors,
       ));
     }
 
@@ -243,6 +248,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       chips.add(_buildFilterChip(
         label: label,
         onRemove: () => ref.read(transactionFilterProvider.notifier).setAmountRange(null, null),
+        colors: colors,
       ));
     }
 
@@ -265,10 +271,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             onPressed: () {
               ref.read(transactionFilterProvider.notifier).clearAll();
             },
-            child: const Text(
+            child: Text(
               'Clear all',
               style: TextStyle(
-                color: AppColors.gold500,
+                color: colors.gold,
                 fontSize: 12,
               ),
             ),
@@ -281,25 +287,26 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   Widget _buildFilterChip({
     required String label,
     required VoidCallback onRemove,
+    required ThemeColors colors,
   }) {
     return Container(
       margin: const EdgeInsets.only(right: AppSpacing.sm),
       child: Chip(
         label: Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
+          style: TextStyle(
+            color: colors.textPrimary,
             fontSize: 12,
           ),
         ),
-        deleteIcon: const Icon(
+        deleteIcon: Icon(
           Icons.close,
           size: 16,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         onDeleted: onRemove,
-        backgroundColor: AppColors.elevated,
-        side: const BorderSide(color: AppColors.borderSubtle),
+        backgroundColor: colors.elevated,
+        side: BorderSide(color: colors.borderSubtle),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.full),
         ),
@@ -327,7 +334,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     return text[0].toUpperCase() + text.substring(1);
   }
 
-  Widget _buildEmptyState(TransactionFilter filter) {
+  Widget _buildEmptyState(TransactionFilter filter, ThemeColors colors) {
     final hasFilters = filter.hasActiveFilters || filter.hasSearchQuery;
 
     return Center(
@@ -340,12 +347,12 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Icon(
                 hasFilters ? Icons.search_off : Icons.receipt_long_outlined,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
                 size: 40,
               ),
             ),
@@ -353,7 +360,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             AppText(
               hasFilters ? 'No Results Found' : 'No Transactions',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             Padding(
@@ -363,7 +370,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                     ? 'Try adjusting your filters or search query to find what you\'re looking for.'
                     : 'Your transaction history will appear here once you make your first deposit or transfer.',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -377,8 +384,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                 icon: const Icon(Icons.filter_alt_off),
                 label: const Text('Clear Filters'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.gold500,
-                  side: const BorderSide(color: AppColors.gold500),
+                  foregroundColor: colors.gold,
+                  side: BorderSide(color: colors.gold),
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.xl,
                     vertical: AppSpacing.md,
@@ -392,7 +399,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(String error, ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -411,10 +418,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'Something Went Wrong',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -422,7 +429,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             child: AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -434,8 +441,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             icon: const Icon(Icons.refresh),
             label: const Text('Try Again'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold500,
-              foregroundColor: AppColors.obsidian,
+              backgroundColor: colors.gold,
+              foregroundColor: colors.canvas,
             ),
           ),
         ],
@@ -448,6 +455,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     List<Transaction> transactions,
     FilteredPaginatedTransactionsState state,
     WidgetRef ref,
+    ThemeColors colors,
   ) {
     // Group transactions by date
     final grouped = _groupByDate(transactions);
@@ -467,10 +475,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
         itemCount: grouped.length + (state.hasMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index >= grouped.length) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
-                child: CircularProgressIndicator(color: AppColors.gold500),
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: CircularProgressIndicator(color: colors.gold),
               ),
             );
           }
@@ -533,6 +541,8 @@ class _TransactionGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -541,7 +551,7 @@ class _TransactionGroup extends StatelessWidget {
           child: AppText(
             date,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ),
         ...transactions.map((tx) => TransactionRow(

@@ -48,11 +48,12 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final walletState = ref.watch(walletStateMachineProvider);
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -65,9 +66,9 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: colors.gold,
+          labelColor: colors.gold,
+          unselectedLabelColor: colors.textSecondary,
           tabs: const [
             Tab(text: 'Airtime'),
             Tab(text: 'Data Bundles'),
@@ -77,46 +78,46 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildAirtimeTab(walletState, userState),
-          _buildDataTab(walletState, userState),
+          _buildAirtimeTab(walletState, userState, colors),
+          _buildDataTab(walletState, userState, colors),
         ],
       ),
     );
   }
 
-  Widget _buildAirtimeTab(WalletState walletState, UserState userState) {
+  Widget _buildAirtimeTab(WalletState walletState, UserState userState, ThemeColors colors) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Balance Card
-          _buildBalanceCard(walletState),
+          _buildBalanceCard(walletState, colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Provider Selection
-          const AppText(
+          AppText(
             'Select Network',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildProviderGrid(),
+          _buildProviderGrid(colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Buy for self/other toggle
-          _buildRecipientToggle(userState),
+          _buildRecipientToggle(userState, colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Phone Number
           if (!_buyForSelf) ...[
-            const AppText(
+            AppText(
               'Phone Number',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -130,18 +131,18 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
           ],
 
           // Amount
-          const AppText(
+          AppText(
             'Amount',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildQuickAmounts(),
+          _buildQuickAmounts(colors),
 
           const SizedBox(height: AppSpacing.lg),
 
           // Custom Amount
-          _buildCustomAmountInput(),
+          _buildCustomAmountInput(colors),
 
           const SizedBox(height: AppSpacing.xxxl),
 
@@ -156,13 +157,13 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
           const SizedBox(height: AppSpacing.xxl),
 
           // Recent Purchases
-          _buildRecentPurchases(),
+          _buildRecentPurchases(colors),
         ],
       ),
     );
   }
 
-  Widget _buildDataTab(WalletState walletState, UserState userState) {
+  Widget _buildDataTab(WalletState walletState, UserState userState, ThemeColors colors) {
     final dataBundles = [
       _DataBundle('1GB', '24 hours', 1.50),
       _DataBundle('2GB', '7 days', 3.00),
@@ -178,32 +179,32 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Balance Card
-          _buildBalanceCard(walletState),
+          _buildBalanceCard(walletState, colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Provider Selection
-          const AppText(
+          AppText(
             'Select Network',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildProviderGrid(),
+          _buildProviderGrid(colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Buy for self/other toggle
-          _buildRecipientToggle(userState),
+          _buildRecipientToggle(userState, colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Phone Number
           if (!_buyForSelf) ...[
-            const AppText(
+            AppText(
               'Phone Number',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -217,14 +218,14 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
           ],
 
           // Data Bundles
-          const AppText(
+          AppText(
             'Select Bundle',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
 
-          ...dataBundles.map((bundle) => _buildDataBundleItem(bundle)),
+          ...dataBundles.map((bundle) => _buildDataBundleItem(bundle, colors)),
 
           const SizedBox(height: AppSpacing.xxl),
         ],
@@ -232,7 +233,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildBalanceCard(WalletState walletState) {
+  Widget _buildBalanceCard(WalletState walletState, ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
@@ -241,24 +242,24 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const Icon(Icons.account_balance_wallet, color: AppColors.gold500),
+            child: Icon(Icons.account_balance_wallet, color: colors.gold),
           ),
           const SizedBox(width: AppSpacing.md),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppText(
+              AppText(
                 'Available Balance',
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               AppText(
                 '\$${walletState.availableBalance.toStringAsFixed(2)}',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
@@ -267,7 +268,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildProviderGrid() {
+  Widget _buildProviderGrid(ThemeColors colors) {
     return Row(
       children: _providers.map((provider) {
         final isSelected = _selectedProvider == provider.name;
@@ -278,10 +279,10 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
               margin: const EdgeInsets.symmetric(horizontal: 4),
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: isSelected ? provider.color.withValues(alpha: 0.1) : AppColors.slate,
+                color: isSelected ? provider.color.withValues(alpha: 0.1) : colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(
-                  color: isSelected ? provider.color : AppColors.borderSubtle,
+                  color: isSelected ? provider.color : colors.borderSubtle,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -306,7 +307,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                   AppText(
                     provider.name,
                     variant: AppTextVariant.labelSmall,
-                    color: isSelected ? provider.color : AppColors.textSecondary,
+                    color: isSelected ? provider.color : colors.textSecondary,
                   ),
                 ],
               ),
@@ -317,7 +318,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildRecipientToggle(UserState userState) {
+  Widget _buildRecipientToggle(UserState userState, ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
@@ -328,26 +329,26 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: _buyForSelf ? AppColors.gold500 : Colors.transparent,
+                  color: _buyForSelf ? colors.gold : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Column(
                   children: [
                     Icon(
                       Icons.person,
-                      color: _buyForSelf ? AppColors.obsidian : AppColors.textSecondary,
+                      color: _buyForSelf ? colors.canvas : colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       'For Myself',
                       variant: AppTextVariant.labelSmall,
-                      color: _buyForSelf ? AppColors.obsidian : AppColors.textSecondary,
+                      color: _buyForSelf ? colors.canvas : colors.textSecondary,
                     ),
                     if (_buyForSelf && userState.phone != null)
                       AppText(
                         userState.phone!,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.obsidian.withValues(alpha: 0.7),
+                        color: colors.canvas.withValues(alpha: 0.7),
                       ),
                   ],
                 ),
@@ -360,20 +361,20 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: !_buyForSelf ? AppColors.gold500 : Colors.transparent,
+                  color: !_buyForSelf ? colors.gold : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Column(
                   children: [
                     Icon(
                       Icons.person_add,
-                      color: !_buyForSelf ? AppColors.obsidian : AppColors.textSecondary,
+                      color: !_buyForSelf ? colors.canvas : colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       'For Someone Else',
                       variant: AppTextVariant.labelSmall,
-                      color: !_buyForSelf ? AppColors.obsidian : AppColors.textSecondary,
+                      color: !_buyForSelf ? colors.canvas : colors.textSecondary,
                     ),
                   ],
                 ),
@@ -385,7 +386,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildQuickAmounts() {
+  Widget _buildQuickAmounts(ThemeColors colors) {
     return Wrap(
       spacing: AppSpacing.md,
       runSpacing: AppSpacing.md,
@@ -397,17 +398,17 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
             width: 80,
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold500 : AppColors.slate,
+              color: isSelected ? colors.gold : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
-                color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+                color: isSelected ? colors.gold : colors.borderSubtle,
               ),
             ),
             child: Center(
               child: AppText(
                 '\$$amount',
                 variant: AppTextVariant.labelLarge,
-                color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+                color: isSelected ? colors.canvas : colors.textSecondary,
               ),
             ),
           ),
@@ -416,14 +417,14 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildCustomAmountInput() {
+  Widget _buildCustomAmountInput(ThemeColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Or enter custom amount',
           variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.sm),
         Container(
@@ -432,16 +433,16 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
             vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: colors.container,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Row(
             children: [
-              const AppText(
+              AppText(
                 '\$',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -452,10 +453,10 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
                   style: AppTypography.titleMedium,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '0.00',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
+                    hintStyle: TextStyle(color: colors.textTertiary),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -467,7 +468,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     );
   }
 
-  Widget _buildRecentPurchases() {
+  Widget _buildRecentPurchases(ThemeColors colors) {
     final recentPurchases = [
       _RecentPurchase('Safaricom', '+254712345678', 10.00, DateTime.now().subtract(const Duration(days: 2))),
       _RecentPurchase('Airtel', '+254723456789', 5.00, DateTime.now().subtract(const Duration(days: 7))),
@@ -476,18 +477,18 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Recent Purchases',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
-        ...recentPurchases.map((purchase) => _buildRecentPurchaseItem(purchase)),
+        ...recentPurchases.map((purchase) => _buildRecentPurchaseItem(purchase, colors)),
       ],
     );
   }
 
-  Widget _buildRecentPurchaseItem(_RecentPurchase purchase) {
+  Widget _buildRecentPurchaseItem(_RecentPurchase purchase, ThemeColors colors) {
     final provider = _providers.firstWhere(
       (p) => p.name == purchase.provider,
       orElse: () => _providers.first,
@@ -530,12 +531,12 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                   AppText(
                     purchase.provider,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     purchase.phone,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -546,24 +547,24 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                 AppText(
                   '\$${purchase.amount.toStringAsFixed(2)}',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   _formatDate(purchase.date),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ],
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Icon(Icons.refresh, color: AppColors.gold500, size: 20),
+            Icon(Icons.refresh, color: colors.gold, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDataBundleItem(_DataBundle bundle) {
+  Widget _buildDataBundleItem(_DataBundle bundle, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: AppCard(
@@ -575,10 +576,10 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.data_usage, color: AppColors.gold500),
+              child: Icon(Icons.data_usage, color: colors.gold),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -588,12 +589,12 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                   AppText(
                     bundle.name,
                     variant: AppTextVariant.labelLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     'Valid for ${bundle.validity}',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -601,10 +602,10 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
             AppText(
               '\$${bundle.price.toStringAsFixed(2)}',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.gold500,
+              color: colors.gold,
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
           ],
         ),
       ),
@@ -646,10 +647,11 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
   }
 
   Future<void> _buyDataBundle(_DataBundle bundle) async {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: colors.container,
         title: const AppText(
           'Confirm Purchase',
           variant: AppTextVariant.titleMedium,
@@ -661,26 +663,26 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
             AppText(
               '${bundle.name} Data Bundle',
               variant: AppTextVariant.labelLarge,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               'Valid for ${bundle.validity}',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
               'Price: \$${bundle.price.toStringAsFixed(2)}',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.gold500,
+              color: colors.gold,
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel', color: AppColors.textSecondary),
+            child: AppText('Cancel', color: colors.textSecondary),
           ),
           TextButton(
             onPressed: () async {
@@ -699,7 +701,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                 ref.read(walletStateMachineProvider.notifier).refresh();
               }
             },
-            child: const AppText('Buy Now', color: AppColors.gold500),
+            child: AppText('Buy Now', color: colors.gold),
           ),
         ],
       ),

@@ -19,16 +19,17 @@ class ProviderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withOpacity(0.1) : AppColors.slate,
+          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -50,7 +51,7 @@ class ProviderCard extends StatelessWidget {
                     provider.name,
                     variant: AppTextVariant.bodyMedium,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -62,7 +63,7 @@ class ProviderCard extends StatelessWidget {
                       AppText(
                         provider.estimatedProcessingTime,
                         variant: AppTextVariant.labelSmall,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                       ),
                     ],
                   ),
@@ -70,7 +71,7 @@ class ProviderCard extends StatelessWidget {
                   AppText(
                     _formatFee(),
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -79,7 +80,7 @@ class ProviderCard extends StatelessWidget {
             // Arrow
             Icon(
               Icons.chevron_right,
-              color: isSelected ? AppColors.gold500 : AppColors.textTertiary,
+              color: isSelected ? colors.gold : colors.textTertiary,
               size: 24,
             ),
           ],
@@ -114,16 +115,17 @@ class ProviderCardCompact extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withOpacity(0.1) : AppColors.slate,
+          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -139,7 +141,7 @@ class ProviderCardCompact extends StatelessWidget {
             AppText(
               provider.shortName,
               variant: AppTextVariant.labelSmall,
-              color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+              color: isSelected ? colors.gold : colors.textPrimary,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -166,7 +168,7 @@ class _ProviderLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (logoUrl.isEmpty) {
-      return _buildFallback();
+      return _buildFallback(context);
     }
 
     return ClipRRect(
@@ -176,25 +178,26 @@ class _ProviderLogo extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        placeholder: (context, url) => _buildFallback(),
-        errorWidget: (context, url, error) => _buildFallback(),
+        placeholder: (ctx, url) => _buildFallback(ctx),
+        errorWidget: (ctx, url, error) => _buildFallback(ctx),
       ),
     );
   }
 
-  Widget _buildFallback() {
+  Widget _buildFallback(BuildContext context) {
+    final colors = context.colors;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.gold500.withOpacity(0.1),
+        color: colors.gold.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Center(
         child: AppText(
           name.isNotEmpty ? name[0].toUpperCase() : '?',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.gold500,
+          color: colors.gold,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -262,14 +265,15 @@ class ProviderListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle, width: 1),
+          border: Border.all(color: colors.borderSubtle, width: 1),
         ),
         child: Row(
           children: [
@@ -290,13 +294,13 @@ class ProviderListItem extends StatelessWidget {
                     payment.providerName,
                     variant: AppTextVariant.bodyMedium,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   const SizedBox(height: 2),
                   AppText(
                     payment.accountNumber,
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -310,7 +314,7 @@ class ProviderListItem extends StatelessWidget {
                   '${payment.totalAmount.toStringAsFixed(0)} ${payment.currency}',
                   variant: AppTextVariant.bodyMedium,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: 2),
                 _StatusBadge(status: payment.status),

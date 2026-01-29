@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
-import '../../../services/feature_flags/feature_flags_service.dart';
+import '../../../services/feature_flags/feature_flags_provider.dart';
+import '../../../services/feature_flags/feature_flags_extensions.dart';
 
 /// Services page - centralized view of all available services
 /// Reduces home page clutter and provides organized access to features
@@ -12,20 +13,21 @@ class ServicesView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final flags = ref.watch(featureFlagsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
-        backgroundColor: AppColors.obsidian,
+        backgroundColor: colors.canvas,
         elevation: 0,
-        title: const AppText(
+        title: AppText(
           'Services',
           variant: AppTextVariant.headlineSmall,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -36,33 +38,33 @@ class ServicesView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Core Services
-              _buildSectionHeader('Core Services'),
+              _buildSectionHeader('Core Services', colors),
               const SizedBox(height: AppSpacing.md),
-              _buildServicesGrid(context, _getCoreServices(flags)),
+              _buildServicesGrid(context, _getCoreServices(flags), colors),
 
               const SizedBox(height: AppSpacing.xxl),
 
               // Financial Services
               if (_getFinancialServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Financial Services'),
+                _buildSectionHeader('Financial Services', colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getFinancialServices(flags)),
+                _buildServicesGrid(context, _getFinancialServices(flags), colors),
                 const SizedBox(height: AppSpacing.xxl),
               ],
 
               // Bill Payments & Top-ups
               if (_getBillServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Bills & Payments'),
+                _buildSectionHeader('Bills & Payments', colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getBillServices(flags)),
+                _buildServicesGrid(context, _getBillServices(flags), colors),
                 const SizedBox(height: AppSpacing.xxl),
               ],
 
               // Analytics & Tools
               if (_getToolsServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Tools & Analytics'),
+                _buildSectionHeader('Tools & Analytics', colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getToolsServices(flags)),
+                _buildServicesGrid(context, _getToolsServices(flags), colors),
               ],
             ],
           ),
@@ -71,15 +73,15 @@ class ServicesView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, ThemeColors colors) {
     return AppText(
       title,
       variant: AppTextVariant.labelMedium,
-      color: AppColors.textSecondary,
+      color: colors.textSecondary,
     );
   }
 
-  Widget _buildServicesGrid(BuildContext context, List<ServiceItem> services) {
+  Widget _buildServicesGrid(BuildContext context, List<ServiceItem> services, ThemeColors colors) {
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -97,12 +99,13 @@ class ServicesView extends ConsumerWidget {
           title: service.title,
           description: service.description,
           onTap: () => context.push(service.route),
+          colors: colors,
         );
       },
     );
   }
 
-  List<ServiceItem> _getCoreServices(FeatureFlags flags) {
+  List<ServiceItem> _getCoreServices(Map<String, bool> flags) {
     final services = <ServiceItem>[];
 
     if (flags.canSend) {
@@ -160,7 +163,7 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getFinancialServices(FeatureFlags flags) {
+  List<ServiceItem> _getFinancialServices(Map<String, bool> flags) {
     final services = <ServiceItem>[];
 
     if (flags.canUseVirtualCards) {
@@ -202,7 +205,7 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getBillServices(FeatureFlags flags) {
+  List<ServiceItem> _getBillServices(Map<String, bool> flags) {
     final services = <ServiceItem>[];
 
     if (flags.canPayBills) {
@@ -235,7 +238,7 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getToolsServices(FeatureFlags flags) {
+  List<ServiceItem> _getToolsServices(Map<String, bool> flags) {
     final services = <ServiceItem>[];
 
     if (flags.canViewAnalytics) {
@@ -247,7 +250,7 @@ class ServicesView extends ConsumerWidget {
       ));
     }
 
-    if (flags.canUseReferrals) {
+    if (flags.canReferFriends) {
       services.add(ServiceItem(
         icon: Icons.card_giftcard,
         title: 'Referrals',
@@ -282,12 +285,14 @@ class _ServiceCard extends StatelessWidget {
     required this.title,
     required this.description,
     required this.onTap,
+    required this.colors,
   });
 
   final IconData icon;
   final String title;
   final String description;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -296,9 +301,9 @@ class _ServiceCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,12 +314,12 @@ class _ServiceCard extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.15),
+                color: colors.gold.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 icon,
-                color: AppColors.gold500,
+                color: colors.gold,
                 size: 24,
               ),
             ),
@@ -323,7 +328,7 @@ class _ServiceCard extends StatelessWidget {
             AppText(
               title,
               variant: AppTextVariant.labelLarge,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -332,7 +337,7 @@ class _ServiceCard extends StatelessWidget {
             AppText(
               description,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

@@ -29,6 +29,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final selectedCategory = ref.watch(selectedBillCategoryProvider);
     final providersAsync = ref.watch(
       billProvidersProvider(BillProvidersParams(
@@ -37,7 +38,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -63,7 +64,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: _buildSearchBar(),
+            child: _buildSearchBar(colors),
           ),
 
           // Categories
@@ -104,7 +105,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   ? '${selectedCategory.displayName} Providers'
                   : 'All Providers',
               variant: AppTextVariant.titleSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -125,7 +126,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                 }
 
                 if (providers.isEmpty) {
-                  return _buildEmptyState();
+                  return _buildEmptyState(colors);
                 }
 
                 return ListView.separated(
@@ -143,10 +144,10 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   },
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.gold500),
+              loading: () => Center(
+                child: CircularProgressIndicator(color: colors.gold),
               ),
-              error: (error, _) => _buildErrorState(error.toString()),
+              error: (error, _) => _buildErrorState(colors, error.toString()),
             ),
           ),
         ],
@@ -154,28 +155,28 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(ThemeColors colors) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
       ),
       child: TextField(
         controller: _searchController,
-        style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+        style: AppTypography.bodyMedium.copyWith(color: colors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Search providers...',
           hintStyle: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, color: AppColors.textTertiary),
+                  icon: Icon(Icons.clear, color: colors.textTertiary),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -199,7 +200,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -207,20 +208,20 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.search_off,
               size: 48,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          const AppText(
+          AppText(
             'No Providers Found',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -230,7 +231,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   ? 'Try adjusting your search'
                   : 'No providers available for this category',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -239,7 +240,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(ThemeColors colors, String error) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -257,10 +258,10 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          const AppText(
+          AppText(
             'Failed to Load Providers',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -268,7 +269,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
             child: AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -280,8 +281,8 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.gold500,
-              foregroundColor: AppColors.obsidian,
+              backgroundColor: colors.gold,
+              foregroundColor: colors.canvas,
             ),
           ),
         ],

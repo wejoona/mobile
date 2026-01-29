@@ -60,10 +60,17 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
-		<!-- Allow localhost for development only -->
+		<!-- Allow localhost and local IP for development only -->
 		<key>NSExceptionDomains</key>
 		<dict>
 			<key>localhost</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+			<key>192.168.1.115</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>

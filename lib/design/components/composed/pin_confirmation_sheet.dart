@@ -70,9 +70,10 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.slate,
+      decoration: BoxDecoration(
+        color: colors.container,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
       child: SafeArea(
@@ -87,7 +88,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -98,12 +99,12 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.1),
+                  color: colors.gold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.lock_outline,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 32,
                 ),
               ),
@@ -113,7 +114,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
               AppText(
                 widget.title,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
 
               // Subtitle
@@ -122,7 +123,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 AppText(
                   widget.subtitle!,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -133,7 +134,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Column(
@@ -142,15 +143,15 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const AppText(
+                            AppText(
                               'Amount',
                               variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                             ),
                             AppText(
                               '\$${widget.amount!.toStringAsFixed(2)}',
                               variant: AppTextVariant.titleMedium,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                           ],
                         ),
@@ -160,16 +161,16 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const AppText(
+                            AppText(
                               'To',
                               variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                             ),
                             Flexible(
                               child: AppText(
                                 widget.recipient!,
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textPrimary,
+                                color: colors.textPrimary,
                                 textAlign: TextAlign.right,
                               ),
                             ),
@@ -189,7 +190,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                   widget.pinLength,
                   (index) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                    child: _PinDot(filled: index < _pin.length),
+                    child: _PinDot(filled: index < _pin.length, colors: colors),
                   ),
                 ),
               ),
@@ -207,7 +208,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
               const SizedBox(height: AppSpacing.xxl),
 
               // Number pad
-              _buildNumberPad(),
+              _buildNumberPad(colors),
 
               const SizedBox(height: AppSpacing.lg),
 
@@ -216,10 +217,10 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 onPressed: _isLoading ? null : () {
                   Navigator.pop(context, PinConfirmationResult.cancelled);
                 },
-                child: const AppText(
+                child: AppText(
                   'Cancel',
                   variant: AppTextVariant.labelLarge,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -229,33 +230,33 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
     );
   }
 
-  Widget _buildNumberPad() {
+  Widget _buildNumberPad(ThemeColors colors) {
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _NumberButton(number: '1', onPressed: () => _onNumberPressed('1')),
-            _NumberButton(number: '2', onPressed: () => _onNumberPressed('2')),
-            _NumberButton(number: '3', onPressed: () => _onNumberPressed('3')),
+            _NumberButton(number: '1', onPressed: () => _onNumberPressed('1'), colors: colors),
+            _NumberButton(number: '2', onPressed: () => _onNumberPressed('2'), colors: colors),
+            _NumberButton(number: '3', onPressed: () => _onNumberPressed('3'), colors: colors),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _NumberButton(number: '4', onPressed: () => _onNumberPressed('4')),
-            _NumberButton(number: '5', onPressed: () => _onNumberPressed('5')),
-            _NumberButton(number: '6', onPressed: () => _onNumberPressed('6')),
+            _NumberButton(number: '4', onPressed: () => _onNumberPressed('4'), colors: colors),
+            _NumberButton(number: '5', onPressed: () => _onNumberPressed('5'), colors: colors),
+            _NumberButton(number: '6', onPressed: () => _onNumberPressed('6'), colors: colors),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _NumberButton(number: '7', onPressed: () => _onNumberPressed('7')),
-            _NumberButton(number: '8', onPressed: () => _onNumberPressed('8')),
-            _NumberButton(number: '9', onPressed: () => _onNumberPressed('9')),
+            _NumberButton(number: '7', onPressed: () => _onNumberPressed('7'), colors: colors),
+            _NumberButton(number: '8', onPressed: () => _onNumberPressed('8'), colors: colors),
+            _NumberButton(number: '9', onPressed: () => _onNumberPressed('9'), colors: colors),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
@@ -263,14 +264,14 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             const SizedBox(width: 72, height: 72), // Empty space
-            _NumberButton(number: '0', onPressed: () => _onNumberPressed('0')),
+            _NumberButton(number: '0', onPressed: () => _onNumberPressed('0'), colors: colors),
             _isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 72,
                     height: 72,
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: AppColors.gold500,
+                        color: colors.gold,
                         strokeWidth: 2,
                       ),
                     ),
@@ -278,6 +279,7 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
                 : _NumberButton(
                     icon: Icons.backspace_outlined,
                     onPressed: _onBackspace,
+                    colors: colors,
                   ),
           ],
         ),
@@ -347,9 +349,10 @@ class _PinConfirmationSheetState extends State<PinConfirmationSheet> {
 }
 
 class _PinDot extends StatelessWidget {
-  const _PinDot({required this.filled});
+  const _PinDot({required this.filled, required this.colors});
 
   final bool filled;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -358,10 +361,10 @@ class _PinDot extends StatelessWidget {
       width: 16,
       height: 16,
       decoration: BoxDecoration(
-        color: filled ? AppColors.gold500 : Colors.transparent,
+        color: filled ? colors.gold : Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(
-          color: filled ? AppColors.gold500 : AppColors.textTertiary,
+          color: filled ? colors.gold : colors.textTertiary,
           width: 2,
         ),
       ),
@@ -374,11 +377,13 @@ class _NumberButton extends StatelessWidget {
     this.number,
     this.icon,
     required this.onPressed,
+    required this.colors,
   });
 
   final String? number;
   final IconData? icon;
   final VoidCallback onPressed;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -388,16 +393,16 @@ class _NumberButton extends StatelessWidget {
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: colors.elevated,
           shape: BoxShape.circle,
         ),
         child: Center(
           child: icon != null
-              ? Icon(icon, color: AppColors.textSecondary, size: 24)
+              ? Icon(icon, color: colors.textSecondary, size: 24)
               : AppText(
                   number ?? '',
                   variant: AppTextVariant.headlineMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
         ),
       ),

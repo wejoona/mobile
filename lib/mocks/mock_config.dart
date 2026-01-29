@@ -9,7 +9,8 @@ import 'package:flutter/foundation.dart';
 /// Mock mode configuration
 class MockConfig {
   /// Master switch - when true, all mocks are enabled
-  static bool useMocks = kDebugMode;
+  /// Set to false to connect to real backend
+  static bool useMocks = false; // Disabled to connect to real backend
 
   /// Per-service mock toggles (only apply when useMocks is true)
   static bool mockAuth = true;

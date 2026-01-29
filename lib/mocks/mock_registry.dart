@@ -13,6 +13,21 @@ import 'services/wallet/wallet_mock.dart';
 import 'services/wallet/wallet_contract.dart';
 import 'services/transactions/transactions_mock.dart';
 import 'services/transactions/transactions_contract.dart';
+import 'services/sessions/sessions_mock.dart';
+import 'services/feature_flags/feature_flags_mock.dart';
+import 'services/feature_flags/feature_flags_contract.dart';
+import 'services/devices/devices_mock.dart';
+import 'services/kyc/kyc_mock.dart';
+import 'services/deposit/deposit_mock.dart';
+import 'services/pin/pin_mock.dart';
+import 'services/transfers/transfers_mock.dart';
+import 'services/bill_payments/bill_payments_mock.dart';
+import 'services/bill_payments/bill_payments_contract.dart';
+import 'services/notifications/notifications_mock.dart';
+import 'services/external_transfer/external_transfer_mock.dart';
+import 'services/savings_pots/savings_pots_mock.dart';
+import 'services/contacts/contacts_sync_mock.dart';
+import 'services/recurring_transfers/recurring_transfers_mock.dart';
 
 /// Mock Registry
 ///
@@ -39,13 +54,22 @@ class MockRegistry {
     AuthMock.register(_interceptor);
     WalletMock.register(_interceptor);
     TransactionsMock.register(_interceptor);
+    SessionsMock.register(_interceptor);
+    FeatureFlagsMock.register(_interceptor);
+    DevicesMock.register(_interceptor);
+    KycMock.register(_interceptor);
+    DepositMock.register(_interceptor);
+    PinMock.register(_interceptor);
+    TransfersMock.register(_interceptor);
+    BillPaymentsMock.register(_interceptor);
+    NotificationsMock.register(_interceptor);
+    ExternalTransferMock.register(_interceptor);
+    SavingsPotsMock.register(_interceptor);
+    ContactsSyncMock.register(_interceptor);
+    RecurringTransfersMock.register(_interceptor);
 
     // Add more mock services here as they are created:
-    // KycMock.register(_interceptor);
-    // TransfersMock.register(_interceptor);
-    // NotificationsMock.register(_interceptor);
     // MerchantMock.register(_interceptor);
-    // BillPaymentsMock.register(_interceptor);
     // RatesMock.register(_interceptor);
 
     _isInitialized = true;
@@ -60,6 +84,10 @@ class MockRegistry {
     AuthMockState.reset();
     WalletMockState.reset();
     TransactionsMockState.reset();
+    DevicesMockState.reset();
+    KycMockState.reset();
+    TransfersMockState.reset();
+    BillPaymentsMockState.reset();
 
     if (kDebugMode) {
       print('=== Mock State Reset ===');
@@ -82,6 +110,8 @@ class MockRegistry {
       AuthContract(),
       WalletContract(),
       TransactionsContract(),
+      FeatureFlagsContract(),
+      BillPaymentsContract(),
     ];
 
     for (final contract in contracts) {
@@ -98,6 +128,8 @@ class MockRegistry {
       AuthContract(),
       WalletContract(),
       TransactionsContract(),
+      FeatureFlagsContract(),
+      BillPaymentsContract(),
     ];
 
     final allPaths = <String, dynamic>{};
@@ -139,6 +171,8 @@ class MockRegistry {
       AuthContract(),
       WalletContract(),
       TransactionsContract(),
+      FeatureFlagsContract(),
+      BillPaymentsContract(),
     ];
 
     final endpoints = <String>[];

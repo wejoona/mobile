@@ -6,6 +6,9 @@ import '../transactions/transactions_service.dart';
 import '../transfers/transfers_service.dart';
 import '../notifications/notifications_service.dart';
 import '../referrals/referrals_service.dart';
+import '../beneficiaries/beneficiaries_service.dart';
+import '../kyc/kyc_service.dart';
+import '../api/api_client.dart';
 
 /// USDC Wallet SDK
 ///
@@ -76,6 +79,15 @@ class UsdcWalletSdk {
   /// - applyReferralCode, getLeaderboard
   final ReferralsService referrals;
 
+  /// Beneficiaries service
+  /// - getBeneficiaries, createBeneficiary
+  /// - updateBeneficiary, deleteBeneficiary, toggleFavorite
+  final BeneficiariesService beneficiaries;
+
+  /// KYC service
+  /// - submitKyc, getKycStatus
+  final KycService kyc;
+
   const UsdcWalletSdk({
     required this.auth,
     required this.user,
@@ -84,6 +96,8 @@ class UsdcWalletSdk {
     required this.transfers,
     required this.notifications,
     required this.referrals,
+    required this.beneficiaries,
+    required this.kyc,
   });
 }
 
@@ -100,5 +114,13 @@ final sdkProvider = Provider<UsdcWalletSdk>((ref) {
     transfers: ref.watch(transfersServiceProvider),
     notifications: ref.watch(notificationsServiceProvider),
     referrals: ref.watch(referralsServiceProvider),
+    beneficiaries: ref.watch(beneficiariesServiceProvider),
+    kyc: ref.watch(kycServiceProvider),
   );
+});
+
+/// KYC Service Provider
+final kycServiceProvider = Provider<KycService>((ref) {
+  final dio = ref.watch(dioProvider);
+  return KycService(dio);
 });

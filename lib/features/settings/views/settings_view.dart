@@ -8,6 +8,8 @@ import '../../../domain/enums/index.dart';
 import '../../../services/biometric/biometric_service.dart';
 import '../../../services/localization/language_provider.dart';
 import '../../../state/index.dart';
+import '../../../services/currency/currency_provider.dart';
+import '../../../services/currency/currency_service.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
@@ -17,21 +19,23 @@ class SettingsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final localeState = ref.watch(localeProvider);
     final currentLanguageName = ref
         .read(localeProvider.notifier)
         .getLanguageName(localeState.locale.languageCode);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.navigation_settings,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -41,54 +45,7 @@ class SettingsView extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Section
-            AppCard(
-              variant: AppCardVariant.elevated,
-              onTap: () => context.push('/settings/profile'),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.goldGradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: AppColors.textInverse,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.lg),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          l10n.settings_profile,
-                          variant: AppTextVariant.titleMedium,
-                          color: AppColors.textPrimary,
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        AppText(
-                          l10n.settings_profileDescription,
-                          variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: AppColors.textTertiary,
-                  ),
-                ],
-              ),
-            ),
+            _ProfileCard(onTap: () => context.push('/settings/profile')),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -96,7 +53,7 @@ class SettingsView extends ConsumerWidget {
             AppText(
               l10n.settings_security,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
@@ -119,7 +76,7 @@ class SettingsView extends ConsumerWidget {
             AppText(
               l10n.settings_preferences,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
@@ -134,12 +91,7 @@ class SettingsView extends ConsumerWidget {
               onTap: () => context.push('/settings/language'),
             ),
             const _ThemeTile(),
-            _SettingsTile(
-              icon: Icons.attach_money,
-              title: l10n.settings_defaultCurrency,
-              subtitle: 'USDC',
-              onTap: () {},
-            ),
+            const _CurrencyTile(),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -147,7 +99,7 @@ class SettingsView extends ConsumerWidget {
             AppText(
               l10n.settings_support,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
@@ -169,12 +121,12 @@ class SettingsView extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.gold500.withOpacity(0.2),
+                      color: colors.gold.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.card_giftcard,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -185,20 +137,20 @@ class SettingsView extends ConsumerWidget {
                         AppText(
                           l10n.settings_referEarn,
                           variant: AppTextVariant.titleSmall,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         AppText(
                           l10n.settings_referDescription,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.chevron_right,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ],
               ),
@@ -221,7 +173,7 @@ class SettingsView extends ConsumerWidget {
               child: AppText(
                 l10n.settings_version('1.0.0'),
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ),
 
@@ -236,40 +188,44 @@ class SettingsView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: AppText(
-          l10n.auth_logout,
-          variant: AppTextVariant.titleMedium,
-        ),
-        content: AppText(
-          l10n.auth_logoutConfirm,
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: AppText(
-              l10n.action_cancel,
-              variant: AppTextVariant.labelLarge,
-              color: AppColors.textSecondary,
-            ),
+      builder: (dialogContext) {
+        final dialogColors = dialogContext.colors;
+        return AlertDialog(
+          backgroundColor: dialogColors.container,
+          title: AppText(
+            l10n.auth_logout,
+            variant: AppTextVariant.titleMedium,
+            color: dialogColors.textPrimary,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).logout();
-              context.go('/login');
-            },
-            child: AppText(
-              l10n.auth_logout,
-              variant: AppTextVariant.labelLarge,
-              color: AppColors.errorText,
-            ),
+          content: AppText(
+            l10n.auth_logoutConfirm,
+            variant: AppTextVariant.bodyMedium,
+            color: dialogColors.textSecondary,
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: AppText(
+                l10n.action_cancel,
+                variant: AppTextVariant.labelLarge,
+                color: dialogColors.textSecondary,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                ref.read(authProvider.notifier).logout();
+                context.go('/login');
+              },
+              child: AppText(
+                l10n.auth_logout,
+                variant: AppTextVariant.labelLarge,
+                color: dialogColors.errorText,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -293,6 +249,7 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -305,26 +262,26 @@ class _SettingsTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(icon, color: AppColors.textSecondary, size: 22),
+              Icon(icon, color: colors.textSecondary, size: 22),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: AppText(
                   title,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
               ),
               if (subtitle != null)
                 AppText(
                   subtitle!,
                   variant: AppTextVariant.bodyMedium,
-                  color: subtitleColor ?? AppColors.textTertiary,
+                  color: subtitleColor ?? colors.textTertiary,
                 ),
               if (trailing != null) trailing!,
               if (trailing == null && subtitle == null)
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   size: 20,
                 ),
             ],
@@ -485,11 +442,12 @@ class _ThemeTile extends ConsumerWidget {
   void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const AppText(
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: dialogContext.colors.container,
+        title: AppText(
           'Select Theme',
           variant: AppTextVariant.titleMedium,
+          color: dialogContext.colors.textPrimary,
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         content: Column(
@@ -501,8 +459,8 @@ class _ThemeTile extends ConsumerWidget {
               icon: Icons.light_mode,
               label: 'Light',
               onTap: () {
+                Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
-                Navigator.pop(context);
               },
             ),
             _ThemeOption(
@@ -511,8 +469,8 @@ class _ThemeTile extends ConsumerWidget {
               icon: Icons.dark_mode,
               label: 'Dark',
               onTap: () {
+                Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
-                Navigator.pop(context);
               },
             ),
             _ThemeOption(
@@ -521,8 +479,8 @@ class _ThemeTile extends ConsumerWidget {
               icon: Icons.brightness_auto,
               label: 'System',
               onTap: () {
+                Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
-                Navigator.pop(context);
               },
             ),
           ],
@@ -549,6 +507,7 @@ class _ThemeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final isSelected = mode == currentMode;
 
     return Material(
@@ -564,7 +523,7 @@ class _ThemeOption extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                color: isSelected ? colors.gold : colors.textSecondary,
                 size: 24,
               ),
               const SizedBox(width: AppSpacing.lg),
@@ -572,19 +531,157 @@ class _ThemeOption extends StatelessWidget {
                 child: AppText(
                   label,
                   variant: AppTextVariant.bodyLarge,
-                  color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                  color: isSelected ? colors.gold : colors.textPrimary,
                 ),
               ),
               if (isSelected)
-                const Icon(
+                Icon(
                   Icons.check_circle,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 20,
                 ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Profile Card showing user avatar, name, phone and verification status
+class _ProfileCard extends ConsumerWidget {
+  const _ProfileCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final userState = ref.watch(userStateMachineProvider);
+    final kycStatus = ref.watch(kycStatusProvider);
+
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      onTap: onTap,
+      child: Row(
+        children: [
+          // Avatar with initials
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: AppColors.goldGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              boxShadow: AppShadows.goldGlow,
+            ),
+            child: Center(
+              child: AppText(
+                _getInitials(userState),
+                variant: AppTextVariant.titleLarge,
+                color: AppColors.textInverse,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Name with verified badge
+                Row(
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        userState.displayName,
+                        variant: AppTextVariant.titleMedium,
+                        color: colors.textPrimary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (kycStatus == KycStatus.verified) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      const Icon(
+                        Icons.verified,
+                        color: AppColors.successBase,
+                        size: 18,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                // Phone number
+                AppText(
+                  _formatPhone(userState.phone),
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            color: colors.textTertiary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getInitials(UserState userState) {
+    final firstName = userState.firstName;
+    final lastName = userState.lastName;
+
+    if (firstName != null && firstName.isNotEmpty && lastName != null && lastName.isNotEmpty) {
+      return '${firstName[0]}${lastName[0]}'.toUpperCase();
+    } else if (firstName != null && firstName.isNotEmpty) {
+      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
+    } else if (userState.phone != null && userState.phone!.length >= 2) {
+      return userState.phone!.substring(userState.phone!.length - 2);
+    }
+    return 'U';
+  }
+
+  String _formatPhone(String? phone) {
+    if (phone == null || phone.isEmpty) return '';
+    // Format: +225 XX XX XX XX
+    if (phone.startsWith('+') && phone.length > 6) {
+      final countryCode = phone.substring(0, 4); // +225
+      final number = phone.substring(4);
+      // Insert spaces every 2 digits
+      final formatted = number.replaceAllMapped(
+        RegExp(r'.{2}'),
+        (match) => '${match.group(0)} ',
+      );
+      return '$countryCode $formatted'.trim();
+    }
+    return phone;
+  }
+}
+
+/// Currency tile showing USDC + optional reference currency
+class _CurrencyTile extends ConsumerWidget {
+  const _CurrencyTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final currencyState = ref.watch(currencyProvider);
+
+    String subtitle = 'USDC';
+    if (currencyState.shouldShowReference) {
+      subtitle = 'USDC + ${currencyState.referenceCurrency.code}';
+    }
+
+    return _SettingsTile(
+      icon: Icons.attach_money,
+      title: l10n.settings_defaultCurrency,
+      subtitle: subtitle,
+      onTap: () => context.push('/settings/currency'),
     );
   }
 }

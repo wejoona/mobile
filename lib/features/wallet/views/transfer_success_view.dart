@@ -67,8 +67,9 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -106,24 +107,24 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                 opacity: _fadeAnimation,
                 child: Column(
                   children: [
-                    const AppText(
+                    AppText(
                       'Transfer Successful!',
                       variant: AppTextVariant.headlineMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     AppText(
                       'You sent \$${widget.amount.toStringAsFixed(2)} to',
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     AppText(
                       widget.recipient,
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -144,23 +145,27 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                         value: _truncateId(widget.transactionId),
                         canCopy: true,
                         fullValue: widget.transactionId,
+                        colors: colors,
                       ),
-                      const Divider(color: AppColors.borderSubtle),
+                      Divider(color: colors.borderSubtle),
                       _DetailRow(
                         label: 'Amount',
                         value: '\$${widget.amount.toStringAsFixed(2)}',
+                        colors: colors,
                       ),
-                      const Divider(color: AppColors.borderSubtle),
-                      const _DetailRow(
+                      Divider(color: colors.borderSubtle),
+                      _DetailRow(
                         label: 'Status',
                         value: 'Completed',
                         valueColor: AppColors.successBase,
+                        colors: colors,
                       ),
                       if (widget.note != null) ...[
-                        const Divider(color: AppColors.borderSubtle),
+                        Divider(color: colors.borderSubtle),
                         _DetailRow(
                           label: 'Note',
                           value: widget.note!,
+                          colors: colors,
                         ),
                       ],
                     ],
@@ -225,6 +230,7 @@ class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.label,
     required this.value,
+    required this.colors,
     this.valueColor,
     this.canCopy = false,
     this.fullValue,
@@ -232,6 +238,7 @@ class _DetailRow extends StatelessWidget {
 
   final String label;
   final String value;
+  final ThemeColors colors;
   final Color? valueColor;
   final bool canCopy;
   final String? fullValue;
@@ -246,14 +253,14 @@ class _DetailRow extends StatelessWidget {
           AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           Row(
             children: [
               AppText(
                 value,
                 variant: AppTextVariant.bodyMedium,
-                color: valueColor ?? AppColors.textPrimary,
+                color: valueColor ?? colors.textPrimary,
               ),
               if (canCopy) ...[
                 const SizedBox(width: AppSpacing.sm),
@@ -261,17 +268,17 @@ class _DetailRow extends StatelessWidget {
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: fullValue ?? value));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Copied to clipboard'),
+                      SnackBar(
+                        content: const Text('Copied to clipboard'),
                         backgroundColor: AppColors.successBase,
-                        duration: Duration(seconds: 2),
+                        duration: const Duration(seconds: 2),
                       ),
                     );
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.copy,
                     size: 16,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ),
               ],

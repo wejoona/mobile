@@ -33,8 +33,9 @@ class _PerformanceDebugScreenState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -56,31 +57,32 @@ class _PerformanceDebugScreenState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildCacheSection(),
+                  _buildCacheSection(colors),
                   const SizedBox(height: AppSpacing.xxl),
-                  _buildInFlightSection(),
+                  _buildInFlightSection(colors),
                   const SizedBox(height: AppSpacing.xxl),
-                  _buildActionsSection(),
+                  _buildActionsSection(colors),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildCacheSection() {
+  Widget _buildCacheSection(ThemeColors colors) {
     final cacheStats = _stats!['cache'] as Map<String, dynamic>;
     final entries = cacheStats['entries'] as List<dynamic>;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'HTTP Response Cache',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildStatCard(
+          colors: colors,
           title: 'Cache Summary',
           items: [
             _StatItem(
@@ -102,21 +104,21 @@ class _PerformanceDebugScreenState
         ),
         const SizedBox(height: AppSpacing.md),
         if (entries.isNotEmpty) ...[
-          const AppText(
+          AppText(
             'Cached Entries',
             variant: AppTextVariant.labelLarge,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          ...entries.map((entry) => _buildCacheEntry(entry)),
+          ...entries.map((entry) => _buildCacheEntry(entry, colors)),
         ] else
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Center(
               child: AppText(
                 'No cached entries',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ),
           ),
@@ -124,20 +126,21 @@ class _PerformanceDebugScreenState
     );
   }
 
-  Widget _buildInFlightSection() {
+  Widget _buildInFlightSection(ThemeColors colors) {
     final inFlightStats = _stats!['inFlight'] as Map<String, dynamic>;
     final requests = inFlightStats['requests'] as List<dynamic>;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'In-Flight Requests',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildStatCard(
+          colors: colors,
           title: 'Active Requests',
           items: [
             _StatItem(
@@ -149,21 +152,21 @@ class _PerformanceDebugScreenState
         ),
         const SizedBox(height: AppSpacing.md),
         if (requests.isNotEmpty) ...[
-          const AppText(
+          AppText(
             'Current Requests',
             variant: AppTextVariant.labelLarge,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          ...requests.map((request) => _buildInFlightRequest(request)),
+          ...requests.map((request) => _buildInFlightRequest(request, colors)),
         ] else
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.lg),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Center(
               child: AppText(
                 'No in-flight requests',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ),
           ),
@@ -171,16 +174,16 @@ class _PerformanceDebugScreenState
     );
   }
 
-  Widget _buildActionsSection() {
+  Widget _buildActionsSection(ThemeColors colors) {
     final perfUtils = ref.read(performanceUtilsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Cache Management',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildActionButton(
@@ -242,6 +245,7 @@ class _PerformanceDebugScreenState
   }
 
   Widget _buildStatCard({
+    required ThemeColors colors,
     required String title,
     required List<_StatItem> items,
   }) {
@@ -249,9 +253,9 @@ class _PerformanceDebugScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +263,7 @@ class _PerformanceDebugScreenState
           AppText(
             title,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -276,7 +280,7 @@ class _PerformanceDebugScreenState
                   AppText(
                     item.label,
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               );
@@ -287,7 +291,7 @@ class _PerformanceDebugScreenState
     );
   }
 
-  Widget _buildCacheEntry(dynamic entry) {
+  Widget _buildCacheEntry(dynamic entry, ThemeColors colors) {
     final isExpired = entry['isExpired'] as bool;
     final expiresIn = entry['expiresIn'] as int;
     final key = entry['key'] as String;
@@ -296,7 +300,7 @@ class _PerformanceDebugScreenState
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: isExpired ? AppColors.errorBase : AppColors.successBase,
@@ -317,7 +321,7 @@ class _PerformanceDebugScreenState
                 child: AppText(
                   key,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -330,14 +334,14 @@ class _PerformanceDebugScreenState
                 ? 'Expired'
                 : 'Expires in ${_formatDuration(expiresIn)}',
             variant: AppTextVariant.labelSmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInFlightRequest(dynamic request) {
+  Widget _buildInFlightRequest(dynamic request, ThemeColors colors) {
     final age = request['age'] as int;
     final key = request['key'] as String;
     final isCompleted = request['isCompleted'] as bool;
@@ -346,9 +350,9 @@ class _PerformanceDebugScreenState
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,9 +364,9 @@ class _PerformanceDebugScreenState
                 height: 16,
                 child: isCompleted
                     ? Icon(Icons.check, color: AppColors.successBase, size: 16)
-                    : const CircularProgressIndicator(
+                    : CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
               ),
               const SizedBox(width: AppSpacing.xs),
@@ -370,7 +374,7 @@ class _PerformanceDebugScreenState
                 child: AppText(
                   key,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -381,7 +385,7 @@ class _PerformanceDebugScreenState
           AppText(
             'Duration: ${age}ms',
             variant: AppTextVariant.labelSmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ),

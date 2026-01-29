@@ -26,8 +26,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -35,7 +36,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () {
             if (_currentStep == PinStep.current) {
               context.pop();
@@ -57,12 +58,12 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 40,
                 ),
               ),
@@ -73,7 +74,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               AppText(
                 _getStepTitle(),
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -83,14 +84,14 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               AppText(
                 _getStepSubtitle(),
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: AppSpacing.xxxl),
 
               // PIN Dots
-              _buildPinDots(),
+              _buildPinDots(colors),
 
               // Error
               if (_error != null)
@@ -165,7 +166,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
-  Widget _buildPinDots() {
+  Widget _buildPinDots(ThemeColors colors) {
     final pin = _currentEnteredPin;
 
     return Row(
@@ -180,13 +181,13 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isFilled
-                ? (hasError ? AppColors.errorBase : AppColors.gold500)
+                ? (hasError ? AppColors.errorBase : colors.gold)
                 : Colors.transparent,
             shape: BoxShape.circle,
             border: Border.all(
               color: hasError
                   ? AppColors.errorBase
-                  : (isFilled ? AppColors.gold500 : AppColors.borderSubtle),
+                  : (isFilled ? colors.gold : colors.borderSubtle),
               width: 2,
             ),
           ),

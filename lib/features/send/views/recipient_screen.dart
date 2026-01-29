@@ -1,0 +1,237 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../services/contacts/contacts_service.dart';
+import '../providers/send_provider.dart';
+import '../widgets/contact_picker_bottom_sheet.dart';
+import '../widgets/beneficiary_picker_bottom_sheet.dart';
+import '../widgets/recent_recipient_card.dart';
+
+class RecipientScreen extends ConsumerStatefulWidget {
+  const RecipientScreen({super.key});
+
+  @override
+  ConsumerState<RecipientScreen> createState() => _RecipientScreenState();
+}
+
+class _RecipientScreenState extends ConsumerState<RecipientScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _nameFocusNode = FocusNode();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load recent recipients
+    Future.microtask(() {
+      ref.read(sendMoneyProvider.notifier).loadRecentRecipients();
+      ref.read(sendMoneyProvider.notifier).loadBalance();
+    });
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _nameFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(sendMoneyProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(
+          l10n.send_selectRecipient,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  children: [
+                    // Phone number input
+                    AppInput(
+                      label: l10n.send_recipientPhone,
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      prefix: const Padding(
+                        padding: EdgeInsets.only(left: 12),
+                        child: Text('+225 ', style: TextStyle(color: AppColors.textPrimary)),
+                      ),
+                      validator: _validatePhone,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                    ),
+                    SizedBox(height: AppSpacing.md),
+
+                    // Action buttons row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppButton(
+                            label: l10n.send_fromContacts,
+                            variant: AppButtonVariant.secondary,
+                            size: AppButtonSize.small,
+                            icon: Icons.contacts_outlined,
+                            onPressed: _selectFromContacts,
+                          ),
+                        ),
+                        SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: AppButton(
+                            label: l10n.send_fromBeneficiaries,
+                            variant: AppButtonVariant.secondary,
+                            size: AppButtonSize.small,
+                            icon: Icons.bookmark_outline,
+                            onPressed: _selectFromBeneficiaries,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppSpacing.xl),
+
+                    // Recent recipients section
+                    if (state.recentRecipients.isNotEmpty) ...[
+                      AppText(
+                        l10n.send_recentRecipients,
+                        variant: AppTextVariant.labelLarge,
+                          color: AppColors.textSecondary,
+                      ),
+                      SizedBox(height: AppSpacing.sm),
+                      ...state.recentRecipients.map(
+                        (recipient) => RecentRecipientCard(
+                          recipient: recipient,
+                          onTap: () => _selectRecipient(
+                            recipient.phoneNumber,
+                            recipient.name,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+
+              // Bottom button
+              Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: AppButton(
+                  label: l10n.action_continue,
+                  onPressed: _handleContinue,
+                  isLoading: _isLoading,
+                  isFullWidth: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String? _validatePhone(String? value) {
+    final l10n = AppLocalizations.of(context)!;
+    if (value == null || value.isEmpty) {
+      return l10n.error_phoneRequired;
+    }
+    if (value.length != 10) {
+      return l10n.error_phoneInvalid;
+    }
+    return null;
+  }
+
+  Future<void> _selectFromContacts() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    // Request permission
+    final status = await Permission.contacts.request();
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.send_contactsPermissionDenied),
+            backgroundColor: AppColors.errorBase,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Show contact picker
+    if (mounted) {
+      final contact = await showModalBottomSheet<ContactInfo>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const ContactPickerBottomSheet(),
+      );
+
+      if (contact != null) {
+        _selectRecipient(contact.phoneNumber, contact.name);
+      }
+    }
+  }
+
+  Future<void> _selectFromBeneficiaries() async {
+    final beneficiary = await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const BeneficiaryPickerBottomSheet(),
+    );
+
+    if (beneficiary != null && mounted) {
+      _selectRecipient(
+        beneficiary.phoneE164 ?? '',
+        beneficiary.name,
+      );
+    }
+  }
+
+  void _selectRecipient(String phoneNumber, String? name) {
+    // Remove country code if present
+    String cleanPhone = phoneNumber;
+    if (cleanPhone.startsWith('+225')) {
+      cleanPhone = cleanPhone.substring(4).trim();
+    }
+    cleanPhone = cleanPhone.replaceAll(RegExp(r'\s+'), '');
+
+    setState(() {
+      _phoneController.text = cleanPhone;
+    });
+  }
+
+  Future<void> _handleContinue() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final phoneNumber = '+225${_phoneController.text}';
+      await ref.read(sendMoneyProvider.notifier).setRecipient(phoneNumber);
+
+      if (mounted) {
+        context.push('/send/amount');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+}

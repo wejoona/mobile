@@ -81,8 +81,9 @@ class _ScanViewState extends ConsumerState<ScanView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -95,9 +96,9 @@ class _ScanViewState extends ConsumerState<ScanView>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textTertiary,
+          indicatorColor: colors.gold,
+          labelColor: colors.gold,
+          unselectedLabelColor: colors.textTertiary,
           tabs: const [
             Tab(text: 'Scan'),
             Tab(text: 'My QR'),
@@ -122,16 +123,17 @@ class _ScanViewState extends ConsumerState<ScanView>
     }
 
     if (!_isScannerInitialized || _scannerController == null) {
-      return const Center(
+      final colors = context.colors;
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: AppColors.gold500),
-            SizedBox(height: AppSpacing.lg),
+            CircularProgressIndicator(color: colors.gold),
+            const SizedBox(height: AppSpacing.lg),
             AppText(
               'Initializing camera...',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
@@ -159,7 +161,7 @@ class _ScanViewState extends ConsumerState<ScanView>
             width: 280,
             height: 280,
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.gold500, width: 3),
+              border: Border.all(color: context.colors.gold, width: 3),
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: ClipRRect(
@@ -215,16 +217,16 @@ class _ScanViewState extends ConsumerState<ScanView>
           right: 0,
           child: Column(
             children: [
-              const AppText(
+              AppText(
                 'Scan a JoonaPay QR code',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
-              const AppText(
+              AppText(
                 'Point your camera at a QR code to send money',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -233,20 +235,21 @@ class _ScanViewState extends ConsumerState<ScanView>
                 onPressed: () => _scannerController?.toggleTorch(),
                 icon: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: const BoxDecoration(
-                    color: AppColors.slate,
+                  decoration: BoxDecoration(
+                    color: context.colors.container,
                     shape: BoxShape.circle,
                   ),
                   child: ValueListenableBuilder(
                     valueListenable: _scannerController!,
                     builder: (context, state, child) {
+                      final colors = context.colors;
                       return Icon(
                         state.torchState == TorchState.on
                             ? Icons.flash_on
                             : Icons.flash_off,
                         color: state.torchState == TorchState.on
-                            ? AppColors.gold500
-                            : AppColors.textSecondary,
+                            ? colors.gold
+                            : colors.textSecondary,
                       );
                     },
                   ),
@@ -260,6 +263,7 @@ class _ScanViewState extends ConsumerState<ScanView>
   }
 
   Widget _buildScannedResult() {
+    final colors = context.colors;
     final isValid = _isValidJoonaPayQr(_scannedData!);
     final parsedData = _parseQrData(_scannedData!);
 
@@ -290,7 +294,7 @@ class _ScanViewState extends ConsumerState<ScanView>
           AppText(
             isValid ? 'QR Code Scanned' : 'Invalid QR Code',
             variant: AppTextVariant.headlineSmall,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
 
           const SizedBox(height: AppSpacing.md),
@@ -300,13 +304,13 @@ class _ScanViewState extends ConsumerState<ScanView>
               variant: AppCardVariant.elevated,
               child: Column(
                 children: [
-                  _InfoRow(label: 'Type', value: parsedData['type'] ?? 'Payment'),
+                  _InfoRow(label: 'Type', value: parsedData['type'] ?? 'Payment', colors: colors),
                   if (parsedData['phone'] != null && parsedData['phone']!.isNotEmpty)
-                    _InfoRow(label: 'Phone', value: parsedData['phone']!),
+                    _InfoRow(label: 'Phone', value: parsedData['phone']!, colors: colors),
                   if (parsedData['address'] != null && parsedData['address']!.isNotEmpty)
-                    _InfoRow(label: 'Address', value: _truncateAddress(parsedData['address']!)),
+                    _InfoRow(label: 'Address', value: _truncateAddress(parsedData['address']!), colors: colors),
                   if (parsedData['amount'] != null && parsedData['amount']!.isNotEmpty)
-                    _InfoRow(label: 'Amount', value: '\$${parsedData['amount']}'),
+                    _InfoRow(label: 'Amount', value: '\$${parsedData['amount']}', colors: colors),
                 ],
               ),
             ),
@@ -328,10 +332,10 @@ class _ScanViewState extends ConsumerState<ScanView>
               isFullWidth: true,
             ),
           ] else ...[
-            const AppText(
+            AppText(
               'This QR code is not a valid JoonaPay payment code.',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -402,53 +406,56 @@ class _ScanViewState extends ConsumerState<ScanView>
                   const SizedBox(height: AppSpacing.xxl),
 
                   // User info
-                  const AppText(
+                  AppText(
                     'JoonaPay',
                     variant: AppTextVariant.titleLarge,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   AppText(
                     phone,
                     variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
 
                   // Wallet address (if available)
                   balanceAsync.when(
-                    data: (balance) => Column(
-                      children: [
-                        const Divider(color: AppColors.borderSubtle),
-                        const SizedBox(height: AppSpacing.lg),
-                        const AppText(
-                          'Wallet Address',
-                          variant: AppTextVariant.labelMedium,
-                          color: AppColors.textSecondary,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AppText(
-                              _truncateAddress(balance.walletId),
-                              variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textTertiary,
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            GestureDetector(
-                              onTap: () => _copyToClipboard(balance.walletId),
-                              child: const Icon(
-                                Icons.copy,
-                                size: 18,
-                                color: AppColors.gold500,
+                    data: (balance) {
+                      final colors = context.colors;
+                      return Column(
+                        children: [
+                          Divider(color: colors.borderSubtle),
+                          const SizedBox(height: AppSpacing.lg),
+                          AppText(
+                            'Wallet Address',
+                            variant: AppTextVariant.labelMedium,
+                            color: colors.textSecondary,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AppText(
+                                _truncateAddress(balance.walletId),
+                                variant: AppTextVariant.bodyMedium,
+                                color: colors.textTertiary,
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                              const SizedBox(width: AppSpacing.sm),
+                              GestureDetector(
+                                onTap: () => _copyToClipboard(balance.walletId),
+                                child: Icon(
+                                  Icons.copy,
+                                  size: 18,
+                                  color: colors.gold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                     loading: () => const SizedBox(),
                     error: (_, __) => const SizedBox(),
                   ),
@@ -499,26 +506,26 @@ class _ScanViewState extends ConsumerState<ScanView>
           // Instructions
           AppCard(
             variant: AppCardVariant.subtle,
-            child: const Column(
+            child: Column(
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.gold500, size: 20),
-                    SizedBox(width: AppSpacing.sm),
+                    Icon(Icons.info_outline, color: context.colors.gold, size: 20),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
                         'Share this QR code to receive payments',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
                 AppText(
                   'Anyone with JoonaPay can scan this code to send you money instantly.',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
               ],
             ),
@@ -715,7 +722,7 @@ class _CornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.gold500
+      ..color = AppColors.gold500 // Static color for QR decoration
       ..strokeWidth = 4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -753,10 +760,15 @@ class _CornerPainter extends CustomPainter {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({
+    required this.label,
+    required this.value,
+    required this.colors,
+  });
 
   final String label;
   final String value;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -768,12 +780,12 @@ class _InfoRow extends StatelessWidget {
           AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           AppText(
             value,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ],
       ),

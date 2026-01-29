@@ -56,9 +56,10 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
   @override
   Widget build(BuildContext context) {
     final walletState = ref.watch(walletStateMachineProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -76,39 +77,39 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Available Balance
-            _buildBalanceCard(walletState),
+            _buildBalanceCard(walletState, colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Bill Categories
-            const AppText(
+            AppText(
               'Select Category',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildCategoryGrid(),
+            _buildCategoryGrid(colors),
 
             if (_selectedCategory != null) ...[
               const SizedBox(height: AppSpacing.xxl),
 
               // Provider Selection
-              const AppText(
+              AppText(
                 'Select Provider',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
-              _buildProviderList(),
+              _buildProviderList(colors),
 
               if (_selectedProvider != null) ...[
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Account Number
-                const AppText(
+                AppText(
                   'Account/Meter Number',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Row(
@@ -123,12 +124,12 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     if (_isVerifying)
-                      const SizedBox(
+                      SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       )
                     else if (_verifiedName != null)
@@ -147,13 +148,13 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Amount
-                const AppText(
+                AppText(
                   'Amount',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                _buildAmountInput(),
+                _buildAmountInput(colors),
 
                 const SizedBox(height: AppSpacing.lg),
 
@@ -162,10 +163,10 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: [
-                    _buildQuickAmountChip(500),
-                    _buildQuickAmountChip(1000),
-                    _buildQuickAmountChip(2000),
-                    _buildQuickAmountChip(5000),
+                    _buildQuickAmountChip(500, colors),
+                    _buildQuickAmountChip(1000, colors),
+                    _buildQuickAmountChip(2000, colors),
+                    _buildQuickAmountChip(5000, colors),
                   ],
                 ),
 
@@ -185,7 +186,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
 
             // Recent Bills
             if (_selectedCategory == null) ...[
-              _buildRecentBills(),
+              _buildRecentBills(colors),
             ],
           ],
         ),
@@ -193,7 +194,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     );
   }
 
-  Widget _buildBalanceCard(WalletState walletState) {
+  Widget _buildBalanceCard(WalletState walletState, ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
@@ -202,24 +203,24 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const Icon(Icons.account_balance_wallet, color: AppColors.gold500),
+            child: Icon(Icons.account_balance_wallet, color: colors.gold),
           ),
           const SizedBox(width: AppSpacing.md),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppText(
+              AppText(
                 'Available Balance',
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               AppText(
                 '\$${walletState.availableBalance.toStringAsFixed(2)}',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
@@ -228,7 +229,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     );
   }
 
-  Widget _buildCategoryGrid() {
+  Widget _buildCategoryGrid(ThemeColors colors) {
     return GridView.count(
       crossAxisCount: 4,
       shrinkWrap: true,
@@ -249,10 +250,10 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : AppColors.slate,
+              color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(
-                color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+                color: isSelected ? colors.gold : colors.borderSubtle,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -261,14 +262,14 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
               children: [
                 Icon(
                   _categoryIcons[category],
-                  color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                  color: isSelected ? colors.gold : colors.textSecondary,
                   size: 24,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
                   _getCategoryName(category),
                   variant: AppTextVariant.labelSmall,
-                  color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                  color: isSelected ? colors.gold : colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -279,7 +280,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     );
   }
 
-  Widget _buildProviderList() {
+  Widget _buildProviderList(ThemeColors colors) {
     final providers = _providers[_selectedCategory] ?? [];
     return Wrap(
       spacing: AppSpacing.sm,
@@ -297,16 +298,16 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold500 : AppColors.slate,
+              color: isSelected ? colors.gold : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
               border: Border.all(
-                color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+                color: isSelected ? colors.gold : colors.borderSubtle,
               ),
             ),
             child: AppText(
               provider,
               variant: AppTextVariant.labelSmall,
-              color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+              color: isSelected ? colors.canvas : colors.textSecondary,
             ),
           ),
         );
@@ -314,23 +315,23 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInput(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
-          const AppText(
+          AppText(
             '\$',
             variant: AppTextVariant.headlineMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -341,10 +342,10 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
               style: AppTypography.headlineMedium,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: '0.00',
-                hintStyle: TextStyle(color: AppColors.textTertiary),
+                hintStyle: TextStyle(color: colors.textTertiary),
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -354,7 +355,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     );
   }
 
-  Widget _buildQuickAmountChip(int amount) {
+  Widget _buildQuickAmountChip(int amount, ThemeColors colors) {
     return GestureDetector(
       onTap: () => setState(() => _amountController.text = amount.toString()),
       child: Container(
@@ -363,20 +364,20 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: AppText(
           '\$$amount',
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _buildRecentBills() {
+  Widget _buildRecentBills(ThemeColors colors) {
     final recentBills = [
       _RecentBill('KPLC', 'Electricity', 45.50, DateTime.now().subtract(const Duration(days: 5))),
       _RecentBill('Safaricom', 'Internet', 30.00, DateTime.now().subtract(const Duration(days: 12))),
@@ -386,18 +387,18 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Recent Bills',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
-        ...recentBills.map((bill) => _buildRecentBillItem(bill)),
+        ...recentBills.map((bill) => _buildRecentBillItem(bill, colors)),
       ],
     );
   }
 
-  Widget _buildRecentBillItem(_RecentBill bill) {
+  Widget _buildRecentBillItem(_RecentBill bill, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: AppCard(
@@ -417,10 +418,10 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.receipt, color: AppColors.gold500, size: 22),
+              child: Icon(Icons.receipt, color: colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -430,12 +431,12 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                   AppText(
                     bill.provider,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     bill.category,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -446,17 +447,17 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                 AppText(
                   '\$${bill.amount.toStringAsFixed(2)}',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   _formatDate(bill.date),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ],
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Icon(Icons.refresh, color: AppColors.gold500, size: 20),
+            Icon(Icons.refresh, color: colors.gold, size: 20),
           ],
         ),
       ),

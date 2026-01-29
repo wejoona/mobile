@@ -230,6 +230,12 @@ abstract class AppLocalizations {
   /// **'Try Again'**
   String get action_tryAgain;
 
+  /// Remove action button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get action_remove;
+
   /// Login label
   ///
   /// In en, this message translates to:
@@ -260,16 +266,16 @@ abstract class AppLocalizations {
   /// **'PIN'**
   String get auth_pin;
 
-  /// Logout label
+  /// Logout button label
   ///
   /// In en, this message translates to:
-  /// **'Log Out'**
+  /// **'Logout'**
   String get auth_logout;
 
   /// Logout confirmation message
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to log out?'**
+  /// **'Are you sure you want to logout?'**
   String get auth_logoutConfirm;
 
   /// Welcome back message
@@ -386,6 +392,138 @@ abstract class AppLocalizations {
   /// **'Resend Code'**
   String get auth_resendCode;
 
+  /// Invalid phone number error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid phone number'**
+  String get auth_phoneInvalid;
+
+  /// OTP code field label
+  ///
+  /// In en, this message translates to:
+  /// **'OTP Code'**
+  String get auth_otp;
+
+  /// Resend OTP button
+  ///
+  /// In en, this message translates to:
+  /// **'Resend OTP'**
+  String get auth_resendOtp;
+
+  /// Invalid OTP error message
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP code. Please try again.'**
+  String get auth_error_invalidOtp;
+
+  /// Login welcome message
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get login_welcomeBack;
+
+  /// Login phone input subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your phone number to login'**
+  String get login_enterPhone;
+
+  /// Remember device checkbox
+  ///
+  /// In en, this message translates to:
+  /// **'Remember this device'**
+  String get login_rememberPhone;
+
+  /// No account prompt
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get login_noAccount;
+
+  /// Create account link
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get login_createAccount;
+
+  /// OTP verification title
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your code'**
+  String get login_verifyCode;
+
+  /// Code sent message
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {countryCode} {phone}'**
+  String login_codeSentTo(String countryCode, String phone);
+
+  /// Resend code button
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get login_resendCode;
+
+  /// Resend countdown
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code in {seconds}s'**
+  String login_resendIn(int seconds);
+
+  /// Verifying message
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying...'**
+  String get login_verifying;
+
+  /// PIN entry title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN'**
+  String get login_enterPin;
+
+  /// PIN entry subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your 6-digit PIN to access your wallet'**
+  String get login_pinSubtitle;
+
+  /// Forgot PIN link
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot PIN?'**
+  String get login_forgotPin;
+
+  /// PIN attempts remaining
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 attempt remaining} other{{count} attempts remaining}}'**
+  String login_attemptsRemaining(int count);
+
+  /// Account locked title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Locked'**
+  String get login_accountLocked;
+
+  /// Account locked message
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed attempts. Your account has been locked for 15 minutes for security.'**
+  String get login_lockedMessage;
+
+  /// OK button
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get common_ok;
+
+  /// Continue button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get common_continue;
+
   /// Wallet balance label
   ///
   /// In en, this message translates to:
@@ -470,6 +608,36 @@ abstract class AppLocalizations {
   /// **'Loading wallet...'**
   String get wallet_loadingWallet;
 
+  /// Title for wallet activation card
+  ///
+  /// In en, this message translates to:
+  /// **'Activate Your Wallet'**
+  String get wallet_activateTitle;
+
+  /// Description for wallet activation
+  ///
+  /// In en, this message translates to:
+  /// **'Set up your USDC wallet to start sending and receiving money instantly'**
+  String get wallet_activateDescription;
+
+  /// Button to activate wallet
+  ///
+  /// In en, this message translates to:
+  /// **'Activate Wallet'**
+  String get wallet_activateButton;
+
+  /// Loading message during wallet activation
+  ///
+  /// In en, this message translates to:
+  /// **'Activating your wallet...'**
+  String get wallet_activating;
+
+  /// Error message when wallet activation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to activate wallet. Please try again.'**
+  String get wallet_activateFailed;
+
   /// Welcome back greeting
   ///
   /// In en, this message translates to:
@@ -505,6 +673,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your recent transactions will appear here'**
   String get home_transactionsWillAppear;
+
+  /// Balance label on home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Balance'**
+  String get home_balance;
 
   /// Send money page title
   ///
@@ -563,13 +737,13 @@ abstract class AppLocalizations {
   /// Network info message
   ///
   /// In en, this message translates to:
-  /// **'External transfers are on the Polygon network. Network fees apply.'**
+  /// **'External transfers may take a few minutes. Small fees apply.'**
   String get send_networkInfo;
 
-  /// Transfer success message
+  /// Transfer success title
   ///
   /// In en, this message translates to:
-  /// **'Transfer successful!'**
+  /// **'Transfer Successful!'**
   String get send_transferSuccess;
 
   /// Invalid amount error
@@ -656,7 +830,7 @@ abstract class AppLocalizations {
   /// **'Select Saved Recipient'**
   String get send_selectSavedRecipient;
 
-  /// Select contact sheet title
+  /// Contact picker title
   ///
   /// In en, this message translates to:
   /// **'Select Contact'**
@@ -671,7 +845,7 @@ abstract class AppLocalizations {
   /// Search contacts placeholder
   ///
   /// In en, this message translates to:
-  /// **'Search contacts...'**
+  /// **'Search contacts'**
   String get send_searchContacts;
 
   /// No saved recipients message
@@ -710,11 +884,11 @@ abstract class AppLocalizations {
   /// **'Receive USDC'**
   String get receive_receiveUsdc;
 
-  /// Only send USDC warning
+  /// Receive USDC info
   ///
   /// In en, this message translates to:
-  /// **'Only send USDC on {network} network'**
-  String receive_onlySendUsdc(String network);
+  /// **'Share your address to receive USDC'**
+  String get receive_onlySendUsdc;
 
   /// Your wallet address label
   ///
@@ -737,8 +911,8 @@ abstract class AppLocalizations {
   /// Share wallet address message
   ///
   /// In en, this message translates to:
-  /// **'Send USDC to my wallet on {network}:\n\n{address}'**
-  String receive_shareMessage(String network, String address);
+  /// **'Send USDC to my JoonaPay wallet:\n\n{address}'**
+  String receive_shareMessage(String address);
 
   /// Share subject
   ///
@@ -755,8 +929,8 @@ abstract class AppLocalizations {
   /// Important warning message
   ///
   /// In en, this message translates to:
-  /// **'Only send USDC on the {network} network to this address. Sending other tokens or using a different network may result in permanent loss of funds.'**
-  String receive_warningMessage(String network);
+  /// **'Only send USDC to this address. Sending other tokens may result in permanent loss of funds.'**
+  String get receive_warningMessage;
 
   /// Transactions page title
   ///
@@ -1208,6 +1382,78 @@ abstract class AppLocalizations {
   /// **'Version {version}'**
   String settings_version(String version);
 
+  /// Devices screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get settings_devices;
+
+  /// Devices screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Manage devices that have access to your account. Revoke access from any device.'**
+  String get settings_devicesDescription;
+
+  /// Current device badge
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get settings_thisDevice;
+
+  /// Last active label
+  ///
+  /// In en, this message translates to:
+  /// **'Last active'**
+  String get settings_lastActive;
+
+  /// Login count label
+  ///
+  /// In en, this message translates to:
+  /// **'Logins'**
+  String get settings_loginCount;
+
+  /// Times unit
+  ///
+  /// In en, this message translates to:
+  /// **'times'**
+  String get settings_times;
+
+  /// Last IP address label
+  ///
+  /// In en, this message translates to:
+  /// **'Last IP'**
+  String get settings_lastIp;
+
+  /// Trust device button
+  ///
+  /// In en, this message translates to:
+  /// **'Trust Device'**
+  String get settings_trustDevice;
+
+  /// Remove device button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Device'**
+  String get settings_removeDevice;
+
+  /// Remove device confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'This device will be logged out and will need to authenticate again to access your account.'**
+  String get settings_removeDeviceConfirm;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No Devices Found'**
+  String get settings_noDevices;
+
+  /// Empty state description
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any registered devices yet.'**
+  String get settings_noDevicesDescription;
+
   /// KYC verified status
   ///
   /// In en, this message translates to:
@@ -1231,6 +1477,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not Started'**
   String get kyc_notStarted;
+
+  /// KYC page title
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Verification'**
+  String get kyc_title;
+
+  /// Document type selection title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Document Type'**
+  String get kyc_selectDocumentType;
+
+  /// Document type selection description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the type of document you\'d like to verify with'**
+  String get kyc_selectDocumentType_description;
+
+  /// National ID document type
+  ///
+  /// In en, this message translates to:
+  /// **'National ID Card'**
+  String get kyc_documentType_nationalId;
+
+  /// National ID document description
+  ///
+  /// In en, this message translates to:
+  /// **'Government-issued ID card'**
+  String get kyc_documentType_nationalId_description;
+
+  /// Passport document type
+  ///
+  /// In en, this message translates to:
+  /// **'Passport'**
+  String get kyc_documentType_passport;
+
+  /// Passport document description
+  ///
+  /// In en, this message translates to:
+  /// **'International travel document'**
+  String get kyc_documentType_passport_description;
+
+  /// Driver's license document type
+  ///
+  /// In en, this message translates to:
+  /// **'Driver\'s License'**
+  String get kyc_documentType_driversLicense;
+
+  /// Driver's license document description
+  ///
+  /// In en, this message translates to:
+  /// **'Government-issued driver\'s license'**
+  String get kyc_documentType_driversLicense_description;
+
+  /// Front side capture guidance
+  ///
+  /// In en, this message translates to:
+  /// **'Align the front of your document within the frame'**
+  String get kyc_capture_frontSide_guidance;
+
+  /// Back side capture guidance
+  ///
+  /// In en, this message translates to:
+  /// **'Align the back of your document within the frame'**
+  String get kyc_capture_backSide_guidance;
+
+  /// National ID capture instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Position your ID card flat and well-lit within the frame'**
+  String get kyc_capture_nationalIdInstructions;
+
+  /// Passport capture instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Position your passport photo page within the frame'**
+  String get kyc_capture_passportInstructions;
+
+  /// Driver's license capture instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Position your driver\'s license flat within the frame'**
+  String get kyc_capture_driversLicenseInstructions;
+
+  /// Back side capture instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Now capture the back side of your document'**
+  String get kyc_capture_backInstructions;
+
+  /// Image quality check message
+  ///
+  /// In en, this message translates to:
+  /// **'Checking image quality...'**
+  String get kyc_checkingQuality;
+
+  /// Review image screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Image'**
+  String get kyc_reviewImage;
+
+  /// Retake photo button
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get kyc_retake;
+
+  /// Accept photo button
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get kyc_accept;
+
+  /// Generic image quality error
+  ///
+  /// In en, this message translates to:
+  /// **'Image quality is not acceptable. Please try again.'**
+  String get kyc_error_imageQuality;
+
+  /// Blurry image error
+  ///
+  /// In en, this message translates to:
+  /// **'Image is too blurry. Hold your phone steady and try again.'**
+  String get kyc_error_imageBlurry;
+
+  /// Glare detected error
+  ///
+  /// In en, this message translates to:
+  /// **'Too much glare detected. Avoid direct light and try again.'**
+  String get kyc_error_imageGlare;
+
+  /// Image too dark error
+  ///
+  /// In en, this message translates to:
+  /// **'Image is too dark. Use better lighting and try again.'**
+  String get kyc_error_imageTooDark;
+
+  /// Pending status title
+  ///
+  /// In en, this message translates to:
+  /// **'Start Verification'**
+  String get kyc_status_pending_title;
+
+  /// Pending status description
+  ///
+  /// In en, this message translates to:
+  /// **'Complete your identity verification to unlock higher limits and all features.'**
+  String get kyc_status_pending_description;
+
+  /// Submitted status title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification In Progress'**
+  String get kyc_status_submitted_title;
+
+  /// Submitted status description
+  ///
+  /// In en, this message translates to:
+  /// **'Your documents are being reviewed. This usually takes 1-2 business days.'**
+  String get kyc_status_submitted_description;
+
+  /// Approved status title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Complete'**
+  String get kyc_status_approved_title;
+
+  /// Approved status description
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity has been verified. You now have access to all features!'**
+  String get kyc_status_approved_description;
+
+  /// Rejected status title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Failed'**
+  String get kyc_status_rejected_title;
+
+  /// Rejected status description
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t verify your documents. Please review the reason below and try again.'**
+  String get kyc_status_rejected_description;
+
+  /// Additional info needed title
+  ///
+  /// In en, this message translates to:
+  /// **'Additional Information Needed'**
+  String get kyc_status_additionalInfo_title;
+
+  /// Additional info needed description
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide additional information to complete your verification.'**
+  String get kyc_status_additionalInfo_description;
+
+  /// Rejection reason label
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection Reason'**
+  String get kyc_rejectionReason;
+
+  /// Try again button
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get kyc_tryAgain;
+
+  /// Start verification button
+  ///
+  /// In en, this message translates to:
+  /// **'Start Verification'**
+  String get kyc_startVerification;
+
+  /// Security info title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Data is Secure'**
+  String get kyc_info_security_title;
+
+  /// Security info description
+  ///
+  /// In en, this message translates to:
+  /// **'All documents are encrypted and securely stored'**
+  String get kyc_info_security_description;
+
+  /// Time info title
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Process'**
+  String get kyc_info_time_title;
+
+  /// Time info description
+  ///
+  /// In en, this message translates to:
+  /// **'Verification usually takes 1-2 business days'**
+  String get kyc_info_time_description;
+
+  /// Documents info title
+  ///
+  /// In en, this message translates to:
+  /// **'Documents Needed'**
+  String get kyc_info_documents_title;
+
+  /// Documents info description
+  ///
+  /// In en, this message translates to:
+  /// **'Valid government-issued ID or passport'**
+  String get kyc_info_documents_description;
+
+  /// Review documents title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Documents'**
+  String get kyc_reviewDocuments;
+
+  /// Review screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Review your captured documents before submitting for verification'**
+  String get kyc_review_description;
+
+  /// Documents section label
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get kyc_review_documents;
+
+  /// Document front label
+  ///
+  /// In en, this message translates to:
+  /// **'Document Front'**
+  String get kyc_review_documentFront;
+
+  /// Document back label
+  ///
+  /// In en, this message translates to:
+  /// **'Document Back'**
+  String get kyc_review_documentBack;
+
+  /// Selfie section label
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie'**
+  String get kyc_review_selfie;
+
+  /// Your selfie label
+  ///
+  /// In en, this message translates to:
+  /// **'Your Selfie'**
+  String get kyc_review_yourSelfie;
+
+  /// Submit button label
+  ///
+  /// In en, this message translates to:
+  /// **'Submit for Verification'**
+  String get kyc_submitForVerification;
+
+  /// Selfie capture title
+  ///
+  /// In en, this message translates to:
+  /// **'Take a Selfie'**
+  String get kyc_selfie_title;
+
+  /// Selfie capture guidance
+  ///
+  /// In en, this message translates to:
+  /// **'Position your face in the oval frame'**
+  String get kyc_selfie_guidance;
+
+  /// Selfie liveness hint
+  ///
+  /// In en, this message translates to:
+  /// **'Make sure you\'re in a well-lit area'**
+  String get kyc_selfie_livenessHint;
+
+  /// Selfie capture instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Look straight at the camera and keep your face within the frame'**
+  String get kyc_selfie_instructions;
+
+  /// Review selfie title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Selfie'**
+  String get kyc_reviewSelfie;
+
+  /// Submission success title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Submitted'**
+  String get kyc_submitted_title;
+
+  /// Submission success description
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you! Your documents have been submitted for verification. We\'ll notify you once the review is complete.'**
+  String get kyc_submitted_description;
+
+  /// Time estimate for verification
+  ///
+  /// In en, this message translates to:
+  /// **'Verification usually takes 1-2 business days'**
+  String get kyc_submitted_timeEstimate;
 
   /// Transaction sent label
   ///
@@ -1309,6 +1903,3246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change Language'**
   String get language_changeLanguage;
+
+  /// Primary currency section label
+  ///
+  /// In en, this message translates to:
+  /// **'Primary Currency'**
+  String get currency_primary;
+
+  /// Reference currency section label
+  ///
+  /// In en, this message translates to:
+  /// **'Reference Currency'**
+  String get currency_reference;
+
+  /// Reference currency description
+  ///
+  /// In en, this message translates to:
+  /// **'Displays local currency equivalent below your USDC balance for reference only. Exchange rates are approximate.'**
+  String get currency_referenceDescription;
+
+  /// Show reference currency toggle label
+  ///
+  /// In en, this message translates to:
+  /// **'Show Local Currency'**
+  String get currency_showReference;
+
+  /// Show reference currency toggle description
+  ///
+  /// In en, this message translates to:
+  /// **'Display approximate local currency value below USDC amounts'**
+  String get currency_showReferenceDescription;
+
+  /// Currency preview section label
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get currency_preview;
+
+  /// Active sessions screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Active Sessions'**
+  String get settings_activeSessions;
+
+  /// Current session badge
+  ///
+  /// In en, this message translates to:
+  /// **'Current session'**
+  String get sessions_currentSession;
+
+  /// Unknown location placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown location'**
+  String get sessions_unknownLocation;
+
+  /// Unknown IP placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown IP'**
+  String get sessions_unknownIP;
+
+  /// Last active label
+  ///
+  /// In en, this message translates to:
+  /// **'Last active'**
+  String get sessions_lastActive;
+
+  /// Revoke session dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke Session'**
+  String get sessions_revokeTitle;
+
+  /// Revoke session dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to revoke this session? This device will be logged out immediately.'**
+  String get sessions_revokeMessage;
+
+  /// Revoke button label
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke'**
+  String get sessions_revoke;
+
+  /// Revoke session success message
+  ///
+  /// In en, this message translates to:
+  /// **'Session revoked successfully'**
+  String get sessions_revokeSuccess;
+
+  /// Logout all devices button
+  ///
+  /// In en, this message translates to:
+  /// **'Logout from All Devices'**
+  String get sessions_logoutAllDevices;
+
+  /// Logout all devices dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Logout from All Devices?'**
+  String get sessions_logoutAllTitle;
+
+  /// Logout all devices dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'This will log you out from all devices including this one. You\'ll need to log in again.'**
+  String get sessions_logoutAllMessage;
+
+  /// Logout all devices warning
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone'**
+  String get sessions_logoutAllWarning;
+
+  /// Logout all confirmation button
+  ///
+  /// In en, this message translates to:
+  /// **'Logout All'**
+  String get sessions_logoutAll;
+
+  /// Logout all success message
+  ///
+  /// In en, this message translates to:
+  /// **'Logged out from all devices'**
+  String get sessions_logoutAllSuccess;
+
+  /// Error loading sessions title
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to Load Sessions'**
+  String get sessions_errorLoading;
+
+  /// No active sessions title
+  ///
+  /// In en, this message translates to:
+  /// **'No Active Sessions'**
+  String get sessions_noActiveSessions;
+
+  /// No active sessions description
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any active sessions at the moment.'**
+  String get sessions_noActiveSessionsDesc;
+
+  /// Beneficiaries screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiaries'**
+  String get beneficiaries_title;
+
+  /// All beneficiaries tab
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get beneficiaries_tabAll;
+
+  /// Favorites tab
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get beneficiaries_tabFavorites;
+
+  /// Recent tab
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get beneficiaries_tabRecent;
+
+  /// Search hint text
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or phone'**
+  String get beneficiaries_searchHint;
+
+  /// Add beneficiary screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Beneficiary'**
+  String get beneficiaries_addTitle;
+
+  /// Edit beneficiary screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Beneficiary'**
+  String get beneficiaries_editTitle;
+
+  /// Name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get beneficiaries_fieldName;
+
+  /// Phone field label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get beneficiaries_fieldPhone;
+
+  /// Account type field label
+  ///
+  /// In en, this message translates to:
+  /// **'Account Type'**
+  String get beneficiaries_fieldAccountType;
+
+  /// Wallet address field label
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Address'**
+  String get beneficiaries_fieldWalletAddress;
+
+  /// Bank code field label
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Code'**
+  String get beneficiaries_fieldBankCode;
+
+  /// Bank account field label
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Account Number'**
+  String get beneficiaries_fieldBankAccount;
+
+  /// Mobile money provider field label
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money Provider'**
+  String get beneficiaries_fieldMobileMoneyProvider;
+
+  /// JoonaPay user account type
+  ///
+  /// In en, this message translates to:
+  /// **'JoonaPay User'**
+  String get beneficiaries_typeJoonapay;
+
+  /// External wallet account type
+  ///
+  /// In en, this message translates to:
+  /// **'External Wallet'**
+  String get beneficiaries_typeWallet;
+
+  /// Bank account type
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Account'**
+  String get beneficiaries_typeBank;
+
+  /// Mobile money account type
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money'**
+  String get beneficiaries_typeMobileMoney;
+
+  /// Add beneficiary button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Beneficiary'**
+  String get beneficiaries_addButton;
+
+  /// Add first beneficiary button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Your First Beneficiary'**
+  String get beneficiaries_addFirst;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No Beneficiaries Yet'**
+  String get beneficiaries_emptyTitle;
+
+  /// Empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Add beneficiaries to send money faster next time'**
+  String get beneficiaries_emptyMessage;
+
+  /// Empty favorites title
+  ///
+  /// In en, this message translates to:
+  /// **'No Favorites'**
+  String get beneficiaries_emptyFavoritesTitle;
+
+  /// Empty favorites message
+  ///
+  /// In en, this message translates to:
+  /// **'Star your frequently used beneficiaries to see them here'**
+  String get beneficiaries_emptyFavoritesMessage;
+
+  /// Empty recent title
+  ///
+  /// In en, this message translates to:
+  /// **'No Recent Transfers'**
+  String get beneficiaries_emptyRecentTitle;
+
+  /// Empty recent message
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiaries you\'ve sent money to will appear here'**
+  String get beneficiaries_emptyRecentMessage;
+
+  /// Edit menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get beneficiaries_menuEdit;
+
+  /// Delete menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get beneficiaries_menuDelete;
+
+  /// Delete confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Beneficiary?'**
+  String get beneficiaries_deleteTitle;
+
+  /// Delete confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete {name}?'**
+  String beneficiaries_deleteMessage(String name);
+
+  /// Delete success message
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiary deleted successfully'**
+  String get beneficiaries_deleteSuccess;
+
+  /// Create success message
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiary added successfully'**
+  String get beneficiaries_createSuccess;
+
+  /// Update success message
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiary updated successfully'**
+  String get beneficiaries_updateSuccess;
+
+  /// Error loading title
+  ///
+  /// In en, this message translates to:
+  /// **'Error Loading Beneficiaries'**
+  String get beneficiaries_errorTitle;
+
+  /// Cancel button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get common_cancel;
+
+  /// Delete button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get common_delete;
+
+  /// Save button
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get common_save;
+
+  /// Retry button
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get common_retry;
+
+  /// Required field error
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get error_required;
+
+  /// Receive QR screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Receive Payment'**
+  String get qr_receiveTitle;
+
+  /// Scan QR screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get qr_scanTitle;
+
+  /// Checkbox label for including amount in QR
+  ///
+  /// In en, this message translates to:
+  /// **'Request specific amount'**
+  String get qr_requestSpecificAmount;
+
+  /// Amount input label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (USD)'**
+  String get qr_amountLabel;
+
+  /// Instructions title
+  ///
+  /// In en, this message translates to:
+  /// **'How to receive payment'**
+  String get qr_howToReceive;
+
+  /// Instructions for receiving payment
+  ///
+  /// In en, this message translates to:
+  /// **'Share this QR code with the sender. They can scan it with their JoonaPay app to send you money instantly.'**
+  String get qr_receiveInstructions;
+
+  /// Success message for saving QR
+  ///
+  /// In en, this message translates to:
+  /// **'QR code saved to gallery'**
+  String get qr_savedToGallery;
+
+  /// Error message for saving QR
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save QR code'**
+  String get qr_failedToSave;
+
+  /// Loading message for camera
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing camera...'**
+  String get qr_initializingCamera;
+
+  /// Main scanner instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a JoonaPay QR code'**
+  String get qr_scanInstruction;
+
+  /// Secondary scanner instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Point your camera at a QR code to send money'**
+  String get qr_scanSubInstruction;
+
+  /// Success title after scanning
+  ///
+  /// In en, this message translates to:
+  /// **'QR Code Scanned'**
+  String get qr_scanned;
+
+  /// Error title for invalid QR
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid QR Code'**
+  String get qr_invalidCode;
+
+  /// Error message for invalid QR
+  ///
+  /// In en, this message translates to:
+  /// **'This QR code is not a valid JoonaPay payment code.'**
+  String get qr_invalidCodeMessage;
+
+  /// Button to retry scanning
+  ///
+  /// In en, this message translates to:
+  /// **'Scan Again'**
+  String get qr_scanAgain;
+
+  /// Button to proceed with payment
+  ///
+  /// In en, this message translates to:
+  /// **'Send Money'**
+  String get qr_sendMoney;
+
+  /// Permission denied title
+  ///
+  /// In en, this message translates to:
+  /// **'Camera Permission Required'**
+  String get qr_cameraPermissionRequired;
+
+  /// Permission denied message
+  ///
+  /// In en, this message translates to:
+  /// **'Please grant camera permission to scan QR codes.'**
+  String get qr_cameraPermissionMessage;
+
+  /// Button to open app settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get qr_openSettings;
+
+  /// Placeholder message for gallery import feature
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery import coming soon'**
+  String get qr_galleryImportSoon;
+
+  /// Good morning greeting
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get home_goodMorning;
+
+  /// Good afternoon greeting
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get home_goodAfternoon;
+
+  /// Good evening greeting
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get home_goodEvening;
+
+  /// Good night greeting
+  ///
+  /// In en, this message translates to:
+  /// **'Good night'**
+  String get home_goodNight;
+
+  /// Total balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Balance'**
+  String get home_totalBalance;
+
+  /// Hide balance tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Hide balance'**
+  String get home_hideBalance;
+
+  /// Show balance tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Show balance'**
+  String get home_showBalance;
+
+  /// Quick action send label
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get home_quickAction_send;
+
+  /// Quick action receive label
+  ///
+  /// In en, this message translates to:
+  /// **'Receive'**
+  String get home_quickAction_receive;
+
+  /// Quick action deposit label
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get home_quickAction_deposit;
+
+  /// Quick action history label
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get home_quickAction_history;
+
+  /// KYC banner title
+  ///
+  /// In en, this message translates to:
+  /// **'Complete verification to unlock all features'**
+  String get home_kycBanner_title;
+
+  /// KYC banner action button
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Now'**
+  String get home_kycBanner_action;
+
+  /// Recent activity section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Activity'**
+  String get home_recentActivity;
+
+  /// See all link text
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get home_seeAll;
+
+  /// Deposit screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Funds'**
+  String get deposit_title;
+
+  /// Quick amounts section label
+  ///
+  /// In en, this message translates to:
+  /// **'Quick amounts'**
+  String get deposit_quickAmounts;
+
+  /// Exchange rate update time
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {time}'**
+  String deposit_rateUpdated(String time);
+
+  /// Amount you will receive label
+  ///
+  /// In en, this message translates to:
+  /// **'You will receive'**
+  String get deposit_youWillReceive;
+
+  /// Amount you will pay label
+  ///
+  /// In en, this message translates to:
+  /// **'You will pay'**
+  String get deposit_youWillPay;
+
+  /// Deposit limits label
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Limits'**
+  String get deposit_limits;
+
+  /// Select provider screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Provider'**
+  String get deposit_selectProvider;
+
+  /// Choose provider instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a payment method'**
+  String get deposit_chooseProvider;
+
+  /// Amount to pay label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount to pay'**
+  String get deposit_amountToPay;
+
+  /// No fee label
+  ///
+  /// In en, this message translates to:
+  /// **'No fee'**
+  String get deposit_noFee;
+
+  /// Fee suffix
+  ///
+  /// In en, this message translates to:
+  /// **'fee'**
+  String get deposit_fee;
+
+  /// Payment instructions screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Instructions'**
+  String get deposit_paymentInstructions;
+
+  /// Expiration countdown label
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in'**
+  String get deposit_expiresIn;
+
+  /// Payment via provider label
+  ///
+  /// In en, this message translates to:
+  /// **'via {provider}'**
+  String deposit_via(String provider);
+
+  /// Reference number label
+  ///
+  /// In en, this message translates to:
+  /// **'Reference Number'**
+  String get deposit_referenceNumber;
+
+  /// Payment instructions section title
+  ///
+  /// In en, this message translates to:
+  /// **'How to complete payment'**
+  String get deposit_howToPay;
+
+  /// USSD code label
+  ///
+  /// In en, this message translates to:
+  /// **'USSD Code'**
+  String get deposit_ussdCode;
+
+  /// Open provider app button
+  ///
+  /// In en, this message translates to:
+  /// **'Open {provider} App'**
+  String deposit_openApp(String provider);
+
+  /// Completed payment button
+  ///
+  /// In en, this message translates to:
+  /// **'I\'ve completed payment'**
+  String get deposit_completedPayment;
+
+  /// Copied to clipboard message
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get deposit_copied;
+
+  /// Cancel deposit dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel deposit?'**
+  String get deposit_cancelTitle;
+
+  /// Cancel deposit dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment session will be cancelled. You can start a new deposit later.'**
+  String get deposit_cancelMessage;
+
+  /// Processing status title
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get deposit_processing;
+
+  /// Success status title
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Successful!'**
+  String get deposit_success;
+
+  /// Failed status title
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Failed'**
+  String get deposit_failed;
+
+  /// Expired status title
+  ///
+  /// In en, this message translates to:
+  /// **'Session Expired'**
+  String get deposit_expired;
+
+  /// Processing status message
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re processing your payment. This may take a few moments.'**
+  String get deposit_processingMessage;
+
+  /// Success status message
+  ///
+  /// In en, this message translates to:
+  /// **'Your funds have been added to your wallet!'**
+  String get deposit_successMessage;
+
+  /// Failed status message
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t process your payment. Please try again.'**
+  String get deposit_failedMessage;
+
+  /// Expired status message
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment session has expired. Please start a new deposit.'**
+  String get deposit_expiredMessage;
+
+  /// Deposited amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Deposited'**
+  String get deposit_deposited;
+
+  /// Received amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Received'**
+  String get deposit_received;
+
+  /// Back to home button
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get deposit_backToHome;
+
+  /// Generic error message
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get common_error;
+
+  /// Create PIN screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your PIN'**
+  String get pin_createTitle;
+
+  /// Confirm PIN screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Your PIN'**
+  String get pin_confirmTitle;
+
+  /// Change PIN screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Change PIN'**
+  String get pin_changeTitle;
+
+  /// Reset PIN screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Reset PIN'**
+  String get pin_resetTitle;
+
+  /// Enter new PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new 6-digit PIN'**
+  String get pin_enterNewPin;
+
+  /// Re-enter PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your PIN to confirm'**
+  String get pin_reenterPin;
+
+  /// Enter current PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your current PIN'**
+  String get pin_enterCurrentPin;
+
+  /// Confirm new PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your new PIN'**
+  String get pin_confirmNewPin;
+
+  /// PIN requirements section title
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Requirements'**
+  String get pin_requirements;
+
+  /// PIN must be 6 digits rule
+  ///
+  /// In en, this message translates to:
+  /// **'6 digits'**
+  String get pin_rule_6digits;
+
+  /// No sequential numbers rule
+  ///
+  /// In en, this message translates to:
+  /// **'No sequential numbers (123456)'**
+  String get pin_rule_noSequential;
+
+  /// No repeated digits rule
+  ///
+  /// In en, this message translates to:
+  /// **'No repeated digits (111111)'**
+  String get pin_rule_noRepeated;
+
+  /// Sequential PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'PIN cannot be sequential numbers'**
+  String get pin_error_sequential;
+
+  /// Repeated digit PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'PIN cannot be all the same digit'**
+  String get pin_error_repeated;
+
+  /// PIN mismatch error message
+  ///
+  /// In en, this message translates to:
+  /// **'PINs don\'t match. Please try again.'**
+  String get pin_error_noMatch;
+
+  /// Wrong current PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'Current PIN is incorrect'**
+  String get pin_error_wrongCurrent;
+
+  /// Failed to save PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save PIN. Please try again.'**
+  String get pin_error_saveFailed;
+
+  /// Failed to change PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change PIN. Please try again.'**
+  String get pin_error_changeFailed;
+
+  /// Failed to reset PIN error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset PIN. Please try again.'**
+  String get pin_error_resetFailed;
+
+  /// PIN created success message
+  ///
+  /// In en, this message translates to:
+  /// **'PIN created successfully'**
+  String get pin_success_set;
+
+  /// PIN changed success message
+  ///
+  /// In en, this message translates to:
+  /// **'PIN changed successfully'**
+  String get pin_success_changed;
+
+  /// PIN reset success message
+  ///
+  /// In en, this message translates to:
+  /// **'PIN reset successfully'**
+  String get pin_success_reset;
+
+  /// Attempts remaining message
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 attempt remaining} other{{count} attempts remaining}}'**
+  String pin_attemptsRemaining(int count);
+
+  /// Forgot PIN link text
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot PIN?'**
+  String get pin_forgotPin;
+
+  /// PIN locked screen title
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Locked'**
+  String get pin_locked_title;
+
+  /// PIN locked message
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed attempts. Your PIN is temporarily locked.'**
+  String get pin_locked_message;
+
+  /// Try again in label
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in'**
+  String get pin_locked_tryAgainIn;
+
+  /// Reset PIN via OTP button
+  ///
+  /// In en, this message translates to:
+  /// **'Reset PIN via SMS'**
+  String get pin_resetViaOtp;
+
+  /// Reset PIN request title
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Your PIN'**
+  String get pin_reset_requestTitle;
+
+  /// Reset PIN request message
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a verification code to your registered phone number to reset your PIN.'**
+  String get pin_reset_requestMessage;
+
+  /// Send OTP button
+  ///
+  /// In en, this message translates to:
+  /// **'Send Verification Code'**
+  String get pin_reset_sendOtp;
+
+  /// Enter OTP instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to your phone'**
+  String get pin_reset_enterOtp;
+
+  /// Select recipient screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Recipient'**
+  String get send_selectRecipient;
+
+  /// Recipient phone input label
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient Phone Number'**
+  String get send_recipientPhone;
+
+  /// Select from contacts button
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get send_fromContacts;
+
+  /// Select from beneficiaries button
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiaries'**
+  String get send_fromBeneficiaries;
+
+  /// Recent recipients section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Recipients'**
+  String get send_recentRecipients;
+
+  /// Contacts permission denied message
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts permission is required to select a contact'**
+  String get send_contactsPermissionDenied;
+
+  /// No contacts found message
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found'**
+  String get send_noContactsFound;
+
+  /// Beneficiary picker title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Beneficiary'**
+  String get send_selectBeneficiary;
+
+  /// Search beneficiaries placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search beneficiaries'**
+  String get send_searchBeneficiaries;
+
+  /// No beneficiaries found message
+  ///
+  /// In en, this message translates to:
+  /// **'No beneficiaries found'**
+  String get send_noBeneficiariesFound;
+
+  /// Enter amount screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Amount'**
+  String get send_enterAmount;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get send_amount;
+
+  /// Max button label
+  ///
+  /// In en, this message translates to:
+  /// **'MAX'**
+  String get send_max;
+
+  /// Note/memo label
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get send_note;
+
+  /// Note placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note (optional)'**
+  String get send_noteOptional;
+
+  /// Fee label
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get send_fee;
+
+  /// Total amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get send_total;
+
+  /// Confirm transfer screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Transfer'**
+  String get send_confirmTransfer;
+
+  /// PIN verification info message
+  ///
+  /// In en, this message translates to:
+  /// **'You will be asked to enter your PIN to confirm this transfer'**
+  String get send_pinVerificationRequired;
+
+  /// Confirm and send button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm & Send'**
+  String get send_confirmAndSend;
+
+  /// PIN verification screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Verify PIN'**
+  String get send_verifyPin;
+
+  /// Enter PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your PIN'**
+  String get send_enterPinToConfirm;
+
+  /// PIN verification description
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your 6-digit PIN to confirm this transfer'**
+  String get send_pinVerificationDescription;
+
+  /// Use biometric button
+  ///
+  /// In en, this message translates to:
+  /// **'Use Biometric'**
+  String get send_useBiometric;
+
+  /// Biometric authentication reason
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to complete the transfer'**
+  String get send_biometricReason;
+
+  /// Transfer failed title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Failed'**
+  String get send_transferFailed;
+
+  /// Transfer success message
+  ///
+  /// In en, this message translates to:
+  /// **'Your money has been sent successfully'**
+  String get send_transferSuccessMessage;
+
+  /// Sent to label
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to'**
+  String get send_sentTo;
+
+  /// Transaction reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get send_reference;
+
+  /// Transaction date label
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get send_date;
+
+  /// Save as beneficiary button
+  ///
+  /// In en, this message translates to:
+  /// **'Save as Beneficiary'**
+  String get send_saveAsBeneficiary;
+
+  /// Share receipt button
+  ///
+  /// In en, this message translates to:
+  /// **'Share Receipt'**
+  String get send_shareReceipt;
+
+  /// Transfer receipt title for sharing
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Receipt'**
+  String get send_transferReceipt;
+
+  /// Beneficiary saved success message
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiary saved successfully'**
+  String get send_beneficiarySaved;
+
+  /// Phone number required error
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number is required'**
+  String get error_phoneRequired;
+
+  /// Invalid phone number error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid phone number'**
+  String get error_phoneInvalid;
+
+  /// Amount required error
+  ///
+  /// In en, this message translates to:
+  /// **'Amount is required'**
+  String get error_amountRequired;
+
+  /// Invalid amount error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get error_amountInvalid;
+
+  /// Insufficient balance error
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get error_insufficientBalance;
+
+  /// Incorrect PIN error
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect PIN. Please try again.'**
+  String get error_pinIncorrect;
+
+  /// Biometric authentication failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication failed'**
+  String get error_biometricFailed;
+
+  /// Transfer failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer failed. Please try again.'**
+  String get error_transferFailed;
+
+  /// Copied to clipboard message
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get common_copiedToClipboard;
+
+  /// Notification permission screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Stay Informed'**
+  String get notifications_permission_title;
+
+  /// Notification permission screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Get instant updates about your transactions, security alerts, and important account activity.'**
+  String get notifications_permission_description;
+
+  /// Transaction benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Updates'**
+  String get notifications_benefit_transactions;
+
+  /// Transaction benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Instant alerts when you send or receive money'**
+  String get notifications_benefit_transactions_desc;
+
+  /// Security benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Security Alerts'**
+  String get notifications_benefit_security;
+
+  /// Security benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Be notified of suspicious activity and new device logins'**
+  String get notifications_benefit_security_desc;
+
+  /// Updates benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Important Updates'**
+  String get notifications_benefit_updates;
+
+  /// Updates benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Stay updated on new features and special offers'**
+  String get notifications_benefit_updates_desc;
+
+  /// Enable notifications button
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get notifications_enable_notifications;
+
+  /// Maybe later button
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get notifications_maybe_later;
+
+  /// Notifications enabled success message
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications enabled successfully'**
+  String get notifications_enabled_success;
+
+  /// Permission denied dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Permission Required'**
+  String get notifications_permission_denied_title;
+
+  /// Permission denied dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'To receive notifications, you need to enable them in your device settings.'**
+  String get notifications_permission_denied_message;
+
+  /// Open settings button
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get action_open_settings;
+
+  /// Notification preferences screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Preferences'**
+  String get notifications_preferences_title;
+
+  /// Notification preferences screen description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which notifications you\'d like to receive'**
+  String get notifications_preferences_description;
+
+  /// Transaction alerts section title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Alerts'**
+  String get notifications_pref_transaction_title;
+
+  /// Transaction alerts label
+  ///
+  /// In en, this message translates to:
+  /// **'All transaction alerts'**
+  String get notifications_pref_transaction_alerts;
+
+  /// Transaction alerts description
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified for all incoming and outgoing transactions'**
+  String get notifications_pref_transaction_alerts_desc;
+
+  /// Security section title
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get notifications_pref_security_title;
+
+  /// Security alerts label
+  ///
+  /// In en, this message translates to:
+  /// **'Security alerts'**
+  String get notifications_pref_security_alerts;
+
+  /// Security alerts description
+  ///
+  /// In en, this message translates to:
+  /// **'Critical security alerts (cannot be disabled)'**
+  String get notifications_pref_security_alerts_desc;
+
+  /// Promotional section title
+  ///
+  /// In en, this message translates to:
+  /// **'Promotional'**
+  String get notifications_pref_promotional_title;
+
+  /// Promotions label
+  ///
+  /// In en, this message translates to:
+  /// **'Promotions and offers'**
+  String get notifications_pref_promotions;
+
+  /// Promotions description
+  ///
+  /// In en, this message translates to:
+  /// **'Special offers and promotional campaigns'**
+  String get notifications_pref_promotions_desc;
+
+  /// Price alerts section title
+  ///
+  /// In en, this message translates to:
+  /// **'Market Updates'**
+  String get notifications_pref_price_title;
+
+  /// Price alerts label
+  ///
+  /// In en, this message translates to:
+  /// **'Price alerts'**
+  String get notifications_pref_price_alerts;
+
+  /// Price alerts description
+  ///
+  /// In en, this message translates to:
+  /// **'USDC and crypto price movements'**
+  String get notifications_pref_price_alerts_desc;
+
+  /// Summary section title
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get notifications_pref_summary_title;
+
+  /// Weekly summary label
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly spending summary'**
+  String get notifications_pref_weekly_summary;
+
+  /// Weekly summary description
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a summary of your weekly activity'**
+  String get notifications_pref_weekly_summary_desc;
+
+  /// Thresholds section title
+  ///
+  /// In en, this message translates to:
+  /// **'Alert Thresholds'**
+  String get notifications_pref_thresholds_title;
+
+  /// Thresholds section description
+  ///
+  /// In en, this message translates to:
+  /// **'Set custom amounts to trigger alerts'**
+  String get notifications_pref_thresholds_description;
+
+  /// Large transaction threshold label
+  ///
+  /// In en, this message translates to:
+  /// **'Large transaction alert'**
+  String get notifications_pref_large_transaction_threshold;
+
+  /// Low balance threshold label
+  ///
+  /// In en, this message translates to:
+  /// **'Low balance alert'**
+  String get notifications_pref_low_balance_threshold;
+
+  /// Edit profile screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get settings_editProfile;
+
+  /// Account section header
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get settings_account;
+
+  /// About section header
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settings_about;
+
+  /// Terms of service label
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get settings_termsOfService;
+
+  /// Privacy policy label
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get settings_privacyPolicy;
+
+  /// App version label
+  ///
+  /// In en, this message translates to:
+  /// **'App Version'**
+  String get settings_appVersion;
+
+  /// First name field label
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get profile_firstName;
+
+  /// Last name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get profile_lastName;
+
+  /// Email field label
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get profile_email;
+
+  /// Phone number field label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get profile_phoneNumber;
+
+  /// Phone number read-only hint
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number cannot be changed'**
+  String get profile_phoneCannotChange;
+
+  /// Profile update success message
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profile_updateSuccess;
+
+  /// Profile update error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile'**
+  String get profile_updateError;
+
+  /// FAQ section title
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently Asked Questions'**
+  String get help_faq;
+
+  /// Contact section title
+  ///
+  /// In en, this message translates to:
+  /// **'Need More Help?'**
+  String get help_needMoreHelp;
+
+  /// Report problem button
+  ///
+  /// In en, this message translates to:
+  /// **'Report Problem'**
+  String get help_reportProblem;
+
+  /// Live chat button
+  ///
+  /// In en, this message translates to:
+  /// **'Live Chat'**
+  String get help_liveChat;
+
+  /// Email support label
+  ///
+  /// In en, this message translates to:
+  /// **'Email Support'**
+  String get help_emailSupport;
+
+  /// WhatsApp support label
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp Support'**
+  String get help_whatsappSupport;
+
+  /// Copied to clipboard message
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get help_copiedToClipboard;
+
+  /// Skip button on welcome slides
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get onboarding_skip;
+
+  /// Get started button
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get onboarding_getStarted;
+
+  /// First onboarding slide title
+  ///
+  /// In en, this message translates to:
+  /// **'Send Money Instantly'**
+  String get onboarding_slide1_title;
+
+  /// First onboarding slide description
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer USDC to anyone, anywhere in West Africa. Fast, secure, and with minimal fees.'**
+  String get onboarding_slide1_description;
+
+  /// Second onboarding slide title
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Bills Easily'**
+  String get onboarding_slide2_title;
+
+  /// Second onboarding slide description
+  ///
+  /// In en, this message translates to:
+  /// **'Pay your utility bills, buy airtime, and manage all your payments in one place.'**
+  String get onboarding_slide2_description;
+
+  /// Third onboarding slide title
+  ///
+  /// In en, this message translates to:
+  /// **'Save for Goals'**
+  String get onboarding_slide3_title;
+
+  /// Third onboarding slide description
+  ///
+  /// In en, this message translates to:
+  /// **'Set savings goals and watch your money grow with USDC\'s stable value.'**
+  String get onboarding_slide3_description;
+
+  /// Phone input screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your phone number'**
+  String get onboarding_phoneInput_title;
+
+  /// Phone input screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send you a code to verify your number'**
+  String get onboarding_phoneInput_subtitle;
+
+  /// Phone number input label
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get onboarding_phoneInput_label;
+
+  /// Terms acceptance checkbox text
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the Terms of Service and Privacy Policy'**
+  String get onboarding_phoneInput_terms;
+
+  /// Login link text
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Login'**
+  String get onboarding_phoneInput_loginLink;
+
+  /// OTP verification screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your number'**
+  String get onboarding_otp_title;
+
+  /// OTP verification screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6-digit code sent to {dialCode} {phoneNumber}'**
+  String onboarding_otp_subtitle(String dialCode, String phoneNumber);
+
+  /// Resend OTP button
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get onboarding_otp_resend;
+
+  /// Resend countdown text
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String onboarding_otp_resendIn(int seconds);
+
+  /// Verifying OTP loading text
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying...'**
+  String get onboarding_otp_verifying;
+
+  /// PIN setup screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Create your PIN'**
+  String get onboarding_pin_title;
+
+  /// PIN confirm screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your PIN'**
+  String get onboarding_pin_confirmTitle;
+
+  /// Enter PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your new 6-digit PIN'**
+  String get onboarding_pin_enterPin;
+
+  /// Confirm PIN instruction
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your PIN to confirm'**
+  String get onboarding_pin_confirmPin;
+
+  /// PIN mismatch error message
+  ///
+  /// In en, this message translates to:
+  /// **'PINs don\'t match. Please try again.'**
+  String get pin_error_mismatch;
+
+  /// Profile setup screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself'**
+  String get onboarding_profile_title;
+
+  /// Profile setup screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'This helps us personalize your experience'**
+  String get onboarding_profile_subtitle;
+
+  /// First name field label
+  ///
+  /// In en, this message translates to:
+  /// **'First Name'**
+  String get onboarding_profile_firstName;
+
+  /// First name field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Amadou'**
+  String get onboarding_profile_firstNameHint;
+
+  /// First name required error
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required'**
+  String get onboarding_profile_firstNameRequired;
+
+  /// Last name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Last Name'**
+  String get onboarding_profile_lastName;
+
+  /// Last name field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Diallo'**
+  String get onboarding_profile_lastNameHint;
+
+  /// Last name required error
+  ///
+  /// In en, this message translates to:
+  /// **'Last name is required'**
+  String get onboarding_profile_lastNameRequired;
+
+  /// Email field label
+  ///
+  /// In en, this message translates to:
+  /// **'Email (Optional)'**
+  String get onboarding_profile_email;
+
+  /// Email field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., amadou@example.com'**
+  String get onboarding_profile_emailHint;
+
+  /// Invalid email error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get onboarding_profile_emailInvalid;
+
+  /// KYC prompt screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get onboarding_kyc_title;
+
+  /// KYC prompt screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock higher limits and all features'**
+  String get onboarding_kyc_subtitle;
+
+  /// KYC benefit 1
+  ///
+  /// In en, this message translates to:
+  /// **'Higher transaction limits'**
+  String get onboarding_kyc_benefit1;
+
+  /// KYC benefit 2
+  ///
+  /// In en, this message translates to:
+  /// **'Send to external wallets'**
+  String get onboarding_kyc_benefit2;
+
+  /// KYC benefit 3
+  ///
+  /// In en, this message translates to:
+  /// **'All features unlocked'**
+  String get onboarding_kyc_benefit3;
+
+  /// Verify KYC button
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Now'**
+  String get onboarding_kyc_verify;
+
+  /// Skip KYC button
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get onboarding_kyc_later;
+
+  /// Success screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to JoonaPay!'**
+  String get onboarding_success_title;
+
+  /// Success screen subtitle with user name
+  ///
+  /// In en, this message translates to:
+  /// **'Hi {name}, you\'re all set!'**
+  String onboarding_success_subtitle(String name);
+
+  /// Wallet created message
+  ///
+  /// In en, this message translates to:
+  /// **'Your Wallet is Ready'**
+  String get onboarding_success_walletCreated;
+
+  /// Wallet ready message
+  ///
+  /// In en, this message translates to:
+  /// **'Start sending, receiving, and managing your USDC today'**
+  String get onboarding_success_walletMessage;
+
+  /// Continue to app button
+  ///
+  /// In en, this message translates to:
+  /// **'Start Using JoonaPay'**
+  String get onboarding_success_continue;
+
+  /// Delete action button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get action_delete;
+
+  /// Savings pots screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Savings Pots'**
+  String get savingsPots_title;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'Start saving for your goals'**
+  String get savingsPots_emptyTitle;
+
+  /// Empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Create pots to save money for specific goals like vacations, gadgets, or emergencies.'**
+  String get savingsPots_emptyMessage;
+
+  /// Create first pot button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your First Pot'**
+  String get savingsPots_createFirst;
+
+  /// Total saved across all pots label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Saved'**
+  String get savingsPots_totalSaved;
+
+  /// Create pot screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Create Savings Pot'**
+  String get savingsPots_createTitle;
+
+  /// Edit pot screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Pot'**
+  String get savingsPots_editTitle;
+
+  /// Pot name input label
+  ///
+  /// In en, this message translates to:
+  /// **'Pot Name'**
+  String get savingsPots_nameLabel;
+
+  /// Pot name input hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Vacation, New Phone'**
+  String get savingsPots_nameHint;
+
+  /// Pot name validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a pot name'**
+  String get savingsPots_nameRequired;
+
+  /// Target amount input label
+  ///
+  /// In en, this message translates to:
+  /// **'Target Amount (Optional)'**
+  String get savingsPots_targetLabel;
+
+  /// Target amount input hint
+  ///
+  /// In en, this message translates to:
+  /// **'How much do you want to save?'**
+  String get savingsPots_targetHint;
+
+  /// Target amount optional note
+  ///
+  /// In en, this message translates to:
+  /// **'Leave blank if you don\'t have a specific goal'**
+  String get savingsPots_targetOptional;
+
+  /// Emoji validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Please select an emoji'**
+  String get savingsPots_emojiRequired;
+
+  /// Color validation error
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a color'**
+  String get savingsPots_colorRequired;
+
+  /// Create pot button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Pot'**
+  String get savingsPots_createButton;
+
+  /// Update pot button
+  ///
+  /// In en, this message translates to:
+  /// **'Update Pot'**
+  String get savingsPots_updateButton;
+
+  /// Create success message
+  ///
+  /// In en, this message translates to:
+  /// **'Pot created successfully!'**
+  String get savingsPots_createSuccess;
+
+  /// Update success message
+  ///
+  /// In en, this message translates to:
+  /// **'Pot updated successfully!'**
+  String get savingsPots_updateSuccess;
+
+  /// Add money button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Money'**
+  String get savingsPots_addMoney;
+
+  /// Withdraw button
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get savingsPots_withdraw;
+
+  /// Available balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Available Balance'**
+  String get savingsPots_availableBalance;
+
+  /// Pot balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Pot Balance'**
+  String get savingsPots_potBalance;
+
+  /// Amount input label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get savingsPots_amount;
+
+  /// Quick amount 10% button
+  ///
+  /// In en, this message translates to:
+  /// **'10%'**
+  String get savingsPots_quick10;
+
+  /// Quick amount 25% button
+  ///
+  /// In en, this message translates to:
+  /// **'25%'**
+  String get savingsPots_quick25;
+
+  /// Quick amount 50% button
+  ///
+  /// In en, this message translates to:
+  /// **'50%'**
+  String get savingsPots_quick50;
+
+  /// Add to pot button
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Pot'**
+  String get savingsPots_addButton;
+
+  /// Withdraw button
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw'**
+  String get savingsPots_withdrawButton;
+
+  /// Withdraw all button
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw All'**
+  String get savingsPots_withdrawAll;
+
+  /// Invalid amount error
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get savingsPots_invalidAmount;
+
+  /// Insufficient balance error
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance in your wallet'**
+  String get savingsPots_insufficientBalance;
+
+  /// Insufficient pot balance error
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance in this pot'**
+  String get savingsPots_insufficientPotBalance;
+
+  /// Add money success message
+  ///
+  /// In en, this message translates to:
+  /// **'Money added successfully!'**
+  String get savingsPots_addSuccess;
+
+  /// Withdraw success message
+  ///
+  /// In en, this message translates to:
+  /// **'Money withdrawn successfully!'**
+  String get savingsPots_withdrawSuccess;
+
+  /// Transaction history section title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction History'**
+  String get savingsPots_transactionHistory;
+
+  /// No transactions message
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get savingsPots_noTransactions;
+
+  /// Deposit transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit'**
+  String get savingsPots_deposit;
+
+  /// Withdrawal transaction type
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal'**
+  String get savingsPots_withdrawal;
+
+  /// Goal reached badge
+  ///
+  /// In en, this message translates to:
+  /// **'Goal Reached!'**
+  String get savingsPots_goalReached;
+
+  /// Delete confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Pot?'**
+  String get savingsPots_deleteTitle;
+
+  /// Delete confirmation dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'The money in this pot will be returned to your main balance. This action cannot be undone.'**
+  String get savingsPots_deleteMessage;
+
+  /// Delete success message
+  ///
+  /// In en, this message translates to:
+  /// **'Pot deleted successfully'**
+  String get savingsPots_deleteSuccess;
+
+  /// External transfer screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Send to External Wallet'**
+  String get sendExternal_title;
+
+  /// External transfer info message
+  ///
+  /// In en, this message translates to:
+  /// **'Send USDC to any wallet address on Polygon or Ethereum networks'**
+  String get sendExternal_info;
+
+  /// Wallet address field label
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Address'**
+  String get sendExternal_walletAddress;
+
+  /// Wallet address input hint
+  ///
+  /// In en, this message translates to:
+  /// **'0x1234...abcd'**
+  String get sendExternal_addressHint;
+
+  /// Address required error
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet address is required'**
+  String get sendExternal_addressRequired;
+
+  /// Paste button label
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get sendExternal_paste;
+
+  /// Scan QR button label
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR'**
+  String get sendExternal_scanQr;
+
+  /// Supported networks section title
+  ///
+  /// In en, this message translates to:
+  /// **'Supported Networks'**
+  String get sendExternal_supportedNetworks;
+
+  /// Polygon network info
+  ///
+  /// In en, this message translates to:
+  /// **'Fast (1-2 min), Low fee (~\$0.01)'**
+  String get sendExternal_polygonInfo;
+
+  /// Ethereum network info
+  ///
+  /// In en, this message translates to:
+  /// **'Slower (5-10 min), Higher fee (~\$2-5)'**
+  String get sendExternal_ethereumInfo;
+
+  /// Enter amount screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Amount'**
+  String get sendExternal_enterAmount;
+
+  /// Recipient address label
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient Address'**
+  String get sendExternal_recipientAddress;
+
+  /// Select network label
+  ///
+  /// In en, this message translates to:
+  /// **'Select Network'**
+  String get sendExternal_selectNetwork;
+
+  /// Recommended badge label
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get sendExternal_recommended;
+
+  /// Fee label
+  ///
+  /// In en, this message translates to:
+  /// **'Fee'**
+  String get sendExternal_fee;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get sendExternal_amount;
+
+  /// Network fee label
+  ///
+  /// In en, this message translates to:
+  /// **'Network Fee'**
+  String get sendExternal_networkFee;
+
+  /// Total label
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get sendExternal_total;
+
+  /// Confirm transfer screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Transfer'**
+  String get sendExternal_confirmTransfer;
+
+  /// Warning title
+  ///
+  /// In en, this message translates to:
+  /// **'Important'**
+  String get sendExternal_warningTitle;
+
+  /// Warning message
+  ///
+  /// In en, this message translates to:
+  /// **'External transfers cannot be reversed. Please verify the address carefully.'**
+  String get sendExternal_warningMessage;
+
+  /// Transfer summary section title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Summary'**
+  String get sendExternal_transferSummary;
+
+  /// Network label
+  ///
+  /// In en, this message translates to:
+  /// **'Network'**
+  String get sendExternal_network;
+
+  /// Total deducted label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Deducted'**
+  String get sendExternal_totalDeducted;
+
+  /// Estimated time label
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Time'**
+  String get sendExternal_estimatedTime;
+
+  /// Confirm and send button
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and Send'**
+  String get sendExternal_confirmAndSend;
+
+  /// Address copied message
+  ///
+  /// In en, this message translates to:
+  /// **'Address copied to clipboard'**
+  String get sendExternal_addressCopied;
+
+  /// Transfer success title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Successful'**
+  String get sendExternal_transferSuccess;
+
+  /// Processing message
+  ///
+  /// In en, this message translates to:
+  /// **'Your transaction is being processed on the blockchain'**
+  String get sendExternal_processingMessage;
+
+  /// Amount sent label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount Sent'**
+  String get sendExternal_amountSent;
+
+  /// Transaction details section title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Details'**
+  String get sendExternal_transactionDetails;
+
+  /// Transaction hash label
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Hash'**
+  String get sendExternal_transactionHash;
+
+  /// Status label
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get sendExternal_status;
+
+  /// View on explorer button
+  ///
+  /// In en, this message translates to:
+  /// **'View on Block Explorer'**
+  String get sendExternal_viewOnExplorer;
+
+  /// Share details button
+  ///
+  /// In en, this message translates to:
+  /// **'Share Details'**
+  String get sendExternal_shareDetails;
+
+  /// Hash copied message
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction hash copied to clipboard'**
+  String get sendExternal_hashCopied;
+
+  /// Pending status
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get sendExternal_statusPending;
+
+  /// Completed status
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get sendExternal_statusCompleted;
+
+  /// Processing status
+  ///
+  /// In en, this message translates to:
+  /// **'Processing'**
+  String get sendExternal_statusProcessing;
+
+  /// Bill payments screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Pay Bills'**
+  String get billPayments_title;
+
+  /// Bill categories section
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get billPayments_categories;
+
+  /// Bill providers section
+  ///
+  /// In en, this message translates to:
+  /// **'Providers'**
+  String get billPayments_providers;
+
+  /// All providers label
+  ///
+  /// In en, this message translates to:
+  /// **'All Providers'**
+  String get billPayments_allProviders;
+
+  /// Search providers placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search providers...'**
+  String get billPayments_searchProviders;
+
+  /// No providers found message
+  ///
+  /// In en, this message translates to:
+  /// **'No Providers Found'**
+  String get billPayments_noProvidersFound;
+
+  /// Adjust search suggestion
+  ///
+  /// In en, this message translates to:
+  /// **'Try adjusting your search'**
+  String get billPayments_tryAdjustingSearch;
+
+  /// Payment history title
+  ///
+  /// In en, this message translates to:
+  /// **'Payment History'**
+  String get billPayments_history;
+
+  /// Electricity category
+  ///
+  /// In en, this message translates to:
+  /// **'Electricity'**
+  String get billPayments_category_electricity;
+
+  /// Water category
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get billPayments_category_water;
+
+  /// Airtime category
+  ///
+  /// In en, this message translates to:
+  /// **'Airtime'**
+  String get billPayments_category_airtime;
+
+  /// Internet category
+  ///
+  /// In en, this message translates to:
+  /// **'Internet'**
+  String get billPayments_category_internet;
+
+  /// TV category
+  ///
+  /// In en, this message translates to:
+  /// **'TV'**
+  String get billPayments_category_tv;
+
+  /// Verify account button
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Account'**
+  String get billPayments_verifyAccount;
+
+  /// Account verified message
+  ///
+  /// In en, this message translates to:
+  /// **'Account verified'**
+  String get billPayments_accountVerified;
+
+  /// Verification failed message
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get billPayments_verificationFailed;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get billPayments_amount;
+
+  /// Processing fee label
+  ///
+  /// In en, this message translates to:
+  /// **'Processing Fee'**
+  String get billPayments_processingFee;
+
+  /// Total amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get billPayments_totalAmount;
+
+  /// Payment successful message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Successful!'**
+  String get billPayments_paymentSuccessful;
+
+  /// Payment processing message
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Processing'**
+  String get billPayments_paymentProcessing;
+
+  /// Bill paid successfully message
+  ///
+  /// In en, this message translates to:
+  /// **'Your bill has been paid successfully'**
+  String get billPayments_billPaidSuccessfully;
+
+  /// Payment being processed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your payment is being processed'**
+  String get billPayments_paymentBeingProcessed;
+
+  /// Receipt number label
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt Number'**
+  String get billPayments_receiptNumber;
+
+  /// Provider label
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get billPayments_provider;
+
+  /// Account label
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get billPayments_account;
+
+  /// Customer label
+  ///
+  /// In en, this message translates to:
+  /// **'Customer'**
+  String get billPayments_customer;
+
+  /// Total paid label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Paid'**
+  String get billPayments_totalPaid;
+
+  /// Date label
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get billPayments_date;
+
+  /// Reference label
+  ///
+  /// In en, this message translates to:
+  /// **'Reference'**
+  String get billPayments_reference;
+
+  /// Your token label
+  ///
+  /// In en, this message translates to:
+  /// **'Your Token'**
+  String get billPayments_yourToken;
+
+  /// Share receipt button
+  ///
+  /// In en, this message translates to:
+  /// **'Share Receipt'**
+  String get billPayments_shareReceipt;
+
+  /// Confirm payment title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Payment'**
+  String get billPayments_confirmPayment;
+
+  /// Failed to load providers error
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to Load Providers'**
+  String get billPayments_failedToLoadProviders;
+
+  /// Failed to load receipt error
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to Load Receipt'**
+  String get billPayments_failedToLoadReceipt;
+
+  /// Return home button
+  ///
+  /// In en, this message translates to:
+  /// **'Return Home'**
+  String get billPayments_returnHome;
+
+  /// Cards navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'Cards'**
+  String get navigation_cards;
+
+  /// History navigation label
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get navigation_history;
+
+  /// Cards coming soon badge
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get cards_comingSoon;
+
+  /// Cards feature title
+  ///
+  /// In en, this message translates to:
+  /// **'Virtual Cards'**
+  String get cards_title;
+
+  /// Cards feature description
+  ///
+  /// In en, this message translates to:
+  /// **'Spend your USDC with virtual debit cards. Perfect for online shopping and subscriptions.'**
+  String get cards_description;
+
+  /// Cards feature 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Shop Online'**
+  String get cards_feature1Title;
+
+  /// Cards feature 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'Use virtual cards for secure online purchases'**
+  String get cards_feature1Description;
+
+  /// Cards feature 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Stay Secure'**
+  String get cards_feature2Title;
+
+  /// Cards feature 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'Freeze, unfreeze, or delete cards instantly'**
+  String get cards_feature2Description;
+
+  /// Cards feature 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Control Spending'**
+  String get cards_feature3Title;
+
+  /// Cards feature 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Set custom spending limits for each card'**
+  String get cards_feature3Description;
+
+  /// Cards notify me button
+  ///
+  /// In en, this message translates to:
+  /// **'Notify Me When Available'**
+  String get cards_notifyMe;
+
+  /// Cards notify dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Get Notified'**
+  String get cards_notifyDialogTitle;
+
+  /// Cards notify dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send you a notification when virtual cards are available in your region.'**
+  String get cards_notifyDialogMessage;
+
+  /// Cards notify success message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll be notified when cards are available'**
+  String get cards_notifySuccess;
+
+  /// Insights screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Insights'**
+  String get insights_title;
+
+  /// Week period label
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get insights_period_week;
+
+  /// Month period label
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get insights_period_month;
+
+  /// Year period label
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get insights_period_year;
+
+  /// Summary section title
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get insights_summary;
+
+  /// Total spent label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Spent'**
+  String get insights_total_spent;
+
+  /// Total received label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Received'**
+  String get insights_total_received;
+
+  /// Net flow label
+  ///
+  /// In en, this message translates to:
+  /// **'Net Flow'**
+  String get insights_net_flow;
+
+  /// Categories section title
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get insights_categories;
+
+  /// Spending trend section title
+  ///
+  /// In en, this message translates to:
+  /// **'Spending Trend'**
+  String get insights_spending_trend;
+
+  /// Top recipients section title
+  ///
+  /// In en, this message translates to:
+  /// **'Top Recipients'**
+  String get insights_top_recipients;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No Insights Yet'**
+  String get insights_empty_title;
+
+  /// Empty state description
+  ///
+  /// In en, this message translates to:
+  /// **'Start using JoonaPay to see your spending insights and analytics'**
+  String get insights_empty_description;
+
+  /// Export report button
+  ///
+  /// In en, this message translates to:
+  /// **'Export Report'**
+  String get insights_export_report;
+
+  /// Contacts screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get contacts_title;
+
+  /// Search contacts placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Search contacts'**
+  String get contacts_search;
+
+  /// JoonaPay users section title
+  ///
+  /// In en, this message translates to:
+  /// **'On JoonaPay'**
+  String get contacts_on_joonapay;
+
+  /// Non-users section title
+  ///
+  /// In en, this message translates to:
+  /// **'Invite to JoonaPay'**
+  String get contacts_invite_to_joonapay;
+
+  /// Empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts found. Pull down to refresh.'**
+  String get contacts_empty;
+
+  /// No search results message
+  ///
+  /// In en, this message translates to:
+  /// **'No contacts match your search'**
+  String get contacts_no_results;
+
+  /// Sync success message
+  ///
+  /// In en, this message translates to:
+  /// **'Found {count} JoonaPay users!'**
+  String contacts_sync_success(int count);
+
+  /// Last synced just now
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get contacts_synced_just_now;
+
+  /// Last synced minutes ago
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m ago'**
+  String contacts_synced_minutes_ago(int minutes);
+
+  /// Last synced hours ago
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h ago'**
+  String contacts_synced_hours_ago(int hours);
+
+  /// Last synced days ago
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d ago'**
+  String contacts_synced_days_ago(int days);
+
+  /// Permission screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Find Your Friends'**
+  String get contacts_permission_title;
+
+  /// Permission screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'See which of your contacts are already on JoonaPay'**
+  String get contacts_permission_subtitle;
+
+  /// Permission benefit 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Find Friends Instantly'**
+  String get contacts_permission_benefit1_title;
+
+  /// Permission benefit 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'See which contacts are on JoonaPay and send money instantly'**
+  String get contacts_permission_benefit1_desc;
+
+  /// Permission benefit 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Private & Secure'**
+  String get contacts_permission_benefit2_title;
+
+  /// Permission benefit 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'We never store your contacts. Phone numbers are hashed before syncing.'**
+  String get contacts_permission_benefit2_desc;
+
+  /// Permission benefit 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Always Up to Date'**
+  String get contacts_permission_benefit3_title;
+
+  /// Permission benefit 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically sync when new contacts join JoonaPay'**
+  String get contacts_permission_benefit3_desc;
+
+  /// Allow permission button
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Access'**
+  String get contacts_permission_allow;
+
+  /// Skip permission button
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get contacts_permission_later;
+
+  /// Permission denied dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Permission Denied'**
+  String get contacts_permission_denied_title;
+
+  /// Permission denied dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'To find your friends on JoonaPay, please allow contact access in Settings.'**
+  String get contacts_permission_denied_message;
+
+  /// Invite sheet title
+  ///
+  /// In en, this message translates to:
+  /// **'Invite {name} to JoonaPay'**
+  String contacts_invite_title(String name);
+
+  /// Invite sheet subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Send money to friends instantly with JoonaPay'**
+  String get contacts_invite_subtitle;
+
+  /// Invite via SMS option
+  ///
+  /// In en, this message translates to:
+  /// **'Send SMS Invite'**
+  String get contacts_invite_via_sms;
+
+  /// Invite via SMS description
+  ///
+  /// In en, this message translates to:
+  /// **'Send an SMS with your invite link'**
+  String get contacts_invite_via_sms_desc;
+
+  /// Invite via WhatsApp option
+  ///
+  /// In en, this message translates to:
+  /// **'Invite via WhatsApp'**
+  String get contacts_invite_via_whatsapp;
+
+  /// Invite via WhatsApp description
+  ///
+  /// In en, this message translates to:
+  /// **'Share invite link on WhatsApp'**
+  String get contacts_invite_via_whatsapp_desc;
+
+  /// Copy invite link option
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Invite Link'**
+  String get contacts_invite_copy_link;
+
+  /// Copy invite link description
+  ///
+  /// In en, this message translates to:
+  /// **'Copy link to share anywhere'**
+  String get contacts_invite_copy_link_desc;
+
+  /// Default invite message
+  ///
+  /// In en, this message translates to:
+  /// **'Hey! I\'m using JoonaPay to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app'**
+  String get contacts_invite_message;
+
+  /// Recurring transfers screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring Transfers'**
+  String get recurringTransfers_title;
+
+  /// Create new recurring transfer button
+  ///
+  /// In en, this message translates to:
+  /// **'Create New'**
+  String get recurringTransfers_createNew;
+
+  /// Create recurring transfer screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Create Recurring Transfer'**
+  String get recurringTransfers_createTitle;
+
+  /// Create first recurring transfer button
+  ///
+  /// In en, this message translates to:
+  /// **'Create Your First'**
+  String get recurringTransfers_createFirst;
+
+  /// Empty state title
+  ///
+  /// In en, this message translates to:
+  /// **'No Recurring Transfers'**
+  String get recurringTransfers_emptyTitle;
+
+  /// Empty state message
+  ///
+  /// In en, this message translates to:
+  /// **'Set up automatic transfers to send money regularly to your loved ones'**
+  String get recurringTransfers_emptyMessage;
+
+  /// Active transfers section
+  ///
+  /// In en, this message translates to:
+  /// **'Active Transfers'**
+  String get recurringTransfers_active;
+
+  /// Paused transfers section
+  ///
+  /// In en, this message translates to:
+  /// **'Paused Transfers'**
+  String get recurringTransfers_paused;
+
+  /// Upcoming executions section
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming This Week'**
+  String get recurringTransfers_upcoming;
+
+  /// Amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get recurringTransfers_amount;
+
+  /// Frequency label
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get recurringTransfers_frequency;
+
+  /// Next execution label
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get recurringTransfers_nextExecution;
+
+  /// Recipient section header
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient Details'**
+  String get recurringTransfers_recipientSection;
+
+  /// Amount section header
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Amount'**
+  String get recurringTransfers_amountSection;
+
+  /// Schedule section header
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get recurringTransfers_scheduleSection;
+
+  /// Start date label
+  ///
+  /// In en, this message translates to:
+  /// **'Start Date'**
+  String get recurringTransfers_startDate;
+
+  /// End condition label
+  ///
+  /// In en, this message translates to:
+  /// **'End Condition'**
+  String get recurringTransfers_endCondition;
+
+  /// Never end option
+  ///
+  /// In en, this message translates to:
+  /// **'Never (until cancelled)'**
+  String get recurringTransfers_neverEnd;
+
+  /// After occurrences option
+  ///
+  /// In en, this message translates to:
+  /// **'After specific number of transfers'**
+  String get recurringTransfers_afterOccurrences;
+
+  /// Until date option
+  ///
+  /// In en, this message translates to:
+  /// **'Until specific date'**
+  String get recurringTransfers_untilDate;
+
+  /// Occurrences count label
+  ///
+  /// In en, this message translates to:
+  /// **'Number of times'**
+  String get recurringTransfers_occurrencesCount;
+
+  /// Select date placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select Date'**
+  String get recurringTransfers_selectDate;
+
+  /// Note field label
+  ///
+  /// In en, this message translates to:
+  /// **'Note (Optional)'**
+  String get recurringTransfers_note;
+
+  /// Note field hint
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Monthly rent, Weekly allowance'**
+  String get recurringTransfers_noteHint;
+
+  /// Create button label
+  ///
+  /// In en, this message translates to:
+  /// **'Create Recurring Transfer'**
+  String get recurringTransfers_create;
+
+  /// Create success message
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring transfer created successfully'**
+  String get recurringTransfers_createSuccess;
+
+  /// Create error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create recurring transfer'**
+  String get recurringTransfers_createError;
+
+  /// Detail screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Details'**
+  String get recurringTransfers_details;
+
+  /// Schedule label
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get recurringTransfers_schedule;
+
+  /// Upcoming executions section
+  ///
+  /// In en, this message translates to:
+  /// **'Next Scheduled'**
+  String get recurringTransfers_upcomingExecutions;
+
+  /// Statistics section
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get recurringTransfers_statistics;
+
+  /// Executed count label
+  ///
+  /// In en, this message translates to:
+  /// **'Executed'**
+  String get recurringTransfers_executed;
+
+  /// Remaining count label
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get recurringTransfers_remaining;
+
+  /// Execution history section
+  ///
+  /// In en, this message translates to:
+  /// **'Execution History'**
+  String get recurringTransfers_executionHistory;
+
+  /// Execution success label
+  ///
+  /// In en, this message translates to:
+  /// **'Completed successfully'**
+  String get recurringTransfers_executionSuccess;
+
+  /// Execution failed label
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get recurringTransfers_executionFailed;
+
+  /// Pause button label
+  ///
+  /// In en, this message translates to:
+  /// **'Pause Transfer'**
+  String get recurringTransfers_pause;
+
+  /// Resume button label
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Transfer'**
+  String get recurringTransfers_resume;
+
+  /// Cancel button label
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Transfer'**
+  String get recurringTransfers_cancel;
+
+  /// Pause success message
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer paused successfully'**
+  String get recurringTransfers_pauseSuccess;
+
+  /// Pause error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pause transfer'**
+  String get recurringTransfers_pauseError;
+
+  /// Resume success message
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer resumed successfully'**
+  String get recurringTransfers_resumeSuccess;
+
+  /// Resume error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resume transfer'**
+  String get recurringTransfers_resumeError;
+
+  /// Cancel confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Recurring Transfer?'**
+  String get recurringTransfers_cancelConfirmTitle;
+
+  /// Cancel confirmation dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently cancel this recurring transfer. This action cannot be undone.'**
+  String get recurringTransfers_cancelConfirmMessage;
+
+  /// Confirm cancel button
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, Cancel'**
+  String get recurringTransfers_confirmCancel;
+
+  /// Cancel success message
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer cancelled successfully'**
+  String get recurringTransfers_cancelSuccess;
+
+  /// Cancel error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to cancel transfer'**
+  String get recurringTransfers_cancelError;
+
+  /// Required field validation
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get validation_required;
+
+  /// Invalid amount validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid amount'**
+  String get validation_invalidAmount;
+
+  /// Today label
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get common_today;
+
+  /// Tomorrow label
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get common_tomorrow;
 }
 
 class _AppLocalizationsDelegate

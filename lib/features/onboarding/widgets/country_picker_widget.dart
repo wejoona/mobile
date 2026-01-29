@@ -1,0 +1,97 @@
+import 'package:flutter/material.dart';
+import '../../../design/tokens/index.dart';
+import '../models/country_data.dart';
+
+/// Country picker bottom sheet widget
+class CountryPickerWidget extends StatelessWidget {
+  final CountryData selectedCountry;
+  final Function(CountryData) onCountrySelected;
+
+  const CountryPickerWidget({
+    super.key,
+    required this.selectedCountry,
+    required this.onCountrySelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.textTertiary,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          SizedBox(height: AppSpacing.md),
+          // Title
+          Text(
+            'Select Country',
+            style: AppTypography.titleLarge,
+          ),
+          SizedBox(height: AppSpacing.lg),
+          // Country list
+          ...SupportedCountries.all.map((country) => _buildCountryTile(country)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountryTile(CountryData country) {
+    final isSelected = country.code == selectedCountry.code;
+
+    return InkWell(
+      onTap: () => onCountrySelected(country),
+      child: Container(
+        padding: EdgeInsets.all(AppSpacing.md),
+        margin: EdgeInsets.only(bottom: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold500.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: isSelected ? AppColors.gold500 : AppColors.borderDefault,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              country.flag,
+              style: const TextStyle(fontSize: 32),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    country.name,
+                    style: AppTypography.bodyLarge.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                  Text(
+                    country.dialCode,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle,
+                color: AppColors.gold500,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

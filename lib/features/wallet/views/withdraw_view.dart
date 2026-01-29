@@ -218,6 +218,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final walletState = ref.watch(walletStateMachineProvider);
     final withdrawState = ref.watch(withdrawProvider);
 
@@ -225,7 +226,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     _availableBalance = walletState.availableBalance;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -249,24 +250,24 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const AppText(
+                  AppText(
                     'Available Balance',
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   walletState.isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.gold500,
+                            color: colors.gold,
                           ),
                         )
                       : AppText(
                           '\$${walletState.availableBalance.toStringAsFixed(2)}',
                           variant: AppTextVariant.titleMedium,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                 ],
               ),
@@ -275,15 +276,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Amount Input
-            _buildAmountCard(),
+            _buildAmountCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Withdrawal Method
-            const AppText(
+            AppText(
               'Withdrawal Method',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
 
@@ -293,13 +294,14 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                     method: method,
                     isSelected: _selectedMethod == method,
                     onTap: () => setState(() => _selectedMethod = method),
+                    colors: colors,
                   ),
                 )),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Method-specific fields
-            if (_selectedMethod != null) _buildMethodFields(),
+            if (_selectedMethod != null) _buildMethodFields(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -317,15 +319,15 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             // Info
             AppCard(
               variant: AppCardVariant.subtle,
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: AppColors.gold500, size: 20),
-                  SizedBox(width: AppSpacing.sm),
+                  Icon(Icons.info_outline, color: colors.gold, size: 20),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
                       'Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ),
                 ],
@@ -337,25 +339,25 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     );
   }
 
-  Widget _buildAmountCard() {
+  Widget _buildAmountCard(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Amount to withdraw',
             variant: AppTextVariant.cardLabel,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.lg),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppText(
+              AppText(
                 '\$',
                 variant: AppTextVariant.displaySmall,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -375,13 +377,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       style: AppTypography.displaySmall.copyWith(
                         color: _amountError != null
                             ? AppColors.errorBase
-                            : AppColors.textPrimary,
+                            : colors.textPrimary,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '0.00',
                         hintStyle: TextStyle(
-                          color: AppColors.textTertiary,
+                          color: colors.textTertiary,
                         ),
                       ),
                       onChanged: (_) => _validateAmount(),
@@ -411,6 +413,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       (_availableBalance * 0.25).toStringAsFixed(2);
                   _validateAmount();
                 },
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
@@ -420,6 +423,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       (_availableBalance * 0.5).toStringAsFixed(2);
                   _validateAmount();
                 },
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
@@ -429,6 +433,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       (_availableBalance * 0.75).toStringAsFixed(2);
                   _validateAmount();
                 },
+                colors: colors,
               ),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountButton(
@@ -438,6 +443,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       _availableBalance.toStringAsFixed(2);
                   _validateAmount();
                 },
+                colors: colors,
               ),
             ],
           ),
@@ -446,27 +452,27 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     );
   }
 
-  Widget _buildMethodFields() {
+  Widget _buildMethodFields(ThemeColors colors) {
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
-        return _buildMobileMoneyFields();
+        return _buildMobileMoneyFields(colors);
       case WithdrawMethod.bankTransfer:
-        return _buildBankFields();
+        return _buildBankFields(colors);
       case WithdrawMethod.crypto:
-        return _buildCryptoFields();
+        return _buildCryptoFields(colors);
     }
   }
 
-  Widget _buildMobileMoneyFields() {
+  Widget _buildMobileMoneyFields(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Mobile Money Number',
             variant: AppTextVariant.cardLabel,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -481,7 +487,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Row(
@@ -489,12 +495,12 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                       AppText(
                         _countryCode,
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
+                      Icon(
                         Icons.keyboard_arrow_down,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         size: 20,
                       ),
                     ],
@@ -507,12 +513,12 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '07 00 00 00 00',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
+                    hintStyle: TextStyle(color: colors.textTertiary),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),
@@ -524,32 +530,32 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     );
   }
 
-  Widget _buildBankFields() {
+  Widget _buildBankFields(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Bank Details',
             variant: AppTextVariant.cardLabel,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _bankNameController,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Bank Name',
-              labelStyle: TextStyle(color: AppColors.textTertiary),
-              border: OutlineInputBorder(),
+              labelStyle: TextStyle(color: colors.textTertiary),
+              border: const OutlineInputBorder(),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderSubtle),
+                borderSide: BorderSide(color: colors.borderSubtle),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold500),
+                borderSide: BorderSide(color: colors.gold),
               ),
             ),
             onChanged: (_) => setState(() {}),
@@ -559,17 +565,17 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             controller: _accountNumberController,
             keyboardType: TextInputType.number,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Account Number',
-              labelStyle: TextStyle(color: AppColors.textTertiary),
-              border: OutlineInputBorder(),
+              labelStyle: TextStyle(color: colors.textTertiary),
+              border: const OutlineInputBorder(),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderSubtle),
+                borderSide: BorderSide(color: colors.borderSubtle),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold500),
+                borderSide: BorderSide(color: colors.gold),
               ),
             ),
             onChanged: (_) => setState(() {}),
@@ -579,41 +585,41 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     );
   }
 
-  Widget _buildCryptoFields() {
+  Widget _buildCryptoFields(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'USDC Wallet Address',
             variant: AppTextVariant.cardLabel,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           TextField(
             controller: _walletAddressController,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: '0x...',
-              hintStyle: TextStyle(color: AppColors.textTertiary),
-              border: OutlineInputBorder(),
+              hintStyle: TextStyle(color: colors.textTertiary),
+              border: const OutlineInputBorder(),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderSubtle),
+                borderSide: BorderSide(color: colors.borderSubtle),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold500),
+                borderSide: BorderSide(color: colors.gold),
               ),
             ),
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: AppSpacing.sm),
-          const AppText(
+          AppText(
             'Make sure to use a Solana or Base USDC address',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ),
@@ -626,11 +632,13 @@ class _MethodCard extends StatelessWidget {
     required this.method,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final WithdrawMethod method;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -639,10 +647,10 @@ class _MethodCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : AppColors.slate,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? colors.gold : Colors.transparent,
             width: 2,
           ),
         ),
@@ -653,13 +661,13 @@ class _MethodCard extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold500.withValues(alpha: 0.2)
-                    : AppColors.elevated,
+                    ? colors.gold.withValues(alpha: 0.2)
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 method.icon,
-                color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                color: isSelected ? colors.gold : colors.textSecondary,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -670,21 +678,21 @@ class _MethodCard extends StatelessWidget {
                   AppText(
                     method.label,
                     variant: AppTextVariant.titleSmall,
-                    color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                    color: isSelected ? colors.gold : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     method.description,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
           ],
         ),
@@ -697,10 +705,12 @@ class _QuickAmountButton extends StatelessWidget {
   const _QuickAmountButton({
     required this.label,
     required this.onTap,
+    required this.colors,
   });
 
   final String label;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -710,14 +720,14 @@ class _QuickAmountButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.elevated,
+            color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Center(
             child: AppText(
               label,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ),

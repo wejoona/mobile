@@ -50,10 +50,11 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -61,13 +62,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
         actions: [
           if (!_isEditing)
             IconButton(
-              icon: const Icon(Icons.edit, color: AppColors.gold500),
+              icon: Icon(Icons.edit, color: colors.gold),
               onPressed: () => setState(() => _isEditing = true),
             )
           else
@@ -79,10 +80,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 _lastNameController.text = userState.lastName ?? '';
                 _emailController.text = userState.email ?? '';
               },
-              child: const AppText(
+              child: AppText(
                 'Cancel',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
         ],
@@ -123,14 +124,14 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: AppColors.slate,
+                          color: colors.container,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.gold500, width: 2),
+                          border: Border.all(color: colors.gold, width: 2),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt,
                           size: 16,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       ),
                     ),
@@ -142,6 +143,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
             // Phone (non-editable)
             _buildInfoCard(
+              colors: colors,
               label: 'Phone Number',
               value: userState.phone ?? 'Not set',
               icon: Icons.phone,
@@ -153,11 +155,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             // First Name
             _isEditing
                 ? _buildEditableField(
+                    colors: colors,
                     label: 'First Name',
                     controller: _firstNameController,
                     icon: Icons.person,
                   )
                 : _buildInfoCard(
+                    colors: colors,
                     label: 'First Name',
                     value: userState.firstName ?? 'Not set',
                     icon: Icons.person,
@@ -168,11 +172,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             // Last Name
             _isEditing
                 ? _buildEditableField(
+                    colors: colors,
                     label: 'Last Name',
                     controller: _lastNameController,
                     icon: Icons.person_outline,
                   )
                 : _buildInfoCard(
+                    colors: colors,
                     label: 'Last Name',
                     value: userState.lastName ?? 'Not set',
                     icon: Icons.person_outline,
@@ -183,12 +189,14 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             // Email
             _isEditing
                 ? _buildEditableField(
+                    colors: colors,
                     label: 'Email',
                     controller: _emailController,
                     icon: Icons.email,
                     keyboardType: TextInputType.emailAddress,
                   )
                 : _buildInfoCard(
+                    colors: colors,
                     label: 'Email',
                     value: userState.email ?? 'Not set',
                     icon: Icons.email,
@@ -198,6 +206,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
             // KYC Status
             _buildInfoCard(
+              colors: colors,
               label: 'KYC Status',
               value: _getKycStatusText(userState.kycStatus),
               icon: Icons.verified_user,
@@ -205,10 +214,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               trailing: userState.kycStatus != KycStatus.verified
                   ? TextButton(
                       onPressed: () => context.push('/settings/kyc'),
-                      child: const AppText(
+                      child: AppText(
                         'Verify',
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
                     )
                   : null,
@@ -218,6 +227,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
             // Country
             _buildInfoCard(
+              colors: colors,
               label: 'Country',
               value: _getCountryName(userState.countryCode),
               icon: Icons.public,
@@ -244,6 +254,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   }
 
   Widget _buildInfoCard({
+    required ThemeColors colors,
     required String label,
     required String value,
     required IconData icon,
@@ -260,10 +271,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 22),
+            child: Icon(icon, color: colors.textSecondary, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -273,7 +284,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Row(
@@ -282,7 +293,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       child: AppText(
                         value,
                         variant: AppTextVariant.bodyLarge,
-                        color: valueColor ?? AppColors.textPrimary,
+                        color: valueColor ?? colors.textPrimary,
                       ),
                     ),
                     if (isVerified)
@@ -303,6 +314,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   }
 
   Widget _buildEditableField({
+    required ThemeColors colors,
     required String label,
     required TextEditingController controller,
     required IconData icon,
@@ -317,10 +329,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.gold500, size: 22),
+            child: Icon(icon, color: colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -330,20 +342,20 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 TextField(
                   controller: controller,
                   keyboardType: keyboardType,
                   style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
                     hintText: 'Enter value',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
+                    hintStyle: TextStyle(color: colors.textTertiary),
                   ),
                   onChanged: (_) => setState(() {}),
                 ),

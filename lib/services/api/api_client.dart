@@ -12,7 +12,8 @@ import '../../mocks/index.dart';
 /// SECURITY: Use HTTPS in production, HTTP only for local development
 class ApiConfig {
   // Use environment-based configuration
-  static const String _devUrl = 'http://localhost:3000/api/v1';
+  // NOTE: iOS simulator cannot connect to localhost, use machine IP instead
+  static const String _devUrl = 'http://192.168.1.115:3000/api/v1';
   static const String _prodUrl = 'https://api.joonapay.com/api/v1';
 
   // SECURITY: Always use HTTPS in production
@@ -28,6 +29,7 @@ class StorageKeys {
   static const String refreshToken = 'refresh_token';
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
+  static const String rememberedPhone = 'remembered_phone';
 }
 
 /// Secure Storage Provider
@@ -131,6 +133,15 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // Handle 401 - Token expired, try refresh
     if (err.response?.statusCode == 401 && !err.requestOptions.path.contains('/auth/refresh')) {
+      // Don't try to refresh if using mocks (mock tokens aren't valid JWTs)
+      if (MockConfig.useMocks) {
+        // Just clear tokens and continue - user will be redirected to login
+        final storage = _ref.read(secureStorageProvider);
+        await storage.delete(key: StorageKeys.accessToken);
+        await storage.delete(key: StorageKeys.refreshToken);
+        return handler.next(err);
+      }
+
       // Attempt to refresh token
       final refreshed = await _refreshToken(err.requestOptions);
 

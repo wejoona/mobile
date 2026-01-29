@@ -20,8 +20,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -29,7 +31,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -39,27 +41,29 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Security Score
-            _buildSecurityScoreCard(),
+            _buildSecurityScoreCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Authentication Section
-            const AppText(
+            AppText(
               'Authentication',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
+              colors: colors,
               icon: Icons.lock_outline,
               title: 'Change PIN',
               subtitle: 'Update your 4-digit PIN',
               onTap: () => context.push('/settings/pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildBiometricToggle(),
+            _buildBiometricToggle(colors),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
+              colors: colors,
               icon: Icons.security,
               title: 'Two-Factor Authentication',
               subtitle: _twoFactorEnabled ? 'Enabled via Authenticator app' : 'Add extra protection',
@@ -70,13 +74,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Transaction Security
-            const AppText(
+            AppText(
               'Transaction Security',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
+              colors: colors,
               icon: Icons.pin,
               title: 'Require PIN for Transactions',
               subtitle: 'Confirm all transactions with PIN',
@@ -87,13 +92,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Alerts Section
-            const AppText(
+            AppText(
               'Security Alerts',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
+              colors: colors,
               icon: Icons.login,
               title: 'Login Notifications',
               subtitle: 'Get notified of new logins',
@@ -102,6 +108,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
+              colors: colors,
               icon: Icons.devices,
               title: 'New Device Alerts',
               subtitle: 'Alert when a new device is used',
@@ -112,13 +119,22 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Session Management
-            const AppText(
+            AppText(
               'Sessions',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
+              colors: colors,
+              icon: Icons.devices,
+              title: 'Devices',
+              subtitle: 'Manage your devices',
+              onTap: () => context.push('/settings/devices'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            _buildSecurityOption(
+              colors: colors,
               icon: Icons.smartphone,
               title: 'Active Sessions',
               subtitle: '2 devices logged in',
@@ -126,6 +142,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
+              colors: colors,
               icon: Icons.logout,
               title: 'Log Out All Devices',
               subtitle: 'Sign out from all other devices',
@@ -136,13 +153,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Privacy
-            const AppText(
+            AppText(
               'Privacy',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
+              colors: colors,
               icon: Icons.history,
               title: 'Login History',
               subtitle: 'View recent login activity',
@@ -150,6 +168,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
+              colors: colors,
               icon: Icons.delete_forever,
               title: 'Delete Account',
               subtitle: 'Permanently delete your account',
@@ -162,7 +181,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  Widget _buildSecurityScoreCard() {
+  Widget _buildSecurityScoreCard(ThemeColors colors) {
     final score = _calculateSecurityScore();
     final scoreColor = score >= 80
         ? AppColors.successBase
@@ -186,7 +205,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                       child: CircularProgressIndicator(
                         value: score / 100,
                         strokeWidth: 8,
-                        backgroundColor: AppColors.borderSubtle,
+                        backgroundColor: colors.borderSubtle,
                         valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                       ),
                     ),
@@ -203,16 +222,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppText(
+                    AppText(
                       'Security Score',
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       _getScoreDescription(score),
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -221,17 +240,17 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ),
           if (score < 100) ...[
             const SizedBox(height: AppSpacing.lg),
-            const Divider(color: AppColors.borderSubtle),
+            Divider(color: colors.borderSubtle),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                const Icon(Icons.lightbulb_outline, color: AppColors.gold500, size: 20),
+                Icon(Icons.lightbulb_outline, color: colors.gold, size: 20),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(
                     _getScoreTip(score),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -243,6 +262,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   Widget _buildSecurityOption({
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -261,12 +281,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               decoration: BoxDecoration(
                 color: isDanger
                     ? AppColors.errorBase.withValues(alpha: 0.1)
-                    : AppColors.elevated,
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 icon,
-                color: isDanger ? AppColors.errorBase : AppColors.gold500,
+                color: isDanger ? AppColors.errorBase : colors.gold,
                 size: 22,
               ),
             ),
@@ -278,19 +298,19 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   AppText(
                     title,
                     variant: AppTextVariant.labelMedium,
-                    color: isDanger ? AppColors.errorBase : AppColors.textPrimary,
+                    color: isDanger ? AppColors.errorBase : colors.textPrimary,
                   ),
                   AppText(
                     subtitle,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: isDanger ? AppColors.errorBase : AppColors.textTertiary,
+              color: isDanger ? AppColors.errorBase : colors.textTertiary,
             ),
           ],
         ),
@@ -299,6 +319,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   Widget _buildToggleOption({
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -313,10 +334,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.gold500, size: 22),
+            child: Icon(icon, color: colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -326,12 +347,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 AppText(
                   title,
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -339,14 +360,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.gold500,
+            activeColor: colors.gold,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBiometricToggle() {
+  Widget _buildBiometricToggle(ThemeColors colors) {
     final biometricAvailable = ref.watch(biometricAvailableProvider);
     final biometricEnabled = ref.watch(biometricEnabledProvider);
 
@@ -354,6 +375,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       data: (available) {
         if (!available) {
           return _buildToggleOption(
+            colors: colors,
             icon: Icons.fingerprint,
             title: 'Biometric Login',
             subtitle: 'Not available on this device',
@@ -371,6 +393,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
         return biometricEnabled.when(
           data: (enabled) => _buildToggleOption(
+            colors: colors,
             icon: Icons.fingerprint,
             title: 'Biometric Login',
             subtitle: 'Use Face ID or fingerprint',
@@ -393,6 +416,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             },
           ),
           loading: () => _buildToggleOption(
+            colors: colors,
             icon: Icons.fingerprint,
             title: 'Biometric Login',
             subtitle: 'Loading...',
@@ -400,6 +424,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             onChanged: (_) {},
           ),
           error: (_, __) => _buildToggleOption(
+            colors: colors,
             icon: Icons.fingerprint,
             title: 'Biometric Login',
             subtitle: 'Error loading state',
@@ -409,6 +434,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         );
       },
       loading: () => _buildToggleOption(
+        colors: colors,
         icon: Icons.fingerprint,
         title: 'Biometric Login',
         subtitle: 'Checking availability...',
@@ -416,6 +442,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         onChanged: (_) {},
       ),
       error: (_, __) => _buildToggleOption(
+        colors: colors,
         icon: Icons.fingerprint,
         title: 'Biometric Login',
         subtitle: 'Error checking availability',
@@ -469,144 +496,159 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   void _showTwoFactorSetup() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+      builder: (context) {
+        final colors = context.colors;
+        return Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colors.gold.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.security, color: colors.gold, size: 40),
               ),
-              child: const Icon(Icons.security, color: AppColors.gold500, size: 40),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            const AppText(
-              'Set Up Two-Factor Authentication',
-              variant: AppTextVariant.titleMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            const AppText(
-              'Use an authenticator app like Google Authenticator or Authy for enhanced security.',
-              variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              label: 'Continue Setup',
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() => _twoFactorEnabled = true);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('2FA enabled successfully'),
-                    backgroundColor: AppColors.successBase,
-                  ),
-                );
-              },
-              variant: AppButtonVariant.primary,
-              isFullWidth: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppButton(
-              label: 'Cancel',
-              onPressed: () => Navigator.pop(context),
-              variant: AppButtonVariant.secondary,
-              isFullWidth: true,
-            ),
-          ],
-        ),
-      ),
+              const SizedBox(height: AppSpacing.lg),
+              const AppText(
+                'Set Up Two-Factor Authentication',
+                variant: AppTextVariant.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                'Use an authenticator app like Google Authenticator or Authy for enhanced security.',
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: 'Continue Setup',
+                onPressed: () {
+                  Navigator.pop(context);
+                  setState(() => _twoFactorEnabled = true);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('2FA enabled successfully'),
+                      backgroundColor: AppColors.successBase,
+                    ),
+                  );
+                },
+                variant: AppButtonVariant.primary,
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppButton(
+                label: 'Cancel',
+                onPressed: () => Navigator.pop(context),
+                variant: AppButtonVariant.secondary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   void _confirmDisableTwoFactor() {
+    final colors = context.colors;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const AppText(
-          'Disable 2FA?',
-          variant: AppTextVariant.titleMedium,
-        ),
-        content: const AppText(
-          'This will make your account less secure. Are you sure?',
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel', color: AppColors.textSecondary),
+      builder: (context) {
+        final colors = context.colors;
+        return AlertDialog(
+          backgroundColor: colors.container,
+          title: const AppText(
+            'Disable 2FA?',
+            variant: AppTextVariant.titleMedium,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() => _twoFactorEnabled = false);
-            },
-            child: const AppText('Disable', color: AppColors.errorBase),
+          content: AppText(
+            'This will make your account less secure. Are you sure?',
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: AppText('Cancel', color: colors.textSecondary),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() => _twoFactorEnabled = false);
+              },
+              child: const AppText('Disable', color: AppColors.errorBase),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showActiveSessions() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const AppText(
-              'Active Sessions',
-              variant: AppTextVariant.titleMedium,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _buildSessionItem(
-              device: 'iPhone 15 Pro',
-              location: 'San Francisco, CA',
-              lastActive: 'Now (This device)',
-              isCurrentDevice: true,
-            ),
-            const Divider(color: AppColors.borderSubtle),
-            _buildSessionItem(
-              device: 'MacBook Pro',
-              location: 'San Francisco, CA',
-              lastActive: '2 hours ago',
-              isCurrentDevice: false,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppButton(
-              label: 'Close',
-              onPressed: () => Navigator.pop(context),
-              variant: AppButtonVariant.secondary,
-              isFullWidth: true,
-            ),
-          ],
-        ),
-      ),
+      builder: (context) {
+        final colors = context.colors;
+        return Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const AppText(
+                'Active Sessions',
+                variant: AppTextVariant.titleMedium,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _buildSessionItem(
+                colors: colors,
+                device: 'iPhone 15 Pro',
+                location: 'San Francisco, CA',
+                lastActive: 'Now (This device)',
+                isCurrentDevice: true,
+              ),
+              Divider(color: colors.borderSubtle),
+              _buildSessionItem(
+                colors: colors,
+                device: 'MacBook Pro',
+                location: 'San Francisco, CA',
+                lastActive: '2 hours ago',
+                isCurrentDevice: false,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              AppButton(
+                label: 'Close',
+                onPressed: () => Navigator.pop(context),
+                variant: AppButtonVariant.secondary,
+                isFullWidth: true,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildSessionItem({
+    required ThemeColors colors,
     required String device,
     required String location,
     required String lastActive,
@@ -618,7 +660,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         children: [
           Icon(
             device.contains('iPhone') ? Icons.phone_iphone : Icons.laptop_mac,
-            color: AppColors.gold500,
+            color: colors.gold,
             size: 32,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -655,7 +697,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 AppText(
                   '$location - $lastActive',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -666,103 +708,116 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   void _confirmLogoutAll() {
+    final colors = context.colors;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const AppText(
-          'Log Out All Devices?',
-          variant: AppTextVariant.titleMedium,
-        ),
-        content: const AppText(
-          'You will be logged out from all other devices. You will need to log in again on those devices.',
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel', color: AppColors.textSecondary),
+      builder: (context) {
+        final colors = context.colors;
+        return AlertDialog(
+          backgroundColor: colors.container,
+          title: const AppText(
+            'Log Out All Devices?',
+            variant: AppTextVariant.titleMedium,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('All other devices have been logged out'),
-                  backgroundColor: AppColors.successBase,
-                ),
-              );
-            },
-            child: const AppText('Log Out All', color: AppColors.errorBase),
+          content: AppText(
+            'You will be logged out from all other devices. You will need to log in again on those devices.',
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: AppText('Cancel', color: colors.textSecondary),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All other devices have been logged out'),
+                    backgroundColor: AppColors.successBase,
+                  ),
+                );
+              },
+              child: const AppText('Log Out All', color: AppColors.errorBase),
+            ),
+          ],
+        );
+      },
     );
   }
 
   void _showLoginHistory() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const AppText(
-                'Login History',
-                variant: AppTextVariant.titleMedium,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  children: [
-                    _buildLoginHistoryItem(
-                      time: 'Today, 10:30 AM',
-                      device: 'iPhone 15 Pro',
-                      location: 'San Francisco, CA',
-                      success: true,
-                    ),
-                    _buildLoginHistoryItem(
-                      time: 'Yesterday, 3:45 PM',
-                      device: 'MacBook Pro',
-                      location: 'San Francisco, CA',
-                      success: true,
-                    ),
-                    _buildLoginHistoryItem(
-                      time: 'Yesterday, 9:12 AM',
-                      device: 'Unknown Device',
-                      location: 'New York, NY',
-                      success: false,
-                    ),
-                    _buildLoginHistoryItem(
-                      time: 'Jan 20, 2:30 PM',
-                      device: 'iPhone 15 Pro',
-                      location: 'Los Angeles, CA',
-                      success: true,
-                    ),
-                  ],
+      builder: (context) {
+        final colors = context.colors;
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) => Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const AppText(
+                  'Login History',
+                  variant: AppTextVariant.titleMedium,
                 ),
-              ),
-            ],
+                const SizedBox(height: AppSpacing.lg),
+                Expanded(
+                  child: ListView(
+                    controller: scrollController,
+                    children: [
+                      _buildLoginHistoryItem(
+                        colors: colors,
+                        time: 'Today, 10:30 AM',
+                        device: 'iPhone 15 Pro',
+                        location: 'San Francisco, CA',
+                        success: true,
+                      ),
+                      _buildLoginHistoryItem(
+                        colors: colors,
+                        time: 'Yesterday, 3:45 PM',
+                        device: 'MacBook Pro',
+                        location: 'San Francisco, CA',
+                        success: true,
+                      ),
+                      _buildLoginHistoryItem(
+                        colors: colors,
+                        time: 'Yesterday, 9:12 AM',
+                        device: 'Unknown Device',
+                        location: 'New York, NY',
+                        success: false,
+                      ),
+                      _buildLoginHistoryItem(
+                        colors: colors,
+                        time: 'Jan 20, 2:30 PM',
+                        device: 'iPhone 15 Pro',
+                        location: 'Los Angeles, CA',
+                        success: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildLoginHistoryItem({
+    required ThemeColors colors,
     required String time,
     required String device,
     required String location,
@@ -801,7 +856,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   AppText(
                     '$location - $time',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -818,34 +873,38 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }
 
   void _confirmDeleteAccount() {
+    final colors = context.colors;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const AppText(
-          'Delete Account?',
-          variant: AppTextVariant.titleMedium,
-          color: AppColors.errorBase,
-        ),
-        content: const AppText(
-          'This action is permanent and cannot be undone. All your data, transaction history, and funds will be lost.',
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel', color: AppColors.textSecondary),
+      builder: (context) {
+        final colors = context.colors;
+        return AlertDialog(
+          backgroundColor: colors.container,
+          title: const AppText(
+            'Delete Account?',
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.errorBase,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Would show another confirmation
-            },
-            child: const AppText('Delete', color: AppColors.errorBase),
+          content: AppText(
+            'This action is permanent and cannot be undone. All your data, transaction history, and funds will be lost.',
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: AppText('Cancel', color: colors.textSecondary),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                // Would show another confirmation
+              },
+              child: const AppText('Delete', color: AppColors.errorBase),
+            ),
+          ],
+        );
+      },
     );
   }
 }

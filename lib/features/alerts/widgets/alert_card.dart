@@ -23,6 +23,7 @@ class AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Dismissible(
       key: Key(alert.alertId),
       direction: onDismiss != null
@@ -44,10 +45,10 @@ class AlertCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: alert.isRead ? AppColors.slate : AppColors.elevated,
+            color: alert.isRead ? colors.container : colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
-              color: _getBorderColor(),
+              color: _getBorderColor(colors),
               width: alert.severity == AlertSeverity.critical ? 1.5 : 1,
             ),
           ),
@@ -70,8 +71,8 @@ class AlertCard extends StatelessWidget {
                                   alert.title,
                                   variant: AppTextVariant.bodyLarge,
                                   color: alert.isRead
-                                      ? AppColors.textSecondary
-                                      : AppColors.textPrimary,
+                                      ? colors.textSecondary
+                                      : colors.textPrimary,
                                 ),
                               ),
                               if (alert.isActionRequired) ...[
@@ -110,7 +111,7 @@ class AlertCard extends StatelessWidget {
                     AppText(
                       alert.message,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -121,13 +122,13 @@ class AlertCard extends StatelessWidget {
                           Icon(
                             Icons.attach_money,
                             size: 14,
-                            color: AppColors.textTertiary,
+                            color: colors.textTertiary,
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           AppText(
                             '${alert.amount?.toStringAsFixed(2)} ${alert.currency ?? 'USD'}',
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textTertiary,
+                            color: colors.textTertiary,
                           ),
                         ],
                       ),
@@ -143,7 +144,7 @@ class AlertCard extends StatelessWidget {
                             AppText(
                               _formatTime(alert.createdAt),
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textTertiary,
+                              color: colors.textTertiary,
                             ),
                           ],
                         ),
@@ -168,11 +169,11 @@ class AlertCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(left: AppSpacing.sm),
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.sm),
                 child: Icon(
                   Icons.chevron_right,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   size: 20,
                 ),
               ),
@@ -217,14 +218,14 @@ class AlertCard extends StatelessWidget {
     );
   }
 
-  Color _getBorderColor() {
+  Color _getBorderColor(ThemeColors colors) {
     if (!alert.isRead && alert.severity == AlertSeverity.critical) {
       return alert.severity.color.withValues(alpha: 0.5);
     }
     if (!alert.isRead) {
-      return AppColors.gold500.withValues(alpha: 0.3);
+      return colors.gold.withValues(alpha: 0.3);
     }
-    return AppColors.borderSubtle;
+    return colors.borderSubtle;
   }
 
   String _formatTime(DateTime dateTime) {

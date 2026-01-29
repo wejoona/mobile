@@ -13,18 +13,20 @@ class ReceiveView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final walletState = ref.watch(walletStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Receive USDC',
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -32,50 +34,7 @@ class ReceiveView extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
-            const SizedBox(height: AppSpacing.lg),
-
-            // Info card
-            AppCard(
-              variant: AppCardVariant.subtle,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.gold500.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    child: const Icon(
-                      Icons.info_outline,
-                      color: AppColors.gold500,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const AppText(
-                          'Receive USDC',
-                          variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textPrimary,
-                        ),
-                        AppText(
-                          'Only send USDC on ${_getNetworkName(walletState.blockchain)} network',
-                          variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxxl),
+            const SizedBox(height: AppSpacing.xxl),
 
             // QR Code
             if (walletState.hasWalletAddress)
@@ -86,7 +45,7 @@ class ReceiveView extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.gold500.withValues(alpha: 0.2),
+                      color: colors.gold.withValues(alpha: 0.2),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -99,11 +58,11 @@ class ReceiveView extends ConsumerWidget {
                   backgroundColor: Colors.white,
                   eyeStyle: const QrEyeStyle(
                     eyeShape: QrEyeShape.square,
-                    color: AppColors.obsidian,
+                    color: Color(0xFF1A1A1F), // Always dark for visibility
                   ),
                   dataModuleStyle: const QrDataModuleStyle(
                     dataModuleShape: QrDataModuleShape.square,
-                    color: AppColors.obsidian,
+                    color: Color(0xFF1A1A1F), // Always dark for visibility
                   ),
                 ),
               )
@@ -112,11 +71,11 @@ class ReceiveView extends ConsumerWidget {
                 width: 268,
                 height: 268,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                 ),
-                child: const Center(
-                  child: CircularProgressIndicator(color: AppColors.gold500),
+                child: Center(
+                  child: CircularProgressIndicator(color: colors.gold),
                 ),
               )
             else
@@ -124,23 +83,23 @@ class ReceiveView extends ConsumerWidget {
                 width: 268,
                 height: 268,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                 ),
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.error_outline,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                         size: 48,
                       ),
-                      SizedBox(height: AppSpacing.md),
+                      const SizedBox(height: AppSpacing.md),
                       AppText(
                         'Wallet address not available',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -150,46 +109,12 @@ class ReceiveView extends ConsumerWidget {
 
             const SizedBox(height: AppSpacing.xxl),
 
-            // Network badge
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.slate,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.successBase,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  AppText(
-                    _getNetworkName(walletState.blockchain),
-                    variant: AppTextVariant.labelMedium,
-                    color: AppColors.textSecondary,
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-
             // Wallet Address
             if (walletState.hasWalletAddress) ...[
-              const AppText(
+              AppText(
                 'Your Wallet Address',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.md),
               AppCard(
@@ -200,7 +125,7 @@ class ReceiveView extends ConsumerWidget {
                     SelectableText(
                       walletState.walletAddress!,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                         fontFamily: 'monospace',
                       ),
                       textAlign: TextAlign.center,
@@ -217,18 +142,20 @@ class ReceiveView extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: _ActionButton(
-                      icon: Icons.copy,
+                    child: AppButton(
                       label: 'Copy',
-                      onTap: () => _copyAddress(context, walletState.walletAddress!),
+                      icon: Icons.copy,
+                      variant: AppButtonVariant.secondary,
+                      onPressed: () => _copyAddress(context, walletState.walletAddress!),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: _ActionButton(
-                      icon: Icons.share,
+                    child: AppButton(
                       label: 'Share',
-                      onTap: () => _shareAddress(walletState.walletAddress!, walletState.blockchain),
+                      icon: Icons.share,
+                      variant: AppButtonVariant.secondary,
+                      onPressed: () => _shareAddress(walletState.walletAddress!),
                     ),
                   ),
                 ],
@@ -261,9 +188,9 @@ class ReceiveView extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
-                          'Only send USDC on the ${_getNetworkName(walletState.blockchain)} network to this address. Sending other tokens or using a different network may result in permanent loss of funds.',
+                          'Only send USDC to this address. Sending other tokens may result in permanent loss of funds.',
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ],
                     ),
@@ -277,26 +204,6 @@ class ReceiveView extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _getNetworkName(String blockchain) {
-    switch (blockchain.toUpperCase()) {
-      case 'MATIC':
-      case 'MATIC-AMOY':
-        return 'Polygon';
-      case 'ETH':
-      case 'ETH-SEPOLIA':
-        return 'Ethereum';
-      case 'SOL':
-      case 'SOL-DEVNET':
-        return 'Solana';
-      case 'AVAX':
-        return 'Avalanche';
-      case 'ARB':
-        return 'Arbitrum';
-      default:
-        return blockchain;
-    }
   }
 
   void _copyAddress(BuildContext context, String address) {
@@ -316,50 +223,10 @@ class ReceiveView extends ConsumerWidget {
     );
   }
 
-  void _shareAddress(String address, String blockchain) {
-    final networkName = _getNetworkName(blockchain);
+  void _shareAddress(String address) {
     Share.share(
-      'Send USDC to my wallet on $networkName:\n\n$address',
-      subject: 'My USDC Wallet Address',
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.slate,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: AppColors.gold500, size: 20),
-            const SizedBox(width: AppSpacing.sm),
-            AppText(
-              label,
-              variant: AppTextVariant.labelMedium,
-              color: AppColors.textPrimary,
-            ),
-          ],
-        ),
-      ),
+      'Send USDC to my JoonaPay wallet:\n\n$address',
+      subject: 'My JoonaPay Wallet Address',
     );
   }
 }

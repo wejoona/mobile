@@ -87,9 +87,9 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final currentState = _getCurrentState();
     final selectedItem = _getSelectedItem();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +99,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
           AppText(
             widget.label!,
             variant: AppTextVariant.labelMedium,
-            color: _getLabelColor(currentState, isDark),
+            color: _getLabelColor(currentState, colors),
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
@@ -111,10 +111,10 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
               vertical: AppSpacing.lg,
             ),
             decoration: BoxDecoration(
-              color: _getFillColor(currentState, isDark),
+              color: _getFillColor(currentState, colors),
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: _getBorderColor(currentState, isDark),
+                color: _getBorderColor(currentState, colors),
                 width: currentState == AppSelectState.focused ? 2 : 1,
               ),
             ),
@@ -124,7 +124,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                   Icon(
                     selectedItem?.icon ?? widget.prefixIcon,
                     size: 20,
-                    color: _getIconColor(currentState, isDark),
+                    color: _getIconColor(currentState, colors),
                   ),
                   const SizedBox(width: AppSpacing.md),
                 ],
@@ -133,21 +133,19 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                       ? AppText(
                           selectedItem.label,
                           variant: AppTextVariant.bodyLarge,
-                          color: _getTextColor(currentState, isDark),
+                          color: _getTextColor(currentState, colors),
                         )
                       : AppText(
                           widget.hint ?? 'Select an option',
                           variant: AppTextVariant.bodyLarge,
-                          color: isDark
-                              ? AppColors.textTertiary
-                              : AppColorsLight.textTertiary,
+                          color: colors.textTertiary,
                         ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Icon(
                   Icons.keyboard_arrow_down,
                   size: 24,
-                  color: _getIconColor(currentState, isDark),
+                  color: _getIconColor(currentState, colors),
                 ),
               ],
             ),
@@ -158,7 +156,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
           AppText(
             widget.error!,
             variant: AppTextVariant.bodySmall,
-            color: isDark ? AppColors.errorText : AppColorsLight.errorText,
+            color: colors.errorText,
           ),
         ],
         if (widget.helper != null && widget.error == null) ...[
@@ -166,7 +164,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
           AppText(
             widget.helper!,
             variant: AppTextVariant.bodySmall,
-            color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ],
@@ -177,11 +175,11 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
   void _showDropdown() {
     setState(() => _isFocused = true);
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     showModalBottomSheet<T>(
       context: context,
-      backgroundColor: isDark ? AppColors.slate : AppColorsLight.container,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.xl),
@@ -199,9 +197,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.borderDefault
-                        : AppColorsLight.borderDefault,
+                    color: colors.border,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 ),
@@ -213,16 +209,12 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                   child: AppText(
                     widget.label!,
                     variant: AppTextVariant.titleMedium,
-                    color: isDark
-                        ? AppColors.textPrimary
-                        : AppColorsLight.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Divider(
-                  color: isDark
-                      ? AppColors.borderSubtle
-                      : AppColorsLight.borderSubtle,
+                  color: colors.borderSubtle,
                   height: 1,
                 ),
               ],
@@ -239,7 +231,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                       item: item,
                       isSelected: isSelected,
                       showCheckmark: widget.showCheckmark,
-                      isDark: isDark,
+                      colors: colors,
                       onTap: item.enabled
                           ? () {
                               widget.onChanged(item.value);
@@ -261,68 +253,64 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
     });
   }
 
-  Color _getFillColor(AppSelectState state, bool isDark) {
+  Color _getFillColor(AppSelectState state, ThemeColors colors) {
     switch (state) {
       case AppSelectState.disabled:
-        return isDark
-            ? AppColors.elevated.withValues(alpha: 0.5)
-            : AppColorsLight.elevated.withValues(alpha: 0.5);
+        return colors.elevated.withValues(alpha: 0.5);
       case AppSelectState.error:
-        return isDark
-            ? AppColors.errorBase.withValues(alpha: 0.05)
-            : AppColorsLight.errorLight;
+        return colors.error.withValues(alpha: 0.05);
       case AppSelectState.focused:
-        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+        return colors.elevated;
       case AppSelectState.idle:
-        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+        return colors.elevated;
     }
   }
 
-  Color _getBorderColor(AppSelectState state, bool isDark) {
+  Color _getBorderColor(AppSelectState state, ThemeColors colors) {
     switch (state) {
       case AppSelectState.disabled:
-        return isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle;
+        return colors.borderSubtle;
       case AppSelectState.error:
-        return isDark ? AppColors.errorBase : AppColorsLight.errorBase;
+        return colors.error;
       case AppSelectState.focused:
-        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+        return colors.gold;
       case AppSelectState.idle:
-        return isDark ? AppColors.borderDefault : AppColorsLight.borderDefault;
+        return colors.border;
     }
   }
 
-  Color _getTextColor(AppSelectState state, bool isDark) {
+  Color _getTextColor(AppSelectState state, ThemeColors colors) {
     switch (state) {
       case AppSelectState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       default:
-        return isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
+        return colors.textPrimary;
     }
   }
 
-  Color _getLabelColor(AppSelectState state, bool isDark) {
+  Color _getLabelColor(AppSelectState state, ThemeColors colors) {
     switch (state) {
       case AppSelectState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       case AppSelectState.error:
-        return isDark ? AppColors.errorText : AppColorsLight.errorText;
+        return colors.errorText;
       case AppSelectState.focused:
-        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+        return colors.gold;
       default:
-        return isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+        return colors.textSecondary;
     }
   }
 
-  Color _getIconColor(AppSelectState state, bool isDark) {
+  Color _getIconColor(AppSelectState state, ThemeColors colors) {
     switch (state) {
       case AppSelectState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       case AppSelectState.error:
-        return isDark ? AppColors.errorBase : AppColorsLight.errorBase;
+        return colors.error;
       case AppSelectState.focused:
-        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+        return colors.gold;
       default:
-        return isDark ? AppColors.textTertiary : AppColorsLight.textTertiary;
+        return colors.textTertiary;
     }
   }
 }
@@ -333,14 +321,14 @@ class _SelectMenuItem<T> extends StatelessWidget {
     required this.item,
     required this.isSelected,
     required this.showCheckmark,
-    required this.isDark,
+    required this.colors,
     required this.onTap,
   });
 
   final AppSelectItem<T> item;
   final bool isSelected;
   final bool showCheckmark;
-  final bool isDark;
+  final ThemeColors colors;
   final VoidCallback? onTap;
 
   @override
@@ -356,9 +344,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isDark
-                    ? AppColors.gold500.withValues(alpha: 0.1)
-                    : AppColorsLight.gold500.withValues(alpha: 0.1))
+                ? colors.gold.withValues(alpha: 0.1)
                 : Colors.transparent,
           ),
           child: Row(
@@ -368,10 +354,8 @@ class _SelectMenuItem<T> extends StatelessWidget {
                   item.icon,
                   size: 20,
                   color: isSelected
-                      ? (isDark ? AppColors.gold500 : AppColorsLight.gold500)
-                      : (isDark
-                          ? AppColors.textSecondary
-                          : AppColorsLight.textSecondary),
+                      ? colors.gold
+                      : colors.textSecondary,
                 ),
                 const SizedBox(width: AppSpacing.md),
               ],
@@ -383,19 +367,15 @@ class _SelectMenuItem<T> extends StatelessWidget {
                       item.label,
                       variant: AppTextVariant.bodyLarge,
                       color: isSelected
-                          ? (isDark ? AppColors.gold500 : AppColorsLight.gold500)
-                          : (isDark
-                              ? AppColors.textPrimary
-                              : AppColorsLight.textPrimary),
+                          ? colors.gold
+                          : colors.textPrimary,
                     ),
                     if (item.subtitle != null) ...[
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
                         item.subtitle!,
                         variant: AppTextVariant.bodySmall,
-                        color: isDark
-                            ? AppColors.textSecondary
-                            : AppColorsLight.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ],
@@ -406,7 +386,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
                 Icon(
                   Icons.check_circle,
                   size: 20,
-                  color: isDark ? AppColors.gold500 : AppColorsLight.gold500,
+                  color: colors.gold,
                 ),
               ],
             ],

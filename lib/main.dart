@@ -61,6 +61,8 @@ class JoonaPayApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _getThemeMode(themeState.mode),
+      themeAnimationDuration: const Duration(milliseconds: 400),
+      themeAnimationCurve: Curves.easeInOut,
       locale: localeState.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,

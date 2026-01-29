@@ -12,6 +12,7 @@ class LanguageView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final localeState = ref.watch(localeProvider);
     final l10n = AppLocalizations.of(context)!;
 
@@ -21,7 +22,7 @@ class LanguageView extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -39,7 +40,7 @@ class LanguageView extends ConsumerWidget {
           AppText(
             l10n.language_selectLanguage,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.xl),
           ...languages.map((language) {
@@ -89,6 +90,7 @@ class _LanguageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AppCard(
       variant: isSelected ? AppCardVariant.goldAccent : AppCardVariant.elevated,
       onTap: isLoading ? null : onTap,
@@ -100,8 +102,8 @@ class _LanguageTile extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.gold500.withOpacity(0.2)
-                  : AppColors.slate.withOpacity(0.5),
+                  ? colors.gold.withOpacity(0.2)
+                  : colors.container.withOpacity(0.5),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Center(
@@ -121,13 +123,13 @@ class _LanguageTile extends StatelessWidget {
                 AppText(
                   nativeName,
                   variant: AppTextVariant.titleMedium,
-                  color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                  color: isSelected ? colors.gold : colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   displayName,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -139,7 +141,7 @@ class _LanguageTile extends StatelessWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: AppColors.gold500,
+                color: colors.gold,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -154,7 +156,7 @@ class _LanguageTile extends StatelessWidget {
               height: 24,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                   width: 2,
                 ),
                 shape: BoxShape.circle,

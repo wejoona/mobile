@@ -46,6 +46,7 @@ dependencies:
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
   flutter_svg: ^2.2.3
+  confetti: ^0.7.0
   # QR Code
   qr_flutter: ^4.1.0
   mobile_scanner: ^7.0.0
@@ -80,6 +81,12 @@ dependencies:
   device_info_plus: ^11.2.0
   # Local notifications for foreground display
   flutter_local_notifications: ^18.0.1
+  # Package info for app version
+  package_info_plus: ^8.1.2
+  # PDF generation for receipts
+  pdf: ^3.10.0
+  # Charts for insights
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:

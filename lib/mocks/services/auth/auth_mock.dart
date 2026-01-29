@@ -3,6 +3,7 @@
 /// Mock handlers for authentication endpoints.
 library;
 
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../base/api_contract.dart';
 import '../../base/mock_data_generator.dart';
@@ -65,9 +66,20 @@ class AuthMockState {
   }
 
   /// Generate auth tokens
+  /// Creates mock JWT-formatted tokens for testing
   static AuthTokensResponse generateTokens(UserResponse user) {
-    final accessToken = 'mock_access_${MockDataGenerator.uuid()}';
-    final refreshToken = 'mock_refresh_${MockDataGenerator.uuid()}';
+    // Generate JWT-like tokens (base64 encoded header.payload.signature)
+    final header = _base64UrlEncode('{"alg":"HS256","typ":"JWT"}');
+    final accessPayload = _base64UrlEncode(
+      '{"sub":"${user.id}","phone":"${user.phone}","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 3600}}'
+    );
+    final refreshPayload = _base64UrlEncode(
+      '{"sub":"${user.id}","type":"refresh","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 604800}}'
+    );
+    final signature = _base64UrlEncode('mock_signature_${user.id}');
+
+    final accessToken = '$header.$accessPayload.$signature';
+    final refreshToken = '$header.$refreshPayload.$signature';
 
     refreshTokens[refreshToken] = user.id;
     currentUserId = user.id;
@@ -80,15 +92,42 @@ class AuthMockState {
     );
   }
 
+  /// Base64 URL encode without padding
+  static String _base64UrlEncode(String input) {
+    return base64Url.encode(utf8.encode(input)).replaceAll('=', '');
+  }
+
   /// Get user from refresh token
   static UserResponse? getUserFromRefreshToken(String refreshToken) {
+    // First check exact match (for tokens we generated)
     final userId = refreshTokens[refreshToken];
-    if (userId == null) return null;
+    if (userId != null) {
+      return users.values.firstWhere(
+        (u) => u.id == userId,
+        orElse: () => throw Exception('User not found'),
+      );
+    }
 
-    return users.values.firstWhere(
-      (u) => u.id == userId,
-      orElse: () => throw Exception('User not found'),
-    );
+    // Try to decode JWT and find user (for persisted tokens)
+    try {
+      final parts = refreshToken.split('.');
+      if (parts.length != 3) return null;
+
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final data = jsonDecode(payload) as Map<String, dynamic>;
+      final sub = data['sub'] as String?;
+
+      if (sub != null) {
+        return users.values.firstWhere(
+          (u) => u.id == sub,
+          orElse: () => throw Exception('User not found'),
+        );
+      }
+    } catch (e) {
+      // Token decode failed
+    }
+
+    return null;
   }
 }
 

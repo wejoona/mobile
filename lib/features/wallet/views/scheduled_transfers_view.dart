@@ -118,11 +118,13 @@ class _ScheduledTransfersViewState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Scheduled Transfers',
           variant: AppTextVariant.titleLarge,
         ),
@@ -132,33 +134,34 @@ class _ScheduledTransfersViewState
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.gold500),
+            icon: Icon(Icons.add, color: colors.gold),
             onPressed: () => _showCreateSheet(),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.gold500),
+          ? Center(
+              child: CircularProgressIndicator(color: colors.gold),
             )
           : _transfers.isEmpty
-              ? _buildEmptyState()
+              ? _buildEmptyState(colors)
               : RefreshIndicator(
                   onRefresh: _loadTransfers,
-                  color: AppColors.gold500,
-                  backgroundColor: AppColors.slate,
+                  color: colors.gold,
+                  backgroundColor: colors.container,
                   child: ListView.builder(
                     padding: const EdgeInsets.all(AppSpacing.screenPadding),
                     itemCount: _transfers.length + 1,
                     itemBuilder: (context, index) {
                       if (index == 0) {
-                        return _buildSummaryCard();
+                        return _buildSummaryCard(colors);
                       }
                       final transfer = _transfers[index - 1];
                       return _ScheduledTransferCard(
                         transfer: transfer,
                         onTap: () => _showTransferDetails(transfer),
                         onToggle: (value) => _toggleTransfer(transfer.id, value),
+                        colors: colors,
                       );
                     },
                   ),
@@ -166,18 +169,18 @@ class _ScheduledTransfersViewState
       floatingActionButton: _transfers.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () => _showCreateSheet(),
-              backgroundColor: AppColors.gold500,
-              icon: const Icon(Icons.add, color: AppColors.obsidian),
-              label: const Text(
+              backgroundColor: colors.gold,
+              icon: Icon(Icons.add, color: colors.canvas),
+              label: Text(
                 'New Schedule',
-                style: TextStyle(color: AppColors.obsidian),
+                style: TextStyle(color: colors.canvas),
               ),
             )
           : null,
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxxl),
@@ -188,26 +191,26 @@ class _ScheduledTransfersViewState
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.xxl),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.schedule,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
                 size: 50,
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'No Scheduled Transfers',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const AppText(
+            AppText(
               'Set up automatic recurring transfers to save time.',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -222,7 +225,7 @@ class _ScheduledTransfersViewState
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildSummaryCard(ThemeColors colors) {
     final activeTransfers = _transfers.where((t) => t.isActive).toList();
     final totalMonthly = activeTransfers.fold<double>(0, (sum, t) {
       switch (t.frequency) {
@@ -242,8 +245,8 @@ class _ScheduledTransfersViewState
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppColors.goldGradient,
+        gradient: LinearGradient(
+          colors: [colors.gold, colors.gold.withValues(alpha: 0.8)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -255,10 +258,10 @@ class _ScheduledTransfersViewState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const AppText(
+              AppText(
                 'Monthly Scheduled',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.obsidian,
+                color: colors.canvas,
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -266,13 +269,13 @@ class _ScheduledTransfersViewState
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.obsidian.withValues(alpha: 0.2),
+                  color: colors.canvas.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   '${activeTransfers.length} active',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.obsidian,
+                  color: colors.canvas,
                 ),
               ),
             ],
@@ -281,13 +284,13 @@ class _ScheduledTransfersViewState
           AppText(
             '\$${totalMonthly.toStringAsFixed(2)}',
             variant: AppTextVariant.headlineMedium,
-            color: AppColors.obsidian,
+            color: colors.canvas,
           ),
           const SizedBox(height: AppSpacing.xxs),
-          const AppText(
+          AppText(
             'Total outgoing this month',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.obsidian,
+            color: colors.canvas,
           ),
         ],
       ),
@@ -295,9 +298,10 @@ class _ScheduledTransfersViewState
   }
 
   void _showCreateSheet() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
@@ -327,9 +331,10 @@ class _ScheduledTransfersViewState
   }
 
   void _showTransferDetails(ScheduledTransfer transfer) {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
@@ -377,11 +382,13 @@ class _ScheduledTransferCard extends StatelessWidget {
     required this.transfer,
     required this.onTap,
     required this.onToggle,
+    required this.colors,
   });
 
   final ScheduledTransfer transfer;
   final VoidCallback onTap;
   final ValueChanged<bool> onToggle;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -391,10 +398,10 @@ class _ScheduledTransferCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: transfer.isActive ? AppColors.borderSubtle : AppColors.borderSubtle.withValues(alpha: 0.5),
+            color: transfer.isActive ? colors.borderSubtle : colors.borderSubtle.withValues(alpha: 0.5),
           ),
         ),
         child: Column(
@@ -406,8 +413,8 @@ class _ScheduledTransferCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: transfer.isActive
-                        ? AppColors.gold500.withValues(alpha: 0.2)
-                        : AppColors.slate,
+                        ? colors.gold.withValues(alpha: 0.2)
+                        : colors.container,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Center(
@@ -415,8 +422,8 @@ class _ScheduledTransferCard extends StatelessWidget {
                       _getInitials(transfer.recipientName),
                       variant: AppTextVariant.titleMedium,
                       color: transfer.isActive
-                          ? AppColors.gold500
-                          : AppColors.textTertiary,
+                          ? colors.gold
+                          : colors.textTertiary,
                     ),
                   ),
                 ),
@@ -429,13 +436,13 @@ class _ScheduledTransferCard extends StatelessWidget {
                         transfer.recipientName,
                         variant: AppTextVariant.bodyLarge,
                         color: transfer.isActive
-                            ? AppColors.textPrimary
-                            : AppColors.textTertiary,
+                            ? colors.textPrimary
+                            : colors.textTertiary,
                       ),
                       AppText(
                         transfer.frequency.label,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),
@@ -447,13 +454,13 @@ class _ScheduledTransferCard extends StatelessWidget {
                       '\$${transfer.amount.toStringAsFixed(2)}',
                       variant: AppTextVariant.titleMedium,
                       color: transfer.isActive
-                          ? AppColors.textPrimary
-                          : AppColors.textTertiary,
+                          ? colors.textPrimary
+                          : colors.textTertiary,
                     ),
                     Switch.adaptive(
                       value: transfer.isActive,
                       onChanged: onToggle,
-                      activeColor: AppColors.gold500,
+                      activeColor: colors.gold,
                     ),
                   ],
                 ),
@@ -464,21 +471,21 @@ class _ScheduledTransferCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.schedule,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                       size: 16,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     AppText(
                       'Next: ${_formatDate(transfer.nextDate)}',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -544,6 +551,7 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -554,13 +562,13 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'Create Scheduled Transfer',
             variant: AppTextVariant.titleMedium,
           ),
@@ -571,10 +579,10 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
               controller: widget.scrollController,
               children: [
                 // Recipient
-                const AppText(
+                AppText(
                   'Recipient Phone',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppInput(
@@ -586,10 +594,10 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Amount
-                const AppText(
+                AppText(
                   'Amount (USD)',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppInput(
@@ -602,10 +610,10 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Frequency
-                const AppText(
+                AppText(
                   'Frequency',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Wrap(
@@ -622,21 +630,21 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.gold500
-                              : AppColors.elevated,
+                              ? colors.gold
+                              : colors.elevated,
                           borderRadius: BorderRadius.circular(AppRadius.full),
                           border: Border.all(
                             color: isSelected
-                                ? AppColors.gold500
-                                : AppColors.borderSubtle,
+                                ? colors.gold
+                                : colors.borderSubtle,
                           ),
                         ),
                         child: AppText(
                           freq.label,
                           variant: AppTextVariant.labelMedium,
                           color: isSelected
-                              ? AppColors.obsidian
-                              : AppColors.textSecondary,
+                              ? colors.canvas
+                              : colors.textSecondary,
                         ),
                       ),
                     );
@@ -646,10 +654,10 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Start Date
-                const AppText(
+                AppText(
                   'Start Date',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 GestureDetector(
@@ -657,22 +665,22 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.elevated,
+                      color: colors.elevated,
                       borderRadius: BorderRadius.circular(AppRadius.lg),
-                      border: Border.all(color: AppColors.borderSubtle),
+                      border: Border.all(color: colors.borderSubtle),
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.calendar_today,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                           size: 20,
                         ),
                         const SizedBox(width: AppSpacing.md),
                         AppText(
                           '${_startDate.day}/${_startDate.month}/${_startDate.year}',
                           variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textPrimary,
+                          color: colors.textPrimary,
                         ),
                       ],
                     ),
@@ -682,10 +690,10 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Note
-                const AppText(
+                AppText(
                   'Note (Optional)',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppInput(
@@ -711,17 +719,19 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
   }
 
   Future<void> _selectDate() async {
+    final colors = context.colors;
     final date = await showDatePicker(
       context: context,
       initialDate: _startDate,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
-      builder: (context, child) {
+      builder: (ctx, child) {
+        final pickerColors = ctx.colors;
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              surface: AppColors.slate,
+          data: Theme.of(ctx).copyWith(
+            colorScheme: ColorScheme.dark(
+              primary: pickerColors.gold,
+              surface: pickerColors.container,
             ),
           ),
           child: child!,
@@ -764,6 +774,7 @@ class _TransferDetailsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -773,12 +784,12 @@ class _TransferDetailsSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
+          AppText(
             'Schedule Details',
             variant: AppTextVariant.titleMedium,
           ),
@@ -797,7 +808,7 @@ class _TransferDetailsSheet extends StatelessWidget {
           _DetailRow(
             label: 'Status',
             value: transfer.isActive ? 'Active' : 'Paused',
-            valueColor: transfer.isActive ? AppColors.successBase : AppColors.textTertiary,
+            valueColor: transfer.isActive ? AppColors.successBase : colors.textTertiary,
           ),
 
           const SizedBox(height: AppSpacing.xxl),
@@ -842,6 +853,7 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
@@ -850,12 +862,12 @@ class _DetailRow extends StatelessWidget {
           AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           AppText(
             value,
             variant: AppTextVariant.bodyMedium,
-            color: valueColor ?? AppColors.textPrimary,
+            color: valueColor ?? colors.textPrimary,
           ),
         ],
       ),

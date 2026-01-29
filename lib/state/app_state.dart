@@ -6,7 +6,7 @@ import '../domain/enums/index.dart';
 enum NavTab {
   wallet,
   activity,
-  rewards,
+  services,
   settings,
 }
 
@@ -17,8 +17,8 @@ extension NavTabExt on NavTab {
         return '/home';
       case NavTab.activity:
         return '/transactions';
-      case NavTab.rewards:
-        return '/referrals';
+      case NavTab.services:
+        return '/services';
       case NavTab.settings:
         return '/settings';
     }
@@ -30,7 +30,7 @@ extension NavTabExt on NavTab {
         return 0;
       case NavTab.activity:
         return 1;
-      case NavTab.rewards:
+      case NavTab.services:
         return 2;
       case NavTab.settings:
         return 3;
@@ -44,7 +44,7 @@ extension NavTabExt on NavTab {
       case 1:
         return NavTab.activity;
       case 2:
-        return NavTab.rewards;
+        return NavTab.services;
       case 3:
         return NavTab.settings;
       default:
@@ -55,7 +55,7 @@ extension NavTabExt on NavTab {
   static NavTab fromRoute(String route) {
     if (route.startsWith('/home')) return NavTab.wallet;
     if (route.startsWith('/transactions')) return NavTab.activity;
-    if (route.startsWith('/referrals')) return NavTab.rewards;
+    if (route.startsWith('/services')) return NavTab.services;
     if (route.startsWith('/settings')) return NavTab.settings;
     return NavTab.wallet;
   }

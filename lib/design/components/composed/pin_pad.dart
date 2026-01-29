@@ -23,35 +23,37 @@ class PinPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Row 1: 1, 2, 3
-        _buildRow([1, 2, 3]),
+        _buildRow([1, 2, 3], colors),
         const SizedBox(height: AppSpacing.md),
         // Row 2: 4, 5, 6
-        _buildRow([4, 5, 6]),
+        _buildRow([4, 5, 6], colors),
         const SizedBox(height: AppSpacing.md),
         // Row 3: 7, 8, 9
-        _buildRow([7, 8, 9]),
+        _buildRow([7, 8, 9], colors),
         const SizedBox(height: AppSpacing.md),
         // Row 4: biometric, 0, delete
-        _buildBottomRow(),
+        _buildBottomRow(colors),
       ],
     );
   }
 
-  Widget _buildRow(List<int> digits) {
+  Widget _buildRow(List<int> digits, ThemeColors colors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: digits.map((digit) {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: _PinButton(
+            colors: colors,
             child: AppText(
               digit.toString(),
               variant: AppTextVariant.headlineMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             onTap: () {
               HapticFeedback.lightImpact();
@@ -63,7 +65,7 @@ class PinPad extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(ThemeColors colors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -72,9 +74,10 @@ class PinPad extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: showBiometric && onBiometricPressed != null
               ? _PinButton(
+                  colors: colors,
                   child: Icon(
                     biometricIcon,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                     size: 28,
                   ),
                   onTap: () {
@@ -88,10 +91,11 @@ class PinPad extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: _PinButton(
-            child: const AppText(
+            colors: colors,
+            child: AppText(
               '0',
               variant: AppTextVariant.headlineMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             onTap: () {
               HapticFeedback.lightImpact();
@@ -103,9 +107,10 @@ class PinPad extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
           child: _PinButton(
-            child: const Icon(
+            colors: colors,
+            child: Icon(
               Icons.backspace_outlined,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               size: 24,
             ),
             onTap: () {
@@ -123,20 +128,22 @@ class _PinButton extends StatelessWidget {
   const _PinButton({
     required this.child,
     required this.onTap,
+    required this.colors,
   });
 
   final Widget child;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.elevated,
+      color: colors.elevated,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        splashColor: AppColors.gold500.withOpacity(0.2),
+        splashColor: colors.gold.withOpacity(0.2),
         highlightColor: AppColors.overlayLight,
         child: Container(
           width: 72,
@@ -164,6 +171,7 @@ class PinDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(length, (index) {
@@ -176,12 +184,12 @@ class PinDots extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isFilled
-                ? (error ? AppColors.errorBase : AppColors.gold500)
+                ? (error ? colors.error : colors.gold)
                 : Colors.transparent,
             border: Border.all(
               color: error
-                  ? AppColors.errorBase
-                  : (isFilled ? AppColors.gold500 : AppColors.borderDefault),
+                  ? colors.error
+                  : (isFilled ? colors.gold : colors.border),
               width: 2,
             ),
           ),

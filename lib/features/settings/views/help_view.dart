@@ -88,8 +88,9 @@ class _HelpViewState extends ConsumerState<HelpView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -97,7 +98,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -117,16 +118,17 @@ class _HelpViewState extends ConsumerState<HelpView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Quick Help Actions
-            const AppText(
+            AppText(
               'Get Help',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 Expanded(
                   child: _buildHelpAction(
+                    colors: colors,
                     icon: Icons.chat_bubble_outline,
                     label: 'Live Chat',
                     onTap: _startLiveChat,
@@ -135,6 +137,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _buildHelpAction(
+                    colors: colors,
                     icon: Icons.email_outlined,
                     label: 'Email Us',
                     onTap: _sendEmail,
@@ -143,6 +146,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _buildHelpAction(
+                    colors: colors,
                     icon: Icons.phone_outlined,
                     label: 'Call Us',
                     onTap: _callSupport,
@@ -157,62 +161,63 @@ class _HelpViewState extends ConsumerState<HelpView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
+                AppText(
                   'Frequently Asked Questions',
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 if (_searchQuery.isNotEmpty)
                   AppText(
                     '${_filteredFaqs.length} results',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
 
             if (_filteredFaqs.isEmpty)
-              _buildNoResults()
+              _buildNoResults(colors)
             else
               ...List.generate(_filteredFaqs.length, (index) {
                 final faq = _filteredFaqs[index];
-                return _buildFaqItem(faq, index);
+                return _buildFaqItem(colors, faq, index);
               }),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Popular Topics
             if (_searchQuery.isEmpty) ...[
-              const AppText(
+              AppText(
                 'Popular Topics',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               Wrap(
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.sm,
                 children: [
-                  _buildTopicChip('Deposits'),
-                  _buildTopicChip('Transfers'),
-                  _buildTopicChip('Withdrawals'),
-                  _buildTopicChip('Security'),
-                  _buildTopicChip('Account'),
-                  _buildTopicChip('Rewards'),
+                  _buildTopicChip(colors, 'Deposits'),
+                  _buildTopicChip(colors, 'Transfers'),
+                  _buildTopicChip(colors, 'Withdrawals'),
+                  _buildTopicChip(colors, 'Security'),
+                  _buildTopicChip(colors, 'Account'),
+                  _buildTopicChip(colors, 'Rewards'),
                 ],
               ),
               const SizedBox(height: AppSpacing.xxl),
             ],
 
             // Resources
-            const AppText(
+            AppText(
               'Resources',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildResourceItem(
+              colors: colors,
               icon: Icons.article_outlined,
               title: 'User Guide',
               subtitle: 'Complete guide to using JoonaPay',
@@ -220,6 +225,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildResourceItem(
+              colors: colors,
               icon: Icons.play_circle_outline,
               title: 'Video Tutorials',
               subtitle: 'Watch step-by-step tutorials',
@@ -227,6 +233,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildResourceItem(
+              colors: colors,
               icon: Icons.policy_outlined,
               title: 'Terms of Service',
               subtitle: 'Read our terms and conditions',
@@ -234,6 +241,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildResourceItem(
+              colors: colors,
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
               subtitle: 'How we protect your data',
@@ -247,25 +255,25 @@ class _HelpViewState extends ConsumerState<HelpView> {
               variant: AppCardVariant.subtle,
               child: Column(
                 children: [
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.textTertiary, size: 16),
-                      SizedBox(width: AppSpacing.sm),
+                      Icon(Icons.info_outline, color: colors.textTertiary, size: 16),
+                      const SizedBox(width: AppSpacing.sm),
                       AppText(
                         'JoonaPay v1.0.0',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton(
                     onPressed: _showLicenses,
-                    child: const AppText(
+                    child: AppText(
                       'Open Source Licenses',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                 ],
@@ -278,6 +286,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
   }
 
   Widget _buildHelpAction({
+    required ThemeColors colors,
     required IconData icon,
     required String label,
     required VoidCallback onTap,
@@ -287,9 +296,9 @@ class _HelpViewState extends ConsumerState<HelpView> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
@@ -297,16 +306,16 @@ class _HelpViewState extends ConsumerState<HelpView> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: colors.gold.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 24),
+              child: Icon(icon, color: colors.gold, size: 24),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
@@ -314,7 +323,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     );
   }
 
-  Widget _buildFaqItem(_FaqItem faq, int index) {
+  Widget _buildFaqItem(ThemeColors colors, _FaqItem faq, int index) {
     final isExpanded = _expandedFaqIndex == index;
 
     return Padding(
@@ -337,19 +346,19 @@ class _HelpViewState extends ConsumerState<HelpView> {
                       vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.gold500.withValues(alpha: 0.1),
+                      color: colors.gold.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.xs),
                     ),
                     child: AppText(
                       faq.category,
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                   const Spacer(),
                   Icon(
                     isExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
@@ -366,36 +375,36 @@ class _HelpViewState extends ConsumerState<HelpView> {
                 child: AppText(
                   faq.question,
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
               ),
             ),
             if (isExpanded) ...[
               const SizedBox(height: AppSpacing.md),
-              const Divider(color: AppColors.borderSubtle),
+              Divider(color: colors.borderSubtle),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 faq.answer,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: [
-                  const AppText(
+                  AppText(
                     'Was this helpful?',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.thumb_up_outlined, size: 18),
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                     onPressed: () => _markHelpful(true),
                   ),
                   IconButton(
                     icon: const Icon(Icons.thumb_down_outlined, size: 18),
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                     onPressed: () => _markHelpful(false),
                   ),
                 ],
@@ -407,7 +416,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     );
   }
 
-  Widget _buildNoResults() {
+  Widget _buildNoResults(ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -415,20 +424,20 @@ class _HelpViewState extends ConsumerState<HelpView> {
           children: [
             Icon(
               Icons.search_off,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 48,
             ),
             const SizedBox(height: AppSpacing.md),
-            const AppText(
+            AppText(
               'No results found',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const AppText(
+            AppText(
               'Try different keywords or contact support',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -437,7 +446,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     );
   }
 
-  Widget _buildTopicChip(String topic) {
+  Widget _buildTopicChip(ThemeColors colors, String topic) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -451,20 +460,21 @@ class _HelpViewState extends ConsumerState<HelpView> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: AppText(
           topic,
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
       ),
     );
   }
 
   Widget _buildResourceItem({
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -480,10 +490,10 @@ class _HelpViewState extends ConsumerState<HelpView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 22),
+              child: Icon(icon, color: colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -493,19 +503,19 @@ class _HelpViewState extends ConsumerState<HelpView> {
                   AppText(
                     title,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     subtitle,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.open_in_new,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 18,
             ),
           ],
@@ -515,9 +525,10 @@ class _HelpViewState extends ConsumerState<HelpView> {
   }
 
   void _startLiveChat() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -530,10 +541,10 @@ class _HelpViewState extends ConsumerState<HelpView> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: colors.gold.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.support_agent, color: AppColors.gold500, size: 40),
+              child: Icon(Icons.support_agent, color: colors.gold, size: 40),
             ),
             const SizedBox(height: AppSpacing.lg),
             const AppText(
@@ -542,10 +553,10 @@ class _HelpViewState extends ConsumerState<HelpView> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const AppText(
+            AppText(
               'Our support team is available 24/7. Average response time: 2 minutes.',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),

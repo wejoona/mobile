@@ -13,8 +13,9 @@ class DepositInstructionsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -35,7 +36,7 @@ class DepositInstructionsView extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.warningBase.withOpacity(0.1),
+                color: AppColors.warningBase.withValues(alpha:0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -47,10 +48,10 @@ class DepositInstructionsView extends ConsumerWidget {
 
             const SizedBox(height: AppSpacing.lg),
 
-            const AppText(
+            AppText(
               'Pending Payment',
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
 
             const SizedBox(height: AppSpacing.sm),
@@ -58,7 +59,7 @@ class DepositInstructionsView extends ConsumerWidget {
             AppText(
               'Complete the payment to add funds to your wallet',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
 
@@ -70,23 +71,23 @@ class DepositInstructionsView extends ConsumerWidget {
               padding: const EdgeInsets.all(AppSpacing.xxl),
               child: Column(
                 children: [
-                  const AppText(
+                  AppText(
                     'Amount to Pay',
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   AppText(
                     '${_formatAmount(response.amount)} ${response.sourceCurrency}',
                     variant: AppTextVariant.displaySmall,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                   if (response.fee > 0) ...[
                     const SizedBox(height: AppSpacing.sm),
                     AppText(
                       'Includes ${_formatAmount(response.fee)} ${response.sourceCurrency} fee',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                   const SizedBox(height: AppSpacing.md),
@@ -107,10 +108,10 @@ class DepositInstructionsView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppText(
+                  AppText(
                     'Payment Instructions',
                     variant: AppTextVariant.titleSmall,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.lg),
 
@@ -118,25 +119,29 @@ class DepositInstructionsView extends ConsumerWidget {
                   AppText(
                     response.paymentInstructions.instructions,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   _InstructionStep(
                     number: '1',
                     text: 'Provider: ${response.paymentInstructions.provider}',
+                    colors: colors,
                   ),
                   _InstructionStep(
                     number: '2',
                     text: 'Account: ${response.paymentInstructions.accountNumber}',
+                    colors: colors,
                   ),
                   _InstructionStep(
                     number: '3',
                     text: 'Amount: ${_formatAmount(response.amount)} ${response.sourceCurrency}',
+                    colors: colors,
                   ),
                   _InstructionStep(
                     number: '4',
                     text: 'Reference: ${response.paymentInstructions.reference}',
                     isLast: true,
+                    colors: colors,
                   ),
                 ],
               ),
@@ -150,10 +155,10 @@ class DepositInstructionsView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppText(
+                  AppText(
                     'Payment Reference',
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
@@ -162,14 +167,14 @@ class DepositInstructionsView extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.all(AppSpacing.lg),
                           decoration: BoxDecoration(
-                            color: AppColors.elevated,
+                            color: colors.elevated,
                             borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                           child: Center(
                             child: AppText(
                               response.paymentInstructions.reference,
                               variant: AppTextVariant.titleMedium,
-                              color: AppColors.textPrimary,
+                              color: colors.textPrimary,
                             ),
                           ),
                         ),
@@ -180,12 +185,12 @@ class DepositInstructionsView extends ConsumerWidget {
                         icon: Container(
                           padding: const EdgeInsets.all(AppSpacing.md),
                           decoration: BoxDecoration(
-                            color: AppColors.gold500.withOpacity(0.1),
+                            color: colors.gold.withValues(alpha:0.1),
                             borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.copy,
-                            color: AppColors.gold500,
+                            color: colors.gold,
                           ),
                         ),
                       ),
@@ -212,10 +217,10 @@ class DepositInstructionsView extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const AppText(
+                        AppText(
                           'Payment expires in',
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         AppText(
                           _formatExpiry(response.expiresAt),
@@ -284,39 +289,42 @@ class DepositInstructionsView extends ConsumerWidget {
   void _showCancelDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const AppText(
-          'Cancel Payment?',
-          variant: AppTextVariant.titleMedium,
-        ),
-        content: const AppText(
-          'Are you sure you want to cancel this deposit? You can always start a new one later.',
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const AppText(
-              'Keep',
-              variant: AppTextVariant.labelLarge,
-              color: AppColors.gold500,
-            ),
+      builder: (context) {
+        final dialogColors = context.colors;
+        return AlertDialog(
+          backgroundColor: dialogColors.container,
+          title: const AppText(
+            'Cancel Payment?',
+            variant: AppTextVariant.titleMedium,
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.go('/home');
-            },
-            child: const AppText(
-              'Cancel',
-              variant: AppTextVariant.labelLarge,
-              color: AppColors.textSecondary,
-            ),
+          content: AppText(
+            'Are you sure you want to cancel this deposit? You can always start a new one later.',
+            variant: AppTextVariant.bodyMedium,
+            color: dialogColors.textSecondary,
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: AppText(
+                'Keep',
+                variant: AppTextVariant.labelLarge,
+                color: dialogColors.gold,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.go('/home');
+              },
+              child: AppText(
+                'Cancel',
+                variant: AppTextVariant.labelLarge,
+                color: dialogColors.textSecondary,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -325,11 +333,13 @@ class _InstructionStep extends StatelessWidget {
   const _InstructionStep({
     required this.number,
     required this.text,
+    required this.colors,
     this.isLast = false,
   });
 
   final String number;
   final String text;
+  final ThemeColors colors;
   final bool isLast;
 
   @override
@@ -343,14 +353,14 @@ class _InstructionStep extends StatelessWidget {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.1),
+              color: colors.gold.withValues(alpha:0.1),
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Center(
               child: AppText(
                 number,
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           ),
@@ -359,7 +369,7 @@ class _InstructionStep extends StatelessWidget {
             child: AppText(
               text,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
         ],

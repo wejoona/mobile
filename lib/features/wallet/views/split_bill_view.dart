@@ -41,8 +41,10 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -60,21 +62,21 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Total Amount
-            const AppText(
+            AppText(
               'Total Bill Amount',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildAmountInput(),
+            _buildAmountInput(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Description
-            const AppText(
+            AppText(
               'What\'s this for?',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -86,7 +88,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Split Options
-            _buildSplitOptions(),
+            _buildSplitOptions(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -94,18 +96,18 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
+                AppText(
                   'Split With',
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 TextButton.icon(
                   onPressed: () => _addParticipant(),
-                  icon: const Icon(Icons.add, color: AppColors.gold500, size: 20),
-                  label: const AppText(
+                  icon: Icon(Icons.add, color: colors.gold, size: 20),
+                  label: AppText(
                     'Add Person',
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ),
               ],
@@ -113,21 +115,21 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             const SizedBox(height: AppSpacing.md),
 
             // My Share
-            if (_includeMe) _buildMyShare(),
+            if (_includeMe) _buildMyShare(colors),
 
             // Participants List
             ..._participants.asMap().entries.map((entry) =>
-              _buildParticipantCard(entry.key, entry.value)
+              _buildParticipantCard(entry.key, entry.value, colors)
             ),
 
             if (_participants.isEmpty && !_includeMe)
-              _buildEmptyState(),
+              _buildEmptyState(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Summary
             if (_totalAmount > 0 && _participantCount > 0)
-              _buildSummary(),
+              _buildSummary(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -142,30 +144,30 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Pending Splits
-            _buildPendingSplits(),
+            _buildPendingSplits(colors),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInput(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
-          const AppText(
+          AppText(
             '\$',
             variant: AppTextVariant.headlineMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -176,10 +178,10 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
               style: AppTypography.headlineMedium,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: '0.00',
-                hintStyle: TextStyle(color: AppColors.textTertiary),
+                hintStyle: TextStyle(color: colors.textTertiary),
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -189,7 +191,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildSplitOptions() {
+  Widget _buildSplitOptions(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Column(
@@ -202,20 +204,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: _splitEqually ? AppColors.gold500 : Colors.transparent,
+                      color: _splitEqually ? colors.gold : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.view_module,
-                          color: _splitEqually ? AppColors.obsidian : AppColors.textSecondary,
+                          color: _splitEqually ? colors.canvas : colors.textSecondary,
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         AppText(
                           'Split Equally',
                           variant: AppTextVariant.labelSmall,
-                          color: _splitEqually ? AppColors.obsidian : AppColors.textSecondary,
+                          color: _splitEqually ? colors.canvas : colors.textSecondary,
                         ),
                       ],
                     ),
@@ -228,20 +230,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: !_splitEqually ? AppColors.gold500 : Colors.transparent,
+                      color: !_splitEqually ? colors.gold : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.tune,
-                          color: !_splitEqually ? AppColors.obsidian : AppColors.textSecondary,
+                          color: !_splitEqually ? colors.canvas : colors.textSecondary,
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         AppText(
                           'Custom Amounts',
                           variant: AppTextVariant.labelSmall,
-                          color: !_splitEqually ? AppColors.obsidian : AppColors.textSecondary,
+                          color: !_splitEqually ? colors.canvas : colors.textSecondary,
                         ),
                       ],
                     ),
@@ -251,20 +253,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          const Divider(color: AppColors.borderSubtle),
+          Divider(color: colors.borderSubtle),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const AppText(
+              AppText(
                 'Include myself in the split',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               Switch(
                 value: _includeMe,
                 onChanged: (value) => setState(() => _includeMe = value),
-                activeColor: AppColors.gold500,
+                activeColor: colors.gold,
               ),
             ],
           ),
@@ -273,7 +275,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildMyShare() {
+  Widget _buildMyShare(ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: AppCard(
@@ -284,27 +286,27 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.gold500, AppColors.gold600],
+                gradient: LinearGradient(
+                  colors: [colors.gold, colors.gold.withValues(alpha: 0.8)],
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.full),
               ),
-              child: const Icon(Icons.person, color: AppColors.obsidian),
+              child: Icon(Icons.person, color: colors.canvas),
             ),
             const SizedBox(width: AppSpacing.md),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
                     'You',
                     variant: AppTextVariant.labelLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     'Your share',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -312,7 +314,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             AppText(
               '\$${_myShare.toStringAsFixed(2)}',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.gold500,
+              color: colors.gold,
             ),
           ],
         ),
@@ -320,7 +322,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildParticipantCard(int index, _Participant participant) {
+  Widget _buildParticipantCard(int index, _Participant participant, ThemeColors colors) {
     final share = _splitEqually && _participantCount > 0
         ? _totalAmount / _participantCount
         : participant.amount;
@@ -347,14 +349,14 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: Center(
                   child: AppText(
                     participant.name[0].toUpperCase(),
                     variant: AppTextVariant.titleMedium,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ),
               ),
@@ -366,12 +368,12 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                     AppText(
                       participant.name,
                       variant: AppTextVariant.labelLarge,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     AppText(
                       participant.phone,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -382,10 +384,10 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   child: TextField(
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.right,
-                    style: AppTypography.labelLarge.copyWith(color: AppColors.gold500),
+                    style: AppTypography.labelLarge.copyWith(color: colors.gold),
                     decoration: InputDecoration(
                       prefixText: '\$',
-                      prefixStyle: AppTypography.labelLarge.copyWith(color: AppColors.gold500),
+                      prefixStyle: AppTypography.labelLarge.copyWith(color: colors.gold),
                       border: InputBorder.none,
                       hintText: '0.00',
                     ),
@@ -400,7 +402,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 AppText(
                   '\$${share.toStringAsFixed(2)}',
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
             ],
           ),
@@ -409,22 +411,22 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.group_add,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 48,
             ),
             const SizedBox(height: AppSpacing.md),
-            const AppText(
+            AppText(
               'Add people to split with',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -433,7 +435,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildSummary() {
+  Widget _buildSummary(ThemeColors colors) {
     final totalAssigned = _participants.fold(0.0, (sum, p) {
       final share = _splitEqually ? _totalAmount / _participantCount : p.amount;
       return sum + share;
@@ -448,15 +450,15 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const AppText(
+              AppText(
                 'Total Bill',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               AppText(
                 '\$${_totalAmount.toStringAsFixed(2)}',
                 variant: AppTextVariant.labelLarge,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
@@ -464,15 +466,15 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const AppText(
+              AppText(
                 'Split among',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               AppText(
                 '$_participantCount people',
                 variant: AppTextVariant.labelLarge,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ],
           ),
@@ -495,20 +497,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          const Divider(color: AppColors.borderSubtle),
+          Divider(color: colors.borderSubtle),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const AppText(
+              AppText(
                 'Requesting from others',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               AppText(
                 '\$${(_totalAmount - _myShare).toStringAsFixed(2)}',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ],
           ),
@@ -517,7 +519,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     );
   }
 
-  Widget _buildPendingSplits() {
+  Widget _buildPendingSplits(ThemeColors colors) {
     final pendingSplits = [
       _PendingSplit('Dinner', 120.00, 4, 2, DateTime.now().subtract(const Duration(days: 2))),
       _PendingSplit('Movie Night', 45.00, 3, 3, DateTime.now().subtract(const Duration(days: 5))),
@@ -528,18 +530,18 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Pending Splits',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
-        ...pendingSplits.map((split) => _buildPendingSplitItem(split)),
+        ...pendingSplits.map((split) => _buildPendingSplitItem(split, colors)),
       ],
     );
   }
 
-  Widget _buildPendingSplitItem(_PendingSplit split) {
+  Widget _buildPendingSplitItem(_PendingSplit split, ThemeColors colors) {
     final isPaid = split.paidCount == split.totalCount;
 
     return Padding(
@@ -570,12 +572,12 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   AppText(
                     split.description,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     '${split.paidCount}/${split.totalCount} paid',
                     variant: AppTextVariant.bodySmall,
-                    color: isPaid ? AppColors.successBase : AppColors.textSecondary,
+                    color: isPaid ? AppColors.successBase : colors.textSecondary,
                   ),
                 ],
               ),
@@ -586,17 +588,17 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 AppText(
                   '\$${split.amount.toStringAsFixed(2)}',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   _formatDate(split.date),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ],
             ),
             const SizedBox(width: AppSpacing.sm),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
           ],
         ),
       ),
@@ -615,10 +617,11 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
   void _addParticipant() {
     final nameController = TextEditingController();
     final phoneController = TextEditingController();
+    final colors = context.colors;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -639,10 +642,10 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               variant: AppTextVariant.titleMedium,
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'Name',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -651,10 +654,10 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               prefixIcon: Icons.person,
             ),
             const SizedBox(height: AppSpacing.lg),
-            const AppText(
+            AppText(
               'Phone Number',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(

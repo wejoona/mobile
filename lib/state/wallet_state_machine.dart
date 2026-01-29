@@ -54,10 +54,24 @@ class WalletStateMachine extends Notifier<WalletState> {
         error: null,
       );
     } on ApiException catch (e) {
-      state = state.copyWith(
-        status: WalletStatus.error,
-        error: e.message,
-      );
+      // If 404 "Wallet not found", set loaded state with empty wallet
+      // This triggers the "Create Wallet" card in home view
+      if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
+        state = state.copyWith(
+          status: WalletStatus.loaded,
+          walletId: '',
+          walletAddress: null,
+          usdBalance: 0,
+          usdcBalance: 0,
+          pendingBalance: 0,
+          error: null,
+        );
+      } else {
+        state = state.copyWith(
+          status: WalletStatus.error,
+          error: e.message,
+        );
+      }
     } catch (e) {
       state = state.copyWith(
         status: WalletStatus.error,

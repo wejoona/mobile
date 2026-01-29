@@ -7,6 +7,8 @@ import '../../../design/components/composed/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../state/index.dart';
+import '../../../services/currency/currency_provider.dart';
+import '../../../services/api/api_client.dart';
 
 /// Simplified Home View - Focus on essential wallet features only
 /// - Prominent balance display
@@ -21,17 +23,18 @@ class HomeView extends ConsumerWidget {
     final walletState = ref.watch(walletStateMachineProvider);
     final txState = ref.watch(transactionStateMachineProvider);
     final userName = ref.watch(userDisplayNameProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             await ref.read(walletStateMachineProvider.notifier).refresh();
             await ref.read(transactionStateMachineProvider.notifier).refresh();
           },
-          color: AppColors.gold500,
-          backgroundColor: AppColors.slate,
+          color: colors.gold,
+          backgroundColor: colors.container,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -43,7 +46,7 @@ class HomeView extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Balance Card
-                _buildBalanceCard(context, walletState),
+                _buildBalanceCard(context, ref, walletState),
                 const SizedBox(height: AppSpacing.xxl),
 
                 // Quick Actions - Only 3 essential actions
@@ -68,39 +71,51 @@ class HomeView extends ConsumerWidget {
 
   Widget _buildHeader(BuildContext context, String userName) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    // Format display name - if it's a phone number, just show "Welcome back"
+    final isPhoneNumber = userName.startsWith('+') || RegExp(r'^\d+$').hasMatch(userName);
+    final displayName = isPhoneNumber ? null : userName;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText(
-              l10n.home_welcomeBack,
-              variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
-            ),
-            const SizedBox(height: AppSpacing.xxs),
-            AppText(
-              userName,
-              variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                l10n.home_welcomeBack,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+              ),
+              if (displayName != null) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  displayName,
+                  variant: AppTextVariant.headlineSmall,
+                  color: colors.textPrimary,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
         ),
         Row(
           children: [
             IconButton(
               onPressed: () => context.push('/notifications'),
-              icon: const Icon(
+              icon: Icon(
                 Icons.notifications_outlined,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
             IconButton(
               onPressed: () => context.go('/settings'),
-              icon: const Icon(
+              icon: Icon(
                 Icons.settings_outlined,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -109,18 +124,22 @@ class HomeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context, WalletState walletState) {
+  Widget _buildBalanceCard(BuildContext context, WidgetRef ref, WalletState walletState) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final currencyState = ref.watch(currencyProvider);
+
     // Handle null/empty wallet state
     if (walletState.status == WalletStatus.initial) {
-      return _buildLoadingCard();
+      return _buildLoadingCard(context);
     }
 
     if (walletState.hasError) {
       return _buildErrorCard(
+        context,
         walletState.error ?? l10n.error_failedToLoadBalance,
         onRetry: () {
-          // Access context through builder pattern if needed
+          ref.read(walletStateMachineProvider.notifier).refresh();
         },
       );
     }
@@ -129,26 +148,82 @@ class HomeView extends ConsumerWidget {
     final hasWallet = walletState.walletId.isNotEmpty;
 
     if (!hasWallet && !walletState.isLoading) {
-      return _buildCreateWalletCard(context);
+      return _buildCreateWalletCard(context, ref);
     }
 
-    return Column(
-      children: [
-        // Total balance header
-        AppCard(
-          variant: AppCardVariant.elevated,
+    // Primary balance is USDC (the stablecoin)
+    final primaryBalance = walletState.usdcBalance;
+
+    // Get reference currency display if enabled (informative only)
+    String? referenceAmount;
+    if (currencyState.shouldShowReference && !walletState.isLoading) {
+      referenceAmount = ref.read(currencyProvider.notifier).getFormattedReference(
+        primaryBalance,
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.container,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(
+          color: colors.borderSubtle,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.cardPadding),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppText(
-                'Total Balance',
-                variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+              // Header with label and subtle USDC badge
+              Row(
+                children: [
+                  const Icon(
+                    Icons.menu,
+                    color: AppColors.gold500,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  AppText(
+                    'Total Balance',
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const Spacer(),
+                  // Subtle USDC badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xxs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.gold500.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                    child: const AppText(
+                      'USDC',
+                      variant: AppTextVariant.labelSmall,
+                      color: AppColors.gold500,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Primary Balance - CENTERED, VIBRANT GOLD, SCALABLE
               if (walletState.isLoading)
-                const SizedBox(
-                  height: 40,
+                SizedBox(
+                  height: 56,
                   child: Center(
                     child: CircularProgressIndicator(
                       color: AppColors.gold500,
@@ -156,71 +231,125 @@ class HomeView extends ConsumerWidget {
                     ),
                   ),
                 )
-              else
-                AppText(
-                  '\$${walletState.totalBalance.toStringAsFixed(2)}',
-                  variant: AppTextVariant.displaySmall,
-                  color: AppColors.textPrimary,
+              else ...[
+                Center(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: AppText(
+                      '\$${_formatBalanceCompact(primaryBalance)}',
+                      variant: AppTextVariant.displayLarge,
+                      color: AppColors.gold500,
+                    ),
+                  ),
                 ),
+                // Reference currency (informative only)
+                if (referenceAmount != null && referenceAmount.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Center(
+                    child: AppText(
+                      '\u2248 $referenceAmount',
+                      variant: AppTextVariant.bodyMedium,
+                      color: colors.textTertiary,
+                    ),
+                  ),
+                ],
+                // Pending balance indicator
+                if (walletState.pendingBalance > 0) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.schedule,
+                          size: 14,
+                          color: colors.warningText,
+                        ),
+                        const SizedBox(width: AppSpacing.xxs),
+                        AppText(
+                          '+\$${_formatBalance(walletState.pendingBalance)} pending',
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.warningText,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ],
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-
-        // USD and USDC balances side by side
-        Row(
-          children: [
-            // USD Balance
-            Expanded(
-              child: _BalanceCard(
-                label: 'USD',
-                balance: walletState.usdBalance,
-                icon: Icons.attach_money,
-                iconColor: AppColors.successBase,
-                isLoading: walletState.isLoading,
-                subtitle: 'Fiat Balance',
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            // USDC Balance
-            Expanded(
-              child: _BalanceCard(
-                label: 'USDC',
-                balance: walletState.usdcBalance,
-                icon: Icons.currency_bitcoin,
-                iconColor: AppColors.infoBase,
-                isLoading: walletState.isLoading,
-                subtitle: 'Stablecoin',
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildLoadingCard() {
+  /// Format balance with commas (e.g., 142850.00 -> 142,850.00)
+  String _formatBalance(double amount) {
+    final parts = amount.toStringAsFixed(2).split('.');
+    final intPart = parts[0];
+    final decPart = parts[1];
+
+    // Add commas to integer part
+    final buffer = StringBuffer();
+    for (int i = 0; i < intPart.length; i++) {
+      if (i > 0 && (intPart.length - i) % 3 == 0) {
+        buffer.write(',');
+      }
+      buffer.write(intPart[i]);
+    }
+
+    return '${buffer.toString()}.$decPart';
+  }
+
+  /// Format balance with K/M/B notation for large amounts
+  /// < 1000: show full amount (e.g., 999.00)
+  /// >= 1000: show K format (e.g., 1.2K)
+  /// >= 1,000,000: show M format (e.g., 1.2M)
+  /// >= 1,000,000,000: show B format (e.g., 1.2B)
+  String _formatBalanceCompact(double amount) {
+    if (amount < 1000) {
+      // Show full amount with 2 decimals
+      return amount.toStringAsFixed(2);
+    } else if (amount < 1000000) {
+      // Show in K format with 1 decimal
+      final kValue = amount / 1000;
+      return '${kValue.toStringAsFixed(1)}K';
+    } else if (amount < 1000000000) {
+      // Show in M format with 1 decimal
+      final mValue = amount / 1000000;
+      return '${mValue.toStringAsFixed(1)}M';
+    } else {
+      // Show in B format with 1 decimal
+      final bValue = amount / 1000000000;
+      return '${bValue.toStringAsFixed(1)}B';
+    }
+  }
+
+  Widget _buildLoadingCard(BuildContext context) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            color: AppColors.gold500,
+          CircularProgressIndicator(
+            color: colors.gold,
             strokeWidth: 2,
           ),
           const SizedBox(height: AppSpacing.md),
-          const AppText(
+          AppText(
             'Loading wallet...',
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCreateWalletCard(BuildContext context) {
+  Widget _buildCreateWalletCard(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Column(
@@ -229,54 +358,105 @@ class HomeView extends ConsumerWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.15),
+              gradient: const LinearGradient(
+                colors: AppColors.goldGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: const Icon(
               Icons.account_balance_wallet_outlined,
-              color: AppColors.gold500,
+              color: AppColors.textInverse,
               size: 32,
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const AppText(
-            'No Wallet Found',
+          AppText(
+            l10n.wallet_activateTitle,
             variant: AppTextVariant.titleLarge,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          const AppText(
-            'Create your wallet to start sending and receiving money',
+          AppText(
+            l10n.wallet_activateDescription,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
-                // TODO: Navigate to wallet creation flow
-                context.push('/settings/kyc');
-              },
+              onPressed: () => _activateWallet(context, ref),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold500,
-                foregroundColor: AppColors.obsidian,
+                backgroundColor: colors.gold,
+                foregroundColor: colors.textInverse,
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
               ),
-              child: const AppText(
-                'Create Wallet',
+              child: AppText(
+                l10n.wallet_activateButton,
                 variant: AppTextVariant.labelLarge,
-                color: AppColors.obsidian,
+                color: colors.textInverse,
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _activateWallet(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.container,
+        content: Row(
+          children: [
+            CircularProgressIndicator(color: colors.gold),
+            const SizedBox(width: AppSpacing.lg),
+            AppText(
+              l10n.wallet_activating,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textPrimary,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Call wallet creation endpoint
+      final dio = ref.read(dioProvider);
+      await dio.post('/wallet/create');
+
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      // Refresh wallet state
+      await ref.read(walletStateMachineProvider.notifier).fetch();
+    } catch (e) {
+      // Close loading dialog
+      if (context.mounted) Navigator.of(context).pop();
+
+      // Show error
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.wallet_activateFailed),
+            backgroundColor: colors.error,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildQuickActions(BuildContext context) {
@@ -310,14 +490,15 @@ class HomeView extends ConsumerWidget {
   }
 
   Widget _buildServicesLink(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: () => context.push('/services'),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Row(
           children: [
@@ -325,37 +506,37 @@ class HomeView extends ConsumerWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.15),
+                color: colors.gold.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.apps,
-                color: AppColors.gold500,
+                color: colors.gold,
                 size: 24,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
                     'All Services',
                     variant: AppTextVariant.labelLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
-                  SizedBox(height: AppSpacing.xxs),
+                  const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     'View all available features',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 18,
             ),
           ],
@@ -366,7 +547,7 @@ class HomeView extends ConsumerWidget {
 
   Widget _buildTransactionList(BuildContext context, TransactionListState txState) {
     if (txState.status == TransactionListStatus.error) {
-      return _buildErrorCard(txState.error ?? 'Failed to load transactions');
+      return _buildErrorCard(context, txState.error ?? 'Failed to load transactions');
     }
 
     if (txState.isLoading && txState.transactions.isEmpty) {
@@ -377,7 +558,7 @@ class HomeView extends ConsumerWidget {
     }
 
     if (txState.transactions.isEmpty) {
-      return _buildEmptyTransactions();
+      return _buildEmptyTransactions(context);
     }
 
     // Show only 3-5 recent transactions
@@ -397,63 +578,68 @@ class HomeView extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyTransactions() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
+  Widget _buildEmptyTransactions(BuildContext context) {
+    final colors = context.colors;
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: colors.container,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: colors.borderSubtle),
+        ),
       child: Column(
         children: [
           Container(
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary.withValues(alpha: 0.1),
+              color: colors.textTertiary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.receipt_long_outlined,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 32,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          const AppText(
+          AppText(
             'No Transactions Yet',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          const AppText(
+          AppText(
             'Your recent transactions will appear here',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
             textAlign: TextAlign.center,
           ),
         ],
       ),
+      ),
     );
   }
 
-  Widget _buildErrorCard(String error, {VoidCallback? onRetry}) {
+  Widget _buildErrorCard(BuildContext context, String error, {VoidCallback? onRetry}) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Center(
         child: Column(
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
-              color: AppColors.errorBase,
+              color: colors.error,
               size: 48,
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
@@ -503,85 +689,6 @@ class HomeView extends ConsumerWidget {
   }
 }
 
-/// Individual balance card for USD/USDC display
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({
-    required this.label,
-    required this.balance,
-    required this.icon,
-    required this.iconColor,
-    required this.isLoading,
-    this.subtitle,
-  });
-
-  final String label;
-  final double balance;
-  final IconData icon;
-  final Color iconColor;
-  final bool isLoading;
-  final String? subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Icon(icon, color: iconColor, size: 18),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              AppText(
-                label,
-                variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          if (isLoading)
-            const SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                color: AppColors.gold500,
-                strokeWidth: 2,
-              ),
-            )
-          else
-            AppText(
-              '\$${balance.toStringAsFixed(2)}',
-              variant: AppTextVariant.titleLarge,
-              color: AppColors.textPrimary,
-            ),
-          if (subtitle != null) ...[
-            const SizedBox(height: AppSpacing.xxs),
-            AppText(
-              subtitle!,
-              variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 /// Quick action button component - simplified
 class _QuickActionButton extends StatelessWidget {
   const _QuickActionButton({
@@ -596,14 +703,15 @@ class _QuickActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
@@ -611,16 +719,16 @@ class _QuickActionButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 22),
+              child: Icon(icon, color: colors.gold, size: 22),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),

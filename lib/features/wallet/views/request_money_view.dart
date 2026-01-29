@@ -30,18 +30,20 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Request Money',
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -52,21 +54,21 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
           children: [
             if (!_showQr) ...[
               // Amount Input
-              const AppText(
+              AppText(
                 'Request Amount',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
-              _buildAmountInput(),
+              _buildAmountInput(colors),
 
               const SizedBox(height: AppSpacing.xxl),
 
               // Note (optional)
-              const AppText(
+              AppText(
                 'Add a Note (Optional)',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppInput(
@@ -102,11 +104,11 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                         backgroundColor: Colors.white,
                         eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
-                          color: AppColors.obsidian,
+                          color: Color(0xFF1A1A1F), // Always dark for visibility
                         ),
                         dataModuleStyle: const QrDataModuleStyle(
                           dataModuleShape: QrDataModuleShape.square,
-                          color: AppColors.obsidian,
+                          color: Color(0xFF1A1A1F), // Always dark for visibility
                         ),
                       ),
                     ),
@@ -114,14 +116,14 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     AppText(
                       'Request for \$${_amountController.text}',
                       variant: AppTextVariant.headlineSmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                     if (_noteController.text.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.sm),
                       AppText(
                         '"${_noteController.text}"',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -129,7 +131,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     AppText(
                       'From: ${userState.phone ?? 'Your account'}',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
@@ -186,54 +188,32 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             const SizedBox(height: AppSpacing.xxl),
 
             // Info Card
-            AppCard(
-              variant: AppCardVariant.subtle,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
-                      SizedBox(width: AppSpacing.sm),
-                      AppText(
-                        'How it works',
-                        variant: AppTextVariant.labelMedium,
-                        color: AppColors.textPrimary,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildInfoStep('1', 'Generate a payment request with amount'),
-                  _buildInfoStep('2', 'Share the QR code or link with the payer'),
-                  _buildInfoStep('3', 'They scan/click to pay you directly'),
-                ],
-              ),
-            ),
+            _buildInfoCard(colors),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildAmountInput(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: _amountError != null ? AppColors.errorBase : AppColors.borderSubtle,
+          color: _amountError != null ? colors.error : colors.borderSubtle,
         ),
       ),
       child: Row(
         children: [
-          const AppText(
+          AppText(
             '\$',
             variant: AppTextVariant.headlineMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -243,11 +223,11 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
-              style: AppTypography.headlineMedium,
-              decoration: const InputDecoration(
+              style: AppTypography.headlineMedium.copyWith(color: colors.textPrimary),
+              decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: '0.00',
-                hintStyle: TextStyle(color: AppColors.textTertiary),
+                hintStyle: TextStyle(color: colors.textTertiary),
               ),
               onChanged: (_) {
                 _validateAmount();
@@ -260,7 +240,33 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     );
   }
 
-  Widget _buildInfoStep(String number, String text) {
+  Widget _buildInfoCard(ThemeColors colors) {
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline, color: colors.info, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              AppText(
+                'How it works',
+                variant: AppTextVariant.labelMedium,
+                color: colors.textPrimary,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _buildInfoStep('1', 'Generate a payment request with amount', colors),
+          _buildInfoStep('2', 'Share the QR code or link with the payer', colors),
+          _buildInfoStep('3', 'They scan/click to pay you directly', colors),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoStep(String number, String text, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -270,14 +276,14 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.2),
+              color: colors.gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: AppText(
                 number,
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           ),
@@ -286,7 +292,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             child: AppText(
               text,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -330,11 +336,12 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
   }
 
   void _copyLink() {
+    final colors = context.colors;
     Clipboard.setData(ClipboardData(text: _generatePaymentLink()));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Payment link copied!'),
-        backgroundColor: AppColors.successBase,
+      SnackBar(
+        content: const Text('Payment link copied!'),
+        backgroundColor: colors.success,
       ),
     );
   }
@@ -368,14 +375,15 @@ class _ShareButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
@@ -383,16 +391,16 @@ class _ShareButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 22),
+              child: Icon(icon, color: colors.gold, size: 22),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),

@@ -9,8 +9,9 @@ class LimitsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -18,7 +19,7 @@ class LimitsView extends ConsumerWidget {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -28,18 +29,19 @@ class LimitsView extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Account Level Badge
-            _buildAccountLevelCard(),
+            _buildAccountLevelCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Daily Limits
-            const AppText(
+            AppText(
               'Daily Limits',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildLimitCard(
+              colors: colors,
               title: 'Send Money',
               used: 250.00,
               limit: 1000.00,
@@ -47,6 +49,7 @@ class LimitsView extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             _buildLimitCard(
+              colors: colors,
               title: 'Withdraw',
               used: 0.00,
               limit: 500.00,
@@ -54,6 +57,7 @@ class LimitsView extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             _buildLimitCard(
+              colors: colors,
               title: 'Deposit',
               used: 500.00,
               limit: 5000.00,
@@ -63,13 +67,14 @@ class LimitsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // Monthly Limits
-            const AppText(
+            AppText(
               'Monthly Limits',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildLimitCard(
+              colors: colors,
               title: 'Total Transactions',
               used: 2450.00,
               limit: 10000.00,
@@ -78,6 +83,7 @@ class LimitsView extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             _buildLimitCard(
+              colors: colors,
               title: 'International Transfers',
               used: 0.00,
               limit: 2500.00,
@@ -88,7 +94,7 @@ class LimitsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // Upgrade CTA
-            _buildUpgradeCard(),
+            _buildUpgradeCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -98,22 +104,22 @@ class LimitsView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
-                      SizedBox(width: AppSpacing.sm),
+                      const Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+                      const SizedBox(width: AppSpacing.sm),
                       AppText(
                         'About Limits',
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.textPrimary,
+                        color: colors.textPrimary,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  const AppText(
+                  AppText(
                     'Limits reset at midnight UTC. Complete KYC verification to increase your limits.',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -124,7 +130,7 @@ class LimitsView extends ConsumerWidget {
     );
   }
 
-  Widget _buildAccountLevelCard() {
+  Widget _buildAccountLevelCard(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Row(
@@ -140,34 +146,34 @@ class LimitsView extends ConsumerWidget {
               ),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.verified,
-              color: AppColors.obsidian,
+              color: colors.canvas,
               size: 28,
             ),
           ),
           const SizedBox(width: AppSpacing.lg),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
                   'Basic Account',
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
-                SizedBox(height: AppSpacing.xxs),
+                const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   'Complete KYC for higher limits',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ),
@@ -175,6 +181,7 @@ class LimitsView extends ConsumerWidget {
   }
 
   Widget _buildLimitCard({
+    required ThemeColors colors,
     required String title,
     required double used,
     required double limit,
@@ -197,10 +204,10 @@ class LimitsView extends ConsumerWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                child: Icon(icon, color: AppColors.gold500, size: 20),
+                child: Icon(icon, color: colors.gold, size: 20),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -210,14 +217,14 @@ class LimitsView extends ConsumerWidget {
                     AppText(
                       title,
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     AppText(
                       '\$${remaining.toStringAsFixed(2)} remaining',
                       variant: AppTextVariant.bodySmall,
                       color: isAtLimit
                           ? AppColors.errorBase
-                          : (isNearLimit ? AppColors.warningBase : AppColors.textSecondary),
+                          : (isNearLimit ? AppColors.warningBase : colors.textSecondary),
                     ),
                   ],
                 ),
@@ -228,12 +235,12 @@ class LimitsView extends ConsumerWidget {
                   AppText(
                     '\$${used.toStringAsFixed(2)}',
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     'of \$${limit.toStringAsFixed(2)}',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                   ),
                 ],
               ),
@@ -245,11 +252,11 @@ class LimitsView extends ConsumerWidget {
             borderRadius: BorderRadius.circular(AppRadius.xs),
             child: LinearProgressIndicator(
               value: percentage,
-              backgroundColor: AppColors.borderSubtle,
+              backgroundColor: colors.borderSubtle,
               valueColor: AlwaysStoppedAnimation<Color>(
                 isAtLimit
                     ? AppColors.errorBase
-                    : (isNearLimit ? AppColors.warningBase : AppColors.gold500),
+                    : (isNearLimit ? AppColors.warningBase : colors.gold),
               ),
               minHeight: 6,
             ),
@@ -259,20 +266,20 @@ class LimitsView extends ConsumerWidget {
     );
   }
 
-  Widget _buildUpgradeCard() {
+  Widget _buildUpgradeCard(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.gold500.withValues(alpha: 0.15),
+            colors.gold.withValues(alpha: 0.15),
             AppColors.gold600.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.gold500.withValues(alpha: 0.3)),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -280,37 +287,37 @@ class LimitsView extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.2),
+              color: colors.gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.trending_up,
-              color: AppColors.gold500,
+              color: colors.gold,
               size: 24,
             ),
           ),
           const SizedBox(width: AppSpacing.lg),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
                   'Need higher limits?',
                   variant: AppTextVariant.labelLarge,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
-                SizedBox(height: AppSpacing.xxs),
+                const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   'Verify your identity to unlock premium limits',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.arrow_forward,
-            color: AppColors.gold500,
+            color: colors.gold,
           ),
         ],
       ),

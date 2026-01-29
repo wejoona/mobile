@@ -38,9 +38,10 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: margin,
-      decoration: _buildDecoration(),
+      decoration: _buildDecoration(colors),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(borderRadius ?? AppRadius.xl),
@@ -59,16 +60,16 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  BoxDecoration _buildDecoration() {
+  BoxDecoration _buildDecoration(ThemeColors colors) {
     final radius = borderRadius ?? AppRadius.xl;
 
     switch (variant) {
       case AppCardVariant.elevated:
         return BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: AppColors.borderSubtle,
+            color: colors.borderSubtle,
             width: 1,
           ),
           boxShadow: AppShadows.card,
@@ -76,7 +77,7 @@ class AppCard extends StatelessWidget {
 
       case AppCardVariant.goldAccent:
         return BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
             color: AppColors.borderGold,
@@ -87,20 +88,20 @@ class AppCard extends StatelessWidget {
 
       case AppCardVariant.subtle:
         return BoxDecoration(
-          color: AppColors.graphite,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: AppColors.borderSubtle,
+            color: colors.borderSubtle,
             width: 1,
           ),
         );
 
       case AppCardVariant.glass:
         return BoxDecoration(
-          color: AppColors.glass,
+          color: colors.isDark ? AppColors.glass : colors.container.withOpacity(0.8),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: AppColors.borderSubtle,
+            color: colors.borderSubtle,
             width: 1,
           ),
           boxShadow: AppShadows.md,

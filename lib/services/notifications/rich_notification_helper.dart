@@ -350,6 +350,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final mediaQuery = MediaQuery.of(context);
     final topPadding = mediaQuery.padding.top;
 
@@ -376,10 +377,10 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    color: colors.border.withOpacity(0.1),
                   ),
                 ),
                 child: Row(
@@ -388,12 +389,12 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.gold500.withOpacity(0.1),
+                        color: colors.gold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.notifications_rounded,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                         size: 20,
                       ),
                     ),
@@ -405,9 +406,10 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                         children: [
                           Text(
                             widget.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 14,
+                              color: colors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -417,10 +419,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                             widget.body,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.7),
+                              color: colors.textSecondary,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -429,7 +428,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close, size: 18),
+                      icon: Icon(Icons.close, size: 18, color: colors.textSecondary),
                       onPressed: _dismiss,
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(

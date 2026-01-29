@@ -27,10 +27,11 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final txState = ref.watch(transactionStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -48,15 +49,15 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Export Summary
-            _buildSummaryCard(txState),
+            _buildSummaryCard(txState, colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Format Selection
-            const AppText(
+            AppText(
               'Export Format',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
@@ -67,6 +68,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                     icon: Icons.table_chart_outlined,
                     title: 'CSV',
                     subtitle: 'Spreadsheet format',
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -76,6 +78,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                     icon: Icons.picture_as_pdf_outlined,
                     title: 'PDF',
                     subtitle: 'Document format',
+                    colors: colors,
                   ),
                 ),
               ],
@@ -84,36 +87,36 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
             const SizedBox(height: AppSpacing.xxl),
 
             // Period Selection
-            const AppText(
+            AppText(
               'Time Period',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             Wrap(
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                _buildPeriodChip(ExportPeriod.week, 'Last 7 Days'),
-                _buildPeriodChip(ExportPeriod.month, 'Last 30 Days'),
-                _buildPeriodChip(ExportPeriod.quarter, 'Last 90 Days'),
-                _buildPeriodChip(ExportPeriod.year, 'Last Year'),
-                _buildPeriodChip(ExportPeriod.custom, 'Custom'),
+                _buildPeriodChip(ExportPeriod.week, 'Last 7 Days', colors),
+                _buildPeriodChip(ExportPeriod.month, 'Last 30 Days', colors),
+                _buildPeriodChip(ExportPeriod.quarter, 'Last 90 Days', colors),
+                _buildPeriodChip(ExportPeriod.year, 'Last Year', colors),
+                _buildPeriodChip(ExportPeriod.custom, 'Custom', colors),
               ],
             ),
 
             if (_selectedPeriod == ExportPeriod.custom) ...[
               const SizedBox(height: AppSpacing.lg),
-              _buildCustomDateRange(),
+              _buildCustomDateRange(colors),
             ],
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Options
-            const AppText(
+            AppText(
               'Include in Export',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
@@ -121,6 +124,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
               subtitle: 'Notes, descriptions, references',
               value: _includeDetails,
               onChanged: (value) => setState(() => _includeDetails = value),
+              colors: colors,
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
@@ -128,6 +132,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
               subtitle: 'Transaction type classifications',
               value: _includeCategories,
               onChanged: (value) => setState(() => _includeCategories = value),
+              colors: colors,
             ),
 
             const SizedBox(height: AppSpacing.xxxl),
@@ -185,7 +190,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     );
   }
 
-  Widget _buildSummaryCard(TransactionListState txState) {
+  Widget _buildSummaryCard(TransactionListState txState, ThemeColors colors) {
     final transactionCount = txState.transactions.length;
     final dateRange = _getDateRangeText();
 
@@ -199,12 +204,12 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.1),
+                  color: colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.download,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 28,
                 ),
               ),
@@ -216,13 +221,13 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                     AppText(
                       '$transactionCount Transactions',
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       dateRange,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -239,6 +244,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     required IconData icon,
     required String title,
     required String subtitle,
+    required ThemeColors colors,
   }) {
     final isSelected = _selectedFormat == format;
 
@@ -247,10 +253,10 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : AppColors.slate,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -258,20 +264,20 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+              color: isSelected ? colors.gold : colors.textSecondary,
               size: 32,
             ),
             const SizedBox(height: AppSpacing.md),
             AppText(
               title,
               variant: AppTextVariant.labelLarge,
-              color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+              color: isSelected ? colors.gold : colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.xxs),
             AppText(
               subtitle,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
@@ -279,7 +285,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     );
   }
 
-  Widget _buildPeriodChip(ExportPeriod period, String label) {
+  Widget _buildPeriodChip(ExportPeriod period, String label, ThemeColors colors) {
     final isSelected = _selectedPeriod == period;
 
     return GestureDetector(
@@ -290,22 +296,22 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500 : AppColors.slate,
+          color: isSelected ? colors.gold : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelSmall,
-          color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+          color: isSelected ? colors.canvas : colors.textSecondary,
         ),
       ),
     );
   }
 
-  Widget _buildCustomDateRange() {
+  Widget _buildCustomDateRange(ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Column(
@@ -314,12 +320,14 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
             label: 'Start Date',
             date: _customStartDate,
             onTap: () => _selectDate(isStart: true),
+            colors: colors,
           ),
-          const Divider(color: AppColors.borderSubtle),
+          Divider(color: colors.borderSubtle),
           _buildDateSelector(
             label: 'End Date',
             date: _customEndDate,
             onTap: () => _selectDate(isStart: false),
+            colors: colors,
           ),
         ],
       ),
@@ -330,6 +338,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     required String label,
     required DateTime? date,
     required VoidCallback onTap,
+    required ThemeColors colors,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -337,7 +346,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            const Icon(Icons.calendar_today, color: AppColors.textSecondary, size: 20),
+            Icon(Icons.calendar_today, color: colors.textSecondary, size: 20),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Column(
@@ -346,17 +355,17 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                   AppText(
                     label,
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   AppText(
                     date != null ? _formatDate(date) : 'Select date',
                     variant: AppTextVariant.bodyMedium,
-                    color: date != null ? AppColors.textPrimary : AppColors.textTertiary,
+                    color: date != null ? colors.textPrimary : colors.textTertiary,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
           ],
         ),
       ),
@@ -368,6 +377,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required ThemeColors colors,
   }) {
     return AppCard(
       variant: AppCardVariant.subtle,
@@ -380,12 +390,12 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
                 AppText(
                   title,
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -393,7 +403,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.gold500,
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -433,11 +443,12 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       builder: (context, child) {
+        final colors = context.colors;
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              surface: AppColors.slate,
+            colorScheme: ColorScheme.dark(
+              primary: colors.gold,
+              surface: colors.container,
             ),
           ),
           child: child!,

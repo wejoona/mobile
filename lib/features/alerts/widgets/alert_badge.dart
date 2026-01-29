@@ -103,6 +103,7 @@ class AlertIconWithBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AlertBadge(
@@ -111,7 +112,7 @@ class AlertIconWithBadge extends ConsumerWidget {
         size: 16,
         child: Icon(
           Icons.notifications_outlined,
-          color: iconColor ?? AppColors.textPrimary,
+          color: iconColor ?? colors.textPrimary,
           size: iconSize,
         ),
       ),
@@ -130,14 +131,15 @@ class AlertAppBarBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     return IconButton(
       onPressed: onTap,
-      icon: const AlertBadge(
-        offset: Offset(6, -6),
+      icon: AlertBadge(
+        offset: const Offset(6, -6),
         size: 16,
         child: Icon(
           Icons.notifications_outlined,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
       ),
     );

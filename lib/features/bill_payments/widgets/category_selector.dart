@@ -121,6 +121,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -130,10 +131,10 @@ class _CategoryChip extends StatelessWidget {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500 : AppColors.slate,
+          color: isSelected ? colors.gold : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
             width: 1,
           ),
         ),
@@ -143,13 +144,13 @@ class _CategoryChip extends StatelessWidget {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+              color: isSelected ? colors.canvas : colors.textSecondary,
             ),
             const SizedBox(width: AppSpacing.xs),
             AppText(
               label,
               variant: AppTextVariant.labelMedium,
-              color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
+              color: isSelected ? colors.canvas : colors.textPrimary,
             ),
             if (badge != null) ...[
               const SizedBox(width: AppSpacing.xs),
@@ -160,14 +161,14 @@ class _CategoryChip extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.obsidian.withOpacity(0.2)
-                      : AppColors.gold500.withOpacity(0.2),
+                      ? colors.canvas.withOpacity(0.2)
+                      : colors.gold.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
                   '$badge',
                   variant: AppTextVariant.labelSmall,
-                  color: isSelected ? AppColors.obsidian : AppColors.gold500,
+                  color: isSelected ? colors.canvas : colors.gold,
                 ),
               ),
             ],
@@ -191,15 +192,16 @@ class _CategoryGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withOpacity(0.1) : AppColors.slate,
+          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -210,14 +212,14 @@ class _CategoryGridItem extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold500
-                    : AppColors.gold500.withOpacity(0.1),
+                    ? colors.gold
+                    : colors.gold.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 _getIconData(category.icon),
                 size: 24,
-                color: isSelected ? AppColors.obsidian : AppColors.gold500,
+                color: isSelected ? colors.canvas : colors.gold,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -226,7 +228,7 @@ class _CategoryGridItem extends StatelessWidget {
               child: AppText(
                 category.displayName,
                 variant: AppTextVariant.labelSmall,
-                color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                color: isSelected ? colors.gold : colors.textSecondary,
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,

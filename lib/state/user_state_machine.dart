@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../domain/enums/index.dart';
 import '../services/index.dart';
+import '../services/user/user_service.dart';
 import 'app_state.dart';
 import 'wallet_state_machine.dart';
 import 'transaction_state_machine.dart';
@@ -20,6 +21,7 @@ class UserStateMachine extends Notifier<UserState> {
 
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
   AuthService get _authService => ref.read(authServiceProvider);
+  UserService get _userService => ref.read(userServiceProvider);
 
   /// Check for stored authentication on app start
   Future<void> _checkStoredAuth() async {
@@ -37,12 +39,15 @@ class UserStateMachine extends Notifier<UserState> {
       final phone = await _storage.read(key: _phoneKey);
 
       if (token != null && token.isNotEmpty) {
-        // We have a token, try to validate it
+        // We have a token, set authenticated state first
         state = UserState(
           status: AuthStatus.authenticated,
           accessToken: token,
           phone: phone,
         );
+
+        // Fetch user profile to populate all user data
+        _fetchUserProfile();
 
         // Trigger wallet and transaction fetch after a small delay
         Future.delayed(const Duration(milliseconds: 100), () {
@@ -58,6 +63,43 @@ class UserStateMachine extends Notifier<UserState> {
       }
     } catch (e) {
       state = const UserState(status: AuthStatus.unauthenticated);
+    }
+  }
+
+  /// Fetch user profile to populate user data
+  Future<void> _fetchUserProfile() async {
+    try {
+      final profile = await _userService.getProfile();
+
+      // Update state with profile data
+      state = state.copyWith(
+        userId: profile.id,
+        phone: profile.phone,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        countryCode: profile.countryCode,
+        kycStatus: _parseKycStatus(profile.kycStatus),
+      );
+
+      // Also update storage with the phone in case it wasn't stored
+      await _storage.write(key: _phoneKey, value: profile.phone);
+    } catch (e) {
+      // Profile fetch failed, but user is still authenticated
+      // Don't change auth status
+    }
+  }
+
+  KycStatus _parseKycStatus(String status) {
+    switch (status.toLowerCase()) {
+      case 'verified':
+        return KycStatus.verified;
+      case 'pending':
+        return KycStatus.pending;
+      case 'rejected':
+        return KycStatus.rejected;
+      default:
+        return KycStatus.none;
     }
   }
 

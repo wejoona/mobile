@@ -56,6 +56,7 @@ class _SendViewState extends ConsumerState<SendView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final transferState = ref.watch(transferProvider);
     final walletState = ref.watch(walletStateMachineProvider);
     final recentContactsAsync = ref.watch(recentContactsProvider);
@@ -81,9 +82,9 @@ class _SendViewState extends ConsumerState<SendView>
         ref.read(transactionStateMachineProvider.notifier).refresh();
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Transfer successful!'),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: colors.success,
           ),
         );
         context.pop();
@@ -91,14 +92,14 @@ class _SendViewState extends ConsumerState<SendView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }
     });
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -111,9 +112,9 @@ class _SendViewState extends ConsumerState<SendView>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textTertiary,
+          indicatorColor: colors.gold,
+          labelColor: colors.gold,
+          unselectedLabelColor: colors.textTertiary,
           tabs: const [
             Tab(text: 'To Phone'),
             Tab(text: 'To Wallet'),
@@ -124,9 +125,9 @@ class _SendViewState extends ConsumerState<SendView>
         controller: _tabController,
         children: [
           // Internal Transfer (Phone)
-          _buildInternalTransfer(walletState, transferState, recentContactsAsync),
+          _buildInternalTransfer(walletState, transferState, recentContactsAsync, colors),
           // External Transfer (Wallet Address)
-          _buildExternalTransfer(walletState, transferState),
+          _buildExternalTransfer(walletState, transferState, colors),
         ],
       ),
     );
@@ -136,6 +137,7 @@ class _SendViewState extends ConsumerState<SendView>
     WalletState walletState,
     TransferState transferState,
     AsyncValue<List<AppContact>> recentContactsAsync,
+    ThemeColors colors,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -149,24 +151,24 @@ class _SendViewState extends ConsumerState<SendView>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
+                AppText(
                   'Available Balance',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 walletState.isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       )
                     : AppText(
                         '\$${walletState.availableBalance.toStringAsFixed(2)}',
                         variant: AppTextVariant.titleMedium,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
               ],
             ),
@@ -180,10 +182,10 @@ class _SendViewState extends ConsumerState<SendView>
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppText(
+                      AppText(
                         'Recent',
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       SizedBox(
@@ -199,6 +201,7 @@ class _SendViewState extends ConsumerState<SendView>
                               contact: contact,
                               isSelected: _selectedContact?.phone == contact.phone,
                               onTap: () => _selectContact(contact),
+                              colors: colors,
                             );
                           },
                         ),
@@ -214,31 +217,31 @@ class _SendViewState extends ConsumerState<SendView>
           // Recipient Section
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: AppText(
                   'Recipient',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
               // Open Saved Recipients Button
               TextButton.icon(
                 onPressed: _openSavedRecipients,
-                icon: const Icon(Icons.people, size: 18, color: AppColors.gold500),
-                label: const AppText(
+                icon: Icon(Icons.people, size: 18, color: colors.gold),
+                label: AppText(
                   'Saved',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
               // Open Device Contacts Button
               TextButton.icon(
                 onPressed: _openContacts,
-                icon: const Icon(Icons.contacts, size: 18, color: AppColors.gold500),
-                label: const AppText(
+                icon: Icon(Icons.contacts, size: 18, color: colors.gold),
+                label: AppText(
                   'Contacts',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],
@@ -255,6 +258,7 @@ class _SendViewState extends ConsumerState<SendView>
                   _phoneController.clear();
                 });
               },
+              colors: colors,
             )
           else if (_selectedContact != null)
             _SelectedContactCard(
@@ -265,6 +269,7 @@ class _SendViewState extends ConsumerState<SendView>
                   _phoneController.clear();
                 });
               },
+              colors: colors,
             )
           else
             PhoneInput(
@@ -278,33 +283,35 @@ class _SendViewState extends ConsumerState<SendView>
           const SizedBox(height: AppSpacing.xxl),
 
           // Amount
-          const AppText(
+          AppText(
             'Amount (USD)',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           _AmountInput(
             controller: _amountController,
             error: _amountError,
             onChanged: (_) => _validateAmount(),
+            colors: colors,
           ),
 
           // Quick amounts
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              _QuickAmountChip(amount: 5, onTap: () => _setAmount(5)),
+              _QuickAmountChip(amount: 5, onTap: () => _setAmount(5), colors: colors),
               const SizedBox(width: AppSpacing.sm),
-              _QuickAmountChip(amount: 10, onTap: () => _setAmount(10)),
+              _QuickAmountChip(amount: 10, onTap: () => _setAmount(10), colors: colors),
               const SizedBox(width: AppSpacing.sm),
-              _QuickAmountChip(amount: 25, onTap: () => _setAmount(25)),
+              _QuickAmountChip(amount: 25, onTap: () => _setAmount(25), colors: colors),
               const SizedBox(width: AppSpacing.sm),
-              _QuickAmountChip(amount: 50, onTap: () => _setAmount(50)),
+              _QuickAmountChip(amount: 50, onTap: () => _setAmount(50), colors: colors),
               const SizedBox(width: AppSpacing.sm),
               _QuickAmountChip(
                 label: 'MAX',
                 onTap: () => _setAmount(_availableBalance),
+                colors: colors,
               ),
             ],
           ),
@@ -327,6 +334,7 @@ class _SendViewState extends ConsumerState<SendView>
   Widget _buildExternalTransfer(
     WalletState walletState,
     TransferState transferState,
+    ThemeColors colors,
   ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -340,24 +348,24 @@ class _SendViewState extends ConsumerState<SendView>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
+                AppText(
                   'Available Balance',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 walletState.isLoading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       )
                     : AppText(
                         '\$${walletState.availableBalance.toStringAsFixed(2)}',
                         variant: AppTextVariant.titleMedium,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
               ],
             ),
@@ -368,21 +376,21 @@ class _SendViewState extends ConsumerState<SendView>
           // Wallet Address
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: AppText(
                   'Wallet Address',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
               // Scan QR Button
               TextButton.icon(
                 onPressed: () => context.push('/scan'),
-                icon: const Icon(Icons.qr_code_scanner, size: 18, color: AppColors.gold500),
-                label: const AppText(
+                icon: Icon(Icons.qr_code_scanner, size: 18, color: colors.gold),
+                label: AppText(
                   'Scan',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],
@@ -403,7 +411,7 @@ class _SendViewState extends ConsumerState<SendView>
                   child: AppText(
                     _addressError!,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.errorBase,
+                    color: colors.error,
                   ),
                 ),
             ],
@@ -412,16 +420,17 @@ class _SendViewState extends ConsumerState<SendView>
           const SizedBox(height: AppSpacing.xxl),
 
           // Amount
-          const AppText(
+          AppText(
             'Amount (USD)',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           _AmountInput(
             controller: _amountController,
             error: _amountError,
             onChanged: (_) => _validateAmount(),
+            colors: colors,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -430,19 +439,19 @@ class _SendViewState extends ConsumerState<SendView>
           AppCard(
             variant: AppCardVariant.subtle,
             padding: const EdgeInsets.all(AppSpacing.md),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.info_outline,
-                  color: AppColors.warningBase,
+                  color: colors.warning,
                   size: 20,
                 ),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(
-                    'External transfers are on the Polygon network. Network fees apply.',
+                    'External transfers may take a few minutes. Small fees apply.',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -517,9 +526,11 @@ class _SendViewState extends ConsumerState<SendView>
   Future<void> _openSavedRecipients() async {
     if (!mounted) return;
 
+    final colors = context.colors;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
@@ -545,9 +556,11 @@ class _SendViewState extends ConsumerState<SendView>
 
     if (!mounted) return;
 
+    final colors = context.colors;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
@@ -573,6 +586,7 @@ class _SendViewState extends ConsumerState<SendView>
   }
 
   void _showCountryPicker() {
+    final colors = context.colors;
     final countries = [
       ('+225', 'Ivory Coast', 'CI'),
       ('+234', 'Nigeria', 'NG'),
@@ -583,7 +597,7 @@ class _SendViewState extends ConsumerState<SendView>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
       ),
@@ -595,7 +609,7 @@ class _SendViewState extends ConsumerState<SendView>
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -610,14 +624,14 @@ class _SendViewState extends ConsumerState<SendView>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Center(
                     child: AppText(
                       c.$3,
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                 ),
@@ -625,7 +639,7 @@ class _SendViewState extends ConsumerState<SendView>
                 trailing: AppText(
                   c.$1,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 onTap: () {
                   setState(() {
@@ -716,6 +730,7 @@ class _SendViewState extends ConsumerState<SendView>
   }
 
   Future<void> _sendInternal() async {
+    final colors = context.colors;
     final amount = double.tryParse(_amountController.text) ?? 0;
     final phone = _selectedSavedContact?.phone ??
         _selectedContact?.phone ??
@@ -754,9 +769,9 @@ class _SendViewState extends ConsumerState<SendView>
     } else if (result == PinConfirmationResult.failed) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Too many incorrect attempts. Please try again later.'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -764,6 +779,7 @@ class _SendViewState extends ConsumerState<SendView>
   }
 
   Future<void> _sendExternal() async {
+    final colors = context.colors;
     final amount = double.tryParse(_amountController.text) ?? 0;
     final address = _addressController.text;
     final shortAddress = '${address.substring(0, 6)}...${address.substring(address.length - 4)}';
@@ -799,9 +815,9 @@ class _SendViewState extends ConsumerState<SendView>
     } else if (result == PinConfirmationResult.failed) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Too many incorrect attempts. Please try again later.'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -810,24 +826,25 @@ class _SendViewState extends ConsumerState<SendView>
 
   /// Offer to save a contact after successful transfer
   void _offerToSaveContact(String defaultName, String? phone, String? walletAddress) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const Text(
+        backgroundColor: colors.container,
+        title: Text(
           'Save Recipient?',
-          style: TextStyle(color: AppColors.textPrimary),
+          style: TextStyle(color: colors.textPrimary),
         ),
         content: Text(
           'Would you like to save this recipient for future transfers?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'Not Now',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: colors.textSecondary),
             ),
           ),
           TextButton(
@@ -839,18 +856,18 @@ class _SendViewState extends ConsumerState<SendView>
               final shouldSave = await showDialog<bool>(
                 context: context,
                 builder: (context) => AlertDialog(
-                  backgroundColor: AppColors.slate,
-                  title: const Text(
+                  backgroundColor: colors.container,
+                  title: Text(
                     'Save Recipient',
-                    style: TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                   ),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const AppText(
+                      AppText(
                         'Enter a name for this recipient',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppInput(
@@ -862,16 +879,16 @@ class _SendViewState extends ConsumerState<SendView>
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(context, false),
-                      child: const Text(
+                      child: Text(
                         'Cancel',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: colors.textSecondary),
                       ),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(context, true),
-                      child: const Text(
+                      child: Text(
                         'Save',
-                        style: TextStyle(color: AppColors.gold500),
+                        style: TextStyle(color: colors.gold),
                       ),
                     ),
                   ],
@@ -888,9 +905,9 @@ class _SendViewState extends ConsumerState<SendView>
                 if (mounted) {
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
+                      SnackBar(
                         content: Text('Recipient saved'),
-                        backgroundColor: AppColors.successBase,
+                        backgroundColor: colors.success,
                       ),
                     );
                   } else {
@@ -898,7 +915,7 @@ class _SendViewState extends ConsumerState<SendView>
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(error ?? 'Failed to save recipient'),
-                        backgroundColor: AppColors.errorBase,
+                        backgroundColor: colors.error,
                       ),
                     );
                   }
@@ -907,9 +924,9 @@ class _SendViewState extends ConsumerState<SendView>
 
               nameController.dispose();
             },
-            child: const Text(
+            child: Text(
               'Save',
-              style: TextStyle(color: AppColors.gold500),
+              style: TextStyle(color: colors.gold),
             ),
           ),
         ],
@@ -923,11 +940,13 @@ class _RecentContactChip extends StatelessWidget {
     required this.contact,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final AppContact contact;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -939,20 +958,20 @@ class _RecentContactChip extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold500 : AppColors.elevated,
+              color: isSelected ? colors.gold : colors.elevated,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+                color: isSelected ? colors.gold : colors.borderSubtle,
                 width: 2,
               ),
             ),
             child: Center(
               child: contact.hasApp
-                  ? const Icon(Icons.check_circle, color: AppColors.successBase, size: 20)
+                  ? Icon(Icons.check_circle, color: colors.success, size: 20)
                   : AppText(
                       _getInitials(contact.name),
                       variant: AppTextVariant.titleMedium,
-                      color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
+                      color: isSelected ? colors.canvas : colors.textPrimary,
                     ),
             ),
           ),
@@ -962,7 +981,7 @@ class _RecentContactChip extends StatelessWidget {
             child: AppText(
               _getShortName(contact.name),
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -991,19 +1010,21 @@ class _SelectedContactCard extends StatelessWidget {
   const _SelectedContactCard({
     required this.contact,
     required this.onClear,
+    required this.colors,
   });
 
   final AppContact contact;
   final VoidCallback onClear;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.gold500),
+        border: Border.all(color: colors.gold),
       ),
       child: Row(
         children: [
@@ -1011,14 +1032,14 @@ class _SelectedContactCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.2),
+              color: colors.gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: AppText(
                 _getInitials(contact.name),
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           ),
@@ -1030,23 +1051,23 @@ class _SelectedContactCard extends StatelessWidget {
                 AppText(
                   contact.name,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 Row(
                   children: [
                     AppText(
                       contact.phone,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                     if (contact.hasApp) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(Icons.verified, color: AppColors.gold500, size: 14),
+                      Icon(Icons.verified, color: colors.gold, size: 14),
                       const SizedBox(width: 2),
-                      const AppText(
+                      AppText(
                         'JoonaPay user',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
                     ],
                   ],
@@ -1056,7 +1077,7 @@ class _SelectedContactCard extends StatelessWidget {
           ),
           IconButton(
             onPressed: onClear,
-            icon: const Icon(Icons.close, color: AppColors.textTertiary),
+            icon: Icon(Icons.close, color: colors.textTertiary),
           ),
         ],
       ),
@@ -1077,11 +1098,13 @@ class _AmountInput extends StatelessWidget {
     required this.controller,
     required this.error,
     required this.onChanged,
+    required this.colors,
   });
 
   final TextEditingController controller;
   final String? error;
   final ValueChanged<String> onChanged;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1094,18 +1117,18 @@ class _AmountInput extends StatelessWidget {
             vertical: AppSpacing.md,
           ),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: colors.container,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
-              color: error != null ? AppColors.errorBase : AppColors.borderSubtle,
+              color: error != null ? colors.error : colors.borderSubtle,
             ),
           ),
           child: Row(
             children: [
-              const AppText(
+              AppText(
                 '\$',
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -1116,10 +1139,10 @@ class _AmountInput extends StatelessWidget {
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
                   style: AppTypography.headlineMedium,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: '0.00',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
+                    hintStyle: TextStyle(color: colors.textTertiary),
                   ),
                   onChanged: onChanged,
                 ),
@@ -1133,7 +1156,7 @@ class _AmountInput extends StatelessWidget {
             child: AppText(
               error!,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.errorBase,
+              color: colors.error,
             ),
           ),
       ],
@@ -1146,11 +1169,13 @@ class _QuickAmountChip extends StatelessWidget {
     this.amount,
     this.label,
     required this.onTap,
+    required this.colors,
   });
 
   final double? amount;
   final String? label;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -1160,15 +1185,15 @@ class _QuickAmountChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: AppColors.elevated,
+            color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
-            border: Border.all(color: AppColors.borderSubtle),
+            border: Border.all(color: colors.borderSubtle),
           ),
           child: Center(
             child: AppText(
               label ?? '\$${amount?.toStringAsFixed(0)}',
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ),
@@ -1181,19 +1206,21 @@ class _SelectedSavedContactCard extends StatelessWidget {
   const _SelectedSavedContactCard({
     required this.contact,
     required this.onClear,
+    required this.colors,
   });
 
   final domain.Contact contact;
   final VoidCallback onClear;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.gold500),
+        border: Border.all(color: colors.gold),
       ),
       child: Row(
         children: [
@@ -1201,14 +1228,14 @@ class _SelectedSavedContactCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.2),
+              color: colors.gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: AppText(
                 _getInitials(contact.name),
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
           ),
@@ -1222,25 +1249,25 @@ class _SelectedSavedContactCard extends StatelessWidget {
                     AppText(
                       contact.name,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     if (contact.isJoonaPayUser) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(Icons.verified, color: AppColors.gold500, size: 14),
+                      Icon(Icons.verified, color: colors.gold, size: 14),
                     ],
                   ],
                 ),
                 AppText(
                   contact.displayIdentifier,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
               ],
             ),
           ),
           IconButton(
             onPressed: onClear,
-            icon: const Icon(Icons.close, color: AppColors.textTertiary),
+            icon: Icon(Icons.close, color: colors.textTertiary),
           ),
         ],
       ),
@@ -1274,6 +1301,7 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final contactsAsync = _searchQuery.isEmpty
         ? ref.watch(contactsProvider)
         : ref.watch(searchContactsProvider(_searchQuery));
@@ -1285,7 +1313,7 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -1302,10 +1330,10 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search recipients...',
-              hintStyle: const TextStyle(color: AppColors.textTertiary),
-              prefixIcon: const Icon(Icons.search, color: AppColors.textTertiary),
+              hintStyle: TextStyle(color: colors.textTertiary),
+              prefixIcon: Icon(Icons.search, color: colors.textTertiary),
               filled: true,
-              fillColor: AppColors.elevated,
+              fillColor: colors.elevated,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 borderSide: BorderSide.none,
@@ -1329,13 +1357,13 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
                       Icon(
                         Icons.people_outline,
                         size: 64,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                       ),
                       const SizedBox(height: AppSpacing.lg),
-                      const AppText(
+                      AppText(
                         'No saved recipients',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),
@@ -1350,20 +1378,20 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: contact.isJoonaPayUser
-                          ? AppColors.gold500.withValues(alpha: 0.2)
-                          : AppColors.elevated,
+                          ? colors.gold.withValues(alpha: 0.2)
+                          : colors.elevated,
                       child: contact.walletAddress != null && contact.phone == null
-                          ? const Icon(
+                          ? Icon(
                               Icons.account_balance_wallet,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                               size: 20,
                             )
                           : Text(
                               _getInitials(contact.name),
                               style: TextStyle(
                                 color: contact.isJoonaPayUser
-                                    ? AppColors.gold500
-                                    : AppColors.textPrimary,
+                                    ? colors.gold
+                                    : colors.textPrimary,
                               ),
                             ),
                     ),
@@ -1375,22 +1403,22 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
                         ),
                         if (contact.isJoonaPayUser) ...[
                           const SizedBox(width: AppSpacing.xs),
-                          const Icon(Icons.verified, color: AppColors.gold500, size: 14),
+                          Icon(Icons.verified, color: colors.gold, size: 14),
                         ],
                       ],
                     ),
                     subtitle: AppText(
                       contact.displayIdentifier,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                     onTap: () => widget.onContactSelected(contact),
                   );
                 },
               );
             },
-            loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.gold500),
+            loading: () => Center(
+              child: CircularProgressIndicator(color: colors.gold),
             ),
             error: (error, stack) => Center(
               child: Column(
@@ -1399,13 +1427,13 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
                   Icon(
                     Icons.error_outline,
                     size: 64,
-                    color: AppColors.errorBase,
+                    color: colors.error,
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  const AppText(
+                  AppText(
                     'Failed to load recipients',
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -1456,6 +1484,7 @@ class _ContactsSheetState extends State<_ContactsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Column(
       children: [
         const SizedBox(height: AppSpacing.lg),
@@ -1463,7 +1492,7 @@ class _ContactsSheetState extends State<_ContactsSheet> {
           width: 40,
           height: 4,
           decoration: BoxDecoration(
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -1480,10 +1509,10 @@ class _ContactsSheetState extends State<_ContactsSheet> {
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search contacts...',
-              hintStyle: const TextStyle(color: AppColors.textTertiary),
-              prefixIcon: const Icon(Icons.search, color: AppColors.textTertiary),
+              hintStyle: TextStyle(color: colors.textTertiary),
+              prefixIcon: Icon(Icons.search, color: colors.textTertiary),
               filled: true,
-              fillColor: AppColors.elevated,
+              fillColor: colors.elevated,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.lg),
                 borderSide: BorderSide.none,
@@ -1508,12 +1537,12 @@ class _ContactsSheetState extends State<_ContactsSheet> {
 
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: AppColors.elevated,
+                  backgroundColor: colors.elevated,
                   child: Text(
                     contact.displayName.isNotEmpty
                         ? contact.displayName[0].toUpperCase()
                         : '?',
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: colors.textPrimary),
                   ),
                 ),
                 title: AppText(
@@ -1523,7 +1552,7 @@ class _ContactsSheetState extends State<_ContactsSheet> {
                 subtitle: AppText(
                   phone,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 onTap: () => widget.onContactSelected(contact),
               );

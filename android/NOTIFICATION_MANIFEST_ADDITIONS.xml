@@ -1,0 +1,124 @@
+<!--
+  Add these entries to android/app/src/main/AndroidManifest.xml
+  for Firebase Push Notifications support
+-->
+
+<!-- ============================================ -->
+<!-- PERMISSIONS (Add inside <manifest> tag, before <application>) -->
+<!-- ============================================ -->
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+<!-- ============================================ -->
+<!-- METADATA (Add inside <application> tag) -->
+<!-- ============================================ -->
+
+<!-- Default notification channel ID -->
+<meta-data
+    android:name="com.google.firebase.messaging.default_notification_channel_id"
+    android:value="high_importance_channel" />
+
+<!-- Default notification icon (use app icon as fallback) -->
+<meta-data
+    android:name="com.google.firebase.messaging.default_notification_icon"
+    android:resource="@mipmap/ic_launcher" />
+
+<!-- Default notification color (JoonaPay gold) -->
+<meta-data
+    android:name="com.google.firebase.messaging.default_notification_color"
+    android:resource="@color/notification_color" />
+
+<!-- ============================================ -->
+<!-- NOTIFICATION COLOR RESOURCE -->
+<!-- ============================================ -->
+<!--
+Create or update: android/app/src/main/res/values/colors.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="notification_color">#C9A962</color>
+</resources>
+-->
+
+<!-- ============================================ -->
+<!-- NOTIFICATION ICON (OPTIONAL) -->
+<!-- ============================================ -->
+<!--
+To use a custom notification icon instead of the app icon:
+
+1. Create icon in vector format (white on transparent)
+2. Save as: android/app/src/main/res/drawable/ic_notification.xml
+
+Example:
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2zM18,16v-5c0,-3.07 -1.63,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.64,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2zm-6,11c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2z"/>
+</vector>
+
+3. Update meta-data to use custom icon:
+<meta-data
+    android:name="com.google.firebase.messaging.default_notification_icon"
+    android:resource="@drawable/ic_notification" />
+-->
+
+<!-- ============================================ -->
+<!-- EXAMPLE: Complete AndroidManifest.xml -->
+<!-- ============================================ -->
+<!--
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <application
+        android:label="JoonaPay"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher">
+
+        <!-- Main Activity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <!-- Firebase Notification Metadata -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+
+        <!-- Don't delete the meta-data below. -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+</manifest>
+-->

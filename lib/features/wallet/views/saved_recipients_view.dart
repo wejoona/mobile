@@ -33,6 +33,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final contactsAsync = ref.watch(contactsProvider);
     final favoritesAsync = ref.watch(favoritesProvider);
     final recentsAsync = ref.watch(recentsProvider);
@@ -41,7 +42,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         : null;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -54,15 +55,15 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add, color: AppColors.gold500),
+            icon: Icon(Icons.person_add, color: colors.gold),
             onPressed: () => _showAddRecipient(),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textTertiary,
+          indicatorColor: colors.gold,
+          labelColor: colors.gold,
+          unselectedLabelColor: colors.textTertiary,
           tabs: [
             Tab(
               text: contactsAsync.maybeWhen(
@@ -88,17 +89,17 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search recipients...',
-                hintStyle: const TextStyle(color: AppColors.textTertiary),
+                hintStyle: TextStyle(color: colors.textTertiary),
                 prefixIcon:
-                    const Icon(Icons.search, color: AppColors.textTertiary),
+                    Icon(Icons.search, color: colors.textTertiary),
                 filled: true,
-                fillColor: AppColors.slate,
+                fillColor: colors.container,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   borderSide: BorderSide.none,
                 ),
               ),
-              style: const TextStyle(color: AppColors.textPrimary),
+              style: TextStyle(color: colors.textPrimary),
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
@@ -134,6 +135,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   Widget _buildSearchResults(AsyncValue<List<Contact>> searchResultsAsync) {
+    final colors = context.colors;
     return searchResultsAsync.when(
       data: (results) {
         if (results.isEmpty) {
@@ -144,13 +146,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 Icon(
                   Icons.search_off,
                   size: 64,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const AppText(
+                AppText(
                   'No results found',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -171,14 +173,14 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           },
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.gold500),
+      loading: () => Center(
+        child: CircularProgressIndicator(color: colors.gold),
       ),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: AppColors.errorBase,
@@ -187,7 +189,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             AppText(
               'Error: ${error.toString()}',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             AppButton(
@@ -204,6 +206,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   Widget _buildContactsList(AsyncValue<List<Contact>> contactsAsync) {
+    final colors = context.colors;
     return contactsAsync.when(
       data: (contacts) {
         final filteredContacts = _filterContacts(contacts);
@@ -216,13 +219,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 Icon(
                   Icons.people_outline,
                   size: 64,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const AppText(
+                AppText(
                   'No recipients found',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
@@ -241,8 +244,8 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             ref.invalidate(favoritesProvider);
             ref.invalidate(recentsProvider);
           },
-          color: AppColors.gold500,
-          backgroundColor: AppColors.slate,
+          color: colors.gold,
+          backgroundColor: colors.container,
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
             itemCount: filteredContacts.length,
@@ -258,14 +261,14 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           ),
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.gold500),
+      loading: () => Center(
+        child: CircularProgressIndicator(color: colors.gold),
       ),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 64,
               color: AppColors.errorBase,
@@ -274,7 +277,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             AppText(
               'Failed to load contacts',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             AppButton(
@@ -321,19 +324,20 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   void _deleteRecipient(Contact contact) {
+    final colors = context.colors;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
-        title: const Text('Delete Recipient?', style: TextStyle(color: AppColors.textPrimary)),
+        backgroundColor: colors.container,
+        title: Text('Delete Recipient?', style: TextStyle(color: colors.textPrimary)),
         content: Text(
           'Remove ${contact.name} from your saved recipients?',
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
           ),
           TextButton(
             onPressed: () async {
@@ -368,9 +372,10 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   void _showAddRecipient() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
@@ -410,6 +415,7 @@ class _RecipientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Dismissible(
       key: Key(contact.id),
       direction: DismissDirection.endToStart,
@@ -417,24 +423,27 @@ class _RecipientCard extends StatelessWidget {
         // Show confirmation dialog
         return await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppColors.slate,
-            title: const Text('Delete Recipient?', style: TextStyle(color: AppColors.textPrimary)),
-            content: Text(
-              'Remove ${contact.name} from your saved recipients?',
-              style: const TextStyle(color: AppColors.textSecondary),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+          builder: (context) {
+            final dialogColors = context.colors;
+            return AlertDialog(
+              backgroundColor: dialogColors.container,
+              title: Text('Delete Recipient?', style: TextStyle(color: dialogColors.textPrimary)),
+              content: Text(
+                'Remove ${contact.name} from your saved recipients?',
+                style: TextStyle(color: dialogColors.textSecondary),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Delete', style: TextStyle(color: AppColors.errorBase)),
-              ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text('Cancel', style: TextStyle(color: dialogColors.textSecondary)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Delete', style: TextStyle(color: AppColors.errorBase)),
+                ),
+              ],
+            );
+          },
         ) ?? false;
       },
       onDismissed: (_) => onDelete(),
@@ -453,7 +462,7 @@ class _RecipientCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: AppColors.elevated,
+            color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: Row(
@@ -464,22 +473,22 @@ class _RecipientCard extends StatelessWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   color: contact.isJoonaPayUser
-                      ? AppColors.gold500.withValues(alpha: 0.2)
-                      : AppColors.slate,
+                      ? colors.gold.withValues(alpha: 0.2)
+                      : colors.container,
                   shape: BoxShape.circle,
                 ),
                 child: contact.walletAddress != null && contact.phone == null
-                    ? const Icon(
+                    ? Icon(
                         Icons.account_balance_wallet,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       )
                     : Center(
                         child: AppText(
                           _getInitials(contact.name),
                           variant: AppTextVariant.titleMedium,
                           color: contact.isJoonaPayUser
-                              ? AppColors.gold500
-                              : AppColors.textSecondary,
+                              ? colors.gold
+                              : colors.textSecondary,
                         ),
                       ),
               ),
@@ -496,14 +505,14 @@ class _RecipientCard extends StatelessWidget {
                           child: AppText(
                             contact.name,
                             variant: AppTextVariant.bodyLarge,
-                            color: AppColors.textPrimary,
+                            color: colors.textPrimary,
                           ),
                         ),
                         if (contact.isJoonaPayUser) ...[
                           const SizedBox(width: AppSpacing.xs),
-                          const Icon(
+                          Icon(
                             Icons.verified,
-                            color: AppColors.gold500,
+                            color: colors.gold,
                             size: 16,
                           ),
                         ],
@@ -513,14 +522,14 @@ class _RecipientCard extends StatelessWidget {
                     AppText(
                       contact.displayIdentifier,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     if (contact.transactionCount > 0) ...[
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
                         '${contact.transactionCount} transfers',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textTertiary,
+                        color: colors.textTertiary,
                       ),
                     ],
                   ],
@@ -535,8 +544,8 @@ class _RecipientCard extends StatelessWidget {
                     child: Icon(
                       contact.isFavorite ? Icons.star : Icons.star_border,
                       color: contact.isFavorite
-                          ? AppColors.gold500
-                          : AppColors.textTertiary,
+                          ? colors.gold
+                          : colors.textTertiary,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -546,13 +555,13 @@ class _RecipientCard extends StatelessWidget {
                       vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.gold500,
+                      color: colors.gold,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
-                    child: const AppText(
+                    child: AppText(
                       'Send',
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.obsidian,
+                      color: colors.canvas,
                     ),
                   ),
                 ],
@@ -601,6 +610,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -612,7 +622,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -632,6 +642,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
                   label: 'Phone',
                   isSelected: _recipientType == 'phone',
                   onTap: () => setState(() => _recipientType = 'phone'),
+                  colors: colors,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -640,6 +651,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
                   label: 'Username',
                   isSelected: _recipientType == 'username',
                   onTap: () => setState(() => _recipientType = 'username'),
+                  colors: colors,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -648,6 +660,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
                   label: 'Wallet',
                   isSelected: _recipientType == 'wallet',
                   onTap: () => setState(() => _recipientType = 'wallet'),
+                  colors: colors,
                 ),
               ),
             ],
@@ -656,10 +669,10 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
           const SizedBox(height: AppSpacing.xl),
 
           // Name
-          const AppText(
+          AppText(
             'Name',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppInput(
@@ -671,10 +684,10 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
 
           // Type-specific field
           if (_recipientType == 'phone') ...[
-            const AppText(
+            AppText(
               'Phone Number',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -683,10 +696,10 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
               keyboardType: TextInputType.phone,
             ),
           ] else if (_recipientType == 'username') ...[
-            const AppText(
+            AppText(
               'JoonaPay Username',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -695,10 +708,10 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
               prefixIcon: Icons.alternate_email,
             ),
           ] else ...[
-            const AppText(
+            AppText(
               'Wallet Address',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppInput(
@@ -789,11 +802,13 @@ class _TypeButton extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    required this.colors,
   });
 
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final ThemeColors colors;
 
   @override
   Widget build(BuildContext context) {
@@ -802,14 +817,14 @@ class _TypeButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500 : AppColors.elevated,
+          color: isSelected ? colors.gold : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Center(
           child: AppText(
             label,
             variant: AppTextVariant.labelMedium,
-            color: isSelected ? AppColors.obsidian : AppColors.textSecondary,
+            color: isSelected ? colors.canvas : colors.textSecondary,
           ),
         ),
       ),

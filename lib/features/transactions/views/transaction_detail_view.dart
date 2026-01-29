@@ -8,6 +8,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/index.dart';
 import '../../../domain/enums/index.dart';
+import '../../receipts/views/share_receipt_sheet.dart';
 
 class TransactionDetailView extends ConsumerWidget {
   const TransactionDetailView({super.key, required this.transaction});
@@ -16,11 +17,12 @@ class TransactionDetailView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     final isPositive = transaction.amount >= 0;
     final statusColor = _getStatusColor(transaction.status);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -34,7 +36,7 @@ class TransactionDetailView extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
-            onPressed: () => _shareTransaction(context),
+            onPressed: () => ShareReceiptSheet.show(context, transaction),
           ),
         ],
       ),
@@ -68,7 +70,7 @@ class TransactionDetailView extends ConsumerWidget {
                   AppText(
                     '${isPositive ? '+' : ''}\$${transaction.amount.abs().toStringAsFixed(2)}',
                     variant: AppTextVariant.displayMedium,
-                    color: isPositive ? AppColors.successBase : AppColors.textPrimary,
+                    color: isPositive ? AppColors.successBase : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.sm),
 
@@ -79,13 +81,13 @@ class TransactionDetailView extends ConsumerWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(transaction.type).withOpacity(0.1),
+                      color: _getTypeColor(transaction.type, colors).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: AppText(
                       transaction.type.name.toUpperCase(),
                       variant: AppTextVariant.labelSmall,
-                      color: _getTypeColor(transaction.type),
+                      color: _getTypeColor(transaction.type, colors),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -125,37 +127,43 @@ class TransactionDetailView extends ConsumerWidget {
                     label: 'Transaction ID',
                     value: _truncateId(transaction.id),
                     onCopy: () => _copyToClipboard(context, transaction.id),
+                    colors: colors,
                   ),
-                  const Divider(color: AppColors.borderSubtle),
+                  Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: 'Date',
                     value: DateFormat('MMM dd, yyyy • HH:mm').format(transaction.createdAt),
+                    colors: colors,
                   ),
-                  const Divider(color: AppColors.borderSubtle),
+                  Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: 'Currency',
                     value: transaction.currency,
+                    colors: colors,
                   ),
                   if (transaction.recipientPhone != null) ...[
-                    const Divider(color: AppColors.borderSubtle),
+                    Divider(color: colors.borderSubtle),
                     _DetailRow(
                       label: 'Recipient Phone',
                       value: transaction.recipientPhone!,
+                      colors: colors,
                     ),
                   ],
                   if (transaction.recipientAddress != null) ...[
-                    const Divider(color: AppColors.borderSubtle),
+                    Divider(color: colors.borderSubtle),
                     _DetailRow(
                       label: 'Recipient Address',
                       value: _truncateAddress(transaction.recipientAddress!),
                       onCopy: () => _copyToClipboard(context, transaction.recipientAddress!),
+                      colors: colors,
                     ),
                   ],
                   if (transaction.description != null) ...[
-                    const Divider(color: AppColors.borderSubtle),
+                    Divider(color: colors.borderSubtle),
                     _DetailRow(
                       label: 'Description',
                       value: transaction.description!,
+                      colors: colors,
                     ),
                   ],
                 ],
@@ -170,10 +178,10 @@ class TransactionDetailView extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppText(
+                    AppText(
                       'Additional Details',
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     ...transaction.metadata!.entries.map((entry) {
@@ -185,13 +193,13 @@ class TransactionDetailView extends ConsumerWidget {
                             AppText(
                               _formatMetadataKey(entry.key),
                               variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textTertiary,
+                              color: colors.textTertiary,
                             ),
                             Flexible(
                               child: AppText(
                                 entry.value.toString(),
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textPrimary,
+                                color: colors.textPrimary,
                                 textAlign: TextAlign.right,
                               ),
                             ),
@@ -212,7 +220,7 @@ class TransactionDetailView extends ConsumerWidget {
                 variant: AppCardVariant.subtle,
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       color: AppColors.errorBase,
                       size: 24,
@@ -222,7 +230,7 @@ class TransactionDetailView extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const AppText(
+                          AppText(
                             'Failure Reason',
                             variant: AppTextVariant.labelMedium,
                             color: AppColors.errorBase,
@@ -231,7 +239,7 @@ class TransactionDetailView extends ConsumerWidget {
                           AppText(
                             transaction.failureReason!,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ],
                       ),
@@ -285,7 +293,7 @@ class TransactionDetailView extends ConsumerWidget {
     }
   }
 
-  Color _getTypeColor(TransactionType type) {
+  Color _getTypeColor(TransactionType type, ThemeColors colors) {
     switch (type) {
       case TransactionType.deposit:
         return AppColors.successBase;
@@ -294,7 +302,7 @@ class TransactionDetailView extends ConsumerWidget {
       case TransactionType.transferInternal:
         return AppColors.infoBase;
       case TransactionType.transferExternal:
-        return AppColors.gold500;
+        return colors.gold;
     }
   }
 
@@ -383,11 +391,13 @@ class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.label,
     required this.value,
+    required this.colors,
     this.onCopy,
   });
 
   final String label;
   final String value;
+  final ThemeColors colors;
   final VoidCallback? onCopy;
 
   @override
@@ -400,23 +410,23 @@ class _DetailRow extends StatelessWidget {
           AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           Row(
             children: [
               AppText(
                 value,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               if (onCopy != null) ...[
                 const SizedBox(width: AppSpacing.sm),
                 GestureDetector(
                   onTap: onCopy,
-                  child: const Icon(
+                  child: Icon(
                     Icons.copy,
                     size: 16,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ),
               ],

@@ -27,10 +27,11 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final alertAsync = ref.watch(alertDetailProvider(widget.alertId));
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -43,8 +44,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         ),
       ),
       body: alertAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.gold500),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colors.gold),
         ),
         error: (error, _) => Center(
           child: Column(
@@ -56,10 +57,10 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.lg),
-              const AppText(
+              AppText(
                 'Failed to load alert',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
@@ -71,53 +72,53 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         ),
         data: (alert) {
           if (alert == null) {
-            return const Center(
+            return Center(
               child: AppText(
                 'Alert not found',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             );
           }
-          return _buildContent(alert);
+          return _buildContent(alert, colors);
         },
       ),
     );
   }
 
-  Widget _buildContent(TransactionAlert alert) {
+  Widget _buildContent(TransactionAlert alert, ThemeColors colors) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Alert header
-          _buildHeader(alert),
+          _buildHeader(alert, colors),
           const SizedBox(height: AppSpacing.xl),
 
           // Alert message
-          _buildMessageSection(alert),
+          _buildMessageSection(alert, colors),
           const SizedBox(height: AppSpacing.xl),
 
           // Alert details
-          _buildDetailsSection(alert),
+          _buildDetailsSection(alert, colors),
           const SizedBox(height: AppSpacing.xl),
 
           // Transaction info (if available)
           if (alert.transactionId != null) ...[
-            _buildTransactionSection(alert),
+            _buildTransactionSection(alert, colors),
             const SizedBox(height: AppSpacing.xl),
           ],
 
           // Action status
           if (alert.actionTaken != null) ...[
-            _buildActionTakenSection(alert),
+            _buildActionTakenSection(alert, colors),
             const SizedBox(height: AppSpacing.xl),
           ],
 
           // Quick actions
           if (alert.actionTaken == null) ...[
-            _buildActionsSection(alert),
+            _buildActionsSection(alert, colors),
           ],
 
           const SizedBox(height: AppSpacing.xxl),
@@ -126,7 +127,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildHeader(TransactionAlert alert) {
+  Widget _buildHeader(TransactionAlert alert, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -197,13 +198,13 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                 AppText(
                   alert.title,
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
                   alert.alertType.displayName,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -213,79 +214,79 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildMessageSection(TransactionAlert alert) {
+  Widget _buildMessageSection(TransactionAlert alert, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Message',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
             alert.message,
             variant: AppTextVariant.bodyLarge,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailsSection(TransactionAlert alert) {
+  Widget _buildDetailsSection(TransactionAlert alert, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Details',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildDetailRow('Alert ID', alert.alertId.substring(0, 8)),
-          _buildDetailRow('Type', alert.alertType.displayName),
-          _buildDetailRow('Severity', alert.severity.displayName),
-          _buildDetailRow('Created', _formatDateTime(alert.createdAt)),
+          _buildDetailRow('Alert ID', alert.alertId.substring(0, 8), colors),
+          _buildDetailRow('Type', alert.alertType.displayName, colors),
+          _buildDetailRow('Severity', alert.severity.displayName, colors),
+          _buildDetailRow('Created', _formatDateTime(alert.createdAt), colors),
           if (alert.amount != null)
-            _buildDetailRow('Amount', '${alert.amount?.toStringAsFixed(2)} ${alert.currency ?? 'USD'}'),
+            _buildDetailRow('Amount', '${alert.amount?.toStringAsFixed(2)} ${alert.currency ?? 'USD'}', colors),
         ],
       ),
     );
   }
 
-  Widget _buildTransactionSection(TransactionAlert alert) {
+  Widget _buildTransactionSection(TransactionAlert alert, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'Related Transaction',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
           const SizedBox(height: AppSpacing.md),
-          _buildDetailRow('Transaction ID', alert.transactionId!.substring(0, 8)),
+          _buildDetailRow('Transaction ID', alert.transactionId!.substring(0, 8), colors),
           const SizedBox(height: AppSpacing.md),
           SizedBox(
             width: double.infinity,
@@ -294,8 +295,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
               icon: const Icon(Icons.receipt_long, size: 18),
               label: const Text('View Transaction'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.gold500,
-                side: const BorderSide(color: AppColors.gold500),
+                foregroundColor: colors.gold,
+                side: BorderSide(color: colors.gold),
               ),
             ),
           ),
@@ -304,7 +305,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildActionTakenSection(TransactionAlert alert) {
+  Widget _buildActionTakenSection(TransactionAlert alert, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -326,23 +327,23 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const AppText(
+                AppText(
                   'Action Taken',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textTertiary,
+                  color: colors.textTertiary,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
                   alert.actionTaken!.displayName,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 if (alert.actionTakenAt != null) ...[
                   const SizedBox(height: AppSpacing.xs),
                   AppText(
                     _formatDateTime(alert.actionTakenAt!),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ],
@@ -353,24 +354,24 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildActionsSection(TransactionAlert alert) {
+  Widget _buildActionsSection(TransactionAlert alert, ThemeColors colors) {
     final actions = alert.availableActions;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
+        AppText(
           'Quick Actions',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
-        ...actions.map((action) => _buildActionButton(alert, action)),
+        ...actions.map((action) => _buildActionButton(alert, action, colors)),
       ],
     );
   }
 
-  Widget _buildActionButton(TransactionAlert alert, AlertAction action) {
+  Widget _buildActionButton(TransactionAlert alert, AlertAction action, ThemeColors colors) {
     final isPrimary = action == AlertAction.verifyIdentity ||
         action == AlertAction.blockRecipient;
     final isDanger = action == AlertAction.freezeAccount ||
@@ -381,8 +382,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       child: SizedBox(
         width: double.infinity,
         child: _isProcessingAction
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.gold500),
+            ? Center(
+                child: CircularProgressIndicator(color: colors.gold),
               )
             : OutlinedButton.icon(
                 onPressed: () => _handleAction(alert, action),
@@ -392,14 +393,14 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                   foregroundColor: isDanger
                       ? AppColors.errorBase
                       : isPrimary
-                          ? AppColors.gold500
-                          : AppColors.textSecondary,
+                          ? colors.gold
+                          : colors.textSecondary,
                   side: BorderSide(
                     color: isDanger
                         ? AppColors.errorBase
                         : isPrimary
-                            ? AppColors.gold500
-                            : AppColors.borderSubtle,
+                            ? colors.gold
+                            : colors.borderSubtle,
                   ),
                   padding: const EdgeInsets.all(AppSpacing.md),
                 ),
@@ -408,7 +409,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, ThemeColors colors) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
@@ -417,12 +418,12 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           AppText(
             value,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
         ],
       ),
@@ -462,19 +463,20 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
   }
 
   Future<bool> _showConfirmationDialog(AlertAction action) async {
+    final colors = context.colors;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.elevated,
+        backgroundColor: colors.elevated,
         title: AppText(
           'Confirm ${action.displayName}',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         content: AppText(
           _getConfirmationMessage(action),
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         actions: [
           TextButton(
@@ -486,7 +488,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
             style: ElevatedButton.styleFrom(
               backgroundColor: action == AlertAction.freezeAccount
                   ? AppColors.errorBase
-                  : AppColors.gold500,
+                  : colors.gold,
             ),
             child: const Text('Confirm'),
           ),

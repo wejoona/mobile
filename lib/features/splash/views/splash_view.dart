@@ -80,8 +80,10 @@ class _SplashViewState extends ConsumerState<SplashView>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: Center(
         child: AnimatedBuilder(
           animation: _controller,
@@ -106,17 +108,17 @@ class _SplashViewState extends ConsumerState<SplashView>
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.gold500.withValues(alpha: 0.3),
+                            color: colors.gold.withValues(alpha: 0.3),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'J',
                           style: TextStyle(
-                            color: AppColors.obsidian,
+                            color: colors.canvas,
                             fontSize: 60,
                             fontWeight: FontWeight.bold,
                           ),
@@ -127,29 +129,29 @@ class _SplashViewState extends ConsumerState<SplashView>
                     const SizedBox(height: AppSpacing.xxl),
 
                     // App name
-                    const AppText(
+                    AppText(
                       'JoonaPay',
                       variant: AppTextVariant.headlineLarge,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
 
                     const SizedBox(height: AppSpacing.sm),
 
                     // Tagline
-                    const AppText(
+                    AppText(
                       'Your Digital Wallet',
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
 
                     const SizedBox(height: AppSpacing.xxxl * 2),
 
                     // Loading indicator
-                    const SizedBox(
+                    SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        color: AppColors.gold500,
+                        color: colors.gold,
                         strokeWidth: 2,
                       ),
                     ),

@@ -492,4 +492,6 @@ void registerFallbackValues() {
   registerFallbackValue(RequestOptions(path: ''));
   registerFallbackValue(Options());
   registerFallbackValue(CancelToken());
+  // local_auth fallback values
+  registerFallbackValue(const AuthenticationOptions());
 }

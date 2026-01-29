@@ -29,10 +29,11 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final state = ref.watch(alertPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
@@ -48,34 +49,34 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             onPressed: state.isSaving
                 ? null
                 : () => _resetToDefault(),
-            child: const AppText(
+            child: AppText(
               'Reset',
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
         ],
       ),
       body: state.isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.gold500),
+          ? Center(
+              child: CircularProgressIndicator(color: colors.gold),
             )
           : state.preferences == null
-              ? const Center(
+              ? Center(
                   child: AppText(
                     'Failed to load preferences',
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 )
               : Stack(
                   children: [
-                    _buildContent(state.preferences!),
+                    _buildContent(state.preferences!, colors),
                     if (state.isSaving)
                       Container(
                         color: Colors.black.withValues(alpha: 0.3),
-                        child: const Center(
-                          child: CircularProgressIndicator(color: AppColors.gold500),
+                        child: Center(
+                          child: CircularProgressIndicator(color: colors.gold),
                         ),
                       ),
                   ],
@@ -83,14 +84,14 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildContent(AlertPreferences prefs) {
+  Widget _buildContent(AlertPreferences prefs, ThemeColors colors) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Notification Channels Section
-          _buildSectionHeader('Notification Channels'),
+          _buildSectionHeader('Notification Channels', colors),
           const SizedBox(height: AppSpacing.md),
           _buildChannelToggle(
             icon: Icons.notifications,
@@ -98,6 +99,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             subtitle: 'Receive alerts on your device',
             value: prefs.pushAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).togglePushAlerts(value),
+            colors: colors,
           ),
           _buildChannelToggle(
             icon: Icons.email,
@@ -105,6 +107,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             subtitle: 'Receive alerts via email',
             value: prefs.emailAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleEmailAlerts(value),
+            colors: colors,
           ),
           _buildChannelToggle(
             icon: Icons.sms,
@@ -112,12 +115,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             subtitle: 'Receive critical alerts via SMS',
             value: prefs.smsAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleSmsAlerts(value),
+            colors: colors,
           ),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Thresholds Section
-          _buildSectionHeader('Alert Thresholds'),
+          _buildSectionHeader('Alert Thresholds', colors),
           const SizedBox(height: AppSpacing.md),
           _buildThresholdSlider(
             title: 'Large Transaction Threshold',
@@ -127,6 +131,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             max: 10000,
             suffix: ' USD',
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).setLargeTransactionThreshold(value),
+            colors: colors,
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildThresholdSlider(
@@ -137,32 +142,33 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             max: 500,
             suffix: ' USD',
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).setBalanceLowThreshold(value),
+            colors: colors,
           ),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Alert Types Section
-          _buildSectionHeader('Alert Types'),
+          _buildSectionHeader('Alert Types', colors),
           const SizedBox(height: AppSpacing.sm),
-          const AppText(
+          AppText(
             'Choose which types of alerts you want to receive',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
-          ...AlertType.values.map((type) => _buildAlertTypeToggle(prefs, type)),
+          ...AlertType.values.map((type) => _buildAlertTypeToggle(prefs, type, colors)),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Quiet Hours Section
-          _buildSectionHeader('Quiet Hours'),
+          _buildSectionHeader('Quiet Hours', colors),
           const SizedBox(height: AppSpacing.md),
-          _buildQuietHoursSection(prefs),
+          _buildQuietHoursSection(prefs, colors),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Critical Alerts
-          _buildSectionHeader('Critical Alerts'),
+          _buildSectionHeader('Critical Alerts', colors),
           const SizedBox(height: AppSpacing.md),
           _buildToggleCard(
             icon: Icons.priority_high,
@@ -174,14 +180,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                 prefs.copyWith(instantCriticalAlerts: value),
               );
             },
+            colors: colors,
           ),
 
           const SizedBox(height: AppSpacing.xxl),
 
           // Digest Frequency
-          _buildSectionHeader('Digest Frequency'),
+          _buildSectionHeader('Digest Frequency', colors),
           const SizedBox(height: AppSpacing.md),
-          _buildDigestFrequencySection(prefs),
+          _buildDigestFrequencySection(prefs, colors),
 
           const SizedBox(height: AppSpacing.xxl),
         ],
@@ -189,11 +196,11 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, ThemeColors colors) {
     return AppText(
       title,
       variant: AppTextVariant.titleMedium,
-      color: AppColors.textPrimary,
+      color: colors.textPrimary,
     );
   }
 
@@ -203,14 +210,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required ThemeColors colors,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -218,10 +226,10 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 20),
+            child: Icon(icon, color: colors.textSecondary, size: 20),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -231,12 +239,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                 AppText(
                   title,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -244,7 +252,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.gold500,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
@@ -257,17 +265,18 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required ThemeColors colors,
   }) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.gold500, size: 24),
+          Icon(icon, color: colors.gold, size: 24),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -276,12 +285,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                 AppText(
                   title,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -289,7 +298,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.gold500,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
@@ -304,13 +313,14 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     required double max,
     required String suffix,
     required ValueChanged<double> onChanged,
+    required ThemeColors colors,
   }) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,7 +331,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
               AppText(
                 title,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -329,13 +339,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.2),
+                  color: colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
                   '${value.toStringAsFixed(0)}$suffix',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],
@@ -344,15 +354,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           AppText(
             subtitle,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
           SliderTheme(
             data: SliderThemeData(
-              activeTrackColor: AppColors.gold500,
-              inactiveTrackColor: AppColors.slate,
-              thumbColor: AppColors.gold500,
-              overlayColor: AppColors.gold500.withValues(alpha: 0.2),
+              activeTrackColor: colors.gold,
+              inactiveTrackColor: colors.container,
+              thumbColor: colors.gold,
+              overlayColor: colors.gold.withValues(alpha: 0.2),
             ),
             child: Slider(
               value: value,
@@ -371,12 +381,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
               AppText(
                 '${min.toStringAsFixed(0)}$suffix',
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
               AppText(
                 '${max.toStringAsFixed(0)}$suffix',
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.textTertiary,
+                color: colors.textTertiary,
               ),
             ],
           ),
@@ -385,16 +395,16 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildAlertTypeToggle(AlertPreferences prefs, AlertType type) {
+  Widget _buildAlertTypeToggle(AlertPreferences prefs, AlertType type, ThemeColors colors) {
     final isEnabled = prefs.alertTypes.contains(type);
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -415,12 +425,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                 AppText(
                   type.displayName,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 AppText(
                   type.description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -430,20 +440,20 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: isEnabled,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleAlertType(type, value),
-            activeColor: AppColors.gold500,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuietHoursSection(AlertPreferences prefs) {
+  Widget _buildQuietHoursSection(AlertPreferences prefs, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         children: [
@@ -453,15 +463,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const AppText(
+                  AppText(
                     'Enable Quiet Hours',
                     variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
-                  const AppText(
+                  AppText(
                     'Mute non-critical alerts during set hours',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -472,7 +482,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   startTime: prefs.quietHoursStart,
                   endTime: prefs.quietHoursEnd,
                 ),
-                activeColor: AppColors.gold500,
+                activeThumbColor: colors.gold,
               ),
             ],
           ),
@@ -489,6 +499,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                       startTime: time,
                       endTime: prefs.quietHoursEnd,
                     ),
+                    colors: colors,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -501,6 +512,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                       startTime: prefs.quietHoursStart,
                       endTime: time,
                     ),
+                    colors: colors,
                   ),
                 ),
               ],
@@ -515,6 +527,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     required String label,
     required String time,
     required ValueChanged<String> onChanged,
+    required ThemeColors colors,
   }) {
     return GestureDetector(
       onTap: () async {
@@ -530,9 +543,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           builder: (context, child) {
             return Theme(
               data: ThemeData.dark().copyWith(
-                colorScheme: const ColorScheme.dark(
-                  primary: AppColors.gold500,
-                  surface: AppColors.elevated,
+                colorScheme: ColorScheme.dark(
+                  primary: colors.gold,
+                  surface: colors.elevated,
                 ),
               ),
               child: child!,
@@ -548,7 +561,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Column(
@@ -556,13 +569,13 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
             const SizedBox(height: AppSpacing.xs),
             AppText(
               time,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ],
         ),
@@ -570,30 +583,30 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildDigestFrequencySection(AlertPreferences prefs) {
+  Widget _buildDigestFrequencySection(AlertPreferences prefs, ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const AppText(
+          AppText(
             'How often to receive alert summaries',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.md),
-          ...DigestFrequency.values.map((freq) => _buildDigestFrequencyOption(prefs, freq)),
+          ...DigestFrequency.values.map((freq) => _buildDigestFrequencyOption(prefs, freq, colors)),
         ],
       ),
     );
   }
 
-  Widget _buildDigestFrequencyOption(AlertPreferences prefs, DigestFrequency freq) {
+  Widget _buildDigestFrequencyOption(AlertPreferences prefs, DigestFrequency freq, ThemeColors colors) {
     final isSelected = prefs.digestFrequency == freq;
 
     return GestureDetector(
@@ -604,17 +617,17 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : colors.borderSubtle,
           ),
         ),
         child: Row(
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: isSelected ? AppColors.gold500 : AppColors.textTertiary,
+              color: isSelected ? colors.gold : colors.textTertiary,
               size: 20,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -625,12 +638,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   AppText(
                     freq.displayName,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                   AppText(
                     freq.description,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
@@ -642,19 +655,20 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
   }
 
   Future<void> _resetToDefault() async {
+    final colors = context.colors;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.elevated,
-        title: const AppText(
+        backgroundColor: colors.elevated,
+        title: AppText(
           'Reset to Default',
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
-        content: const AppText(
+        content: AppText(
           'This will reset all your alert preferences to their default values. Continue?',
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         actions: [
           TextButton(
@@ -663,7 +677,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.gold500),
+            style: ElevatedButton.styleFrom(backgroundColor: colors.gold),
             child: const Text('Reset'),
           ),
         ],

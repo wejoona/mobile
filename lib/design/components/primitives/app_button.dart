@@ -53,6 +53,7 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null || isLoading;
+    final colors = context.colors;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 150),
@@ -60,17 +61,17 @@ class AppButton extends StatelessWidget {
       constraints: isFullWidth
           ? const BoxConstraints(minHeight: 48)
           : const BoxConstraints(minWidth: 88, minHeight: 40),
-      decoration: _buildDecoration(isDisabled),
+      decoration: _buildDecoration(isDisabled, colors),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: isDisabled ? null : onPressed,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          splashColor: _getSplashColor(),
+          splashColor: _getSplashColor(colors),
           child: Padding(
             padding: _getPadding(),
             child: Center(
-              child: _buildContent(),
+              child: _buildContent(colors),
             ),
           ),
         ),
@@ -78,7 +79,7 @@ class AppButton extends StatelessWidget {
     );
   }
 
-  BoxDecoration _buildDecoration(bool isDisabled) {
+  BoxDecoration _buildDecoration(bool isDisabled, ThemeColors colors) {
     switch (variant) {
       case AppButtonVariant.primary:
         return BoxDecoration(
@@ -89,7 +90,7 @@ class AppButton extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-          color: isDisabled ? AppColors.elevated : null,
+          color: isDisabled ? colors.elevated : null,
           borderRadius: BorderRadius.circular(AppRadius.md),
           boxShadow: isDisabled ? null : AppShadows.goldGlow,
         );
@@ -99,7 +100,7 @@ class AppButton extends StatelessWidget {
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isDisabled ? AppColors.borderSubtle : AppColors.borderDefault,
+            color: isDisabled ? colors.borderSubtle : colors.border,
             width: 1,
           ),
         );
@@ -112,19 +113,19 @@ class AppButton extends StatelessWidget {
 
       case AppButtonVariant.success:
         return BoxDecoration(
-          color: isDisabled ? AppColors.elevated : AppColors.successBase,
+          color: isDisabled ? colors.elevated : colors.success,
           borderRadius: BorderRadius.circular(AppRadius.md),
         );
 
       case AppButtonVariant.danger:
         return BoxDecoration(
-          color: isDisabled ? AppColors.elevated : AppColors.errorBase,
+          color: isDisabled ? colors.elevated : colors.error,
           borderRadius: BorderRadius.circular(AppRadius.md),
         );
     }
   }
 
-  Color _getSplashColor() {
+  Color _getSplashColor(ThemeColors colors) {
     switch (variant) {
       case AppButtonVariant.primary:
         return AppColors.gold700.withOpacity(0.3);
@@ -138,20 +139,20 @@ class AppButton extends StatelessWidget {
     }
   }
 
-  Color _getTextColor(bool isDisabled) {
-    if (isDisabled) return AppColors.textDisabled;
+  Color _getTextColor(bool isDisabled, ThemeColors colors) {
+    if (isDisabled) return colors.textDisabled;
 
     switch (variant) {
       case AppButtonVariant.primary:
-        return AppColors.textInverse;
+        return colors.textInverse;
       case AppButtonVariant.secondary:
-        return AppColors.textPrimary;
+        return colors.textPrimary;
       case AppButtonVariant.ghost:
-        return AppColors.gold500;
+        return colors.gold;
       case AppButtonVariant.success:
-        return AppColors.textPrimary;
+        return colors.textPrimary;
       case AppButtonVariant.danger:
-        return AppColors.textPrimary;
+        return colors.textPrimary;
     }
   }
 
@@ -186,9 +187,9 @@ class AppButton extends StatelessWidget {
     }
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(ThemeColors colors) {
     final isDisabled = onPressed == null || isLoading;
-    final textColor = _getTextColor(isDisabled);
+    final textColor = _getTextColor(isDisabled, colors);
 
     if (isLoading) {
       return SizedBox(
@@ -201,24 +202,25 @@ class AppButton extends StatelessWidget {
       );
     }
 
-    // Text widget with proper overflow handling
-    final textWidget = Flexible(
-      child: Text(
-        label,
-        style: AppTypography.button.copyWith(
-          color: textColor,
-          fontSize: _getFontSize(),
-        ),
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
+    // Text widget
+    final textChild = Text(
+      label,
+      style: AppTypography.button.copyWith(
+        color: textColor,
+        fontSize: _getFontSize(),
       ),
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.ellipsis,
+      maxLines: 1,
     );
 
     if (icon == null) {
-      // No icon - just center the text
-      return textWidget;
+      // No icon - just return the text (no Flexible needed outside of Row)
+      return textChild;
     }
+
+    // Flexible wrapper for use inside Row
+    final textWidget = Flexible(child: textChild);
 
     final iconWidget = Icon(
       icon,

@@ -2,9 +2,24 @@ import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:crypto/crypto.dart';
 import 'dart:convert';
 import '../api/api_client.dart';
 import '../../domain/entities/contact.dart' as domain;
+import '../../features/contacts/models/synced_contact.dart';
+import '../../features/contacts/models/contact_sync_result.dart';
+
+/// Simple contact info for contact picker
+class ContactInfo {
+  final String name;
+  final String phoneNumber;
+
+  const ContactInfo({
+    required this.name,
+    required this.phoneNumber,
+  });
+}
 
 /// Contact with app status
 class AppContact {
@@ -84,6 +99,18 @@ class ContactsService {
     );
   }
 
+  /// Get contacts as ContactInfo (simplified for picker)
+  Future<List<ContactInfo>> getContacts() async {
+    final contacts = await getDeviceContacts();
+    return contacts
+        .where((c) => c.phones.isNotEmpty)
+        .map((c) => ContactInfo(
+              name: c.displayName,
+              phoneNumber: _normalizePhone(c.phones.first.number),
+            ))
+        .toList();
+  }
+
   /// Get saved app contacts
   Future<List<AppContact>> getSavedContacts() async {
     final data = await _storage.read(key: _contactsKey);
@@ -158,6 +185,145 @@ class ContactsService {
   String _normalizePhone(String phone) {
     // Remove spaces, dashes, etc.
     return phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+  }
+
+  /// Request contacts permission
+  Future<bool> requestContactsPermission() async {
+    final status = await Permission.contacts.request();
+    return status.isGranted;
+  }
+
+  /// Check if contacts permission is granted
+  Future<bool> hasContactsPermission() async {
+    final status = await Permission.contacts.status;
+    return status.isGranted;
+  }
+
+  /// Normalize phone to E.164 format
+  String normalizePhoneE164(String phone) {
+    // Remove all non-digit characters
+    String cleaned = phone.replaceAll(RegExp(r'\D'), '');
+
+    // Add country code if missing (default to Côte d'Ivoire +225)
+    if (!cleaned.startsWith('225') && cleaned.length <= 10) {
+      cleaned = '225$cleaned';
+    }
+
+    // Ensure it starts with +
+    if (!cleaned.startsWith('+')) {
+      cleaned = '+$cleaned';
+    }
+
+    return cleaned;
+  }
+
+  /// Hash phone number using SHA-256
+  String hashPhone(String phone) {
+    final normalized = normalizePhoneE164(phone);
+    final bytes = utf8.encode(normalized);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Convert device contacts to synced contacts
+  List<SyncedContact> deviceContactsToSyncedContacts(
+    List<Contact> deviceContacts,
+  ) {
+    final List<SyncedContact> synced = [];
+
+    for (final contact in deviceContacts) {
+      if (contact.phones.isNotEmpty) {
+        final phone = contact.phones.first.number;
+        final name = contact.displayName;
+
+        synced.add(SyncedContact(
+          id: contact.id,
+          name: name,
+          phone: phone,
+        ));
+      }
+    }
+
+    return synced;
+  }
+
+  /// Get JoonaPay users from synced contacts
+  ///
+  /// Sends hashed phone numbers, receives matches with user info
+  Future<List<SyncedContact>> getJoonaPayContacts(
+    Dio dio,
+    List<SyncedContact> allContacts,
+  ) async {
+    final hashes = allContacts.map((c) => hashPhone(c.phone)).toList();
+
+    try {
+      final response = await dio.post(
+        '/contacts/sync',
+        data: {'phoneHashes': hashes},
+      );
+
+      final matches = (response.data['matches'] as List)
+          .cast<Map<String, dynamic>>()
+          .map((m) => {
+                'phoneHash': m['phoneHash'] as String,
+                'userId': m['userId'] as String,
+                'avatarUrl': m['avatarUrl'] as String?,
+              })
+          .toList();
+
+      // Create a map of hash -> user info
+      final matchMap = {for (var m in matches) m['phoneHash']: m};
+
+      // Mark matching contacts
+      return allContacts.map((contact) {
+        final hash = hashPhone(contact.phone);
+        final match = matchMap[hash];
+
+        if (match != null) {
+          return contact.copyWith(
+            isJoonaPayUser: true,
+            joonaPayUserId: match['userId'] as String,
+            avatarUrl: match['avatarUrl'] as String?,
+          );
+        }
+
+        return contact;
+      }).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Sync contacts with JoonaPay server
+  Future<ContactSyncResult> syncContactsWithJoonaPay(
+    Dio dio,
+    List<SyncedContact> contacts,
+  ) async {
+    final hashes = contacts.map((c) => hashPhone(c.phone)).toList();
+
+    try {
+      final response = await dio.post(
+        '/contacts/sync',
+        data: {'phoneHashes': hashes},
+      );
+
+      final matches =
+          (response.data['matches'] as List).cast<Map<String, dynamic>>();
+
+      return ContactSyncResult(
+        totalContacts: contacts.length,
+        joonaPayUsersFound: matches.length,
+        syncedAt: DateTime.now(),
+      );
+    } catch (e) {
+      return ContactSyncResult(
+        totalContacts: contacts.length,
+        joonaPayUsersFound: 0,
+        syncedAt: DateTime.now(),
+        success: false,
+        error: e.toString(),
+      );
+    }
   }
 }
 

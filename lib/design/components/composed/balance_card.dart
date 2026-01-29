@@ -26,6 +26,7 @@ class BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
@@ -38,20 +39,20 @@ class BalanceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withOpacity(0.1),
+                  color: colors.gold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_wallet_outlined,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 16,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const AppText(
+              AppText(
                 'Total Balance',
                 variant: AppTextVariant.cardLabel,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -59,14 +60,14 @@ class BalanceCard extends StatelessWidget {
 
           // Balance
           if (isLoading)
-            _buildLoadingBalance()
+            _buildLoadingBalance(colors)
           else
-            _buildBalance(),
+            _buildBalance(colors),
 
           const SizedBox(height: AppSpacing.sm),
 
           // Change indicator
-          if (changePercent != null && !isLoading) _buildChangeIndicator(),
+          if (changePercent != null && !isLoading) _buildChangeIndicator(colors),
 
           const SizedBox(height: AppSpacing.xl),
 
@@ -83,28 +84,28 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBalance() {
+  Widget _buildBalance(ThemeColors colors) {
     return AppText(
       _formatCurrency(balance, currency),
       variant: AppTextVariant.balance,
-      color: AppColors.textPrimary,
+      color: colors.textPrimary,
     );
   }
 
-  Widget _buildLoadingBalance() {
+  Widget _buildLoadingBalance(ThemeColors colors) {
     return Container(
       width: 200,
       height: 42,
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
     );
   }
 
-  Widget _buildChangeIndicator() {
+  Widget _buildChangeIndicator(ThemeColors colors) {
     final isPositive = (changePercent ?? 0) >= 0;
-    final color = isPositive ? AppColors.successText : AppColors.errorText;
+    final color = isPositive ? colors.successText : colors.errorText;
     final icon = isPositive ? Icons.arrow_upward : Icons.arrow_downward;
     final sign = isPositive ? '+' : '';
 
@@ -122,7 +123,7 @@ class BalanceCard extends StatelessWidget {
           AppText(
             '($sign\$${changeAmount?.toStringAsFixed(2)})',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ],
       ],

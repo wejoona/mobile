@@ -106,11 +106,12 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   void _handleSessionExpired() {
     // Navigate to login
     if (mounted) {
+      final colors = context.colors;
       context.go('/login');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Session expired. Please log in again.'),
-          backgroundColor: AppColors.warningBase,
+        SnackBar(
+          content: const Text('Session expired. Please log in again.'),
+          backgroundColor: colors.warning,
         ),
       );
     }
@@ -133,12 +134,13 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     if (!mounted) return;
 
     try {
+      final colors = context.colors;
       showModalBottomSheet(
         context: context,
         isDismissible: false,
         enableDrag: false,
         isScrollControlled: true,
-        backgroundColor: AppColors.obsidian,
+        backgroundColor: colors.canvas,
         builder: (context) => const _LockScreen(),
       );
     } catch (e) {
@@ -162,6 +164,8 @@ class _SessionExpiringOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Container(
       color: Colors.black54,
       child: Center(
@@ -169,7 +173,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
           margin: const EdgeInsets.all(AppSpacing.xxl),
           padding: const EdgeInsets.all(AppSpacing.xxl),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
           child: Column(
@@ -179,26 +183,26 @@ class _SessionExpiringOverlay extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.warningBase.withValues(alpha: 0.1),
+                  color: colors.warning.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.timer,
-                  color: AppColors.warningBase,
+                  color: colors.warning,
                   size: 40,
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              const AppText(
+              AppText(
                 'Session Expiring',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 'Your session will expire in $remainingSeconds seconds due to inactivity.',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -215,11 +219,11 @@ class _SessionExpiringOverlay extends StatelessWidget {
                       child: CircularProgressIndicator(
                         value: remainingSeconds / 30, // Assuming 30s warning
                         strokeWidth: 6,
-                        backgroundColor: AppColors.borderSubtle,
+                        backgroundColor: colors.borderSubtle,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           remainingSeconds <= 10
-                              ? AppColors.errorBase
-                              : AppColors.warningBase,
+                              ? colors.error
+                              : colors.warning,
                         ),
                       ),
                     ),
@@ -227,8 +231,8 @@ class _SessionExpiringOverlay extends StatelessWidget {
                       '$remainingSeconds',
                       variant: AppTextVariant.headlineSmall,
                       color: remainingSeconds <= 10
-                          ? AppColors.errorBase
-                          : AppColors.warningBase,
+                          ? colors.error
+                          : colors.warning,
                     ),
                   ],
                 ),
@@ -246,7 +250,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: AppButton(
-                      label: 'Stay Logged In',
+                      label: 'Continue',
                       onPressed: onExtend,
                       variant: AppButtonVariant.primary,
                     ),
@@ -278,6 +282,8 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -288,26 +294,26 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: colors.gold.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.lock,
-                color: AppColors.gold500,
+                color: colors.gold,
                 size: 40,
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            const AppText(
+            AppText(
               'Session Locked',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
-            const AppText(
+            AppText(
               'Enter your PIN to continue',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.xxxl),
 
@@ -324,13 +330,13 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
                   margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isFilled
-                        ? (hasError ? AppColors.errorBase : AppColors.gold500)
+                        ? (hasError ? colors.error : colors.gold)
                         : Colors.transparent,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: hasError
-                          ? AppColors.errorBase
-                          : (isFilled ? AppColors.gold500 : AppColors.borderSubtle),
+                          ? colors.error
+                          : (isFilled ? colors.gold : colors.borderSubtle),
                       width: 2,
                     ),
                   ),
@@ -343,14 +349,14 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
               AppText(
                 _error!,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.errorBase,
+                color: colors.error,
               ),
             ],
 
             const Spacer(),
 
             // PIN pad
-            _buildPinPad(),
+            _buildPinPad(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -361,10 +367,10 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
                 Navigator.of(context).pop();
                 context.go('/login');
               },
-              child: const AppText(
+              child: AppText(
                 'Log out instead',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
           ],
@@ -373,7 +379,7 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
     );
   }
 
-  Widget _buildPinPad() {
+  Widget _buildPinPad(ThemeColors colors) {
     return Column(
       children: [
         for (var row = 0; row < 4; row++)
@@ -383,7 +389,7 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 for (var col = 0; col < 3; col++)
-                  _buildPinButton(row, col),
+                  _buildPinButton(row, col, colors),
               ],
             ),
           ),
@@ -391,7 +397,7 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
     );
   }
 
-  Widget _buildPinButton(int row, int col) {
+  Widget _buildPinButton(int row, int col, ThemeColors colors) {
     String? label;
     VoidCallback? onTap;
     IconData? icon;
@@ -422,17 +428,17 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
         height: 72,
         margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           shape: BoxShape.circle,
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Center(
           child: icon != null
-              ? Icon(icon, color: AppColors.textSecondary, size: 28)
+              ? Icon(icon, color: colors.textSecondary, size: 28)
               : AppText(
                   label ?? '',
                   variant: AppTextVariant.headlineSmall,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
         ),
       ),

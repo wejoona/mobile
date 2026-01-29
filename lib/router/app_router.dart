@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../features/auth/views/login_view.dart';
+import '../features/auth/views/login_phone_view.dart';
+import '../features/auth/views/login_otp_view.dart';
+import '../features/auth/views/login_pin_view.dart';
 import '../features/auth/views/otp_view.dart';
 import '../features/auth/providers/auth_provider.dart';
+import '../services/feature_flags/feature_flags_provider.dart';
 import '../features/onboarding/views/onboarding_view.dart';
 import '../features/splash/views/splash_view.dart';
-import '../features/wallet/views/home_view.dart';
+import '../features/wallet/views/wallet_home_screen.dart';
 import '../features/wallet/views/deposit_view.dart';
 import '../features/wallet/views/deposit_instructions_view.dart';
-import '../features/wallet/views/send_view.dart';
+import '../features/deposit/views/deposit_amount_screen.dart';
+import '../features/deposit/views/provider_selection_screen.dart';
+import '../features/deposit/views/payment_instructions_screen.dart';
+import '../features/deposit/views/deposit_status_screen.dart';
 import '../features/wallet/views/withdraw_view.dart';
 import '../features/wallet/views/receive_view.dart';
 import '../features/wallet/views/transfer_success_view.dart';
@@ -17,16 +23,30 @@ import '../features/wallet/views/scan_view.dart';
 import '../features/transactions/views/transactions_view.dart';
 import '../features/transactions/views/transaction_detail_view.dart';
 import '../features/referrals/views/referrals_view.dart';
-import '../features/settings/views/settings_view.dart';
+import '../features/settings/views/settings_screen.dart';
+import '../features/cards/views/cards_screen.dart';
 import '../features/settings/views/profile_view.dart';
 import '../features/settings/views/kyc_view.dart';
+import '../features/kyc/views/kyc_status_view.dart';
+import '../features/kyc/views/document_type_view.dart';
+import '../features/kyc/views/document_capture_view.dart';
+import '../features/kyc/views/selfie_view.dart';
+import '../features/kyc/views/review_view.dart';
+import '../features/kyc/views/submitted_view.dart';
 import '../features/settings/views/change_pin_view.dart';
 import '../features/settings/views/notification_settings_view.dart';
 import '../features/settings/views/security_view.dart';
 import '../features/settings/views/limits_view.dart';
 import '../features/settings/views/help_view.dart';
 import '../features/settings/views/language_view.dart';
+import '../features/settings/views/currency_view.dart';
+import '../features/settings/views/devices_screen.dart';
+import '../features/settings/views/sessions_screen.dart';
+import '../features/settings/views/profile_edit_screen.dart';
+import '../features/settings/views/help_screen.dart';
 import '../features/notifications/views/notifications_view.dart';
+import '../features/notifications/views/notification_permission_screen.dart';
+import '../features/notifications/views/notification_preferences_screen.dart';
 import '../features/wallet/views/request_money_view.dart';
 import '../features/wallet/views/scheduled_transfers_view.dart';
 import '../features/wallet/views/analytics_view.dart';
@@ -38,6 +58,13 @@ import '../features/wallet/views/savings_goals_view.dart';
 import '../features/wallet/views/virtual_card_view.dart';
 import '../features/wallet/views/split_bill_view.dart';
 import '../features/wallet/views/budget_view.dart';
+import '../features/savings_pots/views/pots_list_view.dart';
+import '../features/savings_pots/views/create_pot_view.dart';
+import '../features/savings_pots/views/pot_detail_view.dart';
+import '../features/savings_pots/views/edit_pot_view.dart';
+import '../features/recurring_transfers/views/recurring_transfers_list_view.dart';
+import '../features/recurring_transfers/views/create_recurring_transfer_view.dart';
+import '../features/recurring_transfers/views/recurring_transfer_detail_view.dart';
 import '../features/transactions/views/export_transactions_view.dart';
 import '../features/merchant_pay/views/scan_qr_view.dart';
 import '../features/merchant_pay/views/payment_receipt_view.dart';
@@ -51,13 +78,25 @@ import '../features/bill_payments/views/bill_payment_form_view.dart';
 import '../features/bill_payments/views/bill_payment_success_view.dart';
 import '../features/bill_payments/views/bill_payment_history_view.dart';
 import '../features/alerts/views/alerts_list_view.dart';
+import '../features/insights/views/insights_view.dart';
 import '../features/alerts/views/alert_detail_view.dart';
 import '../features/alerts/views/alert_preferences_view.dart';
 import '../features/services/views/services_view.dart';
+import '../features/beneficiaries/views/beneficiaries_screen.dart';
+import '../features/beneficiaries/views/add_beneficiary_screen.dart';
+import '../features/send/views/recipient_screen.dart';
+import '../features/send/views/amount_screen.dart';
+import '../features/send/views/confirm_screen.dart';
+import '../features/send/views/pin_verification_screen.dart';
+import '../features/send/views/result_screen.dart';
+import '../features/send_external/views/address_input_screen.dart';
+import '../features/send_external/views/external_amount_screen.dart';
+import '../features/send_external/views/external_confirm_screen.dart';
+import '../features/send_external/views/external_result_screen.dart';
+import '../features/send_external/views/scan_address_qr_screen.dart';
 import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
-import '../services/feature_flags/feature_flags_service.dart';
-import '../state/index.dart';
+import '../services/feature_flags/feature_flags_provider.dart';
 import 'page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
@@ -69,8 +108,8 @@ class MainShell extends ConsumerWidget {
   /// Get selected index from the current route location
   int _getSelectedIndex(String location) {
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/transactions')) return 1;
-    if (location.startsWith('/referrals')) return 2;
+    if (location.startsWith('/cards')) return 1;
+    if (location.startsWith('/transactions')) return 2;
     if (location.startsWith('/settings')) return 3;
     return 0;
   }
@@ -86,26 +125,37 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
-          // Update state and navigate
-          ref.read(navigationProvider.notifier).setTabFromIndex(index);
-          final tab = NavTabExt.fromIndex(index);
-          context.go(tab.route);
+          // Navigate based on index
+          switch (index) {
+            case 0:
+              context.go('/home');
+              break;
+            case 1:
+              context.go('/cards');
+              break;
+            case 2:
+              context.go('/transactions');
+              break;
+            case 3:
+              context.go('/settings');
+              break;
+          }
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Wallet',
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Activity',
+            icon: Icon(Icons.credit_card_outlined),
+            selectedIcon: Icon(Icons.credit_card),
+            label: 'Cards',
           ),
           NavigationDestination(
-            icon: Icon(Icons.card_giftcard_outlined),
-            selectedIcon: Icon(Icons.card_giftcard),
-            label: 'Rewards',
+            icon: Icon(Icons.history_rounded),
+            selectedIcon: Icon(Icons.history),
+            label: 'History',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
@@ -133,8 +183,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final location = state.matchedLocation;
 
       // Allow splash, onboarding, and auth routes without auth
-      final publicRoutes = ['/', '/onboarding', '/login', '/otp'];
-      final isPublicRoute = publicRoutes.contains(location);
+      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp'];
+      final isPublicRoute = publicRoutes.any((route) => location.startsWith(route));
 
       // Auth guards
       if (!isAuthenticated && !isPublicRoute) {
@@ -142,7 +192,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Redirect authenticated users away from login/otp (but not splash/onboarding)
-      final isAuthRoute = location == '/login' || location == '/otp';
+      final isAuthRoute = location.startsWith('/login') || location == '/otp';
       if (isAuthenticated && isAuthRoute) {
         return '/home';
       }
@@ -152,46 +202,49 @@ final routerProvider = Provider<GoRouter>((ref) {
       // /deposit, /send, /receive, /transactions, /settings/kyc
 
       // Phase 2 routes
-      if (location == '/withdraw' && !flags.canWithdraw) {
+      if (location == '/withdraw' && !(flags[FeatureFlagKeys.withdraw] ?? false)) {
         return '/home';
       }
 
       // Phase 3 routes
-      if (location == '/airtime' && !flags.canBuyAirtime) {
+      if (location == '/airtime' && !(flags[FeatureFlagKeys.airtime] ?? false)) {
         return '/home';
       }
-      if (location == '/bills' && !flags.canPayBills) {
+      if (location == '/bills' && !(flags[FeatureFlagKeys.bills] ?? false)) {
         return '/home';
       }
 
       // Phase 4 routes
-      if (location == '/savings' && !flags.canSetSavingsGoals) {
+      if (location == '/savings' && !(flags[FeatureFlagKeys.savings] ?? false)) {
         return '/home';
       }
-      if (location == '/card' && !flags.canUseVirtualCards) {
+      if (location.startsWith('/savings-pots') && !(flags[FeatureFlagKeys.savingsPots] ?? false)) {
         return '/home';
       }
-      if (location == '/split' && !flags.canSplitBills) {
+      if (location == '/card' && !(flags[FeatureFlagKeys.virtualCards] ?? false)) {
         return '/home';
       }
-      if (location == '/budget' && !flags.canUseBudget) {
+      if (location == '/split' && !(flags[FeatureFlagKeys.splitBills] ?? false)) {
         return '/home';
       }
-      if (location == '/scheduled' && !flags.canScheduleTransfers) {
+      if (location == '/budget' && !(flags[FeatureFlagKeys.budget] ?? false)) {
+        return '/home';
+      }
+      if (location == '/scheduled' && !(flags[FeatureFlagKeys.recurringTransfers] ?? false)) {
         return '/home';
       }
 
       // Other feature routes
-      if (location == '/analytics' && !flags.canViewAnalytics) {
+      if (location == '/analytics' && !(flags[FeatureFlagKeys.analytics] ?? false)) {
         return '/home';
       }
-      if (location == '/converter' && !flags.canUseCurrencyConverter) {
+      if (location == '/converter' && !(flags[FeatureFlagKeys.currencyConverter] ?? false)) {
         return '/home';
       }
-      if (location == '/request' && !flags.canRequestMoney) {
+      if (location == '/request' && !(flags[FeatureFlagKeys.requestMoney] ?? false)) {
         return '/home';
       }
-      if (location == '/recipients' && !flags.canUseSavedRecipients) {
+      if (location == '/recipients' && !(flags[FeatureFlagKeys.savedRecipients] ?? false)) {
         return '/home';
       }
 
@@ -221,7 +274,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const LoginView(),
+          child: const LoginPhoneView(),
+        ),
+      ),
+      GoRoute(
+        path: '/login/otp',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const LoginOtpView(),
+        ),
+      ),
+      GoRoute(
+        path: '/login/pin',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const LoginPinView(),
         ),
       ),
       GoRoute(
@@ -232,39 +299,48 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Main App Routes (with bottom nav - horizontal slide for tab switching)
+      // Main App Routes (with bottom nav - no animation for tab switching)
       ShellRoute(
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-              state: state,
-              child: const HomeView(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const WalletHomeScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/cards',
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const CardsScreen(),
             ),
           ),
           GoRoute(
             path: '/transactions',
-            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-              state: state,
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
               child: const TransactionsView(),
             ),
           ),
           GoRoute(
-            path: '/referrals',
-            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-              state: state,
-              child: const ReferralsView(),
-            ),
-          ),
-          GoRoute(
             path: '/settings',
-            pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-              state: state,
-              child: const SettingsView(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              key: state.pageKey,
+              child: const SettingsScreen(),
             ),
           ),
         ],
+      ),
+
+      // Legacy Services route (kept for backward compatibility)
+      GoRoute(
+        path: '/services',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ServicesView(),
+        ),
       ),
 
       // Full-screen routes (no bottom nav - vertical slide for modals)
@@ -275,11 +351,105 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const DepositView(),
         ),
       ),
+
+      // Mobile Money Deposit Flow
+      GoRoute(
+        path: '/deposit/amount',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const DepositAmountScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/deposit/provider',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const ProviderSelectionScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/deposit/instructions',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const PaymentInstructionsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/deposit/status',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const DepositStatusScreen(),
+        ),
+      ),
       GoRoute(
         path: '/send',
         pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
           state: state,
-          child: const SendView(),
+          child: const RecipientScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send/amount',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const AmountScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send/confirm',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const ConfirmScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send/pin',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const PinVerificationScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send/result',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ResultScreen(),
+        ),
+      ),
+      // External transfer routes
+      GoRoute(
+        path: '/send-external',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const AddressInputScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send-external/amount',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const ExternalAmountScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send-external/confirm',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const ExternalConfirmScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/send-external/result',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ExternalResultScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/qr/scan-address',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ScanAddressQrScreen(),
         ),
       ),
       GoRoute(
@@ -382,11 +552,75 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const KycView(),
         ),
       ),
+      // KYC Flow Routes
+      GoRoute(
+        path: '/kyc',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const KycStatusView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/document-type',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const DocumentTypeView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/document-capture',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const DocumentCaptureView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/selfie',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const SelfieView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/review',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const ReviewView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/submitted',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SubmittedView(),
+        ),
+      ),
       GoRoute(
         path: '/settings/notifications',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const NotificationSettingsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/notifications',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const NotificationsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/notifications/permission',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const NotificationPermissionScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/notifications/preferences',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const NotificationPreferencesScreen(),
         ),
       ),
       GoRoute(
@@ -417,13 +651,48 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const LanguageView(),
         ),
       ),
-
-      // Services Page - centralized view of all features (fade)
       GoRoute(
-        path: '/services',
+        path: '/settings/currency',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const ServicesView(),
+          child: const CurrencyView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/devices',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const DevicesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/sessions',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SessionsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/profile/edit',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ProfileEditScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/help-screen',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const HelpScreen(),
+        ),
+      ),
+
+      // Referrals Page - moved out of bottom nav (fade)
+      GoRoute(
+        path: '/referrals',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ReferralsView(),
         ),
       ),
 
@@ -447,6 +716,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const AnalyticsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/insights',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const InsightsView(),
         ),
       ),
       GoRoute(
@@ -511,6 +787,68 @@ final routerProvider = Provider<GoRouter>((ref) {
           state: state,
           child: const BudgetView(),
         ),
+      ),
+
+      // Savings Pots Routes
+      GoRoute(
+        path: '/savings-pots',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const PotsListView(),
+        ),
+      ),
+      GoRoute(
+        path: '/savings-pots/create',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const CreatePotView(),
+        ),
+      ),
+      GoRoute(
+        path: '/savings-pots/detail/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return AppPageTransitions.fade(
+            state: state,
+            child: PotDetailView(potId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/savings-pots/edit/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return AppPageTransitions.verticalSlide(
+            state: state,
+            child: EditPotView(potId: id),
+          );
+        },
+      ),
+
+      // Recurring Transfers Routes
+      GoRoute(
+        path: '/recurring-transfers',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const RecurringTransfersListView(),
+        ),
+      ),
+      GoRoute(
+        path: '/recurring-transfers/create',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const CreateRecurringTransferView(),
+        ),
+      ),
+      GoRoute(
+        path: '/recurring-transfers/detail/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return AppPageTransitions.fade(
+            state: state,
+            child: RecurringTransferDetailView(transferId: id),
+          );
+        },
       ),
 
       // Merchant Pay Routes
@@ -647,6 +985,35 @@ final routerProvider = Provider<GoRouter>((ref) {
             child = AlertDetailView(alertId: alertId);
           } else {
             child = const _PlaceholderPage(title: 'Alert Not Found');
+          }
+          return AppPageTransitions.verticalSlide(state: state, child: child);
+        },
+      ),
+
+      // Beneficiaries Routes
+      GoRoute(
+        path: '/beneficiaries',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BeneficiariesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/beneficiaries/add',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const AddBeneficiaryScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/beneficiaries/edit/:id',
+        pageBuilder: (context, state) {
+          final beneficiaryId = state.pathParameters['id'];
+          Widget child;
+          if (beneficiaryId != null) {
+            child = AddBeneficiaryScreen(beneficiaryId: beneficiaryId);
+          } else {
+            child = const _PlaceholderPage(title: 'Beneficiary Not Found');
           }
           return AppPageTransitions.verticalSlide(state: state, child: child);
         },
