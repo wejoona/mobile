@@ -6,7 +6,9 @@ import '../../design/components/primitives/index.dart';
 import '../biometric/biometric_service.dart';
 import '../pin/pin_service.dart';
 import '../feature_flags/feature_flags_provider.dart';
+import '../app_review/app_review_service.dart';
 import 'session_service.dart';
+import '../../utils/logger.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
 class SessionManager extends ConsumerStatefulWidget {
@@ -24,6 +26,11 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    // Initialize app review service
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appReviewServiceProvider).initialize();
+    });
   }
 
   @override
@@ -148,7 +155,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       );
     } catch (e) {
       // Navigator not ready yet, ignore
-      debugPrint('Could not show lock screen: $e');
+      AppLogger('Could not show lock screen').error('Could not show lock screen', e);
     }
   }
 }

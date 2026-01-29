@@ -4,6 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
 
 /// Certificate Pinning Service
 /// SECURITY: Prevents man-in-the-middle attacks by validating server certificates
@@ -39,6 +40,8 @@ import 'package:flutter/foundation.dart';
 /// 5. Remove old fingerprint in next app update
 ///
 class CertificatePinning {
+  static final _logger = AppLogger('CertificatePinning');
+
   /// SHA-256 fingerprints of trusted certificate public keys (SPKI)
   ///
   /// IMPORTANT: Replace these with actual fingerprints before production deployment!
@@ -79,7 +82,7 @@ class CertificatePinning {
   static void configurePinning(Dio dio) {
     // Skip pinning in debug mode (localhost doesn't have valid certs)
     if (kDebugMode) {
-      debugPrint('CertificatePinning: Disabled in debug mode');
+      _logger.info('Disabled in debug mode');
       return;
     }
 
@@ -103,7 +106,7 @@ class CertificatePinning {
       },
     );
 
-    debugPrint('CertificatePinning: Enabled for ${_pinnedHosts.join(", ")}');
+    _logger.security('Certificate pinning enabled for ${_pinnedHosts.join(", ")}');
   }
 
   /// Certificate validation callback
@@ -117,7 +120,7 @@ class CertificatePinning {
     if (!requiresPinning) {
       // For non-pinned hosts, reject bad certificates (default behavior)
       // This callback is only called for certificates that failed standard validation
-      debugPrint('CertificatePinning: Rejecting bad certificate for non-pinned host: $host');
+      _logger.security('Rejecting bad certificate for non-pinned host: $host', level: 'WARN');
       return false;
     }
 
@@ -125,9 +128,9 @@ class CertificatePinning {
     final isValid = validateFingerprint(cert);
 
     if (!isValid) {
-      debugPrint('CertificatePinning: SECURITY ALERT - Certificate mismatch for $host');
-      debugPrint('CertificatePinning: Expected one of: ${_trustedFingerprints.join(", ")}');
-      debugPrint('CertificatePinning: Received: ${_computeFingerprint(cert)}');
+      _logger.security('SECURITY ALERT - Certificate mismatch for $host', level: 'CRITICAL');
+      _logger.security('Expected one of: ${_trustedFingerprints.join(", ")}', level: 'CRITICAL');
+      _logger.security('Received: ${_computeFingerprint(cert)}', level: 'CRITICAL');
     }
 
     return isValid;
@@ -140,20 +143,17 @@ class CertificatePinning {
       final fingerprint = _computeFingerprint(certificate);
 
       if (fingerprint.isEmpty) {
-        debugPrint('CertificatePinning: Failed to compute fingerprint');
+        _logger.error('Failed to compute fingerprint');
         return false;
       }
 
       final isValid = _trustedFingerprints.contains(fingerprint);
 
-      if (kDebugMode) {
-        debugPrint('CertificatePinning: Fingerprint validation - '
-            'computed: $fingerprint, valid: $isValid');
-      }
+      _logger.debug('Fingerprint validation - computed: $fingerprint, valid: $isValid');
 
       return isValid;
     } catch (e) {
-      debugPrint('CertificatePinning: Validation error: $e');
+      _logger.error('Validation error', e);
       return false;
     }
   }
@@ -178,7 +178,7 @@ class CertificatePinning {
       // Return base64-encoded fingerprint
       return base64.encode(digest.bytes);
     } catch (e) {
-      debugPrint('CertificatePinning: Error computing fingerprint: $e');
+      _logger.error('Error computing fingerprint', e);
       return '';
     }
   }
@@ -207,7 +207,7 @@ class CertificatePinning {
       // final certData = await rootBundle.load('assets/certs/ca.pem');
       // context.setTrustedCertificatesBytes(certData.buffer.asUint8List());
     } catch (e) {
-      debugPrint('CertificatePinning: Failed to load trusted certificates: $e');
+      _logger.error('Failed to load trusted certificates', e);
     }
 
     return context;

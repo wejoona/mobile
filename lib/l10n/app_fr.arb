@@ -2408,5 +2408,15 @@
   "withdraw_networkWarning": "Assurez-vous d'envoyer vers une adresse Solana USDC",
   "@withdraw_networkWarning": {
     "description": "Warning about network compatibility"
+  },
+
+  "settings_rateApp": "Noter JoonaPay",
+  "@settings_rateApp": {
+    "description": "Rate app option in settings"
+  },
+
+  "settings_rateAppDescription": "Vous aimez JoonaPay? Notez-nous sur l'App Store",
+  "@settings_rateAppDescription": {
+    "description": "Description for rate app option"
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'device_security.dart';
+import '../../utils/logger.dart';
 
 /// Security Gate Widget
 /// SECURITY: Blocks app usage on compromised devices
@@ -47,7 +48,7 @@ class _SecurityGateState extends State<SecurityGate> {
 
       // Log security events (would send to analytics in production)
       if (!result.isSecure) {
-        debugPrint('SECURITY ALERT: Device compromised - ${result.threats}');
+        AppLogger('Debug').debug('SECURITY ALERT: Device compromised - ${result.threats}');
       }
     }
   }

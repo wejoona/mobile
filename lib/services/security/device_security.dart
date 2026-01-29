@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
 
 /// Device Security Service
 /// SECURITY: Detects rooted/jailbroken devices and other security threats
@@ -298,11 +299,11 @@ extension DeviceSecurityCheck on DeviceSecurity {
           return false;
         case CompromisedDevicePolicy.warn:
           // Log and allow with warning
-          debugPrint('SECURITY WARNING: ${result.message}');
+          AppLogger('Debug').debug('SECURITY WARNING: ${result.message}');
           return true;
         case CompromisedDevicePolicy.monitor:
           // Just log
-          debugPrint('SECURITY MONITOR: ${result.message}');
+          AppLogger('Debug').debug('SECURITY MONITOR: ${result.message}');
           return true;
       }
     }

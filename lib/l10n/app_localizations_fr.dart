@@ -5378,6 +5378,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settings_help => 'Aide et support';
 
   @override
+  String get settings_rateApp => 'Noter JoonaPay';
+
+  @override
+  String get settings_rateAppDescription =>
+      'Vous aimez JoonaPay? Notez-nous sur l\'App Store';
+
+  @override
   String get action_copiedToClipboard => 'Copié dans le presse-papiers';
 
   @override

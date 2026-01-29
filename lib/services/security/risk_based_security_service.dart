@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../biometric/biometric_service.dart';
 import '../liveness/liveness_service.dart';
+import '../../utils/logger.dart';
 
 /// Risk flow colors (like Visa 3DS / Apple)
 enum RiskFlow { green, yellow, red }
@@ -164,7 +165,7 @@ class RiskBasedSecurityService {
 
       throw Exception('Failed to evaluate transaction risk');
     } catch (e) {
-      debugPrint('Risk evaluation failed, defaulting to biometric: $e');
+      AppLogger('Risk evaluation failed, defaulting to biometric').error('Risk evaluation failed, defaulting to biometric', e);
       // Fallback to yellow flow on error
       return StepUpDecision(
         flow: RiskFlow.yellow,
@@ -196,7 +197,7 @@ class RiskBasedSecurityService {
 
       throw Exception('Failed to evaluate operation risk');
     } catch (e) {
-      debugPrint('Risk evaluation failed for operation: $e');
+      AppLogger('Risk evaluation failed for operation').error('Risk evaluation failed for operation', e);
       // Default requirements for known operations
       return _getDefaultOperationDecision(operation);
     }
@@ -256,13 +257,13 @@ class RiskBasedSecurityService {
 
       // Note: In production, UI should show LivenessCheckWidget
       // and handle the actual liveness flow
-      debugPrint('Liveness session started: ${session.sessionId}');
+      AppLogger('Debug').debug('Liveness session started: ${session.sessionId}');
 
       // Return false to indicate UI should handle liveness
       // The calling code should show the liveness widget
       return false;
     } catch (e) {
-      debugPrint('Liveness check failed: $e');
+      AppLogger('Liveness check failed').error('Liveness check failed', e);
       return false;
     }
   }
@@ -282,7 +283,7 @@ class RiskBasedSecurityService {
 
       return response.data['success'] == true && response.data['data']['valid'] == true;
     } catch (e) {
-      debugPrint('Step-up validation failed: $e');
+      AppLogger('Step-up validation failed').error('Step-up validation failed', e);
       return false;
     }
   }
@@ -335,7 +336,7 @@ class RiskBasedSecurityService {
       isFirstTransactionToRecipient: isFirstTransaction,
     );
 
-    debugPrint('${decision.flowEmoji} Transfer \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
+    AppLogger('Debug').debug('${decision.flowEmoji} Transfer \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
 
     if (!decision.stepUpRequired) {
       return (approved: true, decision: decision);
@@ -368,7 +369,7 @@ class RiskBasedSecurityService {
       isFirstTransactionToRecipient: isFirstWithdrawal,
     );
 
-    debugPrint('${decision.flowEmoji} Withdrawal \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
+    AppLogger('Debug').debug('${decision.flowEmoji} Withdrawal \$$amount: ${decision.stepUpType.name} (score: ${decision.riskScore})');
 
     if (!decision.stepUpRequired) {
       return (approved: true, decision: decision);
@@ -429,7 +430,7 @@ class RiskBasedSecurityService {
         provider: 'error',
       );
     } catch (e) {
-      debugPrint('Address screening failed: $e');
+      AppLogger('Address screening failed').error('Address screening failed', e);
       // On network error, return unknown - let backend block at transfer time
       return AddressScreeningResult(
         address: address,

@@ -46,3 +46,16 @@ export 'session/session_manager.dart';
 
 // Feature flags
 export 'feature_flags/feature_flags_service.dart';
+
+// Analytics & Crash Reporting
+export 'analytics/analytics_service.dart';
+export 'analytics/crash_reporting_service.dart';
+
+// Performance Monitoring
+export 'performance/performance_service.dart';
+export 'performance/performance_observer.dart';
+export 'performance/api_performance_interceptor.dart';
+export 'performance/firebase_performance_service.dart';
+
+// App Review
+export 'app_review/app_review_service.dart';

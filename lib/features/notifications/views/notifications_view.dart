@@ -7,6 +7,7 @@ import '../../../domain/enums/index.dart';
 import '../../../domain/entities/index.dart';
 import '../../../services/sdk/usdc_wallet_sdk.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../utils/logger.dart';
 
 /// Notification item model
 class NotificationItem {
@@ -305,7 +306,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
         await sdk.notifications.markAsRead(notification.id);
       } catch (e) {
         // Silent fail - notification is already marked as read locally
-        debugPrint('Failed to mark notification as read: $e');
+        AppLogger('Failed to mark notification as read').error('Failed to mark notification as read', e);
       }
     }
 

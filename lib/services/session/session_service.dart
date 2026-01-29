@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../utils/logger.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -371,11 +372,11 @@ class SessionService extends Notifier<SessionState> {
           state = state.copyWith(tokenExpiresAt: expiresAt);
         }
 
-        debugPrint('Token refreshed successfully');
+        AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
       }
     } catch (e) {
-      debugPrint('Token refresh failed: $e');
+      AppLogger('Token refresh failed').error('Token refresh failed', e);
       // If refresh fails, session will eventually expire
     }
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../utils/logger.dart';
 
 /// Notification Navigation Handler
 ///
@@ -8,6 +9,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 /// This is used when user taps on a notification.
 class NotificationNavigationHandler {
   final GoRouter router;
+  static final _logger = AppLogger('NotificationNavigation');
 
   NotificationNavigationHandler(this.router);
 
@@ -18,12 +20,11 @@ class NotificationNavigationHandler {
     final transactionId = data['transactionId'] as String?;
     final route = data['route'] as String?;
 
-    if (kDebugMode) {
-      print('Handling notification navigation:');
-      print('  Type: $type');
-      print('  TransactionId: $transactionId');
-      print('  Route: $route');
-    }
+    _logger.debug('Handling notification navigation', {
+      'type': type,
+      'transactionId': transactionId,
+      'route': route,
+    });
 
     // Custom route takes precedence
     if (route != null && route.isNotEmpty) {

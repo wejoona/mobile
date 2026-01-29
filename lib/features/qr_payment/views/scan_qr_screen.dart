@@ -62,7 +62,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         setState(() => _isScannerInitialized = true);
       }
     } catch (e) {
-      debugPrint('Scanner initialization error: $e');
+      AppLogger('Scanner initialization error').error('Scanner initialization error', e);
       if (mounted) {
         setState(() => _permissionDenied = true);
       }
@@ -232,6 +232,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                           content: Text('Gallery import coming soon'),
                         ),
                       );
+import '../../../utils/logger.dart';
                     },
                     icon: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),

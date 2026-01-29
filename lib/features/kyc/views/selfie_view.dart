@@ -12,6 +12,7 @@ import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../providers/kyc_provider.dart';
 import '../../../services/kyc/image_quality_checker.dart';
+import '../../../utils/logger.dart';
 
 class SelfieView extends ConsumerStatefulWidget {
   const SelfieView({super.key});
@@ -61,7 +62,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         setState(() => _isInitialized = true);
       }
     } catch (e) {
-      debugPrint('Camera initialization error: $e');
+      AppLogger('Camera initialization error').error('Camera initialization error', e);
     }
   }
 
@@ -340,7 +341,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
       });
     } catch (e) {
       setState(() => _isCheckingQuality = false);
-      debugPrint('Capture error: $e');
+      AppLogger('Capture error').error('Capture error', e);
     }
   }
 

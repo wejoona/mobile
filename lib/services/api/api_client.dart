@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../utils/logger.dart';
 import '../security/certificate_pinning.dart';
 import 'cache_interceptor.dart';
 import 'deduplication_interceptor.dart';
@@ -71,9 +72,7 @@ final dioProvider = Provider<Dio>((ref) {
   if (MockConfig.useMocks) {
     MockRegistry.initialize();
     dio.interceptors.add(MockRegistry.interceptor);
-    if (kDebugMode) {
-      print('[API] Mock interceptor enabled - using mock API responses');
-    }
+    AppLogger('API').info('Mock interceptor enabled - using mock API responses');
   }
 
   // PERFORMANCE: Add request deduplication

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
 
 /// In-flight request tracker
 class InFlightRequest {
@@ -45,7 +46,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
 
       if (age < _timeout) {
         if (kDebugMode) {
-          debugPrint('[DeduplicationInterceptor] Deduplicating request: ${options.path}');
+          AppLogger('Debug').debug('[DeduplicationInterceptor] Deduplicating request: ${options.path}');
         }
 
         try {
@@ -67,14 +68,14 @@ class RequestDeduplicationInterceptor extends Interceptor {
         } catch (e) {
           // If the in-flight request failed, proceed with a new request
           if (kDebugMode) {
-            debugPrint('[DeduplicationInterceptor] In-flight request failed, retrying: ${options.path}');
+            AppLogger('Debug').debug('[DeduplicationInterceptor] In-flight request failed, retrying: ${options.path}');
           }
           _inFlightRequests.remove(key);
         }
       } else {
         // Request timed out, remove it
         if (kDebugMode) {
-          debugPrint('[DeduplicationInterceptor] In-flight request timed out: ${options.path}');
+          AppLogger('Debug').debug('[DeduplicationInterceptor] In-flight request timed out: ${options.path}');
         }
         _inFlightRequests.remove(key);
       }
@@ -104,7 +105,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
         inFlight.completer.complete(response);
 
         if (kDebugMode) {
-          debugPrint('[DeduplicationInterceptor] Request completed: ${response.requestOptions.path}');
+          AppLogger('Debug').debug('[DeduplicationInterceptor] Request completed: ${response.requestOptions.path}');
         }
 
         // Clean up after a short delay to allow waiting requests to complete
@@ -132,7 +133,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
         inFlight.completer.completeError(err);
 
         if (kDebugMode) {
-          debugPrint('[DeduplicationInterceptor] Request failed: ${err.requestOptions.path}');
+          AppLogger('Debug').debug('[DeduplicationInterceptor] Request failed: ${err.requestOptions.path}');
         }
 
         // Clean up immediately on error
@@ -175,7 +176,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
     _inFlightRequests.clear();
 
     if (kDebugMode) {
-      debugPrint('[DeduplicationInterceptor] All in-flight requests cleared');
+      AppLogger('Debug').debug('[DeduplicationInterceptor] All in-flight requests cleared');
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/logger.dart';
 
 /// Service for managing app language preferences
 class LanguageService {
@@ -11,7 +12,7 @@ class LanguageService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_languageKey);
     } catch (e) {
-      debugPrint('Error getting saved language: $e');
+      AppLogger('Error getting saved language').error('Error getting saved language', e);
       return null;
     }
   }
@@ -22,7 +23,7 @@ class LanguageService {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.setString(_languageKey, languageCode);
     } catch (e) {
-      debugPrint('Error saving language: $e');
+      AppLogger('Error saving language').error('Error saving language', e);
       return false;
     }
   }

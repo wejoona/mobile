@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/wallet/wallet_service.dart';
+import '../../../services/app_review/app_review_service.dart';
 import '../../../domain/entities/wallet.dart';
 import '../services/external_transfer_service.dart';
 import '../models/external_transfer_request.dart';
@@ -181,6 +182,11 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         isLoading: false,
         result: result,
       );
+
+      // Track successful transaction for app review prompt
+      final appReviewService = ref.read(appReviewServiceProvider);
+      await appReviewService.trackSuccessfulTransaction();
+
       return true;
     } catch (e) {
       state = state.copyWith(

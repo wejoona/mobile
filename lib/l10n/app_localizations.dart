@@ -9908,6 +9908,18 @@ abstract class AppLocalizations {
   /// **'Help & Support'**
   String get settings_help;
 
+  /// Rate app option in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Rate JoonaPay'**
+  String get settings_rateApp;
+
+  /// Description for rate app option
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying JoonaPay? Rate us on the App Store'**
+  String get settings_rateAppDescription;
+
   /// Message shown when text is copied to clipboard
   ///
   /// In en, this message translates to:

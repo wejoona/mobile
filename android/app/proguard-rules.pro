@@ -2,6 +2,14 @@
 # These rules enable code obfuscation to protect against reverse engineering
 
 #-------------------------------------------
+# SIZE OPTIMIZATION: General optimizations
+#-------------------------------------------
+# Enable optimization and obfuscation with safe settings
+-optimizationpasses 3
+-allowaccessmodification
+-repackageclasses ''
+
+#-------------------------------------------
 # Flutter specific rules
 #-------------------------------------------
 -keep class io.flutter.app.** { *; }
@@ -97,3 +105,52 @@
 #-------------------------------------------
 -keepattributes SourceFile,LineNumberTable
 -keep public class * extends java.lang.Exception
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: Firebase
+#-------------------------------------------
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+-dontwarn com.google.android.gms.**
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: Remove verbose logging
+#-------------------------------------------
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+    public static void checkParameterIsNotNull(...);
+    public static void checkExpressionValueIsNotNull(...);
+    public static void checkNotNullExpressionValue(...);
+    public static void checkReturnedValueIsNotNull(...);
+    public static void checkFieldIsNotNull(...);
+    public static void throwUninitializedPropertyAccessException(...);
+}
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: Camera plugin
+#-------------------------------------------
+-keep class androidx.camera.** { *; }
+-dontwarn androidx.camera.**
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: QR/Barcode scanning
+#-------------------------------------------
+-keep class com.google.mlkit.** { *; }
+-dontwarn com.google.mlkit.**
+-keep class com.google.android.gms.vision.** { *; }
+-dontwarn com.google.android.gms.vision.**
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: PDF library
+#-------------------------------------------
+-dontwarn org.apache.tika.**
+-dontwarn javax.xml.stream.**
+-dontwarn org.bouncycastle.**
+-keep class org.apache.pdfbox.** { *; }
+-keep class com.tom_roush.pdfbox.** { *; }
+
+#-------------------------------------------
+# SIZE OPTIMIZATION: Image processing
+#-------------------------------------------
+-dontwarn javax.imageio.**
+-keep class com.caverock.androidsvg.** { *; }

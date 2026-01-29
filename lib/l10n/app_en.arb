@@ -8300,6 +8300,16 @@
     "description": "Help and support settings option"
   },
 
+  "settings_rateApp": "Rate JoonaPay",
+  "@settings_rateApp": {
+    "description": "Rate app option in settings"
+  },
+
+  "settings_rateAppDescription": "Enjoying JoonaPay? Rate us on the App Store",
+  "@settings_rateAppDescription": {
+    "description": "Description for rate app option"
+  },
+
   "action_copiedToClipboard": "Copied to clipboard",
   "@action_copiedToClipboard": {
     "description": "Message shown when text is copied to clipboard"

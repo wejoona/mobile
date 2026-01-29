@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/transfers/transfers_service.dart';
 import '../../../services/wallet/wallet_service.dart';
+import '../../../services/app_review/app_review_service.dart';
 import '../models/transfer_request.dart';
 
 /// Send Money State
@@ -157,6 +158,11 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         isLoading: false,
         result: result,
       );
+
+      // Track successful transaction for app review prompt
+      final appReviewService = ref.read(appReviewServiceProvider);
+      await appReviewService.trackSuccessfulTransaction();
+
       return true;
     } catch (e) {
       state = state.copyWith(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
+import '../../utils/logger.dart';
 
 /// Biometric Types
 enum BiometricType {
@@ -70,7 +71,7 @@ class BiometricService {
     } on PlatformException catch (e) {
       // Log the error for debugging but don't expose details to caller
       // Common errors: NotAvailable, NotEnrolled, PasscodeNotSet
-      debugPrint('Biometric authentication error: ${e.code}');
+      AppLogger('Debug').debug('Biometric authentication error: ${e.code}');
       return false;
     }
   }

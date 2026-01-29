@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../security/risk_based_security_service.dart';
 import '../../domain/entities/index.dart';
+import '../../utils/logger.dart';
 
 /// Transfers Service - mirrors backend TransfersController
 /// Uses risk-based adaptive security (Visa 3DS / Apple style)
@@ -30,7 +31,7 @@ class TransfersService {
         recipientType: 'internal',
       );
 
-      debugPrint('${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}');
+      AppLogger('Debug').debug('${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}');
 
       if (decision.stepUpRequired) {
         final verified = await _riskSecurity.executeStepUp(decision);
@@ -101,7 +102,7 @@ class TransfersService {
         isFirstTransaction: isFirstTransactionToRecipient,
       );
 
-      debugPrint('${result.decision.flowEmoji} External transfer \$$amount: ${result.decision.stepUpType.name} (score: ${result.decision.riskScore})');
+      AppLogger('Debug').debug('${result.decision.flowEmoji} External transfer \$$amount: ${result.decision.stepUpType.name} (score: ${result.decision.riskScore})');
 
       if (!result.approved) {
         // Liveness required - throw to let UI handle

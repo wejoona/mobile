@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
+import '../../utils/logger.dart';
 
 /// Device Attestation Service
 /// SECURITY: Verifies app is running on a genuine, unmodified device
@@ -56,7 +57,7 @@ class DeviceAttestation {
         );
       }
     } catch (e) {
-      debugPrint('Attestation error: $e');
+      AppLogger('Attestation error').error('Attestation error', e);
       return AttestationResult(
         isValid: false,
         error: e.toString(),
@@ -229,7 +230,7 @@ extension AttestationCheck on DeviceAttestation {
     if (policy == AttestationPolicy.preferred) {
       // Log but don't block
       if (!result.isValid) {
-        debugPrint('ATTESTATION WARNING: ${result.error}');
+        AppLogger('Debug').debug('ATTESTATION WARNING: ${result.error}');
       }
       return true;
     }

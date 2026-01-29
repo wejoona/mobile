@@ -39,7 +39,7 @@ enum AppInputState {
   disabled,
 }
 
-/// Luxury Wallet Input Component with Complete State Definitions
+/// Luxury Wallet Input Component with Complete State Definitions and Accessibility
 class AppInput extends StatefulWidget {
   const AppInput({
     super.key,
@@ -67,6 +67,7 @@ class AppInput extends StatefulWidget {
     this.onSubmitted,
     this.onTap,
     this.validator,
+    this.semanticLabel,
   });
 
   final TextEditingController? controller;
@@ -93,6 +94,8 @@ class AppInput extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
   final String? Function(String?)? validator;
+  /// Optional semantic label for screen readers (defaults to label or hint)
+  final String? semanticLabel;
 
   @override
   State<AppInput> createState() => _AppInputState();
@@ -152,19 +155,38 @@ class _AppInputState extends State<AppInput> {
     final currentState = _getCurrentState();
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.label != null) ...[
-          AppText(
-            widget.label!,
-            variant: AppTextVariant.labelMedium,
-            color: _getLabelColor(currentState, isDark),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-        ],
-        TextFormField(
+    // Build semantic label
+    final String effectiveLabel = widget.semanticLabel ??
+        widget.label ??
+        widget.hint ??
+        'Text input';
+
+    final String semanticHint = widget.readOnly
+        ? 'Read only'
+        : widget.error != null
+            ? 'Error: ${widget.error}'
+            : widget.helper ?? '';
+
+    return Semantics(
+      label: effectiveLabel,
+      hint: semanticHint,
+      textField: true,
+      enabled: widget.enabled,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.label != null) ...[
+            ExcludeSemantics(
+              child: AppText(
+                widget.label!,
+                variant: AppTextVariant.labelMedium,
+                color: _getLabelColor(currentState, isDark),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+          TextFormField(
           controller: widget.controller,
           focusNode: _focusNode,
           obscureText: widget.obscureText,
@@ -249,6 +271,7 @@ class _AppInputState extends State<AppInput> {
           ),
         ),
       ],
+      ),
     );
   }
 

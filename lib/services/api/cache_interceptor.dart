@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
 
 /// Cached response data
 class CachedResponse {
@@ -35,7 +36,7 @@ class CacheInterceptor extends Interceptor {
     // Return cached response if not expired
     if (cached != null && !cached.isExpired) {
       if (kDebugMode) {
-        debugPrint('[CacheInterceptor] Cache HIT: ${options.path}');
+        AppLogger('Debug').debug('[CacheInterceptor] Cache HIT: ${options.path}');
       }
 
       return handler.resolve(
@@ -53,7 +54,7 @@ class CacheInterceptor extends Interceptor {
 
     // Cache miss or expired
     if (kDebugMode && cached != null) {
-      debugPrint('[CacheInterceptor] Cache EXPIRED: ${options.path}');
+      AppLogger('Debug').debug('[CacheInterceptor] Cache EXPIRED: ${options.path}');
     }
 
     handler.next(options);
@@ -78,7 +79,7 @@ class CacheInterceptor extends Interceptor {
       );
 
       if (kDebugMode) {
-        debugPrint('[CacheInterceptor] Cached: ${response.requestOptions.path} (TTL: ${ttl.inSeconds}s)');
+        AppLogger('Debug').debug('[CacheInterceptor] Cached: ${response.requestOptions.path} (TTL: ${ttl.inSeconds}s)');
       }
     }
 
@@ -99,7 +100,7 @@ class CacheInterceptor extends Interceptor {
               err.type == DioExceptionType.receiveTimeout ||
               err.type == DioExceptionType.connectionError)) {
         if (kDebugMode) {
-          debugPrint('[CacheInterceptor] Network error, returning STALE cache: ${err.requestOptions.path}');
+          AppLogger('Debug').debug('[CacheInterceptor] Network error, returning STALE cache: ${err.requestOptions.path}');
         }
 
         return handler.resolve(
@@ -173,7 +174,7 @@ class CacheInterceptor extends Interceptor {
   void clearCache() {
     _cache.clear();
     if (kDebugMode) {
-      debugPrint('[CacheInterceptor] Cache cleared');
+      AppLogger('Debug').debug('[CacheInterceptor] Cache cleared');
     }
   }
 
@@ -181,7 +182,7 @@ class CacheInterceptor extends Interceptor {
   void clearCacheForPath(String path) {
     _cache.removeWhere((key, value) => key.contains(path));
     if (kDebugMode) {
-      debugPrint('[CacheInterceptor] Cache cleared for: $path');
+      AppLogger('Debug').debug('[CacheInterceptor] Cache cleared for: $path');
     }
   }
 

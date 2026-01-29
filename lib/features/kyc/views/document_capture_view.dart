@@ -14,6 +14,7 @@ import '../providers/kyc_provider.dart';
 import '../models/document_type.dart';
 import '../models/kyc_document.dart';
 import '../../../services/kyc/image_quality_checker.dart';
+import '../../../utils/logger.dart';
 
 class DocumentCaptureView extends ConsumerStatefulWidget {
   const DocumentCaptureView({super.key});
@@ -59,7 +60,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
         setState(() => _isInitialized = true);
       }
     } catch (e) {
-      debugPrint('Camera initialization error: $e');
+      AppLogger('Camera initialization error').error('Camera initialization error', e);
     }
   }
 
@@ -376,7 +377,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       });
     } catch (e) {
       setState(() => _isCheckingQuality = false);
-      debugPrint('Capture error: $e');
+      AppLogger('Capture error').error('Capture error', e);
     }
   }
 

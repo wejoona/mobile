@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
 import '../mock_config.dart';
 import 'api_contract.dart';
 
@@ -24,6 +25,9 @@ class MockInterceptor extends Interceptor {
   /// Random for simulating failures
   final _random = Random();
 
+  /// Logger
+  static final _logger = AppLogger('MockInterceptor');
+
   /// Register a mock handler for a specific endpoint
   void register({
     required String method,
@@ -33,9 +37,7 @@ class MockInterceptor extends Interceptor {
     _handlers[method.toUpperCase()] ??= {};
     _handlers[method.toUpperCase()]![path] = handler;
 
-    if (kDebugMode) {
-      print('[MockInterceptor] Registered: ${method.toUpperCase()} $path');
-    }
+    _logger.debug('Registered: ${method.toUpperCase()} $path');
   }
 
   /// Register handlers from a contract
@@ -76,9 +78,7 @@ class MockInterceptor extends Interceptor {
 
     if (mockHandler == null) {
       // No mock handler, pass through to real API
-      if (kDebugMode) {
-        print('[MockInterceptor] No handler for ${options.method} ${options.path}, passing through');
-      }
+      _logger.debug('No handler for ${options.method} ${options.path}, passing through');
       handler.next(options);
       return;
     }
@@ -102,9 +102,7 @@ class MockInterceptor extends Interceptor {
       // Call the mock handler
       final mockResponse = await mockHandler(options);
 
-      if (kDebugMode) {
-        print('[MockInterceptor] ${options.method} ${options.path} -> ${mockResponse.statusCode}');
-      }
+      _logger.debug('${options.method} ${options.path} -> ${mockResponse.statusCode}');
 
       // Apply additional delay if specified
       if (mockResponse.delay.inMilliseconds > 0) {
@@ -133,9 +131,7 @@ class MockInterceptor extends Interceptor {
         ));
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('[MockInterceptor] Error: $e');
-      }
+      _logger.error('Mock handler error', e);
       handler.reject(DioException(
         requestOptions: options,
         error: e,

@@ -13,6 +13,8 @@ import 'services/security/security_gate.dart';
 import 'services/security/device_security.dart';
 import 'services/localization/language_provider.dart';
 import 'services/feature_flags/feature_flags_provider.dart';
+import 'services/analytics/crash_reporting_service.dart';
+import 'utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +23,13 @@ void main() async {
   try {
     await Firebase.initializeApp();
   } catch (e) {
-    debugPrint('Firebase initialization failed: $e');
-    debugPrint('Push notifications will be disabled. Configure Firebase for production.');
+    AppLogger('Firebase initialization failed').error('Firebase initialization failed', e);
+    AppLogger('Debug').debug('Push notifications and analytics will be disabled. Configure Firebase for production.');
   }
+
+  // Initialize Crashlytics for error reporting
+  final crashReporting = CrashReportingService();
+  await crashReporting.initialize();
 
   // Initialize SharedPreferences for feature flags cache
   final sharedPreferences = await SharedPreferences.getInstance();

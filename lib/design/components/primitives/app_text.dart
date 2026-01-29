@@ -28,7 +28,7 @@ enum AppTextVariant {
 }
 
 /// Luxury Wallet Text Component
-/// Wrapper for consistent typography
+/// Wrapper for consistent typography with accessibility support
 class AppText extends StatelessWidget {
   const AppText(
     this.text, {
@@ -40,6 +40,8 @@ class AppText extends StatelessWidget {
     this.overflow,
     this.fontWeight,
     this.style,
+    this.semanticLabel,
+    this.excludeSemantics = false,
   });
 
   final String text;
@@ -50,11 +52,15 @@ class AppText extends StatelessWidget {
   final TextOverflow? overflow;
   final FontWeight? fontWeight;
   final TextStyle? style;
+  /// Optional semantic label for screen readers (defaults to text)
+  final String? semanticLabel;
+  /// Whether to exclude this text from semantics tree
+  final bool excludeSemantics;
 
   @override
   Widget build(BuildContext context) {
     final baseStyle = style ?? _getStyle();
-    return Text(
+    final textWidget = Text(
       text,
       style: baseStyle.copyWith(
         color: color,
@@ -64,6 +70,22 @@ class AppText extends StatelessWidget {
       maxLines: maxLines,
       overflow: overflow,
     );
+
+    // If excludeSemantics is true, wrap with ExcludeSemantics
+    if (excludeSemantics) {
+      return ExcludeSemantics(child: textWidget);
+    }
+
+    // If semanticLabel is provided, wrap with Semantics
+    if (semanticLabel != null) {
+      return Semantics(
+        label: semanticLabel,
+        excludeSemantics: true,
+        child: textWidget,
+      );
+    }
+
+    return textWidget;
   }
 
   TextStyle _getStyle() {

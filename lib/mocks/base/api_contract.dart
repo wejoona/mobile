@@ -5,6 +5,9 @@
 /// these contracts become the specification for backend implementation.
 library;
 
+import 'package:flutter/foundation.dart';
+import '../../utils/logger.dart';
+
 /// HTTP methods
 enum HttpMethod { get, post, put, patch, delete }
 
@@ -84,11 +87,12 @@ abstract class ApiContract {
 
   /// Print contract summary
   void printContract() {
-    print('=== $serviceName API Contract ===');
-    print('Base path: $basePath');
-    print('Endpoints:');
+    if (!kDebugMode) return;
+
+    final logger = AppLogger(serviceName);
+    logger.info('API Contract - Base path: $basePath');
     for (final endpoint in endpoints) {
-      print('  $endpoint');
+      logger.debug(endpoint.toString());
     }
   }
 }

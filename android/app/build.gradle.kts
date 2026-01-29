@@ -58,6 +58,19 @@ android {
         }
     }
 
+    // SIZE OPTIMIZATION: Split APK by ABI to reduce individual download size
+    // Each device only downloads the architecture it needs (arm64, arm32, or x86_64)
+    // NOTE: Disable this when building App Bundle with: flutter build appbundle --no-split-per-abi
+    val enableAbiSplit = project.hasProperty("split-per-abi")
+    splits {
+        abi {
+            isEnable = enableAbiSplit
+            reset()
+            include("armeabi-v7a", "arm64-v8a", "x86_64")
+            isUniversalApk = false  // Don't generate universal APK when splitting
+        }
+    }
+
     buildTypes {
         release {
             // SECURITY: Use release signing config if available, otherwise debug for local testing
@@ -75,6 +88,27 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+            )
+
+            // SIZE OPTIMIZATION: Additional build optimizations
+            ndk {
+                debugSymbolLevel = "NONE"  // Don't include debug symbols in release
+            }
+        }
+    }
+
+    // SIZE OPTIMIZATION: Package options
+    packaging {
+        resources {
+            excludes += listOf(
+                "META-INF/*.kotlin_module",
+                "META-INF/LICENSE*",
+                "META-INF/NOTICE*",
+                "META-INF/INDEX.LIST",
+                "META-INF/io.netty.versions.properties",
+                "androidsupportmultidexversion.txt",
+                "kotlin/**",
+                "DebugProbesKt.bin"
             )
         }
     }

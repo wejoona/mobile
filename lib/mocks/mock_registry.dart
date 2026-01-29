@@ -5,6 +5,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import '../utils/logger.dart';
 import 'base/mock_interceptor.dart';
 import 'mock_config.dart';
 import 'services/auth/auth_mock.dart';
@@ -47,6 +48,7 @@ import 'services/bank_linking/bank_linking_mock.dart';
 class MockRegistry {
   static final MockInterceptor _interceptor = MockInterceptor();
   static bool _isInitialized = false;
+  static final _logger = AppLogger('MockRegistry');
 
   /// Get the mock interceptor (for adding to Dio)
   static MockInterceptor get interceptor => _interceptor;
@@ -55,9 +57,7 @@ class MockRegistry {
   static void initialize() {
     if (_isInitialized) return;
 
-    if (kDebugMode) {
-      print('=== Initializing Mock Registry ===');
-    }
+    _logger.info('Initializing Mock Registry');
 
     // Register all mock handlers
     AuthMock.register(_interceptor);
@@ -91,9 +91,7 @@ class MockRegistry {
 
     _isInitialized = true;
 
-    if (kDebugMode) {
-      print('=== Mock Registry Initialized ===');
-    }
+    _logger.info('Mock Registry Initialized');
   }
 
   /// Reset all mock state (useful for testing)
@@ -109,9 +107,7 @@ class MockRegistry {
     BulkPaymentsMockState.reset();
     CardsMockState.reset();
 
-    if (kDebugMode) {
-      print('=== Mock State Reset ===');
-    }
+    _logger.info('Mock State Reset');
   }
 
   /// Clear all mock handlers
@@ -122,9 +118,9 @@ class MockRegistry {
 
   /// Print all API contracts
   static void printContracts() {
-    print('\n========================================');
-    print('       JoonaPay API Contracts');
-    print('========================================\n');
+    if (!kDebugMode) return;
+
+    _logger.info('JoonaPay API Contracts');
 
     final contracts = [
       AuthContract(),
@@ -137,10 +133,7 @@ class MockRegistry {
 
     for (final contract in contracts) {
       contract.printContract();
-      print('');
     }
-
-    print('========================================\n');
   }
 
   /// Generate OpenAPI spec for all contracts

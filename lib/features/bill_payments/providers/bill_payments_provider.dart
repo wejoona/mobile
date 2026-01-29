@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/bill_payments/bill_payments_service.dart';
 import '../../../services/api/api_client.dart';
+import '../../../services/app_review/app_review_service.dart';
 
 // ============================================================================
 // PROVIDERS
@@ -275,6 +276,10 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
 
       // Invalidate history cache
       ref.invalidate(billPaymentHistoryProvider);
+
+      // Track successful transaction for app review prompt
+      final appReviewService = ref.read(appReviewServiceProvider);
+      await appReviewService.trackSuccessfulTransaction();
 
       return true;
     } on ApiException catch (e) {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/logger.dart';
 
 /// Feature flag keys from backend
 class FeatureFlagKeys {
@@ -86,11 +87,11 @@ class FeatureFlagsService {
       // Check if we need to refresh
       if (_lastFetch != null &&
           DateTime.now().difference(_lastFetch!) < _refreshInterval) {
-        debugPrint('[FeatureFlags] Cache still fresh, skipping fetch');
+        AppLogger('Debug').debug('[FeatureFlags] Cache still fresh, skipping fetch');
         return _flags;
       }
 
-      debugPrint('[FeatureFlags] Fetching from API...');
+      AppLogger('Debug').debug('[FeatureFlags] Fetching from API...');
       final response = await _dio.get('/feature-flags/me');
 
       if (response.statusCode == 200 && response.data != null) {
@@ -104,14 +105,14 @@ class FeatureFlagsService {
         await _saveToCache();
         _lastFetch = DateTime.now();
 
-        debugPrint('[FeatureFlags] Fetched ${_flags.length} flags');
+        AppLogger('Debug').debug('[FeatureFlags] Fetched ${_flags.length} flags');
         return _flags;
       }
 
-      debugPrint('[FeatureFlags] Failed to fetch: ${response.statusCode}');
+      AppLogger('Debug').debug('[FeatureFlags] Failed to fetch: ${response.statusCode}');
       return _flags;
     } catch (e) {
-      debugPrint('[FeatureFlags] Error fetching flags: $e');
+      AppLogger('[FeatureFlags] Error fetching flags').error('[FeatureFlags] Error fetching flags', e);
       // Return cached flags on error
       return _flags;
     }
@@ -146,10 +147,10 @@ class FeatureFlagsService {
           _lastFetch = DateTime.fromMillisecondsSinceEpoch(lastFetchMs);
         }
 
-        debugPrint('[FeatureFlags] Loaded ${_flags.length} flags from cache');
+        AppLogger('Debug').debug('[FeatureFlags] Loaded ${_flags.length} flags from cache');
       }
     } catch (e) {
-      debugPrint('[FeatureFlags] Failed to load cache: $e');
+      AppLogger('[FeatureFlags] Failed to load cache').error('[FeatureFlags] Failed to load cache', e);
     }
   }
 
@@ -160,9 +161,9 @@ class FeatureFlagsService {
       if (_lastFetch != null) {
         await _prefs.setInt(_lastFetchKey, _lastFetch!.millisecondsSinceEpoch);
       }
-      debugPrint('[FeatureFlags] Saved to cache');
+      AppLogger('Debug').debug('[FeatureFlags] Saved to cache');
     } catch (e) {
-      debugPrint('[FeatureFlags] Failed to save cache: $e');
+      AppLogger('[FeatureFlags] Failed to save cache').error('[FeatureFlags] Failed to save cache', e);
     }
   }
 

@@ -16,6 +16,7 @@ import '../../../design/components/primitives/app_select.dart';
 import '../services/expenses_service.dart';
 import '../providers/expenses_provider.dart';
 import '../models/expense.dart';
+import '../../../utils/logger.dart';
 
 class CaptureReceiptView extends ConsumerStatefulWidget {
   const CaptureReceiptView({super.key});
@@ -61,7 +62,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       await _cameraController!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      debugPrint('Error initializing camera: $e');
+      AppLogger('Error initializing camera').error('Error initializing camera', e);
     }
   }
 
@@ -397,7 +398,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       });
       await _processReceipt(image.path);
     } catch (e) {
-      debugPrint('Error capturing photo: $e');
+      AppLogger('Error capturing photo').error('Error capturing photo', e);
     }
   }
 
@@ -411,7 +412,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         await _processReceipt(image.path);
       }
     } catch (e) {
-      debugPrint('Error picking from gallery: $e');
+      AppLogger('Error picking from gallery').error('Error picking from gallery', e);
     }
   }
 
@@ -426,7 +427,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       });
     } catch (e) {
       setState(() => _isProcessing = false);
-      debugPrint('Error processing receipt: $e');
+      AppLogger('Error processing receipt').error('Error processing receipt', e);
     }
   }
 

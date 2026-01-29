@@ -11,6 +11,7 @@ import '../../../services/api/api_client.dart';
 import '../../../services/session/session_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import '../../../utils/logger.dart';
 
 class OtpView extends ConsumerStatefulWidget {
   const OtpView({super.key});
@@ -66,7 +67,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
       await SmsAutoFill().listenForCode();
       setState(() => _isListeningForSms = true);
     } catch (e) {
-      debugPrint('SMS autofill not available: $e');
+      AppLogger('SMS autofill not available').error('SMS autofill not available', e);
     }
   }
 
@@ -89,12 +90,12 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
 
     ref.listen<AuthState>(authProvider, (prev, next) {
-      debugPrint('OTP AuthState changed: ${prev?.status} -> ${next.status}');
+      AppLogger('Debug').debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
       if (next.status == AuthStatus.authenticated) {
-        debugPrint('Authentication successful! Navigating to /home...');
+        AppLogger('Debug').debug('Authentication successful! Navigating to /home...');
         context.go('/home');
       } else if (next.error != null) {
-        debugPrint('OTP verification error: ${next.error}');
+        AppLogger('Debug').debug('OTP verification error: ${next.error}');
         setState(() {
           _hasError = true;
           _otp = '';

@@ -27,7 +27,7 @@ enum AppButtonSize {
 }
 
 /// Luxury Wallet Button Component
-/// Enhanced with proper text alignment and overflow handling
+/// Enhanced with proper text alignment, overflow handling, and accessibility
 class AppButton extends StatelessWidget {
   const AppButton({
     super.key,
@@ -39,6 +39,7 @@ class AppButton extends StatelessWidget {
     this.isFullWidth = false,
     this.icon,
     this.iconPosition = IconPosition.left,
+    this.semanticLabel,
   });
 
   final String label;
@@ -49,29 +50,46 @@ class AppButton extends StatelessWidget {
   final bool isFullWidth;
   final IconData? icon;
   final IconPosition iconPosition;
+  /// Optional semantic label for screen readers (defaults to label)
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final isDisabled = onPressed == null || isLoading;
     final colors = context.colors;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: isFullWidth ? double.infinity : null,
-      constraints: isFullWidth
-          ? const BoxConstraints(minHeight: 48)
-          : const BoxConstraints(minWidth: 88, minHeight: 40),
-      decoration: _buildDecoration(isDisabled, colors),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isDisabled ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          splashColor: _getSplashColor(colors),
-          child: Padding(
-            padding: _getPadding(),
-            child: Center(
-              child: _buildContent(colors),
+    // Build semantic label for screen readers
+    final String effectiveLabel = semanticLabel ?? label;
+    final String semanticHint = isLoading
+        ? 'Loading, please wait'
+        : isDisabled
+            ? 'Button disabled'
+            : 'Double tap to activate';
+
+    return Semantics(
+      label: effectiveLabel,
+      hint: semanticHint,
+      button: true,
+      enabled: !isDisabled,
+      excludeSemantics: true,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        width: isFullWidth ? double.infinity : null,
+        constraints: isFullWidth
+            ? const BoxConstraints(minHeight: 48)
+            : const BoxConstraints(minWidth: 88, minHeight: 40),
+        decoration: _buildDecoration(isDisabled, colors),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: isDisabled ? null : onPressed,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            splashColor: _getSplashColor(colors),
+            child: Padding(
+              padding: _getPadding(),
+              child: Center(
+                child: _buildContent(colors),
+              ),
             ),
           ),
         ),

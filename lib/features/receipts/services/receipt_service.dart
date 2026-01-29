@@ -12,6 +12,7 @@ import '../../../domain/entities/transaction.dart';
 import '../../../domain/enums/index.dart';
 import '../models/receipt_data.dart';
 import '../models/receipt_format.dart';
+import '../../../utils/logger.dart';
 
 /// Service for generating and sharing transaction receipts
 class ReceiptService {
@@ -240,7 +241,7 @@ class ReceiptService {
       );
       return result['isSuccess'] ?? false;
     } catch (e) {
-      debugPrint('Error saving to gallery: $e');
+      AppLogger('Error saving to gallery').error('Error saving to gallery', e);
       return false;
     }
   }
@@ -299,7 +300,7 @@ Thank you for using JoonaPay!
       }
       return false;
     } catch (e) {
-      debugPrint('Error sharing via WhatsApp: $e');
+      AppLogger('Error sharing via WhatsApp').error('Error sharing via WhatsApp', e);
       return false;
     }
   }
@@ -340,7 +341,7 @@ The JoonaPay Team
       }
       return false;
     } catch (e) {
-      debugPrint('Error sharing via email: $e');
+      AppLogger('Error sharing via email').error('Error sharing via email', e);
       return false;
     }
   }

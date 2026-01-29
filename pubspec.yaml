@@ -43,7 +43,8 @@ dependencies:
   local_auth: ^2.3.0
   google_fonts: ^8.0.0
   intl: ^0.20.2
-  shimmer: ^3.0.0
+  # SIZE OPTIMIZATION: Removed shimmer (not used in codebase)
+  # shimmer: ^3.0.0
   cached_network_image: ^3.4.1
   flutter_svg: ^2.2.3
   confetti: ^0.7.0
@@ -77,6 +78,10 @@ dependencies:
   # Firebase for push notifications
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.6
+  # Firebase Analytics
+  firebase_analytics: ^11.3.6
+  # Firebase Crashlytics
+  firebase_crashlytics: ^4.1.6
   # Device info for push notification registration
   device_info_plus: ^11.2.0
   # Local notifications for foreground display
@@ -94,6 +99,8 @@ dependencies:
   # UUID generation for offline queue
   uuid: ^4.5.1
   file_picker: ^10.3.10
+  # In-app review for app store ratings
+  in_app_review: ^2.0.9
 
 dev_dependencies:
   flutter_test:

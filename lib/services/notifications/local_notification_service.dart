@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import '../../utils/logger.dart';
 
 /// Local Notification Service
 ///
@@ -17,6 +18,7 @@ class LocalNotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
+  static final _logger = AppLogger('LocalNotifications');
 
   /// Notification tap callback
   Function(String? payload)? onNotificationTap;
@@ -100,9 +102,7 @@ class LocalNotificationService {
 
   /// Handle notification tap
   void _onNotificationTap(NotificationResponse response) {
-    if (kDebugMode) {
-      print('Notification tapped: ${response.payload}');
-    }
+    _logger.debug('Notification tapped', response.payload);
 
     if (onNotificationTap != null) {
       onNotificationTap!(response.payload);

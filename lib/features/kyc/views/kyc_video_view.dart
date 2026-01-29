@@ -14,6 +14,7 @@ import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_card.dart';
 import '../providers/kyc_provider.dart';
+import '../../../utils/logger.dart';
 
 enum VideoStep {
   instructions,
@@ -89,7 +90,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
       await _controller!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      debugPrint('Camera initialization error: $e');
+      AppLogger('Camera initialization error').error('Camera initialization error', e);
     }
   }
 
@@ -533,7 +534,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
 
       setState(() => _videoPath = filePath);
     } catch (e) {
-      debugPrint('Error starting recording: $e');
+      AppLogger('Error starting recording').error('Error starting recording', e);
     }
   }
 
@@ -550,7 +551,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
         _currentStep = VideoStep.preview;
       });
     } catch (e) {
-      debugPrint('Error stopping recording: $e');
+      AppLogger('Error stopping recording').error('Error stopping recording', e);
     }
   }
 

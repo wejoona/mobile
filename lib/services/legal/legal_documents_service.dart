@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
+import '../../utils/logger.dart';
 
 /// Legal document types
 enum LegalDocumentType {
@@ -185,7 +186,7 @@ class LegalDocumentsService {
 
       return false;
     } catch (e) {
-      debugPrint('Error checking consent: $e');
+      AppLogger('Error checking consent').error('Error checking consent', e);
       return false;
     }
   }
@@ -208,7 +209,7 @@ class LegalDocumentsService {
 
     // Send to API (fire and forget, don't block on failure)
     _sendConsentToApi(consent).catchError((e) {
-      debugPrint('Failed to send consent to API: $e');
+      AppLogger('Failed to send consent to API').error('Failed to send consent to API', e);
     });
   }
 
@@ -275,7 +276,7 @@ class LegalDocumentsService {
 
       return document;
     } catch (e) {
-      debugPrint('Failed to fetch legal document: $e');
+      AppLogger('Failed to fetch legal document').error('Failed to fetch legal document', e);
       // Return fallback/cached version
       return _getFallbackDocument(type, locale);
     }
@@ -339,7 +340,7 @@ class LegalDocumentsService {
         ),
       );
     } catch (e) {
-      debugPrint('Failed to parse stored consent: $e');
+      AppLogger('Failed to parse stored consent').error('Failed to parse stored consent', e);
       return null;
     }
   }

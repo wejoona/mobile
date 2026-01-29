@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../utils/logger.dart';
 
 /// Supported reference currencies for display
 enum ReferenceCurrency {
@@ -138,7 +139,7 @@ class CurrencyService {
         orElse: () => ReferenceCurrency.none,
       );
     } catch (e) {
-      debugPrint('Error getting saved reference currency: $e');
+      AppLogger('Error getting saved reference currency').error('Error getting saved reference currency', e);
       return ReferenceCurrency.none;
     }
   }
@@ -149,7 +150,7 @@ class CurrencyService {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.setString(_referenceCurrencyKey, currency.code);
     } catch (e) {
-      debugPrint('Error saving reference currency: $e');
+      AppLogger('Error saving reference currency').error('Error saving reference currency', e);
       return false;
     }
   }
@@ -160,7 +161,7 @@ class CurrencyService {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getBool(_showReferenceCurrencyKey) ?? false;
     } catch (e) {
-      debugPrint('Error getting reference currency enabled: $e');
+      AppLogger('Error getting reference currency enabled').error('Error getting reference currency enabled', e);
       return false;
     }
   }
@@ -171,7 +172,7 @@ class CurrencyService {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.setBool(_showReferenceCurrencyKey, enabled);
     } catch (e) {
-      debugPrint('Error saving reference currency enabled: $e');
+      AppLogger('Error saving reference currency enabled').error('Error saving reference currency enabled', e);
       return false;
     }
   }

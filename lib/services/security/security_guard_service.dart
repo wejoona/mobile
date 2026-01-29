@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../biometric/biometric_service.dart';
 import '../liveness/liveness_service.dart';
+import '../../utils/logger.dart';
 
 /// Security guard service for sensitive operations
 /// Coordinates biometric and liveness checks for various security levels
@@ -53,7 +54,7 @@ class SecurityGuardService {
 
       // In production, this would trigger UI to show liveness check widget
       // For service layer, we just verify the session was started
-      debugPrint('Liveness session started: ${session.sessionId}');
+      AppLogger('Debug').debug('Liveness session started: ${session.sessionId}');
 
       // Return null to indicate UI should handle liveness check
       return null;

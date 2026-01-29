@@ -6,7 +6,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import '../../utils/logger.dart';
 import '../api/api_client.dart';
+
+final _logger = AppLogger('PushNotifications');
 
 /// Background message handler - must be top-level function
 @pragma('vm:entry-point')
@@ -14,13 +17,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Initialize Firebase if needed (for background/terminated state)
   await Firebase.initializeApp();
 
-  if (kDebugMode) {
-    print('Handling background message: ${message.messageId}');
-    print('Message data: ${message.data}');
-    if (message.notification != null) {
-      print('Notification: ${message.notification!.title} - ${message.notification!.body}');
-    }
-  }
+  _logger.info('Background message received', {
+    'messageId': message.messageId,
+    'hasNotification': message.notification != null,
+  });
 
   // Handle the background message
   // Note: You cannot access providers here since the app is in background
@@ -77,9 +77,7 @@ class PushNotificationService {
 
       // Get initial token
       _currentToken = await _messaging.getToken();
-      if (kDebugMode) {
-        print('FCM Token: $_currentToken');
-      }
+      _logger.debug('FCM Token obtained', _currentToken);
 
       // Listen for token refresh
       _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(_handleTokenRefresh);
@@ -98,9 +96,7 @@ class PushNotificationService {
 
       _isInitialized = true;
     } else {
-      if (kDebugMode) {
-        print('Push notifications not authorized: ${settings.authorizationStatus}');
-      }
+      _logger.warn('Push notifications not authorized', settings.authorizationStatus);
     }
   }
 
@@ -131,9 +127,7 @@ class PushNotificationService {
   /// Call this after user authentication
   Future<void> registerWithBackend() async {
     if (_currentToken == null) {
-      if (kDebugMode) {
-        print('No FCM token available to register');
-      }
+      _logger.warn('No FCM token available to register');
       return;
     }
 
@@ -149,13 +143,9 @@ class PushNotificationService {
         'osVersion': deviceInfo['osVersion'],
       });
 
-      if (kDebugMode) {
-        print('FCM token registered with backend');
-      }
+      _logger.info('FCM token registered with backend');
     } on DioException catch (e) {
-      if (kDebugMode) {
-        print('Failed to register FCM token: ${e.message}');
-      }
+      _logger.error('Failed to register FCM token', e);
       // Don't throw - registration failure shouldn't break the app
     }
   }
@@ -170,21 +160,15 @@ class PushNotificationService {
         'token': _currentToken,
       });
 
-      if (kDebugMode) {
-        print('FCM token unregistered from backend');
-      }
+      _logger.info('FCM token unregistered from backend');
     } on DioException catch (e) {
-      if (kDebugMode) {
-        print('Failed to unregister FCM token: ${e.message}');
-      }
+      _logger.error('Failed to unregister FCM token', e);
     }
   }
 
   /// Handle token refresh
   void _handleTokenRefresh(String newToken) async {
-    if (kDebugMode) {
-      print('FCM token refreshed: $newToken');
-    }
+    _logger.info('FCM token refreshed');
 
     // Unregister old token if we have one
     if (_currentToken != null && _currentToken != newToken) {
@@ -199,12 +183,11 @@ class PushNotificationService {
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    if (kDebugMode) {
-      print('Received foreground message: ${message.messageId}');
-      print('Title: ${message.notification?.title}');
-      print('Body: ${message.notification?.body}');
-      print('Data: ${message.data}');
-    }
+    _logger.info('Foreground message received', {
+      'messageId': message.messageId,
+      'title': message.notification?.title,
+      'body': message.notification?.body,
+    });
 
     // Invoke callback if set
     if (onForegroundMessage != null) {
@@ -214,10 +197,7 @@ class PushNotificationService {
 
   /// Handle message tap (app was in background/terminated)
   void _handleMessageOpenedApp(RemoteMessage message) {
-    if (kDebugMode) {
-      print('Message opened app: ${message.messageId}');
-      print('Data: ${message.data}');
-    }
+    _logger.info('Message opened app', message.messageId);
 
     // Invoke callback if set
     if (onMessageOpenedApp != null) {
@@ -240,9 +220,11 @@ class PushNotificationService {
     final action = data['action'] as String?;
     final transactionId = data['transactionId'] as String?;
 
-    if (kDebugMode) {
-      print('Handling navigation - type: $type, action: $action, transactionId: $transactionId');
-    }
+    _logger.debug('Handling navigation', {
+      'type': type,
+      'action': action,
+      'transactionId': transactionId,
+    });
 
     // Navigation logic would go here
     // This should integrate with your router (e.g., GoRouter)
@@ -283,9 +265,7 @@ class PushNotificationService {
         };
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Failed to get device info: $e');
-      }
+      _logger.error('Failed to get device info', e);
     }
 
     return {
@@ -299,17 +279,13 @@ class PushNotificationService {
   /// Subscribe to a topic
   Future<void> subscribeToTopic(String topic) async {
     await _messaging.subscribeToTopic(topic);
-    if (kDebugMode) {
-      print('Subscribed to topic: $topic');
-    }
+    _logger.info('Subscribed to topic', topic);
   }
 
   /// Unsubscribe from a topic
   Future<void> unsubscribeFromTopic(String topic) async {
     await _messaging.unsubscribeFromTopic(topic);
-    if (kDebugMode) {
-      print('Unsubscribed from topic: $topic');
-    }
+    _logger.info('Unsubscribed from topic', topic);
   }
 
   /// Dispose resources
