@@ -80,7 +80,7 @@ dependencies:
   # Device info for push notification registration
   device_info_plus: ^11.2.0
   # Local notifications for foreground display
-  flutter_local_notifications: ^18.0.1
+  flutter_local_notifications: ^20.0.0
   # Package info for app version
   package_info_plus: ^8.1.2
   # PDF generation for receipts
