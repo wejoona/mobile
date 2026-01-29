@@ -1848,6 +1848,31 @@
     "description": "Error loading title"
   },
 
+  "beneficiaries_accountDetails": "Account Details",
+  "@beneficiaries_accountDetails": {
+    "description": "Account details section title"
+  },
+
+  "beneficiaries_statistics": "Transfer Statistics",
+  "@beneficiaries_statistics": {
+    "description": "Statistics section title"
+  },
+
+  "beneficiaries_totalTransfers": "Total Transfers",
+  "@beneficiaries_totalTransfers": {
+    "description": "Total transfers label"
+  },
+
+  "beneficiaries_totalAmount": "Total Amount",
+  "@beneficiaries_totalAmount": {
+    "description": "Total amount label"
+  },
+
+  "beneficiaries_lastTransfer": "Last Transfer",
+  "@beneficiaries_lastTransfer": {
+    "description": "Last transfer label"
+  },
+
   "common_cancel": "Cancel",
   "@common_cancel": {
     "description": "Cancel button"
@@ -1866,6 +1891,11 @@
   "common_retry": "Retry",
   "@common_retry": {
     "description": "Retry button"
+  },
+
+  "common_verified": "Verified",
+  "@common_verified": {
+    "description": "Verified status"
   },
 
   "error_required": "This field is required",
@@ -4759,5 +4789,80 @@
   "common_no": "No",
   "@common_no": {
     "description": "No button"
+  },
+
+  "offline_youreOffline": "You're offline",
+  "@offline_youreOffline": {
+    "description": "Offline banner message"
+  },
+
+  "offline_youreOfflineWithPending": "You're offline · {count} pending",
+  "@offline_youreOfflineWithPending": {
+    "description": "Offline banner with pending count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "offline_syncing": "Syncing...",
+  "@offline_syncing": {
+    "description": "Syncing indicator message"
+  },
+
+  "offline_pendingTransfer": "Pending Transfer",
+  "@offline_pendingTransfer": {
+    "description": "Pending transfer label"
+  },
+
+  "offline_transferQueued": "Transfer queued",
+  "@offline_transferQueued": {
+    "description": "Transfer queued success message"
+  },
+
+  "offline_transferQueuedDesc": "Your transfer will be sent when you're back online",
+  "@offline_transferQueuedDesc": {
+    "description": "Transfer queued description"
+  },
+
+  "offline_viewPending": "View Pending",
+  "@offline_viewPending": {
+    "description": "View pending transfers button"
+  },
+
+  "offline_retryFailed": "Retry Failed",
+  "@offline_retryFailed": {
+    "description": "Retry failed transfer button"
+  },
+
+  "offline_cancelTransfer": "Cancel Transfer",
+  "@offline_cancelTransfer": {
+    "description": "Cancel pending transfer button"
+  },
+
+  "offline_noConnection": "No internet connection",
+  "@offline_noConnection": {
+    "description": "No connection message"
+  },
+
+  "offline_checkConnection": "Please check your internet connection and try again",
+  "@offline_checkConnection": {
+    "description": "Check connection message"
+  },
+
+  "offline_cacheData": "Showing cached data",
+  "@offline_cacheData": {
+    "description": "Cache data indicator"
+  },
+
+  "offline_lastSynced": "Last synced: {time}",
+  "@offline_lastSynced": {
+    "description": "Last sync time",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

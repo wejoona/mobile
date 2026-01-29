@@ -2252,6 +2252,36 @@ abstract class AppLocalizations {
   /// **'Error Loading Beneficiaries'**
   String get beneficiaries_errorTitle;
 
+  /// Account details section title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Details'**
+  String get beneficiaries_accountDetails;
+
+  /// Statistics section title
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer Statistics'**
+  String get beneficiaries_statistics;
+
+  /// Total transfers label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Transfers'**
+  String get beneficiaries_totalTransfers;
+
+  /// Total amount label
+  ///
+  /// In en, this message translates to:
+  /// **'Total Amount'**
+  String get beneficiaries_totalAmount;
+
+  /// Last transfer label
+  ///
+  /// In en, this message translates to:
+  /// **'Last Transfer'**
+  String get beneficiaries_lastTransfer;
+
   /// Cancel button
   ///
   /// In en, this message translates to:
@@ -2275,6 +2305,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get common_retry;
+
+  /// Verified status
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get common_verified;
 
   /// Required field error
   ///
@@ -5617,6 +5653,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No'**
   String get common_no;
+
+  /// Offline banner message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get offline_youreOffline;
+
+  /// Offline banner with pending count
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline · {count} pending'**
+  String offline_youreOfflineWithPending(int count);
+
+  /// Syncing indicator message
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get offline_syncing;
+
+  /// Pending transfer label
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Transfer'**
+  String get offline_pendingTransfer;
+
+  /// Transfer queued success message
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer queued'**
+  String get offline_transferQueued;
+
+  /// Transfer queued description
+  ///
+  /// In en, this message translates to:
+  /// **'Your transfer will be sent when you\'re back online'**
+  String get offline_transferQueuedDesc;
+
+  /// View pending transfers button
+  ///
+  /// In en, this message translates to:
+  /// **'View Pending'**
+  String get offline_viewPending;
+
+  /// Retry failed transfer button
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Failed'**
+  String get offline_retryFailed;
+
+  /// Cancel pending transfer button
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Transfer'**
+  String get offline_cancelTransfer;
+
+  /// No connection message
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get offline_noConnection;
+
+  /// Check connection message
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection and try again'**
+  String get offline_checkConnection;
+
+  /// Cache data indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Showing cached data'**
+  String get offline_cacheData;
+
+  /// Last sync time
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced: {time}'**
+  String offline_lastSynced(String time);
 }
 
 class _AppLocalizationsDelegate

@@ -68,7 +68,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             child: ListView.separated(
               padding: EdgeInsets.all(AppSpacing.md),
               itemCount: state.sessions.length,
-              separatorBuilder: (_, __) => SizedBox(height: AppSpacing.md),
+              separatorBuilder: (context, index) => SizedBox(height: AppSpacing.md),
               itemBuilder: (context, index) {
                 final session = state.sessions[index];
                 final isCurrentSession = session.id == state.currentSessionId;
@@ -121,7 +121,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.gold500.withOpacity(0.1),
+                          color: AppColors.gold500.withValues(alpha: 0.1),
                           border: Border.all(color: AppColors.gold500, width: 1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
@@ -319,17 +319,19 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      final success = await ref.read(sessionsProvider.notifier).revokeSession(session.id);
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.sessions_revokeSuccess),
-            backgroundColor: AppColors.successBase,
-          ),
-        );
-      }
-    }
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    final success = await ref.read(sessionsProvider.notifier).revokeSession(session.id);
+    if (!success || !mounted) return;
+
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: AppText(l10n.sessions_revokeSuccess),
+        backgroundColor: AppColors.successBase,
+      ),
+    );
   }
 
   Future<void> _showLogoutAllDialog(BuildContext context, AppLocalizations l10n) async {
@@ -357,7 +359,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             Container(
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.errorBase.withOpacity(0.1),
+                color: AppColors.errorBase.withValues(alpha: 0.1),
                 border: Border.all(color: AppColors.errorBase, width: 1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
@@ -395,18 +397,21 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
       ),
     );
 
-    if (confirmed == true && mounted) {
-      final success = await ref.read(sessionsProvider.notifier).logoutAllDevices();
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.sessions_logoutAllSuccess),
-            backgroundColor: AppColors.successBase,
-          ),
-        );
-        // Navigate back or to login
-        Navigator.pop(context);
-      }
-    }
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    final success = await ref.read(sessionsProvider.notifier).logoutAllDevices();
+    if (!success || !mounted) return;
+
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: AppText(l10n.sessions_logoutAllSuccess),
+        backgroundColor: AppColors.successBase,
+      ),
+    );
+    // Navigate back or to login
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop();
   }
 }

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Feature flag keys from backend
@@ -42,11 +41,14 @@ class FeatureFlagKeys {
 
   // Other features
   static const String referrals = 'referrals';
+  static const String referralProgram = 'referral_program';
   static const String analytics = 'analytics';
   static const String currencyConverter = 'currency_converter';
   static const String requestMoney = 'request_money';
   static const String scheduledTransfers = 'scheduled_transfers';
   static const String savedRecipients = 'saved_recipients';
+  static const String merchantQr = 'merchant_qr';
+  static const String paymentLinks = 'payment_links';
 }
 
 /// Feature Flags Service

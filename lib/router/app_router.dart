@@ -84,6 +84,7 @@ import '../features/alerts/views/alert_preferences_view.dart';
 import '../features/services/views/services_view.dart';
 import '../features/beneficiaries/views/beneficiaries_screen.dart';
 import '../features/beneficiaries/views/add_beneficiary_screen.dart';
+import '../features/beneficiaries/views/beneficiary_detail_view.dart';
 import '../features/payment_links/views/payment_links_list_view.dart';
 import '../features/payment_links/views/create_link_view.dart';
 import '../features/payment_links/views/link_created_view.dart';
@@ -1050,6 +1051,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           state: state,
           child: const AddBeneficiaryScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/beneficiaries/detail/:id',
+        pageBuilder: (context, state) {
+          final beneficiaryId = state.pathParameters['id'];
+          Widget child;
+          if (beneficiaryId != null) {
+            child = BeneficiaryDetailView(beneficiaryId: beneficiaryId);
+          } else {
+            child = const _PlaceholderPage(title: 'Beneficiary Not Found');
+          }
+          return AppPageTransitions.horizontalSlide(state: state, child: child);
+        },
       ),
       GoRoute(
         path: '/beneficiaries/edit/:id',

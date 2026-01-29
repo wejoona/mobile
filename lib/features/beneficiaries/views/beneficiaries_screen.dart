@@ -262,8 +262,8 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
   }
 
   void _selectBeneficiary(BuildContext context, Beneficiary beneficiary) {
-    // For transfer flow - pop with selected beneficiary
-    context.pop(beneficiary);
+    // Navigate to detail view
+    context.push('/beneficiaries/detail/${beneficiary.id}');
   }
 
   void _navigateToAddBeneficiary(BuildContext context) {

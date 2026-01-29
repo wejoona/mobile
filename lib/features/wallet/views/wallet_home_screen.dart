@@ -12,6 +12,8 @@ import '../../../services/currency/currency_provider.dart';
 import '../../../services/api/api_client.dart';
 import '../../limits/providers/limits_provider.dart';
 import '../../limits/widgets/limit_warning_banner.dart';
+import '../../offline/providers/offline_provider.dart';
+import '../../../design/components/primitives/offline_banner.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -107,8 +109,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      body: SafeArea(
-        child: RefreshIndicator(
+      body: Column(
+        children: [
+          // Offline/Sync Status Banner
+          const OfflineStatusBanner(),
+
+          Expanded(
+            child: SafeArea(
+              child: RefreshIndicator(
           onRefresh: () async {
             await ref.read(walletStateMachineProvider.notifier).refresh();
             await ref.read(transactionStateMachineProvider.notifier).refresh();
@@ -147,6 +155,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             ),
           ),
         ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

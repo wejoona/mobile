@@ -1186,6 +1186,21 @@ class AppLocalizationsFr extends AppLocalizations {
       'Erreur de chargement des bénéficiaires';
 
   @override
+  String get beneficiaries_accountDetails => 'Détails du compte';
+
+  @override
+  String get beneficiaries_statistics => 'Statistiques de transfert';
+
+  @override
+  String get beneficiaries_totalTransfers => 'Transferts totaux';
+
+  @override
+  String get beneficiaries_totalAmount => 'Montant total';
+
+  @override
+  String get beneficiaries_lastTransfer => 'Dernier transfert';
+
+  @override
   String get common_cancel => 'Annuler';
 
   @override
@@ -1196,6 +1211,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get common_retry => 'Réessayer';
+
+  @override
+  String get common_verified => 'Vérifié';
 
   @override
   String get error_required => 'Ce champ est obligatoire';
@@ -3017,4 +3035,49 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get common_no => 'Non';
+
+  @override
+  String get offline_youreOffline => 'Vous êtes hors ligne';
+
+  @override
+  String offline_youreOfflineWithPending(int count) {
+    return 'Vous êtes hors ligne · $count en attente';
+  }
+
+  @override
+  String get offline_syncing => 'Synchronisation...';
+
+  @override
+  String get offline_pendingTransfer => 'Transfert en attente';
+
+  @override
+  String get offline_transferQueued => 'Transfert mis en file d\'attente';
+
+  @override
+  String get offline_transferQueuedDesc =>
+      'Votre transfert sera envoyé lorsque vous serez de nouveau en ligne';
+
+  @override
+  String get offline_viewPending => 'Voir en attente';
+
+  @override
+  String get offline_retryFailed => 'Réessayer l\'échec';
+
+  @override
+  String get offline_cancelTransfer => 'Annuler le transfert';
+
+  @override
+  String get offline_noConnection => 'Pas de connexion Internet';
+
+  @override
+  String get offline_checkConnection =>
+      'Veuillez vérifier votre connexion Internet et réessayer';
+
+  @override
+  String get offline_cacheData => 'Affichage des données en cache';
+
+  @override
+  String offline_lastSynced(String time) {
+    return 'Dernière synchronisation: $time';
+  }
 }

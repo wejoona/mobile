@@ -47,11 +47,14 @@ class FeatureFlagsMock {
 
             // Other features
             'referrals': true,
+            'referral_program': true,
             'analytics': false,
             'currency_converter': true,
             'request_money': true,
             'scheduled_transfers': false,
             'saved_recipients': true,
+            'merchant_qr': true,
+            'payment_links': true,
           },
         });
       },

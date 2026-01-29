@@ -1158,6 +1158,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get beneficiaries_errorTitle => 'Error Loading Beneficiaries';
 
   @override
+  String get beneficiaries_accountDetails => 'Account Details';
+
+  @override
+  String get beneficiaries_statistics => 'Transfer Statistics';
+
+  @override
+  String get beneficiaries_totalTransfers => 'Total Transfers';
+
+  @override
+  String get beneficiaries_totalAmount => 'Total Amount';
+
+  @override
+  String get beneficiaries_lastTransfer => 'Last Transfer';
+
+  @override
   String get common_cancel => 'Cancel';
 
   @override
@@ -1168,6 +1183,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get common_retry => 'Retry';
+
+  @override
+  String get common_verified => 'Verified';
 
   @override
   String get error_required => 'This field is required';
@@ -2957,4 +2975,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get common_no => 'No';
+
+  @override
+  String get offline_youreOffline => 'You\'re offline';
+
+  @override
+  String offline_youreOfflineWithPending(int count) {
+    return 'You\'re offline · $count pending';
+  }
+
+  @override
+  String get offline_syncing => 'Syncing...';
+
+  @override
+  String get offline_pendingTransfer => 'Pending Transfer';
+
+  @override
+  String get offline_transferQueued => 'Transfer queued';
+
+  @override
+  String get offline_transferQueuedDesc =>
+      'Your transfer will be sent when you\'re back online';
+
+  @override
+  String get offline_viewPending => 'View Pending';
+
+  @override
+  String get offline_retryFailed => 'Retry Failed';
+
+  @override
+  String get offline_cancelTransfer => 'Cancel Transfer';
+
+  @override
+  String get offline_noConnection => 'No internet connection';
+
+  @override
+  String get offline_checkConnection =>
+      'Please check your internet connection and try again';
+
+  @override
+  String get offline_cacheData => 'Showing cached data';
+
+  @override
+  String offline_lastSynced(String time) {
+    return 'Last synced: $time';
+  }
 }

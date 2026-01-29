@@ -30,6 +30,8 @@ import 'services/contacts/contacts_sync_mock.dart';
 import 'services/recurring_transfers/recurring_transfers_mock.dart';
 import 'services/limits/limits_mock.dart';
 import 'services/payment_links/payment_links_mock.dart';
+import 'services/beneficiaries/beneficiaries_mock.dart';
+import 'services/beneficiaries/beneficiaries_contract.dart';
 
 /// Mock Registry
 ///
@@ -71,6 +73,7 @@ class MockRegistry {
     RecurringTransfersMock.register(_interceptor);
     LimitsMock.register(_interceptor);
     PaymentLinksMock.register(_interceptor);
+    BeneficiariesMock.register(_interceptor);
 
     // Add more mock services here as they are created:
     // MerchantMock.register(_interceptor);
@@ -92,6 +95,7 @@ class MockRegistry {
     KycMockState.reset();
     TransfersMockState.reset();
     BillPaymentsMockState.reset();
+    BeneficiariesMockState.reset();
 
     if (kDebugMode) {
       print('=== Mock State Reset ===');
@@ -116,6 +120,7 @@ class MockRegistry {
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),
+      BeneficiariesContract(),
     ];
 
     for (final contract in contracts) {
@@ -134,6 +139,7 @@ class MockRegistry {
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),
+      BeneficiariesContract(),
     ];
 
     final allPaths = <String, dynamic>{};
@@ -177,6 +183,7 @@ class MockRegistry {
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),
+      BeneficiariesContract(),
     ];
 
     final endpoints = <String>[];

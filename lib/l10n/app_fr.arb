@@ -388,10 +388,16 @@
   "beneficiaries_createSuccess": "Bénéficiaire ajouté avec succès",
   "beneficiaries_updateSuccess": "Bénéficiaire mis à jour avec succès",
   "beneficiaries_errorTitle": "Erreur de chargement des bénéficiaires",
+  "beneficiaries_accountDetails": "Détails du compte",
+  "beneficiaries_statistics": "Statistiques de transfert",
+  "beneficiaries_totalTransfers": "Transferts totaux",
+  "beneficiaries_totalAmount": "Montant total",
+  "beneficiaries_lastTransfer": "Dernier transfert",
   "common_cancel": "Annuler",
   "common_delete": "Supprimer",
   "common_save": "Enregistrer",
   "common_retry": "Réessayer",
+  "common_verified": "Vérifié",
   "error_required": "Ce champ est obligatoire",
 
   "qr_receiveTitle": "Recevoir un paiement",
@@ -941,5 +947,19 @@
   "paymentLinks_viewTransaction": "Voir la Transaction",
   "common_done": "Terminé",
   "common_yes": "Oui",
-  "common_no": "Non"
+  "common_no": "Non",
+
+  "offline_youreOffline": "Vous êtes hors ligne",
+  "offline_youreOfflineWithPending": "Vous êtes hors ligne · {count} en attente",
+  "offline_syncing": "Synchronisation...",
+  "offline_pendingTransfer": "Transfert en attente",
+  "offline_transferQueued": "Transfert mis en file d'attente",
+  "offline_transferQueuedDesc": "Votre transfert sera envoyé lorsque vous serez de nouveau en ligne",
+  "offline_viewPending": "Voir en attente",
+  "offline_retryFailed": "Réessayer l'échec",
+  "offline_cancelTransfer": "Annuler le transfert",
+  "offline_noConnection": "Pas de connexion Internet",
+  "offline_checkConnection": "Veuillez vérifier votre connexion Internet et réessayer",
+  "offline_cacheData": "Affichage des données en cache",
+  "offline_lastSynced": "Dernière synchronisation: {time}"
 }

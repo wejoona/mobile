@@ -137,8 +137,8 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               colors: colors,
               icon: Icons.smartphone,
               title: 'Active Sessions',
-              subtitle: '2 devices logged in',
-              onTap: () => _showActiveSessions(),
+              subtitle: 'Manage your active sessions',
+              onTap: () => context.push('/settings/sessions'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(

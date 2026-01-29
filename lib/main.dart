@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'design/theme/app_theme.dart';
 import 'design/theme/theme_provider.dart';
@@ -11,6 +12,7 @@ import 'services/session/session_manager.dart';
 import 'services/security/security_gate.dart';
 import 'services/security/device_security.dart';
 import 'services/localization/language_provider.dart';
+import 'services/feature_flags/feature_flags_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,9 @@ void main() async {
     debugPrint('Push notifications will be disabled. Configure Firebase for production.');
   }
 
+  // Initialize SharedPreferences for feature flags cache
+  final sharedPreferences = await SharedPreferences.getInstance();
+
   // Lock orientation to portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -31,9 +36,14 @@ void main() async {
 
   // SECURITY: Wrap app with SecurityGate to block compromised devices
   runApp(
-    const SecurityGate(
+    SecurityGate(
       policy: CompromisedDevicePolicy.block,
-      child: ProviderScope(child: JoonaPayApp()),
+      child: ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+        ],
+        child: const JoonaPayApp(),
+      ),
     ),
   );
 }

@@ -87,6 +87,8 @@ dependencies:
   pdf: ^3.10.0
   # Charts for insights
   fl_chart: ^0.69.0
+  # Connectivity monitoring for offline mode
+  connectivity_plus: ^6.0.5
 
 dev_dependencies:
   flutter_test:

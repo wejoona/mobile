@@ -5,6 +5,7 @@ import '../../design/tokens/index.dart';
 import '../../design/components/primitives/index.dart';
 import '../biometric/biometric_service.dart';
 import '../pin/pin_service.dart';
+import '../feature_flags/feature_flags_provider.dart';
 import 'session_service.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
@@ -42,6 +43,8 @@ class _SessionManagerState extends ConsumerState<SessionManager>
         break;
       case AppLifecycleState.resumed:
         sessionService.onAppForeground();
+        // Refresh feature flags on app resume
+        ref.read(featureFlagsProvider.notifier).loadFlags();
         break;
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:

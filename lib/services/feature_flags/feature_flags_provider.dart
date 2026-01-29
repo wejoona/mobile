@@ -93,3 +93,19 @@ final biometricAuthEnabledProvider = Provider<bool>((ref) {
 final mobileMoneyWithdrawalsEnabledProvider = Provider<bool>((ref) {
   return ref.watch(featureFlagsProvider)[FeatureFlagKeys.mobileMoneyWithdrawals] ?? false;
 });
+
+final merchantQrEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider)[FeatureFlagKeys.merchantQr] ?? false;
+});
+
+final paymentLinksEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider)[FeatureFlagKeys.paymentLinks] ?? false;
+});
+
+final referralProgramEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider)[FeatureFlagKeys.referralProgram] ?? false;
+});
+
+final recurringTransfersEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider)[FeatureFlagKeys.recurringTransfers] ?? false;
+});

@@ -32,10 +32,13 @@ extension FeatureFlagsExtension on Map<String, bool> {
 
   // Other features
   bool get canReferFriends => this[FeatureFlagKeys.referrals] ?? false;
+  bool get canUseReferralProgram => this[FeatureFlagKeys.referralProgram] ?? false;
   bool get canViewAnalytics => this[FeatureFlagKeys.analytics] ?? false;
   bool get canUseCurrencyConverter => this[FeatureFlagKeys.currencyConverter] ?? false;
   bool get canRequestMoney => this[FeatureFlagKeys.requestMoney] ?? false;
   bool get canUseSavedRecipients => this[FeatureFlagKeys.savedRecipients] ?? false;
+  bool get canUseMerchantQr => this[FeatureFlagKeys.merchantQr] ?? false;
+  bool get canUsePaymentLinks => this[FeatureFlagKeys.paymentLinks] ?? false;
 
   // Backend controlled features
   bool get canUseTwoFactorAuth => this[FeatureFlagKeys.twoFactorAuth] ?? false;
