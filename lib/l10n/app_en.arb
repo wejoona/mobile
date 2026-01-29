@@ -106,6 +106,11 @@
     "description": "Clear filters button"
   },
 
+  "action_clear": "Clear",
+  "@action_clear": {
+    "description": "Clear action button"
+  },
+
   "action_tryAgain": "Try Again",
   "@action_tryAgain": {
     "description": "Try again button"
@@ -1045,6 +1050,26 @@
   "settings_theme": "Theme",
   "@settings_theme": {
     "description": "Theme settings label"
+  },
+
+  "settings_selectTheme": "Select Theme",
+  "@settings_selectTheme": {
+    "description": "Select theme dialog title"
+  },
+
+  "settings_themeLight": "Light",
+  "@settings_themeLight": {
+    "description": "Light theme option"
+  },
+
+  "settings_themeDark": "Dark",
+  "@settings_themeDark": {
+    "description": "Dark theme option"
+  },
+
+  "settings_themeSystem": "System",
+  "@settings_themeSystem": {
+    "description": "System theme option (follows device)"
   },
 
   "settings_notifications": "Notifications",
@@ -2948,6 +2973,106 @@
     "description": "Copied to clipboard message"
   },
 
+  "help_needHelp": "Need Help?",
+  "@help_needHelp": {
+    "description": "Need help button text"
+  },
+
+  "transactionDetails_title": "Transaction Details",
+  "@transactionDetails_title": {
+    "description": "Transaction details screen title"
+  },
+
+  "transactionDetails_transactionId": "Transaction ID",
+  "@transactionDetails_transactionId": {
+    "description": "Transaction ID label"
+  },
+
+  "transactionDetails_date": "Date",
+  "@transactionDetails_date": {
+    "description": "Transaction date label"
+  },
+
+  "transactionDetails_currency": "Currency",
+  "@transactionDetails_currency": {
+    "description": "Transaction currency label"
+  },
+
+  "transactionDetails_recipientPhone": "Recipient Phone",
+  "@transactionDetails_recipientPhone": {
+    "description": "Recipient phone label"
+  },
+
+  "transactionDetails_recipientAddress": "Recipient Address",
+  "@transactionDetails_recipientAddress": {
+    "description": "Recipient address label"
+  },
+
+  "transactionDetails_description": "Description",
+  "@transactionDetails_description": {
+    "description": "Transaction description label"
+  },
+
+  "transactionDetails_additionalDetails": "Additional Details",
+  "@transactionDetails_additionalDetails": {
+    "description": "Additional transaction details section"
+  },
+
+  "transactionDetails_failureReason": "Failure Reason",
+  "@transactionDetails_failureReason": {
+    "description": "Transaction failure reason label"
+  },
+
+  "filters_title": "Filter Transactions",
+  "@filters_title": {
+    "description": "Filter transactions screen title"
+  },
+
+  "filters_reset": "Reset",
+  "@filters_reset": {
+    "description": "Reset filters button"
+  },
+
+  "filters_transactionType": "Transaction Type",
+  "@filters_transactionType": {
+    "description": "Transaction type filter label"
+  },
+
+  "filters_status": "Status",
+  "@filters_status": {
+    "description": "Status filter label"
+  },
+
+  "filters_dateRange": "Date Range",
+  "@filters_dateRange": {
+    "description": "Date range filter label"
+  },
+
+  "filters_amountRange": "Amount Range",
+  "@filters_amountRange": {
+    "description": "Amount range filter label"
+  },
+
+  "filters_sortBy": "Sort By",
+  "@filters_sortBy": {
+    "description": "Sort by filter label"
+  },
+
+  "filters_from": "From",
+  "@filters_from": {
+    "description": "Date range from label"
+  },
+
+  "filters_to": "To",
+  "@filters_to": {
+    "description": "Date range to label"
+  },
+
+  "filters_clear": "Clear",
+  "@filters_clear": {
+    "description": "Clear filters button"
+  },
+
   "auth_logoutConfirm": "Are you sure you want to logout?",
   "@auth_logoutConfirm": {
     "description": "Logout confirmation message"
@@ -3431,6 +3556,16 @@
     "description": "Delete success message"
   },
 
+  "savingsPots_chooseEmoji": "Choose an emoji",
+  "@savingsPots_chooseEmoji": {
+    "description": "Emoji picker label"
+  },
+
+  "savingsPots_chooseColor": "Choose a color",
+  "@savingsPots_chooseColor": {
+    "description": "Color picker label"
+  },
+
   "sendExternal_title": "Send to External Wallet",
   "@sendExternal_title": {
     "description": "External transfer screen title"
@@ -3806,6 +3941,228 @@
     "description": "Return home button"
   },
 
+  "billPayments_payProvider": "Pay {providerName}",
+  "@billPayments_payProvider": {
+    "description": "Pay provider title",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_enterField": "Enter {field}",
+  "@billPayments_enterField": {
+    "description": "Enter field hint",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_pleaseEnterField": "Please enter {field}",
+  "@billPayments_pleaseEnterField": {
+    "description": "Validation error for empty field",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_fieldMustBeLength": "{field} must be {length} characters",
+  "@billPayments_fieldMustBeLength": {
+    "description": "Validation error for field length",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "billPayments_meterNumber": "Meter Number",
+  "@billPayments_meterNumber": {
+    "description": "Meter number label"
+  },
+
+  "billPayments_enterMeterNumber": "Enter meter number",
+  "@billPayments_enterMeterNumber": {
+    "description": "Meter number hint"
+  },
+
+  "billPayments_pleaseEnterMeterNumber": "Please enter meter number",
+  "@billPayments_pleaseEnterMeterNumber": {
+    "description": "Meter number validation error"
+  },
+
+  "billPayments_outstanding": "Outstanding: {amount} {currency}",
+  "@billPayments_outstanding": {
+    "description": "Outstanding balance display",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_pleaseEnterAmount": "Please enter amount",
+  "@billPayments_pleaseEnterAmount": {
+    "description": "Amount validation error"
+  },
+
+  "billPayments_pleaseEnterValidAmount": "Please enter a valid amount",
+  "@billPayments_pleaseEnterValidAmount": {
+    "description": "Invalid amount validation error"
+  },
+
+  "billPayments_minimumAmount": "Minimum amount is {amount} {currency}",
+  "@billPayments_minimumAmount": {
+    "description": "Minimum amount validation error",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_maximumAmount": "Maximum amount is {amount} {currency}",
+  "@billPayments_maximumAmount": {
+    "description": "Maximum amount validation error",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_minMaxRange": "Min: {min} - Max: {max} {currency}",
+  "@billPayments_minMaxRange": {
+    "description": "Amount range display",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_available": "Available: {amount} {currency}",
+  "@billPayments_available": {
+    "description": "Available balance display",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_payAmount": "Pay {amount} {currency}",
+  "@billPayments_payAmount": {
+    "description": "Pay button with amount",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_enterPinToPay": "Enter your PIN to pay {providerName}",
+  "@billPayments_enterPinToPay": {
+    "description": "PIN confirmation subtitle",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_paymentFailed": "Payment failed",
+  "@billPayments_paymentFailed": {
+    "description": "Payment failed error message"
+  },
+
+  "billPayments_noProvidersAvailable": "No providers available for this category",
+  "@billPayments_noProvidersAvailable": {
+    "description": "Empty state for no providers"
+  },
+
+  "billPayments_feeNone": "No fee",
+  "@billPayments_feeNone": {
+    "description": "No fee display"
+  },
+
+  "billPayments_feePercentage": "{percentage}% fee",
+  "@billPayments_feePercentage": {
+    "description": "Percentage fee display",
+    "placeholders": {
+      "percentage": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_feeFixed": "{amount} {currency} fee",
+  "@billPayments_feeFixed": {
+    "description": "Fixed fee display",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_statusCompleted": "Completed",
+  "@billPayments_statusCompleted": {
+    "description": "Completed status"
+  },
+
+  "billPayments_statusPending": "Pending",
+  "@billPayments_statusPending": {
+    "description": "Pending status"
+  },
+
+  "billPayments_statusProcessing": "Processing",
+  "@billPayments_statusProcessing": {
+    "description": "Processing status"
+  },
+
+  "billPayments_statusFailed": "Failed",
+  "@billPayments_statusFailed": {
+    "description": "Failed status"
+  },
+
+  "billPayments_statusRefunded": "Refunded",
+  "@billPayments_statusRefunded": {
+    "description": "Refunded status"
+  },
+
   "navigation_cards": "Cards",
   "@navigation_cards": {
     "description": "Cards navigation label"
@@ -3881,6 +4238,69 @@
     "description": "Cards notify success message"
   },
 
+  "cards_featureDisabled": "Virtual cards feature is not available",
+  "cards_noCards": "No Cards Yet",
+  "cards_noCardsDescription": "Request your first virtual card to start making online purchases",
+  "cards_requestCard": "Request Card",
+  "cards_cardDetails": "Card Details",
+  "cards_cardNotFound": "Card not found",
+  "cards_cardInformation": "Card Information",
+  "cards_cardNumber": "Card Number",
+  "cards_cvv": "CVV",
+  "cards_expiryDate": "Expiry Date",
+  "cards_spendingLimit": "Spending Limit",
+  "cards_spent": "Spent",
+  "cards_limit": "Limit",
+  "cards_viewTransactions": "View Transactions",
+  "cards_freezeCard": "Freeze Card",
+  "cards_unfreezeCard": "Unfreeze Card",
+  "cards_freezeConfirmation": "Are you sure you want to freeze this card? You can unfreeze it anytime.",
+  "cards_unfreezeConfirmation": "Are you sure you want to unfreeze this card?",
+  "cards_cardFrozen": "Card frozen successfully",
+  "cards_cardUnfrozen": "Card unfrozen successfully",
+  "cards_copiedToClipboard": "Copied to clipboard",
+  "cards_requestInfo": "Your virtual card will be ready instantly after approval. Requires KYC Level 2.",
+  "cards_cardholderName": "Cardholder Name",
+  "cards_cardholderNameHint": "Enter name as it appears on card",
+  "cards_nameRequired": "Cardholder name is required",
+  "cards_spendingLimitHint": "Enter spending limit in USD",
+  "cards_limitRequired": "Spending limit is required",
+  "cards_limitInvalid": "Invalid spending limit",
+  "cards_limitTooLow": "Minimum spending limit is $10",
+  "cards_limitTooHigh": "Maximum spending limit is $10,000",
+  "cards_cardFeatures": "Card Features",
+  "cards_featureOnlineShopping": "Shop online worldwide",
+  "cards_featureSecure": "Secure and encrypted",
+  "cards_featureFreeze": "Freeze and unfreeze instantly",
+  "cards_featureAlerts": "Real-time transaction alerts",
+  "cards_requestCardSubmit": "Request Virtual Card",
+  "cards_kycRequired": "KYC Verification Required",
+  "cards_kycRequiredDescription": "You need to complete KYC Level 2 verification to request a virtual card.",
+  "cards_completeKYC": "Complete KYC",
+  "cards_requestSuccess": "Card requested successfully",
+  "cards_requestFailed": "Failed to request card",
+  "cards_cardSettings": "Card Settings",
+  "cards_cardStatus": "Card Status",
+  "cards_statusActive": "Active",
+  "cards_statusFrozen": "Frozen",
+  "cards_statusActiveDescription": "Your card is active and ready to use",
+  "cards_statusFrozenDescription": "Your card is frozen and cannot be used",
+  "cards_currentLimit": "Current Limit",
+  "cards_availableLimit": "Available",
+  "cards_updateLimit": "Update Limit",
+  "cards_newLimit": "New Limit",
+  "cards_limitRange": "Limit must be between $10 and $10,000",
+  "cards_limitUpdated": "Spending limit updated successfully",
+  "cards_dangerZone": "Danger Zone",
+  "cards_blockCard": "Block Card",
+  "cards_blockCardDescription": "Permanently block this card. This action cannot be undone.",
+  "cards_blockCardButton": "Block Card Permanently",
+  "cards_blockCardConfirmation": "Are you sure you want to permanently block this card? This action cannot be undone and you'll need to request a new card.",
+  "cards_cardBlocked": "Card blocked successfully",
+  "cards_transactions": "Card Transactions",
+  "cards_noTransactions": "No Transactions",
+  "cards_noTransactionsDescription": "You haven't made any purchases with this card yet",
+
   "insights_title": "Insights",
   "@insights_title": {
     "description": "Insights screen title"
@@ -3949,6 +4369,36 @@
   "insights_export_report": "Export Report",
   "@insights_export_report": {
     "description": "Export report button"
+  },
+
+  "insights_daily_spending": "Daily Spending",
+  "@insights_daily_spending": {
+    "description": "Daily spending section title"
+  },
+
+  "insights_daily_average": "Daily Avg",
+  "@insights_daily_average": {
+    "description": "Daily average spending label"
+  },
+
+  "insights_highest_day": "Highest",
+  "@insights_highest_day": {
+    "description": "Highest spending day label"
+  },
+
+  "insights_income_vs_expenses": "Income vs Expenses",
+  "@insights_income_vs_expenses": {
+    "description": "Income vs expenses chart title"
+  },
+
+  "insights_income": "Income",
+  "@insights_income": {
+    "description": "Income label"
+  },
+
+  "insights_expenses": "Expenses",
+  "@insights_expenses": {
+    "description": "Expenses label"
   },
 
   "contacts_title": "Contacts",
@@ -4481,6 +4931,36 @@
     "description": "Max tier reached text"
   },
 
+  "limits_singleTransaction": "Single Transaction",
+  "@limits_singleTransaction": {
+    "description": "Single transaction limit label"
+  },
+
+  "limits_withdrawal": "Withdrawal Limit",
+  "@limits_withdrawal": {
+    "description": "Withdrawal limit label"
+  },
+
+  "limits_resetIn": "Resets in",
+  "@limits_resetIn": {
+    "description": "Reset time prefix"
+  },
+
+  "limits_hours": "hours",
+  "@limits_hours": {
+    "description": "Hours label"
+  },
+
+  "limits_minutes": "minutes",
+  "@limits_minutes": {
+    "description": "Minutes label"
+  },
+
+  "limits_otherLimits": "Other Limits",
+  "@limits_otherLimits": {
+    "description": "Other limits section title"
+  },
+
   "limits_noData": "No limit data available",
   "@limits_noData": {
     "description": "No data message"
@@ -4776,9 +5256,89 @@
     "description": "View transaction button"
   },
 
+  "paymentLinks_payTitle": "Pay via Link",
+  "@paymentLinks_payTitle": {
+    "description": "Pay via link screen title"
+  },
+
+  "paymentLinks_payingTo": "Paying to",
+  "@paymentLinks_payingTo": {
+    "description": "Paying to label"
+  },
+
+  "paymentLinks_payAmount": "Pay {amount}",
+  "@paymentLinks_payAmount": {
+    "description": "Pay amount button",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "paymentLinks_paymentFor": "Payment for",
+  "@paymentLinks_paymentFor": {
+    "description": "Payment for label"
+  },
+
+  "paymentLinks_linkExpiredTitle": "Link Expired",
+  "@paymentLinks_linkExpiredTitle": {
+    "description": "Link expired error title"
+  },
+
+  "paymentLinks_linkExpiredMessage": "This payment link has expired and can no longer be used",
+  "@paymentLinks_linkExpiredMessage": {
+    "description": "Link expired error message"
+  },
+
+  "paymentLinks_linkPaidTitle": "Already Paid",
+  "@paymentLinks_linkPaidTitle": {
+    "description": "Link already paid title"
+  },
+
+  "paymentLinks_linkPaidMessage": "This payment link has already been paid",
+  "@paymentLinks_linkPaidMessage": {
+    "description": "Link already paid message"
+  },
+
+  "paymentLinks_linkNotFoundTitle": "Link Not Found",
+  "@paymentLinks_linkNotFoundTitle": {
+    "description": "Link not found title"
+  },
+
+  "paymentLinks_linkNotFoundMessage": "This payment link doesn't exist or has been cancelled",
+  "@paymentLinks_linkNotFoundMessage": {
+    "description": "Link not found message"
+  },
+
+  "paymentLinks_paymentSuccess": "Payment Successful",
+  "@paymentLinks_paymentSuccess": {
+    "description": "Payment successful title"
+  },
+
+  "paymentLinks_paymentSuccessMessage": "Your payment has been sent successfully",
+  "@paymentLinks_paymentSuccessMessage": {
+    "description": "Payment successful message"
+  },
+
+  "paymentLinks_insufficientBalance": "Insufficient balance to complete this payment",
+  "@paymentLinks_insufficientBalance": {
+    "description": "Insufficient balance error"
+  },
+
   "common_done": "Done",
   "@common_done": {
     "description": "Done button"
+  },
+
+  "common_close": "Close",
+  "@common_close": {
+    "description": "Close button"
+  },
+
+  "common_unknown": "Unknown",
+  "@common_unknown": {
+    "description": "Unknown value"
   },
 
   "common_yes": "Yes",
@@ -4864,5 +5424,1884 @@
         "type": "String"
       }
     }
+  },
+
+  "referrals_title": "Refer & Earn",
+  "@referrals_title": {
+    "description": "Referrals page title"
+  },
+
+  "referrals_subtitle": "Invite friends and earn rewards together",
+  "@referrals_subtitle": {
+    "description": "Referrals page subtitle"
+  },
+
+  "referrals_earnAmount": "Earn $5",
+  "@referrals_earnAmount": {
+    "description": "Referral earn amount"
+  },
+
+  "referrals_earnDescription": "for each friend who signs up and makes their first deposit",
+  "@referrals_earnDescription": {
+    "description": "Referral earn description"
+  },
+
+  "referrals_yourCode": "Your Referral Code",
+  "@referrals_yourCode": {
+    "description": "Your referral code label"
+  },
+
+  "referrals_shareLink": "Share Link",
+  "@referrals_shareLink": {
+    "description": "Share link button"
+  },
+
+  "referrals_invite": "Invite",
+  "@referrals_invite": {
+    "description": "Invite button"
+  },
+
+  "referrals_yourRewards": "Your Rewards",
+  "@referrals_yourRewards": {
+    "description": "Your rewards section title"
+  },
+
+  "referrals_friendsInvited": "Friends Invited",
+  "@referrals_friendsInvited": {
+    "description": "Friends invited label"
+  },
+
+  "referrals_totalEarned": "Total Earned",
+  "@referrals_totalEarned": {
+    "description": "Total earned label"
+  },
+
+  "referrals_howItWorks": "How it works",
+  "@referrals_howItWorks": {
+    "description": "How it works section title"
+  },
+
+  "referrals_step1Title": "Share your code",
+  "@referrals_step1Title": {
+    "description": "Step 1 title"
+  },
+
+  "referrals_step1Description": "Send your referral code or link to friends",
+  "@referrals_step1Description": {
+    "description": "Step 1 description"
+  },
+
+  "referrals_step2Title": "Friend signs up",
+  "@referrals_step2Title": {
+    "description": "Step 2 title"
+  },
+
+  "referrals_step2Description": "They create an account using your code",
+  "@referrals_step2Description": {
+    "description": "Step 2 description"
+  },
+
+  "referrals_step3Title": "First deposit",
+  "@referrals_step3Title": {
+    "description": "Step 3 title"
+  },
+
+  "referrals_step3Description": "They make their first deposit of $10 or more",
+  "@referrals_step3Description": {
+    "description": "Step 3 description"
+  },
+
+  "referrals_step4Title": "You both earn!",
+  "@referrals_step4Title": {
+    "description": "Step 4 title"
+  },
+
+  "referrals_step4Description": "You get $5, and your friend gets $5 too",
+  "@referrals_step4Description": {
+    "description": "Step 4 description"
+  },
+
+  "referrals_history": "Referral History",
+  "@referrals_history": {
+    "description": "Referral history section title"
+  },
+
+  "referrals_noReferrals": "No referrals yet",
+  "@referrals_noReferrals": {
+    "description": "No referrals message"
+  },
+
+  "referrals_startInviting": "Start inviting friends to see your rewards here",
+  "@referrals_startInviting": {
+    "description": "Start inviting message"
+  },
+
+  "referrals_codeCopied": "Referral code copied!",
+  "@referrals_codeCopied": {
+    "description": "Code copied message"
+  },
+
+  "referrals_shareMessage": "Join JoonaPay and get $5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download",
+  "@referrals_shareMessage": {
+    "description": "Share message template",
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+
+  "referrals_shareSubject": "Join JoonaPay - Get $5 bonus!",
+  "@referrals_shareSubject": {
+    "description": "Share subject"
+  },
+
+  "referrals_inviteComingSoon": "Contact invite coming soon",
+  "@referrals_inviteComingSoon": {
+    "description": "Invite coming soon message"
+  },
+
+  "analytics_title": "Analytics",
+  "@analytics_title": {
+    "description": "Analytics page title"
+  },
+
+  "analytics_income": "Income",
+  "@analytics_income": {
+    "description": "Income label"
+  },
+
+  "analytics_expenses": "Expenses",
+  "@analytics_expenses": {
+    "description": "Expenses label"
+  },
+
+  "analytics_netChange": "Net Change",
+  "@analytics_netChange": {
+    "description": "Net change label"
+  },
+
+  "analytics_surplus": "Surplus",
+  "@analytics_surplus": {
+    "description": "Surplus label"
+  },
+
+  "analytics_deficit": "Deficit",
+  "@analytics_deficit": {
+    "description": "Deficit label"
+  },
+
+  "analytics_spendingByCategory": "Spending by Category",
+  "@analytics_spendingByCategory": {
+    "description": "Spending by category title"
+  },
+
+  "analytics_categoryDetails": "Category Details",
+  "@analytics_categoryDetails": {
+    "description": "Category details title"
+  },
+
+  "analytics_transactionFrequency": "Transaction Frequency",
+  "@analytics_transactionFrequency": {
+    "description": "Transaction frequency title"
+  },
+
+  "analytics_insights": "Insights",
+  "@analytics_insights": {
+    "description": "Insights title"
+  },
+
+  "analytics_period7Days": "7 Days",
+  "@analytics_period7Days": {
+    "description": "7 days period"
+  },
+
+  "analytics_period30Days": "30 Days",
+  "@analytics_period30Days": {
+    "description": "30 days period"
+  },
+
+  "analytics_period90Days": "90 Days",
+  "@analytics_period90Days": {
+    "description": "90 days period"
+  },
+
+  "analytics_period1Year": "1 Year",
+  "@analytics_period1Year": {
+    "description": "1 year period"
+  },
+
+  "analytics_categoryTransfers": "Transfers",
+  "@analytics_categoryTransfers": {
+    "description": "Transfers category"
+  },
+
+  "analytics_categoryWithdrawals": "Withdrawals",
+  "@analytics_categoryWithdrawals": {
+    "description": "Withdrawals category"
+  },
+
+  "analytics_categoryBills": "Bills",
+  "@analytics_categoryBills": {
+    "description": "Bills category"
+  },
+
+  "analytics_categoryOther": "Other",
+  "@analytics_categoryOther": {
+    "description": "Other category"
+  },
+
+  "analytics_transactions": "{count} transactions",
+  "@analytics_transactions": {
+    "description": "Transactions count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "analytics_insightSpendingDown": "Spending Down",
+  "@analytics_insightSpendingDown": {
+    "description": "Spending down insight title"
+  },
+
+  "analytics_insightSpendingDownDesc": "Your spending is 5.2% lower than last month. Great job!",
+  "@analytics_insightSpendingDownDesc": {
+    "description": "Spending down insight description"
+  },
+
+  "analytics_insightSavings": "Savings Opportunity",
+  "@analytics_insightSavings": {
+    "description": "Savings opportunity insight title"
+  },
+
+  "analytics_insightSavingsDesc": "You could save $50/month by reducing withdrawal fees.",
+  "@analytics_insightSavingsDesc": {
+    "description": "Savings opportunity insight description"
+  },
+
+  "analytics_insightPeakActivity": "Peak Activity",
+  "@analytics_insightPeakActivity": {
+    "description": "Peak activity insight title"
+  },
+
+  "analytics_insightPeakActivityDesc": "Most of your transactions happen on Thursdays.",
+  "@analytics_insightPeakActivityDesc": {
+    "description": "Peak activity insight description"
+  },
+
+  "analytics_exportingReport": "Exporting report...",
+  "@analytics_exportingReport": {
+    "description": "Exporting report message"
+  },
+
+  "converter_title": "Currency Converter",
+  "@converter_title": {
+    "description": "Currency converter title"
+  },
+
+  "converter_from": "From",
+  "@converter_from": {
+    "description": "From currency label"
+  },
+
+  "converter_to": "To",
+  "@converter_to": {
+    "description": "To currency label"
+  },
+
+  "converter_selectCurrency": "Select Currency",
+  "@converter_selectCurrency": {
+    "description": "Select currency title"
+  },
+
+  "converter_rateInfo": "Rate Information",
+  "@converter_rateInfo": {
+    "description": "Rate information title"
+  },
+
+  "converter_rateDisclaimer": "Exchange rates are for informational purposes only and may differ from actual transaction rates. Rates are updated every hour.",
+  "@converter_rateDisclaimer": {
+    "description": "Rate disclaimer text"
+  },
+
+  "converter_quickAmounts": "Quick Amounts",
+  "@converter_quickAmounts": {
+    "description": "Quick amounts title"
+  },
+
+  "converter_popularCurrencies": "Popular Currencies",
+  "@converter_popularCurrencies": {
+    "description": "Popular currencies title"
+  },
+
+  "converter_perUsdc": "per USDC",
+  "@converter_perUsdc": {
+    "description": "Per USDC label"
+  },
+
+  "converter_ratesUpdated": "Exchange rates updated",
+  "@converter_ratesUpdated": {
+    "description": "Rates updated message"
+  },
+
+  "converter_updatedJustNow": "Updated just now",
+  "@converter_updatedJustNow": {
+    "description": "Updated just now label"
+  },
+
+  "converter_exchangeRate": "1 {from} = {rate} {to}",
+  "@converter_exchangeRate": {
+    "description": "Exchange rate display",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "rate": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+
+  "currency_usd": "US Dollar",
+  "@currency_usd": {
+    "description": "US Dollar"
+  },
+
+  "currency_usdc": "USD Coin",
+  "@currency_usdc": {
+    "description": "USD Coin"
+  },
+
+  "currency_eur": "Euro",
+  "@currency_eur": {
+    "description": "Euro"
+  },
+
+  "currency_gbp": "British Pound",
+  "@currency_gbp": {
+    "description": "British Pound"
+  },
+
+  "currency_xof": "West African CFA Franc",
+  "@currency_xof": {
+    "description": "West African CFA Franc"
+  },
+
+  "currency_ngn": "Nigerian Naira",
+  "@currency_ngn": {
+    "description": "Nigerian Naira"
+  },
+
+  "currency_kes": "Kenyan Shilling",
+  "@currency_kes": {
+    "description": "Kenyan Shilling"
+  },
+
+  "currency_zar": "South African Rand",
+  "@currency_zar": {
+    "description": "South African Rand"
+  },
+
+  "currency_ghs": "Ghanaian Cedi",
+  "@currency_ghs": {
+    "description": "Ghanaian Cedi"
+  },
+
+  "settings_account": "Account",
+  "@settings_account": {
+    "description": "Account settings section"
+  },
+
+  "settings_accountType": "Account Type",
+  "@settings_accountType": {
+    "description": "Account type setting"
+  },
+
+  "settings_personalAccount": "Personal",
+  "@settings_personalAccount": {
+    "description": "Personal account type"
+  },
+
+  "settings_businessAccount": "Business",
+  "@settings_businessAccount": {
+    "description": "Business account type"
+  },
+
+  "settings_selectAccountType": "Select Account Type",
+  "@settings_selectAccountType": {
+    "description": "Account type selector title"
+  },
+
+  "settings_personalAccountDescription": "For individual use",
+  "@settings_personalAccountDescription": {
+    "description": "Personal account description"
+  },
+
+  "settings_businessAccountDescription": "For business operations",
+  "@settings_businessAccountDescription": {
+    "description": "Business account description"
+  },
+
+  "settings_switchedToPersonal": "Switched to Personal account",
+  "@settings_switchedToPersonal": {
+    "description": "Success message when switching to personal"
+  },
+
+  "settings_switchedToBusiness": "Switched to Business account",
+  "@settings_switchedToBusiness": {
+    "description": "Success message when switching to business"
+  },
+
+  "business_setupTitle": "Business Setup",
+  "@business_setupTitle": {
+    "description": "Business setup screen title"
+  },
+
+  "business_setupDescription": "Set up your business profile to unlock business features",
+  "@business_setupDescription": {
+    "description": "Business setup description"
+  },
+
+  "business_businessName": "Business Name",
+  "@business_businessName": {
+    "description": "Business name field"
+  },
+
+  "business_registrationNumber": "Registration Number",
+  "@business_registrationNumber": {
+    "description": "Business registration number field"
+  },
+
+  "business_businessType": "Business Type",
+  "@business_businessType": {
+    "description": "Business type field"
+  },
+
+  "business_businessAddress": "Business Address",
+  "@business_businessAddress": {
+    "description": "Business address field"
+  },
+
+  "business_taxId": "Tax ID",
+  "@business_taxId": {
+    "description": "Tax ID field"
+  },
+
+  "business_verificationNote": "Your business will need to undergo verification (KYB) before you can access all business features.",
+  "@business_verificationNote": {
+    "description": "KYB verification note"
+  },
+
+  "business_completeSetup": "Complete Setup",
+  "@business_completeSetup": {
+    "description": "Complete setup button"
+  },
+
+  "business_setupSuccess": "Business profile created successfully",
+  "@business_setupSuccess": {
+    "description": "Success message after setup"
+  },
+
+  "business_profileTitle": "Business Profile",
+  "@business_profileTitle": {
+    "description": "Business profile screen title"
+  },
+
+  "business_noProfile": "No business profile found",
+  "@business_noProfile": {
+    "description": "Message when no business profile exists"
+  },
+
+  "business_setupNow": "Set Up Business Profile",
+  "@business_setupNow": {
+    "description": "Button to start business setup"
+  },
+
+  "business_verified": "Business Verified",
+  "@business_verified": {
+    "description": "Business verification status - verified"
+  },
+
+  "business_verifiedDescription": "Your business has been successfully verified",
+  "@business_verifiedDescription": {
+    "description": "Verified business description"
+  },
+
+  "business_verificationPending": "Verification Pending",
+  "@business_verificationPending": {
+    "description": "Business verification status - pending"
+  },
+
+  "business_verificationPendingDescription": "Your business verification is under review",
+  "@business_verificationPendingDescription": {
+    "description": "Pending verification description"
+  },
+
+  "business_information": "Business Information",
+  "@business_information": {
+    "description": "Business information section title"
+  },
+
+  "business_completeVerification": "Complete Business Verification",
+  "@business_completeVerification": {
+    "description": "Complete KYB button"
+  },
+
+  "business_kybDescription": "Verify your business to unlock all features",
+  "@business_kybDescription": {
+    "description": "KYB description"
+  },
+
+  "business_kybTitle": "Business Verification (KYB)",
+  "@business_kybTitle": {
+    "description": "KYB dialog title"
+  },
+
+  "business_kybInfo": "Business verification allows you to:\n\n• Accept higher transaction limits\n• Access advanced reporting\n• Enable merchant features\n• Build trust with customers\n\nVerification typically takes 2-3 business days.",
+  "@business_kybInfo": {
+    "description": "KYB information text"
+  },
+
+  "action_close": "Close",
+  "@action_close": {
+    "description": "Close button"
+  },
+
+  "subBusiness_title": "Sub-Businesses",
+  "@subBusiness_title": {
+    "description": "Sub-businesses screen title"
+  },
+
+  "subBusiness_emptyTitle": "No Sub-Businesses Yet",
+  "@subBusiness_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "subBusiness_emptyMessage": "Create departments, branches, or teams to organize your business operations.",
+  "@subBusiness_emptyMessage": {
+    "description": "Empty state message"
+  },
+
+  "subBusiness_createFirst": "Create First Sub-Business",
+  "@subBusiness_createFirst": {
+    "description": "Create first sub-business button"
+  },
+
+  "subBusiness_totalBalance": "Total Balance",
+  "@subBusiness_totalBalance": {
+    "description": "Total balance label"
+  },
+
+  "subBusiness_unit": "unit",
+  "@subBusiness_unit": {
+    "description": "Single unit label"
+  },
+
+  "subBusiness_units": "units",
+  "@subBusiness_units": {
+    "description": "Multiple units label"
+  },
+
+  "subBusiness_listTitle": "All Sub-Businesses",
+  "@subBusiness_listTitle": {
+    "description": "List section title"
+  },
+
+  "subBusiness_createTitle": "Create Sub-Business",
+  "@subBusiness_createTitle": {
+    "description": "Create screen title"
+  },
+
+  "subBusiness_nameLabel": "Name",
+  "@subBusiness_nameLabel": {
+    "description": "Name input label"
+  },
+
+  "subBusiness_descriptionLabel": "Description (Optional)",
+  "@subBusiness_descriptionLabel": {
+    "description": "Description input label"
+  },
+
+  "subBusiness_typeLabel": "Type",
+  "@subBusiness_typeLabel": {
+    "description": "Type selector label"
+  },
+
+  "subBusiness_typeDepartment": "Department",
+  "@subBusiness_typeDepartment": {
+    "description": "Department type"
+  },
+
+  "subBusiness_typeBranch": "Branch",
+  "@subBusiness_typeBranch": {
+    "description": "Branch type"
+  },
+
+  "subBusiness_typeSubsidiary": "Subsidiary",
+  "@subBusiness_typeSubsidiary": {
+    "description": "Subsidiary type"
+  },
+
+  "subBusiness_typeTeam": "Team",
+  "@subBusiness_typeTeam": {
+    "description": "Team type"
+  },
+
+  "subBusiness_createInfo": "Each sub-business will have its own wallet for tracking income and expenses separately.",
+  "@subBusiness_createInfo": {
+    "description": "Create info message"
+  },
+
+  "subBusiness_createButton": "Create Sub-Business",
+  "@subBusiness_createButton": {
+    "description": "Create button label"
+  },
+
+  "subBusiness_createSuccess": "Sub-business created successfully",
+  "@subBusiness_createSuccess": {
+    "description": "Success message"
+  },
+
+  "subBusiness_balance": "Balance",
+  "@subBusiness_balance": {
+    "description": "Balance label"
+  },
+
+  "subBusiness_transfer": "Transfer",
+  "@subBusiness_transfer": {
+    "description": "Transfer button"
+  },
+
+  "subBusiness_transactions": "Transactions",
+  "@subBusiness_transactions": {
+    "description": "Transactions button"
+  },
+
+  "subBusiness_information": "Information",
+  "@subBusiness_information": {
+    "description": "Information section title"
+  },
+
+  "subBusiness_type": "Type",
+  "@subBusiness_type": {
+    "description": "Type label"
+  },
+
+  "subBusiness_description": "Description",
+  "@subBusiness_description": {
+    "description": "Description label"
+  },
+
+  "subBusiness_created": "Created",
+  "@subBusiness_created": {
+    "description": "Created date label"
+  },
+
+  "subBusiness_staff": "Staff",
+  "@subBusiness_staff": {
+    "description": "Staff section title"
+  },
+
+  "subBusiness_manageStaff": "Manage Staff",
+  "@subBusiness_manageStaff": {
+    "description": "Manage staff button"
+  },
+
+  "subBusiness_noStaff": "No staff members yet. Add team members to give them access to this sub-business.",
+  "@subBusiness_noStaff": {
+    "description": "No staff message"
+  },
+
+  "subBusiness_addFirstStaff": "Add Staff Member",
+  "@subBusiness_addFirstStaff": {
+    "description": "Add first staff button"
+  },
+
+  "subBusiness_viewAllStaff": "View All Staff",
+  "@subBusiness_viewAllStaff": {
+    "description": "View all staff button"
+  },
+
+  "subBusiness_staffTitle": "Staff Management",
+  "@subBusiness_staffTitle": {
+    "description": "Staff screen title"
+  },
+
+  "subBusiness_noStaffTitle": "No Staff Members",
+  "@subBusiness_noStaffTitle": {
+    "description": "No staff title"
+  },
+
+  "subBusiness_noStaffMessage": "Invite team members to collaborate on this sub-business.",
+  "@subBusiness_noStaffMessage": {
+    "description": "No staff message"
+  },
+
+  "subBusiness_staffInfo": "Staff members can view and manage this sub-business based on their assigned role.",
+  "@subBusiness_staffInfo": {
+    "description": "Staff info message"
+  },
+
+  "subBusiness_member": "member",
+  "@subBusiness_member": {
+    "description": "Single member label"
+  },
+
+  "subBusiness_members": "members",
+  "@subBusiness_members": {
+    "description": "Multiple members label"
+  },
+
+  "subBusiness_addStaffTitle": "Add Staff Member",
+  "@subBusiness_addStaffTitle": {
+    "description": "Add staff dialog title"
+  },
+
+  "subBusiness_phoneLabel": "Phone Number",
+  "@subBusiness_phoneLabel": {
+    "description": "Phone input label"
+  },
+
+  "subBusiness_roleLabel": "Role",
+  "@subBusiness_roleLabel": {
+    "description": "Role selector label"
+  },
+
+  "subBusiness_roleOwner": "Owner",
+  "@subBusiness_roleOwner": {
+    "description": "Owner role"
+  },
+
+  "subBusiness_roleAdmin": "Admin",
+  "@subBusiness_roleAdmin": {
+    "description": "Admin role"
+  },
+
+  "subBusiness_roleViewer": "Viewer",
+  "@subBusiness_roleViewer": {
+    "description": "Viewer role"
+  },
+
+  "subBusiness_roleOwnerDesc": "Full access to manage everything",
+  "@subBusiness_roleOwnerDesc": {
+    "description": "Owner role description"
+  },
+
+  "subBusiness_roleAdminDesc": "Can manage and transfer funds",
+  "@subBusiness_roleAdminDesc": {
+    "description": "Admin role description"
+  },
+
+  "subBusiness_roleViewerDesc": "Can only view transactions",
+  "@subBusiness_roleViewerDesc": {
+    "description": "Viewer role description"
+  },
+
+  "subBusiness_inviteButton": "Invite",
+  "@subBusiness_inviteButton": {
+    "description": "Invite button"
+  },
+
+  "subBusiness_inviteSuccess": "Staff member invited successfully",
+  "@subBusiness_inviteSuccess": {
+    "description": "Invite success message"
+  },
+
+  "subBusiness_changeRole": "Change Role",
+  "@subBusiness_changeRole": {
+    "description": "Change role option"
+  },
+
+  "subBusiness_removeStaff": "Remove Staff",
+  "@subBusiness_removeStaff": {
+    "description": "Remove staff option"
+  },
+
+  "subBusiness_changeRoleTitle": "Change Role",
+  "@subBusiness_changeRoleTitle": {
+    "description": "Change role dialog title"
+  },
+
+  "subBusiness_roleUpdateSuccess": "Role updated successfully",
+  "@subBusiness_roleUpdateSuccess": {
+    "description": "Role update success message"
+  },
+
+  "subBusiness_removeStaffTitle": "Remove Staff Member",
+  "@subBusiness_removeStaffTitle": {
+    "description": "Remove staff dialog title"
+  },
+
+  "subBusiness_removeStaffConfirm": "Are you sure you want to remove this staff member? They will lose access to this sub-business.",
+  "@subBusiness_removeStaffConfirm": {
+    "description": "Remove staff confirmation message"
+  },
+
+  "subBusiness_removeButton": "Remove",
+  "@subBusiness_removeButton": {
+    "description": "Remove button"
+  },
+
+  "subBusiness_removeSuccess": "Staff member removed successfully",
+  "@subBusiness_removeSuccess": {
+    "description": "Remove success message"
+  },
+
+  "bulkPayments_title": "Bulk Payments",
+  "@bulkPayments_title": {
+    "description": "Bulk payments screen title"
+  },
+
+  "bulkPayments_uploadCsv": "Upload CSV File",
+  "@bulkPayments_uploadCsv": {
+    "description": "Upload CSV button"
+  },
+
+  "bulkPayments_emptyTitle": "No bulk payments yet",
+  "@bulkPayments_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "bulkPayments_emptyDescription": "Upload a CSV file to send payments to multiple recipients at once",
+  "@bulkPayments_emptyDescription": {
+    "description": "Empty state description"
+  },
+
+  "bulkPayments_active": "Active Batches",
+  "@bulkPayments_active": {
+    "description": "Active batches section"
+  },
+
+  "bulkPayments_completed": "Completed",
+  "@bulkPayments_completed": {
+    "description": "Completed batches section"
+  },
+
+  "bulkPayments_failed": "Failed",
+  "@bulkPayments_failed": {
+    "description": "Failed batches section"
+  },
+
+  "bulkPayments_uploadTitle": "Upload Bulk Payments",
+  "@bulkPayments_uploadTitle": {
+    "description": "Upload view title"
+  },
+
+  "bulkPayments_instructions": "Instructions",
+  "@bulkPayments_instructions": {
+    "description": "Instructions section"
+  },
+
+  "bulkPayments_instructionsDescription": "Upload a CSV file containing phone numbers, amounts, and descriptions for multiple payments",
+  "@bulkPayments_instructionsDescription": {
+    "description": "Instructions description"
+  },
+
+  "bulkPayments_uploadFile": "Upload File",
+  "@bulkPayments_uploadFile": {
+    "description": "Upload file section"
+  },
+
+  "bulkPayments_selectFile": "Tap to select CSV file",
+  "@bulkPayments_selectFile": {
+    "description": "Select file prompt"
+  },
+
+  "bulkPayments_csvOnly": "CSV files only",
+  "@bulkPayments_csvOnly": {
+    "description": "CSV only hint"
+  },
+
+  "bulkPayments_csvFormat": "CSV Format",
+  "@bulkPayments_csvFormat": {
+    "description": "CSV format section"
+  },
+
+  "bulkPayments_phoneFormat": "Phone: International format (+225...)",
+  "@bulkPayments_phoneFormat": {
+    "description": "Phone format rule"
+  },
+
+  "bulkPayments_amountFormat": "Amount: Numeric value (50.00)",
+  "@bulkPayments_amountFormat": {
+    "description": "Amount format rule"
+  },
+
+  "bulkPayments_descriptionFormat": "Description: Required text",
+  "@bulkPayments_descriptionFormat": {
+    "description": "Description format rule"
+  },
+
+  "bulkPayments_example": "Example",
+  "@bulkPayments_example": {
+    "description": "Example section"
+  },
+
+  "bulkPayments_preview": "Preview Payments",
+  "@bulkPayments_preview": {
+    "description": "Preview view title"
+  },
+
+  "bulkPayments_totalPayments": "Total Payments",
+  "@bulkPayments_totalPayments": {
+    "description": "Total payments label"
+  },
+
+  "bulkPayments_totalAmount": "Total Amount",
+  "@bulkPayments_totalAmount": {
+    "description": "Total amount label"
+  },
+
+  "bulkPayments_errorsFound": "{count} errors found",
+  "@bulkPayments_errorsFound": {
+    "description": "Errors found message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "bulkPayments_fixErrors": "Please fix errors before submitting",
+  "@bulkPayments_fixErrors": {
+    "description": "Fix errors message"
+  },
+
+  "bulkPayments_showInvalidOnly": "Show invalid only",
+  "@bulkPayments_showInvalidOnly": {
+    "description": "Show invalid toggle"
+  },
+
+  "bulkPayments_noPayments": "No payments to display",
+  "@bulkPayments_noPayments": {
+    "description": "No payments message"
+  },
+
+  "bulkPayments_submitBatch": "Submit Batch",
+  "@bulkPayments_submitBatch": {
+    "description": "Submit batch button"
+  },
+
+  "bulkPayments_confirmSubmit": "Confirm Batch Submission",
+  "@bulkPayments_confirmSubmit": {
+    "description": "Confirm submit dialog title"
+  },
+
+  "bulkPayments_confirmMessage": "Send {count} payments totaling {amount}?",
+  "@bulkPayments_confirmMessage": {
+    "description": "Confirm message",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "bulkPayments_submitSuccess": "Batch submitted successfully",
+  "@bulkPayments_submitSuccess": {
+    "description": "Submit success message"
+  },
+
+  "bulkPayments_batchStatus": "Batch Status",
+  "@bulkPayments_batchStatus": {
+    "description": "Batch status view title"
+  },
+
+  "bulkPayments_progress": "Progress",
+  "@bulkPayments_progress": {
+    "description": "Progress section"
+  },
+
+  "bulkPayments_successful": "Successful",
+  "@bulkPayments_successful": {
+    "description": "Successful label"
+  },
+
+  "bulkPayments_pending": "Pending",
+  "@bulkPayments_pending": {
+    "description": "Pending label"
+  },
+
+  "bulkPayments_details": "Details",
+  "@bulkPayments_details": {
+    "description": "Details section"
+  },
+
+  "bulkPayments_createdAt": "Created",
+  "@bulkPayments_createdAt": {
+    "description": "Created at label"
+  },
+
+  "bulkPayments_processedAt": "Processed",
+  "@bulkPayments_processedAt": {
+    "description": "Processed at label"
+  },
+
+  "bulkPayments_failedPayments": "Failed Payments",
+  "@bulkPayments_failedPayments": {
+    "description": "Failed payments section"
+  },
+
+  "bulkPayments_failedDescription": "Download a report of failed payments to retry",
+  "@bulkPayments_failedDescription": {
+    "description": "Failed description"
+  },
+
+  "bulkPayments_downloadReport": "Download Report",
+  "@bulkPayments_downloadReport": {
+    "description": "Download report button"
+  },
+
+  "bulkPayments_failedReportTitle": "Failed Payments Report",
+  "@bulkPayments_failedReportTitle": {
+    "description": "Failed report share title"
+  },
+
+  "bulkPayments_downloadFailed": "Failed to download report",
+  "@bulkPayments_downloadFailed": {
+    "description": "Download failed message"
+  },
+
+  "bulkPayments_statusDraft": "Draft",
+  "@bulkPayments_statusDraft": {
+    "description": "Draft status"
+  },
+
+  "bulkPayments_statusPending": "Pending",
+  "@bulkPayments_statusPending": {
+    "description": "Pending status"
+  },
+
+  "bulkPayments_statusProcessing": "Processing",
+  "@bulkPayments_statusProcessing": {
+    "description": "Processing status"
+  },
+
+  "bulkPayments_statusCompleted": "Completed",
+  "@bulkPayments_statusCompleted": {
+    "description": "Completed status"
+  },
+
+  "bulkPayments_statusPartial": "Partially Completed",
+  "@bulkPayments_statusPartial": {
+    "description": "Partially completed status"
+  },
+
+  "bulkPayments_statusFailed": "Failed",
+  "@bulkPayments_statusFailed": {
+    "description": "Failed status"
+  },
+
+  "expenses_title": "Expenses",
+  "@expenses_title": {
+    "description": "Expenses screen title"
+  },
+
+  "expenses_emptyTitle": "No Expenses Yet",
+  "@expenses_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "expenses_emptyMessage": "Start tracking your expenses by capturing receipts or adding them manually",
+  "@expenses_emptyMessage": {
+    "description": "Empty state message"
+  },
+
+  "expenses_captureReceipt": "Capture Receipt",
+  "@expenses_captureReceipt": {
+    "description": "Capture receipt button"
+  },
+
+  "expenses_addManually": "Add Manually",
+  "@expenses_addManually": {
+    "description": "Add manually button"
+  },
+
+  "expenses_addExpense": "Add Expense",
+  "@expenses_addExpense": {
+    "description": "Add expense button"
+  },
+
+  "expenses_totalExpenses": "Total Expenses",
+  "@expenses_totalExpenses": {
+    "description": "Total expenses label"
+  },
+
+  "expenses_items": "items",
+  "@expenses_items": {
+    "description": "Items count label"
+  },
+
+  "expenses_category": "Category",
+  "@expenses_category": {
+    "description": "Category field label"
+  },
+
+  "expenses_amount": "Amount",
+  "@expenses_amount": {
+    "description": "Amount field label"
+  },
+
+  "expenses_vendor": "Vendor",
+  "@expenses_vendor": {
+    "description": "Vendor field label"
+  },
+
+  "expenses_date": "Date",
+  "@expenses_date": {
+    "description": "Date field label"
+  },
+
+  "expenses_time": "Time",
+  "@expenses_time": {
+    "description": "Time field label"
+  },
+
+  "expenses_description": "Description",
+  "@expenses_description": {
+    "description": "Description field label"
+  },
+
+  "expenses_categoryTravel": "Travel",
+  "@expenses_categoryTravel": {
+    "description": "Travel category"
+  },
+
+  "expenses_categoryMeals": "Meals",
+  "@expenses_categoryMeals": {
+    "description": "Meals category"
+  },
+
+  "expenses_categoryOffice": "Office",
+  "@expenses_categoryOffice": {
+    "description": "Office category"
+  },
+
+  "expenses_categoryTransport": "Transport",
+  "@expenses_categoryTransport": {
+    "description": "Transport category"
+  },
+
+  "expenses_categoryOther": "Other",
+  "@expenses_categoryOther": {
+    "description": "Other category"
+  },
+
+  "expenses_errorAmountRequired": "Amount is required",
+  "@expenses_errorAmountRequired": {
+    "description": "Amount required error"
+  },
+
+  "expenses_errorInvalidAmount": "Invalid amount",
+  "@expenses_errorInvalidAmount": {
+    "description": "Invalid amount error"
+  },
+
+  "expenses_addedSuccessfully": "Expense added successfully",
+  "@expenses_addedSuccessfully": {
+    "description": "Success message"
+  },
+
+  "expenses_positionReceipt": "Position the receipt within the frame",
+  "@expenses_positionReceipt": {
+    "description": "Camera instruction"
+  },
+
+  "expenses_receiptPreview": "Receipt Preview",
+  "@expenses_receiptPreview": {
+    "description": "Preview screen title"
+  },
+
+  "expenses_processingReceipt": "Processing receipt...",
+  "@expenses_processingReceipt": {
+    "description": "Processing message"
+  },
+
+  "expenses_extractedData": "Extracted Data",
+  "@expenses_extractedData": {
+    "description": "OCR results title"
+  },
+
+  "expenses_confirmAndEdit": "Confirm & Edit",
+  "@expenses_confirmAndEdit": {
+    "description": "Confirm button"
+  },
+
+  "expenses_retake": "Retake Photo",
+  "@expenses_retake": {
+    "description": "Retake button"
+  },
+
+  "expenses_confirmDetails": "Confirm Details",
+  "@expenses_confirmDetails": {
+    "description": "Confirm details title"
+  },
+
+  "expenses_saveExpense": "Save Expense",
+  "@expenses_saveExpense": {
+    "description": "Save button"
+  },
+
+  "expenses_expenseDetails": "Expense Details",
+  "@expenses_expenseDetails": {
+    "description": "Detail screen title"
+  },
+
+  "expenses_details": "Details",
+  "@expenses_details": {
+    "description": "Details section title"
+  },
+
+  "expenses_linkedTransaction": "Linked Transaction",
+  "@expenses_linkedTransaction": {
+    "description": "Linked transaction label"
+  },
+
+  "expenses_deleteExpense": "Delete Expense",
+  "@expenses_deleteExpense": {
+    "description": "Delete dialog title"
+  },
+
+  "expenses_deleteConfirmation": "Are you sure you want to delete this expense?",
+  "@expenses_deleteConfirmation": {
+    "description": "Delete confirmation message"
+  },
+
+  "expenses_deletedSuccessfully": "Expense deleted successfully",
+  "@expenses_deletedSuccessfully": {
+    "description": "Delete success message"
+  },
+
+  "expenses_reports": "Expense Reports",
+  "@expenses_reports": {
+    "description": "Reports screen title"
+  },
+
+  "expenses_viewReports": "View Reports",
+  "@expenses_viewReports": {
+    "description": "View reports button"
+  },
+
+  "expenses_reportPeriod": "Report Period",
+  "@expenses_reportPeriod": {
+    "description": "Report period label"
+  },
+
+  "expenses_startDate": "Start Date",
+  "@expenses_startDate": {
+    "description": "Start date label"
+  },
+
+  "expenses_endDate": "End Date",
+  "@expenses_endDate": {
+    "description": "End date label"
+  },
+
+  "expenses_reportSummary": "Summary",
+  "@expenses_reportSummary": {
+    "description": "Summary section title"
+  },
+
+  "expenses_averageExpense": "Average Expense",
+  "@expenses_averageExpense": {
+    "description": "Average expense label"
+  },
+
+  "expenses_byCategory": "By Category",
+  "@expenses_byCategory": {
+    "description": "Category breakdown title"
+  },
+
+  "expenses_exportPdf": "Export as PDF",
+  "@expenses_exportPdf": {
+    "description": "Export PDF button"
+  },
+
+  "expenses_exportCsv": "Export as CSV",
+  "@expenses_exportCsv": {
+    "description": "Export CSV button"
+  },
+
+  "expenses_reportGenerated": "Report generated successfully",
+  "@expenses_reportGenerated": {
+    "description": "Report generated message"
+  }
+
+,
+
+  "bulkPayments_title": "Bulk Payments",
+  "@bulkPayments_title": {
+    "description": "Bulk payments screen title"
+  },
+
+  "bulkPayments_uploadCsv": "Upload CSV File",
+  "@bulkPayments_uploadCsv": {
+    "description": "Upload CSV button"
+  },
+
+  "notifications_title": "Notifications",
+  "@notifications_title": {
+    "description": "Notifications screen title"
+  },
+
+  "notifications_markAllRead": "Mark all read",
+  "@notifications_markAllRead": {
+    "description": "Mark all notifications as read button"
+  },
+
+  "notifications_emptyTitle": "No Notifications",
+  "@notifications_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "notifications_emptyMessage": "You're all caught up!",
+  "@notifications_emptyMessage": {
+    "description": "Empty state message"
+  },
+
+  "notifications_errorTitle": "Failed to Load",
+  "@notifications_errorTitle": {
+    "description": "Error state title"
+  },
+
+  "notifications_errorGeneric": "An error occurred",
+  "@notifications_errorGeneric": {
+    "description": "Generic error message"
+  },
+
+  "notifications_timeJustNow": "Just now",
+  "@notifications_timeJustNow": {
+    "description": "Time format for just now"
+  },
+
+  "notifications_timeMinutesAgo": "{count}m ago",
+  "@notifications_timeMinutesAgo": {
+    "description": "Time format for minutes ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "notifications_timeHoursAgo": "{count}h ago",
+  "@notifications_timeHoursAgo": {
+    "description": "Time format for hours ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "notifications_timeDaysAgo": "{count}d ago",
+  "@notifications_timeDaysAgo": {
+    "description": "Time format for days ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "security_title": "Security",
+  "@security_title": {
+    "description": "Security screen title"
+  },
+
+  "security_authentication": "Authentication",
+  "@security_authentication": {
+    "description": "Authentication section header"
+  },
+
+  "security_changePin": "Change PIN",
+  "@security_changePin": {
+    "description": "Change PIN option"
+  },
+
+  "security_changePinSubtitle": "Update your 4-digit PIN",
+  "@security_changePinSubtitle": {
+    "description": "Change PIN subtitle"
+  },
+
+  "security_biometricLogin": "Biometric Login",
+  "@security_biometricLogin": {
+    "description": "Biometric login option"
+  },
+
+  "security_biometricSubtitle": "Use Face ID or fingerprint",
+  "@security_biometricSubtitle": {
+    "description": "Biometric login subtitle"
+  },
+
+  "security_biometricNotAvailable": "Not available on this device",
+  "@security_biometricNotAvailable": {
+    "description": "Biometric not available message"
+  },
+
+  "security_biometricUnavailableMessage": "Biometric authentication is not available on this device",
+  "@security_biometricUnavailableMessage": {
+    "description": "Biometric unavailable snackbar message"
+  },
+
+  "security_biometricVerifyReason": "Verify to enable biometric login",
+  "@security_biometricVerifyReason": {
+    "description": "Biometric verification reason"
+  },
+
+  "security_loading": "Loading...",
+  "@security_loading": {
+    "description": "Loading state text"
+  },
+
+  "security_checkingAvailability": "Checking availability...",
+  "@security_checkingAvailability": {
+    "description": "Checking biometric availability"
+  },
+
+  "security_errorLoadingState": "Error loading state",
+  "@security_errorLoadingState": {
+    "description": "Error loading biometric state"
+  },
+
+  "security_errorCheckingAvailability": "Error checking availability",
+  "@security_errorCheckingAvailability": {
+    "description": "Error checking biometric availability"
+  },
+
+  "security_twoFactorAuth": "Two-Factor Authentication",
+  "@security_twoFactorAuth": {
+    "description": "Two-factor authentication option"
+  },
+
+  "security_twoFactorEnabledSubtitle": "Enabled via Authenticator app",
+  "@security_twoFactorEnabledSubtitle": {
+    "description": "2FA enabled subtitle"
+  },
+
+  "security_twoFactorDisabledSubtitle": "Add extra protection",
+  "@security_twoFactorDisabledSubtitle": {
+    "description": "2FA disabled subtitle"
+  },
+
+  "security_transactionSecurity": "Transaction Security",
+  "@security_transactionSecurity": {
+    "description": "Transaction security section header"
+  },
+
+  "security_requirePinForTransactions": "Require PIN for Transactions",
+  "@security_requirePinForTransactions": {
+    "description": "Require PIN for transactions option"
+  },
+
+  "security_requirePinSubtitle": "Confirm all transactions with PIN",
+  "@security_requirePinSubtitle": {
+    "description": "Require PIN subtitle"
+  },
+
+  "security_alerts": "Security Alerts",
+  "@security_alerts": {
+    "description": "Security alerts section header"
+  },
+
+  "security_loginNotifications": "Login Notifications",
+  "@security_loginNotifications": {
+    "description": "Login notifications option"
+  },
+
+  "security_loginNotificationsSubtitle": "Get notified of new logins",
+  "@security_loginNotificationsSubtitle": {
+    "description": "Login notifications subtitle"
+  },
+
+  "security_newDeviceAlerts": "New Device Alerts",
+  "@security_newDeviceAlerts": {
+    "description": "New device alerts option"
+  },
+
+  "security_newDeviceAlertsSubtitle": "Alert when a new device is used",
+  "@security_newDeviceAlertsSubtitle": {
+    "description": "New device alerts subtitle"
+  },
+
+  "security_sessions": "Sessions",
+  "@security_sessions": {
+    "description": "Sessions section header"
+  },
+
+  "security_devices": "Devices",
+  "@security_devices": {
+    "description": "Devices option"
+  },
+
+  "security_devicesSubtitle": "Manage your devices",
+  "@security_devicesSubtitle": {
+    "description": "Devices subtitle"
+  },
+
+  "security_activeSessions": "Active Sessions",
+  "@security_activeSessions": {
+    "description": "Active sessions option"
+  },
+
+  "security_activeSessionsSubtitle": "Manage your active sessions",
+  "@security_activeSessionsSubtitle": {
+    "description": "Active sessions subtitle"
+  },
+
+  "security_logoutAllDevices": "Log Out All Devices",
+  "@security_logoutAllDevices": {
+    "description": "Log out all devices option"
+  },
+
+  "security_logoutAllDevicesSubtitle": "Sign out from all other devices",
+  "@security_logoutAllDevicesSubtitle": {
+    "description": "Log out all devices subtitle"
+  },
+
+  "security_privacy": "Privacy",
+  "@security_privacy": {
+    "description": "Privacy section header"
+  },
+
+  "security_loginHistory": "Login History",
+  "@security_loginHistory": {
+    "description": "Login history option"
+  },
+
+  "security_loginHistorySubtitle": "View recent login activity",
+  "@security_loginHistorySubtitle": {
+    "description": "Login history subtitle"
+  },
+
+  "security_deleteAccount": "Delete Account",
+  "@security_deleteAccount": {
+    "description": "Delete account option"
+  },
+
+  "security_deleteAccountSubtitle": "Permanently delete your account",
+  "@security_deleteAccountSubtitle": {
+    "description": "Delete account subtitle"
+  },
+
+  "security_scoreTitle": "Security Score",
+  "@security_scoreTitle": {
+    "description": "Security score title"
+  },
+
+  "security_scoreExcellent": "Excellent! Your account is well protected.",
+  "@security_scoreExcellent": {
+    "description": "Excellent security score description"
+  },
+
+  "security_scoreGood": "Good security. A few improvements possible.",
+  "@security_scoreGood": {
+    "description": "Good security score description"
+  },
+
+  "security_scoreModerate": "Moderate security. Enable more features.",
+  "@security_scoreModerate": {
+    "description": "Moderate security score description"
+  },
+
+  "security_scoreLow": "Low security. Please enable protection features.",
+  "@security_scoreLow": {
+    "description": "Low security score description"
+  },
+
+  "security_tipEnable2FA": "Enable 2FA to increase your score by 25 points",
+  "@security_tipEnable2FA": {
+    "description": "Tip to enable 2FA"
+  },
+
+  "security_tipEnableBiometrics": "Enable biometrics for easier secure login",
+  "@security_tipEnableBiometrics": {
+    "description": "Tip to enable biometrics"
+  },
+
+  "security_tipRequirePin": "Require PIN for transactions for extra safety",
+  "@security_tipRequirePin": {
+    "description": "Tip to require PIN"
+  },
+
+  "security_tipEnableNotifications": "Enable all notifications for maximum security",
+  "@security_tipEnableNotifications": {
+    "description": "Tip to enable notifications"
+  },
+
+  "security_setup2FATitle": "Set Up Two-Factor Authentication",
+  "@security_setup2FATitle": {
+    "description": "Set up 2FA dialog title"
+  },
+
+  "security_setup2FAMessage": "Use an authenticator app like Google Authenticator or Authy for enhanced security.",
+  "@security_setup2FAMessage": {
+    "description": "Set up 2FA dialog message"
+  },
+
+  "security_continueSetup": "Continue Setup",
+  "@security_continueSetup": {
+    "description": "Continue setup button"
+  },
+
+  "security_2FAEnabledSuccess": "2FA enabled successfully",
+  "@security_2FAEnabledSuccess": {
+    "description": "2FA enabled success message"
+  },
+
+  "security_disable2FATitle": "Disable 2FA?",
+  "@security_disable2FATitle": {
+    "description": "Disable 2FA dialog title"
+  },
+
+  "security_disable2FAMessage": "This will make your account less secure. Are you sure?",
+  "@security_disable2FAMessage": {
+    "description": "Disable 2FA dialog message"
+  },
+
+  "security_disable": "Disable",
+  "@security_disable": {
+    "description": "Disable button"
+  },
+
+  "security_logoutAllTitle": "Log Out All Devices?",
+  "@security_logoutAllTitle": {
+    "description": "Log out all devices dialog title"
+  },
+
+  "security_logoutAllMessage": "You will be logged out from all other devices. You will need to log in again on those devices.",
+  "@security_logoutAllMessage": {
+    "description": "Log out all devices dialog message"
+  },
+
+  "security_logoutAll": "Log Out All",
+  "@security_logoutAll": {
+    "description": "Log out all button"
+  },
+
+  "security_logoutAllSuccess": "All other devices have been logged out",
+  "@security_logoutAllSuccess": {
+    "description": "Log out all success message"
+  },
+
+  "security_loginHistoryTitle": "Login History",
+  "@security_loginHistoryTitle": {
+    "description": "Login history sheet title"
+  },
+
+  "security_loginSuccess": "Success",
+  "@security_loginSuccess": {
+    "description": "Login success status"
+  },
+
+  "security_loginFailed": "Failed",
+  "@security_loginFailed": {
+    "description": "Login failed status"
+  },
+
+  "security_deleteAccountTitle": "Delete Account?",
+  "@security_deleteAccountTitle": {
+    "description": "Delete account dialog title"
+  },
+
+  "security_deleteAccountMessage": "This action is permanent and cannot be undone. All your data, transaction history, and funds will be lost.",
+  "@security_deleteAccountMessage": {
+    "description": "Delete account dialog message"
+  },
+
+  "security_delete": "Delete",
+  "@security_delete": {
+    "description": "Delete button"
+  },
+
+  "profile_title": "Profile",
+  "@profile_title": {
+    "description": "Profile screen title"
+  },
+
+  "profile_phoneNumber": "Phone Number",
+  "@profile_phoneNumber": {
+    "description": "Phone number field label"
+  },
+
+  "profile_firstName": "First Name",
+  "@profile_firstName": {
+    "description": "First name field label"
+  },
+
+  "profile_lastName": "Last Name",
+  "@profile_lastName": {
+    "description": "Last name field label"
+  },
+
+  "profile_email": "Email",
+  "@profile_email": {
+    "description": "Email field label"
+  },
+
+  "profile_kycStatus": "KYC Status",
+  "@profile_kycStatus": {
+    "description": "KYC status field label"
+  },
+
+  "profile_country": "Country",
+  "@profile_country": {
+    "description": "Country field label"
+  },
+
+  "profile_notSet": "Not set",
+  "@profile_notSet": {
+    "description": "Field not set placeholder"
+  },
+
+  "profile_verify": "Verify",
+  "@profile_verify": {
+    "description": "Verify button"
+  },
+
+  "profile_kycNotVerified": "Not Verified",
+  "@profile_kycNotVerified": {
+    "description": "KYC not verified status"
+  },
+
+  "profile_kycPending": "Pending Review",
+  "@profile_kycPending": {
+    "description": "KYC pending status"
+  },
+
+  "profile_kycVerified": "Verified",
+  "@profile_kycVerified": {
+    "description": "KYC verified status"
+  },
+
+  "profile_kycRejected": "Rejected",
+  "@profile_kycRejected": {
+    "description": "KYC rejected status"
+  },
+
+  "profile_countryIvoryCoast": "Ivory Coast",
+  "@profile_countryIvoryCoast": {
+    "description": "Ivory Coast country name"
+  },
+
+  "profile_countryNigeria": "Nigeria",
+  "@profile_countryNigeria": {
+    "description": "Nigeria country name"
+  },
+
+  "profile_countryKenya": "Kenya",
+  "@profile_countryKenya": {
+    "description": "Kenya country name"
+  },
+
+  "profile_countryGhana": "Ghana",
+  "@profile_countryGhana": {
+    "description": "Ghana country name"
+  },
+
+  "profile_countrySenegal": "Senegal",
+  "@profile_countrySenegal": {
+    "description": "Senegal country name"
+  },
+
+  "changePin_title": "Change PIN",
+  "@changePin_title": {
+    "description": "Change PIN screen title"
+  },
+
+  "changePin_newPinTitle": "New PIN",
+  "@changePin_newPinTitle": {
+    "description": "New PIN step title"
+  },
+
+  "changePin_confirmTitle": "Confirm PIN",
+  "@changePin_confirmTitle": {
+    "description": "Confirm PIN step title"
+  },
+
+  "changePin_enterCurrentPinTitle": "Enter Current PIN",
+  "@changePin_enterCurrentPinTitle": {
+    "description": "Enter current PIN step title"
+  },
+
+  "changePin_enterCurrentPinSubtitle": "Enter your current 4-digit PIN to continue",
+  "@changePin_enterCurrentPinSubtitle": {
+    "description": "Enter current PIN step subtitle"
+  },
+
+  "changePin_createNewPinTitle": "Create New PIN",
+  "@changePin_createNewPinTitle": {
+    "description": "Create new PIN step title"
+  },
+
+  "changePin_createNewPinSubtitle": "Choose a new 4-digit PIN for your account",
+  "@changePin_createNewPinSubtitle": {
+    "description": "Create new PIN step subtitle"
+  },
+
+  "changePin_confirmPinTitle": "Confirm Your PIN",
+  "@changePin_confirmPinTitle": {
+    "description": "Confirm PIN step title"
+  },
+
+  "changePin_confirmPinSubtitle": "Re-enter your new PIN to confirm",
+  "@changePin_confirmPinSubtitle": {
+    "description": "Confirm PIN step subtitle"
+  },
+
+  "changePin_errorBiometricRequired": "Biometric confirmation required",
+  "@changePin_errorBiometricRequired": {
+    "description": "Biometric required error"
+  },
+
+  "changePin_errorIncorrectPin": "Incorrect PIN. Please try again.",
+  "@changePin_errorIncorrectPin": {
+    "description": "Incorrect PIN error"
+  },
+
+  "changePin_errorUnableToVerify": "Unable to verify PIN. Please try again.",
+  "@changePin_errorUnableToVerify": {
+    "description": "Unable to verify PIN error"
+  },
+
+  "changePin_errorWeakPin": "PIN is too simple. Choose a stronger PIN.",
+  "@changePin_errorWeakPin": {
+    "description": "Weak PIN error"
+  },
+
+  "changePin_errorSameAsCurrentPin": "New PIN must be different from current PIN.",
+  "@changePin_errorSameAsCurrentPin": {
+    "description": "Same as current PIN error"
+  },
+
+  "changePin_errorPinMismatch": "PINs do not match. Try again.",
+  "@changePin_errorPinMismatch": {
+    "description": "PIN mismatch error"
+  },
+
+  "changePin_successMessage": "PIN changed successfully!",
+  "@changePin_successMessage": {
+    "description": "PIN changed success message"
+  },
+
+  "changePin_errorFailedToSet": "Failed to set new PIN. Please try a different PIN.",
+  "@changePin_errorFailedToSet": {
+    "description": "Failed to set new PIN error"
+  },
+
+  "changePin_errorFailedToSave": "Failed to save PIN. Please try again.",
+  "@changePin_errorFailedToSave": {
+    "description": "Failed to save PIN error"
   }
 }

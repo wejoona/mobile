@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PinInputWidget extends StatefulWidget {
   final int length;
@@ -91,9 +92,9 @@ class _PinInputWidgetState extends State<PinInputWidget> {
           TextButton(
             onPressed: _clearAll,
             child: AppText(
-              'Clear',
+              AppLocalizations.of(context)!.action_clear,
               variant: AppTextVariant.bodySmall,
-                color: AppColors.gold500,
+              color: AppColors.gold500,
             ),
           ),
         ],

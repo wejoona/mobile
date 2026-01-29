@@ -2,8 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../features/qr_payment/widgets/qr_display.dart';
 import '../providers/merchant_provider.dart';
 import '../services/merchant_service.dart';
 
@@ -121,75 +124,68 @@ Powered by JoonaPay
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(paymentRequestProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: const Text('Request Payment'),
+        title: AppText('Request Payment', variant: AppTextVariant.titleMedium),
+        backgroundColor: Colors.transparent,
         actions: [
           if (state.paymentRequest != null)
             IconButton(
               onPressed: _newRequest,
-              icon: const Icon(Icons.refresh),
+              icon: Icon(Icons.refresh, color: AppColors.gold500),
               tooltip: 'New Request',
             ),
         ],
       ),
       body: SafeArea(
         child: state.paymentRequest != null
-            ? _buildQrDisplay(context, state.paymentRequest!)
-            : _buildRequestForm(context, state),
+            ? _buildQrDisplay(context, l10n, state.paymentRequest!)
+            : _buildRequestForm(context, l10n, state),
       ),
     );
   }
 
-  Widget _buildRequestForm(BuildContext context, PaymentRequestState state) {
-    final theme = Theme.of(context);
-
+  Widget _buildRequestForm(BuildContext context, AppLocalizations l10n, PaymentRequestState state) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Merchant info
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(16),
-            ),
+          // Merchant info card
+          AppCard(
+            variant: AppCardVariant.filled,
+            padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
                 Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: theme.primaryColor.withOpacity(0.1),
+                    color: AppColors.gold500.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.store,
-                    color: theme.primaryColor,
+                    color: AppColors.gold500,
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      AppText(
                         widget.merchant.displayName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                        ),
+                        variant: AppTextVariant.bodyLarge,
                       ),
-                      Text(
+                      AppText(
                         'Creating payment request',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 13,
-                        ),
+                        variant: AppTextVariant.bodySmall,
+                        color: AppColors.silver,
                       ),
                     ],
                   ),
@@ -197,226 +193,181 @@ Powered by JoonaPay
               ],
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
 
           // Amount input
-          const Text(
-            'Amount (USDC)',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _amountController,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                'Amount (USDC)',
+                variant: AppTextVariant.labelMedium,
+              ),
+              SizedBox(height: AppSpacing.xs),
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.charcoal,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      '\$ ',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.gold500,
+                      ),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                        ],
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.white,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: '0.00',
+                          hintStyle: TextStyle(color: AppColors.silver),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-            decoration: InputDecoration(
-              prefixText: '\$ ',
-              prefixStyle: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: theme.primaryColor,
-              ),
-              hintText: '0.00',
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: theme.primaryColor, width: 2),
-              ),
-            ),
-            onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppSpacing.lg),
 
           // Description input
-          const Text(
+          AppText(
             'Description (optional)',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            variant: AppTextVariant.labelMedium,
           ),
-          const SizedBox(height: 8),
-          TextField(
+          SizedBox(height: AppSpacing.xs),
+          AppInput(
             controller: _descriptionController,
+            hint: 'e.g., Coffee and croissant',
             maxLines: 2,
             maxLength: 200,
-            decoration: InputDecoration(
-              hintText: 'e.g., Coffee and croissant',
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppSpacing.md),
 
           // Reference input
-          const Text(
+          AppText(
             'Reference (optional)',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
+            variant: AppTextVariant.labelMedium,
           ),
-          const SizedBox(height: 8),
-          TextField(
+          SizedBox(height: AppSpacing.xs),
+          AppInput(
             controller: _referenceController,
+            hint: 'e.g., Order #123',
             maxLength: 50,
-            decoration: InputDecoration(
-              hintText: 'e.g., Order #123',
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: AppSpacing.xl),
 
           // Error message
           if (state.error != null) ...[
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.error.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                  const SizedBox(width: 8),
+                  Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                  SizedBox(width: AppSpacing.xs),
                   Expanded(
-                    child: Text(
+                    child: AppText(
                       state.error!,
-                      style: TextStyle(color: Colors.red.shade700),
+                      color: AppColors.error,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppSpacing.md),
           ],
 
           // Create button
-          ElevatedButton(
+          AppButton(
+            label: 'Generate QR Code',
             onPressed: _canCreate && !state.isLoading
                 ? _createPaymentRequest
                 : null,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              backgroundColor: theme.primaryColor,
-              foregroundColor: Colors.white,
-            ),
-            child: state.isLoading
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                    ),
-                  )
-                : const Text(
-                    'Generate QR Code',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            variant: AppButtonVariant.primary,
+            isLoading: state.isLoading,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQrDisplay(BuildContext context, PaymentRequestResponse pr) {
-    final theme = Theme.of(context);
+  Widget _buildQrDisplay(BuildContext context, AppLocalizations l10n, PaymentRequestResponse pr) {
     final isExpired = _remainingSeconds <= 0;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           // QR Code Card
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
+          AppCard(
+            variant: AppCardVariant.elevated,
+            padding: EdgeInsets.all(AppSpacing.xxl),
             child: Column(
               children: [
                 // Amount
-                Text(
+                AppText(
                   '\$${pr.amount.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: theme.primaryColor,
-                  ),
+                  variant: AppTextVariant.displayMedium,
+                  color: AppColors.gold500,
                 ),
-                Text(
+                AppText(
                   'USDC',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
-                  ),
+                  variant: AppTextVariant.bodyMedium,
+                  color: AppColors.silver,
                 ),
                 if (pr.description != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
+                  SizedBox(height: AppSpacing.xs),
+                  AppText(
                     pr.description!,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 14,
-                    ),
+                    variant: AppTextVariant.bodyMedium,
+                    color: AppColors.silver,
                     textAlign: TextAlign.center,
                   ),
                 ],
-                const SizedBox(height: 24),
+                SizedBox(height: AppSpacing.lg),
 
-                // QR Code
+                // QR Code or Expired state
                 if (!isExpired)
-                  QrImageView(
+                  QrDisplay(
                     data: pr.qrData,
-                    version: QrVersions.auto,
                     size: 200,
-                    backgroundColor: Colors.white,
+                    showBorder: true,
                   )
                 else
                   Container(
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(16),
+                      color: AppColors.charcoal,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -424,33 +375,35 @@ Powered by JoonaPay
                         Icon(
                           Icons.timer_off,
                           size: 48,
-                          color: Colors.grey.shade400,
+                          color: AppColors.silver,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
+                        SizedBox(height: AppSpacing.sm),
+                        AppText(
                           'Request Expired',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          color: AppColors.silver,
                         ),
                       ],
                     ),
                   ),
-                const SizedBox(height: 24),
+                SizedBox(height: AppSpacing.lg),
 
                 // Timer
                 if (!isExpired)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
                       color: _remainingSeconds < 60
-                          ? Colors.red.shade50
-                          : Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(20),
+                          ? AppColors.error.withValues(alpha: 0.1)
+                          : AppColors.success.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: _remainingSeconds < 60
+                            ? AppColors.error.withValues(alpha: 0.3)
+                            : AppColors.success.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -459,18 +412,15 @@ Powered by JoonaPay
                           Icons.timer,
                           size: 18,
                           color: _remainingSeconds < 60
-                              ? Colors.red.shade700
-                              : Colors.green.shade700,
+                              ? AppColors.error
+                              : AppColors.success,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
+                        SizedBox(width: AppSpacing.xs),
+                        AppText(
                           'Expires in ${_formatTimeRemaining()}',
-                          style: TextStyle(
-                            color: _remainingSeconds < 60
-                                ? Colors.red.shade700
-                                : Colors.green.shade700,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          color: _remainingSeconds < 60
+                              ? AppColors.error
+                              : AppColors.success,
                         ),
                       ],
                     ),
@@ -478,78 +428,54 @@ Powered by JoonaPay
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppSpacing.lg),
 
           // Action buttons
           if (!isExpired)
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: AppButton(
+                    label: l10n.action_share,
                     onPressed: _shareQr,
-                    icon: const Icon(Icons.share),
-                    label: const Text('Share'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
+                    variant: AppButtonVariant.secondary,
+                    icon: Icons.share,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: AppButton(
+                    label: 'New Request',
                     onPressed: _newRequest,
-                    icon: const Icon(Icons.add),
-                    label: const Text('New Request'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: theme.primaryColor,
-                      foregroundColor: Colors.white,
-                    ),
+                    variant: AppButtonVariant.primary,
+                    icon: Icons.add,
                   ),
                 ),
               ],
             )
           else
-            ElevatedButton.icon(
+            AppButton(
+              label: 'Create New Request',
               onPressed: _newRequest,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Create New Request'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: theme.primaryColor,
-                foregroundColor: Colors.white,
-              ),
+              variant: AppButtonVariant.primary,
+              icon: Icons.refresh,
             ),
 
-          const SizedBox(height: 24),
+          SizedBox(height: AppSpacing.lg),
 
           // Instructions
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
+          AppCard(
+            variant: AppCardVariant.outline,
+            padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: Colors.blue.shade700),
-                const SizedBox(width: 12),
+                Icon(Icons.info_outline, color: AppColors.gold500),
+                SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
+                  child: AppText(
                     'Show this QR code to your customer. The payment will be credited automatically.',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 13,
-                    ),
+                    variant: AppTextVariant.bodySmall,
+                    color: AppColors.silver,
                   ),
                 ),
               ],

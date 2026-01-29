@@ -1,6 +1,18 @@
 # JoonaPay Mobile - Claude Context
 
 > **Read this first. Don't explore unless necessary.**
+> **Read sitemap.md for ALL routes before creating screens.**
+
+## CRITICAL: Do Not Duplicate These Screens
+
+| Screen | File | Has |
+|--------|------|-----|
+| Login | `login_view.dart` | Country picker, login/register toggle |
+| Onboarding | `onboarding_view.dart` | 4-page tutorial |
+| OTP | `login_otp_view.dart` | Auto-submit, resend |
+| Splash | `splash_view.dart` | Auth check, animations |
+
+**If a route exists in sitemap.md, DO NOT create a new screen for it.**
 
 ## Project Summary
 - **App:** USDC stablecoin wallet for West Africa

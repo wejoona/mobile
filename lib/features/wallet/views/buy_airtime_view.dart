@@ -446,18 +446,14 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: TextField(
+                child: AppInput(
                   controller: _amountController,
+                  variant: AppInputVariant.amount,
+                  hint: '0.00',
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
-                  style: AppTypography.titleMedium,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0.00',
-                    hintStyle: TextStyle(color: colors.textTertiary),
-                  ),
                   onChanged: (_) => setState(() {}),
                 ),
               ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
@@ -45,6 +46,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(filteredPaginatedTransactionsProvider);
     final filter = ref.watch(transactionFilterProvider);
@@ -56,9 +58,9 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: _showSearch
-            ? _buildSearchField(colors)
-            : const AppText(
-                'Transactions',
+            ? _buildSearchField(colors, l10n)
+            : AppText(
+                l10n.transactions_title,
                 variant: AppTextVariant.titleLarge,
               ),
         leading: IconButton(
@@ -137,7 +139,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       body: Column(
         children: [
           // Active filters indicator
-          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter, colors),
+          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter, colors, l10n),
 
           // Transactions list
           Expanded(
@@ -150,19 +152,18 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               color: colors.gold,
               backgroundColor: colors.container,
               child: state.isLoading && state.transactions.isEmpty
-                  ? Center(
-                      child: CircularProgressIndicator(color: colors.gold),
-                    )
+                  ? _buildLoadingState(colors)
                   : state.error != null
-                      ? _buildErrorState(state.error!, colors)
+                      ? _buildErrorState(state.error!, colors, l10n)
                       : state.transactions.isEmpty
-                          ? _buildEmptyState(filter, colors)
+                          ? _buildEmptyState(filter, colors, l10n)
                           : _buildTransactionsList(
                               context,
                               state.transactions,
                               state,
                               ref,
                               colors,
+                              l10n,
                             ),
             ),
           ),
@@ -171,41 +172,38 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildSearchField(ThemeColors colors) {
-    return TextField(
-      controller: _searchController,
-      focusNode: _searchFocusNode,
-      style: AppTypography.bodyLarge.copyWith(color: colors.textPrimary),
-      decoration: InputDecoration(
-        hintText: 'Search transactions...',
-        hintStyle: AppTypography.bodyLarge.copyWith(
-          color: colors.textTertiary,
+  Widget _buildSearchField(ThemeColors colors, AppLocalizations l10n) {
+    return Row(
+      children: [
+        Expanded(
+          child: AppInput(
+            controller: _searchController,
+            focusNode: _searchFocusNode,
+            variant: AppInputVariant.search,
+            hint: l10n.transactions_searchPlaceholder,
+            prefixIcon: Icons.search,
+            onChanged: _onSearchChanged,
+          ),
         ),
-        border: InputBorder.none,
-        prefixIcon: Icon(
-          Icons.search,
-          color: colors.textTertiary,
-        ),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(Icons.clear, color: colors.textTertiary),
-                onPressed: () {
-                  _searchController.clear();
-                  ref.read(transactionFilterProvider.notifier).setSearch(null);
-                },
-              )
-            : null,
-      ),
-      onChanged: _onSearchChanged,
+        if (_searchController.text.isNotEmpty)
+          IconButton(
+            icon: Icon(Icons.clear, color: colors.textTertiary),
+            onPressed: () {
+              _searchController.clear();
+              ref.read(transactionFilterProvider.notifier).setSearch(null);
+              setState(() {});
+            },
+          ),
+      ],
     );
   }
 
-  Widget _buildActiveFiltersBar(TransactionFilter filter, ThemeColors colors) {
+  Widget _buildActiveFiltersBar(TransactionFilter filter, ThemeColors colors, AppLocalizations l10n) {
     final chips = <Widget>[];
 
     if (filter.type != null) {
       chips.add(_buildFilterChip(
-        label: _getTypeName(filter.type!),
+        label: _getTypeName(filter.type!, l10n),
         onRemove: () => ref.read(transactionFilterProvider.notifier).setType(null),
         colors: colors,
       ));
@@ -272,7 +270,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               ref.read(transactionFilterProvider.notifier).clearAll();
             },
             child: Text(
-              'Clear all',
+              l10n.action_clearAll,
               style: TextStyle(
                 color: colors.gold,
                 fontSize: 12,
@@ -314,12 +312,12 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  String _getTypeName(String type) {
+  String _getTypeName(String type, AppLocalizations l10n) {
     switch (type) {
       case 'deposit':
-        return 'Deposits';
+        return l10n.transactions_deposits;
       case 'withdrawal':
-        return 'Withdrawals';
+        return l10n.transactions_withdrawals;
       case 'transfer_internal':
         return 'Received';
       case 'transfer_external':
@@ -334,7 +332,17 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     return text[0].toUpperCase() + text.substring(1);
   }
 
-  Widget _buildEmptyState(TransactionFilter filter, ThemeColors colors) {
+  Widget _buildLoadingState(ThemeColors colors) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      itemCount: 8,
+      itemBuilder: (context, index) {
+        return SkeletonLayouts.transactionItem();
+      },
+    );
+  }
+
+  Widget _buildEmptyState(TransactionFilter filter, ThemeColors colors, AppLocalizations l10n) {
     final hasFilters = filter.hasActiveFilters || filter.hasSearchQuery;
 
     return Center(
@@ -358,7 +366,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppText(
-              hasFilters ? 'No Results Found' : 'No Transactions',
+              hasFilters ? l10n.transactions_noResultsFound : l10n.transactions_noTransactions,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -367,8 +375,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: AppText(
                 hasFilters
-                    ? 'Try adjusting your filters or search query to find what you\'re looking for.'
-                    : 'Your transaction history will appear here once you make your first deposit or transfer.',
+                    ? l10n.transactions_adjustFilters
+                    : l10n.transactions_historyMessage,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,
@@ -382,7 +390,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   ref.read(transactionFilterProvider.notifier).clearAll();
                 },
                 icon: const Icon(Icons.filter_alt_off),
-                label: const Text('Clear Filters'),
+                label: Text(l10n.action_clearAll),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: colors.gold,
                   side: BorderSide(color: colors.gold),
@@ -399,7 +407,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildErrorState(String error, ThemeColors colors) {
+  Widget _buildErrorState(String error, ThemeColors colors, AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -419,7 +427,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppText(
-            'Something Went Wrong',
+            l10n.transactions_somethingWentWrong,
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -434,16 +442,12 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          ElevatedButton.icon(
+          AppButton(
+            label: l10n.action_retry,
             onPressed: () {
               ref.read(filteredPaginatedTransactionsProvider.notifier).refresh();
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Try Again'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.gold,
-              foregroundColor: colors.canvas,
-            ),
+            icon: Icons.refresh,
           ),
         ],
       ),
@@ -456,9 +460,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     FilteredPaginatedTransactionsState state,
     WidgetRef ref,
     ThemeColors colors,
+    AppLocalizations l10n,
   ) {
     // Group transactions by date
-    final grouped = _groupByDate(transactions);
+    final grouped = _groupByDate(transactions, l10n);
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
@@ -490,13 +495,14 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             transactions: entry.value,
             onTransactionTap: (tx) =>
                 context.push('/transactions/${tx.id}', extra: tx),
+            l10n: l10n,
           );
         },
       ),
     );
   }
 
-  Map<String, List<Transaction>> _groupByDate(List<Transaction> transactions) {
+  Map<String, List<Transaction>> _groupByDate(List<Transaction> transactions, AppLocalizations l10n) {
     final grouped = <String, List<Transaction>>{};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -511,9 +517,9 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
       String label;
       if (txDate == today) {
-        label = 'Today';
+        label = l10n.transactions_today;
       } else if (txDate == yesterday) {
-        label = 'Yesterday';
+        label = l10n.transactions_yesterday;
       } else if (now.difference(txDate).inDays < 7) {
         label = DateFormat('EEEE').format(tx.createdAt);
       } else {
@@ -533,11 +539,13 @@ class _TransactionGroup extends StatelessWidget {
     required this.date,
     required this.transactions,
     required this.onTransactionTap,
+    required this.l10n,
   });
 
   final String date;
   final List<Transaction> transactions;
   final ValueChanged<Transaction> onTransactionTap;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -574,26 +582,26 @@ class _TransactionGroup extends StatelessWidget {
     }
     switch (type) {
       case TransactionType.deposit:
-        return 'Deposit';
+        return l10n.transactions_deposit;
       case TransactionType.withdrawal:
-        return 'Withdrawal';
+        return l10n.transactions_withdrawal;
       case TransactionType.transferInternal:
-        return 'Transfer Received';
+        return l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
-        return 'Transfer Sent';
+        return l10n.transactions_transferSent;
     }
   }
 
   String _getTransactionSubtitle(TransactionType type) {
     switch (type) {
       case TransactionType.deposit:
-        return 'Mobile Money Deposit';
+        return l10n.transactions_mobileMoneyDeposit;
       case TransactionType.withdrawal:
-        return 'Mobile Money Withdrawal';
+        return l10n.transactions_mobileMoneyWithdrawal;
       case TransactionType.transferInternal:
-        return 'From JoonaPay User';
+        return l10n.transactions_fromJoonaPayUser;
       case TransactionType.transferExternal:
-        return 'External Wallet';
+        return l10n.transactions_externalWallet;
     }
   }
 

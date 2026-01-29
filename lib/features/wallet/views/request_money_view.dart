@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../state/index.dart';
@@ -31,14 +32,15 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Request Money',
+          l10n.services_requestMoney,
           variant: AppTextVariant.titleLarge,
           color: colors.textPrimary,
         ),
@@ -48,7 +50,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -116,7 +118,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     AppText(
                       'Request for \$${_amountController.text}',
                       variant: AppTextVariant.headlineSmall,
-                      color: colors.gold,
+                      color: AppColors.gold500,
                     ),
                     if (_noteController.text.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.sm),
@@ -198,14 +200,14 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
   Widget _buildAmountInput(ThemeColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
+        horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: AppColors.charcoal,
+        borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: _amountError != null ? colors.error : colors.borderSubtle,
+          color: _amountError != null ? AppColors.errorBase : AppColors.borderSubtle,
         ),
       ),
       child: Row(
@@ -217,18 +219,15 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: TextField(
+            child: AppInput(
               controller: _amountController,
+              variant: AppInputVariant.amount,
+              hint: '0.00',
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
-              style: AppTypography.headlineMedium.copyWith(color: colors.textPrimary),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: '0.00',
-                hintStyle: TextStyle(color: colors.textTertiary),
-              ),
+              error: _amountError,
               onChanged: (_) {
                 _validateAmount();
                 setState(() {});
@@ -248,7 +247,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: colors.info, size: 20),
+              Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
                 'How it works',
@@ -276,14 +275,14 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: colors.gold.withValues(alpha: 0.2),
+              color: AppColors.gold500.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: AppText(
                 number,
                 variant: AppTextVariant.labelSmall,
-                color: colors.gold,
+                color: AppColors.gold500,
               ),
             ),
           ),
@@ -341,7 +340,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Payment link copied!'),
-        backgroundColor: colors.success,
+        backgroundColor: AppColors.successBase,
       ),
     );
   }
@@ -394,7 +393,7 @@ class _ShareButton extends StatelessWidget {
                 color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: colors.gold, size: 22),
+              child: Icon(icon, color: AppColors.gold500, size: 22),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../design/tokens/index.dart';
 import '../../../domain/enums/index.dart';
 import '../models/receipt_data.dart';
 
@@ -24,7 +26,7 @@ class ReceiptWidget extends StatelessWidget {
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),
-      color: Colors.white,
+      color: AppColors.gold50, // Light cream - paper-like for receipts
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -37,7 +39,7 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: Colors.grey[300]),
+          Container(height: 1, color: AppColors.gold200),
           const SizedBox(height: 24),
 
           // Amount Section
@@ -45,14 +47,14 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: Colors.grey[300]),
+          Container(height: 1, color: AppColors.gold200),
           const SizedBox(height: 24),
 
           // Recipient Section (if applicable)
           if (receiptData.recipientPhone != null || receiptData.recipientAddress != null) ...[
             _buildRecipientSection(),
             const SizedBox(height: 24),
-            Container(height: 1, color: Colors.grey[300]),
+            Container(height: 1, color: AppColors.gold200),
             const SizedBox(height: 24),
           ],
 
@@ -61,7 +63,7 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: Colors.grey[300]),
+          Container(height: 1, color: AppColors.gold200),
           const SizedBox(height: 24),
 
           // QR Code
@@ -85,29 +87,25 @@ class ReceiptWidget extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: const Color(0xFFD4AF37), // Gold color
+            color: AppColors.gold500,
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Center(
-            child: Text(
+            child: AppText(
               'JP',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              variant: AppTextVariant.displayMedium,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
         const SizedBox(height: 16),
-        const Text(
+        const AppText(
           'TRANSACTION RECEIPT',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-            letterSpacing: 1.2,
-          ),
+          variant: AppTextVariant.titleLarge,
+          color: AppColors.textInverse,
+          fontWeight: FontWeight.bold,
+          style: TextStyle(letterSpacing: 1.2),
         ),
       ],
     );
@@ -129,14 +127,12 @@ class ReceiptWidget extends StatelessWidget {
         children: [
           Icon(icon, color: color, size: 24),
           const SizedBox(width: 8),
-          Text(
+          AppText(
             receiptData.getStatusLabel().toUpperCase(),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-              letterSpacing: 1.0,
-            ),
+            variant: AppTextVariant.labelLarge,
+            color: color,
+            fontWeight: FontWeight.bold,
+            style: const TextStyle(letterSpacing: 1.0),
           ),
         ],
       ),
@@ -162,7 +158,7 @@ class ReceiptWidget extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: AppColors.gold100,
             borderRadius: BorderRadius.circular(12),
           ),
           child: _buildRow(
@@ -180,13 +176,11 @@ class ReceiptWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const AppText(
           'Recipient',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.black54,
-          ),
+          variant: AppTextVariant.labelMedium,
+          color: AppColors.gold800,
+          fontWeight: FontWeight.w600,
         ),
         const SizedBox(height: 12),
         if (receiptData.recipientName != null)
@@ -227,16 +221,13 @@ class ReceiptWidget extends StatelessWidget {
           data: receiptData.referenceNumber,
           version: QrVersions.auto,
           size: 120,
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.gold50,
         ),
         const SizedBox(height: 8),
-        Text(
+        AppText(
           receiptData.truncatedId,
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey[600],
-            fontFamily: 'monospace',
-          ),
+          variant: AppTextVariant.monoSmall,
+          color: AppColors.gold700,
         ),
       ],
     );
@@ -245,46 +236,40 @@ class ReceiptWidget extends StatelessWidget {
   Widget _buildFooter() {
     return Column(
       children: [
-        Text(
+        const AppText(
           'Thank you for using',
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
+          variant: AppTextVariant.bodySmall,
+          color: AppColors.gold700,
         ),
         const SizedBox(height: 4),
-        const Text(
+        const AppText(
           'JoonaPay',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFD4AF37), // Gold color
-          ),
+          variant: AppTextVariant.titleMedium,
+          color: AppColors.gold500,
+          fontWeight: FontWeight.bold,
         ),
       ],
     );
   }
 
   Widget _buildRow(String label, String value, {bool isBold = false, double fontSize = 14}) {
+    final variant = fontSize >= 18 ? AppTextVariant.titleMedium : AppTextVariant.bodyMedium;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
+        AppText(
           label,
-          style: TextStyle(
-            fontSize: fontSize,
-            fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-            color: Colors.black87,
-          ),
+          variant: variant,
+          color: AppColors.textInverse,
+          fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
         ),
         Flexible(
-          child: Text(
+          child: AppText(
             value,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-              color: Colors.black,
-            ),
+            variant: variant,
+            color: AppColors.textInverse,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
             textAlign: TextAlign.right,
           ),
         ),
@@ -295,13 +280,13 @@ class ReceiptWidget extends StatelessWidget {
   Color _getStatusColor() {
     switch (receiptData.status) {
       case TransactionStatus.completed:
-        return const Color(0xFF10B981); // Green
+        return AppColors.successBase;
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        return const Color(0xFFF59E0B); // Orange
+        return AppColors.warningBase;
       case TransactionStatus.failed:
       case TransactionStatus.cancelled:
-        return const Color(0xFFEF4444); // Red
+        return AppColors.errorBase;
     }
   }
 

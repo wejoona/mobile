@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../services/bill_payments/bill_payments_service.dart';
+import '../providers/bill_payments_provider.dart';
+import '../widgets/category_selector.dart';
+import '../widgets/provider_card.dart';
+
+/// Main Bill Payments Screen
+/// Shows categories and providers for bill payments
+class BillPaymentsView extends ConsumerStatefulWidget {
+  const BillPaymentsView({super.key});
+
+  @override
+  ConsumerState<BillPaymentsView> createState() => _BillPaymentsViewState();
+}
+
+class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedCategory = ref.watch(selectedBillCategoryProvider);
+    final providersAsync = ref.watch(
+      billProvidersProvider(BillProvidersParams(
+        category: selectedCategory?.value,
+      )),
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: AppText(
+          l10n.billPayments_title,
+          variant: AppTextVariant.titleLarge,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => context.push('/bill-payments/history'),
+            tooltip: l10n.billPayments_history,
+          ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: _buildSearchBar(l10n),
+          ),
+
+          // Categories
+          providersAsync.when(
+            data: (data) {
+              final categories = data.availableCategories.map((cat) {
+                final count = data.providers
+                    .where((p) => p.category == cat)
+                    .length;
+                return CategoryInfo(
+                  category: cat,
+                  displayName: cat.displayName,
+                  description: '',
+                  icon: cat.icon,
+                  providerCount: count,
+                );
+              }).toList();
+
+              return CategorySelector(
+                categories: categories,
+                selectedCategory: selectedCategory,
+                onCategorySelected: (category) {
+                  ref.read(selectedBillCategoryProvider.notifier).select(category);
+                },
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+
+          const SizedBox(height: AppSpacing.lg),
+
+          // Section Title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            child: AppText(
+              selectedCategory != null
+                  ? '${selectedCategory.displayName} ${l10n.billPayments_providers}'
+                  : l10n.billPayments_allProviders,
+              variant: AppTextVariant.titleSmall,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // Providers List
+          Expanded(
+            child: providersAsync.when(
+              data: (data) {
+                var providers = data.providers;
+
+                // Filter by search
+                if (_searchQuery.isNotEmpty) {
+                  providers = providers
+                      .where((p) =>
+                          p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                          p.shortName.toLowerCase().contains(_searchQuery.toLowerCase()))
+                      .toList();
+                }
+
+                if (providers.isEmpty) {
+                  return _buildEmptyState(l10n);
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenPadding,
+                  ),
+                  itemCount: providers.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                  itemBuilder: (context, index) {
+                    final provider = providers[index];
+                    return ProviderCard(
+                      provider: provider,
+                      onTap: () => _onProviderSelected(provider),
+                    );
+                  },
+                );
+              },
+              loading: () => Center(
+                child: CircularProgressIndicator(color: AppColors.gold500),
+              ),
+              error: (error, _) => _buildErrorState(l10n, error.toString()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(AppLocalizations l10n) {
+    return AppInput(
+      controller: _searchController,
+      variant: AppInputVariant.search,
+      hint: l10n.billPayments_searchProviders,
+      prefixIcon: Icons.search,
+      suffixIcon: _searchQuery.isNotEmpty ? Icons.clear : null,
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value;
+        });
+      },
+    );
+  }
+
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: AppColors.slate,
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: Icon(
+              Icons.search_off,
+              size: 48,
+              color: AppColors.textTertiary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppText(
+            l10n.billPayments_noProvidersFound,
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+            child: AppText(
+              _searchQuery.isNotEmpty
+                  ? l10n.billPayments_tryAdjustingSearch
+                  : 'No providers available for this category',
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(AppLocalizations l10n, String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            decoration: BoxDecoration(
+              color: AppColors.errorBase.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: const Icon(
+              Icons.error_outline,
+              size: 48,
+              color: AppColors.errorText,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppText(
+            'Failed to Load Providers',
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+            child: AppText(
+              error,
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            label: l10n.action_retry,
+            onPressed: () {
+              ref.invalidate(billProvidersProvider);
+            },
+            icon: Icons.refresh,
+            variant: AppButtonVariant.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onProviderSelected(BillProvider provider) {
+    ref.read(selectedBillProviderProvider.notifier).select(provider);
+    context.push('/bill-payments/pay/${provider.id}');
+  }
+}

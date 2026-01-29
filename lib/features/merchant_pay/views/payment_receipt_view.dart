@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../features/receipts/widgets/receipt_widget.dart';
+import '../../../features/receipts/models/receipt_data.dart';
+import '../../../domain/enums/index.dart';
 import '../services/merchant_service.dart';
 
 /// Payment Receipt View
@@ -62,38 +66,27 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
     super.dispose();
   }
 
-  void _shareReceipt() {
-    final receipt = widget.payment.receipt;
-    final text = '''
-JoonaPay Payment Receipt
-
-Paid to: ${receipt.merchantName}
-Amount: \$${receipt.amount.toStringAsFixed(2)} USDC
-Date: ${DateFormat('MMM dd, yyyy HH:mm').format(receipt.timestamp)}
-Reference: ${receipt.reference}
-
-Thank you for using JoonaPay!
-''';
-    Share.share(text);
-  }
-
-  void _copyReference() {
-    Clipboard.setData(ClipboardData(text: widget.payment.reference));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Reference copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final receipt = widget.payment.receipt;
 
+    // Convert to ReceiptData for the ReceiptWidget
+    final receiptData = ReceiptData(
+      id: widget.payment.paymentId,
+      referenceNumber: receipt.reference,
+      amount: receipt.amount,
+      fee: receipt.fee,
+      currency: 'USDC',
+      date: receipt.timestamp,
+      status: TransactionStatus.completed,
+      type: TransactionType.merchantPayment,
+      recipientName: receipt.merchantName,
+      description: receipt.merchantCategory,
+    );
+
     return Scaffold(
-      backgroundColor: theme.primaryColor,
+      backgroundColor: AppColors.success,
       body: SafeArea(
         child: Column(
           children: [
@@ -114,11 +107,11 @@ Thank you for using JoonaPay!
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.white,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: AppColors.black.withValues(alpha: 0.1),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -126,27 +119,21 @@ Thank you for using JoonaPay!
                             ),
                             child: Icon(
                               Icons.check,
-                              color: theme.primaryColor,
+                              color: AppColors.success,
                               size: 56,
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          const Text(
+                          SizedBox(height: AppSpacing.lg),
+                          AppText(
                             'Payment Successful!',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            variant: AppTextVariant.headlineMedium,
+                            color: AppColors.white,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
+                          SizedBox(height: AppSpacing.xs),
+                          AppText(
                             '\$${receipt.amount.toStringAsFixed(2)} USDC',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 40,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            variant: AppTextVariant.displaySmall,
+                            color: AppColors.white,
                           ),
                         ],
                       ),
@@ -163,10 +150,12 @@ Thank you for using JoonaPay!
                 opacity: _fadeAnimation,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(AppRadius.xxl),
+                    ),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -176,98 +165,54 @@ Thank you for using JoonaPay!
                         Center(
                           child: Column(
                             children: [
-                              Text(
+                              AppText(
                                 receipt.merchantName,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                variant: AppTextVariant.titleLarge,
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
+                              SizedBox(height: AppSpacing.xs),
+                              AppText(
                                 _formatCategory(receipt.merchantCategory),
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 14,
-                                ),
+                                variant: AppTextVariant.bodyMedium,
+                                color: AppColors.silver,
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: AppSpacing.lg),
 
                         // Divider
-                        Container(
-                          height: 1,
-                          color: Colors.grey.shade200,
-                        ),
-                        const SizedBox(height: 24),
+                        Divider(color: AppColors.charcoal.withValues(alpha: 0.2)),
+                        SizedBox(height: AppSpacing.lg),
 
-                        // Receipt details
-                        _buildReceiptRow('Amount', '\$${receipt.amount.toStringAsFixed(2)}'),
-                        if (receipt.fee > 0) ...[
-                          const SizedBox(height: 12),
-                          _buildReceiptRow('Fee', '\$${receipt.fee.toStringAsFixed(2)}'),
-                        ],
-                        const SizedBox(height: 12),
-                        _buildReceiptRow(
-                          'Total',
-                          '\$${receipt.total.toStringAsFixed(2)}',
-                          isBold: true,
+                        // Use ReceiptWidget for consistent receipt display
+                        ReceiptWidget(
+                          receiptData: receiptData,
+                          showQrCode: false,
                         ),
-                        const SizedBox(height: 12),
-                        _buildReceiptRow(
-                          'Date',
-                          DateFormat('MMM dd, yyyy HH:mm').format(receipt.timestamp),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildReceiptRow(
-                          'Reference',
-                          receipt.reference,
-                          canCopy: true,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildReceiptRow('Status', 'Completed'),
 
-                        const SizedBox(height: 32),
+                        SizedBox(height: AppSpacing.xl),
 
                         // Action buttons
                         Row(
                           children: [
                             Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _shareReceipt,
-                                icon: const Icon(Icons.share),
-                                label: const Text('Share'),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
+                              child: AppButton(
+                                label: l10n.action_share,
+                                onPressed: () {
+                                  // Share functionality
+                                },
+                                variant: AppButtonVariant.secondary,
+                                icon: Icons.share,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            SizedBox(width: AppSpacing.md),
                             Expanded(
                               flex: 2,
-                              child: ElevatedButton(
+                              child: AppButton(
+                                label: l10n.action_done,
                                 onPressed: () => context.go('/home'),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  backgroundColor: theme.primaryColor,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text(
-                                  'Done',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                variant: AppButtonVariant.primary,
                               ),
                             ),
                           ],
@@ -281,49 +226,6 @@ Thank you for using JoonaPay!
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildReceiptRow(
-    String label,
-    String value, {
-    bool isBold = false,
-    bool canCopy = false,
-  }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 14,
-          ),
-        ),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: isBold ? 16 : 14,
-                fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
-            if (canCopy) ...[
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: _copyReference,
-                child: Icon(
-                  Icons.copy,
-                  size: 16,
-                  color: Colors.grey.shade400,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ],
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -12,6 +13,7 @@ class ReferralsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final phone = authState.user?.phone ?? '';
     // Generate a simple referral code from phone
@@ -27,13 +29,13 @@ class ReferralsView extends ConsumerWidget {
             children: [
               // Header
               AppText(
-                'Refer & Earn',
+                l10n.referrals_title,
                 variant: AppTextVariant.headlineMedium,
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
-                'Invite friends and earn rewards together',
+                l10n.referrals_subtitle,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),
@@ -65,13 +67,13 @@ class ReferralsView extends ConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     AppText(
-                      'Earn \$5',
+                      l10n.referrals_earnAmount,
                       variant: AppTextVariant.displaySmall,
                       color: colors.gold,
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     AppText(
-                      'for each friend who signs up and makes their first deposit',
+                      l10n.referrals_earnDescription,
                       variant: AppTextVariant.bodyMedium,
                       color: colors.textSecondary,
                       textAlign: TextAlign.center,
@@ -89,7 +91,7 @@ class ReferralsView extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Your Referral Code',
+                      l10n.referrals_yourCode,
                       variant: AppTextVariant.labelMedium,
                       color: colors.textSecondary,
                     ),
@@ -144,8 +146,8 @@ class ReferralsView extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: AppButton(
-                      label: 'Share Link',
-                      onPressed: () => _shareLink(referralCode),
+                      label: l10n.referrals_shareLink,
+                      onPressed: () => _shareLink(context, referralCode, l10n),
                       variant: AppButtonVariant.primary,
                       icon: Icons.share,
                     ),
@@ -153,8 +155,8 @@ class ReferralsView extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: AppButton(
-                      label: 'Invite',
-                      onPressed: () => _inviteContacts(context),
+                      label: l10n.referrals_invite,
+                      onPressed: () => _inviteContacts(context, l10n),
                       variant: AppButtonVariant.secondary,
                       icon: Icons.people,
                     ),
@@ -166,7 +168,7 @@ class ReferralsView extends ConsumerWidget {
 
               // Stats
               AppText(
-                'Your Rewards',
+                l10n.referrals_yourRewards,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
               ),
@@ -179,7 +181,7 @@ class ReferralsView extends ConsumerWidget {
                       colors: colors,
                       icon: Icons.people_outline,
                       value: '0',
-                      label: 'Friends Invited',
+                      label: l10n.referrals_friendsInvited,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -188,7 +190,7 @@ class ReferralsView extends ConsumerWidget {
                       colors: colors,
                       icon: Icons.attach_money,
                       value: '\$0.00',
-                      label: 'Total Earned',
+                      label: l10n.referrals_totalEarned,
                     ),
                   ),
                 ],
@@ -198,7 +200,7 @@ class ReferralsView extends ConsumerWidget {
 
               // How it works
               AppText(
-                'How it works',
+                l10n.referrals_howItWorks,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
               ),
@@ -207,26 +209,26 @@ class ReferralsView extends ConsumerWidget {
               _HowItWorksStep(
                 colors: colors,
                 number: '1',
-                title: 'Share your code',
-                description: 'Send your referral code or link to friends',
+                title: l10n.referrals_step1Title,
+                description: l10n.referrals_step1Description,
               ),
               _HowItWorksStep(
                 colors: colors,
                 number: '2',
-                title: 'Friend signs up',
-                description: 'They create an account using your code',
+                title: l10n.referrals_step2Title,
+                description: l10n.referrals_step2Description,
               ),
               _HowItWorksStep(
                 colors: colors,
                 number: '3',
-                title: 'First deposit',
-                description: 'They make their first deposit of \$10 or more',
+                title: l10n.referrals_step3Title,
+                description: l10n.referrals_step3Description,
               ),
               _HowItWorksStep(
                 colors: colors,
                 number: '4',
-                title: 'You both earn!',
-                description: 'You get \$5, and your friend gets \$5 too',
+                title: l10n.referrals_step4Title,
+                description: l10n.referrals_step4Description,
                 isLast: true,
               ),
 
@@ -234,7 +236,7 @@ class ReferralsView extends ConsumerWidget {
 
               // Referral History
               AppText(
-                'Referral History',
+                l10n.referrals_history,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
               ),
@@ -252,13 +254,13 @@ class ReferralsView extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       AppText(
-                        'No referrals yet',
+                        l10n.referrals_noReferrals,
                         variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       AppText(
-                        'Start inviting friends to see your rewards here',
+                        l10n.referrals_startInviting,
                         variant: AppTextVariant.bodySmall,
                         color: colors.textTertiary,
                         textAlign: TextAlign.center,
@@ -286,28 +288,29 @@ class ReferralsView extends ConsumerWidget {
 
   void _copyCode(BuildContext context, String code) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Referral code copied!'),
+        content: Text(l10n.referrals_codeCopied),
         backgroundColor: colors.success,
       ),
     );
   }
 
-  void _shareLink(String code) {
+  void _shareLink(BuildContext context, String code, AppLocalizations l10n) {
     Share.share(
-      'Join JoonaPay and get \$5 bonus on your first deposit! Use my referral code: $code\n\nDownload now: https://joonapay.com/download',
-      subject: 'Join JoonaPay - Get \$5 bonus!',
+      l10n.referrals_shareMessage(code),
+      subject: l10n.referrals_shareSubject,
     );
   }
 
-  void _inviteContacts(BuildContext context) {
+  void _inviteContacts(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
-    // TODO: Open contacts picker
+    // TODO: Open contacts picker (WhatsApp/SMS)
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Contact invite coming soon'),
+        content: Text(l10n.referrals_inviteComingSoon),
         backgroundColor: colors.gold,
       ),
     );

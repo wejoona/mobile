@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -37,15 +38,15 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'CNY': 7.24,
   };
 
-  final Map<String, String> _currencyNames = {
-    'USD': 'US Dollar',
-    'USDC': 'USD Coin',
-    'EUR': 'Euro',
-    'GBP': 'British Pound',
-    'NGN': 'Nigerian Naira',
-    'KES': 'Kenyan Shilling',
-    'ZAR': 'South African Rand',
-    'GHS': 'Ghanaian Cedi',
+  Map<String, String> _getCurrencyNames(AppLocalizations l10n) => {
+    'USD': l10n.currency_usd,
+    'USDC': l10n.currency_usdc,
+    'EUR': l10n.currency_eur,
+    'GBP': l10n.currency_gbp,
+    'NGN': l10n.currency_ngn,
+    'KES': l10n.currency_kes,
+    'ZAR': l10n.currency_zar,
+    'GHS': l10n.currency_ghs,
     'INR': 'Indian Rupee',
     'BRL': 'Brazilian Real',
     'MXN': 'Mexican Peso',
@@ -96,13 +97,15 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final currencyNames = _getCurrencyNames(l10n);
 
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Currency Converter',
+        title: AppText(
+          l10n.converter_title,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -112,7 +115,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _refreshRates,
+            onPressed: () => _refreshRates(context, l10n),
           ),
         ],
       ),
@@ -123,7 +126,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           children: [
             // From Currency
             _buildCurrencyInput(
-              label: 'From',
+              label: l10n.converter_from,
               controller: _fromController,
               currency: _fromCurrency,
               onCurrencyChanged: (currency) {
@@ -131,6 +134,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               },
               isEditable: true,
               colors: colors,
+              currencyNames: currencyNames,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -166,7 +170,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
 
             // To Currency
             _buildCurrencyInput(
-              label: 'To',
+              label: l10n.converter_to,
               amount: _convertedAmount,
               currency: _toCurrency,
               onCurrencyChanged: (currency) {
@@ -174,18 +178,19 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               },
               isEditable: false,
               colors: colors,
+              currencyNames: currencyNames,
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Exchange Rate Info
-            _buildExchangeRateCard(colors),
+            _buildExchangeRateCard(colors, l10n),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Quick Amount Buttons
             AppText(
-              'Quick Amounts',
+              l10n.converter_quickAmounts,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -206,12 +211,12 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
 
             // Popular Currencies
             AppText(
-              'Popular Currencies',
+              l10n.converter_popularCurrencies,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildPopularCurrencies(colors),
+            _buildPopularCurrencies(colors, currencyNames, l10n),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -226,7 +231,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                       const Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
-                        'Rate Information',
+                        l10n.converter_rateInfo,
                         variant: AppTextVariant.labelMedium,
                         color: colors.textPrimary,
                       ),
@@ -234,7 +239,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   AppText(
-                    'Exchange rates are for informational purposes only and may differ from actual transaction rates. Rates are updated every hour.',
+                    l10n.converter_rateDisclaimer,
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -255,6 +260,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     required ValueChanged<String> onCurrencyChanged,
     required bool isEditable,
     required ThemeColors colors,
+    required Map<String, String> currencyNames,
   }) {
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -295,7 +301,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               ),
               const SizedBox(width: AppSpacing.md),
               GestureDetector(
-                onTap: () => _showCurrencyPicker(currency, onCurrencyChanged, colors),
+                onTap: () => _showCurrencyPicker(currency, onCurrencyChanged, colors, currencyNames),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
@@ -329,7 +335,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            '${_currencySymbols[currency] ?? ''}${_currencyNames[currency] ?? currency}',
+            '${_currencySymbols[currency] ?? ''}${currencyNames[currency] ?? currency}',
             variant: AppTextVariant.bodySmall,
             color: colors.textTertiary,
           ),
@@ -375,7 +381,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  Widget _buildExchangeRateCard(ThemeColors colors) {
+  Widget _buildExchangeRateCard(ThemeColors colors, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -396,7 +402,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AppText(
-                '1 $_fromCurrency = ${_formatAmount(_exchangeRate)} $_toCurrency',
+                l10n.converter_exchangeRate(_fromCurrency, _formatAmount(_exchangeRate), _toCurrency),
                 variant: AppTextVariant.titleMedium,
                 color: colors.gold,
               ),
@@ -404,7 +410,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            'Updated just now',
+            l10n.converter_updatedJustNow,
             variant: AppTextVariant.bodySmall,
             color: colors.textSecondary,
           ),
@@ -440,7 +446,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  Widget _buildPopularCurrencies(ThemeColors colors) {
+  Widget _buildPopularCurrencies(ThemeColors colors, Map<String, String> currencyNames, AppLocalizations l10n) {
     final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'KES'];
 
     return Column(
@@ -469,7 +475,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                         color: colors.textPrimary,
                       ),
                       AppText(
-                        _currencyNames[currency] ?? currency,
+                        currencyNames[currency] ?? currency,
                         variant: AppTextVariant.bodySmall,
                         color: colors.textSecondary,
                       ),
@@ -485,7 +491,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                       color: colors.textPrimary,
                     ),
                     AppText(
-                      'per USDC',
+                      l10n.converter_perUsdc,
                       variant: AppTextVariant.bodySmall,
                       color: colors.textTertiary,
                     ),
@@ -499,7 +505,8 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  void _showCurrencyPicker(String currentCurrency, ValueChanged<String> onChanged, ThemeColors colors) {
+  void _showCurrencyPicker(String currentCurrency, ValueChanged<String> onChanged, ThemeColors colors, Map<String, String> currencyNames) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       backgroundColor: colors.container,
@@ -518,8 +525,8 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
                 children: [
-                  const AppText(
-                    'Select Currency',
+                  AppText(
+                    l10n.converter_selectCurrency,
                     variant: AppTextVariant.titleMedium,
                   ),
                   const Spacer(),
@@ -547,7 +554,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                       color: isSelected ? colors.gold : colors.textPrimary,
                     ),
                     subtitle: AppText(
-                      _currencyNames[currency] ?? currency,
+                      currencyNames[currency] ?? currency,
                       variant: AppTextVariant.bodySmall,
                       color: colors.textSecondary,
                     ),
@@ -576,7 +583,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     });
   }
 
-  Future<void> _refreshRates() async {
+  Future<void> _refreshRates(BuildContext context, AppLocalizations l10n) async {
     setState(() => _isLoading = true);
 
     // Simulate API call
@@ -586,8 +593,8 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Exchange rates updated'),
+        SnackBar(
+          content: Text(l10n.converter_ratesUpdated),
           backgroundColor: AppColors.successBase,
         ),
       );

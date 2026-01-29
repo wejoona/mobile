@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../models/index.dart';
@@ -27,14 +28,15 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final alertAsync = ref.watch(alertDetailProvider(widget.alertId));
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Alert Details',
           variant: AppTextVariant.titleLarge,
         ),
@@ -51,7 +53,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline,
                 color: AppColors.errorBase,
                 size: 48,
@@ -63,9 +65,10 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.lg),
-              ElevatedButton(
+              AppButton(
+                label: l10n.action_retry,
                 onPressed: () => ref.invalidate(alertDetailProvider(widget.alertId)),
-                child: const Text('Retry'),
+                size: AppButtonSize.small,
               ),
             ],
           ),
@@ -80,13 +83,13 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
               ),
             );
           }
-          return _buildContent(alert, colors);
+          return _buildContent(alert, colors, l10n);
         },
       ),
     );
   }
 
-  Widget _buildContent(TransactionAlert alert, ThemeColors colors) {
+  Widget _buildContent(TransactionAlert alert, ThemeColors colors, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -185,7 +188,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                           color: AppColors.errorBase,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
-                        child: const AppText(
+                        child: AppText(
                           'ACTION REQUIRED',
                           variant: AppTextVariant.labelSmall,
                           color: Colors.white,
@@ -218,9 +221,9 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,9 +248,9 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,9 +276,9 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,7 +403,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                         ? AppColors.errorBase
                         : isPrimary
                             ? colors.gold
-                            : colors.borderSubtle,
+                            : AppColors.borderSubtle,
                   ),
                   padding: const EdgeInsets.all(AppSpacing.md),
                 ),
@@ -463,11 +466,12 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
   }
 
   Future<bool> _showConfirmationDialog(AlertAction action) async {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: colors.elevated,
+        backgroundColor: AppColors.slate,
         title: AppText(
           'Confirm ${action.displayName}',
           variant: AppTextVariant.titleMedium,
@@ -481,16 +485,12 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: AppText(l10n.action_cancel, color: colors.textSecondary),
           ),
-          ElevatedButton(
+          AppButton(
+            label: l10n.action_confirm,
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: action == AlertAction.freezeAccount
-                  ? AppColors.errorBase
-                  : colors.gold,
-            ),
-            child: const Text('Confirm'),
+            size: AppButtonSize.small,
           ),
         ],
       ),

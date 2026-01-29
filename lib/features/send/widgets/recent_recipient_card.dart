@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/formatters.dart';
 import '../models/transfer_request.dart';
 
@@ -64,7 +65,7 @@ class RecentRecipientCard extends StatelessWidget {
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                _formatDate(recipient.lastTransferDate),
+                _formatDate(context, recipient.lastTransferDate),
                 variant: AppTextVariant.bodySmall,
                 color: AppColors.textSecondary,
               ),
@@ -75,16 +76,17 @@ class RecentRecipientCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return l10n.common_today;
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return l10n.transactions_yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
+      return l10n.contacts_synced_days_ago(difference.inDays);
     } else {
       return Formatters.formatDate(date);
     }

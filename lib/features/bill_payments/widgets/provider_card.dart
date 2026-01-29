@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/bill_payments/bill_payments_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Bill Provider Card Widget
 class ProviderCard extends StatelessWidget {
@@ -69,7 +70,7 @@ class ProviderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   AppText(
-                    _formatFee(),
+                    _formatFee(context),
                     variant: AppTextVariant.labelSmall,
                     color: colors.textSecondary,
                   ),
@@ -89,14 +90,15 @@ class ProviderCard extends StatelessWidget {
     );
   }
 
-  String _formatFee() {
+  String _formatFee(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (provider.processingFee == 0) {
-      return 'No fee';
+      return l10n.billPayments_feeNone;
     }
     if (provider.processingFeeType == 'percentage') {
-      return '${provider.processingFee}% fee';
+      return l10n.billPayments_feePercentage(provider.processingFee.toString());
     }
-    return '${provider.processingFee.toInt()} ${provider.currency} fee';
+    return l10n.billPayments_feeFixed(provider.processingFee.toInt(), provider.currency);
   }
 }
 
@@ -233,21 +235,21 @@ class _CategoryBadge extends StatelessWidget {
   Color _getCategoryColor() {
     switch (category) {
       case BillCategory.electricity:
-        return Colors.amber;
+        return AppColors.warningText;
       case BillCategory.water:
-        return Colors.blue;
+        return AppColors.infoText;
       case BillCategory.internet:
-        return Colors.purple;
+        return AppColors.gold400;
       case BillCategory.tv:
-        return Colors.red;
+        return AppColors.errorText;
       case BillCategory.phoneCredit:
-        return Colors.green;
+        return AppColors.successText;
       case BillCategory.insurance:
-        return Colors.teal;
+        return AppColors.infoLight;
       case BillCategory.education:
-        return Colors.indigo;
+        return AppColors.infoBase;
       case BillCategory.government:
-        return Colors.grey;
+        return AppColors.textTertiary;
     }
   }
 }
@@ -345,7 +347,7 @@ class _StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
-        _getStatusText(),
+        _getStatusText(context),
         variant: AppTextVariant.labelSmall,
         color: _getStatusColor(),
       ),
@@ -367,18 +369,19 @@ class _StatusBadge extends StatelessWidget {
     }
   }
 
-  String _getStatusText() {
+  String _getStatusText(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case 'completed':
-        return 'Completed';
+        return l10n.billPayments_statusCompleted;
       case 'pending':
-        return 'Pending';
+        return l10n.billPayments_statusPending;
       case 'processing':
-        return 'Processing';
+        return l10n.billPayments_statusProcessing;
       case 'failed':
-        return 'Failed';
+        return l10n.billPayments_statusFailed;
       case 'refunded':
-        return 'Refunded';
+        return l10n.billPayments_statusRefunded;
       default:
         return status;
     }

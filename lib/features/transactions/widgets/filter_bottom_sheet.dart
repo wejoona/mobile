@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/index.dart';
@@ -80,6 +81,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     return Container(
       constraints: BoxConstraints(
@@ -109,14 +111,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const AppText(
-                  'Filter Transactions',
+                AppText(
+                  l10n.filters_title,
                   variant: AppTextVariant.titleLarge,
                 ),
                 TextButton(
                   onPressed: _resetFilters,
                   child: Text(
-                    'Reset',
+                    l10n.filters_reset,
                     style: TextStyle(color: colors.gold),
                   ),
                 ),
@@ -134,35 +136,35 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Transaction Type
-                  _buildSectionTitle('Transaction Type', colors),
+                  _buildSectionTitle(l10n.filters_transactionType, colors),
                   const SizedBox(height: AppSpacing.sm),
                   _buildTypeChips(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Status
-                  _buildSectionTitle('Status', colors),
+                  _buildSectionTitle(l10n.filters_status, colors),
                   const SizedBox(height: AppSpacing.sm),
                   _buildStatusChips(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Date Range
-                  _buildSectionTitle('Date Range', colors),
+                  _buildSectionTitle(l10n.filters_dateRange, colors),
                   const SizedBox(height: AppSpacing.sm),
                   _buildDateRangeChips(colors),
                   if (_selectedDateRange == DateRangeOption.custom) ...[
                     const SizedBox(height: AppSpacing.md),
-                    _buildCustomDatePickers(),
+                    _buildCustomDatePickers(l10n),
                   ],
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Amount Range
-                  _buildSectionTitle('Amount Range', colors),
+                  _buildSectionTitle(l10n.filters_amountRange, colors),
                   const SizedBox(height: AppSpacing.sm),
                   _buildAmountRangeSlider(colors),
                   const SizedBox(height: AppSpacing.xxl),
 
                   // Sort Options
-                  _buildSectionTitle('Sort By', colors),
+                  _buildSectionTitle(l10n.filters_sortBy, colors),
                   const SizedBox(height: AppSpacing.sm),
                   _buildSortOptions(colors),
                   const SizedBox(height: AppSpacing.xxxl),
@@ -341,14 +343,14 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
     );
   }
 
-  Widget _buildCustomDatePickers() {
+  Widget _buildCustomDatePickers(AppLocalizations l10n) {
     final dateFormat = DateFormat('MMM d, yyyy');
 
     return Row(
       children: [
         Expanded(
           child: _DatePickerButton(
-            label: 'From',
+            label: l10n.filters_from,
             date: _customStartDate,
             dateFormat: dateFormat,
             onTap: () => _selectDate(isStart: true),
@@ -357,7 +359,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: _DatePickerButton(
-            label: 'To',
+            label: l10n.filters_to,
             date: _customEndDate,
             dateFormat: dateFormat,
             onTap: () => _selectDate(isStart: false),
@@ -412,6 +414,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   }
 
   Widget _buildAmountRangeSlider(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
     final hasRange = _amountRange.start > _minAmount ||
         _amountRange.end < _maxAmount;
 
@@ -433,7 +436,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                   });
                 },
                 child: Text(
-                  'Clear',
+                  l10n.filters_clear,
                   style: TextStyle(color: colors.gold, fontSize: 12),
                 ),
               ),

@@ -302,12 +302,11 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
           color: AppColors.textSecondary,
         ),
         actions: [
-          TextButton(
+          AppButton(
+            label: l10n.action_cancel,
             onPressed: () => Navigator.pop(context, false),
-            child: AppText(
-              l10n.action_cancel,
-              color: AppColors.textSecondary,
-            ),
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
           ),
           AppButton(
             label: l10n.sessions_revoke,
@@ -380,12 +379,11 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
           ],
         ),
         actions: [
-          TextButton(
+          AppButton(
+            label: l10n.action_cancel,
             onPressed: () => Navigator.pop(context, false),
-            child: AppText(
-              l10n.action_cancel,
-              color: AppColors.textSecondary,
-            ),
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
           ),
           AppButton(
             label: l10n.sessions_logoutAll,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -14,6 +15,7 @@ class ServicesView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final flags = ref.watch(featureFlagsProvider);
 
     return Scaffold(
@@ -22,7 +24,7 @@ class ServicesView extends ConsumerWidget {
         backgroundColor: colors.canvas,
         elevation: 0,
         title: AppText(
-          'Services',
+          l10n.services_title,
           variant: AppTextVariant.headlineSmall,
           color: colors.textPrimary,
         ),
@@ -38,33 +40,33 @@ class ServicesView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Core Services
-              _buildSectionHeader('Core Services', colors),
+              _buildSectionHeader(l10n.services_coreServices, colors),
               const SizedBox(height: AppSpacing.md),
-              _buildServicesGrid(context, _getCoreServices(flags), colors),
+              _buildServicesGrid(context, _getCoreServices(flags, l10n), colors),
 
               const SizedBox(height: AppSpacing.xxl),
 
               // Financial Services
-              if (_getFinancialServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Financial Services', colors),
+              if (_getFinancialServices(flags, l10n).isNotEmpty) ...[
+                _buildSectionHeader(l10n.services_financialServices, colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getFinancialServices(flags), colors),
+                _buildServicesGrid(context, _getFinancialServices(flags, l10n), colors),
                 const SizedBox(height: AppSpacing.xxl),
               ],
 
               // Bill Payments & Top-ups
-              if (_getBillServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Bills & Payments', colors),
+              if (_getBillServices(flags, l10n).isNotEmpty) ...[
+                _buildSectionHeader(l10n.services_billsPayments, colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getBillServices(flags), colors),
+                _buildServicesGrid(context, _getBillServices(flags, l10n), colors),
                 const SizedBox(height: AppSpacing.xxl),
               ],
 
               // Analytics & Tools
-              if (_getToolsServices(flags).isNotEmpty) ...[
-                _buildSectionHeader('Tools & Analytics', colors),
+              if (_getToolsServices(flags, l10n).isNotEmpty) ...[
+                _buildSectionHeader(l10n.services_toolsAnalytics, colors),
                 const SizedBox(height: AppSpacing.md),
-                _buildServicesGrid(context, _getToolsServices(flags), colors),
+                _buildServicesGrid(context, _getToolsServices(flags, l10n), colors),
               ],
             ],
           ),
@@ -105,14 +107,14 @@ class ServicesView extends ConsumerWidget {
     );
   }
 
-  List<ServiceItem> _getCoreServices(Map<String, bool> flags) {
+  List<ServiceItem> _getCoreServices(Map<String, bool> flags, AppLocalizations l10n) {
     final services = <ServiceItem>[];
 
     if (flags.canSend) {
       services.add(ServiceItem(
         icon: Icons.send,
-        title: 'Send Money',
-        description: 'Transfer to any wallet',
+        title: l10n.services_sendMoney,
+        description: l10n.services_sendMoneyDesc,
         route: '/send',
       ));
     }
@@ -120,8 +122,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canReceive) {
       services.add(ServiceItem(
         icon: Icons.call_received,
-        title: 'Receive Money',
-        description: 'Get your wallet address',
+        title: l10n.services_receiveMoney,
+        description: l10n.services_receiveMoneyDesc,
         route: '/receive',
       ));
     }
@@ -129,24 +131,24 @@ class ServicesView extends ConsumerWidget {
     if (flags.canRequestMoney) {
       services.add(ServiceItem(
         icon: Icons.qr_code,
-        title: 'Request Money',
-        description: 'Create payment request',
+        title: l10n.services_requestMoney,
+        description: l10n.services_requestMoneyDesc,
         route: '/request',
       ));
     }
 
     services.add(ServiceItem(
       icon: Icons.qr_code_scanner,
-      title: 'Scan QR',
-      description: 'Scan to pay or receive',
+      title: l10n.services_scanQr,
+      description: l10n.services_scanQrDesc,
       route: '/scan',
     ));
 
     if (flags.canUseSavedRecipients) {
       services.add(ServiceItem(
         icon: Icons.people_outline,
-        title: 'Recipients',
-        description: 'Manage saved contacts',
+        title: l10n.services_recipients,
+        description: l10n.services_recipientsDesc,
         route: '/recipients',
       ));
     }
@@ -154,8 +156,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canScheduleTransfers) {
       services.add(ServiceItem(
         icon: Icons.schedule,
-        title: 'Scheduled Transfers',
-        description: 'Manage recurring payments',
+        title: l10n.services_scheduledTransfers,
+        description: l10n.services_scheduledTransfersDesc,
         route: '/scheduled',
       ));
     }
@@ -163,14 +165,14 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getFinancialServices(Map<String, bool> flags) {
+  List<ServiceItem> _getFinancialServices(Map<String, bool> flags, AppLocalizations l10n) {
     final services = <ServiceItem>[];
 
     if (flags.canUseVirtualCards) {
       services.add(ServiceItem(
         icon: Icons.credit_card,
-        title: 'Virtual Card',
-        description: 'Online shopping card',
+        title: l10n.services_virtualCard,
+        description: l10n.services_virtualCardDesc,
         route: '/card',
       ));
     }
@@ -178,8 +180,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canSetSavingsGoals) {
       services.add(ServiceItem(
         icon: Icons.savings,
-        title: 'Savings Goals',
-        description: 'Track your savings',
+        title: l10n.services_savingsGoals,
+        description: l10n.services_savingsGoalsDesc,
         route: '/savings',
       ));
     }
@@ -187,8 +189,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canUseBudget) {
       services.add(ServiceItem(
         icon: Icons.pie_chart,
-        title: 'Budget',
-        description: 'Manage spending limits',
+        title: l10n.services_budget,
+        description: l10n.services_budgetDesc,
         route: '/budget',
       ));
     }
@@ -196,8 +198,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canUseCurrencyConverter) {
       services.add(ServiceItem(
         icon: Icons.currency_exchange,
-        title: 'Currency Converter',
-        description: 'Convert currencies',
+        title: l10n.services_currencyConverter,
+        description: l10n.services_currencyConverterDesc,
         route: '/converter',
       ));
     }
@@ -205,14 +207,14 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getBillServices(Map<String, bool> flags) {
+  List<ServiceItem> _getBillServices(Map<String, bool> flags, AppLocalizations l10n) {
     final services = <ServiceItem>[];
 
     if (flags.canPayBills) {
       services.add(ServiceItem(
         icon: Icons.receipt_long,
-        title: 'Bill Payments',
-        description: 'Pay utility bills',
+        title: l10n.services_billPayments,
+        description: l10n.services_billPaymentsDesc,
         route: '/bill-payments',
       ));
     }
@@ -220,8 +222,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canBuyAirtime) {
       services.add(ServiceItem(
         icon: Icons.phone_android,
-        title: 'Buy Airtime',
-        description: 'Mobile top-up',
+        title: l10n.services_buyAirtime,
+        description: l10n.services_buyAirtimeDesc,
         route: '/airtime',
       ));
     }
@@ -229,8 +231,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canSplitBills) {
       services.add(ServiceItem(
         icon: Icons.group,
-        title: 'Split Bills',
-        description: 'Share expenses',
+        title: l10n.services_splitBills,
+        description: l10n.services_splitBillsDesc,
         route: '/split',
       ));
     }
@@ -238,14 +240,14 @@ class ServicesView extends ConsumerWidget {
     return services;
   }
 
-  List<ServiceItem> _getToolsServices(Map<String, bool> flags) {
+  List<ServiceItem> _getToolsServices(Map<String, bool> flags, AppLocalizations l10n) {
     final services = <ServiceItem>[];
 
     if (flags.canViewAnalytics) {
       services.add(ServiceItem(
         icon: Icons.analytics_outlined,
-        title: 'Analytics',
-        description: 'View spending insights',
+        title: l10n.services_analytics,
+        description: l10n.services_analyticsDesc,
         route: '/analytics',
       ));
     }
@@ -253,8 +255,8 @@ class ServicesView extends ConsumerWidget {
     if (flags.canReferFriends) {
       services.add(ServiceItem(
         icon: Icons.card_giftcard,
-        title: 'Referrals',
-        description: 'Invite and earn',
+        title: l10n.services_referrals,
+        description: l10n.services_referralsDesc,
         route: '/referrals',
       ));
     }

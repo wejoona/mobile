@@ -1,0 +1,10 @@
+  "subBusiness_removeSuccess": "Staff member removed successfully",
+  "@subBusiness_removeSuccess": {
+    "description": "Remove success message"
+  },
+
+  "bulkPayments_title": "Bulk Payments",
+  "@bulkPayments_title": {
+    "description": "Bulk payments screen title"
+  }
+}

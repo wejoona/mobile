@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
@@ -26,17 +27,18 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          _getTitle(),
+          _getTitle(l10n),
           variant: AppTextVariant.titleLarge,
+          color: AppColors.textPrimary,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.gold),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () {
             if (_currentStep == PinStep.current) {
               context.pop();
@@ -48,7 +50,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             children: [
               const Spacer(),
@@ -57,13 +59,13 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               Container(
                 width: 80,
                 height: 80,
-                decoration: BoxDecoration(
-                  color: colors.container,
+                decoration: const BoxDecoration(
+                  color: AppColors.slate,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
-                  color: colors.gold,
+                  color: AppColors.gold500,
                   size: 40,
                 ),
               ),
@@ -72,9 +74,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
               // Title
               AppText(
-                _getStepTitle(),
+                _getStepTitle(l10n),
                 variant: AppTextVariant.titleMedium,
-                color: colors.textPrimary,
+                color: AppColors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -82,16 +84,16 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
               // Subtitle
               AppText(
-                _getStepSubtitle(),
+                _getStepSubtitle(l10n),
                 variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
+                color: AppColors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
               const SizedBox(height: AppSpacing.xxxl),
 
               // PIN Dots
-              _buildPinDots(colors),
+              _buildPinDots(),
 
               // Error
               if (_error != null)
@@ -122,36 +124,36 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     );
   }
 
-  String _getTitle() {
+  String _getTitle(AppLocalizations l10n) {
     switch (_currentStep) {
       case PinStep.current:
-        return 'Change PIN';
+        return l10n.changePin_title;
       case PinStep.newPin:
-        return 'New PIN';
+        return l10n.changePin_newPinTitle;
       case PinStep.confirm:
-        return 'Confirm PIN';
+        return l10n.changePin_confirmTitle;
     }
   }
 
-  String _getStepTitle() {
+  String _getStepTitle(AppLocalizations l10n) {
     switch (_currentStep) {
       case PinStep.current:
-        return 'Enter Current PIN';
+        return l10n.changePin_enterCurrentPinTitle;
       case PinStep.newPin:
-        return 'Create New PIN';
+        return l10n.changePin_createNewPinTitle;
       case PinStep.confirm:
-        return 'Confirm Your PIN';
+        return l10n.changePin_confirmPinTitle;
     }
   }
 
-  String _getStepSubtitle() {
+  String _getStepSubtitle(AppLocalizations l10n) {
     switch (_currentStep) {
       case PinStep.current:
-        return 'Enter your current 4-digit PIN to continue';
+        return l10n.changePin_enterCurrentPinSubtitle;
       case PinStep.newPin:
-        return 'Choose a new 4-digit PIN for your account';
+        return l10n.changePin_createNewPinSubtitle;
       case PinStep.confirm:
-        return 'Re-enter your new PIN to confirm';
+        return l10n.changePin_confirmPinSubtitle;
     }
   }
 
@@ -166,7 +168,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
-  Widget _buildPinDots(ThemeColors colors) {
+  Widget _buildPinDots() {
     final pin = _currentEnteredPin;
 
     return Row(
@@ -181,13 +183,13 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isFilled
-                ? (hasError ? AppColors.errorBase : colors.gold)
+                ? (hasError ? AppColors.errorBase : AppColors.gold500)
                 : Colors.transparent,
             shape: BoxShape.circle,
             border: Border.all(
               color: hasError
                   ? AppColors.errorBase
-                  : (isFilled ? colors.gold : colors.borderSubtle),
+                  : (isFilled ? AppColors.gold500 : AppColors.textSecondary),
               width: 2,
             ),
           ),
@@ -259,6 +261,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   Future<void> _validateCurrentPin() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -268,7 +271,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
       if (!biometricConfirmed) {
         setState(() {
-          _error = 'Biometric confirmation required';
+          _error = l10n.changePin_errorBiometricRequired;
           _currentPin = '';
           _isLoading = false;
         });
@@ -286,7 +289,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
         });
       } else {
         setState(() {
-          _error = result.message ?? 'Incorrect PIN. Please try again.';
+          _error = result.message ?? l10n.changePin_errorIncorrectPin;
           _currentPin = '';
           _isLoading = false;
         });
@@ -299,7 +302,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       });
     } catch (e) {
       setState(() {
-        _error = 'Unable to verify PIN. Please try again.';
+        _error = l10n.changePin_errorUnableToVerify;
         _currentPin = '';
         _isLoading = false;
       });
@@ -307,10 +310,11 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   void _validateNewPin() {
+    final l10n = AppLocalizations.of(context)!;
     // Check for weak PINs
     if (_isWeakPin(_newPin)) {
       setState(() {
-        _error = 'PIN is too simple. Choose a stronger PIN.';
+        _error = l10n.changePin_errorWeakPin;
         _newPin = '';
       });
       return;
@@ -319,7 +323,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     // Check not same as current
     if (_newPin == _currentPin) {
       setState(() {
-        _error = 'New PIN must be different from current PIN.';
+        _error = l10n.changePin_errorSameAsCurrentPin;
         _newPin = '';
       });
       return;
@@ -331,11 +335,12 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   void _validateConfirmPin() {
+    final l10n = AppLocalizations.of(context)!;
     if (_confirmPin == _newPin) {
       _saveNewPin();
     } else {
       setState(() {
-        _error = 'PINs do not match. Try again.';
+        _error = l10n.changePin_errorPinMismatch;
         _confirmPin = '';
       });
     }
@@ -359,6 +364,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   Future<void> _saveNewPin() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -370,15 +376,15 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('PIN changed successfully!'),
+            SnackBar(
+              content: Text(l10n.changePin_successMessage),
               backgroundColor: AppColors.successBase,
             ),
           );
           context.pop();
         } else {
           setState(() {
-            _error = 'Failed to set new PIN. Please try a different PIN.';
+            _error = l10n.changePin_errorFailedToSet;
             _confirmPin = '';
             _newPin = '';
             _currentStep = PinStep.newPin;
@@ -388,7 +394,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _error = 'Failed to save PIN. Please try again.';
+        _error = l10n.changePin_errorFailedToSave;
       });
     }
   }

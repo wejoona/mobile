@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../models/index.dart';
@@ -29,14 +30,15 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(alertPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Alert Preferences',
           variant: AppTextVariant.titleLarge,
         ),
@@ -46,9 +48,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         ),
         actions: [
           TextButton(
-            onPressed: state.isSaving
-                ? null
-                : () => _resetToDefault(),
+            onPressed: state.isSaving ? null : () => _resetToDefault(l10n, colors),
             child: AppText(
               'Reset',
               variant: AppTextVariant.labelMedium,
@@ -71,7 +71,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                 )
               : Stack(
                   children: [
-                    _buildContent(state.preferences!, colors),
+                    _buildContent(state.preferences!, colors, l10n),
                     if (state.isSaving)
                       Container(
                         color: Colors.black.withValues(alpha: 0.3),
@@ -84,7 +84,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Widget _buildContent(AlertPreferences prefs, ThemeColors colors) {
+  Widget _buildContent(AlertPreferences prefs, ThemeColors colors, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -216,9 +216,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -226,7 +226,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: colors.container,
+              color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(icon, color: colors.textSecondary, size: 20),
@@ -252,7 +252,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: colors.gold,
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -270,9 +270,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -298,7 +298,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: colors.gold,
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -318,9 +318,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -360,7 +360,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           SliderTheme(
             data: SliderThemeData(
               activeTrackColor: colors.gold,
-              inactiveTrackColor: colors.container,
+              inactiveTrackColor: AppColors.charcoal,
               thumbColor: colors.gold,
               overlayColor: colors.gold.withValues(alpha: 0.2),
             ),
@@ -402,9 +402,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -440,7 +440,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: isEnabled,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleAlertType(type, value),
-            activeThumbColor: colors.gold,
+            activeColor: colors.gold,
           ),
         ],
       ),
@@ -451,9 +451,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         children: [
@@ -482,7 +482,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   startTime: prefs.quietHoursStart,
                   endTime: prefs.quietHoursEnd,
                 ),
-                activeThumbColor: colors.gold,
+                activeColor: colors.gold,
               ),
             ],
           ),
@@ -545,7 +545,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
               data: ThemeData.dark().copyWith(
                 colorScheme: ColorScheme.dark(
                   primary: colors.gold,
-                  surface: colors.elevated,
+                  surface: AppColors.slate,
                 ),
               ),
               child: child!,
@@ -561,7 +561,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: colors.container,
+          color: AppColors.charcoal,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Column(
@@ -587,9 +587,9 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,7 +620,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? colors.gold : colors.borderSubtle,
+            color: isSelected ? colors.gold : AppColors.borderSubtle,
           ),
         ),
         child: Row(
@@ -654,12 +654,11 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     );
   }
 
-  Future<void> _resetToDefault() async {
-    final colors = context.colors;
+  Future<void> _resetToDefault(AppLocalizations l10n, ThemeColors colors) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: colors.elevated,
+        backgroundColor: AppColors.slate,
         title: AppText(
           'Reset to Default',
           variant: AppTextVariant.titleMedium,
@@ -673,12 +672,12 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: AppText(l10n.action_cancel, color: colors.textSecondary),
           ),
-          ElevatedButton(
+          AppButton(
+            label: l10n.action_confirm,
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: colors.gold),
-            child: const Text('Reset'),
+            size: AppButtonSize.small,
           ),
         ],
       ),

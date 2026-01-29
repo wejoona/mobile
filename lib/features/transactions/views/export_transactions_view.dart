@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../design/tokens/index.dart';
@@ -27,6 +28,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final txState = ref.watch(transactionStateMachineProvider);
 
@@ -34,8 +36,8 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Export Transactions',
+        title: AppText(
+          l10n.export_title,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(

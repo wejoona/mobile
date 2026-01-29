@@ -1,0 +1,160 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../providers/bulk_payments_provider.dart';
+import '../widgets/batch_status_card.dart';
+
+class BulkPaymentsView extends ConsumerStatefulWidget {
+  const BulkPaymentsView({super.key});
+
+  @override
+  ConsumerState<BulkPaymentsView> createState() => _BulkPaymentsViewState();
+}
+
+class _BulkPaymentsViewState extends ConsumerState<BulkPaymentsView> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(bulkPaymentsProvider.notifier).loadBatches();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(bulkPaymentsProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(
+          l10n.bulkPayments_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/bulk-payments/upload'),
+        backgroundColor: AppColors.gold500,
+        icon: const Icon(Icons.upload_file, color: AppColors.obsidian),
+        label: AppText(
+          l10n.bulkPayments_uploadCsv,
+          variant: AppTextVariant.bodyMedium,
+          color: AppColors.obsidian,
+        ),
+      ),
+      body: SafeArea(
+        child: state.isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                ),
+              )
+            : state.batches.isEmpty
+                ? _buildEmptyState(l10n)
+                : _buildContent(context, l10n, state),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.upload_file,
+              size: 80,
+              color: AppColors.textSecondary,
+            ),
+            SizedBox(height: AppSpacing.lg),
+            AppText(
+              l10n.bulkPayments_emptyTitle,
+              variant: AppTextVariant.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            AppText(
+              l10n.bulkPayments_emptyDescription,
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: l10n.bulkPayments_uploadCsv,
+              onPressed: () => context.push('/bulk-payments/upload'),
+              icon: Icons.upload_file,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    AppLocalizations l10n,
+    BulkPaymentsState state,
+  ) {
+    return RefreshIndicator(
+      color: AppColors.gold500,
+      backgroundColor: AppColors.slate,
+      onRefresh: () => ref.read(bulkPaymentsProvider.notifier).loadBatches(),
+      child: ListView(
+        padding: EdgeInsets.all(AppSpacing.md),
+        children: [
+          if (state.activeBatches.isNotEmpty) ...[
+            AppText(
+              l10n.bulkPayments_active,
+              variant: AppTextVariant.headlineSmall,
+            ),
+            SizedBox(height: AppSpacing.md),
+            ...state.activeBatches.map((batch) {
+              return BatchStatusCard(
+                batch: batch,
+                onTap: () => context.push('/bulk-payments/status/${batch.id}'),
+              );
+            }),
+            SizedBox(height: AppSpacing.lg),
+          ],
+          if (state.completedBatches.isNotEmpty) ...[
+            AppText(
+              l10n.bulkPayments_completed,
+              variant: AppTextVariant.headlineSmall,
+            ),
+            SizedBox(height: AppSpacing.md),
+            ...state.completedBatches.map((batch) {
+              return BatchStatusCard(
+                batch: batch,
+                onTap: () => context.push('/bulk-payments/status/${batch.id}'),
+              );
+            }),
+            SizedBox(height: AppSpacing.lg),
+          ],
+          if (state.failedBatches.isNotEmpty) ...[
+            AppText(
+              l10n.bulkPayments_failed,
+              variant: AppTextVariant.headlineSmall,
+              color: AppColors.error,
+            ),
+            SizedBox(height: AppSpacing.md),
+            ...state.failedBatches.map((batch) {
+              return BatchStatusCard(
+                batch: batch,
+                onTap: () => context.push('/bulk-payments/status/${batch.id}'),
+              );
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+}

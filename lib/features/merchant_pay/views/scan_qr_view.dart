@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../providers/merchant_provider.dart';
 import '../services/merchant_service.dart';
 import '../widgets/qr_scanner_widget.dart';
@@ -49,6 +52,8 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
   }
 
   void _showPaymentConfirmation(String qrData, QrDecodeResponse merchant) {
+    final l10n = AppLocalizations.of(context)!;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -79,35 +84,35 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(scanToPayProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.obsidian,
       body: Stack(
         children: [
           // QR Scanner
           if (state.isScanning)
             QrScannerWidget(
               onScan: _onQrScanned,
-              title: 'Scan to Pay',
+              title: l10n.action_scan,
               subtitle: 'Point your camera at the merchant\'s QR code',
             ),
 
           // Loading overlay
           if (state.isLoading)
             Container(
-              color: Colors.black54,
-              child: const Center(
+              color: AppColors.obsidian.withValues(alpha: 0.9),
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
-                    SizedBox(height: 16),
-                    Text(
+                    const CircularProgressIndicator(color: AppColors.gold500),
+                    SizedBox(height: AppSpacing.md),
+                    AppText(
                       'Processing...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      variant: AppTextVariant.bodyLarge,
+                      color: AppColors.white,
                     ),
                   ],
                 ),
@@ -118,22 +123,22 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
           if (state.error != null)
             Positioned(
               bottom: 100,
-              left: 16,
-              right: 16,
+              left: AppSpacing.md,
+              right: AppSpacing.md,
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade700,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.error,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.white),
-                    const SizedBox(width: 12),
+                    Icon(Icons.error_outline, color: AppColors.white),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: Text(
+                      child: AppText(
                         state.error!,
-                        style: const TextStyle(color: Colors.white),
+                        color: AppColors.white,
                       ),
                     ),
                     IconButton(
@@ -141,7 +146,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
                         ref.read(scanToPayProvider.notifier).goBackToScanning();
                         _scannedQrData = null;
                       },
-                      icon: const Icon(Icons.close, color: Colors.white),
+                      icon: Icon(Icons.close, color: AppColors.white),
                     ),
                   ],
                 ),

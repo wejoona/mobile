@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
@@ -17,6 +18,7 @@ class TransactionDetailView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final isPositive = transaction.amount >= 0;
     final statusColor = _getStatusColor(transaction.status);
@@ -25,8 +27,8 @@ class TransactionDetailView extends ConsumerWidget {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Transaction Details',
+        title: AppText(
+          l10n.transactionDetails_title,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -124,27 +126,27 @@ class TransactionDetailView extends ConsumerWidget {
               child: Column(
                 children: [
                   _DetailRow(
-                    label: 'Transaction ID',
+                    label: l10n.transactionDetails_transactionId,
                     value: _truncateId(transaction.id),
                     onCopy: () => _copyToClipboard(context, transaction.id),
                     colors: colors,
                   ),
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
-                    label: 'Date',
+                    label: l10n.transactionDetails_date,
                     value: DateFormat('MMM dd, yyyy • HH:mm').format(transaction.createdAt),
                     colors: colors,
                   ),
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
-                    label: 'Currency',
+                    label: l10n.transactionDetails_currency,
                     value: transaction.currency,
                     colors: colors,
                   ),
                   if (transaction.recipientPhone != null) ...[
                     Divider(color: colors.borderSubtle),
                     _DetailRow(
-                      label: 'Recipient Phone',
+                      label: l10n.transactionDetails_recipientPhone,
                       value: transaction.recipientPhone!,
                       colors: colors,
                     ),
@@ -152,7 +154,7 @@ class TransactionDetailView extends ConsumerWidget {
                   if (transaction.recipientAddress != null) ...[
                     Divider(color: colors.borderSubtle),
                     _DetailRow(
-                      label: 'Recipient Address',
+                      label: l10n.transactionDetails_recipientAddress,
                       value: _truncateAddress(transaction.recipientAddress!),
                       onCopy: () => _copyToClipboard(context, transaction.recipientAddress!),
                       colors: colors,
@@ -161,7 +163,7 @@ class TransactionDetailView extends ConsumerWidget {
                   if (transaction.description != null) ...[
                     Divider(color: colors.borderSubtle),
                     _DetailRow(
-                      label: 'Description',
+                      label: l10n.transactionDetails_description,
                       value: transaction.description!,
                       colors: colors,
                     ),
@@ -179,7 +181,7 @@ class TransactionDetailView extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Additional Details',
+                      l10n.transactionDetails_additionalDetails,
                       variant: AppTextVariant.labelMedium,
                       color: colors.textSecondary,
                     ),
@@ -231,7 +233,7 @@ class TransactionDetailView extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
-                            'Failure Reason',
+                            l10n.transactionDetails_failureReason,
                             variant: AppTextVariant.labelMedium,
                             color: AppColors.errorBase,
                           ),
@@ -253,9 +255,9 @@ class TransactionDetailView extends ConsumerWidget {
 
             // Help Button
             AppButton(
-              label: 'Need Help?',
+              label: l10n.help_needHelp,
               onPressed: () {
-                // TODO: Open support
+                context.push('/help');
               },
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
@@ -332,12 +334,13 @@ class TransactionDetailView extends ConsumerWidget {
   }
 
   void _copyToClipboard(BuildContext context, String text) {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Copied to clipboard'),
+      SnackBar(
+        content: Text(l10n.common_copiedToClipboard),
         backgroundColor: AppColors.successBase,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

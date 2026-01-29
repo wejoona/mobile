@@ -219,8 +219,10 @@ class _DepositViewState extends ConsumerState<DepositView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    TextField(
+                    AppInput(
                       controller: _amountController,
+                      variant: AppInputVariant.amount,
+                      hint: '0.00',
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
@@ -229,19 +231,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
                           RegExp(r'^\d+\.?\d{0,2}'),
                         ),
                       ],
-                      style: AppTypography.displaySmall.copyWith(
-                        color: _amountError != null
-                            ? AppColors.errorBase
-                            : colors.textPrimary,
-                      ),
-                      textAlign: TextAlign.right,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: '0.00',
-                        hintStyle: TextStyle(
-                          color: colors.textTertiary,
-                        ),
-                      ),
+                      error: _amountError,
                       onChanged: (_) => _validateAmount(),
                     ),
                     if (_amountError != null)

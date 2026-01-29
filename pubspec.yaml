@@ -58,14 +58,14 @@ dependencies:
   # SMS Auto-fill
   sms_autofill: ^2.4.0
   # Share
-  share_plus: ^10.0.0
+  share_plus: ^12.0.1
   # URL launcher
   url_launcher: ^6.3.0
   # Screenshot for QR sharing
   screenshot: ^3.0.0
   # Cryptography for certificate pinning
   crypto: ^3.0.5
-  path_provider: ^2.1.4
+  path_provider: ^2.1.5
   # Save to gallery
   image_gallery_saver_plus: ^4.0.0
   # HTML rendering for legal documents
@@ -89,6 +89,11 @@ dependencies:
   fl_chart: ^0.69.0
   # Connectivity monitoring for offline mode
   connectivity_plus: ^6.0.5
+  # Time ago formatting
+  timeago: ^3.7.0
+  # UUID generation for offline queue
+  uuid: ^4.5.1
+  file_picker: ^10.3.10
 
 dev_dependencies:
   flutter_test:

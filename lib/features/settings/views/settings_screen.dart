@@ -46,7 +46,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -70,10 +70,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SectionHeader(l10n.settings_profile),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
-              icon: Icons.person_outline,
-              title: l10n.settings_profile,
-              subtitle: l10n.settings_profileDescription,
-              onTap: () => context.push('/settings/profile'),
+              icon: Icons.edit_outlined,
+              title: 'Edit Profile',
+              subtitle: 'Update your personal information',
+              onTap: () => context.push('/settings/profile/edit'),
             ),
             _KycTile(onTap: () => context.push('/settings/kyc')),
 
@@ -85,8 +85,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsTile(
               icon: Icons.lock_outline,
               title: 'Change PIN',
-              subtitle: 'Update your security PIN',
-              onTap: () => context.push('/settings/pin'),
+              subtitle: 'Update your 4-digit security PIN',
+              onTap: () => context.push('/settings/change-pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(
@@ -165,7 +165,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: colors.gold.withOpacity(0.2),
+                      color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
@@ -280,13 +280,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
         actions: [
-          TextButton(
+          AppButton(
+            label: 'Close',
             onPressed: () => Navigator.pop(context),
-            child: AppText(
-              'Close',
-              variant: AppTextVariant.labelLarge,
-              color: colors.gold,
-            ),
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
           ),
         ],
       ),
@@ -321,25 +319,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             color: dialogColors.textSecondary,
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: l10n.action_cancel,
               onPressed: () => Navigator.pop(dialogContext),
-              child: AppText(
-                l10n.action_cancel,
-                variant: AppTextVariant.labelLarge,
-                color: dialogColors.textSecondary,
-              ),
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
             ),
-            TextButton(
+            AppButton(
+              label: 'Logout',
               onPressed: () {
                 Navigator.pop(dialogContext);
                 ref.read(authProvider.notifier).logout();
                 context.go('/login');
               },
-              child: AppText(
-                'Logout',
-                variant: AppTextVariant.labelLarge,
-                color: dialogColors.error,
-              ),
+              variant: AppButtonVariant.danger,
+              size: AppButtonSize.small,
             ),
           ],
         );
@@ -528,7 +522,7 @@ class _BiometricTile extends ConsumerWidget {
                   ref.invalidate(biometricEnabledProvider);
                 }
               },
-              activeColor: AppColors.gold500,
+              activeThumbColor: AppColors.gold500,
             ),
             onTap: () {},
           ),

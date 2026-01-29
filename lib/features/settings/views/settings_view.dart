@@ -11,6 +11,8 @@ import '../../../state/index.dart';
 import '../../../services/currency/currency_provider.dart';
 import '../../../services/currency/currency_service.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../business/providers/business_provider.dart';
+import '../../../domain/enums/account_type.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SettingsView extends ConsumerWidget {
@@ -69,6 +71,17 @@ class SettingsView extends ConsumerWidget {
               subtitle: l10n.settings_limitsDescription,
               onTap: () => context.push('/settings/limits'),
             ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Account Section
+            AppText(
+              l10n.settings_account,
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            const _AccountTypeTile(),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -203,25 +216,21 @@ class SettingsView extends ConsumerWidget {
             color: dialogColors.textSecondary,
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: l10n.action_cancel,
               onPressed: () => Navigator.pop(dialogContext),
-              child: AppText(
-                l10n.action_cancel,
-                variant: AppTextVariant.labelLarge,
-                color: dialogColors.textSecondary,
-              ),
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
             ),
-            TextButton(
+            AppButton(
+              label: l10n.auth_logout,
               onPressed: () {
                 Navigator.pop(dialogContext);
                 ref.read(authProvider.notifier).logout();
                 context.go('/login');
               },
-              child: AppText(
-                l10n.auth_logout,
-                variant: AppTextVariant.labelLarge,
-                color: dialogColors.errorText,
-              ),
+              variant: AppButtonVariant.danger,
+              size: AppButtonSize.small,
             ),
           ],
         );
@@ -418,34 +427,35 @@ class _ThemeTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final themeState = ref.watch(themeProvider);
 
     String getThemeLabel(AppThemeMode mode) {
       switch (mode) {
         case AppThemeMode.light:
-          return 'Light';
+          return l10n.settings_themeLight;
         case AppThemeMode.dark:
-          return 'Dark';
+          return l10n.settings_themeDark;
         case AppThemeMode.system:
-          return 'System';
+          return l10n.settings_themeSystem;
       }
     }
 
     return _SettingsTile(
       icon: Icons.brightness_6,
-      title: 'Theme',
+      title: l10n.settings_theme,
       subtitle: getThemeLabel(themeState.mode),
-      onTap: () => _showThemeDialog(context, ref, themeState.mode),
+      onTap: () => _showThemeDialog(context, ref, themeState.mode, l10n),
     );
   }
 
-  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
+  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: dialogContext.colors.container,
         title: AppText(
-          'Select Theme',
+          l10n.settings_selectTheme,
           variant: AppTextVariant.titleMedium,
           color: dialogContext.colors.textPrimary,
         ),
@@ -457,7 +467,7 @@ class _ThemeTile extends ConsumerWidget {
               mode: AppThemeMode.light,
               currentMode: currentMode,
               icon: Icons.light_mode,
-              label: 'Light',
+              label: l10n.settings_themeLight,
               onTap: () {
                 Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
@@ -467,7 +477,7 @@ class _ThemeTile extends ConsumerWidget {
               mode: AppThemeMode.dark,
               currentMode: currentMode,
               icon: Icons.dark_mode,
-              label: 'Dark',
+              label: l10n.settings_themeDark,
               onTap: () {
                 Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
@@ -477,7 +487,7 @@ class _ThemeTile extends ConsumerWidget {
               mode: AppThemeMode.system,
               currentMode: currentMode,
               icon: Icons.brightness_auto,
-              label: 'System',
+              label: l10n.settings_themeSystem,
               onTap: () {
                 Navigator.pop(dialogContext);
                 ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
@@ -682,6 +692,211 @@ class _CurrencyTile extends ConsumerWidget {
       title: l10n.settings_defaultCurrency,
       subtitle: subtitle,
       onTap: () => context.push('/settings/currency'),
+    );
+  }
+}
+
+/// Account Type Tile - toggle between Personal and Business
+class _AccountTypeTile extends ConsumerWidget {
+  const _AccountTypeTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final businessState = ref.watch(businessProvider);
+
+    return _SettingsTile(
+      icon: businessState.isBusinessAccount ? Icons.business : Icons.person,
+      title: l10n.settings_accountType,
+      subtitle: businessState.isBusinessAccount
+          ? l10n.settings_businessAccount
+          : l10n.settings_personalAccount,
+      onTap: () => _showAccountTypeSwitcher(context, ref, l10n, businessState),
+    );
+  }
+
+  void _showAccountTypeSwitcher(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    BusinessState state,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.colors.container,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: sheetContext.colors.textTertiary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Title
+            AppText(
+              l10n.settings_selectAccountType,
+              variant: AppTextVariant.titleMedium,
+              color: sheetContext.colors.textPrimary,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Personal Account Option
+            _AccountTypeOption(
+              type: AccountType.personal,
+              currentType: state.accountType,
+              icon: Icons.person,
+              title: l10n.settings_personalAccount,
+              description: l10n.settings_personalAccountDescription,
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final success = await ref
+                    .read(businessProvider.notifier)
+                    .switchAccountType(AccountType.personal);
+                if (context.mounted && success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.settings_switchedToPersonal),
+                      backgroundColor: AppColors.successBase,
+                    ),
+                  );
+                }
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Business Account Option
+            _AccountTypeOption(
+              type: AccountType.business,
+              currentType: state.accountType,
+              icon: Icons.business,
+              title: l10n.settings_businessAccount,
+              description: l10n.settings_businessAccountDescription,
+              onTap: () async {
+                Navigator.pop(sheetContext);
+
+                // Check if business profile exists
+                if (state.businessProfile == null) {
+                  // Navigate to setup
+                  context.push('/settings/business-setup');
+                } else {
+                  // Switch to business
+                  final success = await ref
+                      .read(businessProvider.notifier)
+                      .switchAccountType(AccountType.business);
+                  if (context.mounted && success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(l10n.settings_switchedToBusiness),
+                        backgroundColor: AppColors.successBase,
+                      ),
+                    );
+                  }
+                }
+              },
+            ),
+            SizedBox(height: MediaQuery.of(sheetContext).padding.bottom + AppSpacing.md),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AccountTypeOption extends StatelessWidget {
+  const _AccountTypeOption({
+    required this.type,
+    required this.currentType,
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  final AccountType type;
+  final AccountType currentType;
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isSelected = type == currentType;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: isSelected ? colors.gold : colors.textTertiary.withOpacity(0.2),
+              width: isSelected ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colors.gold.withOpacity(0.2)
+                      : colors.textTertiary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected ? colors.gold : colors.textSecondary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      title,
+                      variant: AppTextVariant.titleSmall,
+                      color: isSelected ? colors.gold : colors.textPrimary,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    AppText(
+                      description,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: colors.gold,
+                  size: 24,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

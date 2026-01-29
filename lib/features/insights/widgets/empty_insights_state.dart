@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_text.dart';
 
 class EmptyInsightsState extends StatelessWidget {
   const EmptyInsightsState({super.key});
@@ -35,22 +35,20 @@ class EmptyInsightsState extends StatelessWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // Title
-            Text(
+            AppText(
               l10n.insights_empty_title,
-              style: AppTypography.headlineSmall.copyWith(
-                color: AppColors.textPrimary,
-              ),
+              variant: AppTextVariant.headlineSmall,
+              color: AppColors.textPrimary,
               textAlign: TextAlign.center,
             ),
 
             const SizedBox(height: AppSpacing.md),
 
             // Description
-            Text(
+            AppText(
               l10n.insights_empty_description,
-              style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],

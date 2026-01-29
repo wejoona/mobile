@@ -6,6 +6,7 @@ import '../../../design/components/primitives/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../domain/entities/index.dart';
 import '../../../services/sdk/usdc_wallet_sdk.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Notification item model
 class NotificationItem {
@@ -125,18 +126,18 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     final unreadCount = _notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
           children: [
-            const AppText(
-              'Notifications',
+            AppText(
+              AppLocalizations.of(context)!.notifications_title,
               variant: AppTextVariant.titleLarge,
+              color: AppColors.textPrimary,
             ),
             if (unreadCount > 0) ...[
               const SizedBox(width: AppSpacing.sm),
@@ -146,20 +147,20 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.gold,
+                  color: AppColors.gold500,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   '$unreadCount',
                   variant: AppTextVariant.labelSmall,
-                  color: colors.canvas,
+                  color: AppColors.textInverse,
                 ),
               ),
             ],
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -167,25 +168,25 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             TextButton(
               onPressed: _markAllAsRead,
               child: AppText(
-                'Mark all read',
+                AppLocalizations.of(context)!.notifications_markAllRead,
                 variant: AppTextVariant.labelMedium,
-                color: colors.gold,
+                color: AppColors.gold500,
               ),
             ),
         ],
       ),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: colors.gold),
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.gold500),
             )
           : _errorMessage != null
-              ? _buildErrorState(colors)
+              ? _buildErrorState()
               : _notifications.isEmpty
-                  ? _buildEmptyState(colors)
+                  ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadNotifications,
-                      color: colors.gold,
-                      backgroundColor: colors.container,
+                      color: AppColors.gold500,
+                      backgroundColor: AppColors.slate,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(AppSpacing.screenPadding),
                         itemCount: _notifications.length,
@@ -193,7 +194,6 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                           final notification = _notifications[index];
                           return _NotificationCard(
                             notification: notification,
-                            colors: colors,
                             onTap: () => _handleNotificationTap(notification),
                             onDismiss: () => _dismissNotification(notification.id),
                           );
@@ -203,7 +203,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
     );
   }
 
-  Widget _buildEmptyState(ThemeColors colors) {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -212,33 +212,33 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: colors.container,
+              color: AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.notifications_off_outlined,
-              color: colors.textTertiary,
+              color: AppColors.textTertiary,
               size: 40,
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppText(
-            'No Notifications',
+            AppLocalizations.of(context)!.notifications_emptyTitle,
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            "You're all caught up!",
+            AppLocalizations.of(context)!.notifications_emptyMessage,
             variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
+            color: AppColors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState(ThemeColors colors) {
+  Widget _buildErrorState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -247,10 +247,10 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: colors.container,
+              color: AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.error_outline,
               color: AppColors.errorBase,
               size: 40,
@@ -258,20 +258,20 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppText(
-            'Failed to Load',
+            AppLocalizations.of(context)!.notifications_errorTitle,
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            _errorMessage ?? 'An error occurred',
+            _errorMessage ?? AppLocalizations.of(context)!.notifications_errorGeneric,
             variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
+            color: AppColors.textSecondary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            label: 'Retry',
+            label: AppLocalizations.of(context)!.action_retry,
             variant: AppButtonVariant.primary,
             onPressed: _loadNotifications,
           ),
@@ -364,13 +364,11 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
 class _NotificationCard extends StatelessWidget {
   const _NotificationCard({
     required this.notification,
-    required this.colors,
     required this.onTap,
     required this.onDismiss,
   });
 
   final NotificationItem notification;
-  final ThemeColors colors;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
 
@@ -395,12 +393,12 @@ class _NotificationCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: notification.isRead ? colors.container : colors.elevated,
+            color: notification.isRead ? AppColors.slate : AppColors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
               color: notification.isRead
-                  ? colors.borderSubtle
-                  : colors.gold.withValues(alpha: 0.3),
+                  ? AppColors.borderSubtle
+                  : AppColors.borderGold,
             ),
           ),
           child: Row(
@@ -419,16 +417,16 @@ class _NotificationCard extends StatelessWidget {
                             notification.title,
                             variant: AppTextVariant.bodyLarge,
                             color: notification.isRead
-                                ? colors.textSecondary
-                                : colors.textPrimary,
+                                ? AppColors.textSecondary
+                                : AppColors.textPrimary,
                           ),
                         ),
                         if (!notification.isRead)
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: BoxDecoration(
-                              color: colors.gold,
+                            decoration: const BoxDecoration(
+                              color: AppColors.gold500,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -438,7 +436,7 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       notification.message,
                       variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
+                      color: AppColors.textSecondary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -446,17 +444,17 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       _formatTime(notification.createdAt),
                       variant: AppTextVariant.bodySmall,
-                      color: colors.textTertiary,
+                      color: AppColors.textTertiary,
                     ),
                   ],
                 ),
               ),
               if (notification.actionRoute != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.sm),
+                const Padding(
+                  padding: EdgeInsets.only(left: AppSpacing.sm),
                   child: Icon(
                     Icons.chevron_right,
-                    color: colors.textTertiary,
+                    color: AppColors.textTertiary,
                     size: 20,
                   ),
                 ),
@@ -486,7 +484,7 @@ class _NotificationCard extends StatelessWidget {
         break;
       case NotificationType.promotion:
         icon = Icons.local_offer;
-        color = colors.gold;
+        color = AppColors.gold500;
         break;
       case NotificationType.lowBalance:
         icon = Icons.account_balance_wallet;
@@ -514,7 +512,7 @@ class _NotificationCard extends StatelessWidget {
         break;
       case NotificationType.priceAlert:
         icon = Icons.trending_up;
-        color = colors.gold;
+        color = AppColors.gold500;
         break;
       case NotificationType.weeklySpendingSummary:
         icon = Icons.bar_chart;
@@ -585,15 +583,16 @@ class _NotificationCard extends StatelessWidget {
   String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
     final diff = now.difference(dateTime);
+    final l10n = AppLocalizations.of(context)!;
 
     if (diff.inMinutes < 1) {
-      return 'Just now';
+      return l10n.notifications_timeJustNow;
     } else if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
+      return l10n.notifications_timeMinutesAgo(diff.inMinutes);
     } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
+      return l10n.notifications_timeHoursAgo(diff.inHours);
     } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
+      return l10n.notifications_timeDaysAgo(diff.inDays);
     } else {
       return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
     }

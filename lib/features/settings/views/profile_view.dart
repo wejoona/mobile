@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../state/index.dart';
-import '../../../services/api/api_client.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -15,127 +15,57 @@ class ProfileView extends ConsumerStatefulWidget {
 }
 
 class _ProfileViewState extends ConsumerState<ProfileView> {
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _emailController;
-  bool _isEditing = false;
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize controllers with empty values
-    _firstNameController = TextEditingController();
-    _lastNameController = TextEditingController();
-    _emailController = TextEditingController();
-
-    // Populate controllers after first frame using post-frame callback
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final userState = ref.read(userStateMachineProvider);
-        _firstNameController.text = userState.firstName ?? '';
-        _lastNameController.text = userState.lastName ?? '';
-        _emailController.text = userState.email ?? '';
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Profile',
+        title: AppText(
+          l10n.profile_title,
           variant: AppTextVariant.titleLarge,
+          color: AppColors.textPrimary,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.gold),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
         actions: [
-          if (!_isEditing)
-            IconButton(
-              icon: Icon(Icons.edit, color: colors.gold),
-              onPressed: () => setState(() => _isEditing = true),
-            )
-          else
-            TextButton(
-              onPressed: () {
-                setState(() => _isEditing = false);
-                // Reset to original values
-                _firstNameController.text = userState.firstName ?? '';
-                _lastNameController.text = userState.lastName ?? '';
-                _emailController.text = userState.email ?? '';
-              },
-              child: AppText(
-                'Cancel',
-                variant: AppTextVariant.labelMedium,
-                color: colors.textSecondary,
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.edit, color: AppColors.gold500),
+            onPressed: () => context.push('/settings/profile/edit'),
+          ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
             // Avatar
             Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.goldGradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: AppShadows.goldGlow,
-                    ),
-                    child: Center(
-                      child: AppText(
-                        _getInitials(userState),
-                        variant: AppTextVariant.headlineLarge,
-                        color: AppColors.textInverse,
-                      ),
-                    ),
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: AppColors.goldGradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  if (_isEditing)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: colors.container,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: colors.gold, width: 2),
-                        ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          size: 16,
-                          color: colors.gold,
-                        ),
-                      ),
-                    ),
-                ],
+                  shape: BoxShape.circle,
+                  boxShadow: AppShadows.goldGlow,
+                ),
+                child: Center(
+                  child: AppText(
+                    _getInitials(userState),
+                    variant: AppTextVariant.headlineLarge,
+                    color: AppColors.textInverse,
+                  ),
+                ),
               ),
             ),
 
@@ -143,9 +73,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
             // Phone (non-editable)
             _buildInfoCard(
-              colors: colors,
-              label: 'Phone Number',
-              value: userState.phone ?? 'Not set',
+              label: l10n.profile_phoneNumber,
+              value: userState.phone ?? l10n.profile_notSet,
               icon: Icons.phone,
               isVerified: true,
             ),
@@ -153,71 +82,45 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             const SizedBox(height: AppSpacing.md),
 
             // First Name
-            _isEditing
-                ? _buildEditableField(
-                    colors: colors,
-                    label: 'First Name',
-                    controller: _firstNameController,
-                    icon: Icons.person,
-                  )
-                : _buildInfoCard(
-                    colors: colors,
-                    label: 'First Name',
-                    value: userState.firstName ?? 'Not set',
-                    icon: Icons.person,
-                  ),
+            _buildInfoCard(
+              label: l10n.profile_firstName,
+              value: userState.firstName ?? l10n.profile_notSet,
+              icon: Icons.person,
+            ),
 
             const SizedBox(height: AppSpacing.md),
 
             // Last Name
-            _isEditing
-                ? _buildEditableField(
-                    colors: colors,
-                    label: 'Last Name',
-                    controller: _lastNameController,
-                    icon: Icons.person_outline,
-                  )
-                : _buildInfoCard(
-                    colors: colors,
-                    label: 'Last Name',
-                    value: userState.lastName ?? 'Not set',
-                    icon: Icons.person_outline,
-                  ),
+            _buildInfoCard(
+              label: l10n.profile_lastName,
+              value: userState.lastName ?? l10n.profile_notSet,
+              icon: Icons.person_outline,
+            ),
 
             const SizedBox(height: AppSpacing.md),
 
             // Email
-            _isEditing
-                ? _buildEditableField(
-                    colors: colors,
-                    label: 'Email',
-                    controller: _emailController,
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
-                  )
-                : _buildInfoCard(
-                    colors: colors,
-                    label: 'Email',
-                    value: userState.email ?? 'Not set',
-                    icon: Icons.email,
-                  ),
+            _buildInfoCard(
+              label: l10n.profile_email,
+              value: userState.email ?? l10n.profile_notSet,
+              icon: Icons.email,
+            ),
 
             const SizedBox(height: AppSpacing.md),
 
             // KYC Status
             _buildInfoCard(
-              colors: colors,
-              label: 'KYC Status',
-              value: _getKycStatusText(userState.kycStatus),
+              label: l10n.profile_kycStatus,
+              value: _getKycStatusText(userState.kycStatus, l10n),
               icon: Icons.verified_user,
               valueColor: _getKycStatusColor(userState.kycStatus),
               trailing: userState.kycStatus != KycStatus.verified
                   ? TextButton(
                       onPressed: () => context.push('/settings/kyc'),
                       child: AppText(
-                        'Verify',
+                        l10n.profile_verify,
                         variant: AppTextVariant.labelMedium,
-                        color: colors.gold,
+                        color: AppColors.gold500,
                       ),
                     )
                   : null,
@@ -227,24 +130,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
 
             // Country
             _buildInfoCard(
-              colors: colors,
-              label: 'Country',
-              value: _getCountryName(userState.countryCode),
+              label: l10n.profile_country,
+              value: _getCountryName(userState.countryCode, l10n),
               icon: Icons.public,
             ),
-
-            if (_isEditing) ...[
-              const SizedBox(height: AppSpacing.xxxl),
-
-              // Save Button
-              AppButton(
-                label: 'Save Changes',
-                onPressed: _canSave() ? _saveProfile : null,
-                variant: AppButtonVariant.primary,
-                isFullWidth: true,
-                isLoading: _isSaving,
-              ),
-            ],
 
             const SizedBox(height: AppSpacing.xxl),
           ],
@@ -254,7 +143,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   }
 
   Widget _buildInfoCard({
-    required ThemeColors colors,
     required String label,
     required String value,
     required IconData icon,
@@ -271,10 +159,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: colors.elevated,
+              color: AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: colors.textSecondary, size: 22),
+            child: Icon(icon, color: AppColors.textSecondary, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -284,7 +172,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: colors.textTertiary,
+                  color: AppColors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Row(
@@ -293,7 +181,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       child: AppText(
                         value,
                         variant: AppTextVariant.bodyLarge,
-                        color: valueColor ?? colors.textPrimary,
+                        color: valueColor ?? AppColors.textPrimary,
                       ),
                     ),
                     if (isVerified)
@@ -313,60 +201,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     );
   }
 
-  Widget _buildEditableField({
-    required ThemeColors colors,
-    required String label,
-    required TextEditingController controller,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return AppCard(
-      variant: AppCardVariant.subtle,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colors.elevated,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(icon, color: colors.gold, size: 22),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  label,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textTertiary,
-                ),
-                TextField(
-                  controller: controller,
-                  keyboardType: keyboardType,
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: colors.textPrimary,
-                  ),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    hintText: 'Enter value',
-                    hintStyle: TextStyle(color: colors.textTertiary),
-                  ),
-                  onChanged: (_) => setState(() {}),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _getInitials(UserState userState) {
     final firstName = userState.firstName;
     final lastName = userState.lastName;
@@ -381,16 +215,16 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     return 'U';
   }
 
-  String _getKycStatusText(KycStatus status) {
+  String _getKycStatusText(KycStatus status, AppLocalizations l10n) {
     switch (status) {
       case KycStatus.none:
-        return 'Not Verified';
+        return l10n.profile_kycNotVerified;
       case KycStatus.pending:
-        return 'Pending Review';
+        return l10n.profile_kycPending;
       case KycStatus.verified:
-        return 'Verified';
+        return l10n.profile_kycVerified;
       case KycStatus.rejected:
-        return 'Rejected';
+        return l10n.profile_kycRejected;
     }
   }
 
@@ -407,72 +241,21 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     }
   }
 
-  String _getCountryName(String countryCode) {
-    const countries = {
-      'CI': 'Ivory Coast',
-      'NG': 'Nigeria',
-      'KE': 'Kenya',
-      'GH': 'Ghana',
-      'SN': 'Senegal',
-    };
-    return countries[countryCode] ?? countryCode;
-  }
-
-  bool _canSave() {
-    return _firstNameController.text.isNotEmpty ||
-        _lastNameController.text.isNotEmpty ||
-        _emailController.text.isNotEmpty;
-  }
-
-  Future<void> _saveProfile() async {
-    setState(() => _isSaving = true);
-
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.put('/user/profile', data: {
-        'firstName': _firstNameController.text.isEmpty
-            ? null
-            : _firstNameController.text,
-        'lastName':
-            _lastNameController.text.isEmpty ? null : _lastNameController.text,
-        'email': _emailController.text.isEmpty ? null : _emailController.text,
-      });
-
-      // Update profile via state machine
-      ref.read(userStateMachineProvider.notifier).updateProfile(
-            firstName: _firstNameController.text.isEmpty
-                ? null
-                : _firstNameController.text,
-            lastName: _lastNameController.text.isEmpty
-                ? null
-                : _lastNameController.text,
-            email: _emailController.text.isEmpty ? null : _emailController.text,
-          );
-
-      if (mounted) {
-        setState(() {
-          _isSaving = false;
-          _isEditing = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully'),
-            backgroundColor: AppColors.successBase,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isSaving = false);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update profile: $e'),
-            backgroundColor: AppColors.errorBase,
-          ),
-        );
-      }
+  String _getCountryName(String countryCode, AppLocalizations l10n) {
+    switch (countryCode) {
+      case 'CI':
+        return l10n.profile_countryIvoryCoast;
+      case 'NG':
+        return l10n.profile_countryNigeria;
+      case 'KE':
+        return l10n.profile_countryKenya;
+      case 'GH':
+        return l10n.profile_countryGhana;
+      case 'SN':
+        return l10n.profile_countrySenegal;
+      default:
+        return countryCode;
     }
   }
+
 }

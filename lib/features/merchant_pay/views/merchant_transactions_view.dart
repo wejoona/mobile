@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../services/merchant_service.dart';
 
 /// Merchant Transactions View
@@ -81,7 +84,7 @@ class _MerchantTransactionsViewState
       setState(() => _isLoadingMore = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to load transactions')),
+          SnackBar(content: Text('Failed to load transactions')),
         );
       }
     }
@@ -89,30 +92,35 @@ class _MerchantTransactionsViewState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: AppText(l10n.navigation_transactions, variant: AppTextVariant.titleMedium),
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: _loadTransactions,
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: AppColors.gold500),
           ),
         ],
       ),
       body: _transactions.isEmpty && !_isLoadingMore
-          ? _buildEmptyState()
+          ? _buildEmptyState(l10n)
           : RefreshIndicator(
               onRefresh: _loadTransactions,
+              color: AppColors.gold500,
               child: ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(AppSpacing.md),
                 itemCount: _transactions.length + (_isLoadingMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == _transactions.length) {
-                    return const Center(
+                    return Center(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: CircularProgressIndicator(),
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        child: CircularProgressIndicator(color: AppColors.gold500),
                       ),
                     );
                   }
@@ -123,7 +131,7 @@ class _MerchantTransactionsViewState
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -131,24 +139,19 @@ class _MerchantTransactionsViewState
           Icon(
             Icons.receipt_long,
             size: 80,
-            color: Colors.grey.shade300,
+            color: AppColors.silver.withValues(alpha: 0.5),
           ),
-          const SizedBox(height: 16),
-          Text(
+          SizedBox(height: AppSpacing.md),
+          AppText(
             'No transactions yet',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
-            ),
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.white,
           ),
-          const SizedBox(height: 8),
-          Text(
+          SizedBox(height: AppSpacing.xs),
+          AppText(
             'Transactions will appear here when\ncustomers pay you',
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 14,
-            ),
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.silver,
             textAlign: TextAlign.center,
           ),
         ],
@@ -164,120 +167,101 @@ class _MerchantTransactionsViewState
     IconData statusIcon;
     switch (tx.status) {
       case 'completed':
-        statusColor = Colors.green;
+        statusColor = AppColors.success;
         statusIcon = Icons.check_circle;
         break;
       case 'refunded':
-        statusColor = Colors.orange;
+        statusColor = AppColors.warning;
         statusIcon = Icons.undo;
         break;
       default:
-        statusColor = Colors.red;
+        statusColor = AppColors.error;
         statusIcon = Icons.error;
     }
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () => _showTransactionDetails(tx),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppCard(
+      variant: AppCardVariant.outline,
+      padding: EdgeInsets.all(AppSpacing.md),
+      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+      onTap: () => _showTransactionDetails(tx),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
+              Container(
+                padding: EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  tx.status == 'completed'
+                      ? Icons.arrow_downward
+                      : statusIcon,
+                  color: statusColor,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      tx.reference,
+                      variant: AppTextVariant.bodyLarge,
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    AppText(
+                      dateFormat.format(tx.createdAt),
+                      variant: AppTextVariant.labelSmall,
+                      color: AppColors.silver,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      tx.status == 'completed'
-                          ? Icons.arrow_downward
-                          : statusIcon,
-                      color: statusColor,
-                      size: 20,
-                    ),
+                  AppText(
+                    tx.status == 'refunded'
+                        ? '-${currencyFormat.format(tx.amount)}'
+                        : '+${currencyFormat.format(tx.netAmount)}',
+                    variant: AppTextVariant.bodyLarge,
+                    color: tx.status == 'refunded'
+                        ? AppColors.warning
+                        : AppColors.success,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tx.reference,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          dateFormat.format(tx.createdAt),
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
+                  if (tx.fee > 0)
+                    AppText(
+                      'Fee: ${currencyFormat.format(tx.fee)}',
+                      variant: AppTextVariant.labelSmall,
+                      color: AppColors.silver,
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        tx.status == 'refunded'
-                            ? '-${currencyFormat.format(tx.amount)}'
-                            : '+${currencyFormat.format(tx.netAmount)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: tx.status == 'refunded'
-                              ? Colors.orange
-                              : Colors.green.shade600,
-                        ),
-                      ),
-                      if (tx.fee > 0)
-                        Text(
-                          'Fee: ${currencyFormat.format(tx.fee)}',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 11,
-                          ),
-                        ),
-                    ],
-                  ),
                 ],
               ),
-              if (tx.description != null) ...[
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    tx.description!,
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
-        ),
+          if (tx.description != null) ...[
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.charcoal.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: AppText(
+                tx.description!,
+                variant: AppTextVariant.bodySmall,
+                color: AppColors.silver,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -288,12 +272,13 @@ class _MerchantTransactionsViewState
 
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      backgroundColor: AppColors.charcoal,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
       builder: (context) {
         return Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -303,20 +288,17 @@ class _MerchantTransactionsViewState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: AppColors.silver,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              const Text(
+              SizedBox(height: AppSpacing.lg),
+              AppText(
                 'Transaction Details',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                variant: AppTextVariant.titleLarge,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: AppSpacing.lg),
               _buildDetailRow('Reference', tx.reference),
               _buildDetailRow('Payment ID', tx.paymentId),
               _buildDetailRow('Amount', currencyFormat.format(tx.amount)),
@@ -326,19 +308,11 @@ class _MerchantTransactionsViewState
               _buildDetailRow('Date', dateFormat.format(tx.createdAt)),
               if (tx.description != null)
                 _buildDetailRow('Description', tx.description!),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text('Close'),
-                ),
+              SizedBox(height: AppSpacing.lg),
+              AppButton(
+                label: 'Close',
+                onPressed: () => Navigator.of(context).pop(),
+                variant: AppButtonVariant.secondary,
               ),
             ],
           ),
@@ -349,27 +323,22 @@ class _MerchantTransactionsViewState
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 100,
-            child: Text(
+            child: AppText(
               label,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+              variant: AppTextVariant.bodySmall,
+              color: AppColors.silver,
             ),
           ),
           Expanded(
-            child: Text(
+            child: AppText(
               value,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+              variant: AppTextVariant.bodyMedium,
             ),
           ),
         ],

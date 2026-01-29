@@ -1,6 +1,4 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import '../helpers/test_utils.dart';
@@ -456,8 +454,6 @@ void main() {
     test('should produce same hash for same PIN and salt', () async {
       // Arrange
       await pinService.setPin('7392');
-      final hash1 = mockStorage.storage['pin_hash'];
-      final salt = mockStorage.storage['pin_salt'];
 
       // Create new service with same storage
       final newService = PinService(mockStorage, mockDio);

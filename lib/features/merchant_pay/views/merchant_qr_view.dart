@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../features/qr_payment/widgets/qr_display.dart';
 import '../services/merchant_service.dart';
 
 /// Merchant QR View
@@ -47,7 +50,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to share QR code')),
+          SnackBar(content: Text('Failed to share QR code')),
         );
       }
     } finally {
@@ -58,9 +61,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
   }
 
   void _copyQrData() {
+    final l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: widget.merchant.qrCode));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('QR data copied to clipboard'),
         duration: Duration(seconds: 2),
       ),
@@ -69,40 +73,32 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: const Text('My QR Code'),
+        title: AppText('My QR Code', variant: AppTextVariant.titleMedium),
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: _copyQrData,
-            icon: const Icon(Icons.copy),
-            tooltip: 'Copy QR data',
+            icon: Icon(Icons.copy, color: AppColors.gold500),
+            tooltip: l10n.action_copy,
           ),
         ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
-              // QR Code Card
+              // QR Code Card with Screenshot wrapper
               Screenshot(
                 controller: _screenshotController,
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
+                child: AppCard(
+                  variant: AppCardVariant.elevated,
+                  padding: EdgeInsets.all(AppSpacing.xxl),
                   child: Column(
                     children: [
                       // Logo/Icon
@@ -110,98 +106,74 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: theme.primaryColor.withOpacity(0.1),
+                          color: AppColors.gold500.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           _getCategoryIcon(widget.merchant.category),
-                          color: theme.primaryColor,
+                          color: AppColors.gold500,
                           size: 30,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: AppSpacing.md),
 
                       // Merchant name
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Flexible(
-                            child: Text(
+                            child: AppText(
                               widget.merchant.displayName,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              variant: AppTextVariant.titleLarge,
                               textAlign: TextAlign.center,
                             ),
                           ),
                           if (widget.merchant.isVerified) ...[
-                            const SizedBox(width: 8),
+                            SizedBox(width: AppSpacing.xs),
                             Icon(
                               Icons.verified,
-                              color: Colors.blue.shade600,
+                              color: AppColors.gold500,
                               size: 20,
                             ),
                           ],
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
+                      SizedBox(height: AppSpacing.xs),
+                      AppText(
                         _formatCategory(widget.merchant.category),
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
+                        variant: AppTextVariant.bodyMedium,
+                        color: AppColors.silver,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: AppSpacing.lg),
 
-                      // QR Code
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: QrImageView(
-                          data: widget.merchant.qrCode,
-                          version: QrVersions.auto,
-                          size: 220,
-                          backgroundColor: Colors.white,
-                          eyeStyle: QrEyeStyle(
-                            eyeShape: QrEyeShape.square,
-                            color: theme.primaryColor,
-                          ),
-                          dataModuleStyle: QrDataModuleStyle(
-                            dataModuleShape: QrDataModuleShape.square,
-                            color: Colors.black87,
-                          ),
-                        ),
+                      // QR Display using existing widget
+                      QrDisplay(
+                        data: widget.merchant.qrCode,
+                        size: 220,
+                        showBorder: true,
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: AppSpacing.lg),
 
                       // Instructions
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.charcoal.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.info_outline,
-                              color: Colors.grey.shade600,
+                              color: AppColors.silver,
                               size: 20,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: AppSpacing.sm),
                             Expanded(
-                              child: Text(
+                              child: AppText(
                                 'Customers can scan this QR code to pay you',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 13,
-                                ),
+                                variant: AppTextVariant.bodySmall,
+                                color: AppColors.silver,
                               ),
                             ),
                           ],
@@ -211,84 +183,59 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: AppSpacing.xl),
 
               // Action buttons
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppButton(
+                      label: l10n.action_share,
                       onPressed: _isSharing ? null : _shareQr,
-                      icon: _isSharing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.share),
-                      label: const Text('Share QR'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      variant: AppButtonVariant.secondary,
+                      icon: _isSharing ? null : Icons.share,
+                      isLoading: _isSharing,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: AppSpacing.md),
                   Expanded(
-                    child: ElevatedButton.icon(
+                    child: AppButton(
+                      label: 'Request Amount',
                       onPressed: () {
-                        // Navigate to create dynamic QR
                         Navigator.of(context).pushNamed(
                           '/create-payment-request',
                           arguments: widget.merchant,
                         );
                       },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Request Amount'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: theme.primaryColor,
-                        foregroundColor: Colors.white,
-                      ),
+                      variant: AppButtonVariant.primary,
+                      icon: Icons.add,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: AppSpacing.lg),
 
               // Daily limit info
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              AppCard(
+                variant: AppCardVariant.outline,
+                padding: EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [
-                    Icon(Icons.account_balance_wallet, color: Colors.blue.shade700),
-                    const SizedBox(width: 12),
+                    Icon(Icons.account_balance_wallet, color: AppColors.gold500),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          AppText(
                             'Daily Limit Remaining',
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            variant: AppTextVariant.labelMedium,
+                            color: AppColors.gold500,
                           ),
-                          Text(
+                          AppText(
                             '\$${widget.merchant.remainingDailyLimit.toStringAsFixed(2)} of \$${widget.merchant.dailyLimit.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: Colors.blue.shade600,
-                              fontSize: 13,
-                            ),
+                            variant: AppTextVariant.bodySmall,
+                            color: AppColors.silver,
                           ),
                         ],
                       ),

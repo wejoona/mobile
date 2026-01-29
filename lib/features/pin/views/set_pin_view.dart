@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../widgets/pin_dots.dart';
 import '../widgets/pin_pad.dart';
 
@@ -27,9 +28,9 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: Text(
+        title: AppText(
           l10n.pin_createTitle,
-          style: AppTypography.headlineSmall,
+          variant: AppTextVariant.headlineSmall,
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -40,11 +41,10 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
           child: Column(
             children: [
               SizedBox(height: AppSpacing.xxl),
-              Text(
+              AppText(
                 l10n.pin_enterNewPin,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                variant: AppTextVariant.bodyLarge,
+                color: AppColors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xxxl),
@@ -54,11 +54,10 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
               ),
               if (_errorMessage != null) ...[
                 SizedBox(height: AppSpacing.md),
-                Text(
+                AppText(
                   _errorMessage!,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.errorText,
-                  ),
+                  variant: AppTextVariant.bodyMedium,
+                  color: AppColors.errorText,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -88,11 +87,10 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          AppText(
             l10n.pin_requirements,
-            style: AppTypography.labelMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
+            variant: AppTextVariant.labelMedium,
+            color: AppColors.textSecondary,
           ),
           SizedBox(height: AppSpacing.sm),
           _buildRule(l10n.pin_rule_6digits, _pin.length == 6),
@@ -115,11 +113,10 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(
+            child: AppText(
               text,
-              style: AppTypography.bodySmall.copyWith(
-                color: satisfied ? AppColors.textPrimary : AppColors.textTertiary,
-              ),
+              variant: AppTextVariant.bodySmall,
+              color: satisfied ? AppColors.textPrimary : AppColors.textTertiary,
             ),
           ),
         ],

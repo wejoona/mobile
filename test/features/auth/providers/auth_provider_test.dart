@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -36,7 +35,6 @@ class MockSessionNotifier extends Notifier<SessionState> implements SessionServi
   @override
   Future<void> lockSession() async {}
 
-  @override
   SessionConfig get config => const SessionConfig();
 
   @override

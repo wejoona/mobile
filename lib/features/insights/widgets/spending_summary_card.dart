@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_text.dart';
 import '../providers/insights_provider.dart';
 
 class SpendingSummaryCard extends ConsumerWidget {
@@ -38,11 +38,10 @@ class SpendingSummaryCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              AppText(
                 l10n.insights_summary,
-                style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.textPrimary,
-                ),
+                variant: AppTextVariant.titleMedium,
+                color: AppColors.textPrimary,
               ),
               if (summary.percentageChange > 0)
                 Container(
@@ -69,14 +68,13 @@ class SpendingSummaryCard extends ConsumerWidget {
                             : AppColors.successText,
                       ),
                       const SizedBox(width: 4),
-                      Text(
+                      AppText(
                         '${summary.percentageChange.toStringAsFixed(1)}%',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: summary.isIncrease
-                              ? AppColors.errorText
-                              : AppColors.successText,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        variant: AppTextVariant.bodySmall,
+                        color: summary.isIncrease
+                            ? AppColors.errorText
+                            : AppColors.successText,
+                        fontWeight: FontWeight.bold,
                       ),
                     ],
                   ),
@@ -133,21 +131,16 @@ class SpendingSummaryCard extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
+        AppText(
           label,
-          style: AppTypography.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
-          ),
+          variant: AppTextVariant.bodyMedium,
+          color: AppColors.textSecondary,
         ),
-        Text(
+        AppText(
           value,
-          style: (isLarge
-                  ? AppTypography.headlineSmall
-                  : AppTypography.titleMedium)
-              .copyWith(
-            color: valueColor,
-            fontWeight: FontWeight.bold,
-          ),
+          variant: isLarge ? AppTextVariant.headlineSmall : AppTextVariant.titleMedium,
+          color: valueColor,
+          fontWeight: FontWeight.bold,
         ),
       ],
     );

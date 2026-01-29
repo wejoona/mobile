@@ -1,0 +1,224 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../providers/contacts_provider.dart';
+
+/// Contacts Permission Screen
+///
+/// Explains why we need contacts and privacy assurances
+class ContactsPermissionScreen extends ConsumerStatefulWidget {
+  const ContactsPermissionScreen({super.key});
+
+  @override
+  ConsumerState<ContactsPermissionScreen> createState() =>
+      _ContactsPermissionScreenState();
+}
+
+class _ContactsPermissionScreenState
+    extends ConsumerState<ContactsPermissionScreen> {
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Spacer(flex: 1),
+
+              // Icon
+              Center(
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: AppColors.gold500.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.contacts,
+                    size: 60,
+                    color: AppColors.gold500,
+                  ),
+                ),
+              ),
+
+              SizedBox(height: AppSpacing.xl),
+
+              // Title
+              AppText(
+                l10n.contacts_permission_title,
+                variant: AppTextVariant.headlineLarge,
+                color: AppColors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+
+              SizedBox(height: AppSpacing.md),
+
+              // Subtitle
+              AppText(
+                l10n.contacts_permission_subtitle,
+                variant: AppTextVariant.bodyLarge,
+                color: AppColors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+
+              SizedBox(height: AppSpacing.xxl),
+
+              // Benefits
+              _buildBenefit(
+                context,
+                l10n,
+                Icons.people,
+                l10n.contacts_permission_benefit1_title,
+                l10n.contacts_permission_benefit1_desc,
+              ),
+
+              SizedBox(height: AppSpacing.md),
+
+              _buildBenefit(
+                context,
+                l10n,
+                Icons.lock,
+                l10n.contacts_permission_benefit2_title,
+                l10n.contacts_permission_benefit2_desc,
+              ),
+
+              SizedBox(height: AppSpacing.md),
+
+              _buildBenefit(
+                context,
+                l10n,
+                Icons.sync,
+                l10n.contacts_permission_benefit3_title,
+                l10n.contacts_permission_benefit3_desc,
+              ),
+
+              const Spacer(flex: 2),
+
+              // Allow button
+              AppButton(
+                label: l10n.contacts_permission_allow,
+                onPressed: _handleAllow,
+                isLoading: _isLoading,
+              ),
+
+              SizedBox(height: AppSpacing.md),
+
+              // Maybe later
+              Center(
+                child: TextButton(
+                  onPressed: () => context.pop(),
+                  child: AppText(
+                    l10n.contacts_permission_later,
+                    variant: AppTextVariant.bodyMedium,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBenefit(
+    BuildContext context,
+    AppLocalizations l10n,
+    IconData icon,
+    String title,
+    String description,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.elevated,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Icon(
+            icon,
+            color: AppColors.gold500,
+            size: 20,
+          ),
+        ),
+        SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                title,
+                variant: AppTextVariant.bodyLarge,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              SizedBox(height: AppSpacing.xs),
+              AppText(
+                description,
+                variant: AppTextVariant.bodySmall,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _handleAllow() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final granted = await ref.read(contactsProvider.notifier).requestPermission();
+
+      if (mounted) {
+        if (granted) {
+          context.go('/contacts/list');
+        } else {
+          // Show error dialog
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: AppColors.slate,
+              title: AppText(
+                AppLocalizations.of(context)!.contacts_permission_denied_title,
+                variant: AppTextVariant.headlineSmall,
+              ),
+              content: AppText(
+                AppLocalizations.of(context)!.contacts_permission_denied_message,
+              ),
+              actions: [
+                AppButton(
+                  label: AppLocalizations.of(context)!.action_cancel,
+                  variant: AppButtonVariant.secondary,
+                  size: AppButtonSize.small,
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          );
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+}

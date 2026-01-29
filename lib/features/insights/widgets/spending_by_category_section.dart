@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_text.dart';
 import '../providers/insights_provider.dart';
 import 'spending_pie_chart.dart';
 
@@ -32,11 +32,10 @@ class SpendingByCategorySection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          AppText(
             l10n.insights_categories,
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.textPrimary,
-            ),
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.xxl),
 
@@ -64,11 +63,10 @@ class SpendingByCategorySection extends ConsumerWidget {
 
                   // Category name
                   Expanded(
-                    child: Text(
+                    child: AppText(
                       category.name,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textPrimary,
-                      ),
+                      variant: AppTextVariant.bodyMedium,
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
@@ -76,18 +74,16 @@ class SpendingByCategorySection extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
+                      AppText(
                         '\$${category.amount.toStringAsFixed(2)}',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        variant: AppTextVariant.bodyMedium,
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
+                      AppText(
                         '${category.percentage.toStringAsFixed(1)}%',
-                        style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        variant: AppTextVariant.bodySmall,
+                        color: AppColors.textSecondary,
                       ),
                     ],
                   ),

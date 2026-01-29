@@ -1,0 +1,277 @@
+/// Bank Verification View
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/colors.dart';
+import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_text.dart';
+import '../../../design/components/primitives/app_input.dart';
+import '../../../design/components/primitives/app_button.dart';
+import '../providers/bank_linking_provider.dart';
+
+class BankVerificationView extends ConsumerStatefulWidget {
+  const BankVerificationView({super.key, this.accountId});
+
+  final String? accountId;
+
+  @override
+  ConsumerState<BankVerificationView> createState() =>
+      _BankVerificationViewState();
+}
+
+class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
+  final _otpController = TextEditingController();
+  bool _isLoading = false;
+  bool _canResend = false;
+  int _resendCountdown = 60;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendCountdown();
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
+  void _startResendCountdown() {
+    setState(() {
+      _canResend = false;
+      _resendCountdown = 60;
+    });
+
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted && _resendCountdown > 0) {
+        setState(() => _resendCountdown--);
+        _startResendCountdown();
+      } else if (mounted) {
+        setState(() => _canResend = true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(bankLinkingProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(
+          l10n.bankLinking_verifyAccount,
+          style: AppTypography.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.all(AppSpacing.md),
+                children: [
+                  // Header
+                  Center(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.gold500.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.security,
+                        size: 40,
+                        color: AppColors.gold500,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  AppText(
+                    l10n.bankLinking_verificationTitle,
+                    style: AppTypography.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.sm),
+                  AppText(
+                    l10n.bankLinking_verificationDesc,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xl),
+                  // OTP Input
+                  AppInput(
+                    label: l10n.bankLinking_otpCode,
+                    controller: _otpController,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    hint: '123456',
+                    onChanged: (value) {
+                      if (value.length == 6) {
+                        _handleVerify();
+                      }
+                    },
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  // Resend button
+                  Center(
+                    child: TextButton(
+                      onPressed: _canResend ? _handleResendOtp : null,
+                      child: AppText(
+                        _canResend
+                            ? l10n.bankLinking_resendOtp
+                            : l10n.bankLinking_resendOtpIn(_resendCountdown),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: _canResend
+                              ? AppColors.gold500
+                              : AppColors.textTertiary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                  // Info box
+                  _buildInfoBox(l10n),
+                ],
+              ),
+            ),
+            _buildBottomButton(l10n),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoBox(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.slate,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: AppColors.textSecondary,
+            size: 20,
+          ),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: AppText(
+              l10n.bankLinking_devOtpHint,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButton(AppLocalizations l10n) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.graphite,
+        border: Border(
+          top: BorderSide(
+            color: AppColors.elevated,
+            width: 1,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: AppButton(
+          label: l10n.bankLinking_verify,
+          onPressed: _handleVerify,
+          isLoading: _isLoading,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleVerify() async {
+    final otp = _otpController.text.trim();
+    if (otp.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(
+            AppLocalizations.of(context)!.bankLinking_invalidOtp,
+            style: AppTypography.bodyMedium,
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final success =
+          await ref.read(bankLinkingProvider.notifier).verifyWithOtp(otp);
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: AppText(
+              AppLocalizations.of(context)!.bankLinking_verificationSuccess,
+              style: AppTypography.bodyMedium,
+            ),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        // Navigate back to linked accounts
+        context.go('/bank-linking');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: AppText(
+              AppLocalizations.of(context)!.bankLinking_verificationFailed,
+              style: AppTypography.bodyMedium,
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleResendOtp() async {
+    // In real app, call API to resend OTP
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: AppText(
+          AppLocalizations.of(context)!.bankLinking_otpResent,
+          style: AppTypography.bodyMedium,
+        ),
+        backgroundColor: AppColors.success,
+      ),
+    );
+    _startResendCountdown();
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/contact.dart';
@@ -34,6 +35,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final contactsAsync = ref.watch(contactsProvider);
     final favoritesAsync = ref.watch(favoritesProvider);
     final recentsAsync = ref.watch(recentsProvider);
@@ -42,27 +44,28 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         : null;
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Saved Recipients',
+        title: AppText(
+          l10n.services_recipients,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.person_add, color: colors.gold),
+            icon: Icon(Icons.person_add, color: AppColors.gold500),
             onPressed: () => _showAddRecipient(),
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: colors.gold,
-          labelColor: colors.gold,
+          indicatorColor: AppColors.gold500,
+          labelColor: AppColors.gold500,
           unselectedLabelColor: colors.textTertiary,
           tabs: [
             Tab(
@@ -85,7 +88,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         children: [
           // Search Bar
           Padding(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search recipients...',
@@ -93,7 +96,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 prefixIcon:
                     Icon(Icons.search, color: colors.textTertiary),
                 filled: true,
-                fillColor: colors.container,
+                fillColor: AppColors.charcoal,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
                   borderSide: BorderSide.none,
@@ -160,7 +163,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         }
 
         return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           itemCount: results.length,
           itemBuilder: (context, index) {
             final contact = results[index];
@@ -174,7 +177,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         );
       },
       loading: () => Center(
-        child: CircularProgressIndicator(color: colors.gold),
+        child: CircularProgressIndicator(color: AppColors.gold500),
       ),
       error: (error, stack) => Center(
         child: Column(
@@ -244,10 +247,10 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             ref.invalidate(favoritesProvider);
             ref.invalidate(recentsProvider);
           },
-          color: colors.gold,
-          backgroundColor: colors.container,
+          color: AppColors.gold500,
+          backgroundColor: AppColors.charcoal,
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             itemCount: filteredContacts.length,
             itemBuilder: (context, index) {
               final contact = filteredContacts[index];
@@ -262,7 +265,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         );
       },
       loading: () => Center(
-        child: CircularProgressIndicator(color: colors.gold),
+        child: CircularProgressIndicator(color: AppColors.gold500),
       ),
       error: (error, stack) => Center(
         child: Column(
@@ -328,7 +331,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: colors.container,
+        backgroundColor: AppColors.charcoal,
         title: Text('Delete Recipient?', style: TextStyle(color: colors.textPrimary)),
         content: Text(
           'Remove ${contact.name} from your saved recipients?',
@@ -375,7 +378,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: colors.container,
+      backgroundColor: AppColors.charcoal,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
@@ -473,8 +476,8 @@ class _RecipientCard extends StatelessWidget {
                 height: 50,
                 decoration: BoxDecoration(
                   color: contact.isJoonaPayUser
-                      ? colors.gold.withValues(alpha: 0.2)
-                      : colors.container,
+                      ? AppColors.gold500.withValues(alpha: 0.2)
+                      : AppColors.charcoal,
                   shape: BoxShape.circle,
                 ),
                 child: contact.walletAddress != null && contact.phone == null
@@ -487,7 +490,7 @@ class _RecipientCard extends StatelessWidget {
                           _getInitials(contact.name),
                           variant: AppTextVariant.titleMedium,
                           color: contact.isJoonaPayUser
-                              ? colors.gold
+                              ? AppColors.gold500
                               : colors.textSecondary,
                         ),
                       ),
@@ -512,7 +515,7 @@ class _RecipientCard extends StatelessWidget {
                           const SizedBox(width: AppSpacing.xs),
                           Icon(
                             Icons.verified,
-                            color: colors.gold,
+                            color: AppColors.gold500,
                             size: 16,
                           ),
                         ],
@@ -544,7 +547,7 @@ class _RecipientCard extends StatelessWidget {
                     child: Icon(
                       contact.isFavorite ? Icons.star : Icons.star_border,
                       color: contact.isFavorite
-                          ? colors.gold
+                          ? AppColors.gold500
                           : colors.textTertiary,
                     ),
                   ),
@@ -555,7 +558,7 @@ class _RecipientCard extends StatelessWidget {
                       vertical: AppSpacing.xxs,
                     ),
                     decoration: BoxDecoration(
-                      color: colors.gold,
+                      color: AppColors.gold500,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: AppText(
@@ -612,7 +615,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -817,7 +820,7 @@ class _TypeButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold : colors.elevated,
+          color: isSelected ? AppColors.gold500 : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Center(

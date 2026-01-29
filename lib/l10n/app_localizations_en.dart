@@ -72,6 +72,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get action_clearFilters => 'Clear Filters';
 
   @override
+  String get action_clear => 'Clear';
+
+  @override
   String get action_tryAgain => 'Try Again';
 
   @override
@@ -644,6 +647,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings_theme => 'Theme';
+
+  @override
+  String get settings_selectTheme => 'Select Theme';
+
+  @override
+  String get settings_themeLight => 'Light';
+
+  @override
+  String get settings_themeDark => 'Dark';
+
+  @override
+  String get settings_themeSystem => 'System';
 
   @override
   String get settings_notifications => 'Notifications';
@@ -1837,6 +1852,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get help_copiedToClipboard => 'Copied to clipboard';
 
   @override
+  String get help_needHelp => 'Need Help?';
+
+  @override
+  String get transactionDetails_title => 'Transaction Details';
+
+  @override
+  String get transactionDetails_transactionId => 'Transaction ID';
+
+  @override
+  String get transactionDetails_date => 'Date';
+
+  @override
+  String get transactionDetails_currency => 'Currency';
+
+  @override
+  String get transactionDetails_recipientPhone => 'Recipient Phone';
+
+  @override
+  String get transactionDetails_recipientAddress => 'Recipient Address';
+
+  @override
+  String get transactionDetails_description => 'Description';
+
+  @override
+  String get transactionDetails_additionalDetails => 'Additional Details';
+
+  @override
+  String get transactionDetails_failureReason => 'Failure Reason';
+
+  @override
+  String get filters_title => 'Filter Transactions';
+
+  @override
+  String get filters_reset => 'Reset';
+
+  @override
+  String get filters_transactionType => 'Transaction Type';
+
+  @override
+  String get filters_status => 'Status';
+
+  @override
+  String get filters_dateRange => 'Date Range';
+
+  @override
+  String get filters_amountRange => 'Amount Range';
+
+  @override
+  String get filters_sortBy => 'Sort By';
+
+  @override
+  String get filters_from => 'From';
+
+  @override
+  String get filters_to => 'To';
+
+  @override
+  String get filters_clear => 'Clear';
+
+  @override
   String get onboarding_skip => 'Skip';
 
   @override
@@ -2127,6 +2202,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savingsPots_deleteSuccess => 'Pot deleted successfully';
 
   @override
+  String get savingsPots_chooseEmoji => 'Choose an emoji';
+
+  @override
+  String get savingsPots_chooseColor => 'Choose a color';
+
+  @override
   String get sendExternal_title => 'Send to External Wallet';
 
   @override
@@ -2358,6 +2439,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get billPayments_returnHome => 'Return Home';
 
   @override
+  String billPayments_payProvider(String providerName) {
+    return 'Pay $providerName';
+  }
+
+  @override
+  String billPayments_enterField(String field) {
+    return 'Enter $field';
+  }
+
+  @override
+  String billPayments_pleaseEnterField(String field) {
+    return 'Please enter $field';
+  }
+
+  @override
+  String billPayments_fieldMustBeLength(String field, int length) {
+    return '$field must be $length characters';
+  }
+
+  @override
+  String get billPayments_meterNumber => 'Meter Number';
+
+  @override
+  String get billPayments_enterMeterNumber => 'Enter meter number';
+
+  @override
+  String get billPayments_pleaseEnterMeterNumber => 'Please enter meter number';
+
+  @override
+  String billPayments_outstanding(String amount, String currency) {
+    return 'Outstanding: $amount $currency';
+  }
+
+  @override
+  String get billPayments_pleaseEnterAmount => 'Please enter amount';
+
+  @override
+  String get billPayments_pleaseEnterValidAmount =>
+      'Please enter a valid amount';
+
+  @override
+  String billPayments_minimumAmount(int amount, String currency) {
+    return 'Minimum amount is $amount $currency';
+  }
+
+  @override
+  String billPayments_maximumAmount(int amount, String currency) {
+    return 'Maximum amount is $amount $currency';
+  }
+
+  @override
+  String billPayments_minMaxRange(int min, int max, String currency) {
+    return 'Min: $min - Max: $max $currency';
+  }
+
+  @override
+  String billPayments_available(String amount, String currency) {
+    return 'Available: $amount $currency';
+  }
+
+  @override
+  String billPayments_payAmount(String amount, String currency) {
+    return 'Pay $amount $currency';
+  }
+
+  @override
+  String billPayments_enterPinToPay(String providerName) {
+    return 'Enter your PIN to pay $providerName';
+  }
+
+  @override
+  String get billPayments_paymentFailed => 'Payment failed';
+
+  @override
+  String get billPayments_noProvidersAvailable =>
+      'No providers available for this category';
+
+  @override
+  String get billPayments_feeNone => 'No fee';
+
+  @override
+  String billPayments_feePercentage(String percentage) {
+    return '$percentage% fee';
+  }
+
+  @override
+  String billPayments_feeFixed(int amount, String currency) {
+    return '$amount $currency fee';
+  }
+
+  @override
+  String get billPayments_statusCompleted => 'Completed';
+
+  @override
+  String get billPayments_statusPending => 'Pending';
+
+  @override
+  String get billPayments_statusProcessing => 'Processing';
+
+  @override
+  String get billPayments_statusFailed => 'Failed';
+
+  @override
+  String get billPayments_statusRefunded => 'Refunded';
+
+  @override
   String get navigation_cards => 'Cards';
 
   @override
@@ -2409,6 +2596,202 @@ class AppLocalizationsEn extends AppLocalizations {
       'You\'ll be notified when cards are available';
 
   @override
+  String get cards_featureDisabled => 'Virtual cards feature is not available';
+
+  @override
+  String get cards_noCards => 'No Cards Yet';
+
+  @override
+  String get cards_noCardsDescription =>
+      'Request your first virtual card to start making online purchases';
+
+  @override
+  String get cards_requestCard => 'Request Card';
+
+  @override
+  String get cards_cardDetails => 'Card Details';
+
+  @override
+  String get cards_cardNotFound => 'Card not found';
+
+  @override
+  String get cards_cardInformation => 'Card Information';
+
+  @override
+  String get cards_cardNumber => 'Card Number';
+
+  @override
+  String get cards_cvv => 'CVV';
+
+  @override
+  String get cards_expiryDate => 'Expiry Date';
+
+  @override
+  String get cards_spendingLimit => 'Spending Limit';
+
+  @override
+  String get cards_spent => 'Spent';
+
+  @override
+  String get cards_limit => 'Limit';
+
+  @override
+  String get cards_viewTransactions => 'View Transactions';
+
+  @override
+  String get cards_freezeCard => 'Freeze Card';
+
+  @override
+  String get cards_unfreezeCard => 'Unfreeze Card';
+
+  @override
+  String get cards_freezeConfirmation =>
+      'Are you sure you want to freeze this card? You can unfreeze it anytime.';
+
+  @override
+  String get cards_unfreezeConfirmation =>
+      'Are you sure you want to unfreeze this card?';
+
+  @override
+  String get cards_cardFrozen => 'Card frozen successfully';
+
+  @override
+  String get cards_cardUnfrozen => 'Card unfrozen successfully';
+
+  @override
+  String get cards_copiedToClipboard => 'Copied to clipboard';
+
+  @override
+  String get cards_requestInfo =>
+      'Your virtual card will be ready instantly after approval. Requires KYC Level 2.';
+
+  @override
+  String get cards_cardholderName => 'Cardholder Name';
+
+  @override
+  String get cards_cardholderNameHint => 'Enter name as it appears on card';
+
+  @override
+  String get cards_nameRequired => 'Cardholder name is required';
+
+  @override
+  String get cards_spendingLimitHint => 'Enter spending limit in USD';
+
+  @override
+  String get cards_limitRequired => 'Spending limit is required';
+
+  @override
+  String get cards_limitInvalid => 'Invalid spending limit';
+
+  @override
+  String get cards_limitTooLow => 'Minimum spending limit is \$10';
+
+  @override
+  String get cards_limitTooHigh => 'Maximum spending limit is \$10,000';
+
+  @override
+  String get cards_cardFeatures => 'Card Features';
+
+  @override
+  String get cards_featureOnlineShopping => 'Shop online worldwide';
+
+  @override
+  String get cards_featureSecure => 'Secure and encrypted';
+
+  @override
+  String get cards_featureFreeze => 'Freeze and unfreeze instantly';
+
+  @override
+  String get cards_featureAlerts => 'Real-time transaction alerts';
+
+  @override
+  String get cards_requestCardSubmit => 'Request Virtual Card';
+
+  @override
+  String get cards_kycRequired => 'KYC Verification Required';
+
+  @override
+  String get cards_kycRequiredDescription =>
+      'You need to complete KYC Level 2 verification to request a virtual card.';
+
+  @override
+  String get cards_completeKYC => 'Complete KYC';
+
+  @override
+  String get cards_requestSuccess => 'Card requested successfully';
+
+  @override
+  String get cards_requestFailed => 'Failed to request card';
+
+  @override
+  String get cards_cardSettings => 'Card Settings';
+
+  @override
+  String get cards_cardStatus => 'Card Status';
+
+  @override
+  String get cards_statusActive => 'Active';
+
+  @override
+  String get cards_statusFrozen => 'Frozen';
+
+  @override
+  String get cards_statusActiveDescription =>
+      'Your card is active and ready to use';
+
+  @override
+  String get cards_statusFrozenDescription =>
+      'Your card is frozen and cannot be used';
+
+  @override
+  String get cards_currentLimit => 'Current Limit';
+
+  @override
+  String get cards_availableLimit => 'Available';
+
+  @override
+  String get cards_updateLimit => 'Update Limit';
+
+  @override
+  String get cards_newLimit => 'New Limit';
+
+  @override
+  String get cards_limitRange => 'Limit must be between \$10 and \$10,000';
+
+  @override
+  String get cards_limitUpdated => 'Spending limit updated successfully';
+
+  @override
+  String get cards_dangerZone => 'Danger Zone';
+
+  @override
+  String get cards_blockCard => 'Block Card';
+
+  @override
+  String get cards_blockCardDescription =>
+      'Permanently block this card. This action cannot be undone.';
+
+  @override
+  String get cards_blockCardButton => 'Block Card Permanently';
+
+  @override
+  String get cards_blockCardConfirmation =>
+      'Are you sure you want to permanently block this card? This action cannot be undone and you\'ll need to request a new card.';
+
+  @override
+  String get cards_cardBlocked => 'Card blocked successfully';
+
+  @override
+  String get cards_transactions => 'Card Transactions';
+
+  @override
+  String get cards_noTransactions => 'No Transactions';
+
+  @override
+  String get cards_noTransactionsDescription =>
+      'You haven\'t made any purchases with this card yet';
+
+  @override
   String get insights_title => 'Insights';
 
   @override
@@ -2450,6 +2833,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get insights_export_report => 'Export Report';
+
+  @override
+  String get insights_daily_spending => 'Daily Spending';
+
+  @override
+  String get insights_daily_average => 'Daily Avg';
+
+  @override
+  String get insights_highest_day => 'Highest';
+
+  @override
+  String get insights_income_vs_expenses => 'Income vs Expenses';
+
+  @override
+  String get insights_income => 'Income';
+
+  @override
+  String get insights_expenses => 'Expenses';
 
   @override
   String get contacts_title => 'Contacts';
@@ -2782,6 +3183,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get limits_maxTier => 'You have the highest tier';
 
   @override
+  String get limits_singleTransaction => 'Single Transaction';
+
+  @override
+  String get limits_withdrawal => 'Withdrawal Limit';
+
+  @override
+  String get limits_resetIn => 'Resets in';
+
+  @override
+  String get limits_hours => 'hours';
+
+  @override
+  String get limits_minutes => 'minutes';
+
+  @override
+  String get limits_otherLimits => 'Other Limits';
+
+  @override
   String get limits_noData => 'No limit data available';
 
   @override
@@ -2968,7 +3387,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paymentLinks_viewTransaction => 'View Transaction';
 
   @override
+  String get paymentLinks_payTitle => 'Pay via Link';
+
+  @override
+  String get paymentLinks_payingTo => 'Paying to';
+
+  @override
+  String paymentLinks_payAmount(String amount) {
+    return 'Pay $amount';
+  }
+
+  @override
+  String get paymentLinks_paymentFor => 'Payment for';
+
+  @override
+  String get paymentLinks_linkExpiredTitle => 'Link Expired';
+
+  @override
+  String get paymentLinks_linkExpiredMessage =>
+      'This payment link has expired and can no longer be used';
+
+  @override
+  String get paymentLinks_linkPaidTitle => 'Already Paid';
+
+  @override
+  String get paymentLinks_linkPaidMessage =>
+      'This payment link has already been paid';
+
+  @override
+  String get paymentLinks_linkNotFoundTitle => 'Link Not Found';
+
+  @override
+  String get paymentLinks_linkNotFoundMessage =>
+      'This payment link doesn\'t exist or has been cancelled';
+
+  @override
+  String get paymentLinks_paymentSuccess => 'Payment Successful';
+
+  @override
+  String get paymentLinks_paymentSuccessMessage =>
+      'Your payment has been sent successfully';
+
+  @override
+  String get paymentLinks_insufficientBalance =>
+      'Insufficient balance to complete this payment';
+
+  @override
   String get common_done => 'Done';
+
+  @override
+  String get common_close => 'Close';
+
+  @override
+  String get common_unknown => 'Unknown';
 
   @override
   String get common_yes => 'Yes';
@@ -3020,4 +3491,1168 @@ class AppLocalizationsEn extends AppLocalizations {
   String offline_lastSynced(String time) {
     return 'Last synced: $time';
   }
+
+  @override
+  String get referrals_title => 'Refer & Earn';
+
+  @override
+  String get referrals_subtitle => 'Invite friends and earn rewards together';
+
+  @override
+  String get referrals_earnAmount => 'Earn \$5';
+
+  @override
+  String get referrals_earnDescription =>
+      'for each friend who signs up and makes their first deposit';
+
+  @override
+  String get referrals_yourCode => 'Your Referral Code';
+
+  @override
+  String get referrals_shareLink => 'Share Link';
+
+  @override
+  String get referrals_invite => 'Invite';
+
+  @override
+  String get referrals_yourRewards => 'Your Rewards';
+
+  @override
+  String get referrals_friendsInvited => 'Friends Invited';
+
+  @override
+  String get referrals_totalEarned => 'Total Earned';
+
+  @override
+  String get referrals_howItWorks => 'How it works';
+
+  @override
+  String get referrals_step1Title => 'Share your code';
+
+  @override
+  String get referrals_step1Description =>
+      'Send your referral code or link to friends';
+
+  @override
+  String get referrals_step2Title => 'Friend signs up';
+
+  @override
+  String get referrals_step2Description =>
+      'They create an account using your code';
+
+  @override
+  String get referrals_step3Title => 'First deposit';
+
+  @override
+  String get referrals_step3Description =>
+      'They make their first deposit of \$10 or more';
+
+  @override
+  String get referrals_step4Title => 'You both earn!';
+
+  @override
+  String get referrals_step4Description =>
+      'You get \$5, and your friend gets \$5 too';
+
+  @override
+  String get referrals_history => 'Referral History';
+
+  @override
+  String get referrals_noReferrals => 'No referrals yet';
+
+  @override
+  String get referrals_startInviting =>
+      'Start inviting friends to see your rewards here';
+
+  @override
+  String get referrals_codeCopied => 'Referral code copied!';
+
+  @override
+  String referrals_shareMessage(String code) {
+    return 'Join JoonaPay and get \$5 bonus on your first deposit! Use my referral code: $code\n\nDownload now: https://joonapay.com/download';
+  }
+
+  @override
+  String get referrals_shareSubject => 'Join JoonaPay - Get \$5 bonus!';
+
+  @override
+  String get referrals_inviteComingSoon => 'Contact invite coming soon';
+
+  @override
+  String get analytics_title => 'Analytics';
+
+  @override
+  String get analytics_income => 'Income';
+
+  @override
+  String get analytics_expenses => 'Expenses';
+
+  @override
+  String get analytics_netChange => 'Net Change';
+
+  @override
+  String get analytics_surplus => 'Surplus';
+
+  @override
+  String get analytics_deficit => 'Deficit';
+
+  @override
+  String get analytics_spendingByCategory => 'Spending by Category';
+
+  @override
+  String get analytics_categoryDetails => 'Category Details';
+
+  @override
+  String get analytics_transactionFrequency => 'Transaction Frequency';
+
+  @override
+  String get analytics_insights => 'Insights';
+
+  @override
+  String get analytics_period7Days => '7 Days';
+
+  @override
+  String get analytics_period30Days => '30 Days';
+
+  @override
+  String get analytics_period90Days => '90 Days';
+
+  @override
+  String get analytics_period1Year => '1 Year';
+
+  @override
+  String get analytics_categoryTransfers => 'Transfers';
+
+  @override
+  String get analytics_categoryWithdrawals => 'Withdrawals';
+
+  @override
+  String get analytics_categoryBills => 'Bills';
+
+  @override
+  String get analytics_categoryOther => 'Other';
+
+  @override
+  String analytics_transactions(int count) {
+    return '$count transactions';
+  }
+
+  @override
+  String get analytics_insightSpendingDown => 'Spending Down';
+
+  @override
+  String get analytics_insightSpendingDownDesc =>
+      'Your spending is 5.2% lower than last month. Great job!';
+
+  @override
+  String get analytics_insightSavings => 'Savings Opportunity';
+
+  @override
+  String get analytics_insightSavingsDesc =>
+      'You could save \$50/month by reducing withdrawal fees.';
+
+  @override
+  String get analytics_insightPeakActivity => 'Peak Activity';
+
+  @override
+  String get analytics_insightPeakActivityDesc =>
+      'Most of your transactions happen on Thursdays.';
+
+  @override
+  String get analytics_exportingReport => 'Exporting report...';
+
+  @override
+  String get converter_title => 'Currency Converter';
+
+  @override
+  String get converter_from => 'From';
+
+  @override
+  String get converter_to => 'To';
+
+  @override
+  String get converter_selectCurrency => 'Select Currency';
+
+  @override
+  String get converter_rateInfo => 'Rate Information';
+
+  @override
+  String get converter_rateDisclaimer =>
+      'Exchange rates are for informational purposes only and may differ from actual transaction rates. Rates are updated every hour.';
+
+  @override
+  String get converter_quickAmounts => 'Quick Amounts';
+
+  @override
+  String get converter_popularCurrencies => 'Popular Currencies';
+
+  @override
+  String get converter_perUsdc => 'per USDC';
+
+  @override
+  String get converter_ratesUpdated => 'Exchange rates updated';
+
+  @override
+  String get converter_updatedJustNow => 'Updated just now';
+
+  @override
+  String converter_exchangeRate(String from, String rate, String to) {
+    return '1 $from = $rate $to';
+  }
+
+  @override
+  String get currency_usd => 'US Dollar';
+
+  @override
+  String get currency_usdc => 'USD Coin';
+
+  @override
+  String get currency_eur => 'Euro';
+
+  @override
+  String get currency_gbp => 'British Pound';
+
+  @override
+  String get currency_xof => 'West African CFA Franc';
+
+  @override
+  String get currency_ngn => 'Nigerian Naira';
+
+  @override
+  String get currency_kes => 'Kenyan Shilling';
+
+  @override
+  String get currency_zar => 'South African Rand';
+
+  @override
+  String get currency_ghs => 'Ghanaian Cedi';
+
+  @override
+  String get settings_accountType => 'Account Type';
+
+  @override
+  String get settings_personalAccount => 'Personal';
+
+  @override
+  String get settings_businessAccount => 'Business';
+
+  @override
+  String get settings_selectAccountType => 'Select Account Type';
+
+  @override
+  String get settings_personalAccountDescription => 'For individual use';
+
+  @override
+  String get settings_businessAccountDescription => 'For business operations';
+
+  @override
+  String get settings_switchedToPersonal => 'Switched to Personal account';
+
+  @override
+  String get settings_switchedToBusiness => 'Switched to Business account';
+
+  @override
+  String get business_setupTitle => 'Business Setup';
+
+  @override
+  String get business_setupDescription =>
+      'Set up your business profile to unlock business features';
+
+  @override
+  String get business_businessName => 'Business Name';
+
+  @override
+  String get business_registrationNumber => 'Registration Number';
+
+  @override
+  String get business_businessType => 'Business Type';
+
+  @override
+  String get business_businessAddress => 'Business Address';
+
+  @override
+  String get business_taxId => 'Tax ID';
+
+  @override
+  String get business_verificationNote =>
+      'Your business will need to undergo verification (KYB) before you can access all business features.';
+
+  @override
+  String get business_completeSetup => 'Complete Setup';
+
+  @override
+  String get business_setupSuccess => 'Business profile created successfully';
+
+  @override
+  String get business_profileTitle => 'Business Profile';
+
+  @override
+  String get business_noProfile => 'No business profile found';
+
+  @override
+  String get business_setupNow => 'Set Up Business Profile';
+
+  @override
+  String get business_verified => 'Business Verified';
+
+  @override
+  String get business_verifiedDescription =>
+      'Your business has been successfully verified';
+
+  @override
+  String get business_verificationPending => 'Verification Pending';
+
+  @override
+  String get business_verificationPendingDescription =>
+      'Your business verification is under review';
+
+  @override
+  String get business_information => 'Business Information';
+
+  @override
+  String get business_completeVerification => 'Complete Business Verification';
+
+  @override
+  String get business_kybDescription =>
+      'Verify your business to unlock all features';
+
+  @override
+  String get business_kybTitle => 'Business Verification (KYB)';
+
+  @override
+  String get business_kybInfo =>
+      'Business verification allows you to:\n\n• Accept higher transaction limits\n• Access advanced reporting\n• Enable merchant features\n• Build trust with customers\n\nVerification typically takes 2-3 business days.';
+
+  @override
+  String get action_close => 'Close';
+
+  @override
+  String get subBusiness_title => 'Sub-Businesses';
+
+  @override
+  String get subBusiness_emptyTitle => 'No Sub-Businesses Yet';
+
+  @override
+  String get subBusiness_emptyMessage =>
+      'Create departments, branches, or teams to organize your business operations.';
+
+  @override
+  String get subBusiness_createFirst => 'Create First Sub-Business';
+
+  @override
+  String get subBusiness_totalBalance => 'Total Balance';
+
+  @override
+  String get subBusiness_unit => 'unit';
+
+  @override
+  String get subBusiness_units => 'units';
+
+  @override
+  String get subBusiness_listTitle => 'All Sub-Businesses';
+
+  @override
+  String get subBusiness_createTitle => 'Create Sub-Business';
+
+  @override
+  String get subBusiness_nameLabel => 'Name';
+
+  @override
+  String get subBusiness_descriptionLabel => 'Description (Optional)';
+
+  @override
+  String get subBusiness_typeLabel => 'Type';
+
+  @override
+  String get subBusiness_typeDepartment => 'Department';
+
+  @override
+  String get subBusiness_typeBranch => 'Branch';
+
+  @override
+  String get subBusiness_typeSubsidiary => 'Subsidiary';
+
+  @override
+  String get subBusiness_typeTeam => 'Team';
+
+  @override
+  String get subBusiness_createInfo =>
+      'Each sub-business will have its own wallet for tracking income and expenses separately.';
+
+  @override
+  String get subBusiness_createButton => 'Create Sub-Business';
+
+  @override
+  String get subBusiness_createSuccess => 'Sub-business created successfully';
+
+  @override
+  String get subBusiness_balance => 'Balance';
+
+  @override
+  String get subBusiness_transfer => 'Transfer';
+
+  @override
+  String get subBusiness_transactions => 'Transactions';
+
+  @override
+  String get subBusiness_information => 'Information';
+
+  @override
+  String get subBusiness_type => 'Type';
+
+  @override
+  String get subBusiness_description => 'Description';
+
+  @override
+  String get subBusiness_created => 'Created';
+
+  @override
+  String get subBusiness_staff => 'Staff';
+
+  @override
+  String get subBusiness_manageStaff => 'Manage Staff';
+
+  @override
+  String get subBusiness_noStaff =>
+      'No staff members yet. Add team members to give them access to this sub-business.';
+
+  @override
+  String get subBusiness_addFirstStaff => 'Add Staff Member';
+
+  @override
+  String get subBusiness_viewAllStaff => 'View All Staff';
+
+  @override
+  String get subBusiness_staffTitle => 'Staff Management';
+
+  @override
+  String get subBusiness_noStaffTitle => 'No Staff Members';
+
+  @override
+  String get subBusiness_noStaffMessage =>
+      'Invite team members to collaborate on this sub-business.';
+
+  @override
+  String get subBusiness_staffInfo =>
+      'Staff members can view and manage this sub-business based on their assigned role.';
+
+  @override
+  String get subBusiness_member => 'member';
+
+  @override
+  String get subBusiness_members => 'members';
+
+  @override
+  String get subBusiness_addStaffTitle => 'Add Staff Member';
+
+  @override
+  String get subBusiness_phoneLabel => 'Phone Number';
+
+  @override
+  String get subBusiness_roleLabel => 'Role';
+
+  @override
+  String get subBusiness_roleOwner => 'Owner';
+
+  @override
+  String get subBusiness_roleAdmin => 'Admin';
+
+  @override
+  String get subBusiness_roleViewer => 'Viewer';
+
+  @override
+  String get subBusiness_roleOwnerDesc => 'Full access to manage everything';
+
+  @override
+  String get subBusiness_roleAdminDesc => 'Can manage and transfer funds';
+
+  @override
+  String get subBusiness_roleViewerDesc => 'Can only view transactions';
+
+  @override
+  String get subBusiness_inviteButton => 'Invite';
+
+  @override
+  String get subBusiness_inviteSuccess => 'Staff member invited successfully';
+
+  @override
+  String get subBusiness_changeRole => 'Change Role';
+
+  @override
+  String get subBusiness_removeStaff => 'Remove Staff';
+
+  @override
+  String get subBusiness_changeRoleTitle => 'Change Role';
+
+  @override
+  String get subBusiness_roleUpdateSuccess => 'Role updated successfully';
+
+  @override
+  String get subBusiness_removeStaffTitle => 'Remove Staff Member';
+
+  @override
+  String get subBusiness_removeStaffConfirm =>
+      'Are you sure you want to remove this staff member? They will lose access to this sub-business.';
+
+  @override
+  String get subBusiness_removeButton => 'Remove';
+
+  @override
+  String get subBusiness_removeSuccess => 'Staff member removed successfully';
+
+  @override
+  String get bulkPayments_title => 'Bulk Payments';
+
+  @override
+  String get bulkPayments_uploadCsv => 'Upload CSV File';
+
+  @override
+  String get bulkPayments_emptyTitle => 'No bulk payments yet';
+
+  @override
+  String get bulkPayments_emptyDescription =>
+      'Upload a CSV file to send payments to multiple recipients at once';
+
+  @override
+  String get bulkPayments_active => 'Active Batches';
+
+  @override
+  String get bulkPayments_completed => 'Completed';
+
+  @override
+  String get bulkPayments_failed => 'Failed';
+
+  @override
+  String get bulkPayments_uploadTitle => 'Upload Bulk Payments';
+
+  @override
+  String get bulkPayments_instructions => 'Instructions';
+
+  @override
+  String get bulkPayments_instructionsDescription =>
+      'Upload a CSV file containing phone numbers, amounts, and descriptions for multiple payments';
+
+  @override
+  String get bulkPayments_uploadFile => 'Upload File';
+
+  @override
+  String get bulkPayments_selectFile => 'Tap to select CSV file';
+
+  @override
+  String get bulkPayments_csvOnly => 'CSV files only';
+
+  @override
+  String get bulkPayments_csvFormat => 'CSV Format';
+
+  @override
+  String get bulkPayments_phoneFormat =>
+      'Phone: International format (+225...)';
+
+  @override
+  String get bulkPayments_amountFormat => 'Amount: Numeric value (50.00)';
+
+  @override
+  String get bulkPayments_descriptionFormat => 'Description: Required text';
+
+  @override
+  String get bulkPayments_example => 'Example';
+
+  @override
+  String get bulkPayments_preview => 'Preview Payments';
+
+  @override
+  String get bulkPayments_totalPayments => 'Total Payments';
+
+  @override
+  String get bulkPayments_totalAmount => 'Total Amount';
+
+  @override
+  String bulkPayments_errorsFound(int count) {
+    return '$count errors found';
+  }
+
+  @override
+  String get bulkPayments_fixErrors => 'Please fix errors before submitting';
+
+  @override
+  String get bulkPayments_showInvalidOnly => 'Show invalid only';
+
+  @override
+  String get bulkPayments_noPayments => 'No payments to display';
+
+  @override
+  String get bulkPayments_submitBatch => 'Submit Batch';
+
+  @override
+  String get bulkPayments_confirmSubmit => 'Confirm Batch Submission';
+
+  @override
+  String bulkPayments_confirmMessage(int count, String amount) {
+    return 'Send $count payments totaling $amount?';
+  }
+
+  @override
+  String get bulkPayments_submitSuccess => 'Batch submitted successfully';
+
+  @override
+  String get bulkPayments_batchStatus => 'Batch Status';
+
+  @override
+  String get bulkPayments_progress => 'Progress';
+
+  @override
+  String get bulkPayments_successful => 'Successful';
+
+  @override
+  String get bulkPayments_pending => 'Pending';
+
+  @override
+  String get bulkPayments_details => 'Details';
+
+  @override
+  String get bulkPayments_createdAt => 'Created';
+
+  @override
+  String get bulkPayments_processedAt => 'Processed';
+
+  @override
+  String get bulkPayments_failedPayments => 'Failed Payments';
+
+  @override
+  String get bulkPayments_failedDescription =>
+      'Download a report of failed payments to retry';
+
+  @override
+  String get bulkPayments_downloadReport => 'Download Report';
+
+  @override
+  String get bulkPayments_failedReportTitle => 'Failed Payments Report';
+
+  @override
+  String get bulkPayments_downloadFailed => 'Failed to download report';
+
+  @override
+  String get bulkPayments_statusDraft => 'Draft';
+
+  @override
+  String get bulkPayments_statusPending => 'Pending';
+
+  @override
+  String get bulkPayments_statusProcessing => 'Processing';
+
+  @override
+  String get bulkPayments_statusCompleted => 'Completed';
+
+  @override
+  String get bulkPayments_statusPartial => 'Partially Completed';
+
+  @override
+  String get bulkPayments_statusFailed => 'Failed';
+
+  @override
+  String get expenses_title => 'Expenses';
+
+  @override
+  String get expenses_emptyTitle => 'No Expenses Yet';
+
+  @override
+  String get expenses_emptyMessage =>
+      'Start tracking your expenses by capturing receipts or adding them manually';
+
+  @override
+  String get expenses_captureReceipt => 'Capture Receipt';
+
+  @override
+  String get expenses_addManually => 'Add Manually';
+
+  @override
+  String get expenses_addExpense => 'Add Expense';
+
+  @override
+  String get expenses_totalExpenses => 'Total Expenses';
+
+  @override
+  String get expenses_items => 'items';
+
+  @override
+  String get expenses_category => 'Category';
+
+  @override
+  String get expenses_amount => 'Amount';
+
+  @override
+  String get expenses_vendor => 'Vendor';
+
+  @override
+  String get expenses_date => 'Date';
+
+  @override
+  String get expenses_time => 'Time';
+
+  @override
+  String get expenses_description => 'Description';
+
+  @override
+  String get expenses_categoryTravel => 'Travel';
+
+  @override
+  String get expenses_categoryMeals => 'Meals';
+
+  @override
+  String get expenses_categoryOffice => 'Office';
+
+  @override
+  String get expenses_categoryTransport => 'Transport';
+
+  @override
+  String get expenses_categoryOther => 'Other';
+
+  @override
+  String get expenses_errorAmountRequired => 'Amount is required';
+
+  @override
+  String get expenses_errorInvalidAmount => 'Invalid amount';
+
+  @override
+  String get expenses_addedSuccessfully => 'Expense added successfully';
+
+  @override
+  String get expenses_positionReceipt =>
+      'Position the receipt within the frame';
+
+  @override
+  String get expenses_receiptPreview => 'Receipt Preview';
+
+  @override
+  String get expenses_processingReceipt => 'Processing receipt...';
+
+  @override
+  String get expenses_extractedData => 'Extracted Data';
+
+  @override
+  String get expenses_confirmAndEdit => 'Confirm & Edit';
+
+  @override
+  String get expenses_retake => 'Retake Photo';
+
+  @override
+  String get expenses_confirmDetails => 'Confirm Details';
+
+  @override
+  String get expenses_saveExpense => 'Save Expense';
+
+  @override
+  String get expenses_expenseDetails => 'Expense Details';
+
+  @override
+  String get expenses_details => 'Details';
+
+  @override
+  String get expenses_linkedTransaction => 'Linked Transaction';
+
+  @override
+  String get expenses_deleteExpense => 'Delete Expense';
+
+  @override
+  String get expenses_deleteConfirmation =>
+      'Are you sure you want to delete this expense?';
+
+  @override
+  String get expenses_deletedSuccessfully => 'Expense deleted successfully';
+
+  @override
+  String get expenses_reports => 'Expense Reports';
+
+  @override
+  String get expenses_viewReports => 'View Reports';
+
+  @override
+  String get expenses_reportPeriod => 'Report Period';
+
+  @override
+  String get expenses_startDate => 'Start Date';
+
+  @override
+  String get expenses_endDate => 'End Date';
+
+  @override
+  String get expenses_reportSummary => 'Summary';
+
+  @override
+  String get expenses_averageExpense => 'Average Expense';
+
+  @override
+  String get expenses_byCategory => 'By Category';
+
+  @override
+  String get expenses_exportPdf => 'Export as PDF';
+
+  @override
+  String get expenses_exportCsv => 'Export as CSV';
+
+  @override
+  String get expenses_reportGenerated => 'Report generated successfully';
+
+  @override
+  String get notifications_title => 'Notifications';
+
+  @override
+  String get notifications_markAllRead => 'Mark all read';
+
+  @override
+  String get notifications_emptyTitle => 'No Notifications';
+
+  @override
+  String get notifications_emptyMessage => 'You\'re all caught up!';
+
+  @override
+  String get notifications_errorTitle => 'Failed to Load';
+
+  @override
+  String get notifications_errorGeneric => 'An error occurred';
+
+  @override
+  String get notifications_timeJustNow => 'Just now';
+
+  @override
+  String notifications_timeMinutesAgo(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}m ago';
+  }
+
+  @override
+  String notifications_timeHoursAgo(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}h ago';
+  }
+
+  @override
+  String notifications_timeDaysAgo(int count) {
+    final intl.NumberFormat countNumberFormat = intl.NumberFormat.compact(
+      locale: localeName,
+    );
+    final String countString = countNumberFormat.format(count);
+
+    return '${countString}d ago';
+  }
+
+  @override
+  String get security_title => 'Security';
+
+  @override
+  String get security_authentication => 'Authentication';
+
+  @override
+  String get security_changePin => 'Change PIN';
+
+  @override
+  String get security_changePinSubtitle => 'Update your 4-digit PIN';
+
+  @override
+  String get security_biometricLogin => 'Biometric Login';
+
+  @override
+  String get security_biometricSubtitle => 'Use Face ID or fingerprint';
+
+  @override
+  String get security_biometricNotAvailable => 'Not available on this device';
+
+  @override
+  String get security_biometricUnavailableMessage =>
+      'Biometric authentication is not available on this device';
+
+  @override
+  String get security_biometricVerifyReason =>
+      'Verify to enable biometric login';
+
+  @override
+  String get security_loading => 'Loading...';
+
+  @override
+  String get security_checkingAvailability => 'Checking availability...';
+
+  @override
+  String get security_errorLoadingState => 'Error loading state';
+
+  @override
+  String get security_errorCheckingAvailability =>
+      'Error checking availability';
+
+  @override
+  String get security_twoFactorAuth => 'Two-Factor Authentication';
+
+  @override
+  String get security_twoFactorEnabledSubtitle =>
+      'Enabled via Authenticator app';
+
+  @override
+  String get security_twoFactorDisabledSubtitle => 'Add extra protection';
+
+  @override
+  String get security_transactionSecurity => 'Transaction Security';
+
+  @override
+  String get security_requirePinForTransactions =>
+      'Require PIN for Transactions';
+
+  @override
+  String get security_requirePinSubtitle => 'Confirm all transactions with PIN';
+
+  @override
+  String get security_alerts => 'Security Alerts';
+
+  @override
+  String get security_loginNotifications => 'Login Notifications';
+
+  @override
+  String get security_loginNotificationsSubtitle =>
+      'Get notified of new logins';
+
+  @override
+  String get security_newDeviceAlerts => 'New Device Alerts';
+
+  @override
+  String get security_newDeviceAlertsSubtitle =>
+      'Alert when a new device is used';
+
+  @override
+  String get security_sessions => 'Sessions';
+
+  @override
+  String get security_devices => 'Devices';
+
+  @override
+  String get security_devicesSubtitle => 'Manage your devices';
+
+  @override
+  String get security_activeSessions => 'Active Sessions';
+
+  @override
+  String get security_activeSessionsSubtitle => 'Manage your active sessions';
+
+  @override
+  String get security_logoutAllDevices => 'Log Out All Devices';
+
+  @override
+  String get security_logoutAllDevicesSubtitle =>
+      'Sign out from all other devices';
+
+  @override
+  String get security_privacy => 'Privacy';
+
+  @override
+  String get security_loginHistory => 'Login History';
+
+  @override
+  String get security_loginHistorySubtitle => 'View recent login activity';
+
+  @override
+  String get security_deleteAccount => 'Delete Account';
+
+  @override
+  String get security_deleteAccountSubtitle =>
+      'Permanently delete your account';
+
+  @override
+  String get security_scoreTitle => 'Security Score';
+
+  @override
+  String get security_scoreExcellent =>
+      'Excellent! Your account is well protected.';
+
+  @override
+  String get security_scoreGood =>
+      'Good security. A few improvements possible.';
+
+  @override
+  String get security_scoreModerate =>
+      'Moderate security. Enable more features.';
+
+  @override
+  String get security_scoreLow =>
+      'Low security. Please enable protection features.';
+
+  @override
+  String get security_tipEnable2FA =>
+      'Enable 2FA to increase your score by 25 points';
+
+  @override
+  String get security_tipEnableBiometrics =>
+      'Enable biometrics for easier secure login';
+
+  @override
+  String get security_tipRequirePin =>
+      'Require PIN for transactions for extra safety';
+
+  @override
+  String get security_tipEnableNotifications =>
+      'Enable all notifications for maximum security';
+
+  @override
+  String get security_setup2FATitle => 'Set Up Two-Factor Authentication';
+
+  @override
+  String get security_setup2FAMessage =>
+      'Use an authenticator app like Google Authenticator or Authy for enhanced security.';
+
+  @override
+  String get security_continueSetup => 'Continue Setup';
+
+  @override
+  String get security_2FAEnabledSuccess => '2FA enabled successfully';
+
+  @override
+  String get security_disable2FATitle => 'Disable 2FA?';
+
+  @override
+  String get security_disable2FAMessage =>
+      'This will make your account less secure. Are you sure?';
+
+  @override
+  String get security_disable => 'Disable';
+
+  @override
+  String get security_logoutAllTitle => 'Log Out All Devices?';
+
+  @override
+  String get security_logoutAllMessage =>
+      'You will be logged out from all other devices. You will need to log in again on those devices.';
+
+  @override
+  String get security_logoutAll => 'Log Out All';
+
+  @override
+  String get security_logoutAllSuccess =>
+      'All other devices have been logged out';
+
+  @override
+  String get security_loginHistoryTitle => 'Login History';
+
+  @override
+  String get security_loginSuccess => 'Success';
+
+  @override
+  String get security_loginFailed => 'Failed';
+
+  @override
+  String get security_deleteAccountTitle => 'Delete Account?';
+
+  @override
+  String get security_deleteAccountMessage =>
+      'This action is permanent and cannot be undone. All your data, transaction history, and funds will be lost.';
+
+  @override
+  String get security_delete => 'Delete';
+
+  @override
+  String get profile_title => 'Profile';
+
+  @override
+  String get profile_kycStatus => 'KYC Status';
+
+  @override
+  String get profile_country => 'Country';
+
+  @override
+  String get profile_notSet => 'Not set';
+
+  @override
+  String get profile_verify => 'Verify';
+
+  @override
+  String get profile_kycNotVerified => 'Not Verified';
+
+  @override
+  String get profile_kycPending => 'Pending Review';
+
+  @override
+  String get profile_kycVerified => 'Verified';
+
+  @override
+  String get profile_kycRejected => 'Rejected';
+
+  @override
+  String get profile_countryIvoryCoast => 'Ivory Coast';
+
+  @override
+  String get profile_countryNigeria => 'Nigeria';
+
+  @override
+  String get profile_countryKenya => 'Kenya';
+
+  @override
+  String get profile_countryGhana => 'Ghana';
+
+  @override
+  String get profile_countrySenegal => 'Senegal';
+
+  @override
+  String get changePin_title => 'Change PIN';
+
+  @override
+  String get changePin_newPinTitle => 'New PIN';
+
+  @override
+  String get changePin_confirmTitle => 'Confirm PIN';
+
+  @override
+  String get changePin_enterCurrentPinTitle => 'Enter Current PIN';
+
+  @override
+  String get changePin_enterCurrentPinSubtitle =>
+      'Enter your current 4-digit PIN to continue';
+
+  @override
+  String get changePin_createNewPinTitle => 'Create New PIN';
+
+  @override
+  String get changePin_createNewPinSubtitle =>
+      'Choose a new 4-digit PIN for your account';
+
+  @override
+  String get changePin_confirmPinTitle => 'Confirm Your PIN';
+
+  @override
+  String get changePin_confirmPinSubtitle => 'Re-enter your new PIN to confirm';
+
+  @override
+  String get changePin_errorBiometricRequired =>
+      'Biometric confirmation required';
+
+  @override
+  String get changePin_errorIncorrectPin => 'Incorrect PIN. Please try again.';
+
+  @override
+  String get changePin_errorUnableToVerify =>
+      'Unable to verify PIN. Please try again.';
+
+  @override
+  String get changePin_errorWeakPin =>
+      'PIN is too simple. Choose a stronger PIN.';
+
+  @override
+  String get changePin_errorSameAsCurrentPin =>
+      'New PIN must be different from current PIN.';
+
+  @override
+  String get changePin_errorPinMismatch => 'PINs do not match. Try again.';
+
+  @override
+  String get changePin_successMessage => 'PIN changed successfully!';
+
+  @override
+  String get changePin_errorFailedToSet =>
+      'Failed to set new PIN. Please try a different PIN.';
+
+  @override
+  String get changePin_errorFailedToSave =>
+      'Failed to save PIN. Please try again.';
 }

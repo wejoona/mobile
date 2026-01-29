@@ -39,14 +39,15 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(loginProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -56,19 +57,19 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              AppText(
                 l10n.login_verifyCode,
-                style: AppTypography.headlineLarge,
+                variant: AppTextVariant.headlineLarge,
+                color: colors.textPrimary,
               ),
               SizedBox(height: AppSpacing.sm),
-              Text(
+              AppText(
                 l10n.login_codeSentTo(
                   state.countryCode ?? '+225',
                   _formatPhoneForDisplay(state.phoneNumber ?? ''),
                 ),
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+                variant: AppTextVariant.bodyLarge,
+                color: colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.xxl),
               // OTP input boxes
@@ -84,20 +85,19 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.errorBase.withOpacity(0.1),
+                    color: colors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: AppColors.errorBase),
+                    border: Border.all(color: colors.error),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: AppColors.errorText),
+                      Icon(Icons.error_outline, color: colors.errorText),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
-                        child: Text(
+                        child: AppText(
                           state.error!,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.errorText,
-                          ),
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.errorText,
                         ),
                       ),
                     ],
@@ -108,20 +108,15 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
               // Resend code
               Center(
                 child: state.otpResendCountdown > 0
-                    ? Text(
+                    ? AppText(
                         l10n.login_resendIn(state.otpResendCountdown),
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        variant: AppTextVariant.bodyMedium,
+                        color: colors.textSecondary,
                       )
-                    : TextButton(
+                    : AppButton(
+                        label: l10n.login_resendCode,
                         onPressed: state.isLoading ? null : _handleResend,
-                        child: Text(
-                          l10n.login_resendCode,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.gold500,
-                          ),
-                        ),
+                        variant: AppButtonVariant.ghost,
                       ),
               ),
               const Spacer(),
@@ -129,15 +124,14 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
                 Center(
                   child: Column(
                     children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(colors.gold),
                       ),
                       SizedBox(height: AppSpacing.md),
-                      Text(
+                      AppText(
                         l10n.login_verifying,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        variant: AppTextVariant.bodyMedium,
+                        color: colors.textSecondary,
                       ),
                     ],
                   ),
@@ -150,37 +144,41 @@ class _LoginOtpViewState extends ConsumerState<LoginOtpView> {
   }
 
   Widget _buildOtpBox(int index) {
+    final colors = context.colors;
     return Container(
       width: 48,
       height: 56,
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: _hasError
-              ? AppColors.errorBase
+              ? colors.error
               : _controllers[index].text.isNotEmpty
-                  ? AppColors.gold500
-                  : AppColors.borderDefault,
+                  ? colors.gold
+                  : colors.border,
           width: _controllers[index].text.isNotEmpty ? 2 : 1,
         ),
       ),
-      child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        style: AppTypography.headlineMedium.copyWith(
-          color: AppColors.textPrimary,
+      child: Center(
+        child: TextField(
+          controller: _controllers[index],
+          focusNode: _focusNodes[index],
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
+          maxLength: 1,
+          style: AppTypography.headlineMedium.copyWith(
+            color: colors.textPrimary,
+          ),
+          cursorColor: colors.gold,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: const InputDecoration(
+            counterText: '',
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
+          onChanged: (value) => _handleOtpChange(value, index),
         ),
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) => _handleOtpChange(value, index),
       ),
     );
   }

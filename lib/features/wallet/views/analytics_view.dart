@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -14,16 +15,16 @@ enum AnalyticsPeriod {
 }
 
 extension AnalyticsPeriodExt on AnalyticsPeriod {
-  String get label {
+  String getLabel(AppLocalizations l10n) {
     switch (this) {
       case AnalyticsPeriod.week:
-        return '7 Days';
+        return l10n.analytics_period7Days;
       case AnalyticsPeriod.month:
-        return '30 Days';
+        return l10n.analytics_period30Days;
       case AnalyticsPeriod.quarter:
-        return '90 Days';
+        return l10n.analytics_period90Days;
       case AnalyticsPeriod.year:
-        return '1 Year';
+        return l10n.analytics_period1Year;
     }
   }
 }
@@ -62,9 +63,9 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
   double get _totalExpenses => 1875.50;
   double get _netChange => _totalIncome - _totalExpenses;
 
-  List<SpendingCategory> get _categories => [
+  List<SpendingCategory> _getCategories(AppLocalizations l10n) => [
         SpendingCategory(
-          name: 'Transfers',
+          name: l10n.analytics_categoryTransfers,
           icon: Icons.send,
           color: const Color(0xFF4CAF50),
           amount: 850.00,
@@ -72,7 +73,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           count: 12,
         ),
         SpendingCategory(
-          name: 'Withdrawals',
+          name: l10n.analytics_categoryWithdrawals,
           icon: Icons.arrow_upward,
           color: const Color(0xFFF44336),
           amount: 500.00,
@@ -80,7 +81,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           count: 4,
         ),
         SpendingCategory(
-          name: 'Bills',
+          name: l10n.analytics_categoryBills,
           icon: Icons.receipt,
           color: const Color(0xFF2196F3),
           amount: 325.50,
@@ -88,7 +89,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           count: 6,
         ),
         SpendingCategory(
-          name: 'Other',
+          name: l10n.analytics_categoryOther,
           icon: Icons.more_horiz,
           color: const Color(0xFF9E9E9E),
           amount: 200.00,
@@ -100,12 +101,15 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final categories = _getCategories(l10n);
+
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
-          'Analytics',
+        title: AppText(
+          l10n.analytics_title,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -115,7 +119,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
-            onPressed: _exportReport,
+            onPressed: () => _exportReport(context, l10n),
           ),
         ],
       ),
@@ -125,7 +129,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Period Selector
-            _buildPeriodSelector(),
+            _buildPeriodSelector(l10n),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -134,7 +138,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
               children: [
                 Expanded(
                   child: _StatCard(
-                    label: 'Income',
+                    label: l10n.analytics_income,
                     amount: _totalIncome,
                     icon: Icons.arrow_downward,
                     iconColor: AppColors.successBase,
@@ -146,7 +150,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _StatCard(
-                    label: 'Expenses',
+                    label: l10n.analytics_expenses,
                     amount: _totalExpenses,
                     icon: Icons.arrow_upward,
                     iconColor: AppColors.errorBase,
@@ -161,35 +165,35 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
             const SizedBox(height: AppSpacing.md),
 
             // Net Change Card
-            _buildNetChangeCard(),
+            _buildNetChangeCard(l10n),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Spending Chart (simplified bar representation)
             AppText(
-              'Spending by Category',
+              l10n.analytics_spendingByCategory,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildSpendingChart(colors),
+            _buildSpendingChart(colors, categories),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Category Breakdown
             AppText(
-              'Category Details',
+              l10n.analytics_categoryDetails,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            ..._categories.map((category) => _CategoryCard(category: category, colors: colors)),
+            ...categories.map((category) => _CategoryCard(category: category, colors: colors, l10n: l10n)),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Transaction Frequency
             AppText(
-              'Transaction Frequency',
+              l10n.analytics_transactionFrequency,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -200,12 +204,12 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
 
             // Insights
             AppText(
-              'Insights',
+              l10n.analytics_insights,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.lg),
-            _buildInsights(colors),
+            _buildInsights(colors, l10n),
 
             const SizedBox(height: AppSpacing.xxl),
           ],
@@ -214,7 +218,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildPeriodSelector() {
+  Widget _buildPeriodSelector(AppLocalizations l10n) {
     final colors = context.colors;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -238,7 +242,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                   ),
                 ),
                 child: AppText(
-                  period.label,
+                  period.getLabel(l10n),
                   variant: AppTextVariant.labelMedium,
                   color: isSelected ? colors.canvas : colors.textSecondary,
                 ),
@@ -250,7 +254,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildNetChangeCard() {
+  Widget _buildNetChangeCard(AppLocalizations l10n) {
     final isPositive = _netChange >= 0;
 
     return Container(
@@ -285,8 +289,8 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const AppText(
-                  'Net Change',
+                AppText(
+                  l10n.analytics_netChange,
                   variant: AppTextVariant.bodyMedium,
                   color: Colors.white70,
                 ),
@@ -317,7 +321,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                 ),
                 const SizedBox(width: AppSpacing.xxs),
                 AppText(
-                  isPositive ? 'Surplus' : 'Deficit',
+                  isPositive ? l10n.analytics_surplus : l10n.analytics_deficit,
                   variant: AppTextVariant.labelSmall,
                   color: Colors.white,
                 ),
@@ -329,7 +333,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildSpendingChart(ThemeColors colors) {
+  Widget _buildSpendingChart(ThemeColors colors, List<SpendingCategory> categories) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -339,7 +343,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
       child: Column(
         children: [
           // Horizontal bar chart
-          ..._categories.map((category) => Padding(
+          ...categories.map((category) => Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,40 +446,40 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
     );
   }
 
-  Widget _buildInsights(ThemeColors colors) {
+  Widget _buildInsights(ThemeColors colors, AppLocalizations l10n) {
     return Column(
       children: [
         _InsightCard(
           icon: Icons.trending_up,
           iconColor: AppColors.successBase,
-          title: 'Spending Down',
-          description: 'Your spending is 5.2% lower than last month. Great job!',
+          title: l10n.analytics_insightSpendingDown,
+          description: l10n.analytics_insightSpendingDownDesc,
           colors: colors,
         ),
         const SizedBox(height: AppSpacing.md),
         _InsightCard(
           icon: Icons.savings,
           iconColor: colors.gold,
-          title: 'Savings Opportunity',
-          description: 'You could save \$50/month by reducing withdrawal fees.',
+          title: l10n.analytics_insightSavings,
+          description: l10n.analytics_insightSavingsDesc,
           colors: colors,
         ),
         const SizedBox(height: AppSpacing.md),
         _InsightCard(
           icon: Icons.schedule,
           iconColor: AppColors.infoBase,
-          title: 'Peak Activity',
-          description: 'Most of your transactions happen on Thursdays.',
+          title: l10n.analytics_insightPeakActivity,
+          description: l10n.analytics_insightPeakActivityDesc,
           colors: colors,
         ),
       ],
     );
   }
 
-  void _exportReport() {
+  void _exportReport(BuildContext context, AppLocalizations l10n) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Exporting report...'),
+      SnackBar(
+        content: Text(l10n.analytics_exportingReport),
         backgroundColor: AppColors.infoBase,
       ),
     );
@@ -563,10 +567,11 @@ class _StatCard extends StatelessWidget {
 }
 
 class _CategoryCard extends StatelessWidget {
-  const _CategoryCard({required this.category, required this.colors});
+  const _CategoryCard({required this.category, required this.colors, required this.l10n});
 
   final SpendingCategory category;
   final ThemeColors colors;
+  final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
@@ -599,7 +604,7 @@ class _CategoryCard extends StatelessWidget {
                   color: colors.textPrimary,
                 ),
                 AppText(
-                  '${category.count} transactions',
+                  l10n.analytics_transactions(category.count),
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),

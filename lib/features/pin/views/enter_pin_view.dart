@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../widgets/pin_dots.dart';
 import '../widgets/pin_pad.dart';
 import '../providers/pin_provider.dart';
@@ -46,9 +47,9 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: Text(
+        title: AppText(
           widget.title,
-          style: AppTypography.headlineSmall,
+          variant: AppTextVariant.headlineSmall,
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -60,11 +61,10 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
             children: [
               SizedBox(height: AppSpacing.xxl),
               if (widget.subtitle != null) ...[
-                Text(
+                AppText(
                   widget.subtitle!,
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+                  variant: AppTextVariant.bodyLarge,
+                  color: AppColors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: AppSpacing.xxxl),
@@ -75,22 +75,17 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
               ),
               SizedBox(height: AppSpacing.md),
               if (pinState.remainingAttempts < 5) ...[
-                Text(
+                AppText(
                   l10n.pin_attemptsRemaining(pinState.remainingAttempts),
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.warningText,
-                  ),
+                  variant: AppTextVariant.bodyMedium,
+                  color: AppColors.warningText,
                 ),
               ],
               const Spacer(),
-              TextButton(
+              AppButton(
+                label: l10n.pin_forgotPin,
                 onPressed: () => context.push('/pin/reset'),
-                child: Text(
-                  l10n.pin_forgotPin,
-                  style: AppTypography.labelLarge.copyWith(
-                    color: AppColors.gold500,
-                  ),
-                ),
+                variant: AppButtonVariant.ghost,
               ),
               SizedBox(height: AppSpacing.md),
               PinPad(

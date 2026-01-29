@@ -369,45 +369,50 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
           ),
         ),
         const SizedBox(height: 12),
-        TextField(
-          controller: _amountController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-          ],
-          style: const TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(16),
           ),
-          decoration: InputDecoration(
-            prefixText: '\$ ',
-            prefixStyle: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: theme.primaryColor,
-            ),
-            hintText: '0.00',
-            hintStyle: TextStyle(
-              color: Colors.grey.shade400,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: theme.primaryColor, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 20,
-            ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: Row(
+            children: [
+              Text(
+                '\$ ',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: theme.primaryColor,
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _amountController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                  ],
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: '0.00',
+                    hintStyle: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            ],
           ),
-          onChanged: (_) => setState(() {}),
         ),
         const SizedBox(height: 8),
         Text(

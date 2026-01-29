@@ -234,7 +234,7 @@ class _LoginViewState extends ConsumerState<LoginView>
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: colors.container,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(color: colors.borderSubtle),
             ),
@@ -342,7 +342,7 @@ class _LoginViewState extends ConsumerState<LoginView>
         const SizedBox(height: AppSpacing.sm),
         Container(
           decoration: BoxDecoration(
-            color: colors.container,
+            color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
               color: showError
@@ -374,35 +374,44 @@ class _LoginViewState extends ConsumerState<LoginView>
 
               // Input
               Expanded(
-                child: TextField(
-                  controller: _phoneController,
-                  focusNode: _phoneFocusNode,
-                  keyboardType: TextInputType.phone,
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: colors.textPrimary,
-                    letterSpacing: 1.2,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colors.elevated,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(AppRadius.lg),
+                      bottomRight: Radius.circular(AppRadius.lg),
+                    ),
                   ),
-                  cursorColor: colors.gold,
-                  decoration: InputDecoration(
-                    hintText: _getFormattedHint(),
-                    hintStyle: AppTypography.bodyLarge.copyWith(
-                      color: colors.textTertiary,
+                  child: TextField(
+                    controller: _phoneController,
+                    focusNode: _phoneFocusNode,
+                    keyboardType: TextInputType.phone,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: colors.textPrimary,
                       letterSpacing: 1.2,
                     ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.lg,
+                    cursorColor: colors.gold,
+                    decoration: InputDecoration(
+                      hintText: _getFormattedHint(),
+                      hintStyle: AppTypography.bodyLarge.copyWith(
+                        color: colors.textTertiary,
+                        letterSpacing: 1.2,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      filled: false,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.lg,
+                      ),
                     ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
+                    ],
+                    onChanged: (_) => setState(() {}),
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
-                  ],
-                  onChanged: (_) => setState(() {}),
                 ),
               ),
 
@@ -634,7 +643,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: colors.container,
+                      color: colors.elevated,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: Icon(
@@ -651,38 +660,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           // Search
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: Container(
-              decoration: BoxDecoration(
-                color: colors.container,
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: colors.textPrimary,
-                ),
-                cursorColor: colors.gold,
-                decoration: InputDecoration(
-                  hintText: l10n.auth_searchCountry,
-                  hintStyle: AppTypography.bodyMedium.copyWith(
-                    color: colors.textTertiary,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: colors.textTertiary,
-                    size: 20,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.md,
-                  ),
-                ),
-                onChanged: _filterCountries,
-              ),
+            child: AppInput(
+              controller: _searchController,
+              variant: AppInputVariant.search,
+              hint: l10n.auth_searchCountry,
+              prefixIcon: Icons.search_rounded,
+              onChanged: _filterCountries,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -728,7 +711,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: colors.container,
+                            color: colors.elevated,
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
                           alignment: Alignment.center,

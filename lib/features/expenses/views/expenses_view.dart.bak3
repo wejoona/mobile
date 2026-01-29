@@ -1,0 +1,327 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import '../../../design/tokens/colors.dart';
+import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_button.dart';
+import '../../../design/components/primitives/app_text.dart';
+import '../../../design/components/primitives/app_card.dart';
+import '../providers/expenses_provider.dart';
+import '../models/expense.dart';
+
+class ExpensesView extends ConsumerStatefulWidget {
+  const ExpensesView({super.key});
+
+  @override
+  ConsumerState<ExpensesView> createState() => _ExpensesViewState();
+}
+
+class _ExpensesViewState extends ConsumerState<ExpensesView> {
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final state = ref.watch(expensesProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(
+          l10n.expenses_title,
+          style: AppTypography.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.assessment_outlined),
+            onPressed: () => context.push('/expenses/reports'),
+            tooltip: l10n.expenses_viewReports,
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: state.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : state.expenses.isEmpty
+                ? _buildEmptyState(context, l10n)
+                : RefreshIndicator(
+                    onRefresh: () => ref.read(expensesProvider.notifier).refresh(),
+                    child: Column(
+                      children: [
+                        _buildSummaryCard(context, l10n, state),
+                        Expanded(
+                          child: _buildExpensesList(context, l10n, state),
+                        ),
+                      ],
+                    ),
+                  ),
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'capture',
+            onPressed: () => context.push('/expenses/capture'),
+            backgroundColor: AppColors.gold500,
+            child: const Icon(Icons.camera_alt),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          FloatingActionButton(
+            heroTag: 'add',
+            onPressed: () => context.push('/expenses/add'),
+            backgroundColor: AppColors.charcoal,
+            child: const Icon(Icons.add),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.receipt_long_outlined,
+              size: 80,
+              color: AppColors.silver.withOpacity(0.5),
+            ),
+            SizedBox(height: AppSpacing.lg),
+            AppText(
+              l10n.expenses_emptyTitle,
+              style: AppTypography.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.sm),
+            AppText(
+              l10n.expenses_emptyMessage,
+              style: AppTypography.bodyMedium.copyWith(color: AppColors.silver),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: l10n.expenses_captureReceipt,
+              onPressed: () => context.push('/expenses/capture'),
+              icon: Icons.camera_alt,
+            ),
+            SizedBox(height: AppSpacing.md),
+            AppButton(
+              label: l10n.expenses_addManually,
+              onPressed: () => context.push('/expenses/add'),
+              variant: ButtonVariant.secondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSummaryCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    ExpensesState state,
+  ) {
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'XOF',
+      decimalDigits: 0,
+    );
+
+    return Padding(
+      padding: EdgeInsets.all(AppSpacing.md),
+      child: AppCard(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppText(
+                    l10n.expenses_totalExpenses,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.silver,
+                    ),
+                  ),
+                  AppText(
+                    '${state.expenses.length} ${l10n.expenses_items}',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.silver,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AppSpacing.sm),
+              AppText(
+                currencyFormat.format(state.totalAmount),
+                style: AppTypography.headlineLarge.copyWith(
+                  color: AppColors.gold500,
+                ),
+              ),
+              SizedBox(height: AppSpacing.md),
+              _buildCategoryBreakdown(l10n, state),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryBreakdown(AppLocalizations l10n, ExpensesState state) {
+    if (state.categoryTotals.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      children: state.categoryTotals.entries.map((entry) {
+        final percentage = (entry.value / state.totalAmount * 100).toInt();
+        return Padding(
+          padding: EdgeInsets.only(bottom: AppSpacing.xs),
+          child: Row(
+            children: [
+              Icon(
+                _getCategoryIcon(entry.key),
+                size: 16,
+                color: AppColors.silver,
+              ),
+              SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: AppText(
+                  _getCategoryLabel(l10n, entry.key),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.silver,
+                  ),
+                ),
+              ),
+              AppText(
+                '$percentage%',
+                style: AppTypography.bodySmall.copyWith(
+                  color: AppColors.silver,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildExpensesList(
+    BuildContext context,
+    AppLocalizations l10n,
+    ExpensesState state,
+  ) {
+    final currencyFormat = NumberFormat.currency(
+      symbol: 'XOF',
+      decimalDigits: 0,
+    );
+    final dateFormat = DateFormat('MMM dd, yyyy');
+
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      itemCount: state.expenses.length,
+      itemBuilder: (context, index) {
+        final expense = state.expenses[index];
+        return AppCard(
+          margin: EdgeInsets.only(bottom: AppSpacing.md),
+          onTap: () => context.push('/expenses/detail/${expense.id}', extra: expense),
+          child: Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.charcoal,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(expense.category),
+                    color: AppColors.gold500,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        expense.vendor ?? _getCategoryLabel(l10n, expense.category),
+                        style: AppTypography.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: AppSpacing.xs),
+                      Row(
+                        children: [
+                          AppText(
+                            dateFormat.format(expense.date),
+                            style: AppTypography.bodySmall.copyWith(
+                              color: AppColors.silver,
+                            ),
+                          ),
+                          if (expense.receiptImagePath != null) ...[
+                            SizedBox(width: AppSpacing.xs),
+                            Icon(
+                              Icons.receipt,
+                              size: 14,
+                              color: AppColors.gold500,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                AppText(
+                  currencyFormat.format(expense.amount),
+                  style: AppTypography.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.gold500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case ExpenseCategory.travel:
+        return Icons.flight;
+      case ExpenseCategory.meals:
+        return Icons.restaurant;
+      case ExpenseCategory.office:
+        return Icons.business;
+      case ExpenseCategory.transport:
+        return Icons.directions_car;
+      case ExpenseCategory.other:
+      default:
+        return Icons.more_horiz;
+    }
+  }
+
+  String _getCategoryLabel(AppLocalizations l10n, String category) {
+    switch (category) {
+      case ExpenseCategory.travel:
+        return l10n.expenses_categoryTravel;
+      case ExpenseCategory.meals:
+        return l10n.expenses_categoryMeals;
+      case ExpenseCategory.office:
+        return l10n.expenses_categoryOffice;
+      case ExpenseCategory.transport:
+        return l10n.expenses_categoryTransport;
+      case ExpenseCategory.other:
+      default:
+        return l10n.expenses_categoryOther;
+    }
+  }
+}

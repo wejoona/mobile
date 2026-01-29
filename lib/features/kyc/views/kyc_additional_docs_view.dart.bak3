@@ -1,0 +1,484 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../design/tokens/colors.dart';
+import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_button.dart';
+import '../../../design/components/primitives/app_text.dart';
+import '../../../design/components/primitives/app_card.dart';
+import '../../../design/components/primitives/app_input.dart';
+import '../providers/kyc_provider.dart';
+
+enum SourceOfFundsType {
+  salary,
+  business,
+  investments,
+  savings,
+  inheritance,
+  gift,
+  other;
+
+  String toApiString() {
+    switch (this) {
+      case SourceOfFundsType.salary:
+        return 'salary';
+      case SourceOfFundsType.business:
+        return 'business';
+      case SourceOfFundsType.investments:
+        return 'investments';
+      case SourceOfFundsType.savings:
+        return 'savings';
+      case SourceOfFundsType.inheritance:
+        return 'inheritance';
+      case SourceOfFundsType.gift:
+        return 'gift';
+      case SourceOfFundsType.other:
+        return 'other';
+    }
+  }
+}
+
+class KycAdditionalDocsView extends ConsumerStatefulWidget {
+  const KycAdditionalDocsView({super.key});
+
+  @override
+  ConsumerState<KycAdditionalDocsView> createState() => _KycAdditionalDocsViewState();
+}
+
+class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
+  final _formKey = GlobalKey<FormState>();
+  final _occupationController = TextEditingController();
+  final _employerController = TextEditingController();
+  final _monthlyIncomeController = TextEditingController();
+  final _sourceDetailsController = TextEditingController();
+
+  SourceOfFundsType? _selectedSourceType;
+  final List<String> _uploadedDocuments = [];
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _occupationController.dispose();
+    _employerController.dispose();
+    _monthlyIncomeController.dispose();
+    _sourceDetailsController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(
+          l10n.kyc_additionalDocs_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  children: [
+                    AppText(
+                      l10n.kyc_additionalDocs_description,
+                      variant: AppTextVariant.bodyLarge,
+                      color: AppColors.textSecondary,
+                    ),
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildEmploymentSection(l10n),
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildSourceOfFundsSection(l10n),
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildSupportingDocuments(l10n),
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildInfoCard(l10n),
+                  ],
+                ),
+              ),
+            ),
+            _buildBottomBar(context, l10n),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmploymentSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          l10n.kyc_additionalDocs_employment_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        SizedBox(height: AppSpacing.md),
+        AppInput(
+          label: l10n.kyc_additionalDocs_occupation,
+          controller: _occupationController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.error_required;
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: AppSpacing.md),
+        AppInput(
+          label: l10n.kyc_additionalDocs_employer,
+          controller: _employerController,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.error_required;
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: AppSpacing.md),
+        AppInput(
+          label: l10n.kyc_additionalDocs_monthlyIncome,
+          controller: _monthlyIncomeController,
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.error_required;
+            }
+            if (double.tryParse(value) == null) {
+              return l10n.error_invalidNumber;
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSourceOfFundsSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          l10n.kyc_additionalDocs_sourceOfFunds_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        SizedBox(height: AppSpacing.sm),
+        AppText(
+          l10n.kyc_additionalDocs_sourceOfFunds_description,
+          variant: AppTextVariant.bodyMedium,
+          color: AppColors.textSecondary,
+        ),
+        SizedBox(height: AppSpacing.md),
+        ...SourceOfFundsType.values.map((type) {
+          final isSelected = _selectedSourceType == type;
+          return Padding(
+            padding: EdgeInsets.only(bottom: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedSourceType = type),
+              child: Container(
+                padding: EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.charcoal : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? AppColors.gold500 : AppColors.border,
+                    width: isSelected ? 2 : 1,
+                  ),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                      color: isSelected ? AppColors.gold500 : AppColors.silver,
+                    ),
+                    SizedBox(width: AppSpacing.md),
+                    AppText(
+                      _getSourceTypeLabel(l10n, type),
+                      variant: AppTextVariant.labelLarge,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        SizedBox(height: AppSpacing.md),
+        AppInput(
+          label: l10n.kyc_additionalDocs_sourceDetails,
+          controller: _sourceDetailsController,
+          maxLines: 3,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return l10n.error_required;
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSupportingDocuments(AppLocalizations l10n) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            l10n.kyc_additionalDocs_supportingDocs_title,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          SizedBox(height: AppSpacing.sm),
+          AppText(
+            l10n.kyc_additionalDocs_supportingDocs_description,
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.textSecondary,
+          ),
+          SizedBox(height: AppSpacing.md),
+          _buildDocumentSuggestions(l10n),
+          SizedBox(height: AppSpacing.md),
+          if (_uploadedDocuments.isNotEmpty) ...[
+            ...List.generate(_uploadedDocuments.length, (index) {
+              return _buildUploadedDocumentCard(index);
+            }),
+            SizedBox(height: AppSpacing.md),
+          ],
+          Row(
+            children: [
+              Expanded(
+                child: AppButton(
+                  label: l10n.kyc_additionalDocs_takePhoto,
+                  onPressed: _handleTakePhoto,
+                  variant: AppButtonVariant.secondary,
+                  icon: Icons.camera_alt,
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppButton(
+                  label: l10n.kyc_additionalDocs_uploadFile,
+                  onPressed: _handleUploadFile,
+                  variant: AppButtonVariant.secondary,
+                  icon: Icons.upload_file,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDocumentSuggestions(AppLocalizations l10n) {
+    final suggestions = [
+      l10n.kyc_additionalDocs_suggestion_paySlip,
+      l10n.kyc_additionalDocs_suggestion_businessReg,
+      l10n.kyc_additionalDocs_suggestion_taxReturn,
+      l10n.kyc_additionalDocs_suggestion_bankStatement,
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
+      children: suggestions.map((suggestion) {
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.gold500.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+          child: AppText(
+            suggestion,
+            variant: AppTextVariant.bodySmall,
+            color: AppColors.gold500,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildUploadedDocumentCard(int index) {
+    final documentPath = _uploadedDocuments[index];
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.charcoal,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Image.file(
+                File(documentPath),
+                height: 120,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              top: AppSpacing.sm,
+              right: AppSpacing.sm,
+              child: IconButton(
+                onPressed: () => setState(() => _uploadedDocuments.removeAt(index)),
+                icon: const Icon(Icons.close),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.obsidian.withOpacity(0.8),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(AppLocalizations l10n) {
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.info_outline, color: AppColors.gold500),
+          SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  l10n.kyc_additionalDocs_info_title,
+                  variant: AppTextVariant.labelMedium,
+                ),
+                SizedBox(height: AppSpacing.xs),
+                AppText(
+                  l10n.kyc_additionalDocs_info_description,
+                  variant: AppTextVariant.bodySmall,
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomBar(BuildContext context, AppLocalizations l10n) {
+    final canSubmit = _formKey.currentState?.validate() == true &&
+        _selectedSourceType != null &&
+        _uploadedDocuments.isNotEmpty;
+
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: AppColors.charcoal,
+        border: Border(
+          top: BorderSide(color: AppColors.border),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: AppButton(
+          label: l10n.kyc_additionalDocs_submit,
+          onPressed: canSubmit ? () => _handleSubmit(context, l10n) : null,
+          isLoading: _isLoading,
+          isFullWidth: true,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleTakePhoto() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1080,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      setState(() => _uploadedDocuments.add(image.path));
+    }
+  }
+
+  Future<void> _handleUploadFile() async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1080,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      setState(() => _uploadedDocuments.add(image.path));
+    }
+  }
+
+  Future<void> _handleSubmit(BuildContext context, AppLocalizations l10n) async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_selectedSourceType == null || _uploadedDocuments.isEmpty) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      await ref.read(kycProvider.notifier).submitAdditionalDocuments(
+            occupation: _occupationController.text,
+            employer: _employerController.text,
+            monthlyIncome: _monthlyIncomeController.text,
+            sourceOfFunds: _selectedSourceType!.toApiString(),
+            sourceDetails: _sourceDetailsController.text,
+            supportingDocuments: _uploadedDocuments,
+          );
+
+      if (!mounted) return;
+      context.go('/kyc/submitted');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.kyc_additionalDocs_error),
+          backgroundColor: AppColors.errorBase,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  String _getSourceTypeLabel(AppLocalizations l10n, SourceOfFundsType type) {
+    switch (type) {
+      case SourceOfFundsType.salary:
+        return l10n.kyc_additionalDocs_sourceType_salary;
+      case SourceOfFundsType.business:
+        return l10n.kyc_additionalDocs_sourceType_business;
+      case SourceOfFundsType.investments:
+        return l10n.kyc_additionalDocs_sourceType_investments;
+      case SourceOfFundsType.savings:
+        return l10n.kyc_additionalDocs_sourceType_savings;
+      case SourceOfFundsType.inheritance:
+        return l10n.kyc_additionalDocs_sourceType_inheritance;
+      case SourceOfFundsType.gift:
+        return l10n.kyc_additionalDocs_sourceType_gift;
+      case SourceOfFundsType.other:
+        return l10n.kyc_additionalDocs_sourceType_other;
+    }
+  }
+}

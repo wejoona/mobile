@@ -1,0 +1,253 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../domain/enums/index.dart';
+import '../../../state/index.dart';
+
+class ProfileView extends ConsumerStatefulWidget {
+  const ProfileView({super.key});
+
+  @override
+  ConsumerState<ProfileView> createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends ConsumerState<ProfileView> {
+
+  @override
+  Widget build(BuildContext context) {
+    final userState = ref.watch(userStateMachineProvider);
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: AppText(
+          'Profile',
+          variant: AppTextVariant.titleLarge,
+          color: AppColors.textPrimary,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          onPressed: () => context.pop(),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: AppColors.gold500),
+            onPressed: () => context.push('/settings/profile/edit'),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          children: [
+            // Avatar
+            Center(
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: AppColors.goldGradient,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: AppShadows.goldGlow,
+                ),
+                child: Center(
+                  child: AppText(
+                    _getInitials(userState),
+                    variant: AppTextVariant.headlineLarge,
+                    color: AppColors.textInverse,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.xl),
+
+            // Phone (non-editable)
+            _buildInfoCard(
+              label: 'Phone Number',
+              value: userState.phone ?? 'Not set',
+              icon: Icons.phone,
+              isVerified: true,
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // First Name
+            _buildInfoCard(
+              label: 'First Name',
+              value: userState.firstName ?? 'Not set',
+              icon: Icons.person,
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Last Name
+            _buildInfoCard(
+              label: 'Last Name',
+              value: userState.lastName ?? 'Not set',
+              icon: Icons.person_outline,
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Email
+            _buildInfoCard(
+              label: 'Email',
+              value: userState.email ?? 'Not set',
+              icon: Icons.email,
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // KYC Status
+            _buildInfoCard(
+              label: 'KYC Status',
+              value: _getKycStatusText(userState.kycStatus),
+              icon: Icons.verified_user,
+              valueColor: _getKycStatusColor(userState.kycStatus),
+              trailing: userState.kycStatus != KycStatus.verified
+                  ? TextButton(
+                      onPressed: () => context.push('/settings/kyc'),
+                      child: const AppText(
+                        'Verify',
+                        variant: AppTextVariant.labelMedium,
+                        color: AppColors.gold500,
+                      ),
+                    )
+                  : null,
+            ),
+
+            const SizedBox(height: AppSpacing.md),
+
+            // Country
+            _buildInfoCard(
+              label: 'Country',
+              value: _getCountryName(userState.countryCode),
+              icon: Icons.public,
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required String label,
+    required String value,
+    required IconData icon,
+    Color? valueColor,
+    bool isVerified = false,
+    Widget? trailing,
+  }) {
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.slate,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: AppColors.textSecondary, size: 22),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  label,
+                  variant: AppTextVariant.bodySmall,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        value,
+                        variant: AppTextVariant.bodyLarge,
+                        color: valueColor ?? AppColors.textPrimary,
+                      ),
+                    ),
+                    if (isVerified)
+                      const Icon(
+                        Icons.verified,
+                        color: AppColors.successBase,
+                        size: 18,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
+  String _getInitials(UserState userState) {
+    final firstName = userState.firstName;
+    final lastName = userState.lastName;
+
+    if (firstName != null && lastName != null) {
+      return '${firstName[0]}${lastName[0]}'.toUpperCase();
+    } else if (firstName != null) {
+      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
+    } else if (userState.phone != null) {
+      return userState.phone!.substring(userState.phone!.length - 2);
+    }
+    return 'U';
+  }
+
+  String _getKycStatusText(KycStatus status) {
+    switch (status) {
+      case KycStatus.none:
+        return 'Not Verified';
+      case KycStatus.pending:
+        return 'Pending Review';
+      case KycStatus.verified:
+        return 'Verified';
+      case KycStatus.rejected:
+        return 'Rejected';
+    }
+  }
+
+  Color _getKycStatusColor(KycStatus status) {
+    switch (status) {
+      case KycStatus.none:
+        return AppColors.textSecondary;
+      case KycStatus.pending:
+        return AppColors.warningBase;
+      case KycStatus.verified:
+        return AppColors.successBase;
+      case KycStatus.rejected:
+        return AppColors.errorBase;
+    }
+  }
+
+  String _getCountryName(String countryCode) {
+    const countries = {
+      'CI': 'Ivory Coast',
+      'NG': 'Nigeria',
+      'KE': 'Kenya',
+      'GH': 'Ghana',
+      'SN': 'Senegal',
+    };
+    return countries[countryCode] ?? countryCode;
+  }
+
+}

@@ -1,0 +1,37 @@
+import 'package:dio/dio.dart';
+import '../../features/bulk_payments/models/bulk_batch.dart';
+
+class BulkPaymentsService {
+  final Dio _dio;
+
+  BulkPaymentsService(this._dio);
+
+  Future<List<BulkBatch>> getBatches() async {
+    final response = await _dio.get('/bulk-payments/batches');
+    return (response.data['batches'] as List)
+        .map((json) => BulkBatch.fromJson(json))
+        .toList();
+  }
+
+  Future<BulkBatch> submitBatch(BulkBatch batch) async {
+    final response = await _dio.post(
+      '/bulk-payments/batches',
+      data: {
+        'name': batch.name,
+        'payments': batch.validPayments.map((p) => p.toJson()).toList(),
+      },
+    );
+    return BulkBatch.fromJson(response.data);
+  }
+
+  Future<BulkBatch> getBatchStatus(String batchId) async {
+    final response = await _dio.get('/bulk-payments/batches/$batchId');
+    return BulkBatch.fromJson(response.data);
+  }
+
+  Future<String> downloadFailedPayments(String batchId) async {
+    final response =
+        await _dio.get('/bulk-payments/batches/$batchId/failed-report');
+    return response.data['csv'] as String;
+  }
+}

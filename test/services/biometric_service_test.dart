@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:local_auth/local_auth.dart' hide BiometricType;
 import 'package:local_auth_platform_interface/types/biometric_type.dart' as platform;
 import 'package:mocktail/mocktail.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

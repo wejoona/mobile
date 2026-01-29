@@ -5,14 +5,26 @@
 ## Reading Order (Mandatory)
 
 ```
-1. optimizations.md  ← Token-saving rules (READ FIRST)
-2. context.md        ← File locations, patterns
-3. file-index.md     ← Line numbers for partial reads
-4. snippets.md       ← Micro-patterns to copy
-5. templates.md      ← Full templates for new files
-6. decisions.md      ← Past decisions (don't re-discuss)
-7. api-reference.md  ← API endpoints
+1. sitemap.md        ← ALL ROUTES & SCREENS (CHECK BEFORE CREATING ANY SCREEN)
+2. optimizations.md  ← Token-saving rules
+3. context.md        ← File locations, patterns
+4. file-index.md     ← Line numbers for partial reads
+5. snippets.md       ← Micro-patterns to copy
+6. templates.md      ← Full templates for new files
+7. decisions.md      ← Past decisions (don't re-discuss)
+8. api-reference.md  ← API endpoints
 ```
+
+## CRITICAL: Check Sitemap Before Creating Screens
+
+**ALWAYS read `sitemap.md` before creating ANY new screen or route.**
+
+The sitemap contains:
+- Every route in the app
+- Which view file handles each route
+- DO NOT DUPLICATE list
+
+If the screen already exists, USE IT. Do not create a new one.
 
 ## Token-Saving Rules
 

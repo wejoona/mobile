@@ -14,28 +14,26 @@ class DevicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = context.colors;
     final state = ref.watch(devicesProvider);
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.settings_devices,
           variant: AppTextVariant.titleLarge,
-          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.gold),
+          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.pop(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(devicesProvider.notifier).refresh(),
-        color: colors.gold,
-        backgroundColor: colors.container,
-        child: _buildBody(context, ref, state, colors, l10n),
+        color: AppColors.gold500,
+        backgroundColor: AppColors.slate,
+        child: _buildBody(context, ref, state, l10n),
       ),
     );
   }
@@ -44,42 +42,42 @@ class DevicesScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     DevicesState state,
-    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     if (state.isLoading && state.devices.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: AppColors.gold500,
+        ),
       );
     }
 
     if (state.error != null && state.devices.isEmpty) {
-      return _buildErrorState(context, ref, state.error!, colors, l10n);
+      return _buildErrorState(context, ref, state.error!, l10n);
     }
 
     if (state.devices.isEmpty) {
-      return _buildEmptyState(colors, l10n);
+      return _buildEmptyState(l10n);
     }
 
     return ListView(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+      padding: EdgeInsets.all(AppSpacing.md),
       children: [
         // Info card
-        _buildInfoCard(colors, l10n),
-        const SizedBox(height: AppSpacing.xl),
+        _buildInfoCard(l10n),
+        SizedBox(height: AppSpacing.xl),
 
         // Devices list
         ...state.devices.map((device) {
           final isCurrentDevice =
               ref.read(devicesProvider.notifier).isCurrentDevice(device);
           return Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            padding: EdgeInsets.only(bottom: AppSpacing.md),
             child: _buildDeviceCard(
               context,
               ref,
               device,
               isCurrentDevice,
-              colors,
               l10n,
             ),
           );
@@ -88,7 +86,7 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard(ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildInfoCard(AppLocalizations l10n) {
     return AppCard(
       variant: AppCardVariant.goldAccent,
       child: Row(
@@ -97,20 +95,20 @@ class DevicesScreen extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: colors.gold.withOpacity(0.2),
+              color: AppColors.gold500.withOpacity(0.2),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.info_outline,
-              color: colors.gold,
+              color: AppColors.gold500,
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(
               l10n.settings_devicesDescription,
               variant: AppTextVariant.bodySmall,
-              color: colors.textSecondary,
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -123,7 +121,6 @@ class DevicesScreen extends ConsumerWidget {
     WidgetRef ref,
     Device device,
     bool isCurrentDevice,
-    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     return AppCard(
@@ -138,16 +135,16 @@ class DevicesScreen extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colors.elevated,
+                  color: AppColors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
                   _getPlatformIcon(device.platform),
-                  color: colors.gold,
+                  color: AppColors.gold500,
                   size: 24,
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,15 +155,14 @@ class DevicesScreen extends ConsumerWidget {
                           child: AppText(
                             device.displayName,
                             variant: AppTextVariant.labelLarge,
-                            color: colors.textPrimary,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (isCurrentDevice) ...[
-                          const SizedBox(width: AppSpacing.sm),
+                          SizedBox(width: AppSpacing.sm),
                           Container(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                               horizontal: AppSpacing.sm,
                               vertical: 2,
                             ),
@@ -183,17 +179,17 @@ class DevicesScreen extends ConsumerWidget {
                         ],
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.xxs),
+                    SizedBox(height: AppSpacing.xxs),
                     AppText(
                       device.osDisplay,
                       variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
+                      color: AppColors.textSecondary,
                     ),
                   ],
                 ),
               ),
               if (device.isTrusted)
-                Icon(
+                const Icon(
                   Icons.verified,
                   color: AppColors.successBase,
                   size: 20,
@@ -201,28 +197,25 @@ class DevicesScreen extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: AppSpacing.md),
-          Divider(color: colors.borderSubtle, height: 1),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
+          const Divider(color: AppColors.borderSubtle, height: 1),
+          SizedBox(height: AppSpacing.md),
 
           // Details
           _buildDetailRow(
-            colors,
             Icons.schedule,
             l10n.settings_lastActive,
             _formatLastLogin(device.lastLoginAt),
           ),
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: AppSpacing.sm),
           _buildDetailRow(
-            colors,
             Icons.login,
             l10n.settings_loginCount,
             '${device.loginCount} ${l10n.settings_times}',
           ),
           if (device.lastIpAddress != null) ...[
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.sm),
             _buildDetailRow(
-              colors,
               Icons.location_on_outlined,
               l10n.settings_lastIp,
               device.lastIpAddress!,
@@ -231,20 +224,20 @@ class DevicesScreen extends ConsumerWidget {
 
           // Actions
           if (!isCurrentDevice) ...[
-            const SizedBox(height: AppSpacing.lg),
+            SizedBox(height: AppSpacing.lg),
             Row(
               children: [
                 if (!device.isTrusted)
                   Expanded(
                     child: AppButton(
                       label: l10n.settings_trustDevice,
-                      onPressed: () => _handleTrustDevice(context, ref, device),
+                      onPressed: () => _handleTrustDevice(context, ref, device, l10n),
                       variant: AppButtonVariant.secondary,
                       size: AppButtonSize.small,
                     ),
                   ),
                 if (!device.isTrusted && !isCurrentDevice)
-                  const SizedBox(width: AppSpacing.sm),
+                  SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppButton(
                     label: l10n.settings_removeDevice,
@@ -262,62 +255,59 @@ class DevicesScreen extends ConsumerWidget {
   }
 
   Widget _buildDetailRow(
-    ThemeColors colors,
     IconData icon,
     String label,
     String value,
   ) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: colors.textTertiary),
-        const SizedBox(width: AppSpacing.sm),
+        Icon(icon, size: 16, color: AppColors.textTertiary),
+        SizedBox(width: AppSpacing.sm),
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
-          color: colors.textSecondary,
+          color: AppColors.textSecondary,
         ),
         const Spacer(),
         AppText(
           value,
           variant: AppTextVariant.bodySmall,
-          color: colors.textPrimary,
         ),
       ],
     );
   }
 
-  Widget _buildEmptyState(ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: colors.elevated,
+              decoration: const BoxDecoration(
+                color: AppColors.elevated,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.devices_other,
                 size: 60,
-                color: colors.textTertiary,
+                color: AppColors.textTertiary,
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xl),
             AppText(
               l10n.settings_noDevices,
               variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.sm),
             AppText(
               l10n.settings_noDevicesDescription,
               variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -330,35 +320,33 @@ class DevicesScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String error,
-    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               size: 80,
               color: AppColors.errorBase,
             ),
-            const SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xl),
             AppText(
               l10n.error_generic,
               variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            SizedBox(height: AppSpacing.sm),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.action_retry,
               onPressed: () => ref.read(devicesProvider.notifier).refresh(),
@@ -406,14 +394,15 @@ class DevicesScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     Device device,
+    AppLocalizations l10n,
   ) async {
     try {
       await ref.read(devicesProvider.notifier).trustDevice(device.id);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Device trusted successfully'),
+          SnackBar(
+            content: AppText(l10n.settings_deviceTrustedSuccess),
             backgroundColor: AppColors.successBase,
           ),
         );
@@ -422,7 +411,7 @@ class DevicesScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to trust device: ${e.toString()}'),
+            content: AppText(l10n.settings_deviceTrustError),
             backgroundColor: AppColors.errorBase,
           ),
         );
@@ -439,35 +428,32 @@ class DevicesScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        final colors = dialogContext.colors;
         return AlertDialog(
-          backgroundColor: colors.container,
+          backgroundColor: AppColors.slate,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
           title: AppText(
             l10n.settings_removeDevice,
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
           ),
           content: AppText(
             l10n.settings_removeDeviceConfirm,
             variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
+            color: AppColors.textSecondary,
           ),
           actions: [
-            TextButton(
+            AppButton(
+              label: l10n.action_cancel,
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: AppText(
-                l10n.action_cancel,
-                variant: AppTextVariant.labelLarge,
-                color: colors.textSecondary,
-              ),
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
             ),
-            TextButton(
+            AppButton(
+              label: l10n.action_remove,
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: AppText(
-                l10n.action_remove,
-                variant: AppTextVariant.labelLarge,
-                color: AppColors.errorBase,
-              ),
+              variant: AppButtonVariant.danger,
+              size: AppButtonSize.small,
             ),
           ],
         );
@@ -480,8 +466,8 @@ class DevicesScreen extends ConsumerWidget {
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Device removed successfully'),
+            SnackBar(
+              content: AppText(l10n.settings_deviceRemovedSuccess),
               backgroundColor: AppColors.successBase,
             ),
           );
@@ -490,7 +476,7 @@ class DevicesScreen extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to remove device: ${e.toString()}'),
+              content: AppText(l10n.settings_deviceRemoveError),
               backgroundColor: AppColors.errorBase,
             ),
           );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../features/auth/views/login_phone_view.dart';
+import '../features/auth/views/login_view.dart';
 import '../features/auth/views/login_otp_view.dart';
 import '../features/auth/views/login_pin_view.dart';
 import '../features/auth/views/otp_view.dart';
@@ -25,6 +25,11 @@ import '../features/transactions/views/transaction_detail_view.dart';
 import '../features/referrals/views/referrals_view.dart';
 import '../features/settings/views/settings_screen.dart';
 import '../features/cards/views/cards_screen.dart';
+import '../features/cards/views/cards_list_view.dart';
+import '../features/cards/views/card_detail_view.dart';
+import '../features/cards/views/request_card_view.dart';
+import '../features/cards/views/card_settings_view.dart';
+import '../features/cards/views/card_transactions_view.dart';
 import '../features/settings/views/profile_view.dart';
 import '../features/settings/views/kyc_view.dart';
 import '../features/kyc/views/kyc_status_view.dart';
@@ -33,6 +38,11 @@ import '../features/kyc/views/document_capture_view.dart';
 import '../features/kyc/views/selfie_view.dart';
 import '../features/kyc/views/review_view.dart';
 import '../features/kyc/views/submitted_view.dart';
+import '../features/kyc/views/kyc_upgrade_view.dart';
+import '../features/kyc/views/kyc_address_view.dart';
+import '../features/kyc/views/kyc_video_view.dart';
+import '../features/kyc/views/kyc_additional_docs_view.dart';
+import '../features/kyc/models/kyc_tier.dart';
 import '../features/settings/views/change_pin_view.dart';
 import '../features/settings/views/notification_settings_view.dart';
 import '../features/settings/views/security_view.dart';
@@ -85,10 +95,24 @@ import '../features/services/views/services_view.dart';
 import '../features/beneficiaries/views/beneficiaries_screen.dart';
 import '../features/beneficiaries/views/add_beneficiary_screen.dart';
 import '../features/beneficiaries/views/beneficiary_detail_view.dart';
-import '../features/payment_links/views/payment_links_list_view.dart';
-import '../features/payment_links/views/create_link_view.dart';
+import '../features/business/views/business_setup_view.dart';
+import '../features/business/views/business_profile_view.dart';
+import '../features/expenses/views/expenses_view.dart';
+import '../features/expenses/views/add_expense_view.dart';
+import '../features/expenses/views/capture_receipt_view.dart';
+import '../features/expenses/views/expense_detail_view.dart';
+import '../features/expenses/views/expense_reports_view.dart';
+import '../features/expenses/models/expense.dart';
+import '../features/payment_links/views/payment_links_view.dart';
+import '../features/payment_links/views/create_payment_link_view.dart';
+import '../features/payment_links/views/payment_link_detail_view.dart';
 import '../features/payment_links/views/link_created_view.dart';
-import '../features/payment_links/views/link_detail_view.dart';
+import '../features/payment_links/views/pay_link_view.dart';
+import '../features/bank_linking/views/linked_accounts_view.dart';
+import '../features/bank_linking/views/bank_selection_view.dart';
+import '../features/bank_linking/views/link_bank_view.dart';
+import '../features/bank_linking/views/bank_verification_view.dart';
+import '../features/bank_linking/views/bank_transfer_view.dart';
 import '../features/send/views/recipient_screen.dart';
 import '../features/send/views/amount_screen.dart';
 import '../features/send/views/confirm_screen.dart';
@@ -99,9 +123,16 @@ import '../features/send_external/views/external_amount_screen.dart';
 import '../features/send_external/views/external_confirm_screen.dart';
 import '../features/send_external/views/external_result_screen.dart';
 import '../features/send_external/views/scan_address_qr_screen.dart';
+import '../features/bulk_payments/views/bulk_payments_view.dart';
+import '../features/bulk_payments/views/bulk_upload_view.dart';
+import '../features/bulk_payments/views/bulk_preview_view.dart';
+import '../features/bulk_payments/views/bulk_status_view.dart';
+import '../features/sub_business/views/sub_businesses_view.dart';
+import '../features/sub_business/views/create_sub_business_view.dart';
+import '../features/sub_business/views/sub_business_detail_view.dart';
+import '../features/sub_business/views/sub_business_staff_view.dart';
 import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
-import '../services/feature_flags/feature_flags_provider.dart';
 import 'page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
@@ -226,7 +257,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (location.startsWith('/savings-pots') && !(flags[FeatureFlagKeys.savingsPots] ?? false)) {
         return '/home';
       }
-      if (location == '/card' && !(flags[FeatureFlagKeys.virtualCards] ?? false)) {
+      if ((location == '/card' || location.startsWith('/cards/')) && !(flags[FeatureFlagKeys.virtualCards] ?? false)) {
         return '/home';
       }
       if (location == '/split' && !(flags[FeatureFlagKeys.splitBills] ?? false)) {
@@ -279,7 +310,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const LoginPhoneView(),
+          child: const LoginView(),
         ),
       ),
       GoRoute(
@@ -319,7 +350,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/cards',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
-              child: const CardsScreen(),
+              child: const CardsListView(),
             ),
           ),
           GoRoute(
@@ -464,6 +495,46 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const WithdrawView(),
         ),
       ),
+
+      // Virtual Cards Routes
+      GoRoute(
+        path: '/cards/request',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const RequestCardView(),
+        ),
+      ),
+      GoRoute(
+        path: '/cards/detail/:id',
+        pageBuilder: (context, state) {
+          final cardId = state.pathParameters['id']!;
+          return AppPageTransitions.horizontalSlide(
+            state: state,
+            child: CardDetailView(cardId: cardId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/cards/settings/:id',
+        pageBuilder: (context, state) {
+          final cardId = state.pathParameters['id']!;
+          return AppPageTransitions.horizontalSlide(
+            state: state,
+            child: CardSettingsView(cardId: cardId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/cards/transactions/:id',
+        pageBuilder: (context, state) {
+          final cardId = state.pathParameters['id']!;
+          return AppPageTransitions.horizontalSlide(
+            state: state,
+            child: CardTransactionsView(cardId: cardId),
+          );
+        },
+      ),
+
       GoRoute(
         path: '/scan',
         pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
@@ -601,6 +672,41 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/kyc/upgrade',
+        pageBuilder: (context, state) {
+          final currentTier = state.extra as Map<String, dynamic>?;
+          return AppPageTransitions.verticalSlide(
+            state: state,
+            child: KycUpgradeView(
+              currentTier: currentTier?['currentTier'] as KycTier? ?? KycTier.tier0,
+              targetTier: currentTier?['targetTier'] as KycTier? ?? KycTier.tier1,
+              reason: currentTier?['reason'] as String?,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/kyc/address',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycAddressView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/video',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycVideoView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/additional-docs',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycAdditionalDocsView(),
+        ),
+      ),
+      GoRoute(
         path: '/settings/notifications',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
@@ -689,6 +795,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const HelpScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/business-setup',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BusinessSetupView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/business-profile',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BusinessProfileView(),
         ),
       ),
 
@@ -995,20 +1115,73 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
+      // Expenses Routes
+      GoRoute(
+        path: '/expenses',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ExpensesView(),
+        ),
+      ),
+      GoRoute(
+        path: '/expenses/add',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const AddExpenseView(),
+        ),
+      ),
+      GoRoute(
+        path: '/expenses/capture',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const CaptureReceiptView(),
+        ),
+      ),
+      GoRoute(
+        path: '/expenses/detail/:id',
+        pageBuilder: (context, state) {
+          final expense = state.extra as Expense?;
+          Widget child;
+          if (expense != null) {
+            child = ExpenseDetailView(expense: expense);
+          } else {
+            child = const _PlaceholderPage(title: 'Expense Not Found');
+          }
+          return AppPageTransitions.horizontalSlide(state: state, child: child);
+        },
+      ),
+      GoRoute(
+        path: '/expenses/reports',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ExpenseReportsView(),
+        ),
+      ),
+
       // Payment Links Routes
       GoRoute(
         path: '/payment-links',
-        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+        pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const PaymentLinksListView(),
+          child: const PaymentLinksView(),
         ),
       ),
       GoRoute(
         path: '/payment-links/create',
         pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
           state: state,
-          child: const CreateLinkView(),
+          child: const CreatePaymentLinkView(),
         ),
+      ),
+      GoRoute(
+        path: '/payment-links/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return AppPageTransitions.fade(
+            state: state,
+            child: PaymentLinkDetailView(linkId: id),
+          );
+        },
       ),
       GoRoute(
         path: '/payment-links/created/:id',
@@ -1024,16 +1197,105 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/payment-links/detail/:id',
+        path: '/pay/:code',
         pageBuilder: (context, state) {
-          final linkId = state.pathParameters['id'];
+          final code = state.pathParameters['code'];
           Widget child;
-          if (linkId != null) {
-            child = LinkDetailView(linkId: linkId);
+          if (code != null) {
+            child = PayLinkView(linkCode: code);
           } else {
-            child = const _PlaceholderPage(title: 'Link Not Found');
+            child = const _PlaceholderPage(title: 'Invalid Link');
+          }
+          return AppPageTransitions.verticalSlide(state: state, child: child);
+        },
+      ),
+
+      // Sub-Business Routes
+      GoRoute(
+        path: '/sub-businesses',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SubBusinessesView(),
+        ),
+      ),
+      GoRoute(
+        path: '/sub-businesses/create',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const CreateSubBusinessView(),
+        ),
+      ),
+      GoRoute(
+        path: '/sub-businesses/detail/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'];
+          Widget child;
+          if (id != null) {
+            child = SubBusinessDetailView(subBusinessId: id);
+          } else {
+            child = const _PlaceholderPage(title: 'Sub-Business Not Found');
           }
           return AppPageTransitions.horizontalSlide(state: state, child: child);
+        },
+      ),
+      GoRoute(
+        path: '/sub-businesses/:id/staff',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'];
+          Widget child;
+          if (id != null) {
+            child = SubBusinessStaffView(subBusinessId: id);
+          } else {
+            child = const _PlaceholderPage(title: 'Sub-Business Not Found');
+          }
+          return AppPageTransitions.horizontalSlide(state: state, child: child);
+        },
+      ),
+      GoRoute(
+        path: '/sub-businesses/transfer/:id',
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'];
+          // TODO: Implement transfer between sub-businesses screen
+          return AppPageTransitions.verticalSlide(
+            state: state,
+            child: const _PlaceholderPage(title: 'Transfer Between Sub-Businesses'),
+          );
+        },
+      ),
+
+      // Bulk Payments Routes
+      GoRoute(
+        path: '/bulk-payments',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BulkPaymentsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bulk-payments/upload',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BulkUploadView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bulk-payments/preview',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const BulkPreviewView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bulk-payments/status/:batchId',
+        pageBuilder: (context, state) {
+          final batchId = state.pathParameters['batchId'];
+          Widget child;
+          if (batchId != null) {
+            child = BulkStatusView(batchId: batchId);
+          } else {
+            child = const _PlaceholderPage(title: 'Batch Not Found');
+          }
+          return AppPageTransitions.fade(state: state, child: child);
         },
       ),
 
@@ -1074,6 +1336,60 @@ final routerProvider = Provider<GoRouter>((ref) {
             child = AddBeneficiaryScreen(beneficiaryId: beneficiaryId);
           } else {
             child = const _PlaceholderPage(title: 'Beneficiary Not Found');
+          }
+          return AppPageTransitions.verticalSlide(state: state, child: child);
+        },
+      ),
+
+      // Bank Linking Routes
+      GoRoute(
+        path: '/bank-linking',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const LinkedAccountsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bank-linking/select',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const BankSelectionView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bank-linking/link',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const LinkBankView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bank-linking/verify',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const BankVerificationView(),
+        ),
+      ),
+      GoRoute(
+        path: '/bank-linking/verify/:accountId',
+        pageBuilder: (context, state) {
+          final accountId = state.pathParameters['accountId'];
+          return AppPageTransitions.horizontalSlide(
+            state: state,
+            child: BankVerificationView(accountId: accountId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/bank-linking/transfer/:accountId',
+        pageBuilder: (context, state) {
+          final accountId = state.pathParameters['accountId'];
+          final type = state.extra as String? ?? 'deposit';
+          Widget child;
+          if (accountId != null) {
+            child = BankTransferView(accountId: accountId, type: type);
+          } else {
+            child = const _PlaceholderPage(title: 'Account Not Found');
           }
           return AppPageTransitions.verticalSlide(state: state, child: child);
         },

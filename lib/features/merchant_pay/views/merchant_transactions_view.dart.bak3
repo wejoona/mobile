@@ -1,0 +1,348 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../services/merchant_service.dart';
+
+/// Merchant Transactions View
+/// Shows full transaction history for a merchant
+class MerchantTransactionsView extends ConsumerStatefulWidget {
+  final String merchantId;
+
+  const MerchantTransactionsView({
+    super.key,
+    required this.merchantId,
+  });
+
+  static const String routeName = '/merchant-transactions';
+
+  @override
+  ConsumerState<MerchantTransactionsView> createState() =>
+      _MerchantTransactionsViewState();
+}
+
+class _MerchantTransactionsViewState
+    extends ConsumerState<MerchantTransactionsView> {
+  final _scrollController = ScrollController();
+  int _currentOffset = 0;
+  final int _limit = 20;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  final List<MerchantTransaction> _transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _loadTransactions();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMore &&
+        _hasMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadTransactions() async {
+    _currentOffset = 0;
+    _transactions.clear();
+    _hasMore = true;
+    await _loadMore();
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final service = ref.read(merchantServiceProvider);
+      final response = await service.getTransactions(
+        merchantId: widget.merchantId,
+        limit: _limit,
+        offset: _currentOffset,
+      );
+
+      setState(() {
+        _transactions.addAll(response.transactions);
+        _currentOffset += response.transactions.length;
+        _hasMore = response.transactions.length >= _limit;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingMore = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load transactions')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      backgroundColor: AppColors.obsidian,
+      appBar: AppBar(
+        title: AppText(l10n.navigation_transactions, variant: AppTextVariant.titleMedium),
+        backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            onPressed: _loadTransactions,
+            icon: Icon(Icons.refresh, color: AppColors.gold500),
+          ),
+        ],
+      ),
+      body: _transactions.isEmpty && !_isLoadingMore
+          ? _buildEmptyState(l10n)
+          : RefreshIndicator(
+              onRefresh: _loadTransactions,
+              color: AppColors.gold500,
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(AppSpacing.md),
+                itemCount: _transactions.length + (_isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _transactions.length) {
+                    return Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSpacing.md),
+                        child: CircularProgressIndicator(color: AppColors.gold500),
+                      ),
+                    );
+                  }
+                  return _buildTransactionItem(_transactions[index]);
+                },
+              ),
+            ),
+    );
+  }
+
+  Widget _buildEmptyState(AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.receipt_long,
+            size: 80,
+            color: AppColors.silver.withValues(alpha: 0.5),
+          ),
+          SizedBox(height: AppSpacing.md),
+          AppText(
+            'No transactions yet',
+            variant: AppTextVariant.titleMedium,
+            color: AppColors.white,
+          ),
+          SizedBox(height: AppSpacing.xs),
+          AppText(
+            'Transactions will appear here when\ncustomers pay you',
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.silver,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(MerchantTransaction tx) {
+    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+
+    Color statusColor;
+    IconData statusIcon;
+    switch (tx.status) {
+      case 'completed':
+        statusColor = AppColors.success;
+        statusIcon = Icons.check_circle;
+        break;
+      case 'refunded':
+        statusColor = AppColors.warning;
+        statusIcon = Icons.undo;
+        break;
+      default:
+        statusColor = AppColors.error;
+        statusIcon = Icons.error;
+    }
+
+    return AppCard(
+      variant: AppCardVariant.outline,
+      padding: EdgeInsets.all(AppSpacing.md),
+      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+      onTap: () => _showTransactionDetails(tx),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(AppSpacing.xs),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  tx.status == 'completed'
+                      ? Icons.arrow_downward
+                      : statusIcon,
+                  color: statusColor,
+                  size: 20,
+                ),
+              ),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      tx.reference,
+                      variant: AppTextVariant.bodyLarge,
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    AppText(
+                      dateFormat.format(tx.createdAt),
+                      variant: AppTextVariant.labelSmall,
+                      color: AppColors.silver,
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  AppText(
+                    tx.status == 'refunded'
+                        ? '-${currencyFormat.format(tx.amount)}'
+                        : '+${currencyFormat.format(tx.netAmount)}',
+                    variant: AppTextVariant.bodyLarge,
+                    color: tx.status == 'refunded'
+                        ? AppColors.warning
+                        : AppColors.success,
+                  ),
+                  if (tx.fee > 0)
+                    AppText(
+                      'Fee: ${currencyFormat.format(tx.fee)}',
+                      variant: AppTextVariant.labelSmall,
+                      color: AppColors.silver,
+                    ),
+                ],
+              ),
+            ],
+          ),
+          if (tx.description != null) ...[
+            SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.charcoal.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: AppText(
+                tx.description!,
+                variant: AppTextVariant.bodySmall,
+                color: AppColors.silver,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showTransactionDetails(MerchantTransaction tx) {
+    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final dateFormat = DateFormat('MMMM dd, yyyy HH:mm:ss');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.charcoal,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.silver,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              SizedBox(height: AppSpacing.lg),
+              AppText(
+                'Transaction Details',
+                variant: AppTextVariant.titleLarge,
+              ),
+              SizedBox(height: AppSpacing.lg),
+              _buildDetailRow('Reference', tx.reference),
+              _buildDetailRow('Payment ID', tx.paymentId),
+              _buildDetailRow('Amount', currencyFormat.format(tx.amount)),
+              _buildDetailRow('Fee', currencyFormat.format(tx.fee)),
+              _buildDetailRow('Net Amount', currencyFormat.format(tx.netAmount)),
+              _buildDetailRow('Status', tx.status.toUpperCase()),
+              _buildDetailRow('Date', dateFormat.format(tx.createdAt)),
+              if (tx.description != null)
+                _buildDetailRow('Description', tx.description!),
+              SizedBox(height: AppSpacing.lg),
+              AppButton(
+                label: 'Close',
+                onPressed: () => Navigator.of(context).pop(),
+                variant: AppButtonVariant.secondary,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: AppText(
+              label,
+              variant: AppTextVariant.bodySmall,
+              color: AppColors.silver,
+            ),
+          ),
+          Expanded(
+            child: AppText(
+              value,
+              variant: AppTextVariant.bodyMedium,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

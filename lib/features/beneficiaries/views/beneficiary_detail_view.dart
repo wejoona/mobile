@@ -287,7 +287,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
           if (beneficiary.lastTransferAt != null)
             _buildStatRow(
               l10n.beneficiaries_lastTransfer,
-              _formatDate(beneficiary.lastTransferAt!),
+              _formatDate(beneficiary.lastTransferAt!, l10n),
               Icons.access_time,
             ),
         ],
@@ -386,16 +386,16 @@ class BeneficiaryDetailView extends ConsumerWidget {
     };
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
     if (difference.inDays == 0) {
-      return 'Today';
+      return l10n.common_today;
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return l10n.transactions_yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return l10n.contacts_synced_days_ago(difference.inDays);
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }

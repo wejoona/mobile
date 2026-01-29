@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../services/bill_payments/bill_payments_service.dart';
 import '../providers/bill_payments_provider.dart';
 import '../widgets/provider_card.dart';
@@ -23,7 +24,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final historyAsync = ref.watch(
       billPaymentHistoryProvider(BillPaymentHistoryParams(
         page: 1,
@@ -34,12 +35,12 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     );
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const AppText(
-          'Payment History',
+        title: AppText(
+          l10n.billPayments_history,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -58,25 +59,25 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
         children: [
           // Active Filters
           if (_selectedCategory != null || _selectedStatus != null)
-            _buildActiveFilters(colors),
+            _buildActiveFilters(l10n),
 
           // History List
           Expanded(
             child: historyAsync.when(
               data: (data) {
                 if (data.items.isEmpty) {
-                  return _buildEmptyState(colors);
+                  return _buildEmptyState(l10n);
                 }
 
                 // Group by date
-                final grouped = _groupByDate(data.items);
+                final grouped = _groupByDate(data.items, l10n);
 
                 return RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(billPaymentHistoryProvider);
                   },
-                  color: colors.gold,
-                  backgroundColor: colors.container,
+                  color: AppColors.gold500,
+                  backgroundColor: AppColors.slate,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification is ScrollEndNotification &&
@@ -95,7 +96,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpacing.lg),
                               child: CircularProgressIndicator(
-                                color: colors.gold,
+                                color: AppColors.gold500,
                               ),
                             ),
                           );
@@ -113,9 +114,9 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                 );
               },
               loading: () => Center(
-                child: CircularProgressIndicator(color: colors.gold),
+                child: CircularProgressIndicator(color: AppColors.gold500),
               ),
-              error: (error, _) => _buildErrorState(colors, error.toString()),
+              error: (error, _) => _buildErrorState(l10n, error.toString()),
             ),
           ),
         ],
@@ -123,7 +124,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     );
   }
 
-  Widget _buildActiveFilters(ThemeColors colors) {
+  Widget _buildActiveFilters(AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.screenPadding,
@@ -133,7 +134,6 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
         children: [
           if (_selectedCategory != null)
             _buildFilterChip(
-              colors,
               label: BillCategory.fromString(_selectedCategory!).displayName,
               onRemove: () {
                 setState(() {
@@ -145,7 +145,6 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           if (_selectedStatus != null) ...[
             if (_selectedCategory != null) const SizedBox(width: AppSpacing.sm),
             _buildFilterChip(
-              colors,
               label: _capitalizeStatus(_selectedStatus!),
               onRemove: () {
                 setState(() {
@@ -166,7 +165,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             },
             child: Text(
               'Clear',
-              style: TextStyle(color: colors.gold),
+              style: TextStyle(color: AppColors.gold500),
             ),
           ),
         ],
@@ -174,8 +173,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     );
   }
 
-  Widget _buildFilterChip(
-    ThemeColors colors, {
+  Widget _buildFilterChip({
     required String label,
     required VoidCallback onRemove,
   }) {
@@ -183,25 +181,25 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
       label: Text(
         label,
         style: TextStyle(
-          color: colors.textPrimary,
+          color: AppColors.textPrimary,
           fontSize: 12,
         ),
       ),
       deleteIcon: Icon(
         Icons.close,
         size: 16,
-        color: colors.textSecondary,
+        color: AppColors.textSecondary,
       ),
       onDeleted: onRemove,
-      backgroundColor: colors.elevated,
-      side: BorderSide(color: colors.borderSubtle),
+      backgroundColor: AppColors.elevated,
+      side: BorderSide(color: AppColors.borderSubtle),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.full),
       ),
     );
   }
 
-  Widget _buildEmptyState(ThemeColors colors) {
+  Widget _buildEmptyState(AppLocalizations l10n) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -209,20 +207,20 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: colors.container,
+              color: AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Icon(
               Icons.receipt_long_outlined,
               size: 48,
-              color: colors.textTertiary,
+              color: AppColors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             'No Payment History',
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -230,26 +228,22 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             child: AppText(
               'Your bill payments will appear here',
               variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          ElevatedButton.icon(
+          AppButton(
+            label: 'Pay a Bill',
             onPressed: () => context.push('/bill-payments'),
-            icon: const Icon(Icons.add),
-            label: const Text('Pay a Bill'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.gold,
-              foregroundColor: colors.canvas,
-            ),
+            icon: Icons.add,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState(ThemeColors colors, String error) {
+  Widget _buildErrorState(AppLocalizations l10n, String error) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -270,7 +264,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           AppText(
             'Failed to Load History',
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -278,21 +272,18 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             child: AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
+              color: AppColors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          ElevatedButton.icon(
+          AppButton(
+            label: l10n.action_retry,
             onPressed: () {
               ref.invalidate(billPaymentHistoryProvider);
             },
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.gold,
-              foregroundColor: colors.canvas,
-            ),
+            icon: Icons.refresh,
+            variant: AppButtonVariant.secondary,
           ),
         ],
       ),
@@ -301,6 +292,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
 
   Map<String, List<BillPaymentHistoryItem>> _groupByDate(
     List<BillPaymentHistoryItem> items,
+    AppLocalizations l10n,
   ) {
     final grouped = <String, List<BillPaymentHistoryItem>>{};
     final now = DateTime.now();
@@ -316,9 +308,9 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
 
       String label;
       if (itemDate == today) {
-        label = 'Today';
+        label = l10n.common_today;
       } else if (itemDate == yesterday) {
-        label = 'Yesterday';
+        label = l10n.transactions_yesterday;
       } else if (now.difference(itemDate).inDays < 7) {
         label = DateFormat('EEEE').format(item.createdAt);
       } else {
@@ -332,10 +324,9 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   }
 
   void _showFilterSheet() {
-    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: colors.surface,
+      backgroundColor: AppColors.graphite,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -387,7 +378,6 @@ class _HistoryGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -396,7 +386,7 @@ class _HistoryGroup extends StatelessWidget {
           child: AppText(
             date,
             variant: AppTextVariant.labelMedium,
-            color: colors.textTertiary,
+            color: AppColors.textTertiary,
           ),
         ),
         ...items.map((item) => Padding(
@@ -439,7 +429,6 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
@@ -452,7 +441,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: colors.border,
+                color: AppColors.borderDefault,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -462,7 +451,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Filter Payments',
             variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
+            color: AppColors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.xl),
 
@@ -470,18 +459,17 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Category',
             variant: AppTextVariant.labelMedium,
-            color: colors.textSecondary,
+            color: AppColors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _buildFilterOption(colors, null, 'All', _category == null, (v) {
+              _buildFilterOption(null, 'All', _category == null, (v) {
                 setState(() => _category = v);
               }),
               ...BillCategory.values.map((cat) => _buildFilterOption(
-                    colors,
                     cat.value,
                     cat.displayName,
                     _category == cat.value,
@@ -495,23 +483,23 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Status',
             variant: AppTextVariant.labelMedium,
-            color: colors.textSecondary,
+            color: AppColors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
             children: [
-              _buildFilterOption(colors, null, 'All', _status == null, (v) {
+              _buildFilterOption(null, 'All', _status == null, (v) {
                 setState(() => _status = v);
               }),
-              _buildFilterOption(colors, 'completed', 'Completed', _status == 'completed', (v) {
+              _buildFilterOption('completed', 'Completed', _status == 'completed', (v) {
                 setState(() => _status = v);
               }),
-              _buildFilterOption(colors, 'pending', 'Pending', _status == 'pending', (v) {
+              _buildFilterOption('pending', 'Pending', _status == 'pending', (v) {
                 setState(() => _status = v);
               }),
-              _buildFilterOption(colors, 'failed', 'Failed', _status == 'failed', (v) {
+              _buildFilterOption('failed', 'Failed', _status == 'failed', (v) {
                 setState(() => _status = v);
               }),
             ],
@@ -519,20 +507,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           const SizedBox(height: AppSpacing.xxl),
 
           // Apply Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () => widget.onApply(_category, _status),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.gold,
-                foregroundColor: colors.canvas,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                ),
-              ),
-              child: const Text('Apply Filters'),
-            ),
+          AppButton(
+            label: 'Apply Filters',
+            onPressed: () => widget.onApply(_category, _status),
+            isFullWidth: true,
           ),
           const SizedBox(height: AppSpacing.lg),
         ],
@@ -541,7 +519,6 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
   }
 
   Widget _buildFilterOption(
-    ThemeColors colors,
     String? value,
     String label,
     bool isSelected,
@@ -555,17 +532,17 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold : colors.container,
+          color: isSelected ? AppColors.gold500 : AppColors.slate,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected ? colors.gold : colors.borderSubtle,
+            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
             width: 1,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? colors.canvas : colors.textPrimary,
+          color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
         ),
       ),
     );

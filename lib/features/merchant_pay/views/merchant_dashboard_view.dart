@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
@@ -23,87 +24,84 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final merchantAsync = ref.watch(merchantProfileProvider);
 
     return Scaffold(
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
-        title: const Text('Merchant Dashboard'),
+        title: AppText('Merchant Dashboard', variant: AppTextVariant.titleMedium),
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: () => context.push('/merchant-settings'),
-            icon: const Icon(Icons.settings),
+            icon: Icon(Icons.settings, color: AppColors.gold500),
           ),
         ],
       ),
       body: merchantAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppColors.gold500),
+        ),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
-              const SizedBox(height: 16),
-              Text(
+              Icon(Icons.error_outline, size: 64, color: AppColors.silver),
+              SizedBox(height: AppSpacing.md),
+              AppText(
                 'Error loading merchant profile',
-                style: TextStyle(color: Colors.grey.shade600),
+                color: AppColors.silver,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(
+              SizedBox(height: AppSpacing.md),
+              AppButton(
+                label: l10n.action_retry,
                 onPressed: () => ref.invalidate(merchantProfileProvider),
-                child: const Text('Retry'),
+                variant: AppButtonVariant.secondary,
               ),
             ],
           ),
         ),
         data: (merchant) {
           if (merchant == null) {
-            return _buildNotMerchantView(context);
+            return _buildNotMerchantView(context, l10n);
           }
-          return _buildDashboard(context, merchant);
+          return _buildDashboard(context, l10n, merchant);
         },
       ),
     );
   }
 
-  Widget _buildNotMerchantView(BuildContext context) {
+  Widget _buildNotMerchantView(BuildContext context, AppLocalizations l10n) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.store_outlined,
               size: 80,
-              color: Colors.grey.shade400,
+              color: AppColors.gold500.withValues(alpha: 0.5),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: AppSpacing.lg),
+            AppText(
               'Become a Merchant',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              variant: AppTextVariant.headlineMedium,
+              color: AppColors.white,
             ),
-            const SizedBox(height: 12),
-            Text(
+            SizedBox(height: AppSpacing.sm),
+            AppText(
               'Accept USDC payments from customers with QR codes',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 16,
-              ),
+              variant: AppTextVariant.bodyMedium,
+              color: AppColors.silver,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
+            SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: 'Register as Merchant',
               onPressed: () => context.push('/merchant-register'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 48,
-                  vertical: 16,
-                ),
-              ),
-              child: const Text('Register as Merchant'),
+              variant: AppButtonVariant.primary,
             ),
           ],
         ),
@@ -111,9 +109,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildDashboard(BuildContext context, MerchantResponse merchant) {
-    final theme = Theme.of(context);
-
+  Widget _buildDashboard(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(merchantProfileProvider);
@@ -122,95 +118,87 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           period: _selectedPeriod,
         )));
       },
+      color: AppColors.gold500,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status banner
             if (!merchant.isVerified)
-              _buildStatusBanner(theme, merchant),
+              _buildStatusBanner(merchant),
 
-            // Quick stats
-            _buildQuickStats(theme, merchant),
-            const SizedBox(height: 24),
+            // Quick stats card
+            _buildQuickStats(merchant),
+            SizedBox(height: AppSpacing.lg),
 
             // Quick actions
-            _buildQuickActions(context, merchant),
-            const SizedBox(height: 24),
+            _buildQuickActions(context, l10n, merchant),
+            SizedBox(height: AppSpacing.lg),
 
             // Analytics section
-            _buildAnalyticsSection(context, merchant),
-            const SizedBox(height: 24),
+            _buildAnalyticsSection(context, l10n, merchant),
+            SizedBox(height: AppSpacing.lg),
 
             // Recent transactions
-            _buildRecentTransactions(context, merchant),
+            _buildRecentTransactions(context, l10n, merchant),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusBanner(ThemeData theme, MerchantResponse merchant) {
+  Widget _buildStatusBanner(MerchantResponse merchant) {
     Color bgColor;
     Color textColor;
     IconData icon;
     String message;
 
     if (merchant.isPending) {
-      bgColor = Colors.amber.shade50;
-      textColor = Colors.amber.shade800;
+      bgColor = AppColors.warning.withValues(alpha: 0.1);
+      textColor = AppColors.warning;
       icon = Icons.pending;
       message = 'Your merchant account is pending verification';
     } else if (!merchant.isActive) {
-      bgColor = Colors.red.shade50;
-      textColor = Colors.red.shade800;
+      bgColor = AppColors.error.withValues(alpha: 0.1);
+      textColor = AppColors.error;
       icon = Icons.warning;
       message = 'Your merchant account is ${merchant.status}';
     } else {
-      bgColor = Colors.orange.shade50;
-      textColor = Colors.orange.shade800;
+      bgColor = AppColors.warning.withValues(alpha: 0.1);
+      textColor = AppColors.warning;
       icon = Icons.info;
       message = 'Complete verification to start accepting payments';
     }
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: textColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
           Icon(icon, color: textColor),
-          const SizedBox(width: 12),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: textColor),
-            ),
+            child: AppText(message, color: textColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickStats(ThemeData theme, MerchantResponse merchant) {
+  Widget _buildQuickStats(MerchantResponse merchant) {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
+    return AppCard(
+      variant: AppCardVariant.gradient,
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -220,26 +208,21 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    AppText(
                       merchant.displayName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      variant: AppTextVariant.titleLarge,
+                      color: AppColors.white,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppSpacing.xs),
                     if (merchant.isVerified)
                       Row(
                         children: [
-                          const Icon(Icons.verified, color: Colors.white, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
+                          Icon(Icons.verified, color: AppColors.white, size: 16),
+                          SizedBox(width: AppSpacing.xs),
+                          AppText(
                             'Verified',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 12,
-                            ),
+                            variant: AppTextVariant.labelSmall,
+                            color: AppColors.white.withValues(alpha: 0.9),
                           ),
                         ],
                       ),
@@ -247,23 +230,22 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
-                child: Text(
+                child: AppText(
                   merchant.status.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  variant: AppTextVariant.labelSmall,
+                  color: AppColors.white,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: AppSpacing.lg),
+
+          // Stats grid
           Row(
             children: [
               Expanded(
@@ -276,7 +258,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.3),
+                color: AppColors.white.withValues(alpha: 0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -287,7 +269,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
@@ -300,7 +282,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Container(
                 width: 1,
                 height: 40,
-                color: Colors.white.withOpacity(0.3),
+                color: AppColors.white.withValues(alpha: 0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -318,29 +300,24 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
 
   Widget _buildStatItem(String label, String value, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: Colors.white.withOpacity(0.7), size: 20),
-          const SizedBox(width: 8),
+          Icon(icon, color: AppColors.white.withValues(alpha: 0.7), size: 20),
+          SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppText(
                   label,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
+                  variant: AppTextVariant.labelSmall,
+                  color: AppColors.white.withValues(alpha: 0.7),
                 ),
-                Text(
+                AppText(
                   value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  variant: AppTextVariant.bodyLarge,
+                  color: AppColors.white,
                 ),
               ],
             ),
@@ -350,83 +327,61 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, MerchantResponse merchant) {
+  Widget _buildQuickActions(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
     return Row(
       children: [
         Expanded(
           child: _buildActionCard(
-            context,
             icon: Icons.qr_code,
             label: 'Show QR',
-            onTap: () => context.push(
-              '/merchant-qr',
-              extra: merchant,
-            ),
+            onTap: () => context.push('/merchant-qr', extra: merchant),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: AppSpacing.sm),
         Expanded(
           child: _buildActionCard(
-            context,
             icon: Icons.add_card,
             label: 'Request Payment',
-            onTap: () => context.push(
-              '/create-payment-request',
-              extra: merchant,
-            ),
+            onTap: () => context.push('/create-payment-request', extra: merchant),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: AppSpacing.sm),
         Expanded(
           child: _buildActionCard(
-            context,
             icon: Icons.history,
-            label: 'Transactions',
-            onTap: () => context.push(
-              '/merchant-transactions',
-              extra: merchant.merchantId,
-            ),
+            label: l10n.navigation_transactions,
+            onTap: () => context.push('/merchant-transactions', extra: merchant.merchantId),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActionCard(
-    BuildContext context, {
+  Widget _buildActionCard({
     required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
-    final theme = Theme.of(context);
-
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: AppCard(
+        variant: AppCardVariant.outline,
+        padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: theme.primaryColor.withOpacity(0.1),
+                color: AppColors.gold500.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: theme.primaryColor),
+              child: Icon(icon, color: AppColors.gold500),
             ),
-            const SizedBox(height: 8),
-            Text(
+            SizedBox(height: AppSpacing.xs),
+            AppText(
               label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
+              variant: AppTextVariant.labelSmall,
               textAlign: TextAlign.center,
             ),
           ],
@@ -435,7 +390,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildAnalyticsSection(BuildContext context, MerchantResponse merchant) {
+  Widget _buildAnalyticsSection(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
     final analyticsAsync = ref.watch(merchantAnalyticsProvider(
       MerchantAnalyticsParams(
         merchantId: merchant.merchantId,
@@ -449,7 +404,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const AppText(
+            AppText(
               'Analytics',
               variant: AppTextVariant.titleMedium,
             ),
@@ -473,62 +428,59 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: AppSpacing.md),
         analyticsAsync.when(
-          loading: () => const Center(
+          loading: () => Center(
             child: Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.all(AppSpacing.xl),
+              child: CircularProgressIndicator(color: AppColors.gold500),
             ),
           ),
-          error: (_, __) => Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text('Failed to load analytics'),
+          error: (_, __) => AppCard(
+            variant: AppCardVariant.outline,
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: AppText('Failed to load analytics', color: AppColors.error),
           ),
-          data: (analytics) => _buildAnalyticsCards(context, analytics),
+          data: (analytics) => _buildAnalyticsCards(analytics),
         ),
       ],
     );
   }
 
-  Widget _buildAnalyticsCards(BuildContext context, MerchantAnalyticsResponse analytics) {
+  Widget _buildAnalyticsCards(MerchantAnalyticsResponse analytics) {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
+      crossAxisSpacing: AppSpacing.sm,
+      mainAxisSpacing: AppSpacing.sm,
       childAspectRatio: 1.5,
       children: [
         _buildAnalyticsCard(
           'Total Volume',
           currencyFormat.format(analytics.totalVolume),
           Icons.attach_money,
-          Colors.green,
+          AppColors.success,
         ),
         _buildAnalyticsCard(
           'Total Fees',
           currencyFormat.format(analytics.totalFees),
           Icons.receipt,
-          Colors.orange,
+          AppColors.warning,
         ),
         _buildAnalyticsCard(
           'Transactions',
           analytics.totalTransactions.toString(),
           Icons.swap_horiz,
-          Colors.blue,
+          AppColors.gold500,
         ),
         _buildAnalyticsCard(
           'Unique Customers',
           analytics.uniqueCustomers.toString(),
           Icons.people,
-          Colors.purple,
+          AppColors.gold500,
         ),
       ],
     );
@@ -540,39 +492,31 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     IconData icon,
     Color color,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return AppCard(
+      variant: AppCardVariant.filled,
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Icon(icon, color: color, size: 24),
           const Spacer(),
-          Text(
+          AppText(
             value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            variant: AppTextVariant.titleLarge,
+            color: color,
           ),
-          Text(
+          AppText(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
+            variant: AppTextVariant.labelSmall,
+            color: AppColors.silver,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context, MerchantResponse merchant) {
+  Widget _buildRecentTransactions(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
     final transactionsAsync = ref.watch(merchantTransactionsProvider(
       MerchantTransactionsParams(
         merchantId: merchant.merchantId,
@@ -586,55 +530,40 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            AppText(
               'Recent Transactions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              variant: AppTextVariant.titleMedium,
             ),
             TextButton(
-              onPressed: () => context.push(
-                '/merchant-transactions',
-                extra: merchant.merchantId,
-              ),
-              child: const Text('See All'),
+              onPressed: () => context.push('/merchant-transactions', extra: merchant.merchantId),
+              child: AppText('See All', color: AppColors.gold500),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: AppSpacing.sm),
         transactionsAsync.when(
-          loading: () => const Center(
+          loading: () => Center(
             child: Padding(
-              padding: EdgeInsets.all(32),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.all(AppSpacing.xl),
+              child: CircularProgressIndicator(color: AppColors.gold500),
             ),
           ),
-          error: (_, __) => Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Text('Failed to load transactions'),
+          error: (_, __) => AppCard(
+            variant: AppCardVariant.outline,
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: AppText('Failed to load transactions', color: AppColors.error),
           ),
           data: (response) {
             if (response.transactions.isEmpty) {
-              return Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              return AppCard(
+                variant: AppCardVariant.filled,
+                padding: EdgeInsets.all(AppSpacing.xl),
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.receipt_long, size: 48, color: Colors.grey.shade400),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No transactions yet',
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
+                      Icon(Icons.receipt_long, size: 48, color: AppColors.silver),
+                      SizedBox(height: AppSpacing.sm),
+                      AppText('No transactions yet', color: AppColors.silver),
                     ],
                   ),
                 ),
@@ -652,46 +581,37 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
   }
 
   Widget _buildTransactionItem(MerchantTransaction tx) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
+    return AppCard(
+      variant: AppCardVariant.outline,
+      padding: EdgeInsets.all(AppSpacing.md),
+      margin: EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
-              color: Colors.green.shade50,
+              color: AppColors.success.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.arrow_downward,
-              color: Colors.green.shade600,
+              color: AppColors.success,
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppText(
                   tx.reference,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  variant: AppTextVariant.bodyMedium,
                 ),
-                const SizedBox(height: 4),
-                Text(
+                AppText(
                   DateFormat('MMM dd, HH:mm').format(tx.createdAt),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 12,
-                  ),
+                  variant: AppTextVariant.labelSmall,
+                  color: AppColors.silver,
                 ),
               ],
             ),
@@ -699,19 +619,15 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
+              AppText(
                 '+\$${tx.netAmount.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: Colors.green.shade600,
-                  fontWeight: FontWeight.w600,
-                ),
+                variant: AppTextVariant.bodyLarge,
+                color: AppColors.success,
               ),
-              Text(
+              AppText(
                 'Fee: \$${tx.fee.toStringAsFixed(2)}',
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 11,
-                ),
+                variant: AppTextVariant.labelSmall,
+                color: AppColors.silver,
               ),
             ],
           ),

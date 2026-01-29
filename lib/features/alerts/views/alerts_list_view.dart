@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../models/index.dart';
@@ -49,17 +50,18 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(alertsProvider);
     final filteredAlerts = _filterAlerts(state.alerts);
 
     return Scaffold(
-      backgroundColor: colors.canvas,
+      backgroundColor: AppColors.obsidian,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
           children: [
-            const AppText(
+            AppText(
               'Alerts',
               variant: AppTextVariant.titleLarge,
             ),

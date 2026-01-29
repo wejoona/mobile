@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/services/offline/offline_cache_service.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
-import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart' hide AccountType;
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 void main() {

@@ -1132,18 +1132,14 @@ class _AmountInput extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: TextField(
+                child: AppInput(
                   controller: controller,
+                  variant: AppInputVariant.amount,
+                  hint: '0.00',
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
-                  style: AppTypography.headlineMedium,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0.00',
-                    hintStyle: TextStyle(color: colors.textTertiary),
-                  ),
                   onChanged: onChanged,
                 ),
               ),
@@ -1327,18 +1323,10 @@ class _SavedRecipientsSheetState extends ConsumerState<_SavedRecipientsSheet> {
         // Search
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search recipients...',
-              hintStyle: TextStyle(color: colors.textTertiary),
-              prefixIcon: Icon(Icons.search, color: colors.textTertiary),
-              filled: true,
-              fillColor: colors.elevated,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: BorderSide.none,
-              ),
-            ),
+          child: AppInput(
+            variant: AppInputVariant.search,
+            hint: 'Search recipients...',
+            prefixIcon: Icons.search,
             onChanged: (value) => setState(() => _searchQuery = value),
           ),
         ),
@@ -1506,18 +1494,10 @@ class _ContactsSheetState extends State<_ContactsSheet> {
         // Search
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: 'Search contacts...',
-              hintStyle: TextStyle(color: colors.textTertiary),
-              prefixIcon: Icon(Icons.search, color: colors.textTertiary),
-              filled: true,
-              fillColor: colors.elevated,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: BorderSide.none,
-              ),
-            ),
+          child: AppInput(
+            variant: AppInputVariant.search,
+            hint: 'Search contacts...',
+            prefixIcon: Icons.search,
             onChanged: (value) => setState(() => _searchQuery = value),
           ),
         ),

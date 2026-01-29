@@ -3,10 +3,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/typography.dart';
+import '../../../design/components/primitives/app_text.dart';
 import '../models/spending_trend.dart';
 import '../models/insights_period.dart';
 
-class SpendingLineChart extends StatelessWidget {
+class SpendingLineChart extends StatefulWidget {
   final List<SpendingTrend> trends;
   final InsightsPeriod period;
 
@@ -17,20 +18,51 @@ class SpendingLineChart extends StatelessWidget {
   });
 
   @override
+  State<SpendingLineChart> createState() => _SpendingLineChartState();
+}
+
+class _SpendingLineChartState extends State<SpendingLineChart> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutCubic,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (trends.isEmpty) {
+    if (widget.trends.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    final maxY = trends.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
+    final maxY = widget.trends.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
     final minY = 0.0;
 
     return AspectRatio(
       aspectRatio: 1.7,
       child: Padding(
         padding: const EdgeInsets.only(right: 16, top: 16),
-        child: LineChart(
-          LineChartData(
+        child: AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return LineChart(
+              LineChartData(
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
@@ -75,34 +107,46 @@ class SpendingLineChart extends StatelessWidget {
               ),
             ),
             minX: 0,
-            maxX: trends.length.toDouble() - 1,
+            maxX: widget.trends.length.toDouble() - 1,
             minY: minY,
             maxY: maxY * 1.2,
             lineBarsData: [
               LineChartBarData(
-                spots: trends
+                spots: widget.trends
                     .asMap()
                     .entries
-                    .map((e) => FlSpot(e.key.toDouble(), e.value.amount))
+                    .map((e) => FlSpot(e.key.toDouble(), e.value.amount * _animation.value))
                     .toList(),
                 isCurved: true,
+                curveSmoothness: 0.35,
                 color: AppColors.gold500,
-                barWidth: 3,
+                barWidth: 4,
                 isStrokeCapRound: true,
                 dotData: FlDotData(
                   show: true,
                   getDotPainter: (spot, percent, barData, index) {
                     return FlDotCirclePainter(
-                      radius: 4,
+                      radius: 5,
                       color: AppColors.gold500,
-                      strokeWidth: 2,
+                      strokeWidth: 3,
                       strokeColor: AppColors.obsidian,
                     );
                   },
                 ),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: AppColors.gold500.withValues(alpha: 0.1),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.gold500.withValues(alpha: 0.2),
+                      AppColors.gold500.withValues(alpha: 0.05),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                shadow: Shadow(
+                  color: AppColors.gold500.withValues(alpha: 0.3),
+                  blurRadius: 8,
                 ),
               ),
             ],
@@ -110,9 +154,14 @@ class SpendingLineChart extends StatelessWidget {
               touchTooltipData: LineTouchTooltipData(
                 getTooltipColor: (touchedSpot) => AppColors.slate,
                 tooltipRoundedRadius: 8,
+                tooltipPadding: const EdgeInsets.all(8),
+                tooltipBorder: BorderSide(
+                  color: AppColors.gold500.withValues(alpha: 0.3),
+                  width: 1,
+                ),
                 getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                   return touchedBarSpots.map((barSpot) {
-                    final trend = trends[barSpot.x.toInt()];
+                    final trend = widget.trends[barSpot.x.toInt()];
                     return LineTooltipItem(
                       '\$${trend.amount.toStringAsFixed(2)}\n${_formatDate(trend.date)}',
                       AppTypography.bodySmall.copyWith(
@@ -124,21 +173,23 @@ class SpendingLineChart extends StatelessWidget {
                 },
               ),
             ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildBottomTitle(double value, TitleMeta meta) {
-    if (value.toInt() >= trends.length || value < 0) {
+    if (value.toInt() >= widget.trends.length || value < 0) {
       return const SizedBox.shrink();
     }
 
-    final trend = trends[value.toInt()];
+    final trend = widget.trends[value.toInt()];
     String label;
 
-    switch (period) {
+    switch (widget.period) {
       case InsightsPeriod.week:
         label = DateFormat('E').format(trend.date); // Mon, Tue, etc.
         break;
@@ -152,29 +203,27 @@ class SpendingLineChart extends StatelessWidget {
 
     return SideTitleWidget(
       axisSide: meta.axisSide,
-      child: Text(
+      child: AppText(
         label,
-        style: AppTypography.bodySmall.copyWith(
-          color: AppColors.textSecondary,
-        ),
+        variant: AppTextVariant.bodySmall,
+        color: AppColors.textSecondary,
       ),
     );
   }
 
   Widget _buildLeftTitle(double value, TitleMeta meta) {
-    return Text(
+    return AppText(
       '\$${_formatAmount(value)}',
-      style: AppTypography.bodySmall.copyWith(
-        color: AppColors.textSecondary,
-      ),
+      variant: AppTextVariant.bodySmall,
+      color: AppColors.textSecondary,
       textAlign: TextAlign.left,
     );
   }
 
   double _getBottomInterval() {
-    if (trends.length <= 7) return 1;
-    if (trends.length <= 14) return 2;
-    return (trends.length / 7).ceilToDouble();
+    if (widget.trends.length <= 7) return 1;
+    if (widget.trends.length <= 14) return 2;
+    return (widget.trends.length / 7).ceilToDouble();
   }
 
   String _formatAmount(double amount) {
