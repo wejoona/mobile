@@ -9,6 +9,7 @@ import '../../utils/logger.dart';
 enum LegalDocumentType {
   termsOfService,
   privacyPolicy,
+  cookiePolicy,
 }
 
 /// Represents a versioned legal document
@@ -38,11 +39,20 @@ class LegalDocument {
   });
 
   factory LegalDocument.fromJson(Map<String, dynamic> json) {
+    LegalDocumentType docType;
+    switch (json['type']) {
+      case 'terms_of_service':
+        docType = LegalDocumentType.termsOfService;
+        break;
+      case 'cookie_policy':
+        docType = LegalDocumentType.cookiePolicy;
+        break;
+      default:
+        docType = LegalDocumentType.privacyPolicy;
+    }
     return LegalDocument(
       id: json['id'] as String,
-      type: json['type'] == 'terms_of_service'
-          ? LegalDocumentType.termsOfService
-          : LegalDocumentType.privacyPolicy,
+      type: docType,
       version: json['version'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
@@ -56,11 +66,20 @@ class LegalDocument {
     );
   }
 
+  String get typeString {
+    switch (type) {
+      case LegalDocumentType.termsOfService:
+        return 'terms_of_service';
+      case LegalDocumentType.privacyPolicy:
+        return 'privacy_policy';
+      case LegalDocumentType.cookiePolicy:
+        return 'cookie_policy';
+    }
+  }
+
   Map<String, dynamic> toJson() => {
         'id': id,
-        'type': type == LegalDocumentType.termsOfService
-            ? 'terms_of_service'
-            : 'privacy_policy',
+        'type': typeString,
         'version': version,
         'title': title,
         'content': content,
@@ -103,24 +122,42 @@ class LegalConsent {
   });
 
   factory LegalConsent.fromJson(Map<String, dynamic> json) {
+    LegalDocumentType docType;
+    switch (json['document_type']) {
+      case 'terms_of_service':
+        docType = LegalDocumentType.termsOfService;
+        break;
+      case 'cookie_policy':
+        docType = LegalDocumentType.cookiePolicy;
+        break;
+      default:
+        docType = LegalDocumentType.privacyPolicy;
+    }
     return LegalConsent(
       documentId: json['document_id'] as String,
       documentVersion: json['document_version'] as String,
-      documentType: json['document_type'] == 'terms_of_service'
-          ? LegalDocumentType.termsOfService
-          : LegalDocumentType.privacyPolicy,
+      documentType: docType,
       consentedAt: DateTime.parse(json['consented_at'] as String),
       ipAddress: json['ip_address'] as String?,
       deviceId: json['device_id'] as String?,
     );
   }
 
+  String get documentTypeString {
+    switch (documentType) {
+      case LegalDocumentType.termsOfService:
+        return 'terms_of_service';
+      case LegalDocumentType.privacyPolicy:
+        return 'privacy_policy';
+      case LegalDocumentType.cookiePolicy:
+        return 'cookie_policy';
+    }
+  }
+
   Map<String, dynamic> toJson() => {
         'document_id': documentId,
         'document_version': documentVersion,
-        'document_type': documentType == LegalDocumentType.termsOfService
-            ? 'terms_of_service'
-            : 'privacy_policy',
+        'document_type': documentTypeString,
         'consented_at': consentedAt.toIso8601String(),
         'ip_address': ipAddress,
         'device_id': deviceId,
@@ -135,6 +172,7 @@ class LegalDocumentsService {
   // Cache
   LegalDocument? _cachedTerms;
   LegalDocument? _cachedPrivacy;
+  LegalDocument? _cachedCookiePolicy;
   DateTime? _lastFetch;
 
   static const _consentKey = 'legal_consent_';
@@ -150,6 +188,11 @@ class LegalDocumentsService {
   /// Fetch latest Privacy Policy
   Future<LegalDocument> getPrivacyPolicy({String locale = 'en'}) async {
     return _fetchDocument(LegalDocumentType.privacyPolicy, locale);
+  }
+
+  /// Fetch Cookie Policy
+  Future<LegalDocument> getCookiePolicy({String locale = 'en'}) async {
+    return _fetchDocument(LegalDocumentType.cookiePolicy, locale);
   }
 
   /// Fetch both documents
@@ -246,18 +289,36 @@ class LegalDocumentsService {
   ) async {
     // Check cache first
     if (_isCacheValid()) {
-      final cached = type == LegalDocumentType.termsOfService
-          ? _cachedTerms
-          : _cachedPrivacy;
+      LegalDocument? cached;
+      switch (type) {
+        case LegalDocumentType.termsOfService:
+          cached = _cachedTerms;
+          break;
+        case LegalDocumentType.privacyPolicy:
+          cached = _cachedPrivacy;
+          break;
+        case LegalDocumentType.cookiePolicy:
+          cached = _cachedCookiePolicy;
+          break;
+      }
       if (cached != null && cached.locale == locale) {
         return cached;
       }
     }
 
     try {
-      final endpoint = type == LegalDocumentType.termsOfService
-          ? '/legal/terms'
-          : '/legal/privacy';
+      String endpoint;
+      switch (type) {
+        case LegalDocumentType.termsOfService:
+          endpoint = '/legal/terms';
+          break;
+        case LegalDocumentType.privacyPolicy:
+          endpoint = '/legal/privacy';
+          break;
+        case LegalDocumentType.cookiePolicy:
+          endpoint = '/legal/cookies';
+          break;
+      }
 
       final response = await _dio.get(
         endpoint,
@@ -267,10 +328,16 @@ class LegalDocumentsService {
       final document = LegalDocument.fromJson(response.data as Map<String, dynamic>);
 
       // Update cache
-      if (type == LegalDocumentType.termsOfService) {
-        _cachedTerms = document;
-      } else {
-        _cachedPrivacy = document;
+      switch (type) {
+        case LegalDocumentType.termsOfService:
+          _cachedTerms = document;
+          break;
+        case LegalDocumentType.privacyPolicy:
+          _cachedPrivacy = document;
+          break;
+        case LegalDocumentType.cookiePolicy:
+          _cachedCookiePolicy = document;
+          break;
       }
       _lastFetch = DateTime.now();
 
@@ -289,36 +356,57 @@ class LegalDocumentsService {
 
   LegalDocument _getFallbackDocument(LegalDocumentType type, String locale) {
     // Return minimal fallback document
-    if (type == LegalDocumentType.termsOfService) {
-      return LegalDocument(
-        id: 'tos-fallback',
-        type: LegalDocumentType.termsOfService,
-        version: '1.0.0',
-        title: 'Terms of Service',
-        content: _fallbackTermsContent,
-        contentHtml: _fallbackTermsContent,
-        effectiveDate: DateTime(2024, 1, 1),
-        locale: locale,
-      );
-    } else {
-      return LegalDocument(
-        id: 'privacy-fallback',
-        type: LegalDocumentType.privacyPolicy,
-        version: '1.0.0',
-        title: 'Privacy Policy',
-        content: _fallbackPrivacyContent,
-        contentHtml: _fallbackPrivacyContent,
-        effectiveDate: DateTime(2024, 1, 1),
-        locale: locale,
-      );
+    switch (type) {
+      case LegalDocumentType.termsOfService:
+        return LegalDocument(
+          id: 'tos-fallback',
+          type: LegalDocumentType.termsOfService,
+          version: '1.0.0',
+          title: locale == 'fr' ? 'Conditions d\'utilisation' : 'Terms of Service',
+          content: locale == 'fr' ? _fallbackTermsContentFr : _fallbackTermsContent,
+          contentHtml: locale == 'fr' ? _fallbackTermsContentFr : _fallbackTermsContent,
+          effectiveDate: DateTime(2024, 1, 1),
+          locale: locale,
+        );
+      case LegalDocumentType.privacyPolicy:
+        return LegalDocument(
+          id: 'privacy-fallback',
+          type: LegalDocumentType.privacyPolicy,
+          version: '1.0.0',
+          title: locale == 'fr' ? 'Politique de confidentialite' : 'Privacy Policy',
+          content: locale == 'fr' ? _fallbackPrivacyContentFr : _fallbackPrivacyContent,
+          contentHtml: locale == 'fr' ? _fallbackPrivacyContentFr : _fallbackPrivacyContent,
+          effectiveDate: DateTime(2024, 1, 1),
+          locale: locale,
+        );
+      case LegalDocumentType.cookiePolicy:
+        return LegalDocument(
+          id: 'cookie-fallback',
+          type: LegalDocumentType.cookiePolicy,
+          version: '1.0.0',
+          title: locale == 'fr' ? 'Politique de cookies' : 'Cookie Policy',
+          content: locale == 'fr' ? _fallbackCookiePolicyContentFr : _fallbackCookiePolicyContent,
+          contentHtml: locale == 'fr' ? _fallbackCookiePolicyContentFr : _fallbackCookiePolicyContent,
+          effectiveDate: DateTime(2024, 1, 1),
+          locale: locale,
+        );
     }
   }
 
   Future<void> _storeConsent(LegalConsent consent) async {
-    final key = _consentKey +
-        (consent.documentType == LegalDocumentType.termsOfService
-            ? 'terms'
-            : 'privacy');
+    String suffix;
+    switch (consent.documentType) {
+      case LegalDocumentType.termsOfService:
+        suffix = 'terms';
+        break;
+      case LegalDocumentType.privacyPolicy:
+        suffix = 'privacy';
+        break;
+      case LegalDocumentType.cookiePolicy:
+        suffix = 'cookies';
+        break;
+    }
+    final key = _consentKey + suffix;
     await _storage.write(
       key: key,
       value: consent.toJson().toString(),
@@ -326,8 +414,19 @@ class LegalDocumentsService {
   }
 
   Future<LegalConsent?> _getStoredConsent(LegalDocumentType type) async {
-    final key = _consentKey +
-        (type == LegalDocumentType.termsOfService ? 'terms' : 'privacy');
+    String suffix;
+    switch (type) {
+      case LegalDocumentType.termsOfService:
+        suffix = 'terms';
+        break;
+      case LegalDocumentType.privacyPolicy:
+        suffix = 'privacy';
+        break;
+      case LegalDocumentType.cookiePolicy:
+        suffix = 'cookies';
+        break;
+    }
+    final key = _consentKey + suffix;
     final data = await _storage.read(key: key);
     if (data == null) return null;
 
@@ -420,6 +519,137 @@ For privacy concerns, contact: privacy@joonapay.com
 
 For the complete Privacy Policy, please visit our website.
 ''';
+
+  static const _fallbackCookiePolicyContent = '''
+JOONAPAY COOKIE POLICY
+
+Last Updated: January 2024
+
+1. WHAT ARE COOKIES?
+Cookies are small text files stored on your device when you use our services.
+
+2. ESSENTIAL COOKIES
+We use essential cookies for:
+- Authentication and session management
+- Security (CSRF protection)
+- Device identification
+
+3. FUNCTIONAL COOKIES
+Optional cookies that remember your preferences:
+- Language preference
+- Theme (dark/light mode)
+- Display currency
+
+4. HOW TO MANAGE COOKIES
+You can manage cookie preferences in your device settings.
+Essential cookies cannot be disabled as they are required for the app to function.
+
+5. DATA SECURITY
+All cookies use secure, encrypted storage on your device.
+
+6. CONTACT US
+For questions about cookies: privacy@joonapay.com
+
+For the complete Cookie Policy, please visit our website.
+''';
+
+  static const _fallbackCookiePolicyContentFr = '''
+POLITIQUE DE COOKIES JOONAPAY
+
+Derniere mise a jour: Janvier 2024
+
+1. QU'EST-CE QU'UN COOKIE?
+Les cookies sont de petits fichiers texte stockes sur votre appareil lorsque vous utilisez nos services.
+
+2. COOKIES ESSENTIELS
+Nous utilisons des cookies essentiels pour:
+- Authentification et gestion de session
+- Securite (protection CSRF)
+- Identification de l'appareil
+
+3. COOKIES FONCTIONNELS
+Cookies optionnels qui memorisent vos preferences:
+- Preference de langue
+- Theme (mode sombre/clair)
+- Devise d'affichage
+
+4. GESTION DES COOKIES
+Vous pouvez gerer les preferences de cookies dans les parametres de votre appareil.
+Les cookies essentiels ne peuvent pas etre desactives car ils sont necessaires au fonctionnement de l'application.
+
+5. SECURITE DES DONNEES
+Tous les cookies utilisent un stockage securise et chiffre sur votre appareil.
+
+6. NOUS CONTACTER
+Pour toute question sur les cookies: privacy@joonapay.com
+
+Pour la politique complete des cookies, veuillez visiter notre site web.
+''';
+
+  static const _fallbackTermsContentFr = '''
+CONDITIONS D'UTILISATION JOONAPAY
+
+Derniere mise a jour: Janvier 2024
+
+1. ACCEPTATION DES CONDITIONS
+En accedant ou en utilisant JoonaPay, vous acceptez d'etre lie par ces Conditions d'utilisation.
+
+2. DESCRIPTION DU SERVICE
+JoonaPay fournit un portefeuille mobile pour envoyer, recevoir et stocker des USDC stablecoin.
+
+3. ELIGIBILITE
+Vous devez avoir au moins 18 ans et etre capable de conclure un contrat.
+
+4. INSCRIPTION
+Vous devez fournir des informations exactes et garder votre compte securise.
+
+5. ACTIVITES INTERDITES
+Vous ne pouvez pas utiliser JoonaPay pour des activites illegales, le blanchiment d'argent ou la fraude.
+
+6. FRAIS
+Des frais de transaction peuvent s'appliquer. Les frais actuels sont affiches avant chaque transaction.
+
+7. LIMITATION DE RESPONSABILITE
+JoonaPay n'est pas responsable des pertes dues aux fluctuations du marche ou aux acces non autorises.
+
+8. LOI APPLICABLE
+Ces conditions sont regies par les lois applicables.
+
+Pour les Conditions d'utilisation completes, veuillez visiter notre site web ou contacter le support.
+''';
+
+  static const _fallbackPrivacyContentFr = '''
+POLITIQUE DE CONFIDENTIALITE JOONAPAY
+
+Derniere mise a jour: Janvier 2024
+
+1. INFORMATIONS COLLECTEES
+- Informations personnelles (nom, numero de telephone, email)
+- Donnees de transaction
+- Informations sur l'appareil
+
+2. UTILISATION DE VOS INFORMATIONS
+- Pour fournir et ameliorer nos services
+- Pour verifier votre identite (KYC)
+- Pour se conformer aux exigences legales
+
+3. PARTAGE D'INFORMATIONS
+Nous ne vendons pas vos donnees personnelles. Nous pouvons partager des informations avec:
+- Les processeurs de paiement
+- Les autorites reglementaires (si requis)
+- Les prestataires de services
+
+4. SECURITE DES DONNEES
+Nous utilisons le chiffrement et des mesures de securite aux normes de l'industrie.
+
+5. VOS DROITS
+Vous avez le droit d'acceder, de corriger ou de supprimer vos donnees personnelles.
+
+6. NOUS CONTACTER
+Pour les questions de confidentialite, contactez: privacy@joonapay.com
+
+Pour la Politique de confidentialite complete, veuillez visiter notre site web.
+''';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -449,4 +679,10 @@ final privacyPolicyProvider = FutureProvider<LegalDocument>((ref) async {
 final needsConsentUpdateProvider = FutureProvider<bool>((ref) async {
   final service = ref.watch(legalDocumentsServiceProvider);
   return service.needsConsentUpdate();
+});
+
+/// Provider for Cookie Policy
+final cookiePolicyProvider = FutureProvider<LegalDocument>((ref) async {
+  final service = ref.watch(legalDocumentsServiceProvider);
+  return service.getCookiePolicy();
 });

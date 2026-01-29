@@ -8540,6 +8540,408 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get security_delete;
 
+  /// Biometric enrollment title
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Your Account'**
+  String get biometric_enrollment_title;
+
+  /// Biometric enrollment subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Add an extra layer of security with biometric authentication'**
+  String get biometric_enrollment_subtitle;
+
+  /// Enable biometric button
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Biometric Authentication'**
+  String get biometric_enrollment_enable;
+
+  /// Skip biometric enrollment button
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for Now'**
+  String get biometric_enrollment_skip;
+
+  /// Fast access benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Fast Access'**
+  String get biometric_enrollment_benefit_fast_title;
+
+  /// Fast access benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock your wallet instantly without entering PIN'**
+  String get biometric_enrollment_benefit_fast_desc;
+
+  /// Enhanced security benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced Security'**
+  String get biometric_enrollment_benefit_secure_title;
+
+  /// Enhanced security benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Your unique biometrics provide an additional security layer'**
+  String get biometric_enrollment_benefit_secure_desc;
+
+  /// Convenient authentication benefit title
+  ///
+  /// In en, this message translates to:
+  /// **'Convenient Authentication'**
+  String get biometric_enrollment_benefit_convenient_title;
+
+  /// Convenient authentication benefit description
+  ///
+  /// In en, this message translates to:
+  /// **'Quickly verify transactions and sensitive actions'**
+  String get biometric_enrollment_benefit_convenient_desc;
+
+  /// Biometric authentication reason for enrollment
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to enable biometric login'**
+  String get biometric_enrollment_authenticate_reason;
+
+  /// Biometric enrollment success title
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Enabled!'**
+  String get biometric_enrollment_success_title;
+
+  /// Biometric enrollment success message
+  ///
+  /// In en, this message translates to:
+  /// **'You can now use biometric authentication to access your wallet'**
+  String get biometric_enrollment_success_message;
+
+  /// Biometric not available error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication is not available on this device'**
+  String get biometric_enrollment_error_not_available;
+
+  /// Biometric authentication failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication failed. Please try again'**
+  String get biometric_enrollment_error_failed;
+
+  /// Generic biometric error
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to enable biometric authentication'**
+  String get biometric_enrollment_error_generic;
+
+  /// Skip biometric confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Skip Biometric Setup?'**
+  String get biometric_enrollment_skip_confirm_title;
+
+  /// Skip biometric confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'You can enable biometric authentication later in Settings'**
+  String get biometric_enrollment_skip_confirm_message;
+
+  /// Biometric settings title
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Settings'**
+  String get biometric_settings_title;
+
+  /// Authentication section title
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication'**
+  String get biometric_settings_authentication;
+
+  /// Use cases section title
+  ///
+  /// In en, this message translates to:
+  /// **'Use Biometric For'**
+  String get biometric_settings_use_cases;
+
+  /// Advanced settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get biometric_settings_advanced;
+
+  /// Actions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get biometric_settings_actions;
+
+  /// Biometric enabled status
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get biometric_settings_status_enabled;
+
+  /// Biometric disabled status
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get biometric_settings_status_disabled;
+
+  /// Biometric active status
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get biometric_settings_active;
+
+  /// Biometric inactive status
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get biometric_settings_inactive;
+
+  /// Biometric unavailable status
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable'**
+  String get biometric_settings_unavailable;
+
+  /// Biometric enabled subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication is active'**
+  String get biometric_settings_enabled_subtitle;
+
+  /// Biometric disabled subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Enable to use biometric authentication'**
+  String get biometric_settings_disabled_subtitle;
+
+  /// App unlock setting title
+  ///
+  /// In en, this message translates to:
+  /// **'App Unlock'**
+  String get biometric_settings_app_unlock_title;
+
+  /// App unlock setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Use biometric to unlock the app'**
+  String get biometric_settings_app_unlock_subtitle;
+
+  /// Transaction confirmation setting title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Confirmation'**
+  String get biometric_settings_transactions_title;
+
+  /// Transaction confirmation setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Verify transactions with biometric'**
+  String get biometric_settings_transactions_subtitle;
+
+  /// Sensitive settings title
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitive Settings'**
+  String get biometric_settings_sensitive_title;
+
+  /// Sensitive settings subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Protect PIN change and security settings'**
+  String get biometric_settings_sensitive_subtitle;
+
+  /// View balance setting title
+  ///
+  /// In en, this message translates to:
+  /// **'View Balance'**
+  String get biometric_settings_view_balance_title;
+
+  /// View balance setting subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Require biometric to see wallet balance'**
+  String get biometric_settings_view_balance_subtitle;
+
+  /// Biometric timeout setting title
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Timeout'**
+  String get biometric_settings_timeout_title;
+
+  /// Immediate timeout option
+  ///
+  /// In en, this message translates to:
+  /// **'Immediate (Always required)'**
+  String get biometric_settings_timeout_immediate;
+
+  /// 5 minute timeout option
+  ///
+  /// In en, this message translates to:
+  /// **'5 minutes'**
+  String get biometric_settings_timeout_5min;
+
+  /// 15 minute timeout option
+  ///
+  /// In en, this message translates to:
+  /// **'15 minutes'**
+  String get biometric_settings_timeout_15min;
+
+  /// 30 minute timeout option
+  ///
+  /// In en, this message translates to:
+  /// **'30 minutes'**
+  String get biometric_settings_timeout_30min;
+
+  /// Custom timeout option
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes'**
+  String biometric_settings_timeout_custom(String minutes);
+
+  /// Timeout selector title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Timeout'**
+  String get biometric_settings_timeout_select_title;
+
+  /// High value threshold setting title
+  ///
+  /// In en, this message translates to:
+  /// **'High-Value Threshold'**
+  String get biometric_settings_high_value_title;
+
+  /// High value threshold subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Require biometric + PIN for transfers over \${amount}'**
+  String biometric_settings_high_value_subtitle(String amount);
+
+  /// Threshold selector title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Threshold'**
+  String get biometric_settings_threshold_select_title;
+
+  /// Re-enroll biometric title
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enroll Biometric'**
+  String get biometric_settings_reenroll_title;
+
+  /// Re-enroll biometric subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Update your biometric authentication'**
+  String get biometric_settings_reenroll_subtitle;
+
+  /// Re-enroll confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enroll Biometric?'**
+  String get biometric_settings_reenroll_confirm_title;
+
+  /// Re-enroll confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'Your current biometric setup will be removed and you\'ll need to set it up again'**
+  String get biometric_settings_reenroll_confirm_message;
+
+  /// Fallback to PIN title
+  ///
+  /// In en, this message translates to:
+  /// **'Manage PIN'**
+  String get biometric_settings_fallback_title;
+
+  /// Fallback to PIN subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'PIN is always available as fallback'**
+  String get biometric_settings_fallback_subtitle;
+
+  /// Disable biometric confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Biometric?'**
+  String get biometric_settings_disable_title;
+
+  /// Disable biometric confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll need to use your PIN to authenticate instead'**
+  String get biometric_settings_disable_message;
+
+  /// Disable button
+  ///
+  /// In en, this message translates to:
+  /// **'Disable'**
+  String get biometric_settings_disable;
+
+  /// Error loading biometric settings
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load biometric settings'**
+  String get biometric_settings_error_loading;
+
+  /// Face ID biometric type
+  ///
+  /// In en, this message translates to:
+  /// **'Face ID'**
+  String get biometric_type_face_id;
+
+  /// Fingerprint biometric type
+  ///
+  /// In en, this message translates to:
+  /// **'Fingerprint'**
+  String get biometric_type_fingerprint;
+
+  /// Iris biometric type
+  ///
+  /// In en, this message translates to:
+  /// **'Iris'**
+  String get biometric_type_iris;
+
+  /// No biometric type
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get biometric_type_none;
+
+  /// Biometric lockout error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication is temporarily locked. Please try again later'**
+  String get biometric_error_lockout;
+
+  /// Biometric not enrolled error
+  ///
+  /// In en, this message translates to:
+  /// **'No biometrics enrolled on this device. Please add biometrics in device settings'**
+  String get biometric_error_not_enrolled;
+
+  /// Biometric hardware unavailable error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric hardware is not available'**
+  String get biometric_error_hardware_unavailable;
+
+  /// Biometric change detected title
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Change Detected'**
+  String get biometric_change_detected_title;
+
+  /// Biometric change detected message
+  ///
+  /// In en, this message translates to:
+  /// **'Device biometric enrollment has changed. For security, biometric authentication has been disabled. Please re-enroll if you want to continue using it'**
+  String get biometric_change_detected_message;
+
   /// Profile screen title
   ///
   /// In en, this message translates to:
@@ -10057,6 +10459,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Make sure you are sending to a Solana USDC address'**
   String get withdraw_networkWarning;
+
+  /// Cookie policy title
+  ///
+  /// In en, this message translates to:
+  /// **'Cookie Policy'**
+  String get legal_cookiePolicy;
+
+  /// Effective date label
+  ///
+  /// In en, this message translates to:
+  /// **'Effective'**
+  String get legal_effectiveDate;
+
+  /// What's new in document
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get legal_whatsNew;
+
+  /// Contact us section title
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Us'**
+  String get legal_contactUs;
+
+  /// Cookie policy contact description
+  ///
+  /// In en, this message translates to:
+  /// **'If you have questions about our cookie policy, please contact us:'**
+  String get legal_cookieContactDescription;
+
+  /// Cookie categories section title
+  ///
+  /// In en, this message translates to:
+  /// **'Cookie Categories'**
+  String get legal_cookieCategories;
+
+  /// Essential cookies label
+  ///
+  /// In en, this message translates to:
+  /// **'Essential'**
+  String get legal_essential;
+
+  /// Functional cookies label
+  ///
+  /// In en, this message translates to:
+  /// **'Functional'**
+  String get legal_functional;
+
+  /// Analytics cookies label
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get legal_analytics;
+
+  /// Required indicator
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get legal_required;
+
+  /// Cookie policy description in settings
+  ///
+  /// In en, this message translates to:
+  /// **'View our cookie usage policy'**
+  String get legal_cookiePolicyDescription;
+
+  /// Legal documents section title
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Documents'**
+  String get legal_legalDocuments;
+
+  /// Generic load failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load'**
+  String get error_loadFailed;
+
+  /// Try again later message
+  ///
+  /// In en, this message translates to:
+  /// **'Please try again later'**
+  String get error_tryAgainLater;
 }
 
 class _AppLocalizationsDelegate

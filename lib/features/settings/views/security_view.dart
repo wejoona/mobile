@@ -62,7 +62,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               onTap: () => context.push('/settings/change-pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildBiometricToggle(),
+            _buildBiometricOption(l10n),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
               l10n: l10n,
@@ -371,87 +371,32 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  Widget _buildBiometricToggle() {
-    final l10n = AppLocalizations.of(context)!;
-    final biometricAvailable = ref.watch(biometricAvailableProvider);
+  Widget _buildBiometricOption(AppLocalizations l10n) {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
 
-    return biometricAvailable.when(
-      data: (available) {
-        if (!available) {
-          return _buildToggleOption(
-            l10n: l10n,
-            icon: Icons.fingerprint,
-            title: l10n.security_biometricLogin,
-            subtitle: l10n.security_biometricNotAvailable,
-            value: false,
-            onChanged: (_) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.security_biometricUnavailableMessage),
-                  backgroundColor: AppColors.warningBase,
-                ),
-              );
-            },
-          );
-        }
-
-        return biometricEnabled.when(
-          data: (enabled) => _buildToggleOption(
-            l10n: l10n,
-            icon: Icons.fingerprint,
-            title: l10n.security_biometricLogin,
-            subtitle: l10n.security_biometricSubtitle,
-            value: enabled,
-            onChanged: (value) async {
-              final biometricService = ref.read(biometricServiceProvider);
-              if (value) {
-                final authenticated = await biometricService.authenticate(
-                  reason: l10n.security_biometricVerifyReason,
-                );
-                if (authenticated) {
-                  await biometricService.enableBiometric();
-                  ref.invalidate(biometricEnabledProvider);
-                }
-              } else {
-                await biometricService.disableBiometric();
-                ref.invalidate(biometricEnabledProvider);
-              }
-            },
-          ),
-          loading: () => _buildToggleOption(
-            l10n: l10n,
-            icon: Icons.fingerprint,
-            title: l10n.security_biometricLogin,
-            subtitle: l10n.security_loading,
-            value: false,
-            onChanged: (_) {},
-          ),
-          error: (_, __) => _buildToggleOption(
-            l10n: l10n,
-            icon: Icons.fingerprint,
-            title: l10n.security_biometricLogin,
-            subtitle: l10n.security_errorLoadingState,
-            value: false,
-            onChanged: (_) {},
-          ),
-        );
-      },
-      loading: () => _buildToggleOption(
+    return biometricEnabled.when(
+      data: (enabled) => _buildSecurityOption(
         l10n: l10n,
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
-        subtitle: l10n.security_checkingAvailability,
-        value: false,
-        onChanged: (_) {},
+        subtitle: enabled
+            ? l10n.biometric_settings_enabled_subtitle
+            : l10n.biometric_settings_disabled_subtitle,
+        onTap: () => context.push('/settings/biometric'),
       ),
-      error: (_, __) => _buildToggleOption(
+      loading: () => _buildSecurityOption(
         l10n: l10n,
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
-        subtitle: l10n.security_errorCheckingAvailability,
-        value: false,
-        onChanged: (_) {},
+        subtitle: l10n.security_loading,
+        onTap: () => context.push('/settings/biometric'),
+      ),
+      error: (_, __) => _buildSecurityOption(
+        l10n: l10n,
+        icon: Icons.fingerprint,
+        title: l10n.security_biometricLogin,
+        subtitle: l10n.security_errorLoadingState,
+        onTap: () => context.push('/settings/biometric'),
       ),
     );
   }

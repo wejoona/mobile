@@ -4553,6 +4553,240 @@ class AppLocalizationsEn extends AppLocalizations {
   String get security_delete => 'Delete';
 
   @override
+  String get biometric_enrollment_title => 'Secure Your Account';
+
+  @override
+  String get biometric_enrollment_subtitle =>
+      'Add an extra layer of security with biometric authentication';
+
+  @override
+  String get biometric_enrollment_enable => 'Enable Biometric Authentication';
+
+  @override
+  String get biometric_enrollment_skip => 'Skip for Now';
+
+  @override
+  String get biometric_enrollment_benefit_fast_title => 'Fast Access';
+
+  @override
+  String get biometric_enrollment_benefit_fast_desc =>
+      'Unlock your wallet instantly without entering PIN';
+
+  @override
+  String get biometric_enrollment_benefit_secure_title => 'Enhanced Security';
+
+  @override
+  String get biometric_enrollment_benefit_secure_desc =>
+      'Your unique biometrics provide an additional security layer';
+
+  @override
+  String get biometric_enrollment_benefit_convenient_title =>
+      'Convenient Authentication';
+
+  @override
+  String get biometric_enrollment_benefit_convenient_desc =>
+      'Quickly verify transactions and sensitive actions';
+
+  @override
+  String get biometric_enrollment_authenticate_reason =>
+      'Authenticate to enable biometric login';
+
+  @override
+  String get biometric_enrollment_success_title => 'Biometric Enabled!';
+
+  @override
+  String get biometric_enrollment_success_message =>
+      'You can now use biometric authentication to access your wallet';
+
+  @override
+  String get biometric_enrollment_error_not_available =>
+      'Biometric authentication is not available on this device';
+
+  @override
+  String get biometric_enrollment_error_failed =>
+      'Biometric authentication failed. Please try again';
+
+  @override
+  String get biometric_enrollment_error_generic =>
+      'Failed to enable biometric authentication';
+
+  @override
+  String get biometric_enrollment_skip_confirm_title => 'Skip Biometric Setup?';
+
+  @override
+  String get biometric_enrollment_skip_confirm_message =>
+      'You can enable biometric authentication later in Settings';
+
+  @override
+  String get biometric_settings_title => 'Biometric Settings';
+
+  @override
+  String get biometric_settings_authentication => 'Authentication';
+
+  @override
+  String get biometric_settings_use_cases => 'Use Biometric For';
+
+  @override
+  String get biometric_settings_advanced => 'Advanced';
+
+  @override
+  String get biometric_settings_actions => 'Actions';
+
+  @override
+  String get biometric_settings_status_enabled => 'Enabled';
+
+  @override
+  String get biometric_settings_status_disabled => 'Disabled';
+
+  @override
+  String get biometric_settings_active => 'Active';
+
+  @override
+  String get biometric_settings_inactive => 'Inactive';
+
+  @override
+  String get biometric_settings_unavailable => 'Unavailable';
+
+  @override
+  String get biometric_settings_enabled_subtitle =>
+      'Biometric authentication is active';
+
+  @override
+  String get biometric_settings_disabled_subtitle =>
+      'Enable to use biometric authentication';
+
+  @override
+  String get biometric_settings_app_unlock_title => 'App Unlock';
+
+  @override
+  String get biometric_settings_app_unlock_subtitle =>
+      'Use biometric to unlock the app';
+
+  @override
+  String get biometric_settings_transactions_title =>
+      'Transaction Confirmation';
+
+  @override
+  String get biometric_settings_transactions_subtitle =>
+      'Verify transactions with biometric';
+
+  @override
+  String get biometric_settings_sensitive_title => 'Sensitive Settings';
+
+  @override
+  String get biometric_settings_sensitive_subtitle =>
+      'Protect PIN change and security settings';
+
+  @override
+  String get biometric_settings_view_balance_title => 'View Balance';
+
+  @override
+  String get biometric_settings_view_balance_subtitle =>
+      'Require biometric to see wallet balance';
+
+  @override
+  String get biometric_settings_timeout_title => 'Biometric Timeout';
+
+  @override
+  String get biometric_settings_timeout_immediate =>
+      'Immediate (Always required)';
+
+  @override
+  String get biometric_settings_timeout_5min => '5 minutes';
+
+  @override
+  String get biometric_settings_timeout_15min => '15 minutes';
+
+  @override
+  String get biometric_settings_timeout_30min => '30 minutes';
+
+  @override
+  String biometric_settings_timeout_custom(String minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get biometric_settings_timeout_select_title => 'Select Timeout';
+
+  @override
+  String get biometric_settings_high_value_title => 'High-Value Threshold';
+
+  @override
+  String biometric_settings_high_value_subtitle(String amount) {
+    return 'Require biometric + PIN for transfers over \$$amount';
+  }
+
+  @override
+  String get biometric_settings_threshold_select_title => 'Select Threshold';
+
+  @override
+  String get biometric_settings_reenroll_title => 'Re-enroll Biometric';
+
+  @override
+  String get biometric_settings_reenroll_subtitle =>
+      'Update your biometric authentication';
+
+  @override
+  String get biometric_settings_reenroll_confirm_title =>
+      'Re-enroll Biometric?';
+
+  @override
+  String get biometric_settings_reenroll_confirm_message =>
+      'Your current biometric setup will be removed and you\'ll need to set it up again';
+
+  @override
+  String get biometric_settings_fallback_title => 'Manage PIN';
+
+  @override
+  String get biometric_settings_fallback_subtitle =>
+      'PIN is always available as fallback';
+
+  @override
+  String get biometric_settings_disable_title => 'Disable Biometric?';
+
+  @override
+  String get biometric_settings_disable_message =>
+      'You\'ll need to use your PIN to authenticate instead';
+
+  @override
+  String get biometric_settings_disable => 'Disable';
+
+  @override
+  String get biometric_settings_error_loading =>
+      'Failed to load biometric settings';
+
+  @override
+  String get biometric_type_face_id => 'Face ID';
+
+  @override
+  String get biometric_type_fingerprint => 'Fingerprint';
+
+  @override
+  String get biometric_type_iris => 'Iris';
+
+  @override
+  String get biometric_type_none => 'None';
+
+  @override
+  String get biometric_error_lockout =>
+      'Biometric authentication is temporarily locked. Please try again later';
+
+  @override
+  String get biometric_error_not_enrolled =>
+      'No biometrics enrolled on this device. Please add biometrics in device settings';
+
+  @override
+  String get biometric_error_hardware_unavailable =>
+      'Biometric hardware is not available';
+
+  @override
+  String get biometric_change_detected_title => 'Biometric Change Detected';
+
+  @override
+  String get biometric_change_detected_message =>
+      'Device biometric enrollment has changed. For security, biometric authentication has been disabled. Please re-enroll if you want to continue using it';
+
+  @override
   String get profile_title => 'Profile';
 
   @override
@@ -5358,4 +5592,47 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get withdraw_networkWarning =>
       'Make sure you are sending to a Solana USDC address';
+
+  @override
+  String get legal_cookiePolicy => 'Cookie Policy';
+
+  @override
+  String get legal_effectiveDate => 'Effective';
+
+  @override
+  String get legal_whatsNew => 'What\'s New';
+
+  @override
+  String get legal_contactUs => 'Contact Us';
+
+  @override
+  String get legal_cookieContactDescription =>
+      'If you have questions about our cookie policy, please contact us:';
+
+  @override
+  String get legal_cookieCategories => 'Cookie Categories';
+
+  @override
+  String get legal_essential => 'Essential';
+
+  @override
+  String get legal_functional => 'Functional';
+
+  @override
+  String get legal_analytics => 'Analytics';
+
+  @override
+  String get legal_required => 'Required';
+
+  @override
+  String get legal_cookiePolicyDescription => 'View our cookie usage policy';
+
+  @override
+  String get legal_legalDocuments => 'Legal Documents';
+
+  @override
+  String get error_loadFailed => 'Failed to load';
+
+  @override
+  String get error_tryAgainLater => 'Please try again later';
 }

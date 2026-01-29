@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">View your JoonaPay balance and quick actions</string>
+    <string name="widget_send">Send</string>
+    <string name="widget_receive">Receive</string>
+    <string name="widget_balance_label">Balance</string>
+    <string name="widget_your_balance">Your Balance</string>
+</resources>

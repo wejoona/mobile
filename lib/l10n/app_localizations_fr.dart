@@ -4636,6 +4636,246 @@ class AppLocalizationsFr extends AppLocalizations {
   String get security_delete => 'Supprimer';
 
   @override
+  String get biometric_enrollment_title => 'Sécurisez votre compte';
+
+  @override
+  String get biometric_enrollment_subtitle =>
+      'Ajoutez une couche de sécurité supplémentaire avec l\'authentification biométrique';
+
+  @override
+  String get biometric_enrollment_enable =>
+      'Activer l\'authentification biométrique';
+
+  @override
+  String get biometric_enrollment_skip => 'Ignorer pour l\'instant';
+
+  @override
+  String get biometric_enrollment_benefit_fast_title => 'Accès rapide';
+
+  @override
+  String get biometric_enrollment_benefit_fast_desc =>
+      'Déverrouillez votre portefeuille instantanément sans saisir de code PIN';
+
+  @override
+  String get biometric_enrollment_benefit_secure_title => 'Sécurité renforcée';
+
+  @override
+  String get biometric_enrollment_benefit_secure_desc =>
+      'Vos données biométriques uniques offrent une couche de sécurité supplémentaire';
+
+  @override
+  String get biometric_enrollment_benefit_convenient_title =>
+      'Authentification pratique';
+
+  @override
+  String get biometric_enrollment_benefit_convenient_desc =>
+      'Vérifiez rapidement les transactions et les actions sensibles';
+
+  @override
+  String get biometric_enrollment_authenticate_reason =>
+      'Authentifiez-vous pour activer la connexion biométrique';
+
+  @override
+  String get biometric_enrollment_success_title => 'Biométrie activée !';
+
+  @override
+  String get biometric_enrollment_success_message =>
+      'Vous pouvez maintenant utiliser l\'authentification biométrique pour accéder à votre portefeuille';
+
+  @override
+  String get biometric_enrollment_error_not_available =>
+      'L\'authentification biométrique n\'est pas disponible sur cet appareil';
+
+  @override
+  String get biometric_enrollment_error_failed =>
+      'L\'authentification biométrique a échoué. Veuillez réessayer';
+
+  @override
+  String get biometric_enrollment_error_generic =>
+      'Échec de l\'activation de l\'authentification biométrique';
+
+  @override
+  String get biometric_enrollment_skip_confirm_title =>
+      'Ignorer la configuration biométrique ?';
+
+  @override
+  String get biometric_enrollment_skip_confirm_message =>
+      'Vous pouvez activer l\'authentification biométrique plus tard dans les paramètres';
+
+  @override
+  String get biometric_settings_title => 'Paramètres biométriques';
+
+  @override
+  String get biometric_settings_authentication => 'Authentification';
+
+  @override
+  String get biometric_settings_use_cases => 'Utiliser la biométrie pour';
+
+  @override
+  String get biometric_settings_advanced => 'Avancé';
+
+  @override
+  String get biometric_settings_actions => 'Actions';
+
+  @override
+  String get biometric_settings_status_enabled => 'Activé';
+
+  @override
+  String get biometric_settings_status_disabled => 'Désactivé';
+
+  @override
+  String get biometric_settings_active => 'Actif';
+
+  @override
+  String get biometric_settings_inactive => 'Inactif';
+
+  @override
+  String get biometric_settings_unavailable => 'Indisponible';
+
+  @override
+  String get biometric_settings_enabled_subtitle =>
+      'L\'authentification biométrique est active';
+
+  @override
+  String get biometric_settings_disabled_subtitle =>
+      'Activer pour utiliser l\'authentification biométrique';
+
+  @override
+  String get biometric_settings_app_unlock_title =>
+      'Déverrouillage de l\'application';
+
+  @override
+  String get biometric_settings_app_unlock_subtitle =>
+      'Utiliser la biométrie pour déverrouiller l\'application';
+
+  @override
+  String get biometric_settings_transactions_title =>
+      'Confirmation de transaction';
+
+  @override
+  String get biometric_settings_transactions_subtitle =>
+      'Vérifier les transactions avec la biométrie';
+
+  @override
+  String get biometric_settings_sensitive_title => 'Paramètres sensibles';
+
+  @override
+  String get biometric_settings_sensitive_subtitle =>
+      'Protéger le changement de code PIN et les paramètres de sécurité';
+
+  @override
+  String get biometric_settings_view_balance_title => 'Afficher le solde';
+
+  @override
+  String get biometric_settings_view_balance_subtitle =>
+      'Exiger la biométrie pour voir le solde du portefeuille';
+
+  @override
+  String get biometric_settings_timeout_title =>
+      'Délai d\'expiration biométrique';
+
+  @override
+  String get biometric_settings_timeout_immediate =>
+      'Immédiat (toujours requis)';
+
+  @override
+  String get biometric_settings_timeout_5min => '5 minutes';
+
+  @override
+  String get biometric_settings_timeout_15min => '15 minutes';
+
+  @override
+  String get biometric_settings_timeout_30min => '30 minutes';
+
+  @override
+  String biometric_settings_timeout_custom(String minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get biometric_settings_timeout_select_title => 'Sélectionner le délai';
+
+  @override
+  String get biometric_settings_high_value_title => 'Seuil de valeur élevée';
+
+  @override
+  String biometric_settings_high_value_subtitle(String amount) {
+    return 'Exiger biométrie + PIN pour les transferts supérieurs à \$$amount';
+  }
+
+  @override
+  String get biometric_settings_threshold_select_title =>
+      'Sélectionner le seuil';
+
+  @override
+  String get biometric_settings_reenroll_title => 'Réinscrire la biométrie';
+
+  @override
+  String get biometric_settings_reenroll_subtitle =>
+      'Mettre à jour votre authentification biométrique';
+
+  @override
+  String get biometric_settings_reenroll_confirm_title =>
+      'Réinscrire la biométrie ?';
+
+  @override
+  String get biometric_settings_reenroll_confirm_message =>
+      'Votre configuration biométrique actuelle sera supprimée et vous devrez la configurer à nouveau';
+
+  @override
+  String get biometric_settings_fallback_title => 'Gérer le code PIN';
+
+  @override
+  String get biometric_settings_fallback_subtitle =>
+      'Le code PIN est toujours disponible en secours';
+
+  @override
+  String get biometric_settings_disable_title => 'Désactiver la biométrie ?';
+
+  @override
+  String get biometric_settings_disable_message =>
+      'Vous devrez utiliser votre code PIN pour vous authentifier à la place';
+
+  @override
+  String get biometric_settings_disable => 'Désactiver';
+
+  @override
+  String get biometric_settings_error_loading =>
+      'Échec du chargement des paramètres biométriques';
+
+  @override
+  String get biometric_type_face_id => 'Face ID';
+
+  @override
+  String get biometric_type_fingerprint => 'Empreinte digitale';
+
+  @override
+  String get biometric_type_iris => 'Iris';
+
+  @override
+  String get biometric_type_none => 'Aucun';
+
+  @override
+  String get biometric_error_lockout =>
+      'L\'authentification biométrique est temporairement verrouillée. Veuillez réessayer plus tard';
+
+  @override
+  String get biometric_error_not_enrolled =>
+      'Aucune biométrie enregistrée sur cet appareil. Veuillez ajouter des données biométriques dans les paramètres de l\'appareil';
+
+  @override
+  String get biometric_error_hardware_unavailable =>
+      'Le matériel biométrique n\'est pas disponible';
+
+  @override
+  String get biometric_change_detected_title =>
+      'Changement biométrique détecté';
+
+  @override
+  String get biometric_change_detected_message =>
+      'L\'enregistrement biométrique de l\'appareil a changé. Pour des raisons de sécurité, l\'authentification biométrique a été désactivée. Veuillez vous réinscrire si vous souhaitez continuer à l\'utiliser';
+
+  @override
   String get profile_title => 'Profil';
 
   @override
@@ -5456,4 +5696,48 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get withdraw_networkWarning =>
       'Assurez-vous d\'envoyer vers une adresse Solana USDC';
+
+  @override
+  String get legal_cookiePolicy => 'Politique de cookies';
+
+  @override
+  String get legal_effectiveDate => 'En vigueur depuis';
+
+  @override
+  String get legal_whatsNew => 'Nouveautes';
+
+  @override
+  String get legal_contactUs => 'Nous contacter';
+
+  @override
+  String get legal_cookieContactDescription =>
+      'Si vous avez des questions sur notre politique de cookies, veuillez nous contacter:';
+
+  @override
+  String get legal_cookieCategories => 'Categories de cookies';
+
+  @override
+  String get legal_essential => 'Essentiels';
+
+  @override
+  String get legal_functional => 'Fonctionnels';
+
+  @override
+  String get legal_analytics => 'Analytiques';
+
+  @override
+  String get legal_required => 'Requis';
+
+  @override
+  String get legal_cookiePolicyDescription =>
+      'Consulter notre politique d\'utilisation des cookies';
+
+  @override
+  String get legal_legalDocuments => 'Documents juridiques';
+
+  @override
+  String get error_loadFailed => 'Echec du chargement';
+
+  @override
+  String get error_tryAgainLater => 'Veuillez reessayer plus tard';
 }

@@ -7125,6 +7125,351 @@
     "description": "Delete button"
   },
 
+  "biometric_enrollment_title": "Secure Your Account",
+  "@biometric_enrollment_title": {
+    "description": "Biometric enrollment title"
+  },
+
+  "biometric_enrollment_subtitle": "Add an extra layer of security with biometric authentication",
+  "@biometric_enrollment_subtitle": {
+    "description": "Biometric enrollment subtitle"
+  },
+
+  "biometric_enrollment_enable": "Enable Biometric Authentication",
+  "@biometric_enrollment_enable": {
+    "description": "Enable biometric button"
+  },
+
+  "biometric_enrollment_skip": "Skip for Now",
+  "@biometric_enrollment_skip": {
+    "description": "Skip biometric enrollment button"
+  },
+
+  "biometric_enrollment_benefit_fast_title": "Fast Access",
+  "@biometric_enrollment_benefit_fast_title": {
+    "description": "Fast access benefit title"
+  },
+
+  "biometric_enrollment_benefit_fast_desc": "Unlock your wallet instantly without entering PIN",
+  "@biometric_enrollment_benefit_fast_desc": {
+    "description": "Fast access benefit description"
+  },
+
+  "biometric_enrollment_benefit_secure_title": "Enhanced Security",
+  "@biometric_enrollment_benefit_secure_title": {
+    "description": "Enhanced security benefit title"
+  },
+
+  "biometric_enrollment_benefit_secure_desc": "Your unique biometrics provide an additional security layer",
+  "@biometric_enrollment_benefit_secure_desc": {
+    "description": "Enhanced security benefit description"
+  },
+
+  "biometric_enrollment_benefit_convenient_title": "Convenient Authentication",
+  "@biometric_enrollment_benefit_convenient_title": {
+    "description": "Convenient authentication benefit title"
+  },
+
+  "biometric_enrollment_benefit_convenient_desc": "Quickly verify transactions and sensitive actions",
+  "@biometric_enrollment_benefit_convenient_desc": {
+    "description": "Convenient authentication benefit description"
+  },
+
+  "biometric_enrollment_authenticate_reason": "Authenticate to enable biometric login",
+  "@biometric_enrollment_authenticate_reason": {
+    "description": "Biometric authentication reason for enrollment"
+  },
+
+  "biometric_enrollment_success_title": "Biometric Enabled!",
+  "@biometric_enrollment_success_title": {
+    "description": "Biometric enrollment success title"
+  },
+
+  "biometric_enrollment_success_message": "You can now use biometric authentication to access your wallet",
+  "@biometric_enrollment_success_message": {
+    "description": "Biometric enrollment success message"
+  },
+
+  "biometric_enrollment_error_not_available": "Biometric authentication is not available on this device",
+  "@biometric_enrollment_error_not_available": {
+    "description": "Biometric not available error"
+  },
+
+  "biometric_enrollment_error_failed": "Biometric authentication failed. Please try again",
+  "@biometric_enrollment_error_failed": {
+    "description": "Biometric authentication failed error"
+  },
+
+  "biometric_enrollment_error_generic": "Failed to enable biometric authentication",
+  "@biometric_enrollment_error_generic": {
+    "description": "Generic biometric error"
+  },
+
+  "biometric_enrollment_skip_confirm_title": "Skip Biometric Setup?",
+  "@biometric_enrollment_skip_confirm_title": {
+    "description": "Skip biometric confirmation title"
+  },
+
+  "biometric_enrollment_skip_confirm_message": "You can enable biometric authentication later in Settings",
+  "@biometric_enrollment_skip_confirm_message": {
+    "description": "Skip biometric confirmation message"
+  },
+
+  "biometric_settings_title": "Biometric Settings",
+  "@biometric_settings_title": {
+    "description": "Biometric settings title"
+  },
+
+  "biometric_settings_authentication": "Authentication",
+  "@biometric_settings_authentication": {
+    "description": "Authentication section title"
+  },
+
+  "biometric_settings_use_cases": "Use Biometric For",
+  "@biometric_settings_use_cases": {
+    "description": "Use cases section title"
+  },
+
+  "biometric_settings_advanced": "Advanced",
+  "@biometric_settings_advanced": {
+    "description": "Advanced settings section title"
+  },
+
+  "biometric_settings_actions": "Actions",
+  "@biometric_settings_actions": {
+    "description": "Actions section title"
+  },
+
+  "biometric_settings_status_enabled": "Enabled",
+  "@biometric_settings_status_enabled": {
+    "description": "Biometric enabled status"
+  },
+
+  "biometric_settings_status_disabled": "Disabled",
+  "@biometric_settings_status_disabled": {
+    "description": "Biometric disabled status"
+  },
+
+  "biometric_settings_active": "Active",
+  "@biometric_settings_active": {
+    "description": "Biometric active status"
+  },
+
+  "biometric_settings_inactive": "Inactive",
+  "@biometric_settings_inactive": {
+    "description": "Biometric inactive status"
+  },
+
+  "biometric_settings_unavailable": "Unavailable",
+  "@biometric_settings_unavailable": {
+    "description": "Biometric unavailable status"
+  },
+
+  "biometric_settings_enabled_subtitle": "Biometric authentication is active",
+  "@biometric_settings_enabled_subtitle": {
+    "description": "Biometric enabled subtitle"
+  },
+
+  "biometric_settings_disabled_subtitle": "Enable to use biometric authentication",
+  "@biometric_settings_disabled_subtitle": {
+    "description": "Biometric disabled subtitle"
+  },
+
+  "biometric_settings_app_unlock_title": "App Unlock",
+  "@biometric_settings_app_unlock_title": {
+    "description": "App unlock setting title"
+  },
+
+  "biometric_settings_app_unlock_subtitle": "Use biometric to unlock the app",
+  "@biometric_settings_app_unlock_subtitle": {
+    "description": "App unlock setting subtitle"
+  },
+
+  "biometric_settings_transactions_title": "Transaction Confirmation",
+  "@biometric_settings_transactions_title": {
+    "description": "Transaction confirmation setting title"
+  },
+
+  "biometric_settings_transactions_subtitle": "Verify transactions with biometric",
+  "@biometric_settings_transactions_subtitle": {
+    "description": "Transaction confirmation setting subtitle"
+  },
+
+  "biometric_settings_sensitive_title": "Sensitive Settings",
+  "@biometric_settings_sensitive_title": {
+    "description": "Sensitive settings title"
+  },
+
+  "biometric_settings_sensitive_subtitle": "Protect PIN change and security settings",
+  "@biometric_settings_sensitive_subtitle": {
+    "description": "Sensitive settings subtitle"
+  },
+
+  "biometric_settings_view_balance_title": "View Balance",
+  "@biometric_settings_view_balance_title": {
+    "description": "View balance setting title"
+  },
+
+  "biometric_settings_view_balance_subtitle": "Require biometric to see wallet balance",
+  "@biometric_settings_view_balance_subtitle": {
+    "description": "View balance setting subtitle"
+  },
+
+  "biometric_settings_timeout_title": "Biometric Timeout",
+  "@biometric_settings_timeout_title": {
+    "description": "Biometric timeout setting title"
+  },
+
+  "biometric_settings_timeout_immediate": "Immediate (Always required)",
+  "@biometric_settings_timeout_immediate": {
+    "description": "Immediate timeout option"
+  },
+
+  "biometric_settings_timeout_5min": "5 minutes",
+  "@biometric_settings_timeout_5min": {
+    "description": "5 minute timeout option"
+  },
+
+  "biometric_settings_timeout_15min": "15 minutes",
+  "@biometric_settings_timeout_15min": {
+    "description": "15 minute timeout option"
+  },
+
+  "biometric_settings_timeout_30min": "30 minutes",
+  "@biometric_settings_timeout_30min": {
+    "description": "30 minute timeout option"
+  },
+
+  "biometric_settings_timeout_custom": "{minutes} minutes",
+  "@biometric_settings_timeout_custom": {
+    "description": "Custom timeout option",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+
+  "biometric_settings_timeout_select_title": "Select Timeout",
+  "@biometric_settings_timeout_select_title": {
+    "description": "Timeout selector title"
+  },
+
+  "biometric_settings_high_value_title": "High-Value Threshold",
+  "@biometric_settings_high_value_title": {
+    "description": "High value threshold setting title"
+  },
+
+  "biometric_settings_high_value_subtitle": "Require biometric + PIN for transfers over ${amount}",
+  "@biometric_settings_high_value_subtitle": {
+    "description": "High value threshold subtitle",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "biometric_settings_threshold_select_title": "Select Threshold",
+  "@biometric_settings_threshold_select_title": {
+    "description": "Threshold selector title"
+  },
+
+  "biometric_settings_reenroll_title": "Re-enroll Biometric",
+  "@biometric_settings_reenroll_title": {
+    "description": "Re-enroll biometric title"
+  },
+
+  "biometric_settings_reenroll_subtitle": "Update your biometric authentication",
+  "@biometric_settings_reenroll_subtitle": {
+    "description": "Re-enroll biometric subtitle"
+  },
+
+  "biometric_settings_reenroll_confirm_title": "Re-enroll Biometric?",
+  "@biometric_settings_reenroll_confirm_title": {
+    "description": "Re-enroll confirmation title"
+  },
+
+  "biometric_settings_reenroll_confirm_message": "Your current biometric setup will be removed and you'll need to set it up again",
+  "@biometric_settings_reenroll_confirm_message": {
+    "description": "Re-enroll confirmation message"
+  },
+
+  "biometric_settings_fallback_title": "Manage PIN",
+  "@biometric_settings_fallback_title": {
+    "description": "Fallback to PIN title"
+  },
+
+  "biometric_settings_fallback_subtitle": "PIN is always available as fallback",
+  "@biometric_settings_fallback_subtitle": {
+    "description": "Fallback to PIN subtitle"
+  },
+
+  "biometric_settings_disable_title": "Disable Biometric?",
+  "@biometric_settings_disable_title": {
+    "description": "Disable biometric confirmation title"
+  },
+
+  "biometric_settings_disable_message": "You'll need to use your PIN to authenticate instead",
+  "@biometric_settings_disable_message": {
+    "description": "Disable biometric confirmation message"
+  },
+
+  "biometric_settings_disable": "Disable",
+  "@biometric_settings_disable": {
+    "description": "Disable button"
+  },
+
+  "biometric_settings_error_loading": "Failed to load biometric settings",
+  "@biometric_settings_error_loading": {
+    "description": "Error loading biometric settings"
+  },
+
+  "biometric_type_face_id": "Face ID",
+  "@biometric_type_face_id": {
+    "description": "Face ID biometric type"
+  },
+
+  "biometric_type_fingerprint": "Fingerprint",
+  "@biometric_type_fingerprint": {
+    "description": "Fingerprint biometric type"
+  },
+
+  "biometric_type_iris": "Iris",
+  "@biometric_type_iris": {
+    "description": "Iris biometric type"
+  },
+
+  "biometric_type_none": "None",
+  "@biometric_type_none": {
+    "description": "No biometric type"
+  },
+
+  "biometric_error_lockout": "Biometric authentication is temporarily locked. Please try again later",
+  "@biometric_error_lockout": {
+    "description": "Biometric lockout error"
+  },
+
+  "biometric_error_not_enrolled": "No biometrics enrolled on this device. Please add biometrics in device settings",
+  "@biometric_error_not_enrolled": {
+    "description": "Biometric not enrolled error"
+  },
+
+  "biometric_error_hardware_unavailable": "Biometric hardware is not available",
+  "@biometric_error_hardware_unavailable": {
+    "description": "Biometric hardware unavailable error"
+  },
+
+  "biometric_change_detected_title": "Biometric Change Detected",
+  "@biometric_change_detected_title": {
+    "description": "Biometric change detected title"
+  },
+
+  "biometric_change_detected_message": "Device biometric enrollment has changed. For security, biometric authentication has been disabled. Please re-enroll if you want to continue using it",
+  "@biometric_change_detected_message": {
+    "description": "Biometric change detected message"
+  },
+
   "profile_title": "Profile",
   "@profile_title": {
     "description": "Profile screen title"
@@ -8429,5 +8774,75 @@
   "withdraw_networkWarning": "Make sure you are sending to a Solana USDC address",
   "@withdraw_networkWarning": {
     "description": "Warning about network compatibility"
+  },
+
+  "legal_cookiePolicy": "Cookie Policy",
+  "@legal_cookiePolicy": {
+    "description": "Cookie policy title"
+  },
+
+  "legal_effectiveDate": "Effective",
+  "@legal_effectiveDate": {
+    "description": "Effective date label"
+  },
+
+  "legal_whatsNew": "What's New",
+  "@legal_whatsNew": {
+    "description": "What's new in document"
+  },
+
+  "legal_contactUs": "Contact Us",
+  "@legal_contactUs": {
+    "description": "Contact us section title"
+  },
+
+  "legal_cookieContactDescription": "If you have questions about our cookie policy, please contact us:",
+  "@legal_cookieContactDescription": {
+    "description": "Cookie policy contact description"
+  },
+
+  "legal_cookieCategories": "Cookie Categories",
+  "@legal_cookieCategories": {
+    "description": "Cookie categories section title"
+  },
+
+  "legal_essential": "Essential",
+  "@legal_essential": {
+    "description": "Essential cookies label"
+  },
+
+  "legal_functional": "Functional",
+  "@legal_functional": {
+    "description": "Functional cookies label"
+  },
+
+  "legal_analytics": "Analytics",
+  "@legal_analytics": {
+    "description": "Analytics cookies label"
+  },
+
+  "legal_required": "Required",
+  "@legal_required": {
+    "description": "Required indicator"
+  },
+
+  "legal_cookiePolicyDescription": "View our cookie usage policy",
+  "@legal_cookiePolicyDescription": {
+    "description": "Cookie policy description in settings"
+  },
+
+  "legal_legalDocuments": "Legal Documents",
+  "@legal_legalDocuments": {
+    "description": "Legal documents section title"
+  },
+
+  "error_loadFailed": "Failed to load",
+  "@error_loadFailed": {
+    "description": "Generic load failed error"
+  },
+
+  "error_tryAgainLater": "Please try again later",
+  "@error_tryAgainLater": {
+    "description": "Try again later message"
   }
 }

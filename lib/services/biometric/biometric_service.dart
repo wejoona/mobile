@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
@@ -20,6 +19,9 @@ class BiometricService {
   final FlutterSecureStorage _storage;
 
   BiometricService(this._auth, this._storage);
+
+  static const _keyDeviceBiometricHash = 'device_biometric_hash';
+  static const _keyLastBiometricCheck = 'last_biometric_check';
 
   /// Check if device supports biometrics
   Future<bool> isDeviceSupported() async {
@@ -112,6 +114,134 @@ class BiometricService {
     }
     return BiometricType.none;
   }
+
+  /// Check for device biometric changes
+  /// Returns true if biometric enrollment has changed since last check
+  Future<bool> hasDeviceBiometricChanged() async {
+    try {
+      final currentHash = await _getBiometricHash();
+      final storedHash = await _storage.read(key: _keyDeviceBiometricHash);
+
+      if (storedHash == null) {
+        // First time check, store current hash
+        await _storage.write(key: _keyDeviceBiometricHash, value: currentHash);
+        return false;
+      }
+
+      return currentHash != storedHash;
+    } catch (e) {
+      AppLogger('BiometricService').debug('Error checking biometric change: $e');
+      return false;
+    }
+  }
+
+  /// Update stored biometric hash
+  Future<void> updateBiometricHash() async {
+    final currentHash = await _getBiometricHash();
+    await _storage.write(key: _keyDeviceBiometricHash, value: currentHash);
+    await _storage.write(
+      key: _keyLastBiometricCheck,
+      value: DateTime.now().toIso8601String(),
+    );
+  }
+
+  /// Get a hash representing current biometric enrollment
+  Future<String> _getBiometricHash() async {
+    final types = await getAvailableBiometrics();
+    final canCheck = await canCheckBiometrics();
+    final isSupported = await isDeviceSupported();
+
+    // Create a simple hash from biometric state
+    return '${types.map((t) => t.name).join(',')}_${canCheck}_$isSupported';
+  }
+
+  /// Handle device biometric change
+  /// Disables biometric auth if enrollment has changed
+  Future<BiometricChangeResult> handleBiometricChange() async {
+    final hasChanged = await hasDeviceBiometricChanged();
+
+    if (hasChanged) {
+      final wasEnabled = await isBiometricEnabled();
+      if (wasEnabled) {
+        // Disable biometric for security
+        await disableBiometric();
+        return BiometricChangeResult(
+          changed: true,
+          wasDisabled: true,
+          requiresReEnrollment: true,
+        );
+      }
+      return BiometricChangeResult(
+        changed: true,
+        wasDisabled: false,
+        requiresReEnrollment: false,
+      );
+    }
+
+    return BiometricChangeResult(
+      changed: false,
+      wasDisabled: false,
+      requiresReEnrollment: false,
+    );
+  }
+
+  /// Check if biometric authentication has timed out
+  Future<bool> hasBiometricTimedOut(int timeoutMinutes) async {
+    if (timeoutMinutes == 0) {
+      // Immediate timeout always requires re-auth
+      return true;
+    }
+
+    final lastCheckStr = await _storage.read(key: _keyLastBiometricCheck);
+    if (lastCheckStr == null) {
+      return true;
+    }
+
+    try {
+      final lastCheck = DateTime.parse(lastCheckStr);
+      final now = DateTime.now();
+      final difference = now.difference(lastCheck);
+
+      return difference.inMinutes >= timeoutMinutes;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /// Update last biometric check timestamp
+  Future<void> updateLastBiometricCheck() async {
+    await _storage.write(
+      key: _keyLastBiometricCheck,
+      value: DateTime.now().toIso8601String(),
+    );
+  }
+
+  /// Get localized biometric type name
+  String getBiometricTypeName(BiometricType type) {
+    switch (type) {
+      case BiometricType.faceId:
+        return 'Face ID';
+      case BiometricType.fingerprint:
+        return 'Fingerprint';
+      case BiometricType.iris:
+        return 'Iris';
+      case BiometricType.none:
+        return 'None';
+    }
+  }
+}
+
+/// Result of biometric change check
+class BiometricChangeResult {
+  final bool changed;
+  final bool wasDisabled;
+  final bool requiresReEnrollment;
+
+  BiometricChangeResult({
+    required this.changed,
+    required this.wasDisabled,
+    required this.requiresReEnrollment,
+  });
 }
 
 /// LocalAuthentication Provider

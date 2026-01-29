@@ -1,0 +1,41 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.joonapay.wallet",
+        "paths": [
+          "/send",
+          "/send/*",
+          "/receive",
+          "/transaction/*",
+          "/transactions/*",
+          "/kyc",
+          "/kyc/*",
+          "/settings",
+          "/settings/*",
+          "/pay/*",
+          "/payment-link/*",
+          "/deposit",
+          "/deposit/*",
+          "/withdraw",
+          "/bills",
+          "/bills/*",
+          "/airtime",
+          "/scan",
+          "/scan-to-pay",
+          "/referrals",
+          "/notifications",
+          "/notifications/*",
+          "/home",
+          "/wallet"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "TEAM_ID.com.joonapay.wallet"
+    ]
+  }
+}

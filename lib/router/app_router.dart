@@ -46,6 +46,8 @@ import '../features/kyc/models/kyc_tier.dart';
 import '../features/settings/views/change_pin_view.dart';
 import '../features/settings/views/notification_settings_view.dart';
 import '../features/settings/views/security_view.dart';
+import '../features/biometric/views/biometric_settings_view.dart';
+import '../features/biometric/views/biometric_enrollment_view.dart';
 import '../features/settings/views/limits_view.dart';
 import '../features/settings/views/help_view.dart';
 import '../features/settings/views/language_view.dart';
@@ -54,6 +56,7 @@ import '../features/settings/views/devices_screen.dart';
 import '../features/settings/views/sessions_screen.dart';
 import '../features/settings/views/profile_edit_screen.dart';
 import '../features/settings/views/help_screen.dart';
+import '../features/settings/views/cookie_policy_view.dart';
 import '../features/notifications/views/notifications_view.dart';
 import '../features/notifications/views/notification_permission_screen.dart';
 import '../features/notifications/views/notification_preferences_screen.dart';
@@ -742,6 +745,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/settings/biometric',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BiometricSettingsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/biometric/enrollment',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const BiometricEnrollmentView(),
+        ),
+      ),
+      GoRoute(
         path: '/settings/limits',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
@@ -809,6 +826,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const BusinessProfileView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/legal/cookies',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const CookiePolicyView(),
         ),
       ),
 
