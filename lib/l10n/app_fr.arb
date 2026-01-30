@@ -285,10 +285,10 @@
   "transaction_pending": "En attente",
   "transaction_failed": "Échoué",
   "transaction_completed": "Terminé",
-  "error_generic": "Quelque chose s'est mal passé. Veuillez réessayer.",
-  "error_network": "Erreur réseau. Veuillez vérifier votre connexion.",
-  "error_failedToLoadBalance": "Échec du chargement du solde",
-  "error_failedToLoadTransactions": "Échec du chargement des transactions",
+  "error_generic": "Nous avons rencontré un problème. Veuillez réessayer dans un instant.",
+  "error_network": "Impossible de se connecter. Veuillez vérifier votre connexion Internet et réessayer.",
+  "error_failedToLoadBalance": "Impossible de charger votre solde. Tirez vers le bas pour actualiser ou réessayez plus tard.",
+  "error_failedToLoadTransactions": "Impossible de charger les transactions. Tirez vers le bas pour actualiser ou réessayez plus tard.",
   "language_english": "Anglais",
   "language_french": "Français",
   "language_selectLanguage": "Sélectionner la langue",
@@ -2556,5 +2556,386 @@
   "biometric_error_not_enrolled": "Aucune biométrie enregistrée sur cet appareil. Veuillez ajouter des données biométriques dans les paramètres de l'appareil",
   "biometric_error_hardware_unavailable": "Le matériel biométrique n'est pas disponible",
   "biometric_change_detected_title": "Changement biométrique détecté",
-  "biometric_change_detected_message": "L'enregistrement biométrique de l'appareil a changé. Pour des raisons de sécurité, l'authentification biométrique a été désactivée. Veuillez vous réinscrire si vous souhaitez continuer à l'utiliser"
+  "biometric_change_detected_message": "L'enregistrement biométrique de l'appareil a changé. Pour des raisons de sécurité, l'authentification biométrique a été désactivée. Veuillez vous réinscrire si vous souhaitez continuer à l'utiliser",
+
+  "error_timeout": "La requête a expiré. Veuillez vérifier votre connexion et réessayer.",
+  "@error_timeout": {
+    "description": "Request timeout error"
+  },
+
+  "error_noInternet": "Aucune connexion Internet. Veuillez vérifier votre réseau et réessayer.",
+  "@error_noInternet": {
+    "description": "No internet connection error"
+  },
+
+  "error_requestCancelled": "La requête a été annulée",
+  "@error_requestCancelled": {
+    "description": "Request cancelled error"
+  },
+
+  "error_sslError": "Erreur de sécurité de connexion. Veuillez réessayer.",
+  "@error_sslError": {
+    "description": "SSL/Certificate error"
+  },
+
+  "error_otpExpired": "Le code de vérification a expiré. Demandez un nouveau code.",
+  "@error_otpExpired": {
+    "description": "OTP expired error"
+  },
+
+  "error_tooManyOtpAttempts": "Trop de tentatives échouées. Veuillez attendre avant de réessayer.",
+  "@error_tooManyOtpAttempts": {
+    "description": "Too many OTP attempts error"
+  },
+
+  "error_invalidCredentials": "Identifiants invalides. Veuillez vérifier et réessayer.",
+  "@error_invalidCredentials": {
+    "description": "Invalid credentials error"
+  },
+
+  "error_accountLocked": "Votre compte a été verrouillé. Veuillez contacter le support.",
+  "@error_accountLocked": {
+    "description": "Account locked error"
+  },
+
+  "error_accountSuspended": "Votre compte a été suspendu. Veuillez contacter le support pour assistance.",
+  "@error_accountSuspended": {
+    "description": "Account suspended error"
+  },
+
+  "error_sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+  "@error_sessionExpired": {
+    "description": "Session expired error"
+  },
+
+  "error_kycRequired": "Vérification d'identité requise pour continuer. Complétez la vérification dans les paramètres.",
+  "@error_kycRequired": {
+    "description": "KYC required error"
+  },
+
+  "error_kycPending": "Votre vérification d'identité est en cours d'examen. Veuillez patienter.",
+  "@error_kycPending": {
+    "description": "KYC pending error"
+  },
+
+  "error_kycRejected": "Votre vérification d'identité a été rejetée. Veuillez soumettre à nouveau avec des documents valides.",
+  "@error_kycRejected": {
+    "description": "KYC rejected error"
+  },
+
+  "error_kycExpired": "Votre vérification d'identité a expiré. Veuillez vérifier à nouveau.",
+  "@error_kycExpired": {
+    "description": "KYC expired error"
+  },
+
+  "error_amountTooLow": "Le montant est inférieur au minimum. Veuillez saisir un montant plus élevé.",
+  "@error_amountTooLow": {
+    "description": "Amount too low error"
+  },
+
+  "error_amountTooHigh": "Le montant dépasse le maximum. Veuillez saisir un montant inférieur.",
+  "@error_amountTooHigh": {
+    "description": "Amount too high error"
+  },
+
+  "error_dailyLimitExceeded": "Limite de transaction quotidienne atteinte. Réessayez demain ou améliorez votre compte.",
+  "@error_dailyLimitExceeded": {
+    "description": "Daily limit exceeded error"
+  },
+
+  "error_monthlyLimitExceeded": "Limite de transaction mensuelle atteinte. Veuillez patienter ou améliorer votre compte.",
+  "@error_monthlyLimitExceeded": {
+    "description": "Monthly limit exceeded error"
+  },
+
+  "error_transactionLimitExceeded": "Limite de transaction dépassée pour cette opération.",
+  "@error_transactionLimitExceeded": {
+    "description": "Transaction limit exceeded error"
+  },
+
+  "error_duplicateTransaction": "Cette transaction a déjà été traitée. Veuillez vérifier votre historique.",
+  "@error_duplicateTransaction": {
+    "description": "Duplicate transaction error"
+  },
+
+  "error_pinLocked": "PIN verrouillé en raison de trop de tentatives incorrectes. Réinitialisez votre PIN pour continuer.",
+  "@error_pinLocked": {
+    "description": "PIN locked error"
+  },
+
+  "error_pinTooWeak": "Le PIN est trop simple. Veuillez choisir un PIN plus fort.",
+  "@error_pinTooWeak": {
+    "description": "PIN too weak error"
+  },
+
+  "error_beneficiaryNotFound": "Bénéficiaire non trouvé. Veuillez vérifier et réessayer.",
+  "@error_beneficiaryNotFound": {
+    "description": "Beneficiary not found error"
+  },
+
+  "error_beneficiaryLimitReached": "Nombre maximum de bénéficiaires atteint. Supprimez-en un pour ajouter un nouveau bénéficiaire.",
+  "@error_beneficiaryLimitReached": {
+    "description": "Beneficiary limit reached error"
+  },
+
+  "error_providerUnavailable": "Le fournisseur de services est actuellement indisponible. Veuillez réessayer plus tard.",
+  "@error_providerUnavailable": {
+    "description": "Provider unavailable error"
+  },
+
+  "error_providerTimeout": "Le fournisseur de services ne répond pas. Veuillez réessayer.",
+  "@error_providerTimeout": {
+    "description": "Provider timeout error"
+  },
+
+  "error_providerMaintenance": "Le fournisseur de services est en maintenance. Veuillez réessayer plus tard.",
+  "@error_providerMaintenance": {
+    "description": "Provider maintenance error"
+  },
+
+  "error_rateLimited": "Trop de requêtes. Veuillez ralentir et réessayer dans un instant.",
+  "@error_rateLimited": {
+    "description": "Rate limited error"
+  },
+
+  "error_invalidAddress": "Adresse de portefeuille invalide. Veuillez vérifier et réessayer.",
+  "@error_invalidAddress": {
+    "description": "Invalid address error"
+  },
+
+  "error_invalidCountry": "Service non disponible dans votre pays.",
+  "@error_invalidCountry": {
+    "description": "Invalid country error"
+  },
+
+  "error_deviceNotTrusted": "Cet appareil n'est pas de confiance. Veuillez vérifier votre identité.",
+  "@error_deviceNotTrusted": {
+    "description": "Device not trusted error"
+  },
+
+  "error_deviceLimitReached": "Nombre maximum d'appareils atteint. Supprimez un appareil pour ajouter celui-ci.",
+  "@error_deviceLimitReached": {
+    "description": "Device limit reached error"
+  },
+
+  "error_biometricRequired": "L'authentification biométrique est requise pour cette action.",
+  "@error_biometricRequired": {
+    "description": "Biometric required error"
+  },
+
+  "error_badRequest": "Requête invalide. Veuillez vérifier vos informations et réessayer.",
+  "@error_badRequest": {
+    "description": "Bad request error (400)"
+  },
+
+  "error_unauthorized": "Authentification requise. Veuillez vous reconnecter.",
+  "@error_unauthorized": {
+    "description": "Unauthorized error (401)"
+  },
+
+  "error_accessDenied": "Vous n'avez pas la permission d'effectuer cette action.",
+  "@error_accessDenied": {
+    "description": "Access denied error (403)"
+  },
+
+  "error_notFound": "Ressource demandée non trouvée.",
+  "@error_notFound": {
+    "description": "Not found error (404)"
+  },
+
+  "error_conflict": "La requête entre en conflit avec l'état actuel. Veuillez actualiser et réessayer.",
+  "@error_conflict": {
+    "description": "Conflict error (409)"
+  },
+
+  "error_validationFailed": "Veuillez vérifier les informations que vous avez fournies et réessayer.",
+  "@error_validationFailed": {
+    "description": "Validation failed error (422)"
+  },
+
+  "error_serverError": "Erreur du serveur. Notre équipe a été informée. Veuillez réessayer plus tard.",
+  "@error_serverError": {
+    "description": "Server error (500)"
+  },
+
+  "error_serviceUnavailable": "Service temporairement indisponible. Veuillez réessayer dans quelques instants.",
+  "@error_serviceUnavailable": {
+    "description": "Service unavailable error (503)"
+  },
+
+  "error_gatewayTimeout": "Le service met trop de temps à répondre. Veuillez réessayer.",
+  "@error_gatewayTimeout": {
+    "description": "Gateway timeout error (504)"
+  },
+
+  "error_authenticationFailed": "Authentification échouée. Veuillez réessayer.",
+  "@error_authenticationFailed": {
+    "description": "Authentication failed error"
+  },
+
+  "error_suggestion_checkConnection": "Vérifiez votre connexion Internet",
+  "@error_suggestion_checkConnection": {
+    "description": "Suggestion to check connection"
+  },
+
+  "error_suggestion_tryAgain": "Réessayer",
+  "@error_suggestion_tryAgain": {
+    "description": "Suggestion to try again"
+  },
+
+  "error_suggestion_loginAgain": "Connectez-vous à nouveau",
+  "@error_suggestion_loginAgain": {
+    "description": "Suggestion to login again"
+  },
+
+  "error_suggestion_completeKyc": "Complétez la vérification",
+  "@error_suggestion_completeKyc": {
+    "description": "Suggestion to complete KYC"
+  },
+
+  "error_suggestion_addFunds": "Ajoutez des fonds à votre portefeuille",
+  "@error_suggestion_addFunds": {
+    "description": "Suggestion to add funds"
+  },
+
+  "error_suggestion_waitOrUpgrade": "Attendez ou améliorez votre compte",
+  "@error_suggestion_waitOrUpgrade": {
+    "description": "Suggestion to wait or upgrade"
+  },
+
+  "error_suggestion_tryLater": "Réessayez plus tard",
+  "@error_suggestion_tryLater": {
+    "description": "Suggestion to try later"
+  },
+
+  "error_suggestion_resetPin": "Réinitialisez votre PIN",
+  "@error_suggestion_resetPin": {
+    "description": "Suggestion to reset PIN"
+  },
+
+  "error_suggestion_slowDown": "Ralentissez et attendez un instant",
+  "@error_suggestion_slowDown": {
+    "description": "Suggestion to slow down"
+  },
+
+  "error_offline_title": "Vous êtes hors ligne",
+  "@error_offline_title": {
+    "description": "Offline mode title"
+  },
+
+  "error_offline_message": "Vous n'êtes pas connecté à Internet. Certaines fonctionnalités peuvent ne pas être disponibles.",
+  "@error_offline_message": {
+    "description": "Offline mode message"
+  },
+
+  "error_offline_retry": "Réessayer la connexion",
+  "@error_offline_retry": {
+    "description": "Retry connection button"
+  },
+
+  "action_skip": "Passer",
+  "action_next": "Suivant",
+  "onboarding_page1_title": "Votre argent, à votre façon",
+  "onboarding_page1_description": "Stockez, envoyez et recevez des USDC en toute sécurité. Votre portefeuille numérique conçu pour l'Afrique de l'Ouest.",
+  "onboarding_page1_feature1": "Stockez vos USDC en toute sécurité",
+  "onboarding_page1_feature2": "Envoyez de l'argent instantanément",
+  "onboarding_page1_feature3": "Accédez à vos fonds 24h/24 et 7j/7",
+  "onboarding_page2_title": "Transferts ultra-rapides",
+  "onboarding_page2_description": "Transférez des fonds à vos proches en quelques secondes. Sans frontières, sans délais.",
+  "onboarding_page2_feature1": "Transferts instantanés au sein de JoonaPay",
+  "onboarding_page2_feature2": "Envoyez vers n'importe quel compte Mobile Money",
+  "onboarding_page2_feature3": "Mises à jour des transactions en temps réel",
+  "onboarding_page3_title": "Dépôts et retraits faciles",
+  "onboarding_page3_description": "Ajoutez de l'argent via Mobile Money. Retirez sur votre compte local à tout moment.",
+  "onboarding_page3_feature1": "Dépôts avec Orange Money, MTN, Wave",
+  "onboarding_page3_feature2": "Frais de transaction faibles (1%)",
+  "onboarding_page3_feature3": "Retirez à tout moment sur votre compte",
+  "onboarding_page4_title": "Sécurité bancaire",
+  "onboarding_page4_description": "Vos fonds sont protégés par un chiffrement de pointe et une authentification biométrique.",
+  "onboarding_page4_feature1": "Protection par code PIN et biométrie",
+  "onboarding_page4_feature2": "Chiffrement de bout en bout",
+  "onboarding_page4_feature3": "Surveillance anti-fraude 24h/24 et 7j/7",
+  "onboarding_getStarted": "Commencer",
+  "welcome_title": "Bienvenue, {name} !",
+  "welcome_subtitle": "Votre portefeuille JoonaPay est prêt. Commencez à envoyer et recevoir de l'argent dès aujourd'hui !",
+  "welcome_addFunds": "Ajouter des fonds",
+  "welcome_exploreDashboard": "Explorer le tableau de bord",
+  "welcome_stat_wallet": "Portefeuille sécurisé",
+  "welcome_stat_wallet_desc": "Vos fonds sont en sécurité avec nous",
+  "welcome_stat_instant": "Transferts instantanés",
+  "welcome_stat_instant_desc": "Envoyez de l'argent en quelques secondes",
+  "welcome_stat_secure": "Sécurité bancaire",
+  "welcome_stat_secure_desc": "Protégé par chiffrement avancé",
+  "onboarding_deposit_prompt_title": "Commencez avec votre premier dépôt",
+  "onboarding_deposit_prompt_subtitle": "Ajoutez des fonds pour commencer à envoyer et recevoir de l'argent",
+  "onboarding_deposit_benefit1": "Dépôts instantanés via Mobile Money",
+  "onboarding_deposit_benefit2": "Seulement 1% de frais de transaction",
+  "onboarding_deposit_benefit3": "Fonds disponibles immédiatement",
+  "onboarding_deposit_cta": "Ajouter de l'argent maintenant",
+  "help_whatIsUsdc": "Qu'est-ce que l'USDC ?",
+  "help_usdc_title": "USDC : Dollar numérique",
+  "help_usdc_subtitle": "La monnaie numérique stable",
+  "help_usdc_what_title": "Qu'est-ce que l'USDC ?",
+  "help_usdc_what_description": "L'USDC (USD Coin) est une monnaie numérique qui vaut toujours exactement 1$ USD. Elle combine la stabilité du dollar américain avec la rapidité et l'efficacité de la technologie blockchain.",
+  "help_usdc_why_title": "Pourquoi utiliser l'USDC ?",
+  "help_usdc_benefit1_title": "Valeur stable",
+  "help_usdc_benefit1_description": "Toujours égal à 1$ USD - aucune volatilité",
+  "help_usdc_benefit2_title": "Sécurisé et transparent",
+  "help_usdc_benefit2_description": "Adossé 1:1 à de vrais dollars américains détenus en réserve",
+  "help_usdc_benefit3_title": "Accès mondial",
+  "help_usdc_benefit3_description": "Envoyez de l'argent partout dans le monde instantanément",
+  "help_usdc_benefit4_title": "Disponibilité 24h/24 et 7j/7",
+  "help_usdc_benefit4_description": "Accédez à votre argent à tout moment, n'importe où",
+  "help_usdc_how_title": "Comment ça marche",
+  "help_usdc_how_description": "Lorsque vous déposez de l'argent, il est converti en USDC à un taux de 1:1 avec l'USD. Vous pouvez ensuite envoyer des USDC à n'importe qui ou les reconvertir dans votre monnaie locale à tout moment.",
+  "help_usdc_safety_title": "Est-ce sûr ?",
+  "help_usdc_safety_description": "Oui ! L'USDC est émis par Circle, une institution financière réglementée. Chaque USDC est adossé à de vrais dollars américains détenus dans des comptes de réserve.",
+  "help_howDepositsWork": "Comment fonctionnent les dépôts",
+  "help_deposits_header": "Ajouter de l'argent à votre portefeuille",
+  "help_deposits_intro": "Déposer des fonds sur votre portefeuille JoonaPay est rapide et facile grâce aux services Mobile Money disponibles à travers l'Afrique de l'Ouest.",
+  "help_deposits_steps_title": "Comment déposer",
+  "help_deposits_step1_title": "Choisir le montant",
+  "help_deposits_step1_description": "Entrez le montant que vous souhaitez ajouter à votre portefeuille",
+  "help_deposits_step2_title": "Sélectionner le fournisseur",
+  "help_deposits_step2_description": "Choisissez votre fournisseur Mobile Money (Orange Money, MTN, etc.)",
+  "help_deposits_step3_title": "Finaliser le paiement",
+  "help_deposits_step3_description": "Suivez l'invite USSD sur votre téléphone pour autoriser le paiement",
+  "help_deposits_step4_title": "Fonds ajoutés",
+  "help_deposits_step4_description": "Votre solde USDC est mis à jour en quelques secondes",
+  "help_deposits_providers_title": "Fournisseurs pris en charge",
+  "help_deposits_time_title": "Temps de traitement",
+  "help_deposits_time_description": "La plupart des dépôts sont traités en 1-2 minutes",
+  "help_deposits_faq_title": "Questions fréquentes",
+  "help_deposits_faq1_question": "Quel est le dépôt minimum ?",
+  "help_deposits_faq1_answer": "Le dépôt minimum est de 1 000 XOF (environ 1,60$ USD)",
+  "help_deposits_faq2_question": "Y a-t-il des frais ?",
+  "help_deposits_faq2_answer": "Oui, il y a des frais de transaction de 1% sur les dépôts",
+  "help_deposits_faq3_question": "Que se passe-t-il si mon dépôt échoue ?",
+  "help_deposits_faq3_answer": "Votre argent sera automatiquement remboursé sur votre compte Mobile Money dans les 24 heures",
+  "help_transactionFees": "Frais de transaction",
+  "help_fees_no_hidden_title": "Pas de frais cachés",
+  "help_fees_no_hidden_description": "Nous croyons en la transparence. Voici exactement ce que vous payez.",
+  "help_fees_breakdown_title": "Détail des frais",
+  "help_fees_internal_transfers": "Transferts vers les utilisateurs JoonaPay",
+  "help_fees_free": "GRATUIT",
+  "help_fees_internal_description": "Envoyez de l'argent à d'autres utilisateurs JoonaPay sans frais",
+  "help_fees_deposits": "Dépôts Mobile Money",
+  "help_fees_deposits_amount": "1%",
+  "help_fees_deposits_description": "Frais de 1% lors de l'ajout de fonds via Mobile Money",
+  "help_fees_withdrawals": "Retraits vers Mobile Money",
+  "help_fees_withdrawals_amount": "1%",
+  "help_fees_withdrawals_description": "Frais de 1% lors du retrait vers Mobile Money",
+  "help_fees_external_transfers": "Transferts crypto externes",
+  "help_fees_external_amount": "Frais de réseau",
+  "help_fees_external_description": "Des frais de réseau blockchain s'appliquent (varient selon le réseau)",
+  "help_fees_why_title": "Pourquoi facturons-nous des frais ?",
+  "help_fees_why_description": "Nos frais nous aident à :",
+  "help_fees_why_point1": "Maintenir une infrastructure sécurisée et conforme",
+  "help_fees_why_point2": "Fournir une assistance client 24h/24 et 7j/7",
+  "help_fees_why_point3": "Couvrir les frais des fournisseurs Mobile Money",
+  "help_fees_why_point4": "Continuer à améliorer nos services",
+  "help_fees_comparison_title": "Notre comparaison",
+  "help_fees_comparison_description": "Nos frais sont nettement inférieurs à ceux des services de transfert d'argent traditionnels :",
+  "help_fees_comparison_traditional": "Services traditionnels",
+  "help_fees_comparison_joonapay": "JoonaPay"
 }

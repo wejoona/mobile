@@ -986,18 +986,19 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get error_generic =>
-      'Quelque chose s\'est mal passé. Veuillez réessayer.';
+      'Nous avons rencontré un problème. Veuillez réessayer dans un instant.';
 
   @override
   String get error_network =>
-      'Erreur réseau. Veuillez vérifier votre connexion.';
+      'Impossible de se connecter. Veuillez vérifier votre connexion Internet et réessayer.';
 
   @override
-  String get error_failedToLoadBalance => 'Échec du chargement du solde';
+  String get error_failedToLoadBalance =>
+      'Impossible de charger votre solde. Tirez vers le bas pour actualiser ou réessayez plus tard.';
 
   @override
   String get error_failedToLoadTransactions =>
-      'Échec du chargement des transactions';
+      'Impossible de charger les transactions. Tirez vers le bas pour actualiser ou réessayez plus tard.';
 
   @override
   String get language_english => 'Anglais';
@@ -5740,4 +5741,571 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get error_tryAgainLater => 'Veuillez reessayer plus tard';
+
+  @override
+  String get error_timeout =>
+      'La requête a expiré. Veuillez vérifier votre connexion et réessayer.';
+
+  @override
+  String get error_noInternet =>
+      'Aucune connexion Internet. Veuillez vérifier votre réseau et réessayer.';
+
+  @override
+  String get error_requestCancelled => 'La requête a été annulée';
+
+  @override
+  String get error_sslError =>
+      'Erreur de sécurité de connexion. Veuillez réessayer.';
+
+  @override
+  String get error_otpExpired =>
+      'Le code de vérification a expiré. Demandez un nouveau code.';
+
+  @override
+  String get error_tooManyOtpAttempts =>
+      'Trop de tentatives échouées. Veuillez attendre avant de réessayer.';
+
+  @override
+  String get error_invalidCredentials =>
+      'Identifiants invalides. Veuillez vérifier et réessayer.';
+
+  @override
+  String get error_accountLocked =>
+      'Votre compte a été verrouillé. Veuillez contacter le support.';
+
+  @override
+  String get error_accountSuspended =>
+      'Votre compte a été suspendu. Veuillez contacter le support pour assistance.';
+
+  @override
+  String get error_sessionExpired =>
+      'Votre session a expiré. Veuillez vous reconnecter.';
+
+  @override
+  String get error_kycRequired =>
+      'Vérification d\'identité requise pour continuer. Complétez la vérification dans les paramètres.';
+
+  @override
+  String get error_kycPending =>
+      'Votre vérification d\'identité est en cours d\'examen. Veuillez patienter.';
+
+  @override
+  String get error_kycRejected =>
+      'Votre vérification d\'identité a été rejetée. Veuillez soumettre à nouveau avec des documents valides.';
+
+  @override
+  String get error_kycExpired =>
+      'Votre vérification d\'identité a expiré. Veuillez vérifier à nouveau.';
+
+  @override
+  String get error_amountTooLow =>
+      'Le montant est inférieur au minimum. Veuillez saisir un montant plus élevé.';
+
+  @override
+  String get error_amountTooHigh =>
+      'Le montant dépasse le maximum. Veuillez saisir un montant inférieur.';
+
+  @override
+  String get error_dailyLimitExceeded =>
+      'Limite de transaction quotidienne atteinte. Réessayez demain ou améliorez votre compte.';
+
+  @override
+  String get error_monthlyLimitExceeded =>
+      'Limite de transaction mensuelle atteinte. Veuillez patienter ou améliorer votre compte.';
+
+  @override
+  String get error_transactionLimitExceeded =>
+      'Limite de transaction dépassée pour cette opération.';
+
+  @override
+  String get error_duplicateTransaction =>
+      'Cette transaction a déjà été traitée. Veuillez vérifier votre historique.';
+
+  @override
+  String get error_pinLocked =>
+      'PIN verrouillé en raison de trop de tentatives incorrectes. Réinitialisez votre PIN pour continuer.';
+
+  @override
+  String get error_pinTooWeak =>
+      'Le PIN est trop simple. Veuillez choisir un PIN plus fort.';
+
+  @override
+  String get error_beneficiaryNotFound =>
+      'Bénéficiaire non trouvé. Veuillez vérifier et réessayer.';
+
+  @override
+  String get error_beneficiaryLimitReached =>
+      'Nombre maximum de bénéficiaires atteint. Supprimez-en un pour ajouter un nouveau bénéficiaire.';
+
+  @override
+  String get error_providerUnavailable =>
+      'Le fournisseur de services est actuellement indisponible. Veuillez réessayer plus tard.';
+
+  @override
+  String get error_providerTimeout =>
+      'Le fournisseur de services ne répond pas. Veuillez réessayer.';
+
+  @override
+  String get error_providerMaintenance =>
+      'Le fournisseur de services est en maintenance. Veuillez réessayer plus tard.';
+
+  @override
+  String get error_rateLimited =>
+      'Trop de requêtes. Veuillez ralentir et réessayer dans un instant.';
+
+  @override
+  String get error_invalidAddress =>
+      'Adresse de portefeuille invalide. Veuillez vérifier et réessayer.';
+
+  @override
+  String get error_invalidCountry => 'Service non disponible dans votre pays.';
+
+  @override
+  String get error_deviceNotTrusted =>
+      'Cet appareil n\'est pas de confiance. Veuillez vérifier votre identité.';
+
+  @override
+  String get error_deviceLimitReached =>
+      'Nombre maximum d\'appareils atteint. Supprimez un appareil pour ajouter celui-ci.';
+
+  @override
+  String get error_biometricRequired =>
+      'L\'authentification biométrique est requise pour cette action.';
+
+  @override
+  String get error_badRequest =>
+      'Requête invalide. Veuillez vérifier vos informations et réessayer.';
+
+  @override
+  String get error_unauthorized =>
+      'Authentification requise. Veuillez vous reconnecter.';
+
+  @override
+  String get error_accessDenied =>
+      'Vous n\'avez pas la permission d\'effectuer cette action.';
+
+  @override
+  String get error_notFound => 'Ressource demandée non trouvée.';
+
+  @override
+  String get error_conflict =>
+      'La requête entre en conflit avec l\'état actuel. Veuillez actualiser et réessayer.';
+
+  @override
+  String get error_validationFailed =>
+      'Veuillez vérifier les informations que vous avez fournies et réessayer.';
+
+  @override
+  String get error_serverError =>
+      'Erreur du serveur. Notre équipe a été informée. Veuillez réessayer plus tard.';
+
+  @override
+  String get error_serviceUnavailable =>
+      'Service temporairement indisponible. Veuillez réessayer dans quelques instants.';
+
+  @override
+  String get error_gatewayTimeout =>
+      'Le service met trop de temps à répondre. Veuillez réessayer.';
+
+  @override
+  String get error_authenticationFailed =>
+      'Authentification échouée. Veuillez réessayer.';
+
+  @override
+  String get error_suggestion_checkConnection =>
+      'Vérifiez votre connexion Internet';
+
+  @override
+  String get error_suggestion_tryAgain => 'Réessayer';
+
+  @override
+  String get error_suggestion_loginAgain => 'Connectez-vous à nouveau';
+
+  @override
+  String get error_suggestion_completeKyc => 'Complétez la vérification';
+
+  @override
+  String get error_suggestion_addFunds =>
+      'Ajoutez des fonds à votre portefeuille';
+
+  @override
+  String get error_suggestion_waitOrUpgrade =>
+      'Attendez ou améliorez votre compte';
+
+  @override
+  String get error_suggestion_tryLater => 'Réessayez plus tard';
+
+  @override
+  String get error_suggestion_resetPin => 'Réinitialisez votre PIN';
+
+  @override
+  String get error_suggestion_slowDown => 'Ralentissez et attendez un instant';
+
+  @override
+  String get error_offline_title => 'Vous êtes hors ligne';
+
+  @override
+  String get error_offline_message =>
+      'Vous n\'êtes pas connecté à Internet. Certaines fonctionnalités peuvent ne pas être disponibles.';
+
+  @override
+  String get error_offline_retry => 'Réessayer la connexion';
+
+  @override
+  String get action_skip => 'Passer';
+
+  @override
+  String get action_next => 'Suivant';
+
+  @override
+  String get onboarding_page1_title => 'Votre argent, à votre façon';
+
+  @override
+  String get onboarding_page1_description =>
+      'Stockez, envoyez et recevez des USDC en toute sécurité. Votre portefeuille numérique conçu pour l\'Afrique de l\'Ouest.';
+
+  @override
+  String get onboarding_page1_feature1 => 'Stockez vos USDC en toute sécurité';
+
+  @override
+  String get onboarding_page1_feature2 => 'Envoyez de l\'argent instantanément';
+
+  @override
+  String get onboarding_page1_feature3 => 'Accédez à vos fonds 24h/24 et 7j/7';
+
+  @override
+  String get onboarding_page2_title => 'Transferts ultra-rapides';
+
+  @override
+  String get onboarding_page2_description =>
+      'Transférez des fonds à vos proches en quelques secondes. Sans frontières, sans délais.';
+
+  @override
+  String get onboarding_page2_feature1 =>
+      'Transferts instantanés au sein de JoonaPay';
+
+  @override
+  String get onboarding_page2_feature2 =>
+      'Envoyez vers n\'importe quel compte Mobile Money';
+
+  @override
+  String get onboarding_page2_feature3 =>
+      'Mises à jour des transactions en temps réel';
+
+  @override
+  String get onboarding_page3_title => 'Dépôts et retraits faciles';
+
+  @override
+  String get onboarding_page3_description =>
+      'Ajoutez de l\'argent via Mobile Money. Retirez sur votre compte local à tout moment.';
+
+  @override
+  String get onboarding_page3_feature1 => 'Dépôts avec Orange Money, MTN, Wave';
+
+  @override
+  String get onboarding_page3_feature2 => 'Frais de transaction faibles (1%)';
+
+  @override
+  String get onboarding_page3_feature3 =>
+      'Retirez à tout moment sur votre compte';
+
+  @override
+  String get onboarding_page4_title => 'Sécurité bancaire';
+
+  @override
+  String get onboarding_page4_description =>
+      'Vos fonds sont protégés par un chiffrement de pointe et une authentification biométrique.';
+
+  @override
+  String get onboarding_page4_feature1 =>
+      'Protection par code PIN et biométrie';
+
+  @override
+  String get onboarding_page4_feature2 => 'Chiffrement de bout en bout';
+
+  @override
+  String get onboarding_page4_feature3 =>
+      'Surveillance anti-fraude 24h/24 et 7j/7';
+
+  @override
+  String welcome_title(String name) {
+    return 'Bienvenue, $name !';
+  }
+
+  @override
+  String get welcome_subtitle =>
+      'Votre portefeuille JoonaPay est prêt. Commencez à envoyer et recevoir de l\'argent dès aujourd\'hui !';
+
+  @override
+  String get welcome_addFunds => 'Ajouter des fonds';
+
+  @override
+  String get welcome_exploreDashboard => 'Explorer le tableau de bord';
+
+  @override
+  String get welcome_stat_wallet => 'Portefeuille sécurisé';
+
+  @override
+  String get welcome_stat_wallet_desc => 'Vos fonds sont en sécurité avec nous';
+
+  @override
+  String get welcome_stat_instant => 'Transferts instantanés';
+
+  @override
+  String get welcome_stat_instant_desc =>
+      'Envoyez de l\'argent en quelques secondes';
+
+  @override
+  String get welcome_stat_secure => 'Sécurité bancaire';
+
+  @override
+  String get welcome_stat_secure_desc => 'Protégé par chiffrement avancé';
+
+  @override
+  String get onboarding_deposit_prompt_title =>
+      'Commencez avec votre premier dépôt';
+
+  @override
+  String get onboarding_deposit_prompt_subtitle =>
+      'Ajoutez des fonds pour commencer à envoyer et recevoir de l\'argent';
+
+  @override
+  String get onboarding_deposit_benefit1 =>
+      'Dépôts instantanés via Mobile Money';
+
+  @override
+  String get onboarding_deposit_benefit2 =>
+      'Seulement 1% de frais de transaction';
+
+  @override
+  String get onboarding_deposit_benefit3 => 'Fonds disponibles immédiatement';
+
+  @override
+  String get onboarding_deposit_cta => 'Ajouter de l\'argent maintenant';
+
+  @override
+  String get help_whatIsUsdc => 'Qu\'est-ce que l\'USDC ?';
+
+  @override
+  String get help_usdc_title => 'USDC : Dollar numérique';
+
+  @override
+  String get help_usdc_subtitle => 'La monnaie numérique stable';
+
+  @override
+  String get help_usdc_what_title => 'Qu\'est-ce que l\'USDC ?';
+
+  @override
+  String get help_usdc_what_description =>
+      'L\'USDC (USD Coin) est une monnaie numérique qui vaut toujours exactement 1\$ USD. Elle combine la stabilité du dollar américain avec la rapidité et l\'efficacité de la technologie blockchain.';
+
+  @override
+  String get help_usdc_why_title => 'Pourquoi utiliser l\'USDC ?';
+
+  @override
+  String get help_usdc_benefit1_title => 'Valeur stable';
+
+  @override
+  String get help_usdc_benefit1_description =>
+      'Toujours égal à 1\$ USD - aucune volatilité';
+
+  @override
+  String get help_usdc_benefit2_title => 'Sécurisé et transparent';
+
+  @override
+  String get help_usdc_benefit2_description =>
+      'Adossé 1:1 à de vrais dollars américains détenus en réserve';
+
+  @override
+  String get help_usdc_benefit3_title => 'Accès mondial';
+
+  @override
+  String get help_usdc_benefit3_description =>
+      'Envoyez de l\'argent partout dans le monde instantanément';
+
+  @override
+  String get help_usdc_benefit4_title => 'Disponibilité 24h/24 et 7j/7';
+
+  @override
+  String get help_usdc_benefit4_description =>
+      'Accédez à votre argent à tout moment, n\'importe où';
+
+  @override
+  String get help_usdc_how_title => 'Comment ça marche';
+
+  @override
+  String get help_usdc_how_description =>
+      'Lorsque vous déposez de l\'argent, il est converti en USDC à un taux de 1:1 avec l\'USD. Vous pouvez ensuite envoyer des USDC à n\'importe qui ou les reconvertir dans votre monnaie locale à tout moment.';
+
+  @override
+  String get help_usdc_safety_title => 'Est-ce sûr ?';
+
+  @override
+  String get help_usdc_safety_description =>
+      'Oui ! L\'USDC est émis par Circle, une institution financière réglementée. Chaque USDC est adossé à de vrais dollars américains détenus dans des comptes de réserve.';
+
+  @override
+  String get help_howDepositsWork => 'Comment fonctionnent les dépôts';
+
+  @override
+  String get help_deposits_header =>
+      'Ajouter de l\'argent à votre portefeuille';
+
+  @override
+  String get help_deposits_intro =>
+      'Déposer des fonds sur votre portefeuille JoonaPay est rapide et facile grâce aux services Mobile Money disponibles à travers l\'Afrique de l\'Ouest.';
+
+  @override
+  String get help_deposits_steps_title => 'Comment déposer';
+
+  @override
+  String get help_deposits_step1_title => 'Choisir le montant';
+
+  @override
+  String get help_deposits_step1_description =>
+      'Entrez le montant que vous souhaitez ajouter à votre portefeuille';
+
+  @override
+  String get help_deposits_step2_title => 'Sélectionner le fournisseur';
+
+  @override
+  String get help_deposits_step2_description =>
+      'Choisissez votre fournisseur Mobile Money (Orange Money, MTN, etc.)';
+
+  @override
+  String get help_deposits_step3_title => 'Finaliser le paiement';
+
+  @override
+  String get help_deposits_step3_description =>
+      'Suivez l\'invite USSD sur votre téléphone pour autoriser le paiement';
+
+  @override
+  String get help_deposits_step4_title => 'Fonds ajoutés';
+
+  @override
+  String get help_deposits_step4_description =>
+      'Votre solde USDC est mis à jour en quelques secondes';
+
+  @override
+  String get help_deposits_providers_title => 'Fournisseurs pris en charge';
+
+  @override
+  String get help_deposits_time_title => 'Temps de traitement';
+
+  @override
+  String get help_deposits_time_description =>
+      'La plupart des dépôts sont traités en 1-2 minutes';
+
+  @override
+  String get help_deposits_faq_title => 'Questions fréquentes';
+
+  @override
+  String get help_deposits_faq1_question => 'Quel est le dépôt minimum ?';
+
+  @override
+  String get help_deposits_faq1_answer =>
+      'Le dépôt minimum est de 1 000 XOF (environ 1,60\$ USD)';
+
+  @override
+  String get help_deposits_faq2_question => 'Y a-t-il des frais ?';
+
+  @override
+  String get help_deposits_faq2_answer =>
+      'Oui, il y a des frais de transaction de 1% sur les dépôts';
+
+  @override
+  String get help_deposits_faq3_question =>
+      'Que se passe-t-il si mon dépôt échoue ?';
+
+  @override
+  String get help_deposits_faq3_answer =>
+      'Votre argent sera automatiquement remboursé sur votre compte Mobile Money dans les 24 heures';
+
+  @override
+  String get help_transactionFees => 'Frais de transaction';
+
+  @override
+  String get help_fees_no_hidden_title => 'Pas de frais cachés';
+
+  @override
+  String get help_fees_no_hidden_description =>
+      'Nous croyons en la transparence. Voici exactement ce que vous payez.';
+
+  @override
+  String get help_fees_breakdown_title => 'Détail des frais';
+
+  @override
+  String get help_fees_internal_transfers =>
+      'Transferts vers les utilisateurs JoonaPay';
+
+  @override
+  String get help_fees_free => 'GRATUIT';
+
+  @override
+  String get help_fees_internal_description =>
+      'Envoyez de l\'argent à d\'autres utilisateurs JoonaPay sans frais';
+
+  @override
+  String get help_fees_deposits => 'Dépôts Mobile Money';
+
+  @override
+  String get help_fees_deposits_amount => '1%';
+
+  @override
+  String get help_fees_deposits_description =>
+      'Frais de 1% lors de l\'ajout de fonds via Mobile Money';
+
+  @override
+  String get help_fees_withdrawals => 'Retraits vers Mobile Money';
+
+  @override
+  String get help_fees_withdrawals_amount => '1%';
+
+  @override
+  String get help_fees_withdrawals_description =>
+      'Frais de 1% lors du retrait vers Mobile Money';
+
+  @override
+  String get help_fees_external_transfers => 'Transferts crypto externes';
+
+  @override
+  String get help_fees_external_amount => 'Frais de réseau';
+
+  @override
+  String get help_fees_external_description =>
+      'Des frais de réseau blockchain s\'appliquent (varient selon le réseau)';
+
+  @override
+  String get help_fees_why_title => 'Pourquoi facturons-nous des frais ?';
+
+  @override
+  String get help_fees_why_description => 'Nos frais nous aident à :';
+
+  @override
+  String get help_fees_why_point1 =>
+      'Maintenir une infrastructure sécurisée et conforme';
+
+  @override
+  String get help_fees_why_point2 =>
+      'Fournir une assistance client 24h/24 et 7j/7';
+
+  @override
+  String get help_fees_why_point3 =>
+      'Couvrir les frais des fournisseurs Mobile Money';
+
+  @override
+  String get help_fees_why_point4 => 'Continuer à améliorer nos services';
+
+  @override
+  String get help_fees_comparison_title => 'Notre comparaison';
+
+  @override
+  String get help_fees_comparison_description =>
+      'Nos frais sont nettement inférieurs à ceux des services de transfert d\'argent traditionnels :';
+
+  @override
+  String get help_fees_comparison_traditional => 'Services traditionnels';
+
+  @override
+  String get help_fees_comparison_joonapay => 'JoonaPay';
 }

@@ -1533,22 +1533,22 @@
     "description": "Transaction completed status"
   },
 
-  "error_generic": "Something went wrong. Please try again.",
+  "error_generic": "We encountered an issue. Please try again in a moment.",
   "@error_generic": {
     "description": "Generic error message"
   },
 
-  "error_network": "Network error. Please check your connection.",
+  "error_network": "Unable to connect. Please check your internet connection and try again.",
   "@error_network": {
     "description": "Network error message"
   },
 
-  "error_failedToLoadBalance": "Failed to load balance",
+  "error_failedToLoadBalance": "Unable to load your balance. Pull down to refresh or try again later.",
   "@error_failedToLoadBalance": {
     "description": "Failed to load balance error"
   },
 
-  "error_failedToLoadTransactions": "Failed to load transactions",
+  "error_failedToLoadTransactions": "Unable to load transactions. Pull down to refresh or try again later.",
   "@error_failedToLoadTransactions": {
     "description": "Failed to load transactions error"
   },
@@ -8844,5 +8844,810 @@
   "error_tryAgainLater": "Please try again later",
   "@error_tryAgainLater": {
     "description": "Try again later message"
+  },
+
+  "error_timeout": "Request timed out. Please check your connection and try again.",
+  "@error_timeout": {
+    "description": "Request timeout error"
+  },
+
+  "error_noInternet": "No internet connection. Please check your network and try again.",
+  "@error_noInternet": {
+    "description": "No internet connection error"
+  },
+
+  "error_requestCancelled": "Request was cancelled",
+  "@error_requestCancelled": {
+    "description": "Request cancelled error"
+  },
+
+  "error_sslError": "Connection security error. Please try again.",
+  "@error_sslError": {
+    "description": "SSL/Certificate error"
+  },
+
+  "error_otpExpired": "Verification code has expired. Request a new code.",
+  "@error_otpExpired": {
+    "description": "OTP expired error"
+  },
+
+  "error_tooManyOtpAttempts": "Too many failed attempts. Please wait before trying again.",
+  "@error_tooManyOtpAttempts": {
+    "description": "Too many OTP attempts error"
+  },
+
+  "error_invalidCredentials": "Invalid credentials. Please check and try again.",
+  "@error_invalidCredentials": {
+    "description": "Invalid credentials error"
+  },
+
+  "error_accountLocked": "Your account has been locked. Please contact support.",
+  "@error_accountLocked": {
+    "description": "Account locked error"
+  },
+
+  "error_accountSuspended": "Your account has been suspended. Please contact support for assistance.",
+  "@error_accountSuspended": {
+    "description": "Account suspended error"
+  },
+
+  "error_sessionExpired": "Your session has expired. Please log in again.",
+  "@error_sessionExpired": {
+    "description": "Session expired error"
+  },
+
+  "error_kycRequired": "Identity verification required to continue. Complete verification in settings.",
+  "@error_kycRequired": {
+    "description": "KYC required error"
+  },
+
+  "error_kycPending": "Your identity verification is being reviewed. Please wait.",
+  "@error_kycPending": {
+    "description": "KYC pending error"
+  },
+
+  "error_kycRejected": "Your identity verification was rejected. Please resubmit with valid documents.",
+  "@error_kycRejected": {
+    "description": "KYC rejected error"
+  },
+
+  "error_kycExpired": "Your identity verification has expired. Please verify again.",
+  "@error_kycExpired": {
+    "description": "KYC expired error"
+  },
+
+  "error_amountTooLow": "Amount is below minimum. Please enter a higher amount.",
+  "@error_amountTooLow": {
+    "description": "Amount too low error"
+  },
+
+  "error_amountTooHigh": "Amount exceeds maximum. Please enter a lower amount.",
+  "@error_amountTooHigh": {
+    "description": "Amount too high error"
+  },
+
+  "error_dailyLimitExceeded": "Daily transaction limit reached. Try again tomorrow or upgrade your account.",
+  "@error_dailyLimitExceeded": {
+    "description": "Daily limit exceeded error"
+  },
+
+  "error_monthlyLimitExceeded": "Monthly transaction limit reached. Please wait or upgrade your account.",
+  "@error_monthlyLimitExceeded": {
+    "description": "Monthly limit exceeded error"
+  },
+
+  "error_transactionLimitExceeded": "Transaction limit exceeded for this operation.",
+  "@error_transactionLimitExceeded": {
+    "description": "Transaction limit exceeded error"
+  },
+
+  "error_duplicateTransaction": "This transaction was already processed. Please check your history.",
+  "@error_duplicateTransaction": {
+    "description": "Duplicate transaction error"
+  },
+
+  "error_pinLocked": "PIN locked due to too many incorrect attempts. Reset your PIN to continue.",
+  "@error_pinLocked": {
+    "description": "PIN locked error"
+  },
+
+  "error_pinTooWeak": "PIN is too simple. Please choose a stronger PIN.",
+  "@error_pinTooWeak": {
+    "description": "PIN too weak error"
+  },
+
+  "error_beneficiaryNotFound": "Beneficiary not found. Please check and try again.",
+  "@error_beneficiaryNotFound": {
+    "description": "Beneficiary not found error"
+  },
+
+  "error_beneficiaryLimitReached": "Maximum number of beneficiaries reached. Remove one to add a new beneficiary.",
+  "@error_beneficiaryLimitReached": {
+    "description": "Beneficiary limit reached error"
+  },
+
+  "error_providerUnavailable": "Service provider is currently unavailable. Please try again later.",
+  "@error_providerUnavailable": {
+    "description": "Provider unavailable error"
+  },
+
+  "error_providerTimeout": "Service provider is not responding. Please try again.",
+  "@error_providerTimeout": {
+    "description": "Provider timeout error"
+  },
+
+  "error_providerMaintenance": "Service provider is under maintenance. Please try again later.",
+  "@error_providerMaintenance": {
+    "description": "Provider maintenance error"
+  },
+
+  "error_rateLimited": "Too many requests. Please slow down and try again in a moment.",
+  "@error_rateLimited": {
+    "description": "Rate limited error"
+  },
+
+  "error_invalidAddress": "Invalid wallet address. Please check and try again.",
+  "@error_invalidAddress": {
+    "description": "Invalid address error"
+  },
+
+  "error_invalidCountry": "Service not available in your country.",
+  "@error_invalidCountry": {
+    "description": "Invalid country error"
+  },
+
+  "error_deviceNotTrusted": "This device is not trusted. Please verify your identity.",
+  "@error_deviceNotTrusted": {
+    "description": "Device not trusted error"
+  },
+
+  "error_deviceLimitReached": "Maximum number of devices reached. Remove a device to add this one.",
+  "@error_deviceLimitReached": {
+    "description": "Device limit reached error"
+  },
+
+  "error_biometricRequired": "Biometric authentication is required for this action.",
+  "@error_biometricRequired": {
+    "description": "Biometric required error"
+  },
+
+  "error_badRequest": "Invalid request. Please check your information and try again.",
+  "@error_badRequest": {
+    "description": "Bad request error (400)"
+  },
+
+  "error_unauthorized": "Authentication required. Please log in again.",
+  "@error_unauthorized": {
+    "description": "Unauthorized error (401)"
+  },
+
+  "error_accessDenied": "You don't have permission to perform this action.",
+  "@error_accessDenied": {
+    "description": "Access denied error (403)"
+  },
+
+  "error_notFound": "Requested resource not found.",
+  "@error_notFound": {
+    "description": "Not found error (404)"
+  },
+
+  "error_conflict": "Request conflicts with current state. Please refresh and try again.",
+  "@error_conflict": {
+    "description": "Conflict error (409)"
+  },
+
+  "error_validationFailed": "Please check the information you provided and try again.",
+  "@error_validationFailed": {
+    "description": "Validation failed error (422)"
+  },
+
+  "error_serverError": "Server error. Our team has been notified. Please try again later.",
+  "@error_serverError": {
+    "description": "Server error (500)"
+  },
+
+  "error_serviceUnavailable": "Service temporarily unavailable. Please try again in a few moments.",
+  "@error_serviceUnavailable": {
+    "description": "Service unavailable error (503)"
+  },
+
+  "error_gatewayTimeout": "Service is taking too long to respond. Please try again.",
+  "@error_gatewayTimeout": {
+    "description": "Gateway timeout error (504)"
+  },
+
+  "error_authenticationFailed": "Authentication failed. Please try again.",
+  "@error_authenticationFailed": {
+    "description": "Authentication failed error"
+  },
+
+  "error_suggestion_checkConnection": "Check your internet connection",
+  "@error_suggestion_checkConnection": {
+    "description": "Suggestion to check connection"
+  },
+
+  "error_suggestion_tryAgain": "Try again",
+  "@error_suggestion_tryAgain": {
+    "description": "Suggestion to try again"
+  },
+
+  "error_suggestion_loginAgain": "Log in again",
+  "@error_suggestion_loginAgain": {
+    "description": "Suggestion to login again"
+  },
+
+  "error_suggestion_completeKyc": "Complete verification",
+  "@error_suggestion_completeKyc": {
+    "description": "Suggestion to complete KYC"
+  },
+
+  "error_suggestion_addFunds": "Add funds to your wallet",
+  "@error_suggestion_addFunds": {
+    "description": "Suggestion to add funds"
+  },
+
+  "error_suggestion_waitOrUpgrade": "Wait or upgrade your account",
+  "@error_suggestion_waitOrUpgrade": {
+    "description": "Suggestion to wait or upgrade"
+  },
+
+  "error_suggestion_tryLater": "Try again later",
+  "@error_suggestion_tryLater": {
+    "description": "Suggestion to try later"
+  },
+
+  "error_suggestion_resetPin": "Reset your PIN",
+  "@error_suggestion_resetPin": {
+    "description": "Suggestion to reset PIN"
+  },
+
+  "error_suggestion_slowDown": "Slow down and wait a moment",
+  "@error_suggestion_slowDown": {
+    "description": "Suggestion to slow down"
+  },
+
+  "error_offline_title": "You're Offline",
+  "@error_offline_title": {
+    "description": "Offline mode title"
+  },
+
+  "error_offline_message": "You're not connected to the internet. Some features may not be available.",
+  "@error_offline_message": {
+    "description": "Offline mode message"
+  },
+
+  "error_offline_retry": "Retry Connection",
+  "@error_offline_retry": {
+    "description": "Retry connection button"
+  },
+
+  "action_skip": "Skip",
+  "@action_skip": {
+    "description": "Skip action"
+  },
+
+  "action_next": "Next",
+  "@action_next": {
+    "description": "Next button"
+  },
+
+  "onboarding_page1_title": "Your Money, Your Way",
+  "@onboarding_page1_title": {
+    "description": "Onboarding page 1 title"
+  },
+
+  "onboarding_page1_description": "Store, send, and receive USDC securely. Your digital wallet built for West Africa.",
+  "@onboarding_page1_description": {
+    "description": "Onboarding page 1 description"
+  },
+
+  "onboarding_page1_feature1": "Store USDC safely in your wallet",
+  "@onboarding_page1_feature1": {
+    "description": "Onboarding page 1 feature 1"
+  },
+
+  "onboarding_page1_feature2": "Send money to anyone instantly",
+  "@onboarding_page1_feature2": {
+    "description": "Onboarding page 1 feature 2"
+  },
+
+  "onboarding_page1_feature3": "Access your funds 24/7",
+  "@onboarding_page1_feature3": {
+    "description": "Onboarding page 1 feature 3"
+  },
+
+  "onboarding_page2_title": "Lightning-Fast Transfers",
+  "@onboarding_page2_title": {
+    "description": "Onboarding page 2 title"
+  },
+
+  "onboarding_page2_description": "Transfer funds to friends and family in seconds. No borders, no delays.",
+  "@onboarding_page2_description": {
+    "description": "Onboarding page 2 description"
+  },
+
+  "onboarding_page2_feature1": "Instant transfers within JoonaPay",
+  "@onboarding_page2_feature1": {
+    "description": "Onboarding page 2 feature 1"
+  },
+
+  "onboarding_page2_feature2": "Send to any mobile money account",
+  "@onboarding_page2_feature2": {
+    "description": "Onboarding page 2 feature 2"
+  },
+
+  "onboarding_page2_feature3": "Real-time transaction updates",
+  "@onboarding_page2_feature3": {
+    "description": "Onboarding page 2 feature 3"
+  },
+
+  "onboarding_page3_title": "Easy Deposits & Withdrawals",
+  "@onboarding_page3_title": {
+    "description": "Onboarding page 3 title"
+  },
+
+  "onboarding_page3_description": "Add money via Mobile Money. Cash out to your local account anytime.",
+  "@onboarding_page3_description": {
+    "description": "Onboarding page 3 description"
+  },
+
+  "onboarding_page3_feature1": "Deposit with Orange Money, MTN, Wave",
+  "@onboarding_page3_feature1": {
+    "description": "Onboarding page 3 feature 1"
+  },
+
+  "onboarding_page3_feature2": "Low transaction fees (1%)",
+  "@onboarding_page3_feature2": {
+    "description": "Onboarding page 3 feature 2"
+  },
+
+  "onboarding_page3_feature3": "Withdraw anytime to your account",
+  "@onboarding_page3_feature3": {
+    "description": "Onboarding page 3 feature 3"
+  },
+
+  "onboarding_page4_title": "Bank-Level Security",
+  "@onboarding_page4_title": {
+    "description": "Onboarding page 4 title"
+  },
+
+  "onboarding_page4_description": "Your funds are protected with state-of-the-art encryption and biometric authentication.",
+  "@onboarding_page4_description": {
+    "description": "Onboarding page 4 description"
+  },
+
+  "onboarding_page4_feature1": "PIN and biometric protection",
+  "@onboarding_page4_feature1": {
+    "description": "Onboarding page 4 feature 1"
+  },
+
+  "onboarding_page4_feature2": "End-to-end encryption",
+  "@onboarding_page4_feature2": {
+    "description": "Onboarding page 4 feature 2"
+  },
+
+  "onboarding_page4_feature3": "24/7 fraud monitoring",
+  "@onboarding_page4_feature3": {
+    "description": "Onboarding page 4 feature 3"
+  },
+
+  "onboarding_getStarted": "Get Started",
+  "@onboarding_getStarted": {
+    "description": "Get started button"
+  },
+
+  "welcome_title": "Welcome, {name}!",
+  "@welcome_title": {
+    "description": "Welcome message with user name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "welcome_subtitle": "Your JoonaPay wallet is ready. Start sending and receiving money today!",
+  "@welcome_subtitle": {
+    "description": "Welcome subtitle"
+  },
+
+  "welcome_addFunds": "Add Funds",
+  "@welcome_addFunds": {
+    "description": "Add funds button"
+  },
+
+  "welcome_exploreDashboard": "Explore Dashboard",
+  "@welcome_exploreDashboard": {
+    "description": "Explore dashboard button"
+  },
+
+  "welcome_stat_wallet": "Secure Wallet",
+  "@welcome_stat_wallet": {
+    "description": "Wallet stat title"
+  },
+
+  "welcome_stat_wallet_desc": "Your funds are safe with us",
+  "@welcome_stat_wallet_desc": {
+    "description": "Wallet stat description"
+  },
+
+  "welcome_stat_instant": "Instant Transfers",
+  "@welcome_stat_instant": {
+    "description": "Instant transfers stat title"
+  },
+
+  "welcome_stat_instant_desc": "Send money in seconds",
+  "@welcome_stat_instant_desc": {
+    "description": "Instant transfers stat description"
+  },
+
+  "welcome_stat_secure": "Bank-Level Security",
+  "@welcome_stat_secure": {
+    "description": "Security stat title"
+  },
+
+  "welcome_stat_secure_desc": "Protected by advanced encryption",
+  "@welcome_stat_secure_desc": {
+    "description": "Security stat description"
+  },
+
+  "onboarding_deposit_prompt_title": "Get Started with Your First Deposit",
+  "@onboarding_deposit_prompt_title": {
+    "description": "First deposit prompt title"
+  },
+
+  "onboarding_deposit_prompt_subtitle": "Add funds to start sending and receiving money",
+  "@onboarding_deposit_prompt_subtitle": {
+    "description": "First deposit prompt subtitle"
+  },
+
+  "onboarding_deposit_benefit1": "Instant deposits via Mobile Money",
+  "@onboarding_deposit_benefit1": {
+    "description": "Deposit benefit 1"
+  },
+
+  "onboarding_deposit_benefit2": "Only 1% transaction fee",
+  "@onboarding_deposit_benefit2": {
+    "description": "Deposit benefit 2"
+  },
+
+  "onboarding_deposit_benefit3": "Funds available immediately",
+  "@onboarding_deposit_benefit3": {
+    "description": "Deposit benefit 3"
+  },
+
+  "onboarding_deposit_cta": "Add Money Now",
+  "@onboarding_deposit_cta": {
+    "description": "Deposit CTA button"
+  },
+
+  "help_whatIsUsdc": "What is USDC?",
+  "@help_whatIsUsdc": {
+    "description": "What is USDC title"
+  },
+
+  "help_usdc_title": "USDC: Digital Dollar",
+  "@help_usdc_title": {
+    "description": "USDC explainer title"
+  },
+
+  "help_usdc_subtitle": "The stable digital currency",
+  "@help_usdc_subtitle": {
+    "description": "USDC explainer subtitle"
+  },
+
+  "help_usdc_what_title": "What is USDC?",
+  "@help_usdc_what_title": {
+    "description": "What is USDC section title"
+  },
+
+  "help_usdc_what_description": "USDC (USD Coin) is a digital currency that's always worth exactly $1 USD. It combines the stability of the US dollar with the speed and efficiency of blockchain technology.",
+  "@help_usdc_what_description": {
+    "description": "What is USDC description"
+  },
+
+  "help_usdc_why_title": "Why Use USDC?",
+  "@help_usdc_why_title": {
+    "description": "Why USDC section title"
+  },
+
+  "help_usdc_benefit1_title": "Stable Value",
+  "@help_usdc_benefit1_title": {
+    "description": "USDC benefit 1 title"
+  },
+
+  "help_usdc_benefit1_description": "Always worth $1 USD - no volatility",
+  "@help_usdc_benefit1_description": {
+    "description": "USDC benefit 1 description"
+  },
+
+  "help_usdc_benefit2_title": "Secure & Transparent",
+  "@help_usdc_benefit2_title": {
+    "description": "USDC benefit 2 title"
+  },
+
+  "help_usdc_benefit2_description": "Backed 1:1 by real US dollars held in reserve",
+  "@help_usdc_benefit2_description": {
+    "description": "USDC benefit 2 description"
+  },
+
+  "help_usdc_benefit3_title": "Global Access",
+  "@help_usdc_benefit3_title": {
+    "description": "USDC benefit 3 title"
+  },
+
+  "help_usdc_benefit3_description": "Send money anywhere in the world instantly",
+  "@help_usdc_benefit3_description": {
+    "description": "USDC benefit 3 description"
+  },
+
+  "help_usdc_benefit4_title": "24/7 Availability",
+  "@help_usdc_benefit4_title": {
+    "description": "USDC benefit 4 title"
+  },
+
+  "help_usdc_benefit4_description": "Access your money anytime, anywhere",
+  "@help_usdc_benefit4_description": {
+    "description": "USDC benefit 4 description"
+  },
+
+  "help_usdc_how_title": "How It Works",
+  "@help_usdc_how_title": {
+    "description": "How USDC works title"
+  },
+
+  "help_usdc_how_description": "When you deposit money, it's converted to USDC at a 1:1 rate with USD. You can then send USDC to anyone or convert it back to your local currency anytime.",
+  "@help_usdc_how_description": {
+    "description": "How USDC works description"
+  },
+
+  "help_usdc_safety_title": "Is it Safe?",
+  "@help_usdc_safety_title": {
+    "description": "USDC safety title"
+  },
+
+  "help_usdc_safety_description": "Yes! USDC is issued by Circle, a regulated financial institution. Every USDC is backed by real US dollars held in reserve accounts.",
+  "@help_usdc_safety_description": {
+    "description": "USDC safety description"
+  },
+
+  "help_howDepositsWork": "How Deposits Work",
+  "@help_howDepositsWork": {
+    "description": "How deposits work title"
+  },
+
+  "help_deposits_header": "Adding Money to Your Wallet",
+  "@help_deposits_header": {
+    "description": "Deposits guide header"
+  },
+
+  "help_deposits_intro": "Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.",
+  "@help_deposits_intro": {
+    "description": "Deposits guide intro"
+  },
+
+  "help_deposits_steps_title": "How to Deposit",
+  "@help_deposits_steps_title": {
+    "description": "Deposit steps title"
+  },
+
+  "help_deposits_step1_title": "Choose Amount",
+  "@help_deposits_step1_title": {
+    "description": "Deposit step 1 title"
+  },
+
+  "help_deposits_step1_description": "Enter how much you want to add to your wallet",
+  "@help_deposits_step1_description": {
+    "description": "Deposit step 1 description"
+  },
+
+  "help_deposits_step2_title": "Select Provider",
+  "@help_deposits_step2_title": {
+    "description": "Deposit step 2 title"
+  },
+
+  "help_deposits_step2_description": "Choose your Mobile Money provider (Orange Money, MTN, etc.)",
+  "@help_deposits_step2_description": {
+    "description": "Deposit step 2 description"
+  },
+
+  "help_deposits_step3_title": "Complete Payment",
+  "@help_deposits_step3_title": {
+    "description": "Deposit step 3 title"
+  },
+
+  "help_deposits_step3_description": "Follow the USSD prompt on your phone to authorize the payment",
+  "@help_deposits_step3_description": {
+    "description": "Deposit step 3 description"
+  },
+
+  "help_deposits_step4_title": "Funds Added",
+  "@help_deposits_step4_title": {
+    "description": "Deposit step 4 title"
+  },
+
+  "help_deposits_step4_description": "Your USDC balance updates within seconds",
+  "@help_deposits_step4_description": {
+    "description": "Deposit step 4 description"
+  },
+
+  "help_deposits_providers_title": "Supported Providers",
+  "@help_deposits_providers_title": {
+    "description": "Supported providers title"
+  },
+
+  "help_deposits_time_title": "Processing Time",
+  "@help_deposits_time_title": {
+    "description": "Processing time title"
+  },
+
+  "help_deposits_time_description": "Most deposits are processed within 1-2 minutes",
+  "@help_deposits_time_description": {
+    "description": "Processing time description"
+  },
+
+  "help_deposits_faq_title": "Common Questions",
+  "@help_deposits_faq_title": {
+    "description": "Deposits FAQ title"
+  },
+
+  "help_deposits_faq1_question": "What's the minimum deposit?",
+  "@help_deposits_faq1_question": {
+    "description": "FAQ 1 question"
+  },
+
+  "help_deposits_faq1_answer": "The minimum deposit is 1,000 XOF (approximately $1.60 USD)",
+  "@help_deposits_faq1_answer": {
+    "description": "FAQ 1 answer"
+  },
+
+  "help_deposits_faq2_question": "Are there fees?",
+  "@help_deposits_faq2_question": {
+    "description": "FAQ 2 question"
+  },
+
+  "help_deposits_faq2_answer": "Yes, there's a 1% transaction fee on deposits",
+  "@help_deposits_faq2_answer": {
+    "description": "FAQ 2 answer"
+  },
+
+  "help_deposits_faq3_question": "What if my deposit fails?",
+  "@help_deposits_faq3_question": {
+    "description": "FAQ 3 question"
+  },
+
+  "help_deposits_faq3_answer": "Your money will be automatically refunded to your Mobile Money account within 24 hours",
+  "@help_deposits_faq3_answer": {
+    "description": "FAQ 3 answer"
+  },
+
+  "help_transactionFees": "Transaction Fees",
+  "@help_transactionFees": {
+    "description": "Transaction fees title"
+  },
+
+  "help_fees_no_hidden_title": "No Hidden Fees",
+  "@help_fees_no_hidden_title": {
+    "description": "No hidden fees title"
+  },
+
+  "help_fees_no_hidden_description": "We believe in transparency. Here's exactly what you pay.",
+  "@help_fees_no_hidden_description": {
+    "description": "No hidden fees description"
+  },
+
+  "help_fees_breakdown_title": "Fee Breakdown",
+  "@help_fees_breakdown_title": {
+    "description": "Fee breakdown title"
+  },
+
+  "help_fees_internal_transfers": "Transfers to JoonaPay Users",
+  "@help_fees_internal_transfers": {
+    "description": "Internal transfers label"
+  },
+
+  "help_fees_free": "FREE",
+  "@help_fees_free": {
+    "description": "Free fee label"
+  },
+
+  "help_fees_internal_description": "Send money to other JoonaPay users with zero fees",
+  "@help_fees_internal_description": {
+    "description": "Internal transfers description"
+  },
+
+  "help_fees_deposits": "Mobile Money Deposits",
+  "@help_fees_deposits": {
+    "description": "Deposits label"
+  },
+
+  "help_fees_deposits_amount": "1%",
+  "@help_fees_deposits_amount": {
+    "description": "Deposits fee amount"
+  },
+
+  "help_fees_deposits_description": "1% fee when adding funds via Mobile Money",
+  "@help_fees_deposits_description": {
+    "description": "Deposits description"
+  },
+
+  "help_fees_withdrawals": "Withdrawals to Mobile Money",
+  "@help_fees_withdrawals": {
+    "description": "Withdrawals label"
+  },
+
+  "help_fees_withdrawals_amount": "1%",
+  "@help_fees_withdrawals_amount": {
+    "description": "Withdrawals fee amount"
+  },
+
+  "help_fees_withdrawals_description": "1% fee when cashing out to Mobile Money",
+  "@help_fees_withdrawals_description": {
+    "description": "Withdrawals description"
+  },
+
+  "help_fees_external_transfers": "External Crypto Transfers",
+  "@help_fees_external_transfers": {
+    "description": "External transfers label"
+  },
+
+  "help_fees_external_amount": "Network Fee",
+  "@help_fees_external_amount": {
+    "description": "External transfers fee"
+  },
+
+  "help_fees_external_description": "Blockchain network fee applies (varies by network)",
+  "@help_fees_external_description": {
+    "description": "External transfers description"
+  },
+
+  "help_fees_why_title": "Why Do We Charge Fees?",
+  "@help_fees_why_title": {
+    "description": "Why fees title"
+  },
+
+  "help_fees_why_description": "Our fees help us:",
+  "@help_fees_why_description": {
+    "description": "Why fees description"
+  },
+
+  "help_fees_why_point1": "Maintain secure infrastructure and compliance",
+  "@help_fees_why_point1": {
+    "description": "Why fees point 1"
+  },
+
+  "help_fees_why_point2": "Provide 24/7 customer support",
+  "@help_fees_why_point2": {
+    "description": "Why fees point 2"
+  },
+
+  "help_fees_why_point3": "Cover Mobile Money provider charges",
+  "@help_fees_why_point3": {
+    "description": "Why fees point 3"
+  },
+
+  "help_fees_why_point4": "Continue improving our services",
+  "@help_fees_why_point4": {
+    "description": "Why fees point 4"
+  },
+
+  "help_fees_comparison_title": "How We Compare",
+  "@help_fees_comparison_title": {
+    "description": "Fee comparison title"
+  },
+
+  "help_fees_comparison_description": "Our fees are significantly lower than traditional money transfer services:",
+  "@help_fees_comparison_description": {
+    "description": "Fee comparison description"
+  },
+
+  "help_fees_comparison_traditional": "Traditional Services",
+  "@help_fees_comparison_traditional": {
+    "description": "Traditional services label"
+  },
+
+  "help_fees_comparison_joonapay": "JoonaPay",
+  "@help_fees_comparison_joonapay": {
+    "description": "JoonaPay label"
   }
 }

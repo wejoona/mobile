@@ -1889,25 +1889,25 @@ abstract class AppLocalizations {
   /// Generic error message
   ///
   /// In en, this message translates to:
-  /// **'Something went wrong. Please try again.'**
+  /// **'We encountered an issue. Please try again in a moment.'**
   String get error_generic;
 
   /// Network error message
   ///
   /// In en, this message translates to:
-  /// **'Network error. Please check your connection.'**
+  /// **'Unable to connect. Please check your internet connection and try again.'**
   String get error_network;
 
   /// Failed to load balance error
   ///
   /// In en, this message translates to:
-  /// **'Failed to load balance'**
+  /// **'Unable to load your balance. Pull down to refresh or try again later.'**
   String get error_failedToLoadBalance;
 
   /// Failed to load transactions error
   ///
   /// In en, this message translates to:
-  /// **'Failed to load transactions'**
+  /// **'Unable to load transactions. Pull down to refresh or try again later.'**
   String get error_failedToLoadTransactions;
 
   /// English language name
@@ -10543,6 +10543,960 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please try again later'**
   String get error_tryAgainLater;
+
+  /// Request timeout error
+  ///
+  /// In en, this message translates to:
+  /// **'Request timed out. Please check your connection and try again.'**
+  String get error_timeout;
+
+  /// No internet connection error
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Please check your network and try again.'**
+  String get error_noInternet;
+
+  /// Request cancelled error
+  ///
+  /// In en, this message translates to:
+  /// **'Request was cancelled'**
+  String get error_requestCancelled;
+
+  /// SSL/Certificate error
+  ///
+  /// In en, this message translates to:
+  /// **'Connection security error. Please try again.'**
+  String get error_sslError;
+
+  /// OTP expired error
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code has expired. Request a new code.'**
+  String get error_otpExpired;
+
+  /// Too many OTP attempts error
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed attempts. Please wait before trying again.'**
+  String get error_tooManyOtpAttempts;
+
+  /// Invalid credentials error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid credentials. Please check and try again.'**
+  String get error_invalidCredentials;
+
+  /// Account locked error
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been locked. Please contact support.'**
+  String get error_accountLocked;
+
+  /// Account suspended error
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been suspended. Please contact support for assistance.'**
+  String get error_accountSuspended;
+
+  /// Session expired error
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has expired. Please log in again.'**
+  String get error_sessionExpired;
+
+  /// KYC required error
+  ///
+  /// In en, this message translates to:
+  /// **'Identity verification required to continue. Complete verification in settings.'**
+  String get error_kycRequired;
+
+  /// KYC pending error
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification is being reviewed. Please wait.'**
+  String get error_kycPending;
+
+  /// KYC rejected error
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification was rejected. Please resubmit with valid documents.'**
+  String get error_kycRejected;
+
+  /// KYC expired error
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification has expired. Please verify again.'**
+  String get error_kycExpired;
+
+  /// Amount too low error
+  ///
+  /// In en, this message translates to:
+  /// **'Amount is below minimum. Please enter a higher amount.'**
+  String get error_amountTooLow;
+
+  /// Amount too high error
+  ///
+  /// In en, this message translates to:
+  /// **'Amount exceeds maximum. Please enter a lower amount.'**
+  String get error_amountTooHigh;
+
+  /// Daily limit exceeded error
+  ///
+  /// In en, this message translates to:
+  /// **'Daily transaction limit reached. Try again tomorrow or upgrade your account.'**
+  String get error_dailyLimitExceeded;
+
+  /// Monthly limit exceeded error
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly transaction limit reached. Please wait or upgrade your account.'**
+  String get error_monthlyLimitExceeded;
+
+  /// Transaction limit exceeded error
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction limit exceeded for this operation.'**
+  String get error_transactionLimitExceeded;
+
+  /// Duplicate transaction error
+  ///
+  /// In en, this message translates to:
+  /// **'This transaction was already processed. Please check your history.'**
+  String get error_duplicateTransaction;
+
+  /// PIN locked error
+  ///
+  /// In en, this message translates to:
+  /// **'PIN locked due to too many incorrect attempts. Reset your PIN to continue.'**
+  String get error_pinLocked;
+
+  /// PIN too weak error
+  ///
+  /// In en, this message translates to:
+  /// **'PIN is too simple. Please choose a stronger PIN.'**
+  String get error_pinTooWeak;
+
+  /// Beneficiary not found error
+  ///
+  /// In en, this message translates to:
+  /// **'Beneficiary not found. Please check and try again.'**
+  String get error_beneficiaryNotFound;
+
+  /// Beneficiary limit reached error
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum number of beneficiaries reached. Remove one to add a new beneficiary.'**
+  String get error_beneficiaryLimitReached;
+
+  /// Provider unavailable error
+  ///
+  /// In en, this message translates to:
+  /// **'Service provider is currently unavailable. Please try again later.'**
+  String get error_providerUnavailable;
+
+  /// Provider timeout error
+  ///
+  /// In en, this message translates to:
+  /// **'Service provider is not responding. Please try again.'**
+  String get error_providerTimeout;
+
+  /// Provider maintenance error
+  ///
+  /// In en, this message translates to:
+  /// **'Service provider is under maintenance. Please try again later.'**
+  String get error_providerMaintenance;
+
+  /// Rate limited error
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests. Please slow down and try again in a moment.'**
+  String get error_rateLimited;
+
+  /// Invalid address error
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid wallet address. Please check and try again.'**
+  String get error_invalidAddress;
+
+  /// Invalid country error
+  ///
+  /// In en, this message translates to:
+  /// **'Service not available in your country.'**
+  String get error_invalidCountry;
+
+  /// Device not trusted error
+  ///
+  /// In en, this message translates to:
+  /// **'This device is not trusted. Please verify your identity.'**
+  String get error_deviceNotTrusted;
+
+  /// Device limit reached error
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum number of devices reached. Remove a device to add this one.'**
+  String get error_deviceLimitReached;
+
+  /// Biometric required error
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication is required for this action.'**
+  String get error_biometricRequired;
+
+  /// Bad request error (400)
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid request. Please check your information and try again.'**
+  String get error_badRequest;
+
+  /// Unauthorized error (401)
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication required. Please log in again.'**
+  String get error_unauthorized;
+
+  /// Access denied error (403)
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have permission to perform this action.'**
+  String get error_accessDenied;
+
+  /// Not found error (404)
+  ///
+  /// In en, this message translates to:
+  /// **'Requested resource not found.'**
+  String get error_notFound;
+
+  /// Conflict error (409)
+  ///
+  /// In en, this message translates to:
+  /// **'Request conflicts with current state. Please refresh and try again.'**
+  String get error_conflict;
+
+  /// Validation failed error (422)
+  ///
+  /// In en, this message translates to:
+  /// **'Please check the information you provided and try again.'**
+  String get error_validationFailed;
+
+  /// Server error (500)
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Our team has been notified. Please try again later.'**
+  String get error_serverError;
+
+  /// Service unavailable error (503)
+  ///
+  /// In en, this message translates to:
+  /// **'Service temporarily unavailable. Please try again in a few moments.'**
+  String get error_serviceUnavailable;
+
+  /// Gateway timeout error (504)
+  ///
+  /// In en, this message translates to:
+  /// **'Service is taking too long to respond. Please try again.'**
+  String get error_gatewayTimeout;
+
+  /// Authentication failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Authentication failed. Please try again.'**
+  String get error_authenticationFailed;
+
+  /// Suggestion to check connection
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection'**
+  String get error_suggestion_checkConnection;
+
+  /// Suggestion to try again
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get error_suggestion_tryAgain;
+
+  /// Suggestion to login again
+  ///
+  /// In en, this message translates to:
+  /// **'Log in again'**
+  String get error_suggestion_loginAgain;
+
+  /// Suggestion to complete KYC
+  ///
+  /// In en, this message translates to:
+  /// **'Complete verification'**
+  String get error_suggestion_completeKyc;
+
+  /// Suggestion to add funds
+  ///
+  /// In en, this message translates to:
+  /// **'Add funds to your wallet'**
+  String get error_suggestion_addFunds;
+
+  /// Suggestion to wait or upgrade
+  ///
+  /// In en, this message translates to:
+  /// **'Wait or upgrade your account'**
+  String get error_suggestion_waitOrUpgrade;
+
+  /// Suggestion to try later
+  ///
+  /// In en, this message translates to:
+  /// **'Try again later'**
+  String get error_suggestion_tryLater;
+
+  /// Suggestion to reset PIN
+  ///
+  /// In en, this message translates to:
+  /// **'Reset your PIN'**
+  String get error_suggestion_resetPin;
+
+  /// Suggestion to slow down
+  ///
+  /// In en, this message translates to:
+  /// **'Slow down and wait a moment'**
+  String get error_suggestion_slowDown;
+
+  /// Offline mode title
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re Offline'**
+  String get error_offline_title;
+
+  /// Offline mode message
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re not connected to the internet. Some features may not be available.'**
+  String get error_offline_message;
+
+  /// Retry connection button
+  ///
+  /// In en, this message translates to:
+  /// **'Retry Connection'**
+  String get error_offline_retry;
+
+  /// Skip action
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get action_skip;
+
+  /// Next button
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get action_next;
+
+  /// Onboarding page 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Your Money, Your Way'**
+  String get onboarding_page1_title;
+
+  /// Onboarding page 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'Store, send, and receive USDC securely. Your digital wallet built for West Africa.'**
+  String get onboarding_page1_description;
+
+  /// Onboarding page 1 feature 1
+  ///
+  /// In en, this message translates to:
+  /// **'Store USDC safely in your wallet'**
+  String get onboarding_page1_feature1;
+
+  /// Onboarding page 1 feature 2
+  ///
+  /// In en, this message translates to:
+  /// **'Send money to anyone instantly'**
+  String get onboarding_page1_feature2;
+
+  /// Onboarding page 1 feature 3
+  ///
+  /// In en, this message translates to:
+  /// **'Access your funds 24/7'**
+  String get onboarding_page1_feature3;
+
+  /// Onboarding page 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Lightning-Fast Transfers'**
+  String get onboarding_page2_title;
+
+  /// Onboarding page 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer funds to friends and family in seconds. No borders, no delays.'**
+  String get onboarding_page2_description;
+
+  /// Onboarding page 2 feature 1
+  ///
+  /// In en, this message translates to:
+  /// **'Instant transfers within JoonaPay'**
+  String get onboarding_page2_feature1;
+
+  /// Onboarding page 2 feature 2
+  ///
+  /// In en, this message translates to:
+  /// **'Send to any mobile money account'**
+  String get onboarding_page2_feature2;
+
+  /// Onboarding page 2 feature 3
+  ///
+  /// In en, this message translates to:
+  /// **'Real-time transaction updates'**
+  String get onboarding_page2_feature3;
+
+  /// Onboarding page 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Easy Deposits & Withdrawals'**
+  String get onboarding_page3_title;
+
+  /// Onboarding page 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Add money via Mobile Money. Cash out to your local account anytime.'**
+  String get onboarding_page3_description;
+
+  /// Onboarding page 3 feature 1
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit with Orange Money, MTN, Wave'**
+  String get onboarding_page3_feature1;
+
+  /// Onboarding page 3 feature 2
+  ///
+  /// In en, this message translates to:
+  /// **'Low transaction fees (1%)'**
+  String get onboarding_page3_feature2;
+
+  /// Onboarding page 3 feature 3
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw anytime to your account'**
+  String get onboarding_page3_feature3;
+
+  /// Onboarding page 4 title
+  ///
+  /// In en, this message translates to:
+  /// **'Bank-Level Security'**
+  String get onboarding_page4_title;
+
+  /// Onboarding page 4 description
+  ///
+  /// In en, this message translates to:
+  /// **'Your funds are protected with state-of-the-art encryption and biometric authentication.'**
+  String get onboarding_page4_description;
+
+  /// Onboarding page 4 feature 1
+  ///
+  /// In en, this message translates to:
+  /// **'PIN and biometric protection'**
+  String get onboarding_page4_feature1;
+
+  /// Onboarding page 4 feature 2
+  ///
+  /// In en, this message translates to:
+  /// **'End-to-end encryption'**
+  String get onboarding_page4_feature2;
+
+  /// Onboarding page 4 feature 3
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 fraud monitoring'**
+  String get onboarding_page4_feature3;
+
+  /// Welcome message with user name
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome, {name}!'**
+  String welcome_title(String name);
+
+  /// Welcome subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Your JoonaPay wallet is ready. Start sending and receiving money today!'**
+  String get welcome_subtitle;
+
+  /// Add funds button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Funds'**
+  String get welcome_addFunds;
+
+  /// Explore dashboard button
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Dashboard'**
+  String get welcome_exploreDashboard;
+
+  /// Wallet stat title
+  ///
+  /// In en, this message translates to:
+  /// **'Secure Wallet'**
+  String get welcome_stat_wallet;
+
+  /// Wallet stat description
+  ///
+  /// In en, this message translates to:
+  /// **'Your funds are safe with us'**
+  String get welcome_stat_wallet_desc;
+
+  /// Instant transfers stat title
+  ///
+  /// In en, this message translates to:
+  /// **'Instant Transfers'**
+  String get welcome_stat_instant;
+
+  /// Instant transfers stat description
+  ///
+  /// In en, this message translates to:
+  /// **'Send money in seconds'**
+  String get welcome_stat_instant_desc;
+
+  /// Security stat title
+  ///
+  /// In en, this message translates to:
+  /// **'Bank-Level Security'**
+  String get welcome_stat_secure;
+
+  /// Security stat description
+  ///
+  /// In en, this message translates to:
+  /// **'Protected by advanced encryption'**
+  String get welcome_stat_secure_desc;
+
+  /// First deposit prompt title
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started with Your First Deposit'**
+  String get onboarding_deposit_prompt_title;
+
+  /// First deposit prompt subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Add funds to start sending and receiving money'**
+  String get onboarding_deposit_prompt_subtitle;
+
+  /// Deposit benefit 1
+  ///
+  /// In en, this message translates to:
+  /// **'Instant deposits via Mobile Money'**
+  String get onboarding_deposit_benefit1;
+
+  /// Deposit benefit 2
+  ///
+  /// In en, this message translates to:
+  /// **'Only 1% transaction fee'**
+  String get onboarding_deposit_benefit2;
+
+  /// Deposit benefit 3
+  ///
+  /// In en, this message translates to:
+  /// **'Funds available immediately'**
+  String get onboarding_deposit_benefit3;
+
+  /// Deposit CTA button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Money Now'**
+  String get onboarding_deposit_cta;
+
+  /// What is USDC title
+  ///
+  /// In en, this message translates to:
+  /// **'What is USDC?'**
+  String get help_whatIsUsdc;
+
+  /// USDC explainer title
+  ///
+  /// In en, this message translates to:
+  /// **'USDC: Digital Dollar'**
+  String get help_usdc_title;
+
+  /// USDC explainer subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'The stable digital currency'**
+  String get help_usdc_subtitle;
+
+  /// What is USDC section title
+  ///
+  /// In en, this message translates to:
+  /// **'What is USDC?'**
+  String get help_usdc_what_title;
+
+  /// What is USDC description
+  ///
+  /// In en, this message translates to:
+  /// **'USDC (USD Coin) is a digital currency that\'s always worth exactly \$1 USD. It combines the stability of the US dollar with the speed and efficiency of blockchain technology.'**
+  String get help_usdc_what_description;
+
+  /// Why USDC section title
+  ///
+  /// In en, this message translates to:
+  /// **'Why Use USDC?'**
+  String get help_usdc_why_title;
+
+  /// USDC benefit 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Stable Value'**
+  String get help_usdc_benefit1_title;
+
+  /// USDC benefit 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'Always worth \$1 USD - no volatility'**
+  String get help_usdc_benefit1_description;
+
+  /// USDC benefit 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Secure & Transparent'**
+  String get help_usdc_benefit2_title;
+
+  /// USDC benefit 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'Backed 1:1 by real US dollars held in reserve'**
+  String get help_usdc_benefit2_description;
+
+  /// USDC benefit 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Global Access'**
+  String get help_usdc_benefit3_title;
+
+  /// USDC benefit 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Send money anywhere in the world instantly'**
+  String get help_usdc_benefit3_description;
+
+  /// USDC benefit 4 title
+  ///
+  /// In en, this message translates to:
+  /// **'24/7 Availability'**
+  String get help_usdc_benefit4_title;
+
+  /// USDC benefit 4 description
+  ///
+  /// In en, this message translates to:
+  /// **'Access your money anytime, anywhere'**
+  String get help_usdc_benefit4_description;
+
+  /// How USDC works title
+  ///
+  /// In en, this message translates to:
+  /// **'How It Works'**
+  String get help_usdc_how_title;
+
+  /// How USDC works description
+  ///
+  /// In en, this message translates to:
+  /// **'When you deposit money, it\'s converted to USDC at a 1:1 rate with USD. You can then send USDC to anyone or convert it back to your local currency anytime.'**
+  String get help_usdc_how_description;
+
+  /// USDC safety title
+  ///
+  /// In en, this message translates to:
+  /// **'Is it Safe?'**
+  String get help_usdc_safety_title;
+
+  /// USDC safety description
+  ///
+  /// In en, this message translates to:
+  /// **'Yes! USDC is issued by Circle, a regulated financial institution. Every USDC is backed by real US dollars held in reserve accounts.'**
+  String get help_usdc_safety_description;
+
+  /// How deposits work title
+  ///
+  /// In en, this message translates to:
+  /// **'How Deposits Work'**
+  String get help_howDepositsWork;
+
+  /// Deposits guide header
+  ///
+  /// In en, this message translates to:
+  /// **'Adding Money to Your Wallet'**
+  String get help_deposits_header;
+
+  /// Deposits guide intro
+  ///
+  /// In en, this message translates to:
+  /// **'Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.'**
+  String get help_deposits_intro;
+
+  /// Deposit steps title
+  ///
+  /// In en, this message translates to:
+  /// **'How to Deposit'**
+  String get help_deposits_steps_title;
+
+  /// Deposit step 1 title
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Amount'**
+  String get help_deposits_step1_title;
+
+  /// Deposit step 1 description
+  ///
+  /// In en, this message translates to:
+  /// **'Enter how much you want to add to your wallet'**
+  String get help_deposits_step1_description;
+
+  /// Deposit step 2 title
+  ///
+  /// In en, this message translates to:
+  /// **'Select Provider'**
+  String get help_deposits_step2_title;
+
+  /// Deposit step 2 description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your Mobile Money provider (Orange Money, MTN, etc.)'**
+  String get help_deposits_step2_description;
+
+  /// Deposit step 3 title
+  ///
+  /// In en, this message translates to:
+  /// **'Complete Payment'**
+  String get help_deposits_step3_title;
+
+  /// Deposit step 3 description
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the USSD prompt on your phone to authorize the payment'**
+  String get help_deposits_step3_description;
+
+  /// Deposit step 4 title
+  ///
+  /// In en, this message translates to:
+  /// **'Funds Added'**
+  String get help_deposits_step4_title;
+
+  /// Deposit step 4 description
+  ///
+  /// In en, this message translates to:
+  /// **'Your USDC balance updates within seconds'**
+  String get help_deposits_step4_description;
+
+  /// Supported providers title
+  ///
+  /// In en, this message translates to:
+  /// **'Supported Providers'**
+  String get help_deposits_providers_title;
+
+  /// Processing time title
+  ///
+  /// In en, this message translates to:
+  /// **'Processing Time'**
+  String get help_deposits_time_title;
+
+  /// Processing time description
+  ///
+  /// In en, this message translates to:
+  /// **'Most deposits are processed within 1-2 minutes'**
+  String get help_deposits_time_description;
+
+  /// Deposits FAQ title
+  ///
+  /// In en, this message translates to:
+  /// **'Common Questions'**
+  String get help_deposits_faq_title;
+
+  /// FAQ 1 question
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s the minimum deposit?'**
+  String get help_deposits_faq1_question;
+
+  /// FAQ 1 answer
+  ///
+  /// In en, this message translates to:
+  /// **'The minimum deposit is 1,000 XOF (approximately \$1.60 USD)'**
+  String get help_deposits_faq1_answer;
+
+  /// FAQ 2 question
+  ///
+  /// In en, this message translates to:
+  /// **'Are there fees?'**
+  String get help_deposits_faq2_question;
+
+  /// FAQ 2 answer
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, there\'s a 1% transaction fee on deposits'**
+  String get help_deposits_faq2_answer;
+
+  /// FAQ 3 question
+  ///
+  /// In en, this message translates to:
+  /// **'What if my deposit fails?'**
+  String get help_deposits_faq3_question;
+
+  /// FAQ 3 answer
+  ///
+  /// In en, this message translates to:
+  /// **'Your money will be automatically refunded to your Mobile Money account within 24 hours'**
+  String get help_deposits_faq3_answer;
+
+  /// Transaction fees title
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Fees'**
+  String get help_transactionFees;
+
+  /// No hidden fees title
+  ///
+  /// In en, this message translates to:
+  /// **'No Hidden Fees'**
+  String get help_fees_no_hidden_title;
+
+  /// No hidden fees description
+  ///
+  /// In en, this message translates to:
+  /// **'We believe in transparency. Here\'s exactly what you pay.'**
+  String get help_fees_no_hidden_description;
+
+  /// Fee breakdown title
+  ///
+  /// In en, this message translates to:
+  /// **'Fee Breakdown'**
+  String get help_fees_breakdown_title;
+
+  /// Internal transfers label
+  ///
+  /// In en, this message translates to:
+  /// **'Transfers to JoonaPay Users'**
+  String get help_fees_internal_transfers;
+
+  /// Free fee label
+  ///
+  /// In en, this message translates to:
+  /// **'FREE'**
+  String get help_fees_free;
+
+  /// Internal transfers description
+  ///
+  /// In en, this message translates to:
+  /// **'Send money to other JoonaPay users with zero fees'**
+  String get help_fees_internal_description;
+
+  /// Deposits label
+  ///
+  /// In en, this message translates to:
+  /// **'Mobile Money Deposits'**
+  String get help_fees_deposits;
+
+  /// Deposits fee amount
+  ///
+  /// In en, this message translates to:
+  /// **'1%'**
+  String get help_fees_deposits_amount;
+
+  /// Deposits description
+  ///
+  /// In en, this message translates to:
+  /// **'1% fee when adding funds via Mobile Money'**
+  String get help_fees_deposits_description;
+
+  /// Withdrawals label
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals to Mobile Money'**
+  String get help_fees_withdrawals;
+
+  /// Withdrawals fee amount
+  ///
+  /// In en, this message translates to:
+  /// **'1%'**
+  String get help_fees_withdrawals_amount;
+
+  /// Withdrawals description
+  ///
+  /// In en, this message translates to:
+  /// **'1% fee when cashing out to Mobile Money'**
+  String get help_fees_withdrawals_description;
+
+  /// External transfers label
+  ///
+  /// In en, this message translates to:
+  /// **'External Crypto Transfers'**
+  String get help_fees_external_transfers;
+
+  /// External transfers fee
+  ///
+  /// In en, this message translates to:
+  /// **'Network Fee'**
+  String get help_fees_external_amount;
+
+  /// External transfers description
+  ///
+  /// In en, this message translates to:
+  /// **'Blockchain network fee applies (varies by network)'**
+  String get help_fees_external_description;
+
+  /// Why fees title
+  ///
+  /// In en, this message translates to:
+  /// **'Why Do We Charge Fees?'**
+  String get help_fees_why_title;
+
+  /// Why fees description
+  ///
+  /// In en, this message translates to:
+  /// **'Our fees help us:'**
+  String get help_fees_why_description;
+
+  /// Why fees point 1
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain secure infrastructure and compliance'**
+  String get help_fees_why_point1;
+
+  /// Why fees point 2
+  ///
+  /// In en, this message translates to:
+  /// **'Provide 24/7 customer support'**
+  String get help_fees_why_point2;
+
+  /// Why fees point 3
+  ///
+  /// In en, this message translates to:
+  /// **'Cover Mobile Money provider charges'**
+  String get help_fees_why_point3;
+
+  /// Why fees point 4
+  ///
+  /// In en, this message translates to:
+  /// **'Continue improving our services'**
+  String get help_fees_why_point4;
+
+  /// Fee comparison title
+  ///
+  /// In en, this message translates to:
+  /// **'How We Compare'**
+  String get help_fees_comparison_title;
+
+  /// Fee comparison description
+  ///
+  /// In en, this message translates to:
+  /// **'Our fees are significantly lower than traditional money transfer services:'**
+  String get help_fees_comparison_description;
+
+  /// Traditional services label
+  ///
+  /// In en, this message translates to:
+  /// **'Traditional Services'**
+  String get help_fees_comparison_traditional;
+
+  /// JoonaPay label
+  ///
+  /// In en, this message translates to:
+  /// **'JoonaPay'**
+  String get help_fees_comparison_joonapay;
 }
 
 class _AppLocalizationsDelegate

@@ -1,0 +1,136 @@
+name: Accessibility Tests
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  accessibility-tests:
+    name: Run Accessibility Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run accessibility tests
+        run: flutter test test/accessibility/ --coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: accessibility
+          name: accessibility-coverage
+
+      - name: Check for semantic label regressions
+        run: flutter analyze --fatal-warnings
+
+      - name: Generate accessibility report
+        run: |
+          echo "# Accessibility Test Results" > accessibility_report.md
+          echo "" >> accessibility_report.md
+          echo "## Test Summary" >> accessibility_report.md
+          flutter test test/accessibility/ --reporter=json > test_results.json || true
+          echo "" >> accessibility_report.md
+          echo "## Coverage" >> accessibility_report.md
+          echo "Coverage report uploaded to Codecov" >> accessibility_report.md
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('accessibility_report.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+  contrast-check:
+    name: Verify Contrast Ratios
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run contrast ratio tests
+        run: flutter test test/accessibility/button_accessibility_test.dart test/accessibility/input_accessibility_test.dart --name "contrast"
+
+  semantics-check:
+    name: Check Semantic Labels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check for unlabeled elements
+        run: |
+          # Scan for common accessibility issues
+          ! grep -r "GestureDetector\|InkWell" lib/ | grep -v "Semantics\|semanticLabel" | grep -v ".g.dart" || {
+            echo "⚠️ Warning: Found potentially unlabeled interactive widgets"
+            echo "Ensure all GestureDetector and InkWell widgets have semantic labels"
+            exit 1
+          }
+
+      - name: Check for missing alt text
+        run: |
+          # Check for images without semantics
+          ! grep -r "Image\." lib/ | grep -v "Semantics\|ExcludeSemantics" | grep -v ".g.dart" || {
+            echo "⚠️ Warning: Found images without semantic wrappers"
+            echo "Ensure images have alt text or are marked as decorative"
+          }
+
+  touch-target-check:
+    name: Verify Touch Targets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run touch target tests
+        run: flutter test test/accessibility/ --name "touch target"
