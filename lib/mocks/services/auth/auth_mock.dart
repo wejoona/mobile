@@ -9,6 +9,7 @@ import '../../base/api_contract.dart';
 import '../../base/mock_data_generator.dart';
 import '../../base/mock_interceptor.dart';
 import 'auth_contract.dart';
+import '../wallet/wallet_mock.dart';
 
 /// Auth mock state (simulates backend state)
 class AuthMockState {
@@ -248,6 +249,11 @@ class AuthMock {
     // Get or create user
     final user = AuthMockState.getOrCreateUser(phone);
     final tokens = AuthMockState.generateTokens(user);
+
+    // Auto-create wallet for user if it doesn't exist
+    if (WalletMockState.getWallet(user.id) == null) {
+      WalletMockState.createWallet(user.id);
+    }
 
     return MockResponse.success(tokens.toJson());
   }
