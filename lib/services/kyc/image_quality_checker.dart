@@ -1,11 +1,24 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import '../../features/kyc/models/image_quality_result.dart';
 
 class ImageQualityChecker {
   /// Check if image quality is acceptable for KYC
-  static Future<ImageQualityResult> checkQuality(String imagePath) async {
+  ///
+  /// [skipStrictChecks] - If true, skips strict quality checks (for simulator/gallery testing)
+  /// Callers should pass `ref.read(isSimulatorProvider)` or `ref.read(mockCameraProvider)` for this value.
+  static Future<ImageQualityResult> checkQuality(
+    String imagePath, {
+    bool skipStrictChecks = false,
+  }) async {
+    // Skip strict quality checks on simulator or when explicitly requested
+    if (skipStrictChecks) {
+      debugPrint('[ImageQualityChecker] Skipping strict quality checks (simulator mode)');
+      return ImageQualityResult.acceptable();
+    }
+
     try {
       final file = File(imagePath);
       final bytes = await file.readAsBytes();
@@ -32,6 +45,11 @@ class ImageQualityChecker {
 
       return ImageQualityResult.acceptable();
     } catch (e) {
+      // In debug mode, accept images even if quality check fails
+      if (kDebugMode) {
+        debugPrint('[ImageQualityChecker] Error checking quality: $e - accepting in debug mode');
+        return ImageQualityResult.acceptable();
+      }
       return ImageQualityResult.blurry();
     }
   }

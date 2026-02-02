@@ -16,8 +16,9 @@ import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../providers/kyc_provider.dart';
 import '../../../services/kyc/image_quality_checker.dart';
+import '../models/image_quality_result.dart';
 import '../../../utils/logger.dart';
-import '../../../mocks/mock_config.dart';
+import '../../../mocks/mock_config_provider.dart';
 
 class SelfieView extends ConsumerStatefulWidget {
   const SelfieView({super.key});
@@ -47,15 +48,13 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
     super.dispose();
   }
 
-  /// Check if running in simulator/mock mode
-  bool get _isSimulator => MockConfig.useMocks && kDebugMode;
-
   Future<void> _initializeCamera() async {
-    // In simulator/mock mode, go straight to gallery fallback
-    if (_isSimulator) {
+    // Skip camera initialization if running on simulator (auto-detected)
+    final mockCamera = ref.read(mockCameraProvider);
+    if (mockCamera) {
       debugPrint('[Selfie] Simulator detected - using gallery fallback');
       if (mounted) {
-        setState(() => _cameraError = 'Camera not available in simulator. Please use gallery.');
+        setState(() => _cameraError = 'Camera mocked for simulator. Please use gallery.');
       }
       return;
     }
@@ -355,67 +354,89 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.warning.withOpacity(0.1),
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.warning.withOpacity(0.1),
+                    ),
+                    child: Icon(
+                      Icons.no_photography,
+                      size: 64,
+                      color: colors.warning,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppText(
+                    l10n.kyc_camera_unavailable,
+                    variant: AppTextVariant.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  AppText(
+                    l10n.kyc_camera_unavailable_description,
+                    variant: AppTextVariant.bodyMedium,
+                    color: colors.textSecondary,
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButton(
+                    label: l10n.kyc_chooseFromGallery,
+                    onPressed: _isCheckingQuality ? null : _pickFromGallery,
+                    isFullWidth: true,
+                    icon: Icons.photo_library,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  AppButton(
+                    label: l10n.kyc_tryAgain,
+                    variant: AppButtonVariant.secondary,
+                    onPressed: _isCheckingQuality ? null : () {
+                      setState(() {
+                        _cameraError = null;
+                        _isInitialized = false;
+                      });
+                      _initializeCamera();
+                    },
+                    isFullWidth: true,
+                  ),
+                ],
+              ),
+            ),
+            if (_isCheckingQuality)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.7),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: Colors.white),
+                        SizedBox(height: AppSpacing.md),
+                        AppText(
+                          l10n.kyc_checkingQuality,
+                          variant: AppTextVariant.bodyMedium,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: Icon(
-                  Icons.no_photography,
-                  size: 64,
-                  color: colors.warning,
-                ),
               ),
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.kyc_camera_unavailable,
-                variant: AppTextVariant.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppText(
-                l10n.kyc_camera_unavailable_description,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xxl),
-              AppButton(
-                label: l10n.kyc_chooseFromGallery,
-                onPressed: _pickFromGallery,
-                isFullWidth: true,
-                icon: Icons.photo_library,
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppButton(
-                label: l10n.kyc_tryAgain,
-                variant: AppButtonVariant.secondary,
-                onPressed: () {
-                  setState(() {
-                    _cameraError = null;
-                    _isInitialized = false;
-                  });
-                  _initializeCamera();
-                },
-                isFullWidth: true,
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 
   Future<void> _pickFromGallery() async {
-    setState(() => _isCheckingQuality = true);
-
     try {
       final picker = ImagePicker();
       final XFile? image = await picker.pickImage(
@@ -426,12 +447,21 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
       );
 
       if (image == null) {
-        setState(() => _isCheckingQuality = false);
         return;
       }
 
-      // Check image quality
-      final qualityResult = await ImageQualityChecker.checkQuality(image.path);
+      // Show loading only after user has picked an image
+      setState(() => _isCheckingQuality = true);
+
+      // Check image quality with timeout
+      final isSimulator = ref.read(isSimulatorProvider);
+      final qualityResult = await ImageQualityChecker.checkQuality(
+        image.path,
+        skipStrictChecks: isSimulator,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => ImageQualityResult.acceptable(),
+      );
 
       if (!qualityResult.isAcceptable) {
         if (mounted) {
@@ -477,7 +507,11 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
       final image = await _controller!.takePicture();
 
       // Check image quality
-      final qualityResult = await ImageQualityChecker.checkQuality(image.path);
+      final isSimulator = ref.read(isSimulatorProvider);
+      final qualityResult = await ImageQualityChecker.checkQuality(
+        image.path,
+        skipStrictChecks: isSimulator,
+      );
 
       if (!qualityResult.isAcceptable) {
         if (mounted) {

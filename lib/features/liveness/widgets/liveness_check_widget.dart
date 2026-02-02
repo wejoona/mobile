@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/mocks/mock_config_provider.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 
 /// Liveness check widget state
@@ -69,17 +69,13 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     super.dispose();
   }
 
-  /// Check if running on iOS Simulator
-  bool get _isSimulator {
-    // In debug mode with mocks enabled, or on iOS Simulator
-    if (MockConfig.useMocks && kDebugMode) return true;
-    // Additional check for iOS Simulator (no camera available)
-    return Platform.isIOS && kDebugMode;
-  }
-
   Future<void> _initializeCamera() async {
-    // In simulator/mock mode, skip camera and auto-pass liveness
-    if (_isSimulator) {
+    // Check if running on simulator (auto-detected by provider)
+    final mockCamera = ref.read(mockCameraProvider);
+    final isSimulator = ref.read(isSimulatorProvider);
+
+    // In simulator mode, skip camera and auto-pass liveness
+    if (isSimulator || mockCamera) {
       debugPrint('[Liveness] Simulator detected - using mock flow');
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -130,9 +126,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         _startLivenessSession();
       }
     } catch (e) {
-      // Camera failed - in debug mode, auto-pass; in production, show error
-      if (kDebugMode) {
-        debugPrint('[Liveness] Camera error in debug mode - auto-completing: $e');
+      // Camera failed - only auto-pass on simulator, show error on physical device
+      final isSimulator = ref.read(isSimulatorProvider);
+      if (isSimulator) {
+        debugPrint('[Liveness] Camera error on simulator - auto-completing: $e');
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           widget.onComplete?.call(LivenessResult(
@@ -145,9 +142,11 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
         return;
       }
 
+      // On physical device, show error and let user retry
+      debugPrint('[Liveness] Camera error on physical device: $e');
       setState(() {
         _state = LivenessCheckState.failed;
-        _errorMessage = 'Failed to initialize camera: $e';
+        _errorMessage = 'Failed to initialize camera. Please ensure camera permissions are granted and try again.';
       });
       widget.onError?.call(_errorMessage!);
     }

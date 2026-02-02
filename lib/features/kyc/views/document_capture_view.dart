@@ -18,6 +18,7 @@ import '../models/document_type.dart';
 import '../models/kyc_document.dart';
 import '../../../services/kyc/image_quality_checker.dart';
 import '../../../utils/logger.dart';
+import '../../../mocks/mock_config_provider.dart';
 
 class DocumentCaptureView extends ConsumerStatefulWidget {
   const DocumentCaptureView({super.key});
@@ -49,9 +50,26 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   }
 
   Future<void> _initializeCamera() async {
+    // Skip camera initialization if running on simulator (auto-detected)
+    final mockCamera = ref.read(mockCameraProvider);
+    if (mockCamera) {
+      debugPrint('[DocumentCapture] Simulator detected - showing gallery picker');
+      if (mounted) {
+        setState(() {
+          _cameraError = 'Camera mocked for simulator testing';
+        });
+      }
+      return;
+    }
+
     try {
       debugPrint('[DocumentCapture] Initializing camera...');
-      _cameras = await availableCameras();
+
+      // Add timeout for simulator environments where camera hangs
+      _cameras = await availableCameras().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => <CameraDescription>[],
+      );
       debugPrint('[DocumentCapture] Found ${_cameras?.length ?? 0} cameras');
 
       if (_cameras == null || _cameras!.isEmpty) {
@@ -69,7 +87,12 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
         enableAudio: false,
       );
 
-      await _controller!.initialize();
+      await _controller!.initialize().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw Exception('Camera initialization timed out');
+        },
+      );
       debugPrint('[DocumentCapture] Camera initialized successfully');
       if (mounted) {
         setState(() => _isInitialized = true);
@@ -88,6 +111,8 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   Future<void> _pickFromGallery(BuildContext context, KycState state) async {
     try {
       final picker = ImagePicker();
+      debugPrint('[DocumentCapture] Opening gallery picker...');
+
       final XFile? image = await picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1920,
@@ -95,23 +120,35 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
         imageQuality: 90,
       );
 
-      if (image == null) return;
+      if (image == null) {
+        debugPrint('[DocumentCapture] Gallery picker cancelled');
+        return;
+      }
+
+      debugPrint('[DocumentCapture] Image selected: ${image.path}');
 
       // Copy to app directory for consistency
       final appDir = await getApplicationDocumentsDirectory();
       final fileName = 'document_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final savedPath = path.join(appDir.path, fileName);
+
+      debugPrint('[DocumentCapture] Copying to: $savedPath');
       await File(image.path).copy(savedPath);
+      debugPrint('[DocumentCapture] File copied successfully');
 
       // Set the captured image and go to review
-      setState(() {
-        _capturedImagePath = savedPath;
-        _cameraError = null;
-      });
-
-      debugPrint('[DocumentCapture] Image picked from gallery: $savedPath');
-    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _capturedImagePath = savedPath;
+          _cameraError = null;
+        });
+        debugPrint('[DocumentCapture] State updated, showing review screen');
+      } else {
+        debugPrint('[DocumentCapture] Widget not mounted, cannot update state');
+      }
+    } catch (e, stack) {
       debugPrint('[DocumentCapture] Gallery pick error: $e');
+      debugPrint('[DocumentCapture] Stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to pick image: $e')),
@@ -126,44 +163,108 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     final state = ref.watch(kycProvider);
     final colors = context.colors;
 
+    // Check captured image FIRST - this must come before camera error check
+    // so gallery-picked images show the review screen
+    if (_capturedImagePath != null) {
+      return _buildReviewScreen(context, l10n, state);
+    }
+
     // Show error if camera failed - with gallery option
     if (_cameraError != null) {
+      final documentType = state.selectedDocumentType;
+      final isBackSide = documentType?.requiresBackSide == true && state.capturedDocuments.isNotEmpty;
+      final documentName = _getDocumentTypeName(l10n, documentType);
+      final sideLabel = isBackSide ? 'Back Side' : 'Front Side';
+
       return Scaffold(
         backgroundColor: colors.canvas,
         appBar: AppBar(
           title: AppText(l10n.kyc_title, variant: AppTextVariant.headlineSmall),
           backgroundColor: Colors.transparent,
         ),
-        body: Center(
+        body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.all(AppSpacing.xl),
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.camera_alt_outlined, size: 64, color: colors.textSecondary),
-                SizedBox(height: AppSpacing.lg),
-                AppText(
-                  'Camera Not Available',
-                  variant: AppTextVariant.headlineSmall,
-                  textAlign: TextAlign.center,
+                // Task card - what user needs to do (primary focus)
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: colors.gold.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(color: colors.gold.withOpacity(0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: colors.gold.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        child: Icon(
+                          Icons.badge_outlined,
+                          color: colors.gold,
+                          size: 24,
+                        ),
+                      ),
+                      SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppText(
+                              documentName,
+                              variant: AppTextVariant.labelMedium,
+                              color: colors.gold,
+                            ),
+                            SizedBox(height: AppSpacing.xxs),
+                            AppText(
+                              sideLabel,
+                              variant: AppTextVariant.headlineMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: AppSpacing.md),
-                AppText(
-                  _cameraError!,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
-                  textAlign: TextAlign.center,
+
+                // Spacer to push content to center
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.camera_alt_outlined, size: 48, color: colors.textTertiary),
+                      SizedBox(height: AppSpacing.md),
+                      AppText(
+                        l10n.kyc_camera_unavailable,
+                        variant: AppTextVariant.titleMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: AppSpacing.xs),
+                      AppText(
+                        l10n.kyc_camera_unavailable_description,
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textSecondary,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-                SizedBox(height: AppSpacing.xxl),
+
+                // Actions at bottom (natural thumb zone)
                 AppButton(
-                  label: 'Choose from Gallery',
+                  label: l10n.kyc_chooseFromGallery,
                   icon: Icons.photo_library,
                   onPressed: () => _pickFromGallery(context, state),
                   isFullWidth: true,
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.sm),
                 AppButton(
-                  label: 'Retry Camera',
+                  label: l10n.kyc_tryAgain,
                   variant: AppButtonVariant.secondary,
                   icon: Icons.refresh,
                   onPressed: () {
@@ -174,9 +275,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   },
                   isFullWidth: true,
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.sm),
                 AppButton(
-                  label: 'Go Back',
+                  label: l10n.common_cancel,
                   variant: AppButtonVariant.ghost,
                   onPressed: () => context.pop(),
                   isFullWidth: true,
@@ -188,13 +289,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       );
     }
 
-    // Check captured image FIRST (before camera init check)
-    // This allows gallery-picked images to show review screen
-    if (_capturedImagePath != null) {
-      return _buildReviewScreen(context, l10n, state);
-    }
-
-    // Show loading while camera initializes (only if no image captured)
+    // Show loading while camera initializes
     if (!_isInitialized || _controller == null) {
       return Scaffold(
         backgroundColor: colors.canvas,
@@ -473,6 +568,18 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     }
   }
 
+  String _getDocumentTypeName(AppLocalizations l10n, DocumentType? type) {
+    if (type == null) return 'Document';
+    switch (type) {
+      case DocumentType.nationalId:
+        return l10n.kyc_documentType_nationalId;
+      case DocumentType.passport:
+        return l10n.kyc_documentType_passport;
+      case DocumentType.driversLicense:
+        return l10n.kyc_documentType_driversLicense;
+    }
+  }
+
   Future<void> _toggleFlash() async {
     if (_controller == null) return;
 
@@ -491,7 +598,11 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       final image = await _controller!.takePicture();
 
       // Check image quality
-      final qualityResult = await ImageQualityChecker.checkQuality(image.path);
+      final isSimulator = ref.read(isSimulatorProvider);
+      final qualityResult = await ImageQualityChecker.checkQuality(
+        image.path,
+        skipStrictChecks: isSimulator,
+      );
 
       if (!qualityResult.isAcceptable) {
         if (mounted) {
@@ -548,22 +659,39 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   void _acceptPhoto(BuildContext context) {
     final state = ref.read(kycProvider);
     final documentType = state.selectedDocumentType!;
+    final existingDocCount = state.capturedDocuments.length;
+
+    // Determine the correct side based on existing documents (BEFORE adding)
+    final isBackSide = documentType.requiresBackSide && existingDocCount > 0;
+    final side = isBackSide ? DocumentSide.back : DocumentSide.front;
+
+    debugPrint('[DocumentCapture] Accepting photo as ${side.name} side (existing docs: $existingDocCount)');
 
     final document = KycDocument(
       type: documentType,
       imagePath: _capturedImagePath!,
-      side: _currentSide,
+      side: side,
     );
 
     ref.read(kycProvider.notifier).addDocument(document);
 
-    // Check if we need to capture the back side
-    if (documentType.requiresBackSide && state.capturedDocuments.isEmpty) {
+    // Check if we need to capture the back side (check based on count BEFORE adding)
+    final needsBackSide = documentType.requiresBackSide && existingDocCount == 0;
+
+    if (needsBackSide) {
       // Reset for back side capture
-      setState(() => _capturedImagePath = null);
+      debugPrint('[DocumentCapture] Need back side - resetting for next capture');
+      setState(() {
+        _capturedImagePath = null;
+        _currentSide = DocumentSide.back;
+        // Re-set camera error if camera is not available (for simulator/gallery flow)
+        if (!_isInitialized && _cameraError == null) {
+          _cameraError = 'Camera not available';
+        }
+      });
     } else {
       // Move to selfie
-      debugPrint('[DocumentCapture] Navigating to /kyc/selfie');
+      debugPrint('[DocumentCapture] All documents captured - navigating to /kyc/selfie');
       context.go('/kyc/selfie');
     }
   }

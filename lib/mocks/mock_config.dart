@@ -2,15 +2,23 @@
 ///
 /// Global configuration for the mocking framework.
 /// Toggle between mock and real API at app level or per-service.
+///
+/// NOTE: Prefer using [mockConfigProvider] from mock_config_provider.dart
+/// for reactive, provider-based mock configuration that auto-detects
+/// simulator vs physical device.
 library;
 
 import 'package:flutter/foundation.dart';
 
 /// Mock mode configuration
+///
+/// DEPRECATED: Use mockConfigProvider instead for automatic simulator detection.
+/// These static values are kept for backwards compatibility but should not be
+/// used for camera mocking - the provider handles that automatically.
 class MockConfig {
   /// Master switch - when true, all mocks are enabled
   /// Set to false to connect to real backend
-  static bool useMocks = true; // Enabled for simulator testing
+  static bool useMocks = false; // Disabled - using real API
 
   /// Per-service mock toggles (only apply when useMocks is true)
   static bool mockAuth = true;
@@ -22,6 +30,11 @@ class MockConfig {
   static bool mockMerchant = true;
   static bool mockBillPayments = true;
   static bool mockRates = true;
+
+  /// Camera mock - DEPRECATED: Use mockConfigProvider.mockCamera instead
+  /// This is now auto-detected based on simulator vs physical device
+  @Deprecated('Use ref.watch(mockCameraProvider) instead')
+  static bool mockCamera = false;
 
   /// Simulated network delay (ms)
   static int networkDelayMs = 500;
@@ -70,6 +83,7 @@ class MockConfig {
     mockMerchant = true;
     mockBillPayments = true;
     mockRates = true;
+    mockCamera = true;
   }
 
   /// Disable all mocks (use real API)
@@ -89,6 +103,7 @@ class MockConfig {
     mockMerchant = true;
     mockBillPayments = true;
     mockRates = true;
+    mockCamera = true;
     networkDelayMs = 500;
     simulateRandomFailures = false;
     failureRate = 0.1;
