@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
 
 // Import all flow tests
 import 'flows/auth_flow_test.dart' as auth_flow;
@@ -9,6 +10,11 @@ import 'flows/withdraw_flow_test.dart' as withdraw_flow;
 import 'flows/kyc_flow_test.dart' as kyc_flow;
 import 'flows/settings_flow_test.dart' as settings_flow;
 import 'flows/beneficiary_flow_test.dart' as beneficiary_flow;
+import 'flows/receive_flow_test.dart' as receive_flow;
+import 'flows/transaction_history_flow_test.dart' as transaction_history_flow;
+import 'flows/pin_security_flow_test.dart' as pin_security_flow;
+import 'flows/error_scenarios_flow_test.dart' as error_scenarios_flow;
+import 'flows/onboarding_flow_test.dart' as onboarding_flow;
 
 /// Main integration test entry point
 ///
@@ -29,14 +35,30 @@ import 'flows/beneficiary_flow_test.dart' as beneficiary_flow;
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // Enable mocks globally
+  setUpAll(() {
+    MockConfig.enableAllMocks();
+  });
+
   group('JoonaPay Integration Tests', () {
-    // Run all flow tests
+    // Core flows
     auth_flow.main();
+    onboarding_flow.main();
+
+    // Money flows
     send_money_flow.main();
+    receive_flow.main();
     deposit_flow.main();
     withdraw_flow.main();
+
+    // Feature flows
     kyc_flow.main();
     settings_flow.main();
     beneficiary_flow.main();
+    transaction_history_flow.main();
+
+    // Security & error handling
+    pin_security_flow.main();
+    error_scenarios_flow.main();
   });
 }
