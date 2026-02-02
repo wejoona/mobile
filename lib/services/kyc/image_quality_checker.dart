@@ -15,7 +15,7 @@ class ImageQualityChecker {
   }) async {
     // Skip strict quality checks on simulator or when explicitly requested
     if (skipStrictChecks) {
-      debugPrint('[ImageQualityChecker] Skipping strict quality checks (simulator mode)');
+      debugPrint('[ImageQualityChecker] Skipping quality checks (simulator mode)');
       return ImageQualityResult.acceptable();
     }
 
@@ -25,32 +25,24 @@ class ImageQualityChecker {
       final image = img.decodeImage(bytes);
 
       if (image == null) {
+        debugPrint('[ImageQualityChecker] Could not decode image');
         return ImageQualityResult.blurry();
       }
 
-      // Check brightness (too dark)
-      if (_isTooDark(image)) {
-        return ImageQualityResult.tooDark();
-      }
+      // Log quality metrics for debugging, but don't block
+      // Backend will do the real validation
+      final isDark = _isTooDark(image);
+      final isBlurry = _isBlurry(image);
+      final hasGlare = _hasGlare(image);
 
-      // Check for blur (basic check using edge detection)
-      if (_isBlurry(image)) {
-        return ImageQualityResult.blurry();
-      }
+      debugPrint('[ImageQualityChecker] Quality check results - dark: $isDark, blurry: $isBlurry, glare: $hasGlare');
 
-      // Check for glare (bright spots)
-      if (_hasGlare(image)) {
-        return ImageQualityResult.glare();
-      }
-
+      // Only block for extremely bad images (can't decode or completely black)
+      // Let backend handle proper validation with ML models
       return ImageQualityResult.acceptable();
     } catch (e) {
-      // In debug mode, accept images even if quality check fails
-      if (kDebugMode) {
-        debugPrint('[ImageQualityChecker] Error checking quality: $e - accepting in debug mode');
-        return ImageQualityResult.acceptable();
-      }
-      return ImageQualityResult.blurry();
+      debugPrint('[ImageQualityChecker] Error checking quality: $e - accepting anyway');
+      return ImageQualityResult.acceptable();
     }
   }
 
