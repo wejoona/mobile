@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
@@ -19,6 +20,7 @@ import '../models/kyc_document.dart';
 import '../../../services/kyc/image_quality_checker.dart';
 import '../../../utils/logger.dart';
 import '../../../mocks/mock_config_provider.dart';
+import '../widgets/kyc_instruction_screen.dart';
 
 class DocumentCaptureView extends ConsumerStatefulWidget {
   const DocumentCaptureView({super.key});
@@ -36,11 +38,12 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   bool _isCheckingQuality = false;
   DocumentSide _currentSide = DocumentSide.front;
   String? _cameraError;
+  bool _showInstructions = true; // Show instructions first
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    // Don't initialize camera immediately - wait for user to continue from instructions
   }
 
   @override
@@ -162,6 +165,11 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(kycProvider);
     final colors = context.colors;
+
+    // Show instruction screen first
+    if (_showInstructions) {
+      return _buildInstructionScreen(context, l10n, state);
+    }
 
     // Check captured image FIRST - this must come before camera error check
     // so gallery-picked images show the review screen
@@ -315,6 +323,31 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     }
 
     return _buildCaptureScreen(context, l10n, state);
+  }
+
+  Widget _buildInstructionScreen(
+    BuildContext context,
+    AppLocalizations l10n,
+    KycState state,
+  ) {
+    final documentType = state.selectedDocumentType;
+    final documentName = _getDocumentTypeName(l10n, documentType);
+    final isBackSide = documentType?.requiresBackSide == true && state.capturedDocuments.isNotEmpty;
+
+    return KycInstructionScreen(
+      title: isBackSide ? 'Capture Back Side' : 'Capture $documentName',
+      description: isBackSide
+          ? 'Now flip your document over and capture the back side.'
+          : 'Position your document within the frame and take a clear photo.',
+      icon: Icons.badge_outlined,
+      instructions: KycInstructions.documentCapture,
+      buttonLabel: l10n.kyc_continue,
+      onContinue: () {
+        setState(() => _showInstructions = false);
+        _initializeCamera();
+      },
+      onBack: () => context.safePop(),
+    );
   }
 
   Widget _buildCaptureScreen(
@@ -679,15 +712,12 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     final needsBackSide = documentType.requiresBackSide && existingDocCount == 0;
 
     if (needsBackSide) {
-      // Reset for back side capture
-      debugPrint('[DocumentCapture] Need back side - resetting for next capture');
+      // Reset for back side capture - show instructions again
+      debugPrint('[DocumentCapture] Need back side - showing instructions for back side');
       setState(() {
         _capturedImagePath = null;
         _currentSide = DocumentSide.back;
-        // Re-set camera error if camera is not available (for simulator/gallery flow)
-        if (!_isInitialized && _cameraError == null) {
-          _cameraError = 'Camera not available';
-        }
+        _showInstructions = true; // Show instructions for back side
       });
     } else {
       // Move to selfie

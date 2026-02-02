@@ -19,28 +19,30 @@ import '../../../services/kyc/image_quality_checker.dart';
 import '../models/image_quality_result.dart';
 import '../../../utils/logger.dart';
 import '../../../mocks/mock_config_provider.dart';
+import '../widgets/kyc_instruction_screen.dart';
+
+enum _SelfieViewState {
+  instructions,
+  initializing,
+  capturing,
+  reviewing,
+  error,
+}
 
 class SelfieView extends ConsumerStatefulWidget {
   const SelfieView({super.key});
 
   @override
-  ConsumerState<SelfieView> createState() => _SelfieViewState();
+  ConsumerState<SelfieView> createState() => _SelfieViewState2();
 }
 
-class _SelfieViewState extends ConsumerState<SelfieView> {
+class _SelfieViewState2 extends ConsumerState<SelfieView> {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
-  bool _isInitialized = false;
+  _SelfieViewState _viewState = _SelfieViewState.instructions;
   String? _capturedImagePath;
   bool _isCheckingQuality = false;
   String? _cameraError;
-
-  @override
-  void initState() {
-    super.initState();
-    debugPrint('[SelfieView] initState called - starting camera init');
-    _initializeCamera();
-  }
 
   @override
   void dispose() {
@@ -49,45 +51,81 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
   }
 
   Future<void> _initializeCamera() async {
-    // Skip camera initialization if running on simulator (auto-detected)
+    setState(() => _viewState = _SelfieViewState.initializing);
+
+    // Check if running on simulator
     final mockCamera = ref.read(mockCameraProvider);
     if (mockCamera) {
       debugPrint('[Selfie] Simulator detected - using gallery fallback');
       if (mounted) {
-        setState(() => _cameraError = 'Camera mocked for simulator. Please use gallery.');
+        setState(() {
+          _cameraError = 'Camera mocked for simulator. Please use gallery.';
+          _viewState = _SelfieViewState.error;
+        });
       }
       return;
     }
 
     try {
+      debugPrint('[Selfie] Getting available cameras...');
       _cameras = await availableCameras();
+
       if (_cameras == null || _cameras!.isEmpty) {
+        debugPrint('[Selfie] No cameras available');
         if (mounted) {
-          setState(() => _cameraError = 'No cameras available on this device');
+          setState(() {
+            _cameraError = 'No cameras available on this device';
+            _viewState = _SelfieViewState.error;
+          });
         }
         return;
       }
 
-      // Find front camera
-      final frontCamera = _cameras!.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-        orElse: () => _cameras![0],
-      );
+      // Log all available cameras
+      for (int i = 0; i < _cameras!.length; i++) {
+        final cam = _cameras![i];
+        debugPrint('[Selfie] Camera $i: ${cam.name}, direction: ${cam.lensDirection}');
+      }
+
+      // Find front camera - MUST use front camera for selfie
+      CameraDescription? frontCamera;
+      for (final camera in _cameras!) {
+        if (camera.lensDirection == CameraLensDirection.front) {
+          frontCamera = camera;
+          break;
+        }
+      }
+
+      if (frontCamera == null) {
+        debugPrint('[Selfie] No front camera found, using first available');
+        frontCamera = _cameras!.first;
+      } else {
+        debugPrint('[Selfie] Using front camera: ${frontCamera.name}');
+      }
 
       _controller = CameraController(
         frontCamera,
         ResolutionPreset.high,
         enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
+      debugPrint('[Selfie] Initializing camera controller...');
       await _controller!.initialize();
+      debugPrint('[Selfie] Camera initialized successfully');
+
       if (mounted) {
-        setState(() => _isInitialized = true);
+        setState(() => _viewState = _SelfieViewState.capturing);
       }
-    } catch (e) {
-      AppLogger('Camera initialization error').error('Camera initialization error', e);
+    } catch (e, stack) {
+      debugPrint('[Selfie] Camera initialization error: $e');
+      debugPrint('[Selfie] Stack: $stack');
+      AppLogger('Selfie camera error').error('Camera initialization error', e);
       if (mounted) {
-        setState(() => _cameraError = 'Camera not available. Please use gallery instead.');
+        setState(() {
+          _cameraError = 'Camera not available. Please use gallery instead.';
+          _viewState = _SelfieViewState.error;
+        });
       }
     }
   }
@@ -95,36 +133,65 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    switch (_viewState) {
+      case _SelfieViewState.instructions:
+        return _buildInstructionScreen(context, l10n);
+      case _SelfieViewState.initializing:
+        return _buildLoadingScreen(context, l10n);
+      case _SelfieViewState.capturing:
+        return _buildCaptureScreen(context, l10n);
+      case _SelfieViewState.reviewing:
+        return _buildReviewScreen(context, l10n);
+      case _SelfieViewState.error:
+        return _buildGalleryFallbackScreen(context, l10n);
+    }
+  }
+
+  Widget _buildInstructionScreen(BuildContext context, AppLocalizations l10n) {
+    return KycInstructionScreen(
+      title: l10n.kyc_selfie_title,
+      description: 'We need a clear photo of your face to verify your identity.',
+      icon: Icons.face,
+      instructions: KycInstructions.selfie,
+      buttonLabel: l10n.kyc_continue,
+      onContinue: _initializeCamera,
+      onBack: () => context.safePop(),
+    );
+  }
+
+  Widget _buildLoadingScreen(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
-
-    // Show captured image review screen
-    if (_capturedImagePath != null) {
-      return _buildReviewScreen(context, l10n);
-    }
-
-    // Show gallery fallback when camera not available
-    if (_cameraError != null) {
-      return _buildGalleryFallbackScreen(context, l10n);
-    }
-
-    // Show loading while camera initializes
-    if (!_isInitialized || _controller == null) {
-      return Scaffold(
-        backgroundColor: colors.canvas,
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return _buildCaptureScreen(context, l10n);
+    return Scaffold(
+      backgroundColor: colors.canvas,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: colors.gold),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              'Starting camera...',
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCaptureScreen(BuildContext context, AppLocalizations l10n) {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return _buildLoadingScreen(context, l10n);
+    }
+
     return Scaffold(
-      backgroundColor: Colors.black, // Always black for camera screen
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: Stack(
           children: [
-            // Camera preview
+            // Camera preview - full screen
             Positioned.fill(
               child: CameraPreview(_controller!),
             ),
@@ -140,7 +207,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
               left: 0,
               right: 0,
               child: Container(
-                padding: EdgeInsets.all(AppSpacing.lg),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -154,8 +221,12 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
-                      onPressed: () => context.safePop(),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                      onPressed: () {
+                        _controller?.dispose();
+                        _controller = null;
+                        setState(() => _viewState = _SelfieViewState.instructions);
+                      },
                     ),
                     Expanded(
                       child: AppText(
@@ -176,16 +247,16 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
               left: 0,
               right: 0,
               child: Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.md,
                 ),
-                margin: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.gold500.withOpacity(0.3), // Keep gold for visibility
+                    color: AppColors.gold500.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -197,7 +268,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                       variant: AppTextVariant.bodyMedium,
                       color: Colors.white,
                     ),
-                    SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
                     AppText(
                       l10n.kyc_selfie_livenessHint,
                       textAlign: TextAlign.center,
@@ -214,7 +285,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
               left: 0,
               right: 0,
               child: Container(
-                padding: EdgeInsets.all(AppSpacing.xxl),
+                padding: const EdgeInsets.all(AppSpacing.xxl),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
@@ -233,12 +304,13 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                       variant: AppTextVariant.bodyLarge,
                       color: Colors.white,
                     ),
-                    SizedBox(height: AppSpacing.xxl),
+                    const SizedBox(height: AppSpacing.xxl),
                     _buildCaptureButton(),
                   ],
                 ),
               ),
             ),
+            // Processing overlay
             if (_isCheckingQuality)
               Positioned.fill(
                 child: Container(
@@ -247,8 +319,8 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const CircularProgressIndicator(),
-                        SizedBox(height: AppSpacing.md),
+                        const CircularProgressIndicator(color: Colors.white),
+                        const SizedBox(height: AppSpacing.md),
                         AppText(
                           l10n.kyc_checkingQuality,
                           variant: AppTextVariant.bodyMedium,
@@ -276,7 +348,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
               Expanded(
@@ -294,7 +366,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                   ),
                 ),
               ),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
               Row(
                 children: [
                   Expanded(
@@ -304,7 +376,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                       variant: AppButtonVariant.secondary,
                     ),
                   ),
-                  SizedBox(width: AppSpacing.lg),
+                  const SizedBox(width: AppSpacing.lg),
                   Expanded(
                     child: AppButton(
                       label: l10n.kyc_accept,
@@ -322,7 +394,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
 
   Widget _buildCaptureButton() {
     return GestureDetector(
-      onTap: _capturePhoto,
+      onTap: _isCheckingQuality ? null : _capturePhoto,
       child: Container(
         width: 72,
         height: 72,
@@ -349,7 +421,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         title: AppText(l10n.kyc_selfie_title, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.safePop(),
         ),
       ),
@@ -357,7 +429,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         child: Stack(
           children: [
             Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -374,37 +446,31 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                       color: colors.warning,
                     ),
                   ),
-                  SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xxl),
                   AppText(
                     l10n.kyc_camera_unavailable,
                     variant: AppTextVariant.headlineSmall,
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.md),
                   AppText(
-                    l10n.kyc_camera_unavailable_description,
+                    _cameraError ?? l10n.kyc_camera_unavailable_description,
                     variant: AppTextVariant.bodyMedium,
                     color: colors.textSecondary,
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xxl),
                   AppButton(
                     label: l10n.kyc_chooseFromGallery,
                     onPressed: _isCheckingQuality ? null : _pickFromGallery,
                     isFullWidth: true,
                     icon: Icons.photo_library,
                   ),
-                  SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.md),
                   AppButton(
                     label: l10n.kyc_tryAgain,
                     variant: AppButtonVariant.secondary,
-                    onPressed: _isCheckingQuality ? null : () {
-                      setState(() {
-                        _cameraError = null;
-                        _isInitialized = false;
-                      });
-                      _initializeCamera();
-                    },
+                    onPressed: _isCheckingQuality ? null : _initializeCamera,
                     isFullWidth: true,
                   ),
                 ],
@@ -419,7 +485,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const CircularProgressIndicator(color: Colors.white),
-                        SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.md),
                         AppText(
                           l10n.kyc_checkingQuality,
                           variant: AppTextVariant.bodyMedium,
@@ -444,16 +510,13 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         maxWidth: 1920,
         maxHeight: 1920,
         imageQuality: 90,
+        preferredCameraDevice: CameraDevice.front,
       );
 
-      if (image == null) {
-        return;
-      }
+      if (image == null) return;
 
-      // Show loading only after user has picked an image
       setState(() => _isCheckingQuality = true);
 
-      // Check image quality with timeout
       final isSimulator = ref.read(isSimulatorProvider);
       final qualityResult = await ImageQualityChecker.checkQuality(
         image.path,
@@ -481,7 +544,6 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         return;
       }
 
-      // Save to permanent location
       final directory = await getApplicationDocumentsDirectory();
       final fileName = 'selfie_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final permanentPath = path.join(directory.path, fileName);
@@ -490,7 +552,7 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
       setState(() {
         _capturedImagePath = permanentPath;
         _isCheckingQuality = false;
-        _cameraError = null;
+        _viewState = _SelfieViewState.reviewing;
       });
     } catch (e) {
       setState(() => _isCheckingQuality = false);
@@ -504,9 +566,10 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
     setState(() => _isCheckingQuality = true);
 
     try {
+      debugPrint('[Selfie] Taking picture...');
       final image = await _controller!.takePicture();
+      debugPrint('[Selfie] Picture taken: ${image.path}');
 
-      // Check image quality
       final isSimulator = ref.read(isSimulatorProvider);
       final qualityResult = await ImageQualityChecker.checkQuality(
         image.path,
@@ -531,17 +594,22 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
         return;
       }
 
-      // Save to permanent location
       final directory = await getApplicationDocumentsDirectory();
       final fileName = 'selfie_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final permanentPath = path.join(directory.path, fileName);
       await File(image.path).copy(permanentPath);
 
+      // Dispose camera before showing review
+      _controller?.dispose();
+      _controller = null;
+
       setState(() {
         _capturedImagePath = permanentPath;
         _isCheckingQuality = false;
+        _viewState = _SelfieViewState.reviewing;
       });
     } catch (e) {
+      debugPrint('[Selfie] Capture error: $e');
       setState(() => _isCheckingQuality = false);
       AppLogger('Capture error').error('Capture error', e);
     }
@@ -561,7 +629,10 @@ class _SelfieViewState extends ConsumerState<SelfieView> {
   }
 
   void _retakePhoto() {
-    setState(() => _capturedImagePath = null);
+    setState(() {
+      _capturedImagePath = null;
+      _viewState = _SelfieViewState.instructions;
+    });
   }
 
   void _acceptPhoto(BuildContext context) {
@@ -574,7 +645,7 @@ class FaceOvalPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.7) // Always black for camera overlay
+      ..color = Colors.black.withOpacity(0.7)
       ..style = PaintingStyle.fill;
 
     final ovalPaint = Paint()
@@ -582,7 +653,6 @@ class FaceOvalPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3;
 
-    // Face oval dimensions
     final ovalWidth = size.width * 0.6;
     final ovalHeight = ovalWidth * 1.3;
 
@@ -592,15 +662,12 @@ class FaceOvalPainter extends CustomPainter {
       height: ovalHeight,
     );
 
-    // Draw darkened areas outside oval
     final path = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
       ..addOval(ovalRect)
       ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);
-
-    // Draw animated oval border
     canvas.drawOval(ovalRect, ovalPaint);
   }
 
