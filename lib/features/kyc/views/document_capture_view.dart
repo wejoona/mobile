@@ -341,7 +341,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
           : 'Position your document within the frame and take a clear photo.',
       icon: Icons.badge_outlined,
       instructions: KycInstructions.documentCapture,
-      buttonLabel: l10n.kyc_continue,
+      buttonLabel: l10n.common_continue,
       onContinue: () {
         setState(() => _showInstructions = false);
         _initializeCamera();

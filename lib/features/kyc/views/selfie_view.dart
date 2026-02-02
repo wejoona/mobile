@@ -154,7 +154,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       description: 'We need a clear photo of your face to verify your identity.',
       icon: Icons.face,
       instructions: KycInstructions.selfie,
-      buttonLabel: l10n.kyc_continue,
+      buttonLabel: l10n.common_continue,
       onContinue: _initializeCamera,
       onBack: () => context.safePop(),
     );

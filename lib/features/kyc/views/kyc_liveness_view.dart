@@ -77,7 +77,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         description: 'We need to verify you\'re a real person by checking your live presence.',
         icon: Icons.videocam_outlined,
         instructions: KycInstructions.liveness,
-        buttonLabel: l10n.kyc_continue,
+        buttonLabel: l10n.common_continue,
         onContinue: () => setState(() => _showInstructions = false),
         onBack: _onCancel,
       );
