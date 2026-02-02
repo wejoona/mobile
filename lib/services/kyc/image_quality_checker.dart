@@ -71,7 +71,8 @@ class ImageQualityChecker {
     }
 
     final avgBrightness = totalBrightness / pixelCount;
-    return avgBrightness < 40; // Threshold for too dark
+    debugPrint('[ImageQualityChecker] Brightness: $avgBrightness');
+    return avgBrightness < 30; // Threshold for too dark (lowered for flexibility)
   }
 
   static bool _isBlurry(img.Image image) {
@@ -100,7 +101,8 @@ class ImageQualityChecker {
     }
 
     final avgVariance = variance / count;
-    return avgVariance < 10; // Threshold for blur
+    debugPrint('[ImageQualityChecker] Blur variance: $avgVariance');
+    return avgVariance < 3; // Threshold for blur (lowered for ID cards with uniform areas)
   }
 
   static bool _hasGlare(img.Image image) {
@@ -124,7 +126,8 @@ class ImageQualityChecker {
     }
 
     final glarePercentage = (brightPixels / totalPixels) * 100;
-    return glarePercentage > 15; // More than 15% very bright pixels
+    debugPrint('[ImageQualityChecker] Glare percentage: $glarePercentage%');
+    return glarePercentage > 25; // More than 25% very bright pixels (raised for ID cards)
   }
 
   /// Compress image for upload
