@@ -95,11 +95,11 @@ class SendRobot {
   }
 
   // Confirmation
-  Future<void> verifyRecipient(String name) {
+  void verifyRecipient(String name) {
     expect(find.text(name), findsOneWidget);
   }
 
-  Future<void> verifyAmount(double amount) {
+  void verifyAmount(double amount) {
     final amountStr = amount.toStringAsFixed(0);
     expect(find.textContaining(amountStr), findsOneWidget);
   }

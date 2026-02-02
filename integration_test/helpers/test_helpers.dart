@@ -156,7 +156,8 @@ class TestHelpers {
 
   /// Dismiss keyboard if open
   static Future<void> dismissKeyboard(WidgetTester tester) async {
-    await tester.testTextInput.hide();
+    // Unfocus any focused widget to dismiss keyboard
+    FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
   }
 

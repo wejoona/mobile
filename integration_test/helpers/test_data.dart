@@ -5,7 +5,7 @@ class TestData {
     {
       'firstName': 'Amadou',
       'lastName': 'Diallo',
-      'phone': '+225 07 12 34 56 78',
+      'phone': '0700000000',
       'countryCode': '+225',
       'country': 'Côte d\'Ivoire',
     },

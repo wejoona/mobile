@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import '../helpers/test_helpers.dart';
 import '../helpers/test_data.dart';
 import '../robots/auth_robot.dart';
@@ -10,12 +11,17 @@ import '../robots/send_robot.dart';
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() {
+    MockConfig.enableAllMocks();
+  });
+
   group('Send Money Flow Tests', () {
     late AuthRobot authRobot;
     late WalletRobot walletRobot;
     late SendRobot sendRobot;
 
     setUp(() async {
+      MockConfig.enableAllMocks();
       await TestHelpers.clearAppData();
     });
 
@@ -60,8 +66,8 @@ void main() {
 
         // Confirm
         sendRobot.verifyOnConfirmScreen();
-        await sendRobot.verifyRecipient(recipient['name'] as String);
-        await sendRobot.verifyAmount(TestData.smallAmount);
+        sendRobot.verifyRecipient(recipient['name'] as String);
+        sendRobot.verifyAmount(TestData.smallAmount);
         await sendRobot.tapConfirm();
 
         // Enter PIN
@@ -88,7 +94,7 @@ void main() {
         await sendRobot.selectBeneficiary(beneficiary['name'] as String);
 
         // Verify recipient selected
-        await sendRobot.verifyRecipient(beneficiary['name'] as String);
+        sendRobot.verifyRecipient(beneficiary['name'] as String);
 
         // Continue with flow
         await sendRobot.enterAmount(TestData.mediumAmount);
@@ -192,7 +198,7 @@ void main() {
         await sendRobot.enterAmount(TestData.mediumAmount);
 
         // Verify new amount
-        await sendRobot.verifyAmount(TestData.mediumAmount);
+        sendRobot.verifyAmount(TestData.mediumAmount);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'edit_amount_error');
         rethrow;
@@ -248,7 +254,7 @@ void main() {
           await sendRobot.selectRecentRecipient('Fatou Traore');
 
           // Verify recipient selected
-          await sendRobot.verifyRecipient('Fatou Traore');
+          sendRobot.verifyRecipient('Fatou Traore');
 
           // Continue flow
           await sendRobot.enterAmount(TestData.smallAmount);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import '../helpers/test_helpers.dart';
 import '../helpers/test_data.dart';
 import '../robots/auth_robot.dart';
@@ -9,10 +10,15 @@ import '../robots/auth_robot.dart';
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  setUpAll(() {
+    MockConfig.enableAllMocks();
+  });
+
   group('Beneficiary Flow Tests', () {
     late AuthRobot authRobot;
 
     setUp(() async {
+      MockConfig.enableAllMocks();
       await TestHelpers.clearAppData();
     });
 

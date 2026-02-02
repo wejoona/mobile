@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import '../helpers/test_helpers.dart';
 import '../helpers/test_data.dart';
 import '../robots/auth_robot.dart';
@@ -8,11 +9,17 @@ import '../robots/auth_robot.dart';
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
+  // Enable mocks for all integration tests
+  setUpAll(() {
+    MockConfig.enableAllMocks();
+  });
+
   group('Authentication Flow Tests', () {
     late AuthRobot authRobot;
 
     setUp(() async {
-      // Clear app data before each test
+      // Ensure mocks are enabled and clear app data
+      MockConfig.enableAllMocks();
       await TestHelpers.clearAppData();
     });
 

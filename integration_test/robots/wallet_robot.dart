@@ -157,4 +157,17 @@ class WalletRobot {
   void verifyOnTransactionDetail() {
     expect(find.text('Transaction Details'), findsOneWidget);
   }
+
+  void verifyOnHomeScreen() {
+    // Verify we're on home by checking for wallet/balance elements
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            find.text('Home').evaluate().isNotEmpty ||
+            find.text('Balance').evaluate().isNotEmpty ||
+            find.text('Send').evaluate().isNotEmpty,
+      ),
+      findsWidgets,
+    );
+  }
 }
