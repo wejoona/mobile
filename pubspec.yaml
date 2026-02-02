@@ -93,7 +93,7 @@ dependencies:
   # Charts for insights
   fl_chart: ^0.69.0
   # Connectivity monitoring for offline mode
-  connectivity_plus: ^6.0.5
+  connectivity_plus: ^7.0.0
   # Time ago formatting
   timeago: ^3.7.0
   # UUID generation for offline queue
