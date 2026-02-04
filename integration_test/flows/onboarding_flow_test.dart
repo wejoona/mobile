@@ -113,7 +113,7 @@ void main() {
         await authRobot.tapContinue();
 
         // Verify OTP screen
-        await TestHelpers.waitForWidget(tester, find.text('Enter OTP'));
+        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
         await authRobot.enterOtp(TestData.testOtp);
 
         // Enter name
@@ -264,7 +264,7 @@ void main() {
         await authRobot.acceptTermsAndConditions();
         await authRobot.tapContinue();
 
-        await TestHelpers.waitForWidget(tester, find.text('Enter OTP'));
+        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
         await authRobot.enterOtp(TestData.testOtp);
 
         await TestHelpers.waitForWidget(tester, find.text('First Name'));
@@ -309,7 +309,7 @@ void main() {
         await authRobot.acceptTermsAndConditions();
         await authRobot.tapContinue();
 
-        await TestHelpers.waitForWidget(tester, find.text('Enter OTP'));
+        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
         await authRobot.enterOtp(TestData.testOtp);
 
         await TestHelpers.waitForWidget(tester, find.text('First Name'));

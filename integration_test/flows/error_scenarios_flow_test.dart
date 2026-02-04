@@ -210,7 +210,7 @@ void main() {
           await authRobot.tapContinue();
 
           // Enter invalid OTP
-          await TestHelpers.waitForWidget(tester, find.text('Enter OTP'));
+          await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
           await authRobot.enterOtp('000000');
 
           // Wait for error
@@ -246,7 +246,7 @@ void main() {
           await authRobot.tapContinue();
 
           // Wait for OTP screen
-          await TestHelpers.waitForWidget(tester, find.text('Enter OTP'));
+          await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
 
           // Enter expired OTP (simulated by invalid code in mock)
           await authRobot.enterOtp('999999');

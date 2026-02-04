@@ -174,4 +174,15 @@ class KycMockState {
     kycStatus = 'documents_pending';
     rejectionReason = null;
   }
+
+  /// Set KYC status directly (for testing convenience)
+  /// Valid values: 'none', 'documents_pending', 'pending_verification',
+  ///               'auto_approved', 'approved', 'verified', 'manual_review', 'rejected'
+  static void setStatus(String status) {
+    // Map 'verified' to 'approved' for backward compatibility
+    kycStatus = status == 'verified' ? 'approved' : status;
+    if (status != 'rejected') {
+      rejectionReason = null;
+    }
+  }
 }
