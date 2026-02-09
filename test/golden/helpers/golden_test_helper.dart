@@ -692,7 +692,7 @@ class GoldenTestWrapper extends StatelessWidget {
   final Locale locale;
   final bool isDarkMode;
   final GlobalKey<NavigatorState>? navigatorKey;
-  final List<Override> overrides;
+  final List<dynamic> overrides;
 
   static final _mockDio = _MockDio();
 

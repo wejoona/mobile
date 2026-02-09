@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "data": {
+    "transactions": [
+      {
+        "transactionId": "tx_001",
+        "type": "transfer",
+        "direction": "outgoing",
+        "amount": 25.00,
+        "currency": "USD",
+        "status": "completed",
+        "recipientName": "Jane Doe",
+        "recipientPhone": "+254711111111",
+        "note": "Lunch",
+        "createdAt": "2026-02-09T10:30:00Z"
+      },
+      {
+        "transactionId": "tx_002",
+        "type": "deposit",
+        "direction": "incoming",
+        "amount": 100.00,
+        "currency": "USD",
+        "status": "completed",
+        "providerName": "M-Pesa",
+        "createdAt": "2026-02-08T14:00:00Z"
+      },
+      {
+        "transactionId": "tx_003",
+        "type": "transfer",
+        "direction": "incoming",
+        "amount": 50.00,
+        "currency": "USD",
+        "status": "completed",
+        "senderName": "John Smith",
+        "senderPhone": "+254722222222",
+        "note": "Refund",
+        "createdAt": "2026-02-07T09:15:00Z"
+      }
+    ],
+    "page": 1,
+    "limit": 20,
+    "total": 3,
+    "hasNext": false,
+    "hasPrev": false
+  }
+}

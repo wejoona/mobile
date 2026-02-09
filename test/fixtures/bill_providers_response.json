@@ -1,0 +1,42 @@
+{
+  "success": true,
+  "data": {
+    "providers": [
+      {
+        "providerId": "prov_001",
+        "name": "Kenya Power",
+        "categoryId": "cat_001",
+        "logo": "https://example.com/kplc.png",
+        "minAmount": 1.00,
+        "maxAmount": 500.00,
+        "currency": "USD",
+        "fields": [
+          {
+            "name": "meterNumber",
+            "label": "Meter Number",
+            "type": "text",
+            "required": true,
+            "validation": "^[0-9]{10,13}$"
+          }
+        ]
+      },
+      {
+        "providerId": "prov_002",
+        "name": "Nairobi Water",
+        "categoryId": "cat_002",
+        "logo": "https://example.com/nwsc.png",
+        "minAmount": 1.00,
+        "maxAmount": 200.00,
+        "currency": "USD",
+        "fields": [
+          {
+            "name": "accountNumber",
+            "label": "Account Number",
+            "type": "text",
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}

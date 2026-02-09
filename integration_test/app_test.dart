@@ -15,6 +15,9 @@ import 'flows/transaction_history_flow_test.dart' as transaction_history_flow;
 import 'flows/pin_security_flow_test.dart' as pin_security_flow;
 import 'flows/error_scenarios_flow_test.dart' as error_scenarios_flow;
 import 'flows/onboarding_flow_test.dart' as onboarding_flow;
+import 'flows/wallet_flow_test.dart' as wallet_flow;
+import 'flows/bill_pay_flow_test.dart' as bill_pay_flow;
+import 'flows/app_smoke_test.dart' as app_smoke;
 
 /// Main integration test entry point
 ///
@@ -57,8 +60,15 @@ void main() {
     beneficiary_flow.main();
     transaction_history_flow.main();
 
+    // Wallet & payments
+    wallet_flow.main();
+    bill_pay_flow.main();
+
     // Security & error handling
     pin_security_flow.main();
     error_scenarios_flow.main();
+
+    // Smoke tests
+    app_smoke.main();
   });
 }

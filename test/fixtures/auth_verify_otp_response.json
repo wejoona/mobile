@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-token",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-refresh",
+    "expiresIn": 3600,
+    "user": {
+      "userId": "usr_test_001",
+      "phoneNumber": "+254700000000",
+      "firstName": "Test",
+      "lastName": "User",
+      "email": "test@example.com",
+      "kycStatus": "verified",
+      "createdAt": "2025-01-15T10:00:00Z"
+    }
+  }
+}

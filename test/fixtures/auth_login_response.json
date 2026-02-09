@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "message": "OTP sent successfully",
+  "data": {
+    "phoneNumber": "+254700000000",
+    "otpLength": 6,
+    "expiresIn": 300,
+    "isNewUser": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": {
+    "walletId": "wal_test_001",
+    "currency": "USDC",
+    "status": "active",
+    "balances": [
+      {
+        "currency": "USD",
+        "available": 150.50,
+        "pending": 0,
+        "total": 150.50
+      }
+    ],
+    "createdAt": "2025-01-15T10:00:00Z",
+    "updatedAt": "2026-02-09T12:00:00Z"
+  }
+}
