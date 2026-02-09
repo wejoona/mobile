@@ -1,13 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
+import '../security/device_fingerprint_service.dart';
 import '../../domain/entities/index.dart';
+import '../../utils/logger.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {
   final Dio _dio;
+  final DeviceFingerprintService _fingerprintService;
 
-  AuthService(this._dio);
+  AuthService(this._dio, this._fingerprintService);
 
   /// POST /auth/register
   Future<OtpResponse> register({
@@ -47,9 +50,26 @@ class AuthService {
         'phone': phone,
         'otp': otp,
       });
-      return AuthResponse.fromJson(response.data);
+      final authResponse = AuthResponse.fromJson(response.data);
+
+      // Register device fingerprint after successful auth
+      _registerDeviceInBackground();
+
+      return authResponse;
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// Register device fingerprint with backend (fire-and-forget).
+  void _registerDeviceInBackground() async {
+    try {
+      final fingerprint = await _fingerprintService.collect();
+      await _dio.post('/devices', data: fingerprint.toJson());
+      AppLogger('Auth').info('Device registered successfully');
+    } catch (e) {
+      // Non-critical — don't block auth flow
+      AppLogger('Auth').error('Device registration failed', e);
     }
   }
 
@@ -145,5 +165,8 @@ class RefreshResponse {
 
 /// Auth Service Provider
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(ref.watch(dioProvider));
+  return AuthService(
+    ref.watch(dioProvider),
+    ref.watch(deviceFingerprintServiceProvider),
+  );
 });

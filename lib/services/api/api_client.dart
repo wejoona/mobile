@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../utils/logger.dart';
 import '../security/certificate_pinning.dart';
+import '../security/device_fingerprint_service.dart';
+import '../security/client_risk_score_service.dart';
+import '../security/security_headers_interceptor.dart';
 import 'cache_interceptor.dart';
 import 'deduplication_interceptor.dart';
 import '../../mocks/index.dart';
@@ -131,6 +134,12 @@ final dioProvider = Provider<Dio>((ref) {
 
   // PERFORMANCE: Add HTTP response caching (must be before auth)
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
+
+  // SECURITY: Add device fingerprint and risk score headers
+  dio.interceptors.add(SecurityHeadersInterceptor(
+    fingerprintService: ref.read(deviceFingerprintServiceProvider),
+    riskScoreService: ref.read(clientRiskScoreServiceProvider),
+  ));
 
   // Add auth interceptor
   dio.interceptors.add(AuthInterceptor(ref));
