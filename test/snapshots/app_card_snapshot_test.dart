@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
@@ -11,6 +12,7 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_card_snapshot_test.dart
 void main() {
+  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
   group('AppCard Snapshot Tests', () {
     group('Variants', () {
       testWidgets('elevated variant', (tester) async {

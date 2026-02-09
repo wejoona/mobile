@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 import '../../helpers/test_wrapper.dart';
@@ -18,6 +19,10 @@ import '../../helpers/test_wrapper.dart';
 /// async loading timers. The goldens are still generated. Run tests
 /// twice if needed - failures on second run indicate real issues.
 void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
   final screenSizes = {
     'medium': const Size(390, 844),
     'large': const Size(430, 932),

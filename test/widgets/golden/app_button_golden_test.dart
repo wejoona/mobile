@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 
 import '../../helpers/test_wrapper.dart';
@@ -8,6 +9,10 @@ import '../../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens
 void main() {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+
   group('AppButton Golden Tests', () {
     testWidgets('primary button default state', (tester) async {
       await tester.pumpWidget(

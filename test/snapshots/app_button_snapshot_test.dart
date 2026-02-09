@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -9,6 +10,7 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_button_snapshot_test.dart
 void main() {
+  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
   group('AppButton Snapshot Tests', () {
     group('Variants', () {
       testWidgets('primary variant - default state', (tester) async {

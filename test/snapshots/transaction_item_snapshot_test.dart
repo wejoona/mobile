@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
@@ -11,6 +12,7 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/transaction_item_snapshot_test.dart
 void main() {
+  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
   group('Transaction Item Snapshot Tests', () {
     Widget buildTransactionItem({
       required String title,

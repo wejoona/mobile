@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/composed/balance_card.dart';
@@ -9,6 +10,7 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/balance_card_snapshot_test.dart
 void main() {
+  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
   group('BalanceCard Snapshot Tests', () {
     group('Basic States', () {
       testWidgets('default balance card', (tester) async {
