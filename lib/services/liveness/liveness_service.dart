@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
@@ -6,7 +7,9 @@ import '../api/api_client.dart';
 enum LivenessChallengeType {
   blink,
   smile,
-  turnHead,
+  turnLeft,
+  turnRight,
+  lookUp,
   nod,
 }
 
@@ -14,25 +17,33 @@ extension LivenessChallengeTypeExt on LivenessChallengeType {
   String get value {
     switch (this) {
       case LivenessChallengeType.blink:
-        return 'blink';
+        return 'BLINK';
       case LivenessChallengeType.smile:
-        return 'smile';
-      case LivenessChallengeType.turnHead:
-        return 'turn_head';
+        return 'SMILE';
+      case LivenessChallengeType.turnLeft:
+        return 'TURN_LEFT';
+      case LivenessChallengeType.turnRight:
+        return 'TURN_RIGHT';
+      case LivenessChallengeType.lookUp:
+        return 'LOOK_UP';
       case LivenessChallengeType.nod:
-        return 'nod';
+        return 'NOD';
     }
   }
 
   static LivenessChallengeType fromString(String value) {
-    switch (value.toLowerCase()) {
-      case 'blink':
+    switch (value.toUpperCase()) {
+      case 'BLINK':
         return LivenessChallengeType.blink;
-      case 'smile':
+      case 'SMILE':
         return LivenessChallengeType.smile;
-      case 'turn_head':
-        return LivenessChallengeType.turnHead;
-      case 'nod':
+      case 'TURN_LEFT':
+        return LivenessChallengeType.turnLeft;
+      case 'TURN_RIGHT':
+        return LivenessChallengeType.turnRight;
+      case 'LOOK_UP':
+        return LivenessChallengeType.lookUp;
+      case 'NOD':
         return LivenessChallengeType.nod;
       default:
         return LivenessChallengeType.blink;
@@ -40,42 +51,113 @@ extension LivenessChallengeTypeExt on LivenessChallengeType {
   }
 }
 
-/// Liveness challenge model
+/// A single liveness challenge
 class LivenessChallenge {
   final String challengeId;
   final LivenessChallengeType type;
   final String instruction;
-  final DateTime expiresAt;
 
   const LivenessChallenge({
     required this.challengeId,
     required this.type,
     required this.instruction,
-    required this.expiresAt,
   });
 
   factory LivenessChallenge.fromJson(Map<String, dynamic> json) {
     return LivenessChallenge(
-      challengeId: json['challengeId'] as String,
+      challengeId: json['id'] as String,
       type: LivenessChallengeTypeExt.fromString(json['type'] as String),
       instruction: json['instruction'] as String,
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'challengeId': challengeId,
-      'type': type.value,
-      'instruction': instruction,
-      'expiresAt': expiresAt.toIso8601String(),
-    };
-  }
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
 }
 
-/// Liveness result model
+/// Liveness session with challenges
+class LivenessSession {
+  final String sessionToken;
+  final List<LivenessChallenge> challenges;
+
+  const LivenessSession({
+    required this.sessionToken,
+    required this.challenges,
+  });
+
+  factory LivenessSession.fromJson(Map<String, dynamic> json) {
+    final challengesData = json['challenges'] as List<dynamic>? ?? [];
+    return LivenessSession(
+      sessionToken: json['sessionToken'] as String,
+      challenges: challengesData
+          .map((e) => LivenessChallenge.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+/// Result of submitting a single challenge photo
+class ChallengeSubmitResult {
+  final String sessionToken;
+  final String status;
+  final int challengesCompleted;
+  final int challengesTotal;
+  final bool? isAlive;
+  final int? confidence;
+  final ChallengeVerificationResult? result;
+
+  const ChallengeSubmitResult({
+    required this.sessionToken,
+    required this.status,
+    required this.challengesCompleted,
+    required this.challengesTotal,
+    this.isAlive,
+    this.confidence,
+    this.result,
+  });
+
+  bool get allComplete => challengesCompleted == challengesTotal;
+
+  factory ChallengeSubmitResult.fromJson(Map<String, dynamic> json) {
+    return ChallengeSubmitResult(
+      sessionToken: json['sessionToken'] as String,
+      status: json['status'] as String,
+      challengesCompleted: json['challengesCompleted'] as int,
+      challengesTotal: json['challengesTotal'] as int,
+      isAlive: json['isAlive'] as bool?,
+      confidence: json['confidence'] as int?,
+      result: json['result'] != null
+          ? ChallengeVerificationResult.fromJson(json['result'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+/// Final verification result after all challenges
+class ChallengeVerificationResult {
+  final bool isAlive;
+  final int confidence;
+  final int antiSpoofScore;
+  final int faceMatchScore;
+  final String? failureReason;
+
+  const ChallengeVerificationResult({
+    required this.isAlive,
+    required this.confidence,
+    required this.antiSpoofScore,
+    required this.faceMatchScore,
+    this.failureReason,
+  });
+
+  factory ChallengeVerificationResult.fromJson(Map<String, dynamic> json) {
+    return ChallengeVerificationResult(
+      isAlive: json['isAlive'] as bool,
+      confidence: json['confidence'] as int,
+      antiSpoofScore: json['antiSpoofScore'] as int,
+      faceMatchScore: json['faceMatchScore'] as int,
+      failureReason: json['failureReason'] as String?,
+    );
+  }
+}
+
+/// Liveness result (for widget callback)
 class LivenessResult {
   final String sessionId;
   final bool isLive;
@@ -90,151 +172,52 @@ class LivenessResult {
     required this.completedAt,
     this.failureReason,
   });
-
-  factory LivenessResult.fromJson(Map<String, dynamic> json) {
-    return LivenessResult(
-      sessionId: json['sessionId'] as String,
-      isLive: json['isLive'] as bool,
-      confidence: (json['confidence'] as num).toDouble(),
-      completedAt: DateTime.parse(json['completedAt'] as String),
-      failureReason: json['failureReason'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'sessionId': sessionId,
-      'isLive': isLive,
-      'confidence': confidence,
-      'completedAt': completedAt.toIso8601String(),
-      if (failureReason != null) 'failureReason': failureReason,
-    };
-  }
 }
 
-/// Liveness session start response
-class LivenessSession {
-  final String sessionId;
-  final List<LivenessChallenge> challenges;
-
-  const LivenessSession({
-    required this.sessionId,
-    required this.challenges,
-  });
-
-  factory LivenessSession.fromJson(Map<String, dynamic> json) {
-    final challengesData = json['challenges'] as List<dynamic>? ?? [];
-    return LivenessSession(
-      sessionId: json['sessionId'] as String,
-      challenges: challengesData
-          .map((e) => LivenessChallenge.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-  }
-}
-
-/// Liveness challenge submission response
-class LivenessChallengeResponse {
-  final bool passed;
-  final LivenessChallenge? nextChallenge;
-  final bool isComplete;
-  final String? message;
-
-  const LivenessChallengeResponse({
-    required this.passed,
-    this.nextChallenge,
-    this.isComplete = false,
-    this.message,
-  });
-
-  factory LivenessChallengeResponse.fromJson(Map<String, dynamic> json) {
-    return LivenessChallengeResponse(
-      passed: json['passed'] as bool,
-      nextChallenge: json['nextChallenge'] != null
-          ? LivenessChallenge.fromJson(
-              json['nextChallenge'] as Map<String, dynamic>)
-          : null,
-      isComplete: json['isComplete'] as bool? ?? false,
-      message: json['message'] as String?,
-    );
-  }
-}
-
-/// Liveness detection service
-/// Handles face liveness verification through the backend's /kyc/liveness/* endpoints
-/// Flow: createSession() → capture video+selfie → submitLiveness() → poll getLivenessStatus()
+/// Liveness detection service — challenge-based photo flow
+///
+/// Flow:
+/// 1. createSession() → get sessionToken + 2-3 challenges
+/// 2. For each challenge: capture photo → submitChallenge()
+/// 3. Last submission auto-verifies and returns final result
 class LivenessService {
   final Dio _dio;
 
   LivenessService(this._dio);
 
-  /// Create a new liveness session via POST /kyc/liveness/session
-  /// Returns sessionToken + challenge info from VerifyHQ
+  /// Create a new liveness session
+  /// Returns sessionToken + list of challenges (2-3)
   Future<LivenessSession> createSession() async {
     try {
       final response = await _dio.post('/kyc/liveness/session');
-      final data = response.data as Map<String, dynamic>;
-
-      // Map backend response to LivenessSession
-      final sessionToken = data['sessionToken'] as String;
-      final challengeType = data['challengeType'] as String?;
-      final challengeData = data['challengeData'] as Map<String, dynamic>?;
-
-      // Build challenges list from challengeData if available
-      final challenges = <LivenessChallenge>[];
-      if (challengeData != null && challengeData['challenges'] is List) {
-        for (final c in challengeData['challenges'] as List) {
-          if (c is Map<String, dynamic>) {
-            challenges.add(LivenessChallenge.fromJson(c));
-          }
-        }
-      } else if (challengeType != null) {
-        // Single challenge type — create a default challenge
-        challenges.add(LivenessChallenge(
-          challengeId: 'default',
-          type: LivenessChallengeTypeExt.fromString(challengeType),
-          instruction: _getInstructionForType(challengeType),
-          expiresAt: DateTime.now().add(const Duration(minutes: 5)),
-        ));
-      }
-
-      return LivenessSession(
-        sessionId: sessionToken,
-        challenges: challenges,
-      );
+      return LivenessSession.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// Submit liveness check with video + selfie S3 keys
-  /// via POST /kyc/liveness/submit
-  Future<LivenessResult> submitLiveness({
+  /// Submit a photo for a specific challenge
+  /// Returns progress and final result when all challenges complete
+  Future<ChallengeSubmitResult> submitChallenge({
     required String sessionToken,
-    required String videoKey,
-    required String selfieKey,
+    required String challengeId,
+    required String photoPath,
   }) async {
     try {
-      final response = await _dio.post('/kyc/liveness/submit', data: {
+      final formData = FormData.fromMap({
         'sessionToken': sessionToken,
-        'videoKey': videoKey,
-        'selfieKey': selfieKey,
+        'challengeId': challengeId,
+        'photo': await MultipartFile.fromFile(photoPath, filename: 'challenge.jpg'),
       });
 
-      final data = response.data as Map<String, dynamic>;
-      return LivenessResult(
-        sessionId: data['id'] as String? ?? sessionToken,
-        isLive: data['isAlive'] as bool? ?? false,
-        confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
-        completedAt: DateTime.now(),
-        failureReason: data['status'] == 'failed' ? 'Liveness check failed' : null,
-      );
+      final response = await _dio.post('/kyc/liveness/challenge', data: formData);
+      return ChallengeSubmitResult.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// Get liveness status via GET /kyc/liveness/status
+  /// Get liveness status
   Future<LivenessResult?> getLivenessStatus() async {
     try {
       final response = await _dio.get('/kyc/liveness/status');
@@ -247,31 +230,15 @@ class LivenessService {
         isLive: data['isAlive'] as bool? ?? false,
         confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
         completedAt: DateTime.now(),
-        failureReason: data['status'] == 'failed' ? 'Liveness check failed' : null,
+        failureReason: data['status'] == 'FAILED' ? 'Liveness check failed' : null,
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// Cancel an ongoing liveness session (best-effort, no backend endpoint currently)
   Future<void> cancelSession(String sessionId) async {
-    // No cancel endpoint in the new backend — just a no-op
-  }
-
-  String _getInstructionForType(String type) {
-    switch (type.toLowerCase()) {
-      case 'blink':
-        return 'Please blink your eyes';
-      case 'smile':
-        return 'Please smile';
-      case 'turn_head':
-        return 'Please turn your head slowly';
-      case 'nod':
-        return 'Please nod your head';
-      default:
-        return 'Follow the on-screen instructions';
-    }
+    // No cancel endpoint — no-op
   }
 }
 

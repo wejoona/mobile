@@ -255,7 +255,7 @@ class RiskBasedSecurityService {
 
       // Note: In production, UI should show LivenessCheckWidget
       // and handle the actual liveness flow
-      AppLogger('Debug').debug('Liveness session started: ${session.sessionId}');
+      AppLogger('Debug').debug('Liveness session started: ${session.sessionToken}');
 
       // Return false to indicate UI should handle liveness
       // The calling code should show the liveness widget

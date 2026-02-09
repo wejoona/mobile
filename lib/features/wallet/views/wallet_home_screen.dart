@@ -37,6 +37,7 @@ class WalletHomeScreen extends ConsumerStatefulWidget {
 class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     with SingleTickerProviderStateMixin {
   bool _isBalanceHidden = false;
+  bool _isCreatingWallet = false;
   late AnimationController _balanceAnimationController;
   late Animation<double> _balanceAnimation;
   double _displayedBalance = 0;
@@ -275,7 +276,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final hasWallet = walletState.walletId.isNotEmpty;
 
     if (!hasWallet && !walletState.isLoading) {
-      return _buildCreateWalletCard(context, ref, l10n, colors);
+      // Auto-create wallet — no manual button needed
+      _autoCreateWallet(context, ref);
+      return _buildWalletCreatingState(colors);
     }
 
     // Primary balance is USDC
@@ -980,6 +983,62 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           const SizedBox(height: AppSpacing.md),
           AppText(
             l10n.wallet_loadingWallet,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _autoCreateWallet(BuildContext context, WidgetRef ref) async {
+    if (_isCreatingWallet) return;
+    _isCreatingWallet = true;
+
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/wallet/create');
+      await ref.read(walletStateMachineProvider.notifier).fetch();
+    } catch (e) {
+      debugPrint('[WalletHome] Auto wallet creation failed: $e');
+    } finally {
+      _isCreatingWallet = false;
+    }
+  }
+
+  Widget _buildWalletCreatingState(ThemeColors colors) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [colors.gold, colors.gold.withValues(alpha: 0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: Icon(
+              Icons.account_balance_wallet_outlined,
+              color: colors.textInverse,
+              size: 36,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          CircularProgressIndicator(color: colors.gold, strokeWidth: 2),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            'Setting up your wallet...',
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            'This will only take a moment',
             variant: AppTextVariant.bodyMedium,
             color: colors.textSecondary,
           ),

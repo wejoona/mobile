@@ -1,105 +1,101 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/mocks/mock_config_provider.dart';
-import 'package:usdc_wallet/services/liveness/liveness_service.dart';
-import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import '../../../design/components/primitives/app_text.dart';
+import '../../../design/tokens/theme_colors.dart';
+import '../../../design/tokens/spacing.dart';
+import '../../../services/liveness/liveness_service.dart';
 
-/// Liveness check widget state
-enum LivenessCheckState {
+/// Provider to detect simulator (mock flow)
+final isSimulatorProvider = Provider<bool>((ref) => false);
+final mockCameraProvider = Provider<bool>((ref) => false);
+
+/// Challenge-based liveness check widget
+///
+/// Flow:
+/// 1. Create session → get 2-3 challenges
+/// 2. Show each challenge instruction + camera preview
+/// 3. User taps capture → photo taken → submitted to backend
+/// 4. After all challenges → backend verifies → result returned
+class LivenessCheckWidget extends ConsumerStatefulWidget {
+  final void Function(LivenessResult result)? onComplete;
+  final VoidCallback? onCancel;
+
+  const LivenessCheckWidget({
+    super.key,
+    this.onComplete,
+    this.onCancel,
+  });
+
+  @override
+  ConsumerState<LivenessCheckWidget> createState() => _LivenessCheckWidgetState();
+}
+
+enum _LivenessState {
   initializing,
   ready,
-  recording,
+  capturing,
   uploading,
   processing,
   completed,
   failed,
 }
 
-/// Reusable liveness check widget with camera preview and challenge instructions
-/// Uses the real backend flow:
-/// 1. Create liveness session (get sessionToken + challenges)
-/// 2. Show challenges to user, record video + capture selfie
-/// 3. Upload video + selfie to get S3 keys
-/// 4. Submit S3 keys to /kyc/liveness/submit
-/// 5. Poll /kyc/liveness/status for result
-class LivenessCheckWidget extends ConsumerStatefulWidget {
-  final String purpose; // 'kyc', 'recovery', 'withdrawal'
-  final VoidCallback? onCancel;
-  final Function(LivenessResult)? onComplete;
-  final Function(String)? onError;
-
-  const LivenessCheckWidget({
-    super.key,
-    required this.purpose,
-    this.onCancel,
-    this.onComplete,
-    this.onError,
-  });
-
-  @override
-  ConsumerState<LivenessCheckWidget> createState() =>
-      _LivenessCheckWidgetState();
-}
-
 class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
-  LivenessCheckState _state = LivenessCheckState.initializing;
   CameraController? _cameraController;
+  _LivenessState _state = _LivenessState.initializing;
+  String _statusMessage = 'Initializing...';
+
   String? _sessionToken;
   List<LivenessChallenge> _challenges = [];
   int _currentChallengeIndex = 0;
   String? _errorMessage;
-  String? _statusMessage;
-  bool _isRecording = false;
-  String? _videoPath;
-  String? _selfiePath;
-  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    _start();
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
     _cameraController?.dispose();
     super.dispose();
   }
 
-  Future<void> _initializeCamera() async {
+  Future<void> _start() async {
     final isSimulator = ref.read(isSimulatorProvider);
     final mockCamera = ref.read(mockCameraProvider);
 
-    // Simulator: auto-pass
     if (isSimulator || mockCamera) {
-      debugPrint('[Liveness] Simulator detected - using mock flow');
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       if (mounted) {
         widget.onComplete?.call(LivenessResult(
+          sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
           isLive: true,
           confidence: 0.99,
-          sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
           completedAt: DateTime.now(),
         ));
       }
       return;
     }
 
+    await _initializeCamera();
+    if (mounted && _cameraController != null) {
+      await _createSession();
+    }
+  }
+
+  Future<void> _initializeCamera() async {
+    setState(() => _statusMessage = 'Initializing camera...');
+
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
-        _fail('No cameras available on this device');
+        _fail('No cameras available');
         return;
       }
 
@@ -116,221 +112,124 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       );
 
       await _cameraController!.initialize();
-      if (mounted) {
-        setState(() {});
-        _createLivenessSession();
-      }
+      if (mounted) setState(() {});
     } catch (e) {
-      _fail('Failed to initialize camera: $e');
+      _fail('Camera initialization failed: $e');
     }
   }
 
-  Future<void> _createLivenessSession() async {
+  Future<void> _createSession() async {
+    setState(() => _statusMessage = 'Creating liveness session...');
+
     try {
-      setState(() => _statusMessage = 'Creating liveness session...');
       final livenessService = ref.read(livenessServiceProvider);
       final session = await livenessService.createSession();
 
-      setState(() {
-        _sessionToken = session.sessionId;
-        _challenges = session.challenges;
-        _currentChallengeIndex = 0;
-        _state = LivenessCheckState.ready;
-        _statusMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _sessionToken = session.sessionToken;
+          _challenges = session.challenges;
+          _currentChallengeIndex = 0;
+          _state = _LivenessState.ready;
+        });
+      }
     } catch (e) {
       _fail('Failed to create liveness session: $e');
     }
   }
 
-  Future<void> _startRecording() async {
+  Future<void> _captureAndSubmit() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) return;
-    if (_isRecording) return;
-
-    try {
-      await _cameraController!.startVideoRecording();
-      setState(() {
-        _isRecording = true;
-        _state = LivenessCheckState.recording;
-      });
-
-      // Auto-advance through challenges with timed intervals
-      _advanceChallenges();
-    } catch (e) {
-      _fail('Failed to start recording: $e');
-    }
-  }
-
-  Future<void> _advanceChallenges() async {
-    // Show each challenge for 3 seconds
-    for (int i = 0; i < _challenges.length; i++) {
-      if (!mounted || !_isRecording) return;
-      setState(() => _currentChallengeIndex = i);
-      await Future.delayed(const Duration(seconds: 3));
-    }
-
-    // All challenges shown, stop recording and capture selfie
-    if (mounted && _isRecording) {
-      await _stopRecordingAndCapture();
-    }
-  }
-
-  Future<void> _stopRecordingAndCapture() async {
-    if (_cameraController == null) return;
-
-    try {
-      // Stop video recording
-      final videoFile = await _cameraController!.stopVideoRecording();
-      setState(() => _isRecording = false);
-
-      // Save video to app directory
-      final appDir = await getApplicationDocumentsDirectory();
-      final videoName = 'liveness_video_${DateTime.now().millisecondsSinceEpoch}.mp4';
-      final videoSavePath = path.join(appDir.path, videoName);
-      await File(videoFile.path).copy(videoSavePath);
-      _videoPath = videoSavePath;
-
-      // Capture selfie
-      final selfieImage = await _cameraController!.takePicture();
-      final selfieName = 'liveness_selfie_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final selfieSavePath = path.join(appDir.path, selfieName);
-      await File(selfieImage.path).copy(selfieSavePath);
-      _selfiePath = selfieSavePath;
-
-      // Upload and submit
-      await _uploadAndSubmit();
-    } catch (e) {
-      _fail('Failed to capture: $e');
-    }
-  }
-
-  Future<void> _uploadAndSubmit() async {
-    if (_videoPath == null || _selfiePath == null || _sessionToken == null) {
-      _fail('Missing video, selfie, or session token');
-      return;
-    }
+    if (_state == _LivenessState.capturing || _state == _LivenessState.uploading) return;
 
     setState(() {
-      _state = LivenessCheckState.uploading;
-      _statusMessage = 'Uploading video and selfie...';
+      _state = _LivenessState.capturing;
+      _statusMessage = 'Capturing photo...';
     });
 
     try {
-      final sdk = ref.read(sdkProvider);
-
-      // Upload video and selfie to get S3 keys
-      debugPrint('[Liveness] Uploading video...');
-      final videoKey = await sdk.kyc.uploadFileForVerification(_videoPath!, 'video');
-      debugPrint('[Liveness] Uploading selfie...');
-      final selfieKey = await sdk.kyc.uploadFileForVerification(_selfiePath!, 'selfie');
+      final photo = await _cameraController!.takePicture();
 
       setState(() {
-        _state = LivenessCheckState.processing;
-        _statusMessage = 'Verifying liveness...';
+        _state = _LivenessState.uploading;
+        _statusMessage = 'Submitting challenge ${_currentChallengeIndex + 1} of ${_challenges.length}...';
       });
 
-      // Submit S3 keys to liveness endpoint
-      debugPrint('[Liveness] Submitting liveness check...');
       final livenessService = ref.read(livenessServiceProvider);
-      final result = await livenessService.submitLiveness(
+      final challenge = _challenges[_currentChallengeIndex];
+
+      final result = await livenessService.submitChallenge(
         sessionToken: _sessionToken!,
-        videoKey: videoKey,
-        selfieKey: selfieKey,
+        challengeId: challenge.challengeId,
+        photoPath: photo.path,
       );
 
-      if (result.isLive) {
-        setState(() => _state = LivenessCheckState.completed);
-        widget.onComplete?.call(result);
-      } else {
-        // Check if still processing — poll
-        if (result.failureReason == null) {
-          _startPolling();
-        } else {
-          _fail(result.failureReason ?? 'Liveness verification failed');
+      // Clean up temp photo
+      try { File(photo.path).deleteSync(); } catch (_) {}
+
+      if (!mounted) return;
+
+      if (result.allComplete && result.result != null) {
+        // All challenges done — show result
+        setState(() {
+          _state = result.result!.isAlive ? _LivenessState.completed : _LivenessState.failed;
+          _statusMessage = result.result!.isAlive ? 'Verification passed!' : 'Verification failed';
+          _errorMessage = result.result!.failureReason;
+        });
+
+        if (result.result!.isAlive) {
+          widget.onComplete?.call(LivenessResult(
+            sessionId: result.sessionToken,
+            isLive: true,
+            confidence: result.result!.confidence / 100.0,
+            completedAt: DateTime.now(),
+          ));
         }
+      } else {
+        // Move to next challenge
+        setState(() {
+          _currentChallengeIndex++;
+          _state = _LivenessState.ready;
+        });
       }
     } catch (e) {
-      _fail('Liveness submission failed: $e');
+      _fail('Challenge submission failed: $e');
     }
-  }
-
-  void _startPolling() {
-    int attempts = 0;
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      attempts++;
-      if (attempts > 10) {
-        timer.cancel();
-        _fail('Verification timed out. Please try again.');
-        return;
-      }
-
-      try {
-        final livenessService = ref.read(livenessServiceProvider);
-        final status = await livenessService.getLivenessStatus();
-
-        if (status == null) return;
-
-        if (status.isLive) {
-          timer.cancel();
-          if (mounted) {
-            setState(() => _state = LivenessCheckState.completed);
-            widget.onComplete?.call(status);
-          }
-        } else if (status.failureReason != null) {
-          timer.cancel();
-          _fail(status.failureReason!);
-        }
-      } catch (e) {
-        // Continue polling on transient errors
-        debugPrint('[Liveness] Poll error: $e');
-      }
-    });
   }
 
   void _fail(String message) {
-    debugPrint('[Liveness] Failed: $message');
     if (mounted) {
       setState(() {
-        _state = LivenessCheckState.failed;
+        _state = _LivenessState.failed;
+        _statusMessage = 'Verification failed';
         _errorMessage = message;
-        _statusMessage = null;
-        _isRecording = false;
       });
-      widget.onError?.call(message);
     }
   }
 
   void _retry() {
-    _pollTimer?.cancel();
-    _cameraController?.dispose();
-    _cameraController = null;
     setState(() {
-      _state = LivenessCheckState.initializing;
+      _state = _LivenessState.initializing;
+      _statusMessage = 'Initializing...';
+      _errorMessage = null;
       _sessionToken = null;
       _challenges = [];
       _currentChallengeIndex = 0;
-      _errorMessage = null;
-      _statusMessage = null;
-      _videoPath = null;
-      _selfiePath = null;
-      _isRecording = false;
     });
-    _initializeCamera();
+    _start();
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Container(
+    return Material(
       color: colors.canvas,
       child: SafeArea(
         child: Column(
           children: [
             _buildHeader(colors),
             Expanded(child: _buildContent(colors)),
-            if (_state == LivenessCheckState.ready ||
-                _state == LivenessCheckState.recording)
-              _buildInstructions(colors),
+            if (_state == _LivenessState.ready) _buildCaptureButton(colors),
           ],
         ),
       ),
@@ -348,7 +247,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
-          if (_state != LivenessCheckState.completed)
+          if (_state != _LivenessState.completed)
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: widget.onCancel,
@@ -361,220 +260,164 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
   Widget _buildContent(ThemeColors colors) {
     switch (_state) {
-      case LivenessCheckState.initializing:
-        return _buildLoadingView(_statusMessage ?? 'Initializing camera...', colors);
+      case _LivenessState.initializing:
+        return _buildLoading(colors, _statusMessage);
 
-      case LivenessCheckState.ready:
-      case LivenessCheckState.recording:
-        return _buildCameraPreview(colors);
+      case _LivenessState.ready:
+        return _buildCameraWithChallenge(colors);
 
-      case LivenessCheckState.uploading:
-      case LivenessCheckState.processing:
-        return _buildLoadingView(_statusMessage ?? 'Processing...', colors);
+      case _LivenessState.capturing:
+      case _LivenessState.uploading:
+      case _LivenessState.processing:
+        return _buildCameraWithProgress(colors);
 
-      case LivenessCheckState.completed:
-        return _buildSuccessView(colors);
+      case _LivenessState.completed:
+        return _buildSuccess(colors);
 
-      case LivenessCheckState.failed:
-        return _buildErrorView(colors);
+      case _LivenessState.failed:
+        return _buildFailure(colors);
     }
   }
 
-  Widget _buildLoadingView(String message, ThemeColors colors) {
+  Widget _buildLoading(ThemeColors colors, String message) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           CircularProgressIndicator(color: colors.gold),
-          const SizedBox(height: AppSpacing.xl),
-          AppText(
-            message,
-            variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
-          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(message, color: colors.textSecondary),
         ],
       ),
+    );
+  }
+
+  Widget _buildCameraWithChallenge(ThemeColors colors) {
+    final challenge = _challenges[_currentChallengeIndex];
+
+    return Column(
+      children: [
+        // Progress indicator
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Row(
+            children: List.generate(_challenges.length, (i) {
+              return Expanded(
+                child: Container(
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: i < _currentChallengeIndex
+                        ? colors.success
+                        : i == _currentChallengeIndex
+                            ? colors.gold
+                            : colors.surface,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // Challenge instruction
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Column(
+            children: [
+              AppText(
+                'Challenge ${_currentChallengeIndex + 1} of ${_challenges.length}',
+                variant: AppTextVariant.labelSmall,
+                color: colors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                challenge.instruction,
+                variant: AppTextVariant.titleSmall,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+
+        // Camera preview
+        Expanded(child: _buildCameraPreview(colors)),
+      ],
     );
   }
 
   Widget _buildCameraPreview(ThemeColors colors) {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
-      return _buildLoadingView('Starting camera...', colors);
+      return _buildLoading(colors, 'Camera not ready');
     }
 
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: ClipOval(
+        child: AspectRatio(
+          aspectRatio: 1,
+          child: CameraPreview(_cameraController!),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCameraWithProgress(ThemeColors colors) {
     return Stack(
       children: [
-        Center(
-          child: AspectRatio(
-            aspectRatio: _cameraController!.value.aspectRatio,
-            child: CameraPreview(_cameraController!),
-          ),
-        ),
-        // Face oval guide
-        Center(
+        _buildCameraWithChallenge(colors),
+        Positioned.fill(
           child: Container(
-            width: 250,
-            height: 300,
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: _isRecording
-                    ? colors.gold
-                    : colors.textPrimary.withOpacity(0.5),
-                width: 3,
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.xxl),
-            ),
+            color: Colors.black54,
+            child: _buildLoading(colors, _statusMessage),
           ),
         ),
-        // Recording indicator
-        if (_isRecording)
-          Positioned(
-            top: AppSpacing.xl,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.errorBase.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    AppText(
-                      'Recording',
-                      variant: AppTextVariant.labelMedium,
-                      color: Colors.white,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        // Start button (when ready, not recording yet)
-        if (_state == LivenessCheckState.ready && !_isRecording)
-          Positioned(
-            bottom: AppSpacing.xxl,
-            left: AppSpacing.xxl,
-            right: AppSpacing.xxl,
-            child: AppButton(
-              label: 'Start Liveness Check',
-              onPressed: _startRecording,
-              variant: AppButtonVariant.primary,
-              isFullWidth: true,
-            ),
-          ),
       ],
     );
   }
 
-  Widget _buildInstructions(ThemeColors colors) {
-    if (_challenges.isEmpty) return const SizedBox();
-
-    final currentChallenge = _currentChallengeIndex < _challenges.length
-        ? _challenges[_currentChallengeIndex]
-        : _challenges.last;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xxl),
-      decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xxl),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Progress dots
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(
-              _challenges.length,
-              (index) => Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  color: index <= _currentChallengeIndex
-                      ? colors.gold
-                      : colors.borderSubtle,
-                  shape: BoxShape.circle,
-                ),
-              ),
+  Widget _buildCaptureButton(ThemeColors colors) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: GestureDetector(
+        onTap: _captureAndSubmit,
+        child: Container(
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.gold, width: 4),
+          ),
+          child: Container(
+            margin: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: colors.gold,
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          AppText(
-            currentChallenge.instruction,
-            variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          AppText(
-            'Step ${_currentChallengeIndex + 1} of ${_challenges.length}',
-            variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.info_outline, color: AppColors.infoBase, size: 16),
-              const SizedBox(width: AppSpacing.xs),
-              AppText(
-                'Position your face in the frame',
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSuccessView(ThemeColors colors) {
+  Widget _buildSuccess(ThemeColors colors) {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.successBase.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.check_circle,
-              color: AppColors.successBase,
-              size: 60,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          AppText(
-            'Liveness Check Complete',
-            variant: AppTextVariant.headlineSmall,
-            color: colors.textPrimary,
-          ),
+          Icon(Icons.check_circle, size: 80, color: colors.success),
           const SizedBox(height: AppSpacing.md),
           AppText(
-            'Your identity has been verified',
-            variant: AppTextVariant.bodyMedium,
+            'Liveness Verified!',
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            'Your identity has been confirmed',
             color: colors.textSecondary,
           ),
         ],
@@ -582,47 +425,45 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     );
   }
 
-  Widget _buildErrorView(ThemeColors colors) {
+  Widget _buildFailure(ThemeColors colors) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.errorBase.withOpacity(0.2),
-                shape: BoxShape.circle,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.error_outline, size: 80, color: colors.error),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            'Liveness Check Failed',
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          if (_errorMessage != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: AppText(
+                _errorMessage!,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
               ),
-              child: const Icon(
-                Icons.error,
-                color: AppColors.errorBase,
-                size: 60,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            AppText(
-              'Liveness Check Failed',
-              variant: AppTextVariant.headlineSmall,
-              color: colors.textPrimary,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppText(
-              _errorMessage ?? 'Please try again',
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            AppButton(
-              label: 'Try Again',
-              onPressed: _retry,
-              variant: AppButtonVariant.primary,
             ),
           ],
-        ),
+          const SizedBox(height: AppSpacing.xl),
+          ElevatedButton(
+            onPressed: _retry,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.gold,
+              foregroundColor: colors.textInverse,
+              minimumSize: const Size(200, 48),
+            ),
+            child: const Text('Try Again'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: widget.onCancel,
+            child: Text('Go Back', style: TextStyle(color: colors.textSecondary)),
+          ),
+        ],
       ),
     );
   }

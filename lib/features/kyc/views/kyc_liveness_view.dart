@@ -86,9 +86,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     // Show liveness check widget
     if (!_isComplete && !_hasFailed) {
       return LivenessCheckWidget(
-        purpose: 'kyc',
         onComplete: _onLivenessComplete,
-        onError: _onLivenessError,
         onCancel: _onCancel,
       );
     }

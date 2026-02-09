@@ -1075,17 +1075,9 @@ class _KycViewState extends ConsumerState<KycView> {
         insetPadding: EdgeInsets.zero,
         backgroundColor: Colors.transparent,
         child: LivenessCheckWidget(
-          purpose: 'kyc',
           onCancel: () => Navigator.of(context).pop(),
           onComplete: (result) => Navigator.of(context).pop(result),
-          onError: (error) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(error),
-                backgroundColor: AppColors.errorBase,
-              ),
-            );
-          },
+          /* onError handled internally by widget now - shows retry UI */
         ),
       ),
     );
