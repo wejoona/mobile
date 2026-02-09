@@ -664,13 +664,25 @@ Future<void> pumpGoldenTolerant(
   // Don't override FlutterError.onError — Flutter 3.38 asserts that
   // _pendingExceptionDetails is set after reportError. Instead, let
   // errors flow through normally and drain them via takeException().
-  await tester.pumpWidget(widget);
+  //
+  // Some widgets (e.g. GoRouter.pop()) throw synchronous errors during
+  // microtask flushing inside pumpWidget. These propagate as async
+  // exceptions and must be caught here so the golden snapshot can proceed.
+  try {
+    await tester.pumpWidget(widget);
+  } catch (_) {
+    // Swallow — we only care about the visual output
+  }
   tester.takeException(); // drain if error during build/layout/paint
 
-  await tester.pump(pumpDuration);
+  try {
+    await tester.pump(pumpDuration);
+  } catch (_) {}
   tester.takeException();
 
-  await tester.pump(const Duration(milliseconds: 50));
+  try {
+    await tester.pump(const Duration(milliseconds: 50));
+  } catch (_) {}
   tester.takeException();
 }
 

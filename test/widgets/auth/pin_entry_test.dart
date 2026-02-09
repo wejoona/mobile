@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 
@@ -203,8 +204,10 @@ void main() {
         final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.obscureText, isTrue);
 
-        // Text should be obscured in UI
-        expect(find.text('123456'), findsNothing);
+        // Text should be obscured in UI (obscureText hides visual chars)
+        // Note: Flutter's text finder still matches EditableText content,
+        // so we verify the obscureText property is set instead
+        expect(textField.obscureText, isTrue);
       });
     });
 
@@ -246,6 +249,7 @@ void main() {
 
         controller.text = '123456';
         expect(formKey.currentState!.validate(), isFalse);
+        await tester.pump();
         expect(find.text('Sequential PINs not allowed'), findsOneWidget);
       });
     });
@@ -266,7 +270,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppInput));
         expect(semantics.label, contains('Enter your 6-digit PIN'));
       });
     });

@@ -1,158 +1,97 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
-import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 
 import '../../helpers/test_wrapper.dart';
-import '../../helpers/test_utils.dart';
 
-class MockWalletStateMachine extends Mock implements WalletStateMachine {}
+/// Fake WalletStateMachine for Riverpod 3.x
+class FakeWalletStateMachine extends WalletStateMachine {
+  final WalletState initialState;
+  FakeWalletStateMachine([this.initialState = const WalletState(status: WalletStatus.loaded, usdcBalance: 0)]);
 
-class MockTransactionStateMachine extends Mock
-    implements TransactionStateMachine {}
+  @override
+  WalletState build() => initialState;
 
-class MockUserStateMachine extends Mock implements UserStateMachine {}
+  @override
+  Future<void> fetch() async {}
+  @override
+  Future<void> refresh() async {}
+  @override
+  Future<void> createWallet() async {}
+  @override
+  void reset() {}
+}
+
+/// Fake TransactionStateMachine for Riverpod 3.x
+class FakeTransactionStateMachine extends TransactionStateMachine {
+  final TransactionListState initialState;
+  FakeTransactionStateMachine([this.initialState = const TransactionListState(status: TransactionListStatus.loaded, transactions: [])]);
+
+  @override
+  TransactionListState build() => initialState;
+
+  @override
+  Future<void> fetch() async {}
+  @override
+  Future<void> refresh() async {}
+  @override
+  Future<void> loadMore() async {}
+  @override
+  void reset() {}
+}
 
 void main() {
   group('WalletHomeScreen Widget Tests', () {
-    late MockWalletStateMachine mockWalletState;
-    late MockTransactionStateMachine mockTxState;
-    late MockUserStateMachine mockUserState;
-
-    setUp(() {
-      mockWalletState = MockWalletStateMachine();
-      mockTxState = MockTransactionStateMachine();
-      mockUserState = MockUserStateMachine();
-      registerFallbackValues();
-    });
+    Widget buildSubject({
+      WalletState? walletState,
+      TransactionListState? txState,
+    }) {
+      return TestWrapper(
+        overrides: [
+          walletStateMachineProvider.overrideWith(() => FakeWalletStateMachine(
+            walletState ?? const WalletState(status: WalletStatus.loaded, usdcBalance: 1000.0),
+          )),
+          transactionStateMachineProvider.overrideWith(() => FakeTransactionStateMachine(
+            txState ?? const TransactionListState(status: TransactionListStatus.loaded, transactions: []),
+          )),
+        ],
+        child: const WalletHomeScreen(),
+      );
+    }
 
     testWidgets('renders home screen', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 1000.0,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('displays greeting based on time of day', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 0,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 
-      // Greeting text should be present (morning/afternoon/evening/night)
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('displays balance', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 1234.56,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject(
+        walletState: const WalletState(status: WalletStatus.loaded, usdcBalance: 1234.56),
+      ));
       await tester.pumpAndSettle();
 
-      // Balance should be displayed (might be formatted)
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('toggles balance visibility', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 1000.0,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 
-      // Look for visibility toggle button (usually an IconButton)
       final visibilityButtons = find.byIcon(Icons.visibility);
       final visibilityOffButtons = find.byIcon(Icons.visibility_off);
 
@@ -168,162 +107,51 @@ void main() {
     });
 
     testWidgets('shows quick action buttons', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 0,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 
-      // Should have quick action buttons (Send, Receive, Deposit, etc.)
-      // The actual implementation may vary
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('displays recent transactions', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 0,
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        TransactionListState(
+      await tester.pumpWidget(buildSubject(
+        txState: TransactionListState(
           status: TransactionListStatus.loaded,
           transactions: [
-            createTestTransaction(id: '1', amount: 100),
-            createTestTransaction(id: '2', amount: 200),
+            _createTestTransaction(id: '1', amount: 100),
+            _createTestTransaction(id: '2', amount: 200),
           ],
         ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      ));
       await tester.pumpAndSettle();
 
-      // Transactions should be displayed
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('shows loading state', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(status: WalletStatus.loading),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(status: TransactionListStatus.loading),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject(
+        walletState: const WalletState(status: WalletStatus.loading),
+        txState: const TransactionListState(status: TransactionListStatus.loading),
+      ));
       await tester.pump();
 
       expect(find.byType(CircularProgressIndicator), findsWidgets);
     });
 
     testWidgets('shows error state', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.error,
-          error: 'Failed to load wallet',
-        ),
-      );
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject(
+        walletState: const WalletState(status: WalletStatus.error, error: 'Failed to load wallet'),
+      ));
       await tester.pumpAndSettle();
 
-      // Error message might be displayed
       expect(find.byType(WalletHomeScreen), findsOneWidget);
     });
 
     testWidgets('supports pull-to-refresh', (tester) async {
-      when(() => mockWalletState.build()).thenReturn(
-        const WalletState(
-          status: WalletStatus.loaded,
-          usdcBalance: 0,
-        ),
-      );
-
-      when(() => mockWalletState.refresh()).thenAnswer((_) async {});
-
-      when(() => mockTxState.build()).thenReturn(
-        const TransactionListState(
-          status: TransactionListStatus.loaded,
-          transactions: [],
-        ),
-      );
-
-      when(() => mockTxState.refresh()).thenAnswer((_) async {});
-
-      await tester.pumpWidget(
-        TestWrapper(
-          overrides: [
-            walletStateMachineProvider.overrideWith(() => mockWalletState),
-            transactionStateMachineProvider.overrideWith(() => mockTxState),
-          ],
-          child: const WalletHomeScreen(),
-        ),
-      );
-
+      await tester.pumpWidget(buildSubject());
       await tester.pumpAndSettle();
 
-      // Pull down to refresh
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, 300),
-      );
+      await tester.drag(find.byType(SingleChildScrollView), const Offset(0, 300));
       await tester.pumpAndSettle();
 
       expect(find.byType(WalletHomeScreen), findsOneWidget);
@@ -331,96 +159,25 @@ void main() {
 
     group('KYC Banner', () {
       testWidgets('shows KYC banner for unverified users', (tester) async {
-        when(() => mockWalletState.build()).thenReturn(
-          const WalletState(
-            status: WalletStatus.loaded,
-            usdcBalance: 0,
-          ),
-        );
-
-        when(() => mockTxState.build()).thenReturn(
-          const TransactionListState(
-            status: TransactionListStatus.loaded,
-            transactions: [],
-          ),
-        );
-
-        await tester.pumpWidget(
-          TestWrapper(
-            overrides: [
-              walletStateMachineProvider.overrideWith(() => mockWalletState),
-              transactionStateMachineProvider.overrideWith(() => mockTxState),
-            ],
-            child: const WalletHomeScreen(),
-          ),
-        );
-
+        await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();
 
-        // KYC banner might be present
         expect(find.byType(WalletHomeScreen), findsOneWidget);
       });
     });
 
     group('Empty States', () {
       testWidgets('shows empty state for no transactions', (tester) async {
-        when(() => mockWalletState.build()).thenReturn(
-          const WalletState(
-            status: WalletStatus.loaded,
-            usdcBalance: 0,
-          ),
-        );
-
-        when(() => mockTxState.build()).thenReturn(
-          const TransactionListState(
-            status: TransactionListStatus.loaded,
-            transactions: [],
-          ),
-        );
-
-        await tester.pumpWidget(
-          TestWrapper(
-            overrides: [
-              walletStateMachineProvider.overrideWith(() => mockWalletState),
-              transactionStateMachineProvider.overrideWith(() => mockTxState),
-            ],
-            child: const WalletHomeScreen(),
-          ),
-        );
-
+        await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();
 
-        // Empty state message might be present
         expect(find.byType(WalletHomeScreen), findsOneWidget);
       });
     });
 
     group('Accessibility', () {
       testWidgets('has proper semantic labels', (tester) async {
-        when(() => mockWalletState.build()).thenReturn(
-          const WalletState(
-            status: WalletStatus.loaded,
-            usdcBalance: 1000,
-          ),
-        );
-
-        when(() => mockTxState.build()).thenReturn(
-          const TransactionListState(
-            status: TransactionListStatus.loaded,
-            transactions: [],
-          ),
-        );
-
-        await tester.pumpWidget(
-          TestWrapper(
-            overrides: [
-              walletStateMachineProvider.overrideWith(() => mockWalletState),
-              transactionStateMachineProvider.overrideWith(() => mockTxState),
-            ],
-            child: const WalletHomeScreen(),
-          ),
-        );
-
+        await tester.pumpWidget(buildSubject());
         await tester.pumpAndSettle();
 
         expect(find.byType(Semantics), findsWidgets);
@@ -429,11 +186,7 @@ void main() {
   });
 }
 
-// Helper function to create test transaction
-Transaction createTestTransaction({
-  required String id,
-  required double amount,
-}) {
+Transaction _createTestTransaction({required String id, required double amount}) {
   return Transaction(
     id: id,
     walletId: 'test-wallet',

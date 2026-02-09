@@ -269,7 +269,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppButton));
         expect(semantics.label, contains('Custom semantic label'));
       });
 
@@ -286,7 +286,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppButton));
         expect(semantics.hasFlag(SemanticsFlag.isButton), isTrue);
       });
 
@@ -303,7 +303,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppButton));
         expect(semantics.hasFlag(SemanticsFlag.hasEnabledState), isTrue);
       });
 
@@ -321,7 +321,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppButton));
         expect(semantics.hint, contains('Loading'));
       });
     });

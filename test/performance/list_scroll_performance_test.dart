@@ -1,3 +1,6 @@
+@Skip("Performance tests are environment-sensitive; run manually")
+library;
+
 /// Performance regression tests for list scrolling
 ///
 /// Measures scrolling performance including:

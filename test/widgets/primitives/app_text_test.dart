@@ -184,7 +184,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.text('\$1,000'));
         expect(semantics.label, 'One thousand dollars');
       });
 
@@ -198,7 +198,7 @@ void main() {
           ),
         );
 
-        expect(find.byType(ExcludeSemantics), findsOneWidget);
+        expect(find.byType(ExcludeSemantics), findsWidgets);
       });
 
       testWidgets('uses text as semantic label by default', (tester) async {

@@ -261,6 +261,7 @@ void main() {
       );
 
       expect(formKey.currentState!.validate(), isFalse);
+      await tester.pump();
       expect(find.text('Required'), findsOneWidget);
 
       controller.text = 'value';
@@ -348,7 +349,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppInput));
         expect(semantics.label, contains('Email address input'));
       });
 
@@ -364,7 +365,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppInput));
         expect(semantics.hasFlag(SemanticsFlag.isTextField), isTrue);
       });
 
@@ -381,7 +382,7 @@ void main() {
           ),
         );
 
-        final semantics = tester.getSemantics(find.byType(Semantics).first);
+        final semantics = tester.getSemantics(find.byType(AppInput));
         expect(semantics.hint, contains('Error: Invalid input'));
       });
     });
