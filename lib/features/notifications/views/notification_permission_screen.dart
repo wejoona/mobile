@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../providers/notification_permission_provider.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 /// Notification Permission Screen
 ///
@@ -17,9 +18,10 @@ class NotificationPermissionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final permissionState = ref.watch(notificationPermissionProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -29,22 +31,27 @@ class NotificationPermissionScreen extends ConsumerWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                  icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                  icon: Icon(Icons.close, color: colors.textSecondary),
                   onPressed: () => context.pop(),
                 ),
               ),
 
-              const Spacer(),
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: AppSpacing.lg),
 
-              // Illustration
-              Container(
+                      // Illustration
+                      Container(
                 width: 200,
                 height: 200,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                   border: Border.all(
-                    color: AppColors.borderGold,
+                    color: colors.borderGold,
                     width: 2,
                   ),
                 ),
@@ -58,7 +65,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.gold500.withValues(alpha: 0.1),
+                          color: colors.gold.withValues(alpha: 0.1),
                           width: 1,
                         ),
                       ),
@@ -69,7 +76,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: AppColors.borderGold,
+                          color: colors.borderGold,
                           width: 1,
                         ),
                       ),
@@ -79,12 +86,12 @@ class NotificationPermissionScreen extends ConsumerWidget {
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: AppColors.gold500.withValues(alpha: 0.15),
+                        color: colors.gold.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.notifications_active,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                         size: 32,
                       ),
                     ),
@@ -98,7 +105,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
               AppText(
                 l10n.notifications_permission_title,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -108,7 +115,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
               AppText(
                 l10n.notifications_permission_description,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
@@ -133,9 +140,13 @@ class NotificationPermissionScreen extends ConsumerWidget {
                 description: l10n.notifications_benefit_updates_desc,
               ),
 
-              const Spacer(),
+                      const SizedBox(height: AppSpacing.xxl),
+                    ],
+                  ),
+                ),
+              ),
 
-              // Enable button
+              // Enable button (fixed at bottom)
               AppButton(
                 label: l10n.notifications_enable_notifications,
                 onPressed: () => _enableNotifications(context, ref),
@@ -152,7 +163,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
                 child: AppText(
                   l10n.notifications_maybe_later,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ),
             ],
@@ -167,6 +178,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
     final success = await notifier.requestPermission();
 
     if (context.mounted) {
+      final colors = context.colors;
       if (success) {
         // Permission granted - navigate back or to next screen
         context.pop();
@@ -177,7 +189,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
             content: Text(
               AppLocalizations.of(context)!.notifications_enabled_success,
             ),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: colors.success,
           ),
         );
       } else {
@@ -189,30 +201,31 @@ class NotificationPermissionScreen extends ConsumerWidget {
 
   void _showPermissionDeniedDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: colors.container,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         title: AppText(
           l10n.notifications_permission_denied_title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         content: AppText(
           l10n.notifications_permission_denied_message,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: AppText(
               l10n.action_cancel,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           AppButton(
@@ -242,6 +255,7 @@ class _BenefitItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -249,12 +263,12 @@ class _BenefitItem extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: AppColors.gold500.withValues(alpha: 0.1),
+            color: colors.gold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Icon(
             icon,
-            color: AppColors.gold500,
+            color: colors.gold,
             size: 24,
           ),
         ),
@@ -266,13 +280,13 @@ class _BenefitItem extends StatelessWidget {
               AppText(
                 title,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.xxs),
               AppText(
                 description,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),

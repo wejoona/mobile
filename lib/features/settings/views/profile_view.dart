@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/enums/index.dart';
 import '../../../state/index.dart';
@@ -19,24 +20,25 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.profile_title,
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
+          onPressed: () => context.safePop(fallbackRoute: '/home'),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.gold500),
+            icon: Icon(Icons.edit, color: colors.gold),
             onPressed: () => context.push('/settings/profile/edit'),
           ),
         ],
@@ -150,6 +152,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     bool isVerified = false,
     Widget? trailing,
   }) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.subtle,
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -159,10 +162,10 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 22),
+            child: Icon(icon, color: colors.textSecondary, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -172,7 +175,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Row(
@@ -181,7 +184,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       child: AppText(
                         value,
                         variant: AppTextVariant.bodyLarge,
-                        color: valueColor ?? AppColors.textPrimary,
+                        color: valueColor ?? colors.textPrimary,
                       ),
                     ),
                     if (isVerified)
@@ -220,11 +223,16 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       case KycStatus.none:
         return l10n.profile_kycNotVerified;
       case KycStatus.pending:
+      case KycStatus.documentsPending:
+        return l10n.profile_kycPending;
+      case KycStatus.submitted:
         return l10n.profile_kycPending;
       case KycStatus.verified:
         return l10n.profile_kycVerified;
       case KycStatus.rejected:
         return l10n.profile_kycRejected;
+      case KycStatus.additionalInfoNeeded:
+        return l10n.profile_kycPending;
     }
   }
 
@@ -233,6 +241,9 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
       case KycStatus.none:
         return AppColors.textSecondary;
       case KycStatus.pending:
+      case KycStatus.documentsPending:
+      case KycStatus.submitted:
+      case KycStatus.additionalInfoNeeded:
         return AppColors.warningBase;
       case KycStatus.verified:
         return AppColors.successBase;

@@ -71,30 +71,32 @@ class JoonaPayApp extends ConsumerWidget {
       );
     });
 
-    return MaterialApp.router(
-      title: 'JoonaPay',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: _getThemeMode(themeState.mode),
-      themeAnimationDuration: const Duration(milliseconds: 400),
-      themeAnimationCurve: Curves.easeInOut,
-      locale: localeState.locale,
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('fr'),
-      ],
-      routerConfig: router,
-      builder: (context, child) {
-        // Wrap with SessionManager to handle session lifecycle
-        return SessionManager(child: child ?? const SizedBox.shrink());
-      },
+    return SystemBrightnessObserver(
+      child: MaterialApp.router(
+        title: 'JoonaPay',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: _getThemeMode(themeState.mode),
+        themeAnimationDuration: const Duration(milliseconds: 400),
+        themeAnimationCurve: Curves.easeInOut,
+        locale: localeState.locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('en'),
+          Locale('fr'),
+        ],
+        routerConfig: router,
+        builder: (context, child) {
+          // Wrap with SessionManager to handle session lifecycle
+          return SessionManager(child: child ?? const SizedBox.shrink());
+        },
+      ),
     );
   }
 

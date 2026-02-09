@@ -14,7 +14,7 @@ class DepositService {
   /// Initiate a deposit
   Future<DepositResponse> initiateDeposit(DepositRequest request) async {
     final response = await _dio.post(
-      '/api/v1/wallet/deposit',
+      '/wallet/deposit',
       data: request.toJson(),
     );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
@@ -22,8 +22,19 @@ class DepositService {
 
   /// Get deposit status
   Future<DepositResponse> getDepositStatus(String depositId) async {
-    final response = await _dio.get('/api/v1/wallet/deposit/$depositId');
+    final response = await _dio.get('/wallet/deposit/$depositId');
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Get deposit channels
+  Future<Map<String, dynamic>> getDepositChannels({String? currency}) async {
+    final response = await _dio.get(
+      '/wallet/deposit/channels',
+      queryParameters: {
+        if (currency != null) 'currency': currency,
+      },
+    );
+    return response.data as Map<String, dynamic>;
   }
 
   /// Get exchange rate (XOF to USD)
@@ -32,8 +43,11 @@ class DepositService {
     String to = 'USD',
   }) async {
     final response = await _dio.get(
-      '/api/v1/wallet/exchange-rate',
-      queryParameters: {'from': from, 'to': to},
+      '/wallet/rate',
+      queryParameters: {
+        'sourceCurrency': from,
+        'targetCurrency': to,
+      },
     );
     return ExchangeRate.fromJson(response.data as Map<String, dynamic>);
   }

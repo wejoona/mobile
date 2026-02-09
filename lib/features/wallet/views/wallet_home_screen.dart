@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
+import '../../../design/utils/responsive_layout.dart';
+import '../../../core/orientation/orientation_helper.dart';
 import '../../../domain/enums/index.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../state/index.dart';
@@ -45,12 +47,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     _loadBalanceVisibilityPreference();
     _balanceAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 600),
     );
     _balanceAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _balanceAnimationController,
-        curve: Curves.easeOutCubic,
+        curve: Curves.easeOut,
       ),
     );
     // Fetch limits on init
@@ -98,6 +100,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final userName = ref.watch(userDisplayNameProvider);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+    final isLandscape = OrientationHelper.isLandscape(context);
+
+    // Debug: log wallet state on build
+    print('[WalletHomeScreen] BUILD: status=${walletState.status}, walletId="${walletState.walletId}", isLoading=${walletState.isLoading}, usdcBalance=${walletState.usdcBalance}');
 
     // Trigger balance animation when loaded
     if (walletState.status == WalletStatus.loaded &&
@@ -122,33 +128,34 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with greeting and icons
-                _buildHeader(context, l10n, userName, colors),
-                const SizedBox(height: AppSpacing.xxl),
-
-                // Balance Card
-                _buildBalanceCard(context, ref, walletState, l10n, colors),
-                const SizedBox(height: AppSpacing.xxl),
-
-                // Quick Actions Row (4 buttons)
-                _buildQuickActions(context, l10n, colors),
-                const SizedBox(height: AppSpacing.xxl),
-
-                // KYC Banner (conditional)
-                _buildKycBanner(context, ref, l10n, colors),
-
-                // Limits Warning Banner (conditional)
-                _buildLimitsWarningBanner(context, ref, l10n),
-
-                // Recent Transactions
-                _buildTransactionList(context, txState, l10n, colors),
-
-                const SizedBox(height: AppSpacing.xxl),
-              ],
+            child: ConstrainedContent(
+              child: Padding(
+                padding: OrientationHelper.padding(
+                  context,
+                  portrait: ResponsiveLayout.padding(
+                    context,
+                    mobile: const EdgeInsets.all(AppSpacing.screenPadding),
+                    tablet: const EdgeInsets.all(AppSpacing.xl),
+                  ),
+                  landscape: ResponsiveLayout.padding(
+                    context,
+                    mobile: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xl,
+                      vertical: AppSpacing.md,
+                    ),
+                    tablet: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xxl,
+                      vertical: AppSpacing.lg,
+                    ),
+                  ),
+                ),
+                child: isLandscape
+                    ? _buildLandscapeLayout(context, ref, walletState, txState, userName, l10n, colors)
+                    : ResponsiveBuilder(
+                        mobile: _buildMobileLayout(context, ref, walletState, txState, userName, l10n, colors),
+                        tablet: _buildTabletLayout(context, ref, walletState, txState, userName, l10n, colors),
+                      ),
+              ),
             ),
           ),
         ),
@@ -165,6 +172,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     String userName,
     ThemeColors colors,
   ) {
+    final userState = ref.watch(userStateMachineProvider);
+
     // Format display name - if it's a phone number, just show greeting
     final isPhoneNumber = userName.startsWith('+') ||
                           RegExp(r'^\d+$').hasMatch(userName);
@@ -174,28 +183,46 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // Avatar and greeting
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              AppText(
-                greeting,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
+              UserAvatar(
+                imageUrl: null, // TODO: Add profile image URL when available
+                firstName: userState.firstName,
+                lastName: userState.lastName,
+                size: UserAvatar.sizeMedium,
+                showBorder: true,
+                borderColor: colors.gold,
+                onTap: () => context.push('/settings/profile'),
               ),
-              if (displayName != null) ...[
-                const SizedBox(height: AppSpacing.xxs),
-                AppText(
-                  displayName,
-                  variant: AppTextVariant.headlineSmall,
-                  color: colors.textPrimary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      greeting,
+                      variant: AppTextVariant.bodyMedium,
+                      color: colors.textSecondary,
+                    ),
+                    if (displayName != null) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      AppText(
+                        displayName,
+                        variant: AppTextVariant.headlineSmall,
+                        color: colors.textPrimary,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
         ),
+        // Action icons
         Row(
           children: [
             IconButton(
@@ -204,7 +231,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 Icons.notifications_outlined,
                 color: colors.textSecondary,
               ),
-              tooltip: 'Notifications',
+              tooltip: l10n.settings_notifications,
             ),
             IconButton(
               onPressed: () => context.go('/settings'),
@@ -263,32 +290,80 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       );
     }
 
+    // Get theme-aware gradient
+    final cardGradient = context.colors.isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFF2A2520), // Dark gold-brown
+              const Color(0xFF1F1D1A), // Darker gold-brown
+            ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              const Color(0xFFFFF9E6), // Light cream-gold
+              const Color(0xFFFFF3D6), // Slightly darker cream-gold
+            ],
+          );
+
+    // Get theme-aware shadow
+    final cardShadow = context.colors.isDark
+        ? [
+            BoxShadow(
+              color: colors.gold.withValues(alpha: 0.15),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ]
+        : [
+            BoxShadow(
+              color: colors.gold.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ];
+
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colors.container,
-            colors.container.withValues(alpha: 0.8),
-          ],
-        ),
+        gradient: cardGradient,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: colors.borderGold.withValues(alpha: 0.3),
+          color: colors.borderGold.withValues(alpha: context.colors.isDark ? 0.4 : 0.5),
           width: 1.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.gold.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        boxShadow: cardShadow,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-        child: Column(
+      child: Stack(
+        children: [
+          // Decorative pattern overlay (subtle)
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              child: CustomPaint(
+                painter: _CardPatternPainter(
+                  isDark: context.colors.isDark,
+                  color: colors.gold.withValues(alpha: context.colors.isDark ? 0.03 : 0.04),
+                ),
+              ),
+            ),
+          ),
+          // Main content
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+            child: Column(
           children: [
             // Header with label and hide/show toggle
             Row(
@@ -302,7 +377,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 AppText(
                   l10n.home_totalBalance,
                   variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
+                  color: context.colors.isDark
+                      ? colors.textSecondary
+                      : colors.textSecondary.withValues(alpha: 0.9),
                 ),
                 const Spacer(),
                 // Hide/Show balance toggle
@@ -312,7 +389,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     _isBalanceHidden
                         ? Icons.visibility_outlined
                         : Icons.visibility_off_outlined,
-                    color: colors.textTertiary,
+                    color: context.colors.isDark
+                        ? colors.textTertiary
+                        : colors.textSecondary,
                     size: 20,
                   ),
                   tooltip: _isBalanceHidden
@@ -329,13 +408,17 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                     vertical: AppSpacing.xxs,
                   ),
                   decoration: BoxDecoration(
-                    color: colors.gold.withValues(alpha: 0.15),
+                    color: context.colors.isDark
+                        ? colors.gold.withValues(alpha: 0.2)
+                        : colors.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: AppText(
                     'USDC',
                     variant: AppTextVariant.labelSmall,
-                    color: colors.gold,
+                    color: context.colors.isDark
+                        ? colors.gold
+                        : AppColorsLight.gold700,
                   ),
                 ),
               ],
@@ -355,33 +438,86 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
               )
             else ...[
               Center(
-                child: AnimatedBuilder(
-                  animation: _balanceAnimation,
-                  builder: (context, child) {
-                    final animatedValue = primaryBalance * _balanceAnimation.value;
-                    return FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: AppText(
-                        _isBalanceHidden
-                            ? '••••••'
-                            : '\$${_formatBalanceCompact(animatedValue)}',
-                        variant: AppTextVariant.displayLarge,
-                        color: colors.gold,
+                child: _isBalanceHidden
+                    ? _buildHiddenBalance(context, colors)
+                    : AnimatedBuilder(
+                        animation: _balanceAnimation,
+                        builder: (context, child) {
+                          final animatedValue = primaryBalance * _balanceAnimation.value;
+                          final balanceText = '\$${_formatBalanceCompact(animatedValue)}';
+                          final isDark = context.colors.isDark;
+
+                          // Same widget for both modes, just different gradient colors
+                          final gradientColors = isDark
+                              ? [AppColors.gold300, AppColors.gold500, AppColors.gold400]
+                              : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
+
+                          return FadeTransition(
+                            opacity: _balanceAnimation,
+                            child: ShaderMask(
+                              shaderCallback: (bounds) => LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: gradientColors,
+                              ).createShader(bounds),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: AppText(
+                                  balanceText,
+                                  variant: AppTextVariant.displayLarge,
+                                  color: AppColors.white, // Required for ShaderMask
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ),
               // Reference currency (informative only)
               if (!_isBalanceHidden &&
                   referenceAmount != null &&
                   referenceAmount.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.md),
                 Center(
-                  child: AppText(
-                    '\u2248 $referenceAmount',
-                    variant: AppTextVariant.bodyMedium,
-                    color: colors.textTertiary,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: (context.colors.isDark
+                              ? colors.gold
+                              : AppColorsLight.gold600)
+                          .withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: (context.colors.isDark
+                                ? colors.gold
+                                : AppColorsLight.gold600)
+                            .withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.currency_exchange_rounded,
+                          size: 14,
+                          color: context.colors.isDark
+                              ? colors.gold.withValues(alpha: 0.7)
+                              : AppColorsLight.gold700,
+                        ),
+                        const SizedBox(width: AppSpacing.xs),
+                        AppText(
+                          '\u2248 $referenceAmount',
+                          variant: AppTextVariant.labelMedium,
+                          color: context.colors.isDark
+                              ? colors.textSecondary
+                              : colors.textPrimary.withValues(alpha: 0.8),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -410,7 +546,130 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             ],
           ],
         ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context,
+    WidgetRef ref,
+    WalletState walletState,
+    TransactionListState txState,
+    String userName,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(context, l10n, userName, colors),
+        const SizedBox(height: AppSpacing.xxl),
+        _buildBalanceCard(context, ref, walletState, l10n, colors),
+        const SizedBox(height: AppSpacing.xxl),
+        _buildQuickActions(context, l10n, colors),
+        const SizedBox(height: AppSpacing.xxl),
+        _buildKycBanner(context, ref, l10n, colors),
+        _buildLimitsWarningBanner(context, ref, l10n),
+        _buildTransactionList(context, txState, l10n, colors),
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(
+    BuildContext context,
+    WidgetRef ref,
+    WalletState walletState,
+    TransactionListState txState,
+    String userName,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(context, l10n, userName, colors),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Two-column layout: Balance + Quick Actions
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: _buildBalanceCard(context, ref, walletState, l10n, colors),
+            ),
+            const SizedBox(width: AppSpacing.xl),
+            Expanded(
+              flex: 2,
+              child: Column(
+                children: [
+                  _buildQuickActionsGrid(context, l10n, colors),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        _buildKycBanner(context, ref, l10n, colors),
+        _buildLimitsWarningBanner(context, ref, l10n),
+
+        // Full-width transactions on tablet
+        _buildTransactionList(context, txState, l10n, colors),
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+
+  /// Landscape layout: Horizontal split with balance/actions on left, transactions on right
+  Widget _buildLandscapeLayout(
+    BuildContext context,
+    WidgetRef ref,
+    WalletState walletState,
+    TransactionListState txState,
+    String userName,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(context, l10n, userName, colors),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Two-column landscape layout
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left column: Balance + Quick Actions + Banners
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBalanceCard(context, ref, walletState, l10n, colors),
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildQuickActions(context, l10n, colors),
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildKycBanner(context, ref, l10n, colors),
+                  _buildLimitsWarningBanner(context, ref, l10n),
+                ],
+              ),
+            ),
+            const SizedBox(width: AppSpacing.xl),
+
+            // Right column: Transactions
+            Expanded(
+              flex: 3,
+              child: _buildTransactionList(context, txState, l10n, colors),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+      ],
     );
   }
 
@@ -451,6 +710,63 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             label: l10n.home_quickAction_history,
             onTap: () => context.push('/transactions'),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickActionsGrid(
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    final actions = [
+      _QuickActionData(Icons.send_rounded, l10n.home_quickAction_send, '/send'),
+      _QuickActionData(Icons.qr_code_2_rounded, l10n.home_quickAction_receive, '/receive'),
+      _QuickActionData(Icons.add_circle_outline_rounded, l10n.home_quickAction_deposit, '/deposit'),
+      _QuickActionData(Icons.history_rounded, l10n.home_quickAction_history, '/transactions'),
+    ];
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionButton(
+                icon: actions[0].icon,
+                label: actions[0].label,
+                onTap: () => context.push(actions[0].route),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _QuickActionButton(
+                icon: actions[1].icon,
+                label: actions[1].label,
+                onTap: () => context.push(actions[1].route),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionButton(
+                icon: actions[2].icon,
+                label: actions[2].label,
+                onTap: () => context.push(actions[2].route),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _QuickActionButton(
+                icon: actions[3].icon,
+                label: actions[3].label,
+                onTap: () => context.push(actions[3].route),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -844,6 +1160,43 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return '${buffer.toString()}.$decPart';
   }
 
+  /// Build stylish hidden balance indicator - same size as balance text
+  Widget _buildHiddenBalance(BuildContext context, ThemeColors colors) {
+    final isDark = context.colors.isDark;
+
+    // Use same gradient as the balance for consistency
+    final gradientColors = isDark
+        ? [AppColors.gold300, AppColors.gold500, AppColors.gold400]
+        : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
+
+    // Compact hidden indicator
+    return ShaderMask(
+      shaderCallback: (bounds) => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: gradientColors,
+      ).createShader(bounds),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.visibility_off_rounded,
+            size: 40,
+            color: AppColors.white,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          AppText(
+            '******',
+            variant: AppTextVariant.displayLarge,
+            color: AppColors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Format balance with K/M/B notation for large amounts
   String _formatBalanceCompact(double amount) {
     if (amount < 1000) {
@@ -890,6 +1243,14 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 }
 
+class _QuickActionData {
+  final IconData icon;
+  final String label;
+  final String route;
+
+  _QuickActionData(this.icon, this.label, this.route);
+}
+
 /// Quick action button component
 class _QuickActionButton extends StatelessWidget {
   const _QuickActionButton({
@@ -905,6 +1266,8 @@ class _QuickActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isDark = context.colors.isDark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -915,11 +1278,17 @@ class _QuickActionButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: colors.borderSubtle),
+          border: Border.all(
+            color: isDark
+                ? colors.borderSubtle
+                : AppColorsLight.gold600.withValues(alpha: 0.2),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 8,
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.1)
+                  : AppColorsLight.gold700.withValues(alpha: 0.08),
+              blurRadius: isDark ? 10 : 8,
               offset: const Offset(0, 2),
             ),
           ],
@@ -934,20 +1303,38 @@ class _QuickActionButton extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    colors.gold.withValues(alpha: 0.2),
-                    colors.gold.withValues(alpha: 0.1),
-                  ],
+                  colors: isDark
+                      ? [
+                          colors.gold.withValues(alpha: 0.25),
+                          colors.gold.withValues(alpha: 0.15),
+                        ]
+                      : [
+                          colors.gold.withValues(alpha: 0.15),
+                          colors.gold.withValues(alpha: 0.08),
+                        ],
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.md),
+                boxShadow: isDark
+                    ? [
+                        BoxShadow(
+                          color: colors.gold.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
-              child: Icon(icon, color: colors.gold, size: 24),
+              child: Icon(
+                icon,
+                color: isDark ? colors.gold : AppColorsLight.gold700,
+                size: 24,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: colors.textSecondary,
+              color: isDark ? colors.textSecondary : colors.textPrimary,
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -956,5 +1343,81 @@ class _QuickActionButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Custom painter for the decorative pattern on the balance card
+class _CardPatternPainter extends CustomPainter {
+  final bool isDark;
+  final Color color;
+
+  _CardPatternPainter({
+    required this.isDark,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    // Draw subtle geometric pattern
+    final spacing = 40.0;
+    final offset = isDark ? 20.0 : 15.0;
+
+    // Diagonal lines from top-right
+    for (double i = -size.height; i < size.width + size.height; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+
+    // Add circular elements in corners
+    final circlePaint = Paint()
+      ..color = color.withValues(alpha: color.a * 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    // Top-right corner circles
+    canvas.drawCircle(
+      Offset(size.width - offset, offset),
+      30,
+      circlePaint,
+    );
+    canvas.drawCircle(
+      Offset(size.width - offset, offset),
+      50,
+      circlePaint.copyWith(alpha: color.a * 0.3),
+    );
+
+    // Bottom-left corner circles
+    canvas.drawCircle(
+      Offset(offset, size.height - offset),
+      25,
+      circlePaint,
+    );
+    canvas.drawCircle(
+      Offset(offset, size.height - offset),
+      45,
+      circlePaint.copyWith(alpha: color.a * 0.3),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CardPatternPainter oldDelegate) {
+    return oldDelegate.isDark != isDark || oldDelegate.color != color;
+  }
+}
+
+extension _PaintCopyWith on Paint {
+  Paint copyWith({double? alpha}) {
+    return Paint()
+      ..color = alpha != null ? color.withValues(alpha: alpha) : color
+      ..style = style
+      ..strokeWidth = strokeWidth;
   }
 }

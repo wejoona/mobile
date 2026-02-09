@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../design/index.dart';
 import '../../../design/components/composed/pin_confirmation_sheet.dart';
+import '../../../services/pin/pin_service.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../providers/merchant_provider.dart';
 import '../services/merchant_service.dart';
@@ -70,10 +71,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       amount: amount,
       recipient: widget.merchant.displayName,
       onConfirm: (pin) async {
-        // TODO: Verify PIN with backend
-        // For now, accept any 4-digit PIN
-        await Future.delayed(const Duration(milliseconds: 500));
-        return pin.length == 4;
+        final pinService = ref.read(pinServiceProvider);
+        final result = await pinService.verifyPinWithBackend(pin);
+        return result.success;
       },
     );
 

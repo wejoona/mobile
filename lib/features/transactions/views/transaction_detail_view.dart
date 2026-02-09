@@ -72,7 +72,7 @@ class TransactionDetailView extends ConsumerWidget {
                   AppText(
                     '${isPositive ? '+' : ''}\$${transaction.amount.abs().toStringAsFixed(2)}',
                     variant: AppTextVariant.displayMedium,
-                    color: isPositive ? AppColors.successBase : colors.textPrimary,
+                    color: isPositive ? colors.successText : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.sm),
 
@@ -224,7 +224,7 @@ class TransactionDetailView extends ConsumerWidget {
                   children: [
                     Icon(
                       Icons.error_outline,
-                      color: AppColors.errorBase,
+                      color: colors.errorText,
                       size: 24,
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -235,7 +235,7 @@ class TransactionDetailView extends ConsumerWidget {
                           AppText(
                             l10n.transactionDetails_failureReason,
                             variant: AppTextVariant.labelMedium,
-                            color: AppColors.errorBase,
+                            color: colors.errorText,
                           ),
                           const SizedBox(height: AppSpacing.xs),
                           AppText(
@@ -270,6 +270,9 @@ class TransactionDetailView extends ConsumerWidget {
   }
 
   Color _getStatusColor(TransactionStatus status) {
+    // Note: We need a BuildContext to access theme colors, but this method
+    // doesn't have access to colors. This method is used for the status icon
+    // background, which should use hardcoded semantic colors for consistency.
     switch (status) {
       case TransactionStatus.completed:
         return AppColors.successBase;
@@ -298,13 +301,13 @@ class TransactionDetailView extends ConsumerWidget {
   Color _getTypeColor(TransactionType type, ThemeColors colors) {
     switch (type) {
       case TransactionType.deposit:
-        return AppColors.successBase;
+        return colors.successText; // Green for deposits
       case TransactionType.withdrawal:
-        return AppColors.warningBase;
+        return colors.errorText; // Red for withdrawals
       case TransactionType.transferInternal:
-        return AppColors.infoBase;
+        return colors.infoText; // Blue for internal transfers
       case TransactionType.transferExternal:
-        return colors.gold;
+        return colors.warning; // Orange/amber for external transfers
     }
   }
 
@@ -335,11 +338,12 @@ class TransactionDetailView extends ConsumerWidget {
 
   void _copyToClipboard(BuildContext context, String text) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.common_copiedToClipboard),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: colors.success,
         duration: const Duration(seconds: 2),
       ),
     );

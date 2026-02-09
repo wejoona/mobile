@@ -38,6 +38,7 @@ class _BeneficiaryPickerBottomSheetState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(beneficiariesProvider);
+    final colors = context.colors;
 
     final filteredBeneficiaries = _searchQuery.isEmpty
         ? state.beneficiaries
@@ -55,7 +56,7 @@ class _BeneficiaryPickerBottomSheetState
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.lg),
         ),
@@ -68,7 +69,7 @@ class _BeneficiaryPickerBottomSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -86,7 +87,7 @@ class _BeneficiaryPickerBottomSheetState
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -111,10 +112,10 @@ class _BeneficiaryPickerBottomSheetState
           // Beneficiaries list
           Expanded(
             child: state.isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                          AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
                 : joonaPayBeneficiaries.isEmpty
@@ -125,13 +126,13 @@ class _BeneficiaryPickerBottomSheetState
                             Icon(
                               Icons.bookmark_outline,
                               size: 64,
-                              color: AppColors.textSecondary.withOpacity(0.5),
+                              color: colors.textSecondary.withOpacity(0.5),
                             ),
                             SizedBox(height: AppSpacing.md),
                             AppText(
                               l10n.send_noBeneficiariesFound,
                               variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -144,7 +145,7 @@ class _BeneficiaryPickerBottomSheetState
                         itemCount: joonaPayBeneficiaries.length,
                         itemBuilder: (context, index) {
                           final beneficiary = joonaPayBeneficiaries[index];
-                          return _buildBeneficiaryItem(beneficiary);
+                          return _buildBeneficiaryItem(beneficiary, colors);
                         },
                       ),
           ),
@@ -153,7 +154,7 @@ class _BeneficiaryPickerBottomSheetState
     );
   }
 
-  Widget _buildBeneficiaryItem(Beneficiary beneficiary) {
+  Widget _buildBeneficiaryItem(Beneficiary beneficiary, ThemeColors colors) {
     return InkWell(
       onTap: () => Navigator.pop(context, beneficiary),
       child: Padding(
@@ -161,12 +162,12 @@ class _BeneficiaryPickerBottomSheetState
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.gold500.withOpacity(0.2),
+              backgroundColor: colors.gold.withOpacity(0.2),
               child: AppText(
                 beneficiary.name[0].toUpperCase(),
                 variant: AppTextVariant.bodyLarge,
-                  color: AppColors.gold500,
-                  fontWeight: FontWeight.w600,
+                color: colors.gold,
+                fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(width: AppSpacing.md),
@@ -179,14 +180,14 @@ class _BeneficiaryPickerBottomSheetState
                       AppText(
                         beneficiary.name,
                         variant: AppTextVariant.bodyLarge,
-                          fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w600,
                       ),
                       if (beneficiary.isFavorite) ...[
                         SizedBox(width: AppSpacing.xs),
                         Icon(
                           Icons.star,
                           size: 16,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       ],
                     ],
@@ -195,14 +196,14 @@ class _BeneficiaryPickerBottomSheetState
                   AppText(
                     beneficiary.phoneE164 ?? '',
                     variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),

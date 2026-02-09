@@ -6,6 +6,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../providers/recurring_transfers_provider.dart';
 import '../widgets/recurring_transfer_card.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 class RecurringTransfersListView extends ConsumerStatefulWidget {
   const RecurringTransfersListView({super.key});
@@ -32,7 +33,7 @@ class _RecurringTransfersListViewState
     final state = ref.watch(recurringTransfersProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.recurringTransfers_title,
@@ -43,18 +44,18 @@ class _RecurringTransfersListViewState
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/recurring-transfers/create'),
-        backgroundColor: AppColors.gold500,
-        child: const Icon(Icons.add, color: AppColors.obsidian),
+        backgroundColor: context.colors.gold,
+        child: Icon(Icons.add, color: context.colors.textInverse),
       ),
       body: SafeArea(
         child: state.isLoading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
                 ),
               )
             : state.transfers.isEmpty
-                ? _buildEmptyState(l10n)
+                ? _buildEmptyState(context, l10n)
                 : _buildContent(context, l10n, state),
       ),
     );
@@ -66,8 +67,8 @@ class _RecurringTransfersListViewState
     RecurringTransfersState state,
   ) {
     return RefreshIndicator(
-      color: AppColors.gold500,
-      backgroundColor: AppColors.slate,
+      color: context.colors.gold,
+      backgroundColor: context.colors.container,
       onRefresh: () =>
           ref.read(recurringTransfersProvider.notifier).loadRecurringTransfers(),
       child: ListView(
@@ -97,7 +98,7 @@ class _RecurringTransfersListViewState
             AppText(
               l10n.recurringTransfers_paused,
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
             ...state.pausedTransfers.map((transfer) {
@@ -139,7 +140,7 @@ class _RecurringTransfersListViewState
                     children: [
                       Icon(
                         Icons.schedule,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         size: 20,
                       ),
                       SizedBox(width: AppSpacing.sm),
@@ -155,7 +156,7 @@ class _RecurringTransfersListViewState
                             AppText(
                               '${upcoming.amount.toStringAsFixed(0)} ${upcoming.currency}',
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ],
                         ),
@@ -167,7 +168,7 @@ class _RecurringTransfersListViewState
                                 ? l10n.common_tomorrow
                                 : _formatDate(upcoming.scheduledDate),
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         fontWeight: FontWeight.w600,
                       ),
                     ],
@@ -181,7 +182,7 @@ class _RecurringTransfersListViewState
     );
   }
 
-  Widget _buildEmptyState(AppLocalizations l10n) {
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
@@ -191,7 +192,7 @@ class _RecurringTransfersListViewState
             Icon(
               Icons.repeat,
               size: 80,
-              color: AppColors.textSecondary.withOpacity(0.3),
+              color: context.colors.textSecondary.withOpacity(0.3),
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -203,7 +204,7 @@ class _RecurringTransfersListViewState
             AppText(
               l10n.recurringTransfers_emptyMessage,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),

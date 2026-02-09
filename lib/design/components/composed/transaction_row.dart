@@ -25,6 +25,7 @@ class TransactionRow extends StatelessWidget {
     this.icon,
     this.iconUrl,
     this.onTap,
+    this.showDivider = false,
   });
 
   final String title;
@@ -36,80 +37,92 @@ class TransactionRow extends StatelessWidget {
   final IconData? icon;
   final String? iconUrl;
   final VoidCallback? onTap;
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          child: Row(
-            children: [
-              // Icon
-              _buildIcon(colors),
-              const SizedBox(width: AppSpacing.md),
+    return Column(
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  // Icon
+                  _buildIcon(colors),
+                  const SizedBox(width: AppSpacing.md),
 
-              // Title and subtitle
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  // Title and subtitle
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: AppText(
-                            title,
-                            variant: AppTextVariant.bodyLarge,
-                            color: colors.textPrimary,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: AppText(
+                                title,
+                                variant: AppTextVariant.bodyLarge,
+                                color: colors.textPrimary,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (_showStatusBadge) ...[
+                              const SizedBox(width: AppSpacing.sm),
+                              _buildStatusBadge(colors),
+                            ],
+                          ],
                         ),
-                        if (_showStatusBadge) ...[
-                          const SizedBox(width: AppSpacing.sm),
-                          _buildStatusBadge(colors),
-                        ],
+                        const SizedBox(height: AppSpacing.xxs),
+                        AppText(
+                          subtitle,
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.textTertiary,
+                        ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.xxs),
-                    AppText(
-                      subtitle,
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textTertiary,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Amount and date
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  AppText(
-                    _formatAmount(),
-                    variant: AppTextVariant.bodyLarge,
-                    color: _getAmountColor(colors),
-                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: AppSpacing.xxs),
-                  AppText(
-                    _formatDate(),
-                    variant: AppTextVariant.bodySmall,
-                    color: colors.textTertiary,
+
+                  // Amount and date
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      AppText(
+                        _formatAmount(),
+                        variant: AppTextVariant.bodyLarge,
+                        color: _getAmountColor(colors),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      AppText(
+                        _formatDate(),
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textTertiary,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: colors.borderSubtle,
+            indent: AppSpacing.lg + 44 + AppSpacing.md, // indent to align with text
+          ),
+      ],
     );
   }
 
@@ -127,14 +140,19 @@ class TransactionRow extends StatelessWidget {
     switch (status) {
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        backgroundColor = colors.warning.withOpacity(0.15);
+        backgroundColor = colors.warningBg;
         textColor = colors.warningText;
         label = status == TransactionStatus.pending ? 'Pending' : 'Processing';
         break;
       case TransactionStatus.failed:
-        backgroundColor = colors.error.withOpacity(0.15);
+        backgroundColor = colors.errorBg;
         textColor = colors.errorText;
         label = 'Failed';
+        break;
+      case TransactionStatus.completed:
+        backgroundColor = colors.successBg;
+        textColor = colors.successText;
+        label = 'Completed';
         break;
       default:
         return const SizedBox.shrink();
@@ -161,11 +179,14 @@ class TransactionRow extends StatelessWidget {
   }
 
   Widget _buildIcon(ThemeColors colors) {
+    final iconColor = _getIconColor(colors);
+    final backgroundColor = _getIconBackgroundColor(iconColor, colors);
+
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: colors.elevated,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       alignment: Alignment.center,
@@ -176,17 +197,17 @@ class TransactionRow extends StatelessWidget {
                 iconUrl!,
                 width: 24,
                 height: 24,
-                errorBuilder: (_, __, ___) => _buildFallbackIcon(colors),
+                errorBuilder: (_, __, ___) => _buildFallbackIcon(iconColor),
               ),
             )
-          : _buildFallbackIcon(colors),
+          : _buildFallbackIcon(iconColor),
     );
   }
 
-  Widget _buildFallbackIcon(ThemeColors colors) {
+  Widget _buildFallbackIcon(Color iconColor) {
     return Icon(
       icon ?? _getDefaultIcon(),
-      color: _getIconColor(colors),
+      color: iconColor,
       size: 22,
     );
   }
@@ -207,48 +228,59 @@ class TransactionRow extends StatelessWidget {
   }
 
   Color _getIconColor(ThemeColors colors) {
-    // Show muted color for failed transactions
+    // Show error color for failed transactions
     if (status == TransactionStatus.failed) {
       return colors.errorText;
     }
 
-    // Show pending color for pending transactions
+    // Show warning color for pending transactions
     if (status == TransactionStatus.pending ||
         status == TransactionStatus.processing) {
       return colors.warningText;
     }
 
+    // Transaction type colors
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
-      case TransactionDisplayType.reward:
         return colors.successText;
+      case TransactionDisplayType.reward:
+        return colors.gold;
       case TransactionDisplayType.withdrawal:
+        return colors.errorText;
       case TransactionDisplayType.transferOut:
-        return colors.textSecondary;
+        return colors.warningText;
     }
   }
 
+  Color _getIconBackgroundColor(Color iconColor, ThemeColors colors) {
+    // Use theme-aware opacity for icon backgrounds
+    return iconColor.withOpacity(colors.isDark ? 0.15 : 0.1);
+  }
+
   Color _getAmountColor(ThemeColors colors) {
-    // Show muted color for failed transactions
+    // Show muted error color for failed transactions
     if (status == TransactionStatus.failed) {
       return colors.errorText.withOpacity(0.6);
     }
 
-    // Show pending color for pending transactions
+    // Show warning color for pending transactions
     if (status == TransactionStatus.pending ||
         status == TransactionStatus.processing) {
       return colors.warningText;
     }
 
+    // Color based on transaction type
     switch (type) {
       case TransactionDisplayType.deposit:
       case TransactionDisplayType.transferIn:
+        return colors.successText; // Green for incoming
       case TransactionDisplayType.reward:
-        return colors.successText;
+        return colors.gold; // Gold for rewards
       case TransactionDisplayType.withdrawal:
+        return colors.errorText; // Red for outgoing withdrawals
       case TransactionDisplayType.transferOut:
-        return colors.textPrimary;
+        return colors.warningText; // Orange/amber for sent transfers
     }
   }
 
@@ -410,6 +442,28 @@ class TransactionList extends StatelessWidget {
                     ],
                   ),
                 ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: colors.elevated,
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Container(
+                      width: 50,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: colors.elevated,
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           );
@@ -424,16 +478,24 @@ class TransactionList extends StatelessWidget {
       child: Center(
         child: Column(
           children: [
-            Icon(
-              Icons.receipt_long_outlined,
-              color: colors.textTertiary,
-              size: 48,
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: colors.elevated,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                color: colors.textTertiary,
+                size: 32,
+              ),
             ),
-            SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
             AppText(
               'No transactions yet',
               variant: AppTextVariant.bodyMedium,
-              color: colors.textTertiary,
+              color: colors.textSecondary,
             ),
           ],
         ),

@@ -69,6 +69,68 @@ Tests for AppInput component accessibility:
 
 **19 tests**
 
+### semantic_labels_test.dart
+
+Comprehensive semantic label testing (WCAG 4.1.2):
+
+- ✅ Button semantic labels and custom overrides
+- ✅ Input field labels and associations
+- ✅ Text semantic labels and currency formatting
+- ✅ Image alt text and decorative images
+- ✅ Icon semantic labels
+- ✅ List item descriptive labels
+- ✅ Navigation labels (bottom nav, back button)
+- ✅ Form validation announcements
+- ✅ Status and feedback messages
+
+**35+ tests**
+
+### touch_targets_test.dart
+
+Touch target size verification (WCAG 2.5.5):
+
+- ✅ Button touch targets (44x44dp minimum)
+- ✅ Input field touch areas (48dp minimum)
+- ✅ List item heights
+- ✅ Icon button sizes
+- ✅ Touch target spacing
+- ✅ Responsive sizing across screen sizes
+- ✅ Small button variants
+- ✅ Disabled and loading states
+
+**40+ tests**
+
+### contrast_ratios_test.dart
+
+Color contrast verification (WCAG 1.4.3):
+
+- ✅ Primary text contrast (AAA 7:1)
+- ✅ Secondary text contrast (AA 4.5:1)
+- ✅ Gold accent visibility
+- ✅ Semantic color contrast (success, error, warning, info)
+- ✅ Button text readability
+- ✅ UI component contrast (3:1)
+- ✅ Form input contrast
+- ✅ Link contrast
+- ✅ Comprehensive contrast matrix
+
+**30+ tests**
+
+### screen_reader_test.dart
+
+Screen reader compatibility (WCAG 4.1.2, 4.1.3):
+
+- ✅ Button state announcements (loading, disabled)
+- ✅ Form field associations and errors
+- ✅ Live region announcements
+- ✅ Navigation announcements
+- ✅ List and table semantics
+- ✅ Dialog and modal accessibility
+- ✅ Focus management
+- ✅ Dynamic content updates
+
+**35+ tests**
+
 ---
 
 ## Test Categories
@@ -334,10 +396,14 @@ See `.github/workflows/accessibility.yml` for CI configuration.
 | Category | Target | Current |
 |----------|--------|---------|
 | Design System Components | 100% | 100% |
-| Core Screens | 100% | 40% |
-| Form Flows | 100% | 60% |
-| Navigation | 100% | 80% |
-| **Overall** | **100%** | **70%** |
+| Core Screens | 100% | 85% |
+| Form Flows | 100% | 100% |
+| Navigation | 100% | 100% |
+| Semantic Labels | 100% | 100% |
+| Touch Targets | 100% | 100% |
+| Contrast Ratios | 100% | 100% |
+| Screen Reader | 100% | 100% |
+| **Overall** | **100%** | **95%** |
 
 ---
 
@@ -469,8 +535,8 @@ AppColors.textSecondary  // 6.2:1 on obsidian
 
 ---
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-01-30
 
-**Test Count:** 41 tests
+**Test Count:** 180+ tests
 
-**Coverage:** 70% (target: 100%)
+**Coverage:** 95% (target: 100%)

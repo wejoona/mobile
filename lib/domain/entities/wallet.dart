@@ -30,7 +30,7 @@ class Wallet {
       userId: json['userId'] as String,
       circleWalletId: json['circleWalletId'] as String?,
       walletAddress: json['walletAddress'] as String?,
-      blockchain: json['blockchain'] as String? ?? 'MATIC',
+      blockchain: json['blockchain'] as String? ?? 'polygon',
       kycStatus: KycStatus.values.firstWhere(
         (e) => e.name == json['kycStatus'],
         orElse: () => KycStatus.none,

@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/theme_colors.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_card.dart';
@@ -23,9 +24,10 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(l10n.kyc_selectDocumentType, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
@@ -39,7 +41,7 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
               AppText(
                 l10n.kyc_selectDocumentType_description,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.xxl),
               _buildDocumentTypeCard(
@@ -89,6 +91,7 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
     String title,
     String description,
   ) {
+    final colors = context.colors;
     final isSelected = _selectedType == type;
 
     return GestureDetector(
@@ -97,7 +100,7 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderDefault,
+            color: isSelected ? colors.gold : colors.border,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -110,14 +113,14 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: (isSelected ? AppColors.gold500 : AppColors.textSecondary)
+                  color: (isSelected ? colors.gold : colors.textSecondary)
                       .withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
                   icon,
                   size: 32,
-                  color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                  color: isSelected ? colors.gold : colors.textSecondary,
                 ),
               ),
               SizedBox(width: AppSpacing.lg),
@@ -128,13 +131,13 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
                     AppText(
                       title,
                       variant: AppTextVariant.labelLarge,
-                      color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                      color: isSelected ? colors.gold : colors.textPrimary,
                     ),
                     SizedBox(height: AppSpacing.xs),
                     AppText(
                       description,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -142,7 +145,7 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
               if (isSelected)
                 Icon(
                   Icons.check_circle,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   size: 24,
                 ),
             ],
@@ -156,6 +159,6 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
     if (_selectedType == null) return;
 
     ref.read(kycProvider.notifier).selectDocumentType(_selectedType!);
-    context.push('/kyc/document-capture');
+    context.push('/kyc/personal-info');
   }
 }

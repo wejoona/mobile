@@ -166,25 +166,16 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
                 const SizedBox(height: AppSpacing.xxs),
                 Row(
                   children: [
-                    AppText(
-                      transaction.merchantCategory,
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Container(
-                      width: 4,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colors.textTertiary,
-                        shape: BoxShape.circle,
+                    Flexible(
+                      child: Text(
+                        '${transaction.merchantCategory} • ${_formatDate(transaction.createdAt)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colors.textSecondary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: AppSpacing.xs),
-                    AppText(
-                      _formatDate(transaction.createdAt),
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
                     ),
                   ],
                 ),

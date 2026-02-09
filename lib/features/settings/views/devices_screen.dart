@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/components/dialogs/index.dart';
 import '../providers/devices_provider.dart';
 import '../models/device.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -26,7 +28,7 @@ class DevicesScreen extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings/security'),
         ),
       ),
       body: RefreshIndicator(
@@ -400,20 +402,16 @@ class DevicesScreen extends ConsumerWidget {
       await ref.read(devicesProvider.notifier).trustDevice(device.id);
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.settings_deviceTrustedSuccess),
-            backgroundColor: AppColors.successBase,
-          ),
+        await context.showSuccessAlert(
+          title: l10n.action_done,
+          message: l10n.settings_deviceTrustedSuccess,
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.settings_deviceTrustError),
-            backgroundColor: AppColors.errorBase,
-          ),
+        await context.showErrorAlert(
+          title: l10n.common_error,
+          message: l10n.settings_deviceTrustError,
         );
       }
     }
@@ -425,60 +423,27 @@ class DevicesScreen extends ConsumerWidget {
     Device device,
     AppLocalizations l10n,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.slate,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
-          title: AppText(
-            l10n.settings_removeDevice,
-            variant: AppTextVariant.titleMedium,
-          ),
-          content: AppText(
-            l10n.settings_removeDeviceConfirm,
-            variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
-          ),
-          actions: [
-            AppButton(
-              label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(dialogContext, false),
-              variant: AppButtonVariant.ghost,
-              size: AppButtonSize.small,
-            ),
-            AppButton(
-              label: l10n.action_remove,
-              onPressed: () => Navigator.pop(dialogContext, true),
-              variant: AppButtonVariant.danger,
-              size: AppButtonSize.small,
-            ),
-          ],
-        );
-      },
+    final confirmed = await context.showDeleteConfirmation(
+      title: l10n.settings_removeDevice,
+      message: l10n.settings_removeDeviceConfirm,
+      confirmText: l10n.action_remove,
     );
 
-    if (confirmed == true) {
+    if (confirmed) {
       try {
         await ref.read(devicesProvider.notifier).revokeDevice(device.id);
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: AppText(l10n.settings_deviceRemovedSuccess),
-              backgroundColor: AppColors.successBase,
-            ),
+          await context.showSuccessAlert(
+            title: l10n.action_done,
+            message: l10n.settings_deviceRemovedSuccess,
           );
         }
       } catch (e) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: AppText(l10n.settings_deviceRemoveError),
-              backgroundColor: AppColors.errorBase,
-            ),
+          await context.showErrorAlert(
+            title: l10n.common_error,
+            message: l10n.settings_deviceRemoveError,
           );
         }
       }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/savings_pots_provider.dart';
 import '../widgets/pot_card.dart';
 
@@ -31,9 +32,10 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsProvider);
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.savingsPots_title,
@@ -43,8 +45,8 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(savingsPotsProvider.notifier).loadPots(),
-        color: AppColors.gold500,
-        backgroundColor: AppColors.slate,
+        color: colors.gold,
+        backgroundColor: colors.container,
         child: state.isLoading && state.pots.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.pots.isEmpty
@@ -53,13 +55,15 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/savings-pots/create'),
-        backgroundColor: AppColors.gold500,
-        child: const Icon(Icons.add, color: AppColors.obsidian),
+        backgroundColor: colors.gold,
+        child: Icon(Icons.add, color: colors.textInverse),
       ),
     );
   }
 
   Widget _buildEmptyState(AppLocalizations l10n) {
+    final colors = context.colors;
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
@@ -77,7 +81,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
             AppText(
               l10n.savingsPots_emptyMessage,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -96,6 +100,8 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
+    final colors = context.colors;
+
     return ListView(
       padding: EdgeInsets.all(AppSpacing.md),
       children: [
@@ -105,8 +111,8 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.gold500.withOpacity(0.2),
-                AppColors.gold500.withOpacity(0.05),
+                colors.gold.withOpacity(0.2),
+                colors.gold.withOpacity(0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -119,13 +125,13 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
               AppText(
                 l10n.savingsPots_totalSaved,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 currencyFormat.format(state.totalSaved),
                 variant: AppTextVariant.displaySmall,
-                color: AppColors.gold500,
+                color: colors.gold,
                 fontWeight: FontWeight.bold,
               ),
             ],

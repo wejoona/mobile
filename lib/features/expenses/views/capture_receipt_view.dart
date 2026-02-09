@@ -427,6 +427,14 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       });
     } catch (e) {
       setState(() => _isProcessing = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       AppLogger('Error processing receipt').error('Error processing receipt', e);
     }
   }

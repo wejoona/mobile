@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../utils/logger.dart';
+import '../api/api_client.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -348,10 +349,10 @@ class SessionService extends Notifier<SessionState> {
     if (refreshToken == null) return;
 
     try {
-      // Import Dio at the top of the file
       final dio = Dio(BaseOptions(
-        baseUrl: 'https://api.joonapay.com/api/v1', // Use ApiConfig.baseUrl if available
-        connectTimeout: const Duration(seconds: 30),
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: ApiConfig.connectTimeout,
+        receiveTimeout: ApiConfig.receiveTimeout,
       ));
 
       final response = await dio.post('/auth/refresh', data: {

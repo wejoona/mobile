@@ -157,7 +157,7 @@ class WalletState {
     this.status = WalletStatus.initial,
     this.walletId = '',
     this.walletAddress,
-    this.blockchain = 'MATIC',
+    this.blockchain = 'polygon',
     this.usdBalance = 0,
     this.usdcBalance = 0,
     this.pendingBalance = 0,
@@ -172,6 +172,7 @@ class WalletState {
       status == WalletStatus.loading || status == WalletStatus.refreshing;
   bool get hasError => status == WalletStatus.error;
   bool get isLoaded => status == WalletStatus.loaded;
+  bool get hasWallet => walletId.isNotEmpty && status == WalletStatus.loaded;
   bool get hasWalletAddress => walletAddress != null && walletAddress!.isNotEmpty;
 
   /// Short display version of wallet address
@@ -224,6 +225,7 @@ class UserState {
   final String? firstName;
   final String? lastName;
   final String? email;
+  final String? avatarUrl;
   final String countryCode;
   final KycStatus kycStatus;
   final bool canTransact;
@@ -238,6 +240,7 @@ class UserState {
     this.firstName,
     this.lastName,
     this.email,
+    this.avatarUrl,
     this.countryCode = 'CI',
     this.kycStatus = KycStatus.none,
     this.canTransact = false,
@@ -258,6 +261,7 @@ class UserState {
     String? firstName,
     String? lastName,
     String? email,
+    String? avatarUrl,
     String? countryCode,
     KycStatus? kycStatus,
     bool? canTransact,
@@ -272,6 +276,7 @@ class UserState {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
       countryCode: countryCode ?? this.countryCode,
       kycStatus: kycStatus ?? this.kycStatus,
       canTransact: canTransact ?? this.canTransact,

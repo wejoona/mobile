@@ -71,23 +71,24 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final validationState = ref.watch(accountValidationProvider);
     final formState = ref.watch(billPaymentFormProvider);
     final walletAsync = ref.watch(walletBalanceProvider);
 
     if (_provider == null) {
       return Scaffold(
-        backgroundColor: AppColors.obsidian,
+        backgroundColor: colors.canvas,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: Icon(Icons.arrow_back, color: colors.icon),
             onPressed: () => context.pop(),
           ),
         ),
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.gold500),
+          child: CircularProgressIndicator(color: colors.gold),
         ),
       );
     }
@@ -95,16 +96,17 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     final provider = _provider!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: AppText(
-          l10n.billPayments_payProvider(provider.shortName),
+          l10n.billPayments_payProvider(provider.shortName, provider.shortName),
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () => context.pop(),
         ),
       ),
@@ -166,12 +168,13 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildProviderInfo(BillProvider provider) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
       ),
       child: Row(
         children: [
@@ -179,14 +182,14 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.1),
+              color: colors.gold.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Center(
               child: AppText(
                 provider.shortName.isNotEmpty ? provider.shortName[0] : '?',
                 variant: AppTextVariant.titleLarge,
-                color: AppColors.gold500,
+                color: colors.gold,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -199,13 +202,13 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
                 AppText(
                   provider.name,
                   variant: AppTextVariant.titleSmall,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                 ),
                 const SizedBox(height: 4),
                 AppText(
                   '${provider.category.displayName} - ${provider.estimatedProcessingTime}',
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -269,15 +272,14 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildValidationResult(AppLocalizations l10n, AccountValidationResult result) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: result.isValid
-            ? AppColors.successBase.withOpacity(0.1)
-            : AppColors.errorBase.withOpacity(0.1),
+        color: result.isValid ? colors.successBg : colors.errorBg,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: result.isValid ? AppColors.successBase : AppColors.errorBase,
+          color: result.isValid ? colors.success : colors.error,
           width: 1,
         ),
       ),
@@ -285,7 +287,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
         children: [
           Icon(
             result.isValid ? Icons.check_circle : Icons.error,
-            color: result.isValid ? AppColors.successText : AppColors.errorText,
+            color: result.isValid ? colors.successText : colors.errorText,
             size: 24,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -298,12 +300,12 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
                     result.customerName!,
                     variant: AppTextVariant.bodyMedium,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: colors.textPrimary,
                   ),
                 AppText(
                   result.message ?? (result.isValid ? l10n.billPayments_accountVerified : l10n.billPayments_verificationFailed),
                   variant: AppTextVariant.labelMedium,
-                  color: result.isValid ? AppColors.successText : AppColors.errorText,
+                  color: result.isValid ? colors.successText : colors.errorText,
                 ),
                 if (result.outstandingBalance != null)
                   AppText(
@@ -312,7 +314,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
                       'XOF',
                     ),
                     variant: AppTextVariant.labelSmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
               ],
             ),
@@ -323,6 +325,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildAmountField(AppLocalizations l10n, BillProvider provider) {
+    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -334,7 +337,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
           suffix: AppText(
             provider.currency,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
           onChanged: (value) {
             final amount = double.tryParse(value) ?? 0;
@@ -371,13 +374,14 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
             provider.currency,
           ),
           variant: AppTextVariant.labelSmall,
-          color: AppColors.textTertiary,
+          color: colors.textTertiary,
         ),
       ],
     );
   }
 
   Widget _buildFeeDisplay(AppLocalizations l10n, BillProvider provider) {
+    final colors = context.colors;
     final amount = double.tryParse(_amountController.text) ?? 0;
     final fee = provider.calculateFee(amount);
     final total = amount + fee;
@@ -385,7 +389,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
@@ -393,7 +397,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
           _buildFeeRow(l10n.billPayments_amount, '${amount.toStringAsFixed(0)} ${provider.currency}'),
           const SizedBox(height: AppSpacing.sm),
           _buildFeeRow(l10n.billPayments_processingFee, '${fee.toStringAsFixed(0)} ${provider.currency}'),
-          Divider(color: AppColors.borderSubtle, height: AppSpacing.lg),
+          Divider(color: colors.borderSubtle, height: AppSpacing.lg),
           _buildFeeRow(
             l10n.billPayments_totalAmount,
             '${total.toStringAsFixed(0)} ${provider.currency}',
@@ -405,19 +409,20 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildFeeRow(String label, String value, {bool isTotal = false}) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppText(
           label,
           variant: isTotal ? AppTextVariant.bodyMedium : AppTextVariant.labelMedium,
-          color: isTotal ? AppColors.textPrimary : AppColors.textSecondary,
+          color: isTotal ? colors.textPrimary : colors.textSecondary,
           fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
         ),
         AppText(
           value,
           variant: isTotal ? AppTextVariant.bodyMedium : AppTextVariant.labelMedium,
-          color: isTotal ? AppColors.gold500 : AppColors.textPrimary,
+          color: isTotal ? colors.gold : colors.textPrimary,
           fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
         ),
       ],
@@ -425,13 +430,14 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildBalanceDisplay(double balance, AppLocalizations l10n) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
           Icons.account_balance_wallet,
           size: 16,
-          color: AppColors.textSecondary,
+          color: colors.iconSecondary,
         ),
         const SizedBox(width: AppSpacing.xs),
         AppText(
@@ -440,7 +446,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
             'USD',
           ),
           variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
       ],
     );
@@ -491,7 +497,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     final result = await PinConfirmationSheet.show(
       context: context,
       title: l10n.billPayments_confirmPayment,
-      subtitle: l10n.billPayments_enterPinToPay(provider.name),
+      subtitle: l10n.billPayments_enterPinToPay(provider.name, provider.name),
       onConfirm: (pin) async {
         // Verify PIN with server
         // TODO: Implement actual PIN verification
@@ -524,11 +530,12 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
       }
     } else if (mounted) {
       final l10n = AppLocalizations.of(context)!;
+      final colors = context.colors;
       final error = ref.read(billPaymentProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? l10n.billPayments_paymentFailed),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: colors.error,
         ),
       );
     }

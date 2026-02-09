@@ -10,7 +10,7 @@ export 'sdk/usdc_wallet_sdk.dart';
 // Individual services
 export 'auth/auth_service.dart';
 export 'user/user_service.dart';
-export 'wallet/wallet_service.dart';
+export 'wallet/wallet_service.dart' hide KycStatusResponse;
 export 'transactions/transactions_service.dart';
 export 'transfers/transfers_service.dart';
 export 'notifications/notifications_service.dart';
@@ -23,6 +23,14 @@ export 'referrals/referrals_service.dart';
 
 // Bill Payments
 export 'bill_payments/bill_payments_service.dart';
+
+// Financial services
+export 'deposit/deposit_service.dart';
+export 'recurring_transfers/recurring_transfers_service.dart';
+export 'bulk_payments/bulk_payments_service.dart';
+export 'cards/cards_service.dart';
+export 'bank_linking/bank_linking_service.dart';
+export 'kyc/kyc_service.dart';
 
 // Device services
 export 'contacts/contacts_service.dart';

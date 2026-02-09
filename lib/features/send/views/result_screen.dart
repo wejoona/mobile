@@ -10,6 +10,7 @@ import '../../../utils/formatters.dart';
 import '../../beneficiaries/providers/beneficiaries_provider.dart';
 import '../../beneficiaries/models/beneficiary.dart';
 import '../providers/send_provider.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -37,8 +38,22 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
     _controller.forward();
 
-    // Check if recipient is already a beneficiary
-    Future.microtask(() => _checkBeneficiaryStatus());
+    // Trigger haptic feedback based on result
+    Future.microtask(() {
+      _checkBeneficiaryStatus();
+      _triggerResultHaptic();
+    });
+  }
+
+  void _triggerResultHaptic() {
+    final state = ref.read(sendMoneyProvider);
+    final isSuccess = state.result != null && state.result!.status == 'completed';
+
+    if (isSuccess) {
+      hapticService.paymentConfirmed();
+    } else {
+      hapticService.error();
+    }
   }
 
   Future<void> _checkBeneficiaryStatus() async {
@@ -58,11 +73,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
+    final colors = context.colors;
 
     final isSuccess = state.result != null && state.result!.status == 'completed';
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
@@ -81,14 +97,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.xl),
                   decoration: BoxDecoration(
-                    color: (isSuccess ? AppColors.successBase : AppColors.errorBase)
+                    color: (isSuccess ? colors.success : colors.error)
                         .withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isSuccess ? Icons.check_circle : Icons.error,
                     size: 80,
-                    color: isSuccess ? AppColors.successBase : AppColors.errorBase,
+                    color: isSuccess ? colors.success : colors.error,
                   ),
                 ),
               ),
@@ -107,14 +123,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 AppText(
                   l10n.send_transferSuccessMessage,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ] else ...[
                 AppText(
                   state.error ?? l10n.error_transferFailed,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.errorBase,
+                  color: colors.error,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -129,13 +145,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       AppText(
                         '\$${Formatters.formatCurrency(state.result!.amount)}',
                         variant: AppTextVariant.headlineLarge,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
                       SizedBox(height: AppSpacing.sm),
                       AppText(
                         l10n.send_sentTo,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
@@ -148,13 +164,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                         AppText(
                           state.recipient!.phoneNumber,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       ],
                       SizedBox(height: AppSpacing.md),
 
                       Divider(
-                        color: AppColors.textSecondary.withOpacity(0.2),
+                        color: colors.textSecondary.withOpacity(0.2),
                       ),
                       SizedBox(height: AppSpacing.md),
 
@@ -162,6 +178,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       _buildDetailRow(
                         l10n.send_reference,
                         state.result!.reference,
+                        colors,
                         canCopy: true,
                       ),
                       SizedBox(height: AppSpacing.sm),
@@ -170,6 +187,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       _buildDetailRow(
                         l10n.send_date,
                         Formatters.formatDateTime(state.result!.createdAt),
+                        colors,
                       ),
                     ],
                   ),
@@ -232,14 +250,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool canCopy = false}) {
+  Widget _buildDetailRow(String label, String value, ThemeColors colors, {bool canCopy = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppText(
           label,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         Row(
           children: [
@@ -250,11 +268,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
             if (canCopy) ...[
               SizedBox(width: AppSpacing.xs),
               InkWell(
-                onTap: () => _copyToClipboard(value),
+                onTap: () => _copyToClipboard(value, colors),
                 child: Icon(
                   Icons.copy,
                   size: 16,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],
@@ -264,14 +282,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     );
   }
 
-  Future<void> _copyToClipboard(String text) async {
+  Future<void> _copyToClipboard(String text, ThemeColors colors) async {
     final l10n = AppLocalizations.of(context)!;
+    hapticService.lightTap();
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.common_copiedToClipboard),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: colors.success,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -280,6 +299,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   Future<void> _handleSaveBeneficiary() async {
     final state = ref.read(sendMoneyProvider);
+    final colors = context.colors;
     if (state.recipient == null) return;
 
     // Navigate to add beneficiary screen or show dialog
@@ -300,7 +320,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.send_beneficiarySaved),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: colors.success,
           ),
         );
       }
@@ -309,7 +329,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }

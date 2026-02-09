@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/beneficiaries_provider.dart';
 import '../widgets/beneficiary_card.dart';
 import '../models/beneficiary.dart';
@@ -68,9 +70,11 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(beneficiariesProvider);
+    final colors = context.colors;
+    final appColors = context.appColors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.beneficiaries_title,
@@ -80,9 +84,9 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: appColors.gold500,
+          labelColor: appColors.gold500,
+          unselectedLabelColor: colors.textSecondary,
           tabs: [
             Tab(text: l10n.beneficiaries_tabAll),
             Tab(text: l10n.beneficiaries_tabFavorites),
@@ -114,8 +118,8 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
               child: RefreshIndicator(
                 onRefresh: () =>
                     ref.read(beneficiariesProvider.notifier).refresh(),
-                color: AppColors.gold500,
-                backgroundColor: AppColors.slate,
+                color: appColors.gold500,
+                backgroundColor: colors.container,
                 child: _buildContent(context, state, l10n),
               ),
             ),
@@ -124,8 +128,8 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToAddBeneficiary(context),
-        backgroundColor: AppColors.gold500,
-        child: const Icon(Icons.add, color: AppColors.obsidian),
+        backgroundColor: appColors.gold500,
+        child: Icon(Icons.add, color: colors.textInverse),
       ),
     );
   }
@@ -171,6 +175,8 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
     AppLocalizations l10n,
     BeneficiariesFilter filter,
   ) {
+    final colors = context.colors;
+
     String title;
     String message;
     IconData icon;
@@ -199,7 +205,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(icon, size: 64, color: colors.textSecondary.withOpacity(0.5)),
             SizedBox(height: AppSpacing.md),
             AppText(
               title,
@@ -210,7 +216,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
             AppText(
               message,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             if (filter == BeneficiariesFilter.all) ...[
@@ -228,13 +234,15 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
   }
 
   Widget _buildError(AppLocalizations l10n, String error) {
+    final colors = context.colors;
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.errorBase),
+            Icon(Icons.error_outline, size: 64, color: colors.error),
             SizedBox(height: AppSpacing.md),
             AppText(
               l10n.beneficiaries_errorTitle,
@@ -245,7 +253,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.lg),
@@ -278,9 +286,12 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
     Beneficiary beneficiary,
     AppLocalizations l10n,
   ) {
+    final colors = context.colors;
+    final appColors = context.appColors;
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -294,7 +305,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -309,7 +320,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
 
             // Edit
             ListTile(
-              leading: Icon(Icons.edit, color: AppColors.gold500),
+              leading: Icon(Icons.edit, color: appColors.gold500),
               title: AppText(l10n.beneficiaries_menuEdit),
               onTap: () {
                 context.pop();
@@ -323,11 +334,11 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
 
             // Delete
             ListTile(
-              leading: Icon(Icons.delete, color: AppColors.errorBase),
+              leading: Icon(Icons.delete, color: colors.error),
               title: AppText(
                 l10n.beneficiaries_menuDelete,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.errorBase,
+                color: colors.error,
               ),
               onTap: () {
                 context.pop();
@@ -345,10 +356,12 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
     Beneficiary beneficiary,
     AppLocalizations l10n,
   ) async {
+    final colors = context.colors;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: colors.container,
         title: AppText(
           l10n.beneficiaries_deleteTitle,
           variant: AppTextVariant.headlineSmall,
@@ -372,6 +385,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
     );
 
     if (confirmed == true && context.mounted) {
+      final colors = context.colors;
       final success = await ref
           .read(beneficiariesProvider.notifier)
           .deleteBeneficiary(beneficiary.id);
@@ -380,7 +394,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: AppText(l10n.beneficiaries_deleteSuccess),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: colors.success,
           ),
         );
       }

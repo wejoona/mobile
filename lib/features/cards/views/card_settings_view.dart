@@ -144,11 +144,16 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      AppText(
-                        l10n.cards_currentLimit,
-                        variant: AppTextVariant.bodyMedium,
-                        color: colors.textSecondary,
+                      Flexible(
+                        child: AppText(
+                          l10n.cards_currentLimit,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: AppSpacing.sm),
                       AppText(
                         '${card.currency} ${card.spendingLimit.toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,
@@ -160,11 +165,16 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      AppText(
-                        l10n.cards_availableLimit,
-                        variant: AppTextVariant.bodyMedium,
-                        color: colors.textSecondary,
+                      Flexible(
+                        child: AppText(
+                          l10n.cards_availableLimit,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      const SizedBox(width: AppSpacing.sm),
                       AppText(
                         '${card.currency} ${card.availableLimit.toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,

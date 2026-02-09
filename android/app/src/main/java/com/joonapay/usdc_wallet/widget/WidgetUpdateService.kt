@@ -55,13 +55,13 @@ class WidgetUpdateWorker(
     params: WorkerParameters
 ) : Worker(context, params) {
 
-    override fun doWork(): Result {
+    override fun doWork(): androidx.work.ListenableWorker.Result {
         return try {
             // Trigger widget update
             BalanceWidgetProvider.updateWidgets(applicationContext)
-            Result.success()
+            androidx.work.ListenableWorker.Result.success()
         } catch (e: Exception) {
-            Result.failure()
+            androidx.work.ListenableWorker.Result.failure()
         }
     }
 }

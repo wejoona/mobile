@@ -5,6 +5,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../providers/notification_preferences_notifier_provider.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 /// Notification Preferences Screen
 ///
@@ -16,18 +17,19 @@ class NotificationPreferencesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(notificationPreferencesNotifierProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.notifications_preferences_title,
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -39,7 +41,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
             AppText(
               l10n.notifications_preferences_description,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
 
             const SizedBox(height: AppSpacing.xl),
@@ -140,7 +142,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
             AppText(
               l10n.notifications_pref_thresholds_title,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -148,7 +150,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
             AppText(
               l10n.notifications_pref_thresholds_description,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -182,19 +184,19 @@ class NotificationPreferencesScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
           ],
         ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.gold500),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colors.gold),
         ),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: AppColors.errorBase, size: 48),
+              Icon(Icons.error_outline, color: colors.error, size: 48),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 l10n.error_generic,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),
@@ -215,13 +217,14 @@ class _PreferenceSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
           title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
         ...children,
@@ -247,12 +250,13 @@ class _PreferenceSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -262,17 +266,19 @@ class _PreferenceSwitch extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    AppText(
-                      label,
-                      variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
+                    Flexible(
+                      child: AppText(
+                        label,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textPrimary,
+                      ),
                     ),
                     if (locked) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
+                      Icon(
                         Icons.lock,
                         size: 16,
-                        color: AppColors.gold500,
+                        color: colors.gold,
                       ),
                     ],
                   ],
@@ -281,7 +287,7 @@ class _PreferenceSwitch extends StatelessWidget {
                 AppText(
                   description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -290,10 +296,10 @@ class _PreferenceSwitch extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: AppColors.gold500,
-            activeTrackColor: AppColors.gold500.withValues(alpha: 0.5),
-            inactiveThumbColor: AppColors.textTertiary,
-            inactiveTrackColor: AppColors.elevated,
+            activeColor: colors.gold,
+            activeTrackColor: colors.gold.withValues(alpha: 0.5),
+            inactiveThumbColor: colors.textTertiary,
+            inactiveTrackColor: colors.elevated,
           ),
         ],
       ),
@@ -335,12 +341,13 @@ class _ThresholdCardState extends State<_ThresholdCard> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +355,7 @@ class _ThresholdCardState extends State<_ThresholdCard> {
           AppText(
             widget.label,
             variant: AppTextVariant.bodyLarge,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -357,13 +364,13 @@ class _ThresholdCardState extends State<_ThresholdCard> {
                 child: TextField(
                   controller: _controller,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: AppColors.elevated,
+                    fillColor: colors.elevated,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(AppRadius.md),
                       borderSide: BorderSide.none,
@@ -373,7 +380,7 @@ class _ThresholdCardState extends State<_ThresholdCard> {
                       vertical: AppSpacing.sm,
                     ),
                     hintText: '0',
-                    hintStyle: const TextStyle(color: AppColors.textTertiary),
+                    hintStyle: TextStyle(color: colors.textTertiary),
                   ),
                   onChanged: (value) {
                     final parsed = double.tryParse(value);
@@ -390,13 +397,13 @@ class _ThresholdCardState extends State<_ThresholdCard> {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.1),
+                  color: colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: AppText(
                   widget.unit,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],

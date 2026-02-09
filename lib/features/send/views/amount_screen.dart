@@ -41,6 +41,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
     final limitsState = ref.watch(limitsProvider);
+    final colors = context.colors;
 
     if (state.recipient == null) {
       // Navigate back if no recipient
@@ -49,7 +50,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.send_enterAmount,
@@ -71,10 +72,10 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: AppColors.gold500.withOpacity(0.2),
+                            backgroundColor: colors.gold.withOpacity(0.2),
                             child: Icon(
                               Icons.person_outline,
-                              color: AppColors.gold500,
+                              color: colors.gold,
                             ),
                           ),
                           SizedBox(width: AppSpacing.md),
@@ -92,7 +93,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                   AppText(
                                     state.recipient!.phoneNumber,
                                     variant: AppTextVariant.bodySmall,
-                                    color: AppColors.textSecondary,
+                                    color: colors.textSecondary,
                                   ),
                               ],
                             ),
@@ -109,13 +110,13 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         AppText(
                           l10n.wallet_availableBalance,
                           variant: AppTextVariant.bodyMedium,
-                          color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                         AppText(
                           '\$${Formatters.formatCurrency(state.availableBalance)}',
                           variant: AppTextVariant.bodyLarge,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       ],
                     ),
@@ -135,9 +136,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(left: 12),
-                        child: Text('\$ ', style: TextStyle(color: AppColors.textPrimary)),
+                      prefix: Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text('\$ ', style: TextStyle(color: colors.textPrimary)),
                       ),
                       validator: _validateAmount,
                       inputFormatters: [
@@ -150,7 +151,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         child: AppText(
                           l10n.send_max,
                           variant: AppTextVariant.labelMedium,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       ),
                     ),
@@ -192,18 +193,18 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                 AppText(
                                   l10n.send_fee,
                                   variant: AppTextVariant.bodyMedium,
-                                  color: AppColors.textSecondary,
+                                  color: colors.textSecondary,
                                 ),
                                 AppText(
                                   '\$${Formatters.formatCurrency(state.fee)}',
                                   variant: AppTextVariant.bodyMedium,
-                                  color: AppColors.textSecondary,
+                                  color: colors.textSecondary,
                                 ),
                               ],
                             ),
                             Divider(
                               height: AppSpacing.md,
-                              color: AppColors.textSecondary.withOpacity(0.2),
+                              color: colors.textSecondary.withOpacity(0.2),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,7 +218,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                   '\$${Formatters.formatCurrency(state.total)}',
                                   variant: AppTextVariant.bodyLarge,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.gold500,
+                                  color: colors.gold,
                                 ),
                               ],
                             ),

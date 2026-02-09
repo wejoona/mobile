@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/beneficiaries_provider.dart';
 import '../models/beneficiary.dart';
 
@@ -86,10 +88,11 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final isEdit = widget.beneficiaryId != null;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           isEdit
@@ -254,13 +257,14 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
             .updateBeneficiary(widget.beneficiaryId!, request);
 
         if (success && mounted) {
+          final colors = context.colors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.beneficiaries_updateSuccess),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: colors.success,
             ),
           );
-          context.pop();
+          context.safePop(fallbackRoute: '/beneficiaries');
         }
       } else {
         // Create new beneficiary
@@ -290,21 +294,23 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
             .createBeneficiary(request);
 
         if (beneficiary != null && mounted) {
+          final colors = context.colors;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.beneficiaries_createSuccess),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: colors.success,
             ),
           );
-          context.pop();
+          context.safePop(fallbackRoute: '/beneficiaries');
         }
       }
     } catch (e) {
       if (mounted) {
+        final colors = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: AppText(e.toString()),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }

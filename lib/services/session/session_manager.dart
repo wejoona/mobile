@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../design/tokens/index.dart';
 import '../../design/components/primitives/index.dart';
+import '../../l10n/app_localizations.dart';
 import '../biometric/biometric_service.dart';
 import '../pin/pin_service.dart';
 import '../feature_flags/feature_flags_provider.dart';
@@ -60,7 +61,12 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   }
 
   void _recordActivity() {
-    ref.read(sessionServiceProvider.notifier).recordActivity();
+    // Delay provider modification to avoid modifying during build/layout
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(sessionServiceProvider.notifier).recordActivity();
+      }
+    });
   }
 
   @override
@@ -114,16 +120,25 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   }
 
   void _handleSessionExpired() {
-    // Navigate to login
+    // Navigate to login - delay to ensure GoRouter is ready
     if (mounted) {
-      final colors = context.colors;
-      context.go('/login');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Session expired. Please log in again.'),
-          backgroundColor: colors.warning,
-        ),
-      );
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          try {
+            final colors = context.colors;
+            context.go('/login');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Session expired. Please log in again.'),
+                backgroundColor: colors.warning,
+              ),
+            );
+          } catch (e) {
+            // GoRouter not ready yet, ignore - user will be redirected on next navigation
+            AppLogger('SessionManager').warn('Could not navigate on session expiry', e);
+          }
+        }
+      });
     }
   }
 
@@ -175,8 +190,9 @@ class _SessionExpiringOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
-    return Container(
+    return Material(
       color: Colors.black54,
       child: Center(
         child: Container(
@@ -204,13 +220,13 @@ class _SessionExpiringOverlay extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               AppText(
-                'Session Expiring',
+                l10n.session_expiring,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                'Your session will expire in $remainingSeconds seconds due to inactivity.',
+                l10n.session_expiringMessage(remainingSeconds),
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,
@@ -252,7 +268,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
                 children: [
                   Expanded(
                     child: AppButton(
-                      label: 'Log Out',
+                      label: l10n.common_logout,
                       onPressed: onLogout,
                       variant: AppButtonVariant.secondary,
                     ),
@@ -260,7 +276,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: AppButton(
-                      label: 'Continue',
+                      label: l10n.session_stayLoggedIn,
                       onPressed: onExtend,
                       variant: AppButtonVariant.primary,
                     ),

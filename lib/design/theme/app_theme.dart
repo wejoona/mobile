@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../tokens/index.dart';
+import 'theme_extensions.dart';
 
 /// App Theme Configuration
 /// Luxury themes with gold accents - supports both dark and light modes
@@ -80,6 +81,20 @@ class AppTheme {
             return const IconThemeData(color: AppColorsLight.gold500, size: 24);
           }
           return const IconThemeData(color: AppColorsLight.textTertiary, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColorsLight.gold500,
+            );
+          }
+          return const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: AppColorsLight.textTertiary,
+          );
         }),
       ),
 
@@ -236,6 +251,15 @@ class AppTheme {
         labelMedium: AppTypography.labelMedium.copyWith(color: AppColorsLight.textSecondary),
         labelSmall: AppTypography.labelSmall.copyWith(color: AppColorsLight.textSecondary),
       ),
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // CUSTOM EXTENSIONS
+      // ═══════════════════════════════════════════════════════════════════════
+      extensions: <ThemeExtension<dynamic>>[
+        AppColorsExtension.light,
+        AppGradientsExtension.light,
+        AppShadowsExtension.shared,
+      ],
     );
   }
 
@@ -322,6 +346,20 @@ class AppTheme {
             return const IconThemeData(color: AppColors.gold500, size: 24);
           }
           return const IconThemeData(color: AppColors.textTertiary, size: 24);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.gold500,
+            );
+          }
+          return const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textTertiary,
+          );
         }),
       ),
 
@@ -511,6 +549,15 @@ class AppTheme {
         labelMedium: AppTypography.labelMedium,
         labelSmall: AppTypography.labelSmall,
       ),
+
+      // ═══════════════════════════════════════════════════════════════════════
+      // CUSTOM EXTENSIONS
+      // ═══════════════════════════════════════════════════════════════════════
+      extensions: <ThemeExtension<dynamic>>[
+        AppColorsExtension.dark,
+        AppGradientsExtension.dark,
+        AppShadowsExtension.shared,
+      ],
     );
   }
 }

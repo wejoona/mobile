@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../tokens/colors.dart';
+import '../../tokens/theme_colors.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 /// Custom pull-to-refresh indicator with JoonaPay styling.
 /// Provides haptic feedback and uses brand colors.
@@ -33,21 +34,24 @@ class AppRefreshIndicator extends StatelessWidget {
 
   Future<void> _handleRefresh() async {
     // Provide haptic feedback when refresh starts
-    HapticFeedback.mediumImpact();
+    await hapticService.refresh();
     await onRefresh();
     // Provide subtle feedback when refresh completes
-    HapticFeedback.lightImpact();
+    await hapticService.lightTap();
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return RefreshIndicator(
       onRefresh: _handleRefresh,
       displacement: displacement,
       edgeOffset: edgeOffset,
       notificationPredicate: notificationPredicate,
-      backgroundColor: AppColors.slate,
-      color: AppColors.gold500,
+      backgroundColor: isDark ? AppColors.slate : AppColorsLight.container,
+      color: isDark ? AppColors.gold500 : AppColorsLight.gold600,
       strokeWidth: 2.5,
       child: child,
     );
@@ -116,10 +120,7 @@ class AppRefreshableList extends StatelessWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: emptyWidget!,
-            ),
+            SliverFillRemaining(hasScrollBody: false, child: emptyWidget!),
           ],
         ),
       );

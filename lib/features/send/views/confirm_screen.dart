@@ -14,6 +14,7 @@ class ConfirmScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
+    final colors = context.colors;
 
     if (!state.canProceedToConfirm) {
       // Navigate back if incomplete
@@ -22,7 +23,7 @@ class ConfirmScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.send_confirmTransfer,
@@ -43,16 +44,15 @@ class ConfirmScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Recipient section
-                        _buildSectionHeader(l10n.send_recipient),
+                        _buildSectionHeader(l10n.send_recipient, colors),
                         SizedBox(height: AppSpacing.sm),
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor:
-                                  AppColors.gold500.withOpacity(0.2),
+                              backgroundColor: colors.gold.withOpacity(0.2),
                               child: Icon(
                                 Icons.person_outline,
-                                color: AppColors.gold500,
+                                color: colors.gold,
                               ),
                             ),
                             SizedBox(width: AppSpacing.md),
@@ -70,7 +70,7 @@ class ConfirmScreen extends ConsumerWidget {
                                     AppText(
                                       state.recipient!.phoneNumber,
                                       variant: AppTextVariant.bodySmall,
-                                      color: AppColors.textSecondary,
+                                      color: colors.textSecondary,
                                     ),
                                 ],
                               ),
@@ -78,7 +78,7 @@ class ConfirmScreen extends ConsumerWidget {
                             IconButton(
                               icon: Icon(
                                 Icons.edit_outlined,
-                                color: AppColors.gold500,
+                                color: colors.gold,
                                 size: 20,
                               ),
                               onPressed: () => context.go('/send'),
@@ -88,7 +88,7 @@ class ConfirmScreen extends ConsumerWidget {
                         SizedBox(height: AppSpacing.lg),
 
                         // Amount section
-                        _buildSectionHeader(l10n.send_amount),
+                        _buildSectionHeader(l10n.send_amount, colors),
                         SizedBox(height: AppSpacing.sm),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,12 +96,12 @@ class ConfirmScreen extends ConsumerWidget {
                             AppText(
                               '\$${Formatters.formatCurrency(state.amount!)}',
                               variant: AppTextVariant.headlineMedium,
-                              color: AppColors.gold500,
+                              color: colors.gold,
                             ),
                             IconButton(
                               icon: Icon(
                                 Icons.edit_outlined,
-                                color: AppColors.gold500,
+                                color: colors.gold,
                                 size: 20,
                               ),
                               onPressed: () => context.go('/send/amount'),
@@ -113,7 +113,7 @@ class ConfirmScreen extends ConsumerWidget {
                         // Fee breakdown
                         if (state.fee > 0) ...[
                           Divider(
-                            color: AppColors.textSecondary.withOpacity(0.2),
+                            color: colors.textSecondary.withOpacity(0.2),
                           ),
                           SizedBox(height: AppSpacing.sm),
                           Row(
@@ -122,12 +122,12 @@ class ConfirmScreen extends ConsumerWidget {
                               AppText(
                                 l10n.send_fee,
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                               ),
                               AppText(
                                 '\$${Formatters.formatCurrency(state.fee)}',
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textSecondary,
+                                color: colors.textSecondary,
                               ),
                             ],
                           ),
@@ -135,7 +135,7 @@ class ConfirmScreen extends ConsumerWidget {
                         ],
 
                         Divider(
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: colors.textSecondary.withOpacity(0.2),
                         ),
                         SizedBox(height: AppSpacing.sm),
 
@@ -152,7 +152,7 @@ class ConfirmScreen extends ConsumerWidget {
                               '\$${Formatters.formatCurrency(state.total)}',
                               variant: AppTextVariant.bodyLarge,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.gold500,
+                              color: colors.gold,
                             ),
                           ],
                         ),
@@ -160,12 +160,12 @@ class ConfirmScreen extends ConsumerWidget {
 
                         // Note section (if provided)
                         if (state.note != null && state.note!.isNotEmpty) ...[
-                          _buildSectionHeader(l10n.send_note),
+                          _buildSectionHeader(l10n.send_note, colors),
                           SizedBox(height: AppSpacing.sm),
                           AppText(
                             state.note!,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ],
                       ],
@@ -180,7 +180,7 @@ class ConfirmScreen extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: AppColors.gold500,
+                          color: colors.gold,
                           size: 20,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -188,7 +188,7 @@ class ConfirmScreen extends ConsumerWidget {
                           child: AppText(
                             l10n.send_pinVerificationRequired,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ),
                       ],
@@ -213,11 +213,11 @@ class ConfirmScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(String text) {
+  Widget _buildSectionHeader(String text, ThemeColors colors) {
     return AppText(
       text,
       variant: AppTextVariant.labelSmall,
-      color: AppColors.textSecondary,
+      color: colors.textSecondary,
     );
   }
 }

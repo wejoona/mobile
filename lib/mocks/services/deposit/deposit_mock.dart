@@ -11,26 +11,34 @@ class DepositMock {
       handler: (options) async {
         final data = options.data as Map<String, dynamic>;
         final amount = data['amount'] as double;
-        final provider = data['provider'] as String;
+        final sourceCurrency = data['sourceCurrency'] as String;
+        final channelId = data['channelId'] as String;
 
         // Simulate 3-second delay
         await Future.delayed(const Duration(seconds: 3));
 
+        final rate = 655.957; // 1 USD = 655.957 XOF (realistic rate)
+        final fee = amount * 0.01; // 1% fee
+        final estimatedAmount = (amount / rate) - (fee / rate);
+
         return MockResponse.success({
+          'transactionId': 'txn_${DateTime.now().millisecondsSinceEpoch}',
           'depositId': 'dep_${DateTime.now().millisecondsSinceEpoch}',
+          'amount': amount,
+          'sourceCurrency': sourceCurrency,
+          'targetCurrency': 'USD',
+          'rate': rate,
+          'fee': fee,
+          'estimatedAmount': estimatedAmount,
           'paymentInstructions': {
-            'provider': _getProviderName(provider),
-            'ussdCode': _getUssdCode(provider),
-            'deepLink': _getDeepLink(provider),
-            'referenceNumber': _generateReference(),
-            'amountToPay': amount,
-            'currency': 'XOF',
-            'instructions': _getInstructions(provider),
+            'type': _getChannelType(channelId),
+            'provider': _getProviderName(channelId),
+            'accountNumber': _getAccountNumber(channelId),
+            'reference': _generateReference(),
+            'instructions': _getInstructions(channelId),
+            'qrCode': null,
           },
           'expiresAt': DateTime.now().add(const Duration(minutes: 30)).toIso8601String(),
-          'status': 'pending',
-          'amount': amount,
-          'convertedAmount': amount / 600, // Mock 1 USD = 600 XOF
         });
       },
     );
@@ -43,21 +51,34 @@ class DepositMock {
         // Simulate random status (80% success, 20% pending)
         final isPending = DateTime.now().second % 5 == 0;
 
+        final amount = 60000.0;
+        final rate = 655.957;
+        final fee = amount * 0.01;
+        final estimatedAmount = (amount / rate) - (fee / rate);
+
         return MockResponse.success({
+          'transactionId': 'txn_123456',
           'depositId': 'dep_123456',
+          'amount': amount,
+          'sourceCurrency': 'XOF',
+          'targetCurrency': 'USD',
+          'rate': rate,
+          'fee': fee,
+          'estimatedAmount': estimatedAmount,
           'paymentInstructions': {
+            'type': 'mobile_money',
             'provider': 'Orange Money',
-            'ussdCode': '#144#',
-            'deepLink': 'orangemoney://',
-            'referenceNumber': 'OM123456',
-            'amountToPay': 60000.0,
-            'currency': 'XOF',
-            'instructions': 'Dial #144# and follow the prompts',
+            'accountNumber': '+225XXXXXXXX',
+            'reference': 'OM123456',
+            'instructions': '''1. Dial #144# on your Orange Money registered phone
+2. Select "Transfer Money"
+3. Enter the reference number: OM123456
+4. Enter the amount: 60000 XOF
+5. Confirm with your PIN''',
+            'qrCode': null,
           },
           'expiresAt': DateTime.now().add(const Duration(minutes: 30)).toIso8601String(),
           'status': isPending ? 'pending' : 'completed',
-          'amount': 60000.0,
-          'convertedAmount': 100.0,
         });
       },
     );
@@ -77,66 +98,58 @@ class DepositMock {
     );
   }
 
-  static String _getProviderName(String provider) {
-    switch (provider) {
-      case 'orange_money':
-        return 'Orange Money';
-      case 'wave':
-        return 'Wave';
-      case 'mtn_momo':
-        return 'MTN MoMo';
-      default:
-        return 'Mobile Money';
+  static String _getChannelType(String channelId) {
+    if (channelId.contains('bank')) {
+      return 'bank_transfer';
+    } else if (channelId.contains('card')) {
+      return 'card';
     }
+    return 'mobile_money';
   }
 
-  static String? _getUssdCode(String provider) {
-    switch (provider) {
-      case 'orange_money':
-        return '#144#';
-      case 'mtn_momo':
-        return '*133#';
-      default:
-        return null;
+  static String _getProviderName(String channelId) {
+    if (channelId.contains('orange')) {
+      return 'Orange Money';
+    } else if (channelId.contains('mtn')) {
+      return 'MTN MoMo';
+    } else if (channelId.contains('wave')) {
+      return 'Wave';
     }
+    return 'Mobile Money';
   }
 
-  static String? _getDeepLink(String provider) {
-    switch (provider) {
-      case 'orange_money':
-        return 'orangemoney://';
-      case 'wave':
-        return 'wave://';
-      case 'mtn_momo':
-        return 'momo://';
-      default:
-        return null;
+  static String? _getAccountNumber(String channelId) {
+    if (channelId.contains('orange')) {
+      return '+225XXXXXXXX';
+    } else if (channelId.contains('mtn')) {
+      return '+225YYYYYYYY';
+    } else if (channelId.contains('wave')) {
+      return '+225ZZZZZZZZ';
     }
+    return null;
   }
 
-  static String _getInstructions(String provider) {
-    switch (provider) {
-      case 'orange_money':
-        return '''1. Dial #144# on your Orange Money registered phone
+  static String _getInstructions(String channelId) {
+    if (channelId.contains('orange')) {
+      return '''1. Dial #144# on your Orange Money registered phone
 2. Select "Transfer Money"
 3. Enter the reference number
 4. Enter the amount
 5. Confirm with your PIN''';
-      case 'wave':
-        return '''1. Open the Wave app
+    } else if (channelId.contains('mtn')) {
+      return '''1. Dial *133# on your MTN registered phone
+2. Select "Transfer Money"
+3. Enter the reference number
+4. Enter the amount
+5. Confirm with your PIN''';
+    } else if (channelId.contains('wave')) {
+      return '''1. Open the Wave app
 2. Tap "Send Money"
 3. Enter the reference number
 4. Enter the amount
 5. Confirm the transaction''';
-      case 'mtn_momo':
-        return '''1. Dial *133# on your MTN registered phone
-2. Select "Transfer Money"
-3. Enter the reference number
-4. Enter the amount
-5. Confirm with your PIN''';
-      default:
-        return 'Follow the instructions from your mobile money provider';
     }
+    return 'Follow the instructions from your mobile money provider';
   }
 
   static String _generateReference() {

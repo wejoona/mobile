@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -34,7 +35,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: ListView(

@@ -106,6 +106,11 @@
     "description": "Clear filters button"
   },
 
+  "action_clear": "Clear",
+  "@action_clear": {
+    "description": "Clear action button"
+  },
+
   "action_tryAgain": "Try Again",
   "@action_tryAgain": {
     "description": "Try again button"
@@ -1067,6 +1072,26 @@
     "description": "System theme option (follows device)"
   },
 
+  "settings_themeLightDescription": "Bright and clean appearance",
+  "@settings_themeLightDescription": {
+    "description": "Light theme description"
+  },
+
+  "settings_themeDarkDescription": "Easy on the eyes at night",
+  "@settings_themeDarkDescription": {
+    "description": "Dark theme description"
+  },
+
+  "settings_themeSystemDescription": "Matches your device settings",
+  "@settings_themeSystemDescription": {
+    "description": "System theme description"
+  },
+
+  "settings_appearance": "Appearance",
+  "@settings_appearance": {
+    "description": "Appearance settings label"
+  },
+
   "settings_notifications": "Notifications",
   "@settings_notifications": {
     "description": "Notifications settings label"
@@ -1528,22 +1553,22 @@
     "description": "Transaction completed status"
   },
 
-  "error_generic": "Something went wrong. Please try again.",
+  "error_generic": "We encountered an issue. Please try again in a moment.",
   "@error_generic": {
     "description": "Generic error message"
   },
 
-  "error_network": "Network error. Please check your connection.",
+  "error_network": "Unable to connect. Please check your internet connection and try again.",
   "@error_network": {
     "description": "Network error message"
   },
 
-  "error_failedToLoadBalance": "Failed to load balance",
+  "error_failedToLoadBalance": "Unable to load your balance. Pull down to refresh or try again later.",
   "@error_failedToLoadBalance": {
     "description": "Failed to load balance error"
   },
 
-  "error_failedToLoadTransactions": "Failed to load transactions",
+  "error_failedToLoadTransactions": "Unable to load transactions. Pull down to refresh or try again later.",
   "@error_failedToLoadTransactions": {
     "description": "Failed to load transactions error"
   },
@@ -2114,6 +2139,10 @@
     "placeholders": {
       "time": {
         "type": "String"
+      },
+      "hora": {
+        "type": "DateTime",
+        "format": "Hm"
       }
     }
   },
@@ -2966,6 +2995,106 @@
   "help_copiedToClipboard": "Copied to clipboard",
   "@help_copiedToClipboard": {
     "description": "Copied to clipboard message"
+  },
+
+  "help_needHelp": "Need Help?",
+  "@help_needHelp": {
+    "description": "Need help button text"
+  },
+
+  "transactionDetails_title": "Transaction Details",
+  "@transactionDetails_title": {
+    "description": "Transaction details screen title"
+  },
+
+  "transactionDetails_transactionId": "Transaction ID",
+  "@transactionDetails_transactionId": {
+    "description": "Transaction ID label"
+  },
+
+  "transactionDetails_date": "Date",
+  "@transactionDetails_date": {
+    "description": "Transaction date label"
+  },
+
+  "transactionDetails_currency": "Currency",
+  "@transactionDetails_currency": {
+    "description": "Transaction currency label"
+  },
+
+  "transactionDetails_recipientPhone": "Recipient Phone",
+  "@transactionDetails_recipientPhone": {
+    "description": "Recipient phone label"
+  },
+
+  "transactionDetails_recipientAddress": "Recipient Address",
+  "@transactionDetails_recipientAddress": {
+    "description": "Recipient address label"
+  },
+
+  "transactionDetails_description": "Description",
+  "@transactionDetails_description": {
+    "description": "Transaction description label"
+  },
+
+  "transactionDetails_additionalDetails": "Additional Details",
+  "@transactionDetails_additionalDetails": {
+    "description": "Additional transaction details section"
+  },
+
+  "transactionDetails_failureReason": "Failure Reason",
+  "@transactionDetails_failureReason": {
+    "description": "Transaction failure reason label"
+  },
+
+  "filters_title": "Filter Transactions",
+  "@filters_title": {
+    "description": "Filter transactions screen title"
+  },
+
+  "filters_reset": "Reset",
+  "@filters_reset": {
+    "description": "Reset filters button"
+  },
+
+  "filters_transactionType": "Transaction Type",
+  "@filters_transactionType": {
+    "description": "Transaction type filter label"
+  },
+
+  "filters_status": "Status",
+  "@filters_status": {
+    "description": "Status filter label"
+  },
+
+  "filters_dateRange": "Date Range",
+  "@filters_dateRange": {
+    "description": "Date range filter label"
+  },
+
+  "filters_amountRange": "Amount Range",
+  "@filters_amountRange": {
+    "description": "Amount range filter label"
+  },
+
+  "filters_sortBy": "Sort By",
+  "@filters_sortBy": {
+    "description": "Sort by filter label"
+  },
+
+  "filters_from": "From",
+  "@filters_from": {
+    "description": "Date range from label"
+  },
+
+  "filters_to": "To",
+  "@filters_to": {
+    "description": "Date range to label"
+  },
+
+  "filters_clear": "Clear",
+  "@filters_clear": {
+    "description": "Clear filters button"
   },
 
   "auth_logoutConfirm": "Are you sure you want to logout?",
@@ -3834,6 +3963,228 @@
   "billPayments_returnHome": "Return Home",
   "@billPayments_returnHome": {
     "description": "Return home button"
+  },
+
+  "billPayments_payProvider": "Pay {providerName}",
+  "@billPayments_payProvider": {
+    "description": "Pay provider title",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_enterField": "Enter {field}",
+  "@billPayments_enterField": {
+    "description": "Enter field hint",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_pleaseEnterField": "Please enter {field}",
+  "@billPayments_pleaseEnterField": {
+    "description": "Validation error for empty field",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_fieldMustBeLength": "{field} must be {length} characters",
+  "@billPayments_fieldMustBeLength": {
+    "description": "Validation error for field length",
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+
+  "billPayments_meterNumber": "Meter Number",
+  "@billPayments_meterNumber": {
+    "description": "Meter number label"
+  },
+
+  "billPayments_enterMeterNumber": "Enter meter number",
+  "@billPayments_enterMeterNumber": {
+    "description": "Meter number hint"
+  },
+
+  "billPayments_pleaseEnterMeterNumber": "Please enter meter number",
+  "@billPayments_pleaseEnterMeterNumber": {
+    "description": "Meter number validation error"
+  },
+
+  "billPayments_outstanding": "Outstanding: {amount} {currency}",
+  "@billPayments_outstanding": {
+    "description": "Outstanding balance display",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_pleaseEnterAmount": "Please enter amount",
+  "@billPayments_pleaseEnterAmount": {
+    "description": "Amount validation error"
+  },
+
+  "billPayments_pleaseEnterValidAmount": "Please enter a valid amount",
+  "@billPayments_pleaseEnterValidAmount": {
+    "description": "Invalid amount validation error"
+  },
+
+  "billPayments_minimumAmount": "Minimum amount is {amount} {currency}",
+  "@billPayments_minimumAmount": {
+    "description": "Minimum amount validation error",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_maximumAmount": "Maximum amount is {amount} {currency}",
+  "@billPayments_maximumAmount": {
+    "description": "Maximum amount validation error",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_minMaxRange": "Min: {min} - Max: {max} {currency}",
+  "@billPayments_minMaxRange": {
+    "description": "Amount range display",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_available": "Available: {amount} {currency}",
+  "@billPayments_available": {
+    "description": "Available balance display",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_payAmount": "Pay {amount} {currency}",
+  "@billPayments_payAmount": {
+    "description": "Pay button with amount",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_enterPinToPay": "Enter your PIN to pay {providerName}",
+  "@billPayments_enterPinToPay": {
+    "description": "PIN confirmation subtitle",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_paymentFailed": "Payment failed",
+  "@billPayments_paymentFailed": {
+    "description": "Payment failed error message"
+  },
+
+  "billPayments_noProvidersAvailable": "No providers available for this category",
+  "@billPayments_noProvidersAvailable": {
+    "description": "Empty state for no providers"
+  },
+
+  "billPayments_feeNone": "No fee",
+  "@billPayments_feeNone": {
+    "description": "No fee display"
+  },
+
+  "billPayments_feePercentage": "{percentage}% fee",
+  "@billPayments_feePercentage": {
+    "description": "Percentage fee display",
+    "placeholders": {
+      "percentage": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_feeFixed": "{amount} {currency} fee",
+  "@billPayments_feeFixed": {
+    "description": "Fixed fee display",
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+
+  "billPayments_statusCompleted": "Completed",
+  "@billPayments_statusCompleted": {
+    "description": "Completed status"
+  },
+
+  "billPayments_statusPending": "Pending",
+  "@billPayments_statusPending": {
+    "description": "Pending status"
+  },
+
+  "billPayments_statusProcessing": "Processing",
+  "@billPayments_statusProcessing": {
+    "description": "Processing status"
+  },
+
+  "billPayments_statusFailed": "Failed",
+  "@billPayments_statusFailed": {
+    "description": "Failed status"
+  },
+
+  "billPayments_statusRefunded": "Refunded",
+  "@billPayments_statusRefunded": {
+    "description": "Refunded status"
   },
 
   "navigation_cards": "Cards",
@@ -5940,286 +6291,6 @@
     "description": "Empty state title"
   },
 
-  "bankLinking_linkedAccounts": "Linked Bank Accounts",
-  "@bankLinking_linkedAccounts": {
-    "description": "Linked accounts page title"
-  },
-
-  "bankLinking_noLinkedAccounts": "No linked accounts",
-  "@bankLinking_noLinkedAccounts": {
-    "description": "Empty state title"
-  },
-
-  "bankLinking_linkAccountDesc": "Link your bank account to easily deposit and withdraw funds",
-  "@bankLinking_linkAccountDesc": {
-    "description": "Empty state description"
-  },
-
-  "bankLinking_linkNewAccount": "Link New Account",
-  "@bankLinking_linkNewAccount": {
-    "description": "Link new account button"
-  },
-
-  "bankLinking_selectBank": "Select Bank",
-  "@bankLinking_selectBank": {
-    "description": "Select bank page title"
-  },
-
-  "bankLinking_selectBankTitle": "Choose Your Bank",
-  "@bankLinking_selectBankTitle": {
-    "description": "Select bank heading"
-  },
-
-  "bankLinking_selectBankDesc": "Select the bank where you have an account",
-  "@bankLinking_selectBankDesc": {
-    "description": "Select bank description"
-  },
-
-  "bankLinking_linkAccount": "Link Account",
-  "@bankLinking_linkAccount": {
-    "description": "Link account page title"
-  },
-
-  "bankLinking_accountDetails": "Account Details",
-  "@bankLinking_accountDetails": {
-    "description": "Account details section"
-  },
-
-  "bankLinking_accountNumber": "Account Number",
-  "@bankLinking_accountNumber": {
-    "description": "Account number field label"
-  },
-
-  "bankLinking_accountNumberRequired": "Account number is required",
-  "@bankLinking_accountNumberRequired": {
-    "description": "Account number validation"
-  },
-
-  "bankLinking_accountHolderName": "Account Holder Name",
-  "@bankLinking_accountHolderName": {
-    "description": "Account holder name field label"
-  },
-
-  "bankLinking_accountHolderNameRequired": "Account holder name is required",
-  "@bankLinking_accountHolderNameRequired": {
-    "description": "Account holder name validation"
-  },
-
-  "bankLinking_verificationRequired": "Verification Required",
-  "@bankLinking_verificationRequired": {
-    "description": "Verification info title"
-  },
-
-  "bankLinking_verificationDesc": "You will receive an OTP to verify your account ownership",
-  "@bankLinking_verificationDesc": {
-    "description": "Verification info description"
-  },
-
-  "bankLinking_linkFailed": "Failed to link account",
-  "@bankLinking_linkFailed": {
-    "description": "Link account error message"
-  },
-
-  "bankLinking_verifyAccount": "Verify Account",
-  "@bankLinking_verifyAccount": {
-    "description": "Verify account page title"
-  },
-
-  "bankLinking_verificationTitle": "Verify Your Account",
-  "@bankLinking_verificationTitle": {
-    "description": "Verification page heading"
-  },
-
-  "bankLinking_otpCode": "OTP Code",
-  "@bankLinking_otpCode": {
-    "description": "OTP code field label"
-  },
-
-  "bankLinking_resendOtp": "Resend OTP",
-  "@bankLinking_resendOtp": {
-    "description": "Resend OTP button"
-  },
-
-  "bankLinking_resendOtpIn": "Resend OTP in {seconds}s",
-  "@bankLinking_resendOtpIn": {
-    "description": "Resend OTP countdown",
-    "placeholders": {
-      "seconds": {
-        "type": "int"
-      }
-    }
-  },
-
-  "bankLinking_devOtpHint": "Dev mode: Use OTP 123456",
-  "@bankLinking_devOtpHint": {
-    "description": "Dev OTP hint"
-  },
-
-  "bankLinking_invalidOtp": "Invalid OTP code",
-  "@bankLinking_invalidOtp": {
-    "description": "Invalid OTP error"
-  },
-
-  "bankLinking_verify": "Verify",
-  "@bankLinking_verify": {
-    "description": "Verify button"
-  },
-
-  "bankLinking_verificationSuccess": "Account verified successfully",
-  "@bankLinking_verificationSuccess": {
-    "description": "Verification success message"
-  },
-
-  "bankLinking_verificationFailed": "Verification failed",
-  "@bankLinking_verificationFailed": {
-    "description": "Verification failed message"
-  },
-
-  "bankLinking_otpResent": "OTP sent successfully",
-  "@bankLinking_otpResent": {
-    "description": "OTP resent message"
-  },
-
-  "bankLinking_primary": "Primary",
-  "@bankLinking_primary": {
-    "description": "Primary account badge"
-  },
-
-  "bankLinking_verified": "Verified",
-  "@bankLinking_verified": {
-    "description": "Verified status"
-  },
-
-  "bankLinking_pending": "Pending",
-  "@bankLinking_pending": {
-    "description": "Pending status"
-  },
-
-  "bankLinking_failed": "Failed",
-  "@bankLinking_failed": {
-    "description": "Failed status"
-  },
-
-  "bankLinking_suspended": "Suspended",
-  "@bankLinking_suspended": {
-    "description": "Suspended status"
-  },
-
-  "bankLinking_balance": "Balance",
-  "@bankLinking_balance": {
-    "description": "Balance label"
-  },
-
-  "bankLinking_deposit": "Deposit",
-  "@bankLinking_deposit": {
-    "description": "Deposit button"
-  },
-
-  "bankLinking_withdraw": "Withdraw",
-  "@bankLinking_withdraw": {
-    "description": "Withdraw button"
-  },
-
-  "bankLinking_primaryAccountSet": "Primary account updated",
-  "@bankLinking_primaryAccountSet": {
-    "description": "Primary account success message"
-  },
-
-  "bankLinking_balanceCheck": "Balance",
-  "@bankLinking_balanceCheck": {
-    "description": "Balance check feature badge"
-  },
-
-  "bankLinking_directDebit": "Direct",
-  "@bankLinking_directDebit": {
-    "description": "Direct debit feature badge"
-  },
-
-  "bankLinking_depositFromBank": "Deposit from Bank",
-  "@bankLinking_depositFromBank": {
-    "description": "Deposit page title"
-  },
-
-  "bankLinking_withdrawToBank": "Withdraw to Bank",
-  "@bankLinking_withdrawToBank": {
-    "description": "Withdraw page title"
-  },
-
-  "bankLinking_amount": "Amount",
-  "@bankLinking_amount": {
-    "description": "Amount label"
-  },
-
-  "bankLinking_enterAmount": "Enter amount",
-  "@bankLinking_enterAmount": {
-    "description": "Enter amount field label"
-  },
-
-  "bankLinking_amountRequired": "Amount is required",
-  "@bankLinking_amountRequired": {
-    "description": "Amount validation"
-  },
-
-  "bankLinking_invalidAmount": "Invalid amount",
-  "@bankLinking_invalidAmount": {
-    "description": "Invalid amount validation"
-  },
-
-  "bankLinking_confirmDeposit": "Confirm Deposit",
-  "@bankLinking_confirmDeposit": {
-    "description": "Confirm deposit button"
-  },
-
-  "bankLinking_confirmWithdraw": "Confirm Withdraw",
-  "@bankLinking_confirmWithdraw": {
-    "description": "Confirm withdraw button"
-  },
-
-  "bankLinking_depositConfirmation": "Deposit {amount} XOF from your bank account?",
-  "@bankLinking_depositConfirmation": {
-    "description": "Deposit confirmation message",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-
-  "bankLinking_withdrawConfirmation": "Withdraw {amount} XOF to your bank account?",
-  "@bankLinking_withdrawConfirmation": {
-    "description": "Withdraw confirmation message",
-    "placeholders": {
-      "amount": {
-        "type": "String"
-      }
-    }
-  },
-
-  "bankLinking_depositSuccess": "Deposit initiated successfully",
-  "@bankLinking_depositSuccess": {
-    "description": "Deposit success message"
-  },
-
-  "bankLinking_withdrawSuccess": "Withdrawal initiated successfully",
-  "@bankLinking_withdrawSuccess": {
-    "description": "Withdraw success message"
-  },
-
-  "bankLinking_depositInfo": "Funds will be deposited to your JoonaPay wallet instantly",
-  "@bankLinking_depositInfo": {
-    "description": "Deposit info message"
-  },
-
-  "bankLinking_withdrawInfo": "Withdrawal will be processed within 2-4 hours",
-  "@bankLinking_withdrawInfo": {
-    "description": "Withdraw info message"
-  },
-
-  "bankLinking_withdrawTime": "Estimated time: 2-4 hours",
-  "@bankLinking_withdrawTime": {
-    "description": "Withdraw time estimate"
-  },
-
   "bulkPayments_emptyDescription": "Upload a CSV file to send payments to multiple recipients at once",
   "@bulkPayments_emptyDescription": {
     "description": "Empty state description"
@@ -6421,7 +6492,37 @@
   "bulkPayments_downloadFailed": "Failed to download report",
   "@bulkPayments_downloadFailed": {
     "description": "Download failed message"
-,
+  },
+
+  "bulkPayments_statusDraft": "Draft",
+  "@bulkPayments_statusDraft": {
+    "description": "Draft status"
+  },
+
+  "bulkPayments_statusPending": "Pending",
+  "@bulkPayments_statusPending": {
+    "description": "Pending status"
+  },
+
+  "bulkPayments_statusProcessing": "Processing",
+  "@bulkPayments_statusProcessing": {
+    "description": "Processing status"
+  },
+
+  "bulkPayments_statusCompleted": "Completed",
+  "@bulkPayments_statusCompleted": {
+    "description": "Completed status"
+  },
+
+  "bulkPayments_statusPartial": "Partially Completed",
+  "@bulkPayments_statusPartial": {
+    "description": "Partially completed status"
+  },
+
+  "bulkPayments_statusFailed": "Failed",
+  "@bulkPayments_statusFailed": {
+    "description": "Failed status"
+  },
 
   "expenses_title": "Expenses",
   "@expenses_title": {
@@ -6656,5 +6757,3106 @@
   "expenses_reportGenerated": "Report generated successfully",
   "@expenses_reportGenerated": {
     "description": "Report generated message"
+  }
+
+,
+
+  "bulkPayments_title": "Bulk Payments",
+  "@bulkPayments_title": {
+    "description": "Bulk payments screen title"
+  },
+
+  "bulkPayments_uploadCsv": "Upload CSV File",
+  "@bulkPayments_uploadCsv": {
+    "description": "Upload CSV button"
+  },
+
+  "notifications_title": "Notifications",
+  "@notifications_title": {
+    "description": "Notifications screen title"
+  },
+
+  "notifications_markAllRead": "Mark all read",
+  "@notifications_markAllRead": {
+    "description": "Mark all notifications as read button"
+  },
+
+  "notifications_emptyTitle": "No Notifications",
+  "@notifications_emptyTitle": {
+    "description": "Empty state title"
+  },
+
+  "notifications_emptyMessage": "You're all caught up!",
+  "@notifications_emptyMessage": {
+    "description": "Empty state message"
+  },
+
+  "notifications_errorTitle": "Failed to Load",
+  "@notifications_errorTitle": {
+    "description": "Error state title"
+  },
+
+  "notifications_errorGeneric": "An error occurred",
+  "@notifications_errorGeneric": {
+    "description": "Generic error message"
+  },
+
+  "notifications_timeJustNow": "Just now",
+  "@notifications_timeJustNow": {
+    "description": "Time format for just now"
+  },
+
+  "notifications_timeMinutesAgo": "{count}m ago",
+  "@notifications_timeMinutesAgo": {
+    "description": "Time format for minutes ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "notifications_timeHoursAgo": "{count}h ago",
+  "@notifications_timeHoursAgo": {
+    "description": "Time format for hours ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "notifications_timeDaysAgo": "{count}d ago",
+  "@notifications_timeDaysAgo": {
+    "description": "Time format for days ago",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+
+  "security_title": "Security",
+  "@security_title": {
+    "description": "Security screen title"
+  },
+
+  "security_authentication": "Authentication",
+  "@security_authentication": {
+    "description": "Authentication section header"
+  },
+
+  "security_changePin": "Change PIN",
+  "@security_changePin": {
+    "description": "Change PIN option"
+  },
+
+  "security_changePinSubtitle": "Update your 4-digit PIN",
+  "@security_changePinSubtitle": {
+    "description": "Change PIN subtitle"
+  },
+
+  "security_biometricLogin": "Biometric Login",
+  "@security_biometricLogin": {
+    "description": "Biometric login option"
+  },
+
+  "security_biometricSubtitle": "Use Face ID or fingerprint",
+  "@security_biometricSubtitle": {
+    "description": "Biometric login subtitle"
+  },
+
+  "security_biometricNotAvailable": "Not available on this device",
+  "@security_biometricNotAvailable": {
+    "description": "Biometric not available message"
+  },
+
+  "security_biometricUnavailableMessage": "Biometric authentication is not available on this device",
+  "@security_biometricUnavailableMessage": {
+    "description": "Biometric unavailable snackbar message"
+  },
+
+  "security_biometricVerifyReason": "Verify to enable biometric login",
+  "@security_biometricVerifyReason": {
+    "description": "Biometric verification reason"
+  },
+
+  "security_loading": "Loading...",
+  "@security_loading": {
+    "description": "Loading state text"
+  },
+
+  "security_checkingAvailability": "Checking availability...",
+  "@security_checkingAvailability": {
+    "description": "Checking biometric availability"
+  },
+
+  "security_errorLoadingState": "Error loading state",
+  "@security_errorLoadingState": {
+    "description": "Error loading biometric state"
+  },
+
+  "security_errorCheckingAvailability": "Error checking availability",
+  "@security_errorCheckingAvailability": {
+    "description": "Error checking biometric availability"
+  },
+
+  "security_twoFactorAuth": "Two-Factor Authentication",
+  "@security_twoFactorAuth": {
+    "description": "Two-factor authentication option"
+  },
+
+  "security_twoFactorEnabledSubtitle": "Enabled via Authenticator app",
+  "@security_twoFactorEnabledSubtitle": {
+    "description": "2FA enabled subtitle"
+  },
+
+  "security_twoFactorDisabledSubtitle": "Add extra protection",
+  "@security_twoFactorDisabledSubtitle": {
+    "description": "2FA disabled subtitle"
+  },
+
+  "security_transactionSecurity": "Transaction Security",
+  "@security_transactionSecurity": {
+    "description": "Transaction security section header"
+  },
+
+  "security_requirePinForTransactions": "Require PIN for Transactions",
+  "@security_requirePinForTransactions": {
+    "description": "Require PIN for transactions option"
+  },
+
+  "security_requirePinSubtitle": "Confirm all transactions with PIN",
+  "@security_requirePinSubtitle": {
+    "description": "Require PIN subtitle"
+  },
+
+  "security_alerts": "Security Alerts",
+  "@security_alerts": {
+    "description": "Security alerts section header"
+  },
+
+  "security_loginNotifications": "Login Notifications",
+  "@security_loginNotifications": {
+    "description": "Login notifications option"
+  },
+
+  "security_loginNotificationsSubtitle": "Get notified of new logins",
+  "@security_loginNotificationsSubtitle": {
+    "description": "Login notifications subtitle"
+  },
+
+  "security_newDeviceAlerts": "New Device Alerts",
+  "@security_newDeviceAlerts": {
+    "description": "New device alerts option"
+  },
+
+  "security_newDeviceAlertsSubtitle": "Alert when a new device is used",
+  "@security_newDeviceAlertsSubtitle": {
+    "description": "New device alerts subtitle"
+  },
+
+  "security_sessions": "Sessions",
+  "@security_sessions": {
+    "description": "Sessions section header"
+  },
+
+  "security_devices": "Devices",
+  "@security_devices": {
+    "description": "Devices option"
+  },
+
+  "security_devicesSubtitle": "Manage your devices",
+  "@security_devicesSubtitle": {
+    "description": "Devices subtitle"
+  },
+
+  "security_activeSessions": "Active Sessions",
+  "@security_activeSessions": {
+    "description": "Active sessions option"
+  },
+
+  "security_activeSessionsSubtitle": "Manage your active sessions",
+  "@security_activeSessionsSubtitle": {
+    "description": "Active sessions subtitle"
+  },
+
+  "security_logoutAllDevices": "Log Out All Devices",
+  "@security_logoutAllDevices": {
+    "description": "Log out all devices option"
+  },
+
+  "security_logoutAllDevicesSubtitle": "Sign out from all other devices",
+  "@security_logoutAllDevicesSubtitle": {
+    "description": "Log out all devices subtitle"
+  },
+
+  "security_privacy": "Privacy",
+  "@security_privacy": {
+    "description": "Privacy section header"
+  },
+
+  "security_loginHistory": "Login History",
+  "@security_loginHistory": {
+    "description": "Login history option"
+  },
+
+  "security_loginHistorySubtitle": "View recent login activity",
+  "@security_loginHistorySubtitle": {
+    "description": "Login history subtitle"
+  },
+
+  "security_deleteAccount": "Delete Account",
+  "@security_deleteAccount": {
+    "description": "Delete account option"
+  },
+
+  "security_deleteAccountSubtitle": "Permanently delete your account",
+  "@security_deleteAccountSubtitle": {
+    "description": "Delete account subtitle"
+  },
+
+  "security_scoreTitle": "Security Score",
+  "@security_scoreTitle": {
+    "description": "Security score title"
+  },
+
+  "security_scoreExcellent": "Excellent! Your account is well protected.",
+  "@security_scoreExcellent": {
+    "description": "Excellent security score description"
+  },
+
+  "security_scoreGood": "Good security. A few improvements possible.",
+  "@security_scoreGood": {
+    "description": "Good security score description"
+  },
+
+  "security_scoreModerate": "Moderate security. Enable more features.",
+  "@security_scoreModerate": {
+    "description": "Moderate security score description"
+  },
+
+  "security_scoreLow": "Low security. Please enable protection features.",
+  "@security_scoreLow": {
+    "description": "Low security score description"
+  },
+
+  "security_tipEnable2FA": "Enable 2FA to increase your score by 25 points",
+  "@security_tipEnable2FA": {
+    "description": "Tip to enable 2FA"
+  },
+
+  "security_tipEnableBiometrics": "Enable biometrics for easier secure login",
+  "@security_tipEnableBiometrics": {
+    "description": "Tip to enable biometrics"
+  },
+
+  "security_tipRequirePin": "Require PIN for transactions for extra safety",
+  "@security_tipRequirePin": {
+    "description": "Tip to require PIN"
+  },
+
+  "security_tipEnableNotifications": "Enable all notifications for maximum security",
+  "@security_tipEnableNotifications": {
+    "description": "Tip to enable notifications"
+  },
+
+  "security_setup2FATitle": "Set Up Two-Factor Authentication",
+  "@security_setup2FATitle": {
+    "description": "Set up 2FA dialog title"
+  },
+
+  "security_setup2FAMessage": "Use an authenticator app like Google Authenticator or Authy for enhanced security.",
+  "@security_setup2FAMessage": {
+    "description": "Set up 2FA dialog message"
+  },
+
+  "security_continueSetup": "Continue Setup",
+  "@security_continueSetup": {
+    "description": "Continue setup button"
+  },
+
+  "security_2FAEnabledSuccess": "2FA enabled successfully",
+  "@security_2FAEnabledSuccess": {
+    "description": "2FA enabled success message"
+  },
+
+  "security_disable2FATitle": "Disable 2FA?",
+  "@security_disable2FATitle": {
+    "description": "Disable 2FA dialog title"
+  },
+
+  "security_disable2FAMessage": "This will make your account less secure. Are you sure?",
+  "@security_disable2FAMessage": {
+    "description": "Disable 2FA dialog message"
+  },
+
+  "security_disable": "Disable",
+  "@security_disable": {
+    "description": "Disable button"
+  },
+
+  "security_logoutAllTitle": "Log Out All Devices?",
+  "@security_logoutAllTitle": {
+    "description": "Log out all devices dialog title"
+  },
+
+  "security_logoutAllMessage": "You will be logged out from all other devices. You will need to log in again on those devices.",
+  "@security_logoutAllMessage": {
+    "description": "Log out all devices dialog message"
+  },
+
+  "security_logoutAll": "Log Out All",
+  "@security_logoutAll": {
+    "description": "Log out all button"
+  },
+
+  "security_logoutAllSuccess": "All other devices have been logged out",
+  "@security_logoutAllSuccess": {
+    "description": "Log out all success message"
+  },
+
+  "security_loginHistoryTitle": "Login History",
+  "@security_loginHistoryTitle": {
+    "description": "Login history sheet title"
+  },
+
+  "security_loginSuccess": "Success",
+  "@security_loginSuccess": {
+    "description": "Login success status"
+  },
+
+  "security_loginFailed": "Failed",
+  "@security_loginFailed": {
+    "description": "Login failed status"
+  },
+
+  "security_deleteAccountTitle": "Delete Account?",
+  "@security_deleteAccountTitle": {
+    "description": "Delete account dialog title"
+  },
+
+  "security_deleteAccountMessage": "This action is permanent and cannot be undone. All your data, transaction history, and funds will be lost.",
+  "@security_deleteAccountMessage": {
+    "description": "Delete account dialog message"
+  },
+
+  "security_delete": "Delete",
+  "@security_delete": {
+    "description": "Delete button"
+  },
+
+  "biometric_enrollment_title": "Secure Your Account",
+  "@biometric_enrollment_title": {
+    "description": "Biometric enrollment title"
+  },
+
+  "biometric_enrollment_subtitle": "Add an extra layer of security with biometric authentication",
+  "@biometric_enrollment_subtitle": {
+    "description": "Biometric enrollment subtitle"
+  },
+
+  "biometric_enrollment_enable": "Enable Biometric Authentication",
+  "@biometric_enrollment_enable": {
+    "description": "Enable biometric button"
+  },
+
+  "biometric_enrollment_skip": "Skip for Now",
+  "@biometric_enrollment_skip": {
+    "description": "Skip biometric enrollment button"
+  },
+
+  "biometric_enrollment_benefit_fast_title": "Fast Access",
+  "@biometric_enrollment_benefit_fast_title": {
+    "description": "Fast access benefit title"
+  },
+
+  "biometric_enrollment_benefit_fast_desc": "Unlock your wallet instantly without entering PIN",
+  "@biometric_enrollment_benefit_fast_desc": {
+    "description": "Fast access benefit description"
+  },
+
+  "biometric_enrollment_benefit_secure_title": "Enhanced Security",
+  "@biometric_enrollment_benefit_secure_title": {
+    "description": "Enhanced security benefit title"
+  },
+
+  "biometric_enrollment_benefit_secure_desc": "Your unique biometrics provide an additional security layer",
+  "@biometric_enrollment_benefit_secure_desc": {
+    "description": "Enhanced security benefit description"
+  },
+
+  "biometric_enrollment_benefit_convenient_title": "Convenient Authentication",
+  "@biometric_enrollment_benefit_convenient_title": {
+    "description": "Convenient authentication benefit title"
+  },
+
+  "biometric_enrollment_benefit_convenient_desc": "Quickly verify transactions and sensitive actions",
+  "@biometric_enrollment_benefit_convenient_desc": {
+    "description": "Convenient authentication benefit description"
+  },
+
+  "biometric_enrollment_authenticate_reason": "Authenticate to enable biometric login",
+  "@biometric_enrollment_authenticate_reason": {
+    "description": "Biometric authentication reason for enrollment"
+  },
+
+  "biometric_enrollment_success_title": "Biometric Enabled!",
+  "@biometric_enrollment_success_title": {
+    "description": "Biometric enrollment success title"
+  },
+
+  "biometric_enrollment_success_message": "You can now use biometric authentication to access your wallet",
+  "@biometric_enrollment_success_message": {
+    "description": "Biometric enrollment success message"
+  },
+
+  "biometric_enrollment_error_not_available": "Biometric authentication is not available on this device",
+  "@biometric_enrollment_error_not_available": {
+    "description": "Biometric not available error"
+  },
+
+  "biometric_enrollment_error_failed": "Biometric authentication failed. Please try again",
+  "@biometric_enrollment_error_failed": {
+    "description": "Biometric authentication failed error"
+  },
+
+  "biometric_enrollment_error_generic": "Failed to enable biometric authentication",
+  "@biometric_enrollment_error_generic": {
+    "description": "Generic biometric error"
+  },
+
+  "biometric_enrollment_skip_confirm_title": "Skip Biometric Setup?",
+  "@biometric_enrollment_skip_confirm_title": {
+    "description": "Skip biometric confirmation title"
+  },
+
+  "biometric_enrollment_skip_confirm_message": "You can enable biometric authentication later in Settings",
+  "@biometric_enrollment_skip_confirm_message": {
+    "description": "Skip biometric confirmation message"
+  },
+
+  "biometric_settings_title": "Biometric Settings",
+  "@biometric_settings_title": {
+    "description": "Biometric settings title"
+  },
+
+  "biometric_settings_authentication": "Authentication",
+  "@biometric_settings_authentication": {
+    "description": "Authentication section title"
+  },
+
+  "biometric_settings_use_cases": "Use Biometric For",
+  "@biometric_settings_use_cases": {
+    "description": "Use cases section title"
+  },
+
+  "biometric_settings_advanced": "Advanced",
+  "@biometric_settings_advanced": {
+    "description": "Advanced settings section title"
+  },
+
+  "biometric_settings_actions": "Actions",
+  "@biometric_settings_actions": {
+    "description": "Actions section title"
+  },
+
+  "biometric_settings_status_enabled": "Enabled",
+  "@biometric_settings_status_enabled": {
+    "description": "Biometric enabled status"
+  },
+
+  "biometric_settings_status_disabled": "Disabled",
+  "@biometric_settings_status_disabled": {
+    "description": "Biometric disabled status"
+  },
+
+  "biometric_settings_active": "Active",
+  "@biometric_settings_active": {
+    "description": "Biometric active status"
+  },
+
+  "biometric_settings_inactive": "Inactive",
+  "@biometric_settings_inactive": {
+    "description": "Biometric inactive status"
+  },
+
+  "biometric_settings_unavailable": "Unavailable",
+  "@biometric_settings_unavailable": {
+    "description": "Biometric unavailable status"
+  },
+
+  "biometric_settings_enabled_subtitle": "Biometric authentication is active",
+  "@biometric_settings_enabled_subtitle": {
+    "description": "Biometric enabled subtitle"
+  },
+
+  "biometric_settings_disabled_subtitle": "Enable to use biometric authentication",
+  "@biometric_settings_disabled_subtitle": {
+    "description": "Biometric disabled subtitle"
+  },
+
+  "biometric_settings_app_unlock_title": "App Unlock",
+  "@biometric_settings_app_unlock_title": {
+    "description": "App unlock setting title"
+  },
+
+  "biometric_settings_app_unlock_subtitle": "Use biometric to unlock the app",
+  "@biometric_settings_app_unlock_subtitle": {
+    "description": "App unlock setting subtitle"
+  },
+
+  "biometric_settings_transactions_title": "Transaction Confirmation",
+  "@biometric_settings_transactions_title": {
+    "description": "Transaction confirmation setting title"
+  },
+
+  "biometric_settings_transactions_subtitle": "Verify transactions with biometric",
+  "@biometric_settings_transactions_subtitle": {
+    "description": "Transaction confirmation setting subtitle"
+  },
+
+  "biometric_settings_sensitive_title": "Sensitive Settings",
+  "@biometric_settings_sensitive_title": {
+    "description": "Sensitive settings title"
+  },
+
+  "biometric_settings_sensitive_subtitle": "Protect PIN change and security settings",
+  "@biometric_settings_sensitive_subtitle": {
+    "description": "Sensitive settings subtitle"
+  },
+
+  "biometric_settings_view_balance_title": "View Balance",
+  "@biometric_settings_view_balance_title": {
+    "description": "View balance setting title"
+  },
+
+  "biometric_settings_view_balance_subtitle": "Require biometric to see wallet balance",
+  "@biometric_settings_view_balance_subtitle": {
+    "description": "View balance setting subtitle"
+  },
+
+  "biometric_settings_timeout_title": "Biometric Timeout",
+  "@biometric_settings_timeout_title": {
+    "description": "Biometric timeout setting title"
+  },
+
+  "biometric_settings_timeout_immediate": "Immediate (Always required)",
+  "@biometric_settings_timeout_immediate": {
+    "description": "Immediate timeout option"
+  },
+
+  "biometric_settings_timeout_5min": "5 minutes",
+  "@biometric_settings_timeout_5min": {
+    "description": "5 minute timeout option"
+  },
+
+  "biometric_settings_timeout_15min": "15 minutes",
+  "@biometric_settings_timeout_15min": {
+    "description": "15 minute timeout option"
+  },
+
+  "biometric_settings_timeout_30min": "30 minutes",
+  "@biometric_settings_timeout_30min": {
+    "description": "30 minute timeout option"
+  },
+
+  "biometric_settings_timeout_custom": "{minutes} minutes",
+  "@biometric_settings_timeout_custom": {
+    "description": "Custom timeout option",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+
+  "biometric_settings_timeout_select_title": "Select Timeout",
+  "@biometric_settings_timeout_select_title": {
+    "description": "Timeout selector title"
+  },
+
+  "biometric_settings_high_value_title": "High-Value Threshold",
+  "@biometric_settings_high_value_title": {
+    "description": "High value threshold setting title"
+  },
+
+  "biometric_settings_high_value_subtitle": "Require biometric + PIN for transfers over ${amount}",
+  "@biometric_settings_high_value_subtitle": {
+    "description": "High value threshold subtitle",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "biometric_settings_threshold_select_title": "Select Threshold",
+  "@biometric_settings_threshold_select_title": {
+    "description": "Threshold selector title"
+  },
+
+  "biometric_settings_reenroll_title": "Re-enroll Biometric",
+  "@biometric_settings_reenroll_title": {
+    "description": "Re-enroll biometric title"
+  },
+
+  "biometric_settings_reenroll_subtitle": "Update your biometric authentication",
+  "@biometric_settings_reenroll_subtitle": {
+    "description": "Re-enroll biometric subtitle"
+  },
+
+  "biometric_settings_reenroll_confirm_title": "Re-enroll Biometric?",
+  "@biometric_settings_reenroll_confirm_title": {
+    "description": "Re-enroll confirmation title"
+  },
+
+  "biometric_settings_reenroll_confirm_message": "Your current biometric setup will be removed and you'll need to set it up again",
+  "@biometric_settings_reenroll_confirm_message": {
+    "description": "Re-enroll confirmation message"
+  },
+
+  "biometric_settings_fallback_title": "Manage PIN",
+  "@biometric_settings_fallback_title": {
+    "description": "Fallback to PIN title"
+  },
+
+  "biometric_settings_fallback_subtitle": "PIN is always available as fallback",
+  "@biometric_settings_fallback_subtitle": {
+    "description": "Fallback to PIN subtitle"
+  },
+
+  "biometric_settings_disable_title": "Disable Biometric?",
+  "@biometric_settings_disable_title": {
+    "description": "Disable biometric confirmation title"
+  },
+
+  "biometric_settings_disable_message": "You'll need to use your PIN to authenticate instead",
+  "@biometric_settings_disable_message": {
+    "description": "Disable biometric confirmation message"
+  },
+
+  "biometric_settings_disable": "Disable",
+  "@biometric_settings_disable": {
+    "description": "Disable button"
+  },
+
+  "biometric_settings_error_loading": "Failed to load biometric settings",
+  "@biometric_settings_error_loading": {
+    "description": "Error loading biometric settings"
+  },
+
+  "biometric_type_face_id": "Face ID",
+  "@biometric_type_face_id": {
+    "description": "Face ID biometric type"
+  },
+
+  "biometric_type_fingerprint": "Fingerprint",
+  "@biometric_type_fingerprint": {
+    "description": "Fingerprint biometric type"
+  },
+
+  "biometric_type_iris": "Iris",
+  "@biometric_type_iris": {
+    "description": "Iris biometric type"
+  },
+
+  "biometric_type_none": "None",
+  "@biometric_type_none": {
+    "description": "No biometric type"
+  },
+
+  "biometric_error_lockout": "Biometric authentication is temporarily locked. Please try again later",
+  "@biometric_error_lockout": {
+    "description": "Biometric lockout error"
+  },
+
+  "biometric_error_not_enrolled": "No biometrics enrolled on this device. Please add biometrics in device settings",
+  "@biometric_error_not_enrolled": {
+    "description": "Biometric not enrolled error"
+  },
+
+  "biometric_error_hardware_unavailable": "Biometric hardware is not available",
+  "@biometric_error_hardware_unavailable": {
+    "description": "Biometric hardware unavailable error"
+  },
+
+  "biometric_change_detected_title": "Biometric Change Detected",
+  "@biometric_change_detected_title": {
+    "description": "Biometric change detected title"
+  },
+
+  "biometric_change_detected_message": "Device biometric enrollment has changed. For security, biometric authentication has been disabled. Please re-enroll if you want to continue using it",
+  "@biometric_change_detected_message": {
+    "description": "Biometric change detected message"
+  },
+
+  "profile_title": "Profile",
+  "@profile_title": {
+    "description": "Profile screen title"
+  },
+
+  "profile_phoneNumber": "Phone Number",
+  "@profile_phoneNumber": {
+    "description": "Phone number field label"
+  },
+
+  "profile_firstName": "First Name",
+  "@profile_firstName": {
+    "description": "First name field label"
+  },
+
+  "profile_lastName": "Last Name",
+  "@profile_lastName": {
+    "description": "Last name field label"
+  },
+
+  "profile_email": "Email",
+  "@profile_email": {
+    "description": "Email field label"
+  },
+
+  "profile_kycStatus": "KYC Status",
+  "@profile_kycStatus": {
+    "description": "KYC status field label"
+  },
+
+  "profile_country": "Country",
+  "@profile_country": {
+    "description": "Country field label"
+  },
+
+  "profile_notSet": "Not set",
+  "@profile_notSet": {
+    "description": "Field not set placeholder"
+  },
+
+  "profile_verify": "Verify",
+  "@profile_verify": {
+    "description": "Verify button"
+  },
+
+  "profile_kycNotVerified": "Not Verified",
+  "@profile_kycNotVerified": {
+    "description": "KYC not verified status"
+  },
+
+  "profile_kycPending": "Pending Review",
+  "@profile_kycPending": {
+    "description": "KYC pending status"
+  },
+
+  "profile_kycVerified": "Verified",
+  "@profile_kycVerified": {
+    "description": "KYC verified status"
+  },
+
+  "profile_kycRejected": "Rejected",
+  "@profile_kycRejected": {
+    "description": "KYC rejected status"
+  },
+
+  "profile_countryIvoryCoast": "Ivory Coast",
+  "@profile_countryIvoryCoast": {
+    "description": "Ivory Coast country name"
+  },
+
+  "profile_countryNigeria": "Nigeria",
+  "@profile_countryNigeria": {
+    "description": "Nigeria country name"
+  },
+
+  "profile_countryKenya": "Kenya",
+  "@profile_countryKenya": {
+    "description": "Kenya country name"
+  },
+
+  "profile_countryGhana": "Ghana",
+  "@profile_countryGhana": {
+    "description": "Ghana country name"
+  },
+
+  "profile_countrySenegal": "Senegal",
+  "@profile_countrySenegal": {
+    "description": "Senegal country name"
+  },
+
+  "changePin_title": "Change PIN",
+  "@changePin_title": {
+    "description": "Change PIN screen title"
+  },
+
+  "changePin_newPinTitle": "New PIN",
+  "@changePin_newPinTitle": {
+    "description": "New PIN step title"
+  },
+
+  "changePin_confirmTitle": "Confirm PIN",
+  "@changePin_confirmTitle": {
+    "description": "Confirm PIN step title"
+  },
+
+  "changePin_enterCurrentPinTitle": "Enter Current PIN",
+  "@changePin_enterCurrentPinTitle": {
+    "description": "Enter current PIN step title"
+  },
+
+  "changePin_enterCurrentPinSubtitle": "Enter your current 4-digit PIN to continue",
+  "@changePin_enterCurrentPinSubtitle": {
+    "description": "Enter current PIN step subtitle"
+  },
+
+  "changePin_createNewPinTitle": "Create New PIN",
+  "@changePin_createNewPinTitle": {
+    "description": "Create new PIN step title"
+  },
+
+  "changePin_createNewPinSubtitle": "Choose a new 4-digit PIN for your account",
+  "@changePin_createNewPinSubtitle": {
+    "description": "Create new PIN step subtitle"
+  },
+
+  "changePin_confirmPinTitle": "Confirm Your PIN",
+  "@changePin_confirmPinTitle": {
+    "description": "Confirm PIN step title"
+  },
+
+  "changePin_confirmPinSubtitle": "Re-enter your new PIN to confirm",
+  "@changePin_confirmPinSubtitle": {
+    "description": "Confirm PIN step subtitle"
+  },
+
+  "changePin_errorBiometricRequired": "Biometric confirmation required",
+  "@changePin_errorBiometricRequired": {
+    "description": "Biometric required error"
+  },
+
+  "changePin_errorIncorrectPin": "Incorrect PIN. Please try again.",
+  "@changePin_errorIncorrectPin": {
+    "description": "Incorrect PIN error"
+  },
+
+  "changePin_errorUnableToVerify": "Unable to verify PIN. Please try again.",
+  "@changePin_errorUnableToVerify": {
+    "description": "Unable to verify PIN error"
+  },
+
+  "changePin_errorWeakPin": "PIN is too simple. Choose a stronger PIN.",
+  "@changePin_errorWeakPin": {
+    "description": "Weak PIN error"
+  },
+
+  "changePin_errorSameAsCurrentPin": "New PIN must be different from current PIN.",
+  "@changePin_errorSameAsCurrentPin": {
+    "description": "Same as current PIN error"
+  },
+
+  "changePin_errorPinMismatch": "PINs do not match. Try again.",
+  "@changePin_errorPinMismatch": {
+    "description": "PIN mismatch error"
+  },
+
+  "changePin_successMessage": "PIN changed successfully!",
+  "@changePin_successMessage": {
+    "description": "PIN changed success message"
+  },
+
+  "changePin_errorFailedToSet": "Failed to set new PIN. Please try a different PIN.",
+  "@changePin_errorFailedToSet": {
+    "description": "Failed to set new PIN error"
+  },
+
+  "changePin_errorFailedToSave": "Failed to save PIN. Please try again.",
+  "@changePin_errorFailedToSave": {
+    "description": "Failed to save PIN error"
+  },
+
+  "notifications_email": "Email Notifications",
+  "@notifications_email": {
+    "description": "Email notifications section"
+  },
+
+  "notifications_emailReceipts": "Email Receipts",
+  "@notifications_emailReceipts": {
+    "description": "Email receipts option"
+  },
+
+  "notifications_emailReceiptsDescription": "Receive transaction receipts by email",
+  "@notifications_emailReceiptsDescription": {
+    "description": "Email receipts description"
+  },
+
+  "notifications_loadError": "Failed to load notification settings",
+  "@notifications_loadError": {
+    "description": "Error loading notification settings"
+  },
+
+  "notifications_marketing": "Marketing",
+  "@notifications_marketing": {
+    "description": "Marketing notifications option"
+  },
+
+  "notifications_marketingDescription": "Promotional offers and updates",
+  "@notifications_marketingDescription": {
+    "description": "Marketing notifications description"
+  },
+
+  "notifications_monthlyStatement": "Monthly Statement",
+  "@notifications_monthlyStatement": {
+    "description": "Monthly statement option"
+  },
+
+  "notifications_monthlyStatementDescription": "Receive monthly account statement",
+  "@notifications_monthlyStatementDescription": {
+    "description": "Monthly statement description"
+  },
+
+  "notifications_newsletter": "Newsletter",
+  "@notifications_newsletter": {
+    "description": "Newsletter option"
+  },
+
+  "notifications_newsletterDescription": "Product news and updates",
+  "@notifications_newsletterDescription": {
+    "description": "Newsletter description"
+  },
+
+  "notifications_push": "Push Notifications",
+  "@notifications_push": {
+    "description": "Push notifications section"
+  },
+
+  "notifications_required": "Required",
+  "@notifications_required": {
+    "description": "Required notification indicator"
+  },
+
+  "notifications_saveError": "Failed to save preferences",
+  "@notifications_saveError": {
+    "description": "Error saving notification preferences"
+  },
+
+  "notifications_savePreferences": "Save Preferences",
+  "@notifications_savePreferences": {
+    "description": "Save preferences button"
+  },
+
+  "notifications_saveSuccess": "Preferences saved successfully",
+  "@notifications_saveSuccess": {
+    "description": "Success saving preferences"
+  },
+
+  "notifications_security": "Security Alerts",
+  "@notifications_security": {
+    "description": "Security alerts option"
+  },
+
+  "notifications_securityCodes": "Security Codes",
+  "@notifications_securityCodes": {
+    "description": "Security codes option"
+  },
+
+  "notifications_securityCodesDescription": "Receive login and verification codes",
+  "@notifications_securityCodesDescription": {
+    "description": "Security codes description"
+  },
+
+  "notifications_securityDescription": "Account security notifications",
+  "@notifications_securityDescription": {
+    "description": "Security notifications description"
+  },
+
+  "notifications_securityNote": "Security notifications cannot be disabled",
+  "@notifications_securityNote": {
+    "description": "Security notification note"
+  },
+
+  "notifications_sms": "SMS Notifications",
+  "@notifications_sms": {
+    "description": "SMS notifications section"
+  },
+
+  "notifications_smsTransactions": "Transaction Alerts",
+  "@notifications_smsTransactions": {
+    "description": "SMS transaction alerts option"
+  },
+
+  "notifications_smsTransactionsDescription": "Receive SMS for transactions",
+  "@notifications_smsTransactionsDescription": {
+    "description": "SMS transaction alerts description"
+  },
+
+  "notifications_transactions": "Transactions",
+  "@notifications_transactions": {
+    "description": "Transaction notifications option"
+  },
+
+  "notifications_transactionsDescription": "Receive notifications for transfers and payments",
+  "@notifications_transactionsDescription": {
+    "description": "Transaction notifications description"
+  },
+
+  "notifications_unsavedChanges": "Unsaved Changes",
+  "@notifications_unsavedChanges": {
+    "description": "Unsaved changes dialog title"
+  },
+
+  "notifications_unsavedChangesMessage": "You have unsaved changes. Discard them?",
+  "@notifications_unsavedChangesMessage": {
+    "description": "Unsaved changes dialog message"
+  },
+
+  "help_callUs": "Call Us",
+  "@help_callUs": {
+    "description": "Call us button"
+  },
+
+  "help_emailUs": "Email Us",
+  "@help_emailUs": {
+    "description": "Email us button"
+  },
+
+  "help_getHelp": "Get Help",
+  "@help_getHelp": {
+    "description": "Get help title"
+  },
+
+  "help_results": "Results",
+  "@help_results": {
+    "description": "Search results label"
+  },
+
+  "help_searchPlaceholder": "Search help articles...",
+  "@help_searchPlaceholder": {
+    "description": "Help search placeholder"
+  },
+
+  "action_discard": "Discard",
+  "@action_discard": {
+    "description": "Discard action"
+  },
+
+  "common_comingSoon": "Coming Soon",
+  "@common_comingSoon": {
+    "description": "Coming soon label"
+  },
+
+  "common_maybeLater": "Maybe Later",
+  "@common_maybeLater": {
+    "description": "Maybe later button"
+  },
+
+  "common_optional": "Optional",
+  "@common_optional": {
+    "description": "Optional field indicator"
+  },
+
+  "common_share": "Share",
+  "@common_share": {
+    "description": "Share action"
+  },
+
+  "error_invalidNumber": "Invalid number",
+  "@error_invalidNumber": {
+    "description": "Invalid number error"
+  },
+
+  "export_title": "Export",
+  "@export_title": {
+    "description": "Export title"
+  },
+
+  "bankLinking_accountDetails": "Account Details",
+  "@bankLinking_accountDetails": {
+    "description": "Account details header"
+  },
+
+  "bankLinking_accountHolderName": "Account Holder Name",
+  "@bankLinking_accountHolderName": {
+    "description": "Account holder name field"
+  },
+
+  "bankLinking_accountHolderNameRequired": "Account holder name is required",
+  "@bankLinking_accountHolderNameRequired": {
+    "description": "Account holder name validation error"
+  },
+
+  "bankLinking_accountNumber": "Account Number",
+  "@bankLinking_accountNumber": {
+    "description": "Account number field"
+  },
+
+  "bankLinking_accountNumberRequired": "Account number is required",
+  "@bankLinking_accountNumberRequired": {
+    "description": "Account number validation error"
+  },
+
+  "bankLinking_amount": "Amount",
+  "@bankLinking_amount": {
+    "description": "Amount field"
+  },
+
+  "bankLinking_amountRequired": "Amount is required",
+  "@bankLinking_amountRequired": {
+    "description": "Amount validation error"
+  },
+
+  "bankLinking_balance": "Balance",
+  "@bankLinking_balance": {
+    "description": "Balance label"
+  },
+
+  "bankLinking_balanceCheck": "Balance Check",
+  "@bankLinking_balanceCheck": {
+    "description": "Balance check action"
+  },
+
+  "bankLinking_confirmDeposit": "Confirm Deposit",
+  "@bankLinking_confirmDeposit": {
+    "description": "Confirm deposit button"
+  },
+
+  "bankLinking_confirmWithdraw": "Confirm Withdrawal",
+  "@bankLinking_confirmWithdraw": {
+    "description": "Confirm withdrawal button"
+  },
+
+  "bankLinking_deposit": "Deposit",
+  "@bankLinking_deposit": {
+    "description": "Deposit action"
+  },
+
+  "bankLinking_depositConfirmation": "Deposit {amount} from your bank?",
+  "@bankLinking_depositConfirmation": {
+    "description": "Deposit confirmation message",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "bankLinking_depositFromBank": "Deposit from Bank",
+  "@bankLinking_depositFromBank": {
+    "description": "Deposit from bank action"
+  },
+
+  "bankLinking_depositInfo": "Funds will be credited within 24 hours",
+  "@bankLinking_depositInfo": {
+    "description": "Deposit information message"
+  },
+
+  "bankLinking_depositSuccess": "Deposit successful",
+  "@bankLinking_depositSuccess": {
+    "description": "Deposit success message"
+  },
+
+  "bankLinking_devOtpHint": "Dev OTP: 123456",
+  "@bankLinking_devOtpHint": {
+    "description": "Development OTP hint"
+  },
+
+  "bankLinking_directDebit": "Direct Debit",
+  "@bankLinking_directDebit": {
+    "description": "Direct debit label"
+  },
+
+  "bankLinking_enterAmount": "Enter amount",
+  "@bankLinking_enterAmount": {
+    "description": "Enter amount placeholder"
+  },
+
+  "bankLinking_failed": "Failed",
+  "@bankLinking_failed": {
+    "description": "Failed status"
+  },
+
+  "bankLinking_invalidAmount": "Invalid amount",
+  "@bankLinking_invalidAmount": {
+    "description": "Invalid amount error"
+  },
+
+  "bankLinking_invalidOtp": "Invalid OTP",
+  "@bankLinking_invalidOtp": {
+    "description": "Invalid OTP error"
+  },
+
+  "bankLinking_linkAccount": "Link Account",
+  "@bankLinking_linkAccount": {
+    "description": "Link account action"
+  },
+
+  "bankLinking_linkAccountDesc": "Link your bank account for easy transfers",
+  "@bankLinking_linkAccountDesc": {
+    "description": "Link account description"
+  },
+
+  "bankLinking_linkedAccounts": "Linked Accounts",
+  "@bankLinking_linkedAccounts": {
+    "description": "Linked accounts title"
+  },
+
+  "bankLinking_linkFailed": "Failed to link account",
+  "@bankLinking_linkFailed": {
+    "description": "Link failed error message"
+  },
+
+  "bankLinking_linkNewAccount": "Link New Account",
+  "@bankLinking_linkNewAccount": {
+    "description": "Link new account action"
+  },
+
+  "bankLinking_noLinkedAccounts": "No linked accounts",
+  "@bankLinking_noLinkedAccounts": {
+    "description": "No linked accounts message"
+  },
+
+  "bankLinking_otpCode": "OTP Code",
+  "@bankLinking_otpCode": {
+    "description": "OTP code field"
+  },
+
+  "bankLinking_otpResent": "OTP resent",
+  "@bankLinking_otpResent": {
+    "description": "OTP resent confirmation"
+  },
+
+  "bankLinking_pending": "Pending",
+  "@bankLinking_pending": {
+    "description": "Pending status"
+  },
+
+  "bankLinking_primary": "Primary",
+  "@bankLinking_primary": {
+    "description": "Primary account label"
+  },
+
+  "bankLinking_primaryAccountSet": "Primary account set",
+  "@bankLinking_primaryAccountSet": {
+    "description": "Primary account set confirmation"
+  },
+
+  "bankLinking_resendOtp": "Resend OTP",
+  "@bankLinking_resendOtp": {
+    "description": "Resend OTP action"
+  },
+
+  "bankLinking_resendOtpIn": "Resend OTP in {seconds}s",
+  "@bankLinking_resendOtpIn": {
+    "description": "Resend OTP countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+
+  "bankLinking_selectBank": "Select Bank",
+  "@bankLinking_selectBank": {
+    "description": "Select bank action"
+  },
+
+  "bankLinking_selectBankDesc": "Choose your bank to link",
+  "@bankLinking_selectBankDesc": {
+    "description": "Select bank description"
+  },
+
+  "bankLinking_selectBankTitle": "Select Your Bank",
+  "@bankLinking_selectBankTitle": {
+    "description": "Select bank title"
+  },
+
+  "bankLinking_suspended": "Suspended",
+  "@bankLinking_suspended": {
+    "description": "Suspended status"
+  },
+
+  "bankLinking_verificationDesc": "Enter the OTP sent to your phone",
+  "@bankLinking_verificationDesc": {
+    "description": "Verification description"
+  },
+
+  "bankLinking_verificationFailed": "Verification failed",
+  "@bankLinking_verificationFailed": {
+    "description": "Verification failed error"
+  },
+
+  "bankLinking_verificationRequired": "Verification Required",
+  "@bankLinking_verificationRequired": {
+    "description": "Verification required title"
+  },
+
+  "bankLinking_verificationSuccess": "Account verified",
+  "@bankLinking_verificationSuccess": {
+    "description": "Verification success message"
+  },
+
+  "bankLinking_verificationTitle": "Verify Account",
+  "@bankLinking_verificationTitle": {
+    "description": "Verify account title"
+  },
+
+  "bankLinking_verified": "Verified",
+  "@bankLinking_verified": {
+    "description": "Verified status"
+  },
+
+  "bankLinking_verify": "Verify",
+  "@bankLinking_verify": {
+    "description": "Verify action"
+  },
+
+  "bankLinking_verifyAccount": "Verify Account",
+  "@bankLinking_verifyAccount": {
+    "description": "Verify account action"
+  },
+
+  "bankLinking_withdraw": "Withdraw",
+  "@bankLinking_withdraw": {
+    "description": "Withdraw action"
+  },
+
+  "bankLinking_withdrawConfirmation": "Withdraw {amount} to your bank?",
+  "@bankLinking_withdrawConfirmation": {
+    "description": "Withdraw confirmation message",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+
+  "bankLinking_withdrawInfo": "Funds will arrive in 1-3 business days",
+  "@bankLinking_withdrawInfo": {
+    "description": "Withdraw information message"
+  },
+
+  "bankLinking_withdrawSuccess": "Withdrawal successful",
+  "@bankLinking_withdrawSuccess": {
+    "description": "Withdrawal success message"
+  },
+
+  "bankLinking_withdrawTime": "Processing time: 1-3 business days",
+  "@bankLinking_withdrawTime": {
+    "description": "Withdrawal processing time"
+  },
+
+  "bankLinking_withdrawToBank": "Withdraw to Bank",
+  "@bankLinking_withdrawToBank": {
+    "description": "Withdraw to bank action"
+  },
+
+  "common_confirm": "Confirm",
+  "@common_confirm": {
+    "description": "Confirm button text"
+  },
+
+  "expenses_totalAmount": "Total Amount",
+  "@expenses_totalAmount": {
+    "description": "Total amount label for expenses"
+  },
+
+  "kyc_additionalDocs_title": "Additional Documents",
+  "@kyc_additionalDocs_title": {
+    "description": "Additional documents screen title"
+  },
+
+  "kyc_additionalDocs_description": "Provide additional information for verification",
+  "@kyc_additionalDocs_description": {
+    "description": "Additional documents screen description"
+  },
+
+  "kyc_additionalDocs_employment_title": "Employment Information",
+  "@kyc_additionalDocs_employment_title": {
+    "description": "Employment section title"
+  },
+
+  "kyc_additionalDocs_occupation": "Occupation",
+  "@kyc_additionalDocs_occupation": {
+    "description": "Occupation field label"
+  },
+
+  "kyc_additionalDocs_employer": "Employer",
+  "@kyc_additionalDocs_employer": {
+    "description": "Employer field label"
+  },
+
+  "kyc_additionalDocs_monthlyIncome": "Monthly Income",
+  "@kyc_additionalDocs_monthlyIncome": {
+    "description": "Monthly income field label"
+  },
+
+  "kyc_additionalDocs_sourceOfFunds_title": "Source of Funds",
+  "@kyc_additionalDocs_sourceOfFunds_title": {
+    "description": "Source of funds section title"
+  },
+
+  "kyc_additionalDocs_sourceOfFunds_description": "Tell us about your source of funds",
+  "@kyc_additionalDocs_sourceOfFunds_description": {
+    "description": "Source of funds section description"
+  },
+
+  "kyc_additionalDocs_sourceDetails": "Source Details",
+  "@kyc_additionalDocs_sourceDetails": {
+    "description": "Source details field label"
+  },
+
+  "kyc_additionalDocs_supportingDocs_title": "Supporting Documents",
+  "@kyc_additionalDocs_supportingDocs_title": {
+    "description": "Supporting documents section title"
+  },
+
+  "kyc_additionalDocs_supportingDocs_description": "Upload documents to verify your information",
+  "@kyc_additionalDocs_supportingDocs_description": {
+    "description": "Supporting documents section description"
+  },
+
+  "kyc_additionalDocs_takePhoto": "Take Photo",
+  "@kyc_additionalDocs_takePhoto": {
+    "description": "Take photo button text"
+  },
+
+  "kyc_additionalDocs_uploadFile": "Upload File",
+  "@kyc_additionalDocs_uploadFile": {
+    "description": "Upload file button text"
+  },
+
+  "kyc_additionalDocs_error": "Failed to submit documents",
+  "@kyc_additionalDocs_error": {
+    "description": "Error message when document submission fails"
+  },
+
+  "kyc_additionalDocs_info_title": "Why we need this",
+  "@kyc_additionalDocs_info_title": {
+    "description": "Info section title"
+  },
+
+  "kyc_additionalDocs_info_description": "This helps us verify your identity",
+  "@kyc_additionalDocs_info_description": {
+    "description": "Info section description"
+  },
+
+  "kyc_additionalDocs_submit": "Submit Documents",
+  "@kyc_additionalDocs_submit": {
+    "description": "Submit documents button text"
+  },
+
+  "kyc_additionalDocs_sourceType_salary": "Salary",
+  "@kyc_additionalDocs_sourceType_salary": {
+    "description": "Salary source type"
+  },
+
+  "kyc_additionalDocs_sourceType_business": "Business Income",
+  "@kyc_additionalDocs_sourceType_business": {
+    "description": "Business income source type"
+  },
+
+  "kyc_additionalDocs_sourceType_investments": "Investments",
+  "@kyc_additionalDocs_sourceType_investments": {
+    "description": "Investments source type"
+  },
+
+  "kyc_additionalDocs_sourceType_savings": "Savings",
+  "@kyc_additionalDocs_sourceType_savings": {
+    "description": "Savings source type"
+  },
+
+  "kyc_additionalDocs_sourceType_inheritance": "Inheritance",
+  "@kyc_additionalDocs_sourceType_inheritance": {
+    "description": "Inheritance source type"
+  },
+
+  "kyc_additionalDocs_sourceType_gift": "Gift",
+  "@kyc_additionalDocs_sourceType_gift": {
+    "description": "Gift source type"
+  },
+
+  "kyc_additionalDocs_sourceType_other": "Other",
+  "@kyc_additionalDocs_sourceType_other": {
+    "description": "Other source type"
+  },
+
+  "kyc_additionalDocs_suggestion_paySlip": "Pay slip",
+  "@kyc_additionalDocs_suggestion_paySlip": {
+    "description": "Pay slip document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_bankStatement": "Bank statement",
+  "@kyc_additionalDocs_suggestion_bankStatement": {
+    "description": "Bank statement document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_businessReg": "Business registration",
+  "@kyc_additionalDocs_suggestion_businessReg": {
+    "description": "Business registration document suggestion"
+  },
+
+  "kyc_additionalDocs_suggestion_taxReturn": "Tax return",
+  "@kyc_additionalDocs_suggestion_taxReturn": {
+    "description": "Tax return document suggestion"
+  },
+
+  "kyc_address_title": "Address Verification",
+  "@kyc_address_title": {
+    "description": "Address verification screen title"
+  },
+
+  "kyc_address_description": "Verify your residential address",
+  "@kyc_address_description": {
+    "description": "Address verification screen description"
+  },
+
+  "kyc_address_form_title": "Your Address",
+  "@kyc_address_form_title": {
+    "description": "Address form section title"
+  },
+
+  "kyc_address_addressLine1": "Address Line 1",
+  "@kyc_address_addressLine1": {
+    "description": "Address line 1 field label"
+  },
+
+  "kyc_address_addressLine2": "Address Line 2",
+  "@kyc_address_addressLine2": {
+    "description": "Address line 2 field label"
+  },
+
+  "kyc_address_city": "City",
+  "@kyc_address_city": {
+    "description": "City field label"
+  },
+
+  "kyc_address_state": "State/Region",
+  "@kyc_address_state": {
+    "description": "State/Region field label"
+  },
+
+  "kyc_address_postalCode": "Postal Code",
+  "@kyc_address_postalCode": {
+    "description": "Postal code field label"
+  },
+
+  "kyc_address_country": "Country",
+  "@kyc_address_country": {
+    "description": "Country field label"
+  },
+
+  "kyc_address_proofDocument_title": "Proof of Address",
+  "@kyc_address_proofDocument_title": {
+    "description": "Proof of address section title"
+  },
+
+  "kyc_address_proofDocument_description": "Upload a document showing your address",
+  "@kyc_address_proofDocument_description": {
+    "description": "Proof of address section description"
+  },
+
+  "kyc_address_takePhoto": "Take Photo",
+  "@kyc_address_takePhoto": {
+    "description": "Take photo button text"
+  },
+
+  "kyc_address_retakePhoto": "Retake Photo",
+  "@kyc_address_retakePhoto": {
+    "description": "Retake photo button text"
+  },
+
+  "kyc_address_chooseFile": "Choose File",
+  "@kyc_address_chooseFile": {
+    "description": "Choose file button text"
+  },
+
+  "kyc_address_changeFile": "Change File",
+  "@kyc_address_changeFile": {
+    "description": "Change file button text"
+  },
+
+  "kyc_address_uploadDocument": "Upload Document",
+  "@kyc_address_uploadDocument": {
+    "description": "Upload document button text"
+  },
+
+  "kyc_address_submit": "Submit Address",
+  "@kyc_address_submit": {
+    "description": "Submit address button text"
+  },
+
+  "kyc_address_error": "Failed to submit address",
+  "@kyc_address_error": {
+    "description": "Error message when address submission fails"
+  },
+
+  "kyc_address_info_title": "Accepted Documents",
+  "@kyc_address_info_title": {
+    "description": "Accepted documents info title"
+  },
+
+  "kyc_address_info_description": "Documents must be dated within 3 months",
+  "@kyc_address_info_description": {
+    "description": "Accepted documents info description"
+  },
+
+  "kyc_address_docType_utilityBill": "Utility Bill",
+  "@kyc_address_docType_utilityBill": {
+    "description": "Utility bill document type"
+  },
+
+  "kyc_address_docType_utilityBill_description": "Electricity, water, or gas bill",
+  "@kyc_address_docType_utilityBill_description": {
+    "description": "Utility bill document type description"
+  },
+
+  "kyc_address_docType_bankStatement": "Bank Statement",
+  "@kyc_address_docType_bankStatement": {
+    "description": "Bank statement document type"
+  },
+
+  "kyc_address_docType_bankStatement_description": "Recent bank statement",
+  "@kyc_address_docType_bankStatement_description": {
+    "description": "Bank statement document type description"
+  },
+
+  "kyc_address_docType_governmentLetter": "Government Letter",
+  "@kyc_address_docType_governmentLetter": {
+    "description": "Government letter document type"
+  },
+
+  "kyc_address_docType_governmentLetter_description": "Official government correspondence",
+  "@kyc_address_docType_governmentLetter_description": {
+    "description": "Government letter document type description"
+  },
+
+  "kyc_address_docType_rentalAgreement": "Rental Agreement",
+  "@kyc_address_docType_rentalAgreement": {
+    "description": "Rental agreement document type"
+  },
+
+  "kyc_address_docType_rentalAgreement_description": "Signed rental or lease agreement",
+  "@kyc_address_docType_rentalAgreement_description": {
+    "description": "Rental agreement document type description"
+  },
+
+  "kyc_video_title": "Video Verification",
+  "@kyc_video_title": {
+    "description": "Video verification screen title"
+  },
+
+  "kyc_video_instructions_title": "Before You Start",
+  "@kyc_video_instructions_title": {
+    "description": "Video instructions section title"
+  },
+
+  "kyc_video_instructions_description": "Follow these guidelines for best results",
+  "@kyc_video_instructions_description": {
+    "description": "Video instructions section description"
+  },
+
+  "kyc_video_instruction_lighting_title": "Good Lighting",
+  "@kyc_video_instruction_lighting_title": {
+    "description": "Lighting instruction title"
+  },
+
+  "kyc_video_instruction_lighting_description": "Find a well-lit area",
+  "@kyc_video_instruction_lighting_description": {
+    "description": "Lighting instruction description"
+  },
+
+  "kyc_video_instruction_position_title": "Face Position",
+  "@kyc_video_instruction_position_title": {
+    "description": "Face position instruction title"
+  },
+
+  "kyc_video_instruction_position_description": "Keep your face in the frame",
+  "@kyc_video_instruction_position_description": {
+    "description": "Face position instruction description"
+  },
+
+  "kyc_video_instruction_quiet_title": "Quiet Environment",
+  "@kyc_video_instruction_quiet_title": {
+    "description": "Quiet environment instruction title"
+  },
+
+  "kyc_video_instruction_quiet_description": "Find a quiet place",
+  "@kyc_video_instruction_quiet_description": {
+    "description": "Quiet environment instruction description"
+  },
+
+  "kyc_video_instruction_solo_title": "Be Alone",
+  "@kyc_video_instruction_solo_title": {
+    "description": "Solo instruction title"
+  },
+
+  "kyc_video_instruction_solo_description": "Only you should be in the frame",
+  "@kyc_video_instruction_solo_description": {
+    "description": "Solo instruction description"
+  },
+
+  "kyc_video_actions_title": "Follow Instructions",
+  "@kyc_video_actions_title": {
+    "description": "Video actions section title"
+  },
+
+  "kyc_video_actions_description": "Complete each action as prompted",
+  "@kyc_video_actions_description": {
+    "description": "Video actions section description"
+  },
+
+  "kyc_video_action_lookStraight": "Look straight",
+  "@kyc_video_action_lookStraight": {
+    "description": "Look straight action"
+  },
+
+  "kyc_video_action_turnLeft": "Turn left",
+  "@kyc_video_action_turnLeft": {
+    "description": "Turn left action"
+  },
+
+  "kyc_video_action_turnRight": "Turn right",
+  "@kyc_video_action_turnRight": {
+    "description": "Turn right action"
+  },
+
+  "kyc_video_action_smile": "Smile",
+  "@kyc_video_action_smile": {
+    "description": "Smile action"
+  },
+
+  "kyc_video_action_blink": "Blink",
+  "@kyc_video_action_blink": {
+    "description": "Blink action"
+  },
+
+  "kyc_video_startRecording": "Start Recording",
+  "@kyc_video_startRecording": {
+    "description": "Start recording button text"
+  },
+
+  "kyc_video_continue": "Continue",
+  "@kyc_video_continue": {
+    "description": "Continue button text"
+  },
+
+  "kyc_video_preview_title": "Preview",
+  "@kyc_video_preview_title": {
+    "description": "Video preview section title"
+  },
+
+  "kyc_video_preview_description": "Review your video",
+  "@kyc_video_preview_description": {
+    "description": "Video preview section description"
+  },
+
+  "kyc_video_preview_videoRecorded": "Video recorded",
+  "@kyc_video_preview_videoRecorded": {
+    "description": "Video recorded status message"
+  },
+
+  "kyc_video_retake": "Retake",
+  "@kyc_video_retake": {
+    "description": "Retake video button text"
+  },
+
+  "kyc_upgrade_title": "Upgrade Verification",
+  "@kyc_upgrade_title": {
+    "description": "Upgrade verification screen title"
+  },
+
+  "kyc_upgrade_selectTier": "Select Tier",
+  "@kyc_upgrade_selectTier": {
+    "description": "Select tier section title"
+  },
+
+  "kyc_upgrade_selectTier_description": "Choose your verification level",
+  "@kyc_upgrade_selectTier_description": {
+    "description": "Select tier section description"
+  },
+
+  "kyc_upgrade_currentTier": "Current Tier",
+  "@kyc_upgrade_currentTier": {
+    "description": "Current tier label"
+  },
+
+  "kyc_upgrade_recommended": "Recommended",
+  "@kyc_upgrade_recommended": {
+    "description": "Recommended tier badge"
+  },
+
+  "kyc_upgrade_perTransaction": "Per Transaction",
+  "@kyc_upgrade_perTransaction": {
+    "description": "Per transaction limit label"
+  },
+
+  "kyc_upgrade_dailyLimit": "Daily Limit",
+  "@kyc_upgrade_dailyLimit": {
+    "description": "Daily limit label"
+  },
+
+  "kyc_upgrade_monthlyLimit": "Monthly Limit",
+  "@kyc_upgrade_monthlyLimit": {
+    "description": "Monthly limit label"
+  },
+
+  "kyc_upgrade_andMore": "and more",
+  "@kyc_upgrade_andMore": {
+    "description": "And more features text"
+  },
+
+  "kyc_upgrade_requirements_title": "Requirements",
+  "@kyc_upgrade_requirements_title": {
+    "description": "Requirements section title"
+  },
+
+  "kyc_upgrade_requirement_idDocument": "ID Document",
+  "@kyc_upgrade_requirement_idDocument": {
+    "description": "ID document requirement"
+  },
+
+  "kyc_upgrade_requirement_selfie": "Selfie",
+  "@kyc_upgrade_requirement_selfie": {
+    "description": "Selfie requirement"
+  },
+
+  "kyc_upgrade_requirement_addressProof": "Address Proof",
+  "@kyc_upgrade_requirement_addressProof": {
+    "description": "Address proof requirement"
+  },
+
+  "kyc_upgrade_requirement_sourceOfFunds": "Source of Funds",
+  "@kyc_upgrade_requirement_sourceOfFunds": {
+    "description": "Source of funds requirement"
+  },
+
+  "kyc_upgrade_requirement_videoVerification": "Video Verification",
+  "@kyc_upgrade_requirement_videoVerification": {
+    "description": "Video verification requirement"
+  },
+
+  "kyc_upgrade_startVerification": "Start Verification",
+  "@kyc_upgrade_startVerification": {
+    "description": "Start verification button text"
+  },
+
+  "kyc_upgrade_reason_title": "Why upgrade?",
+  "@kyc_upgrade_reason_title": {
+    "description": "Why upgrade section title"
+  },
+
+  "settings_deviceTrustedSuccess": "Device marked as trusted",
+  "@settings_deviceTrustedSuccess": {
+    "description": "Success message when device is marked as trusted"
+  },
+
+  "settings_deviceTrustError": "Failed to trust device",
+  "@settings_deviceTrustError": {
+    "description": "Error message when device trust fails"
+  },
+
+  "settings_deviceRemovedSuccess": "Device removed successfully",
+  "@settings_deviceRemovedSuccess": {
+    "description": "Success message when device is removed"
+  },
+
+  "settings_deviceRemoveError": "Failed to remove device",
+  "@settings_deviceRemoveError": {
+    "description": "Error message when device removal fails"
+  },
+
+  "settings_help": "Help & Support",
+  "@settings_help": {
+    "description": "Help and support settings option"
+  },
+
+  "settings_rateApp": "Rate JoonaPay",
+  "@settings_rateApp": {
+    "description": "Rate app option in settings"
+  },
+
+  "settings_rateAppDescription": "Enjoying JoonaPay? Rate us on the App Store",
+  "@settings_rateAppDescription": {
+    "description": "Description for rate app option"
+  },
+
+  "action_copiedToClipboard": "Copied to clipboard",
+  "@action_copiedToClipboard": {
+    "description": "Message shown when text is copied to clipboard"
+  },
+
+  "transfer_successTitle": "Transfer Successful!",
+  "@transfer_successTitle": {
+    "description": "Title for successful transfer screen"
+  },
+
+  "transfer_successMessage": "Your transfer of {amount} was successful",
+  "@transfer_successMessage": {
+    "description": "Message for successful transfer",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "$100.00"
+      }
+    }
+  },
+
+  "transactions_transactionId": "Transaction ID",
+  "@transactions_transactionId": {
+    "description": "Transaction ID label"
+  },
+
+  "common_amount": "Amount",
+  "@common_amount": {
+    "description": "Amount label"
+  },
+
+  "transactions_status": "Status",
+  "@transactions_status": {
+    "description": "Transaction status label"
+  },
+
+  "transactions_completed": "Completed",
+  "@transactions_completed": {
+    "description": "Completed transaction status"
+  },
+
+  "transactions_noAccountTitle": "No Wallet Found",
+  "@transactions_noAccountTitle": {
+    "description": "Title when user has no wallet/account"
+  },
+
+  "transactions_noAccountMessage": "Create your wallet to start tracking your transactions and payment history.",
+  "@transactions_noAccountMessage": {
+    "description": "Message when user has no wallet/account"
+  },
+
+  "transactions_connectionErrorTitle": "Unable to Load",
+  "@transactions_connectionErrorTitle": {
+    "description": "Title when there's a connection error"
+  },
+
+  "transactions_connectionErrorMessage": "Please check your internet connection and try again.",
+  "@transactions_connectionErrorMessage": {
+    "description": "Message when there's a connection error"
+  },
+
+  "transactions_emptyStateTitle": "No Transactions Yet",
+  "@transactions_emptyStateTitle": {
+    "description": "Title for empty transactions state"
+  },
+
+  "transactions_emptyStateMessage": "Once you make your first deposit or transfer, your transaction history will appear here.",
+  "@transactions_emptyStateMessage": {
+    "description": "Message for empty transactions state"
+  },
+
+  "transactions_emptyStateAction": "Make First Deposit",
+  "@transactions_emptyStateAction": {
+    "description": "CTA button for empty transactions state"
+  },
+
+  "common_note": "Note",
+  "@common_note": {
+    "description": "Note label"
+  },
+
+  "action_shareReceipt": "Share Receipt",
+  "@action_shareReceipt": {
+    "description": "Share receipt button text"
+  },
+
+  "withdraw_mobileMoney": "Mobile Money",
+  "@withdraw_mobileMoney": {
+    "description": "Mobile Money withdrawal method"
+  },
+
+  "withdraw_bankTransfer": "Bank Transfer",
+  "@withdraw_bankTransfer": {
+    "description": "Bank transfer withdrawal method"
+  },
+
+  "withdraw_crypto": "Crypto Wallet",
+  "@withdraw_crypto": {
+    "description": "Crypto wallet withdrawal method"
+  },
+
+  "withdraw_mobileMoneyDesc": "Withdraw to Orange Money, MTN, Wave",
+  "@withdraw_mobileMoneyDesc": {
+    "description": "Mobile Money withdrawal description"
+  },
+
+  "withdraw_bankDesc": "Transfer to your bank account",
+  "@withdraw_bankDesc": {
+    "description": "Bank transfer withdrawal description"
+  },
+
+  "withdraw_cryptoDesc": "Send to external wallet",
+  "@withdraw_cryptoDesc": {
+    "description": "Crypto withdrawal description"
+  },
+
+  "navigation_withdraw": "Withdraw",
+  "@navigation_withdraw": {
+    "description": "Withdraw navigation item"
+  },
+
+  "withdraw_method": "Withdrawal Method",
+  "@withdraw_method": {
+    "description": "Withdrawal method label"
+  },
+
+  "withdraw_processingInfo": "Processing times vary by method",
+  "@withdraw_processingInfo": {
+    "description": "Withdrawal processing time info"
+  },
+
+  "withdraw_amountLabel": "Amount to Withdraw",
+  "@withdraw_amountLabel": {
+    "description": "Withdrawal amount label"
+  },
+
+  "withdraw_mobileNumber": "Mobile Money Number",
+  "@withdraw_mobileNumber": {
+    "description": "Mobile Money number input label"
+  },
+
+  "withdraw_bankDetails": "Bank Details",
+  "@withdraw_bankDetails": {
+    "description": "Bank details input label"
+  },
+
+  "withdraw_walletAddress": "Wallet Address",
+  "@withdraw_walletAddress": {
+    "description": "Crypto wallet address input label"
+  },
+
+  "withdraw_networkWarning": "Make sure you are sending to a Solana USDC address",
+  "@withdraw_networkWarning": {
+    "description": "Warning about network compatibility"
+  },
+
+  "legal_cookiePolicy": "Cookie Policy",
+  "@legal_cookiePolicy": {
+    "description": "Cookie policy title"
+  },
+
+  "legal_effectiveDate": "Effective",
+  "@legal_effectiveDate": {
+    "description": "Effective date label"
+  },
+
+  "legal_whatsNew": "What's New",
+  "@legal_whatsNew": {
+    "description": "What's new in document"
+  },
+
+  "legal_contactUs": "Contact Us",
+  "@legal_contactUs": {
+    "description": "Contact us section title"
+  },
+
+  "legal_cookieContactDescription": "If you have questions about our cookie policy, please contact us:",
+  "@legal_cookieContactDescription": {
+    "description": "Cookie policy contact description"
+  },
+
+  "legal_cookieCategories": "Cookie Categories",
+  "@legal_cookieCategories": {
+    "description": "Cookie categories section title"
+  },
+
+  "legal_essential": "Essential",
+  "@legal_essential": {
+    "description": "Essential cookies label"
+  },
+
+  "legal_functional": "Functional",
+  "@legal_functional": {
+    "description": "Functional cookies label"
+  },
+
+  "legal_analytics": "Analytics",
+  "@legal_analytics": {
+    "description": "Analytics cookies label"
+  },
+
+  "legal_required": "Required",
+  "@legal_required": {
+    "description": "Required indicator"
+  },
+
+  "legal_cookiePolicyDescription": "View our cookie usage policy",
+  "@legal_cookiePolicyDescription": {
+    "description": "Cookie policy description in settings"
+  },
+
+  "legal_legalDocuments": "Legal Documents",
+  "@legal_legalDocuments": {
+    "description": "Legal documents section title"
+  },
+
+  "error_loadFailed": "Failed to load",
+  "@error_loadFailed": {
+    "description": "Generic load failed error"
+  },
+
+  "error_tryAgainLater": "Please try again later",
+  "@error_tryAgainLater": {
+    "description": "Try again later message"
+  },
+
+  "error_timeout": "Request timed out. Please check your connection and try again.",
+  "@error_timeout": {
+    "description": "Request timeout error"
+  },
+
+  "error_noInternet": "No internet connection. Please check your network and try again.",
+  "@error_noInternet": {
+    "description": "No internet connection error"
+  },
+
+  "error_requestCancelled": "Request was cancelled",
+  "@error_requestCancelled": {
+    "description": "Request cancelled error"
+  },
+
+  "error_sslError": "Connection security error. Please try again.",
+  "@error_sslError": {
+    "description": "SSL/Certificate error"
+  },
+
+  "error_otpExpired": "Verification code has expired. Request a new code.",
+  "@error_otpExpired": {
+    "description": "OTP expired error"
+  },
+
+  "error_tooManyOtpAttempts": "Too many failed attempts. Please wait before trying again.",
+  "@error_tooManyOtpAttempts": {
+    "description": "Too many OTP attempts error"
+  },
+
+  "error_invalidCredentials": "Invalid credentials. Please check and try again.",
+  "@error_invalidCredentials": {
+    "description": "Invalid credentials error"
+  },
+
+  "error_accountLocked": "Your account has been locked. Please contact support.",
+  "@error_accountLocked": {
+    "description": "Account locked error"
+  },
+
+  "error_accountSuspended": "Your account has been suspended. Please contact support for assistance.",
+  "@error_accountSuspended": {
+    "description": "Account suspended error"
+  },
+
+  "error_sessionExpired": "Your session has expired. Please log in again.",
+  "@error_sessionExpired": {
+    "description": "Session expired error"
+  },
+
+  "error_kycRequired": "Identity verification required to continue. Complete verification in settings.",
+  "@error_kycRequired": {
+    "description": "KYC required error"
+  },
+
+  "error_kycPending": "Your identity verification is being reviewed. Please wait.",
+  "@error_kycPending": {
+    "description": "KYC pending error"
+  },
+
+  "error_kycRejected": "Your identity verification was rejected. Please resubmit with valid documents.",
+  "@error_kycRejected": {
+    "description": "KYC rejected error"
+  },
+
+  "error_kycExpired": "Your identity verification has expired. Please verify again.",
+  "@error_kycExpired": {
+    "description": "KYC expired error"
+  },
+
+  "error_amountTooLow": "Amount is below minimum. Please enter a higher amount.",
+  "@error_amountTooLow": {
+    "description": "Amount too low error"
+  },
+
+  "error_amountTooHigh": "Amount exceeds maximum. Please enter a lower amount.",
+  "@error_amountTooHigh": {
+    "description": "Amount too high error"
+  },
+
+  "error_dailyLimitExceeded": "Daily transaction limit reached. Try again tomorrow or upgrade your account.",
+  "@error_dailyLimitExceeded": {
+    "description": "Daily limit exceeded error"
+  },
+
+  "error_monthlyLimitExceeded": "Monthly transaction limit reached. Please wait or upgrade your account.",
+  "@error_monthlyLimitExceeded": {
+    "description": "Monthly limit exceeded error"
+  },
+
+  "error_transactionLimitExceeded": "Transaction limit exceeded for this operation.",
+  "@error_transactionLimitExceeded": {
+    "description": "Transaction limit exceeded error"
+  },
+
+  "error_duplicateTransaction": "This transaction was already processed. Please check your history.",
+  "@error_duplicateTransaction": {
+    "description": "Duplicate transaction error"
+  },
+
+  "error_pinLocked": "PIN locked due to too many incorrect attempts. Reset your PIN to continue.",
+  "@error_pinLocked": {
+    "description": "PIN locked error"
+  },
+
+  "error_pinTooWeak": "PIN is too simple. Please choose a stronger PIN.",
+  "@error_pinTooWeak": {
+    "description": "PIN too weak error"
+  },
+
+  "error_beneficiaryNotFound": "Beneficiary not found. Please check and try again.",
+  "@error_beneficiaryNotFound": {
+    "description": "Beneficiary not found error"
+  },
+
+  "error_beneficiaryLimitReached": "Maximum number of beneficiaries reached. Remove one to add a new beneficiary.",
+  "@error_beneficiaryLimitReached": {
+    "description": "Beneficiary limit reached error"
+  },
+
+  "error_providerUnavailable": "Service provider is currently unavailable. Please try again later.",
+  "@error_providerUnavailable": {
+    "description": "Provider unavailable error"
+  },
+
+  "error_providerTimeout": "Service provider is not responding. Please try again.",
+  "@error_providerTimeout": {
+    "description": "Provider timeout error"
+  },
+
+  "error_providerMaintenance": "Service provider is under maintenance. Please try again later.",
+  "@error_providerMaintenance": {
+    "description": "Provider maintenance error"
+  },
+
+  "error_rateLimited": "Too many requests. Please slow down and try again in a moment.",
+  "@error_rateLimited": {
+    "description": "Rate limited error"
+  },
+
+  "error_invalidAddress": "Invalid wallet address. Please check and try again.",
+  "@error_invalidAddress": {
+    "description": "Invalid address error"
+  },
+
+  "error_invalidCountry": "Service not available in your country.",
+  "@error_invalidCountry": {
+    "description": "Invalid country error"
+  },
+
+  "error_deviceNotTrusted": "This device is not trusted. Please verify your identity.",
+  "@error_deviceNotTrusted": {
+    "description": "Device not trusted error"
+  },
+
+  "error_deviceLimitReached": "Maximum number of devices reached. Remove a device to add this one.",
+  "@error_deviceLimitReached": {
+    "description": "Device limit reached error"
+  },
+
+  "error_biometricRequired": "Biometric authentication is required for this action.",
+  "@error_biometricRequired": {
+    "description": "Biometric required error"
+  },
+
+  "error_badRequest": "Invalid request. Please check your information and try again.",
+  "@error_badRequest": {
+    "description": "Bad request error (400)"
+  },
+
+  "error_unauthorized": "Authentication required. Please log in again.",
+  "@error_unauthorized": {
+    "description": "Unauthorized error (401)"
+  },
+
+  "error_accessDenied": "You don't have permission to perform this action.",
+  "@error_accessDenied": {
+    "description": "Access denied error (403)"
+  },
+
+  "error_notFound": "Requested resource not found.",
+  "@error_notFound": {
+    "description": "Not found error (404)"
+  },
+
+  "error_conflict": "Request conflicts with current state. Please refresh and try again.",
+  "@error_conflict": {
+    "description": "Conflict error (409)"
+  },
+
+  "error_validationFailed": "Please check the information you provided and try again.",
+  "@error_validationFailed": {
+    "description": "Validation failed error (422)"
+  },
+
+  "error_serverError": "Server error. Our team has been notified. Please try again later.",
+  "@error_serverError": {
+    "description": "Server error (500)"
+  },
+
+  "error_serviceUnavailable": "Service temporarily unavailable. Please try again in a few moments.",
+  "@error_serviceUnavailable": {
+    "description": "Service unavailable error (503)"
+  },
+
+  "error_gatewayTimeout": "Service is taking too long to respond. Please try again.",
+  "@error_gatewayTimeout": {
+    "description": "Gateway timeout error (504)"
+  },
+
+  "error_authenticationFailed": "Authentication failed. Please try again.",
+  "@error_authenticationFailed": {
+    "description": "Authentication failed error"
+  },
+
+  "error_suggestion_checkConnection": "Check your internet connection",
+  "@error_suggestion_checkConnection": {
+    "description": "Suggestion to check connection"
+  },
+
+  "error_suggestion_tryAgain": "Try again",
+  "@error_suggestion_tryAgain": {
+    "description": "Suggestion to try again"
+  },
+
+  "error_suggestion_loginAgain": "Log in again",
+  "@error_suggestion_loginAgain": {
+    "description": "Suggestion to login again"
+  },
+
+  "error_suggestion_completeKyc": "Complete verification",
+  "@error_suggestion_completeKyc": {
+    "description": "Suggestion to complete KYC"
+  },
+
+  "error_suggestion_addFunds": "Add funds to your wallet",
+  "@error_suggestion_addFunds": {
+    "description": "Suggestion to add funds"
+  },
+
+  "error_suggestion_waitOrUpgrade": "Wait or upgrade your account",
+  "@error_suggestion_waitOrUpgrade": {
+    "description": "Suggestion to wait or upgrade"
+  },
+
+  "error_suggestion_tryLater": "Try again later",
+  "@error_suggestion_tryLater": {
+    "description": "Suggestion to try later"
+  },
+
+  "error_suggestion_resetPin": "Reset your PIN",
+  "@error_suggestion_resetPin": {
+    "description": "Suggestion to reset PIN"
+  },
+
+  "error_suggestion_slowDown": "Slow down and wait a moment",
+  "@error_suggestion_slowDown": {
+    "description": "Suggestion to slow down"
+  },
+
+  "error_offline_title": "You're Offline",
+  "@error_offline_title": {
+    "description": "Offline mode title"
+  },
+
+  "error_offline_message": "You're not connected to the internet. Some features may not be available.",
+  "@error_offline_message": {
+    "description": "Offline mode message"
+  },
+
+  "error_offline_retry": "Retry Connection",
+  "@error_offline_retry": {
+    "description": "Retry connection button"
+  },
+
+  "action_skip": "Skip",
+  "@action_skip": {
+    "description": "Skip action"
+  },
+
+  "action_next": "Next",
+  "@action_next": {
+    "description": "Next button"
+  },
+
+  "onboarding_page1_title": "Your Money, Your Way",
+  "@onboarding_page1_title": {
+    "description": "Onboarding page 1 title"
+  },
+
+  "onboarding_page1_description": "Store, send, and receive USDC securely. Your digital wallet built for West Africa.",
+  "@onboarding_page1_description": {
+    "description": "Onboarding page 1 description"
+  },
+
+  "onboarding_page1_feature1": "Store USDC safely in your wallet",
+  "@onboarding_page1_feature1": {
+    "description": "Onboarding page 1 feature 1"
+  },
+
+  "onboarding_page1_feature2": "Send money to anyone instantly",
+  "@onboarding_page1_feature2": {
+    "description": "Onboarding page 1 feature 2"
+  },
+
+  "onboarding_page1_feature3": "Access your funds 24/7",
+  "@onboarding_page1_feature3": {
+    "description": "Onboarding page 1 feature 3"
+  },
+
+  "onboarding_page2_title": "Lightning-Fast Transfers",
+  "@onboarding_page2_title": {
+    "description": "Onboarding page 2 title"
+  },
+
+  "onboarding_page2_description": "Transfer funds to friends and family in seconds. No borders, no delays.",
+  "@onboarding_page2_description": {
+    "description": "Onboarding page 2 description"
+  },
+
+  "onboarding_page2_feature1": "Instant transfers within JoonaPay",
+  "@onboarding_page2_feature1": {
+    "description": "Onboarding page 2 feature 1"
+  },
+
+  "onboarding_page2_feature2": "Send to any mobile money account",
+  "@onboarding_page2_feature2": {
+    "description": "Onboarding page 2 feature 2"
+  },
+
+  "onboarding_page2_feature3": "Real-time transaction updates",
+  "@onboarding_page2_feature3": {
+    "description": "Onboarding page 2 feature 3"
+  },
+
+  "onboarding_page3_title": "Easy Deposits & Withdrawals",
+  "@onboarding_page3_title": {
+    "description": "Onboarding page 3 title"
+  },
+
+  "onboarding_page3_description": "Add money via Mobile Money. Cash out to your local account anytime.",
+  "@onboarding_page3_description": {
+    "description": "Onboarding page 3 description"
+  },
+
+  "onboarding_page3_feature1": "Deposit with Orange Money, MTN, Wave",
+  "@onboarding_page3_feature1": {
+    "description": "Onboarding page 3 feature 1"
+  },
+
+  "onboarding_page3_feature2": "Low transaction fees (1%)",
+  "@onboarding_page3_feature2": {
+    "description": "Onboarding page 3 feature 2"
+  },
+
+  "onboarding_page3_feature3": "Withdraw anytime to your account",
+  "@onboarding_page3_feature3": {
+    "description": "Onboarding page 3 feature 3"
+  },
+
+  "onboarding_page4_title": "Bank-Level Security",
+  "@onboarding_page4_title": {
+    "description": "Onboarding page 4 title"
+  },
+
+  "onboarding_page4_description": "Your funds are protected with state-of-the-art encryption and biometric authentication.",
+  "@onboarding_page4_description": {
+    "description": "Onboarding page 4 description"
+  },
+
+  "onboarding_page4_feature1": "PIN and biometric protection",
+  "@onboarding_page4_feature1": {
+    "description": "Onboarding page 4 feature 1"
+  },
+
+  "onboarding_page4_feature2": "End-to-end encryption",
+  "@onboarding_page4_feature2": {
+    "description": "Onboarding page 4 feature 2"
+  },
+
+  "onboarding_page4_feature3": "24/7 fraud monitoring",
+  "@onboarding_page4_feature3": {
+    "description": "Onboarding page 4 feature 3"
+  },
+
+  "onboarding_getStarted": "Get Started",
+  "@onboarding_getStarted": {
+    "description": "Get started button"
+  },
+
+  "welcome_title": "Welcome, {name}!",
+  "@welcome_title": {
+    "description": "Welcome message with user name",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+
+  "welcome_subtitle": "Your JoonaPay wallet is ready. Start sending and receiving money today!",
+  "@welcome_subtitle": {
+    "description": "Welcome subtitle"
+  },
+
+  "welcome_addFunds": "Add Funds",
+  "@welcome_addFunds": {
+    "description": "Add funds button"
+  },
+
+  "welcome_exploreDashboard": "Explore Dashboard",
+  "@welcome_exploreDashboard": {
+    "description": "Explore dashboard button"
+  },
+
+  "welcome_stat_wallet": "Secure Wallet",
+  "@welcome_stat_wallet": {
+    "description": "Wallet stat title"
+  },
+
+  "welcome_stat_wallet_desc": "Your funds are safe with us",
+  "@welcome_stat_wallet_desc": {
+    "description": "Wallet stat description"
+  },
+
+  "welcome_stat_instant": "Instant Transfers",
+  "@welcome_stat_instant": {
+    "description": "Instant transfers stat title"
+  },
+
+  "welcome_stat_instant_desc": "Send money in seconds",
+  "@welcome_stat_instant_desc": {
+    "description": "Instant transfers stat description"
+  },
+
+  "welcome_stat_secure": "Bank-Level Security",
+  "@welcome_stat_secure": {
+    "description": "Security stat title"
+  },
+
+  "welcome_stat_secure_desc": "Protected by advanced encryption",
+  "@welcome_stat_secure_desc": {
+    "description": "Security stat description"
+  },
+
+  "onboarding_deposit_prompt_title": "Get Started with Your First Deposit",
+  "@onboarding_deposit_prompt_title": {
+    "description": "First deposit prompt title"
+  },
+
+  "onboarding_deposit_prompt_subtitle": "Add funds to start sending and receiving money",
+  "@onboarding_deposit_prompt_subtitle": {
+    "description": "First deposit prompt subtitle"
+  },
+
+  "onboarding_deposit_benefit1": "Instant deposits via Mobile Money",
+  "@onboarding_deposit_benefit1": {
+    "description": "Deposit benefit 1"
+  },
+
+  "onboarding_deposit_benefit2": "Only 1% transaction fee",
+  "@onboarding_deposit_benefit2": {
+    "description": "Deposit benefit 2"
+  },
+
+  "onboarding_deposit_benefit3": "Funds available immediately",
+  "@onboarding_deposit_benefit3": {
+    "description": "Deposit benefit 3"
+  },
+
+  "onboarding_deposit_cta": "Add Money Now",
+  "@onboarding_deposit_cta": {
+    "description": "Deposit CTA button"
+  },
+
+  "help_whatIsUsdc": "What is USDC?",
+  "@help_whatIsUsdc": {
+    "description": "What is USDC title"
+  },
+
+  "help_usdc_title": "USDC: Digital Dollar",
+  "@help_usdc_title": {
+    "description": "USDC explainer title"
+  },
+
+  "help_usdc_subtitle": "The stable digital currency",
+  "@help_usdc_subtitle": {
+    "description": "USDC explainer subtitle"
+  },
+
+  "help_usdc_what_title": "What is USDC?",
+  "@help_usdc_what_title": {
+    "description": "What is USDC section title"
+  },
+
+  "help_usdc_what_description": "USDC (USD Coin) is a digital currency that's always worth exactly $1 USD. It combines the stability of the US dollar with the speed and efficiency of blockchain technology.",
+  "@help_usdc_what_description": {
+    "description": "What is USDC description"
+  },
+
+  "help_usdc_why_title": "Why Use USDC?",
+  "@help_usdc_why_title": {
+    "description": "Why USDC section title"
+  },
+
+  "help_usdc_benefit1_title": "Stable Value",
+  "@help_usdc_benefit1_title": {
+    "description": "USDC benefit 1 title"
+  },
+
+  "help_usdc_benefit1_description": "Always worth $1 USD - no volatility",
+  "@help_usdc_benefit1_description": {
+    "description": "USDC benefit 1 description"
+  },
+
+  "help_usdc_benefit2_title": "Secure & Transparent",
+  "@help_usdc_benefit2_title": {
+    "description": "USDC benefit 2 title"
+  },
+
+  "help_usdc_benefit2_description": "Backed 1:1 by real US dollars held in reserve",
+  "@help_usdc_benefit2_description": {
+    "description": "USDC benefit 2 description"
+  },
+
+  "help_usdc_benefit3_title": "Global Access",
+  "@help_usdc_benefit3_title": {
+    "description": "USDC benefit 3 title"
+  },
+
+  "help_usdc_benefit3_description": "Send money anywhere in the world instantly",
+  "@help_usdc_benefit3_description": {
+    "description": "USDC benefit 3 description"
+  },
+
+  "help_usdc_benefit4_title": "24/7 Availability",
+  "@help_usdc_benefit4_title": {
+    "description": "USDC benefit 4 title"
+  },
+
+  "help_usdc_benefit4_description": "Access your money anytime, anywhere",
+  "@help_usdc_benefit4_description": {
+    "description": "USDC benefit 4 description"
+  },
+
+  "help_usdc_how_title": "How It Works",
+  "@help_usdc_how_title": {
+    "description": "How USDC works title"
+  },
+
+  "help_usdc_how_description": "When you deposit money, it's converted to USDC at a 1:1 rate with USD. You can then send USDC to anyone or convert it back to your local currency anytime.",
+  "@help_usdc_how_description": {
+    "description": "How USDC works description"
+  },
+
+  "help_usdc_safety_title": "Is it Safe?",
+  "@help_usdc_safety_title": {
+    "description": "USDC safety title"
+  },
+
+  "help_usdc_safety_description": "Yes! USDC is issued by Circle, a regulated financial institution. Every USDC is backed by real US dollars held in reserve accounts.",
+  "@help_usdc_safety_description": {
+    "description": "USDC safety description"
+  },
+
+  "help_howDepositsWork": "How Deposits Work",
+  "@help_howDepositsWork": {
+    "description": "How deposits work title"
+  },
+
+  "help_deposits_header": "Adding Money to Your Wallet",
+  "@help_deposits_header": {
+    "description": "Deposits guide header"
+  },
+
+  "help_deposits_intro": "Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.",
+  "@help_deposits_intro": {
+    "description": "Deposits guide intro"
+  },
+
+  "help_deposits_steps_title": "How to Deposit",
+  "@help_deposits_steps_title": {
+    "description": "Deposit steps title"
+  },
+
+  "help_deposits_step1_title": "Choose Amount",
+  "@help_deposits_step1_title": {
+    "description": "Deposit step 1 title"
+  },
+
+  "help_deposits_step1_description": "Enter how much you want to add to your wallet",
+  "@help_deposits_step1_description": {
+    "description": "Deposit step 1 description"
+  },
+
+  "help_deposits_step2_title": "Select Provider",
+  "@help_deposits_step2_title": {
+    "description": "Deposit step 2 title"
+  },
+
+  "help_deposits_step2_description": "Choose your Mobile Money provider (Orange Money, MTN, etc.)",
+  "@help_deposits_step2_description": {
+    "description": "Deposit step 2 description"
+  },
+
+  "help_deposits_step3_title": "Complete Payment",
+  "@help_deposits_step3_title": {
+    "description": "Deposit step 3 title"
+  },
+
+  "help_deposits_step3_description": "Follow the USSD prompt on your phone to authorize the payment",
+  "@help_deposits_step3_description": {
+    "description": "Deposit step 3 description"
+  },
+
+  "help_deposits_step4_title": "Funds Added",
+  "@help_deposits_step4_title": {
+    "description": "Deposit step 4 title"
+  },
+
+  "help_deposits_step4_description": "Your USDC balance updates within seconds",
+  "@help_deposits_step4_description": {
+    "description": "Deposit step 4 description"
+  },
+
+  "help_deposits_providers_title": "Supported Providers",
+  "@help_deposits_providers_title": {
+    "description": "Supported providers title"
+  },
+
+  "help_deposits_time_title": "Processing Time",
+  "@help_deposits_time_title": {
+    "description": "Processing time title"
+  },
+
+  "help_deposits_time_description": "Most deposits are processed within 1-2 minutes",
+  "@help_deposits_time_description": {
+    "description": "Processing time description"
+  },
+
+  "help_deposits_faq_title": "Common Questions",
+  "@help_deposits_faq_title": {
+    "description": "Deposits FAQ title"
+  },
+
+  "help_deposits_faq1_question": "What's the minimum deposit?",
+  "@help_deposits_faq1_question": {
+    "description": "FAQ 1 question"
+  },
+
+  "help_deposits_faq1_answer": "The minimum deposit is 1,000 XOF (approximately $1.60 USD)",
+  "@help_deposits_faq1_answer": {
+    "description": "FAQ 1 answer"
+  },
+
+  "help_deposits_faq2_question": "Are there fees?",
+  "@help_deposits_faq2_question": {
+    "description": "FAQ 2 question"
+  },
+
+  "help_deposits_faq2_answer": "Yes, there's a 1% transaction fee on deposits",
+  "@help_deposits_faq2_answer": {
+    "description": "FAQ 2 answer"
+  },
+
+  "help_deposits_faq3_question": "What if my deposit fails?",
+  "@help_deposits_faq3_question": {
+    "description": "FAQ 3 question"
+  },
+
+  "help_deposits_faq3_answer": "Your money will be automatically refunded to your Mobile Money account within 24 hours",
+  "@help_deposits_faq3_answer": {
+    "description": "FAQ 3 answer"
+  },
+
+  "help_transactionFees": "Transaction Fees",
+  "@help_transactionFees": {
+    "description": "Transaction fees title"
+  },
+
+  "help_fees_no_hidden_title": "No Hidden Fees",
+  "@help_fees_no_hidden_title": {
+    "description": "No hidden fees title"
+  },
+
+  "help_fees_no_hidden_description": "We believe in transparency. Here's exactly what you pay.",
+  "@help_fees_no_hidden_description": {
+    "description": "No hidden fees description"
+  },
+
+  "help_fees_breakdown_title": "Fee Breakdown",
+  "@help_fees_breakdown_title": {
+    "description": "Fee breakdown title"
+  },
+
+  "help_fees_internal_transfers": "Transfers to JoonaPay Users",
+  "@help_fees_internal_transfers": {
+    "description": "Internal transfers label"
+  },
+
+  "help_fees_free": "FREE",
+  "@help_fees_free": {
+    "description": "Free fee label"
+  },
+
+  "help_fees_internal_description": "Send money to other JoonaPay users with zero fees",
+  "@help_fees_internal_description": {
+    "description": "Internal transfers description"
+  },
+
+  "help_fees_deposits": "Mobile Money Deposits",
+  "@help_fees_deposits": {
+    "description": "Deposits label"
+  },
+
+  "help_fees_deposits_amount": "1%",
+  "@help_fees_deposits_amount": {
+    "description": "Deposits fee amount"
+  },
+
+  "help_fees_deposits_description": "1% fee when adding funds via Mobile Money",
+  "@help_fees_deposits_description": {
+    "description": "Deposits description"
+  },
+
+  "help_fees_withdrawals": "Withdrawals to Mobile Money",
+  "@help_fees_withdrawals": {
+    "description": "Withdrawals label"
+  },
+
+  "help_fees_withdrawals_amount": "1%",
+  "@help_fees_withdrawals_amount": {
+    "description": "Withdrawals fee amount"
+  },
+
+  "help_fees_withdrawals_description": "1% fee when cashing out to Mobile Money",
+  "@help_fees_withdrawals_description": {
+    "description": "Withdrawals description"
+  },
+
+  "help_fees_external_transfers": "External Crypto Transfers",
+  "@help_fees_external_transfers": {
+    "description": "External transfers label"
+  },
+
+  "help_fees_external_amount": "Network Fee",
+  "@help_fees_external_amount": {
+    "description": "External transfers fee"
+  },
+
+  "help_fees_external_description": "Blockchain network fee applies (varies by network)",
+  "@help_fees_external_description": {
+    "description": "External transfers description"
+  },
+
+  "help_fees_why_title": "Why Do We Charge Fees?",
+  "@help_fees_why_title": {
+    "description": "Why fees title"
+  },
+
+  "help_fees_why_description": "Our fees help us:",
+  "@help_fees_why_description": {
+    "description": "Why fees description"
+  },
+
+  "help_fees_why_point1": "Maintain secure infrastructure and compliance",
+  "@help_fees_why_point1": {
+    "description": "Why fees point 1"
+  },
+
+  "help_fees_why_point2": "Provide 24/7 customer support",
+  "@help_fees_why_point2": {
+    "description": "Why fees point 2"
+  },
+
+  "help_fees_why_point3": "Cover Mobile Money provider charges",
+  "@help_fees_why_point3": {
+    "description": "Why fees point 3"
+  },
+
+  "help_fees_why_point4": "Continue improving our services",
+  "@help_fees_why_point4": {
+    "description": "Why fees point 4"
+  },
+
+  "help_fees_comparison_title": "How We Compare",
+  "@help_fees_comparison_title": {
+    "description": "Fee comparison title"
+  },
+
+  "help_fees_comparison_description": "Our fees are significantly lower than traditional money transfer services:",
+  "@help_fees_comparison_description": {
+    "description": "Fee comparison description"
+  },
+
+  "help_fees_comparison_traditional": "Traditional Services",
+  "@help_fees_comparison_traditional": {
+    "description": "Traditional services label"
+  },
+
+  "help_fees_comparison_joonapay": "JoonaPay",
+  "@help_fees_comparison_joonapay": {
+    "description": "JoonaPay label"
+  },
+
+  "offline_banner_title": "You're offline",
+  "@offline_banner_title": {
+    "description": "Offline banner title"
+  },
+
+  "offline_banner_last_sync": "Last synced {time}",
+  "@offline_banner_last_sync": {
+    "description": "Offline banner last sync time",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2m ago"
+      }
+    }
+  },
+
+  "offline_banner_syncing": "Syncing pending operations...",
+  "@offline_banner_syncing": {
+    "description": "Offline banner syncing message"
+  },
+
+  "offline_banner_reconnected": "Back online! All synced.",
+  "@offline_banner_reconnected": {
+    "description": "Offline banner reconnected message"
+  }
+  "state_otpExpired": "OTP code has expired",
+  "@state_otpExpired": {
+    "description": "OTP expired state message"
+  },
+
+  "state_otpExpiredDescription": "Your one-time password has expired. Please request a new code.",
+  "@state_otpExpiredDescription": {
+    "description": "OTP expired detailed message"
+  },
+
+  "state_tokenRefreshing": "Refreshing your access...",
+  "@state_tokenRefreshing": {
+    "description": "Token refreshing state message"
+  },
+
+  "state_accountLocked": "Account locked",
+  "@state_accountLocked": {
+    "description": "Account locked state message"
+  },
+
+  "state_accountLockedDescription": "Your account has been locked due to multiple failed attempts. Please try again later.",
+  "@state_accountLockedDescription": {
+    "description": "Account locked detailed message"
+  },
+
+  "state_accountSuspended": "Account suspended",
+  "@state_accountSuspended": {
+    "description": "Account suspended state message"
+  },
+
+  "state_accountSuspendedDescription": "Your account has been suspended. Please contact support for more information.",
+  "@state_accountSuspendedDescription": {
+    "description": "Account suspended detailed message"
+  },
+
+  "state_walletFrozen": "Wallet frozen",
+  "@state_walletFrozen": {
+    "description": "Wallet frozen state message"
+  },
+
+  "state_walletFrozenDescription": "Your wallet has been frozen for security reasons. Please contact support.",
+  "@state_walletFrozenDescription": {
+    "description": "Wallet frozen detailed message"
+  },
+
+  "state_walletUnderReview": "Wallet under review",
+  "@state_walletUnderReview": {
+    "description": "Wallet under review state message"
+  },
+
+  "state_walletUnderReviewDescription": "Your wallet is currently under review. Transactions are temporarily restricted.",
+  "@state_walletUnderReviewDescription": {
+    "description": "Wallet under review detailed message"
+  },
+
+  "state_walletLimited": "Wallet limited",
+  "@state_walletLimited": {
+    "description": "Wallet limited state message"
+  },
+
+  "state_walletLimitedDescription": "Your wallet has reached its transaction or balance limit. Upgrade your account to increase limits.",
+  "@state_walletLimitedDescription": {
+    "description": "Wallet limited detailed message"
+  },
+
+  "state_kycExpired": "KYC verification expired",
+  "@state_kycExpired": {
+    "description": "KYC expired state message"
+  },
+
+  "state_kycExpiredDescription": "Your identity verification has expired. Please update your information to continue.",
+  "@state_kycExpiredDescription": {
+    "description": "KYC expired detailed message"
+  },
+
+  "state_kycManualReview": "KYC manual review pending",
+  "@state_kycManualReview": {
+    "description": "KYC manual review state message"
+  },
+
+  "state_kycManualReviewDescription": "Your identity verification is being manually reviewed. This may take 24-48 hours.",
+  "@state_kycManualReviewDescription": {
+    "description": "KYC manual review detailed message"
+  },
+
+  "state_kycUpgrading": "KYC level upgrading",
+  "@state_kycUpgrading": {
+    "description": "KYC upgrading state message"
+  },
+
+  "state_kycUpgradingDescription": "Your identity verification level is being upgraded. Please wait.",
+  "@state_kycUpgradingDescription": {
+    "description": "KYC upgrading detailed message"
+  },
+
+  "state_biometricPrompt": "Biometric authentication required",
+  "@state_biometricPrompt": {
+    "description": "Biometric prompt state message"
+  },
+
+  "state_biometricPromptDescription": "Please use your fingerprint or face to authenticate.",
+  "@state_biometricPromptDescription": {
+    "description": "Biometric prompt detailed message"
+  },
+
+  "state_deviceChanged": "Device verification required",
+  "@state_deviceChanged": {
+    "description": "Device changed state message"
+  },
+
+  "state_deviceChangedDescription": "This appears to be a new device. Please verify your identity to continue.",
+  "@state_deviceChangedDescription": {
+    "description": "Device changed detailed message"
+  },
+
+  "state_sessionConflict": "Another session is active",
+  "@state_sessionConflict": {
+    "description": "Session conflict state message"
+  },
+
+  "state_sessionConflictDescription": "You are logged in on another device. Please log out there or continue here.",
+  "@state_sessionConflictDescription": {
+    "description": "Session conflict detailed message"
   }
 }

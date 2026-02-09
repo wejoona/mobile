@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../tokens/index.dart';
 import 'app_text.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 /// Select/Dropdown Item Model
 class AppSelectItem<T> {
@@ -120,7 +121,8 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
             ),
             child: Row(
               children: [
-                if (widget.prefixIcon != null || selectedItem?.icon != null) ...[
+                if (widget.prefixIcon != null ||
+                    selectedItem?.icon != null) ...[
                   Icon(
                     selectedItem?.icon ?? widget.prefixIcon,
                     size: 20,
@@ -181,9 +183,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
       context: context,
       backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (context) {
         return SafeArea(
@@ -205,7 +205,9 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
               // Title
               if (widget.label != null) ...[
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                  ),
                   child: AppText(
                     widget.label!,
                     variant: AppTextVariant.titleMedium,
@@ -213,10 +215,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Divider(
-                  color: colors.borderSubtle,
-                  height: 1,
-                ),
+                Divider(color: colors.borderSubtle, height: 1),
               ],
               // Items
               Flexible(
@@ -234,6 +233,7 @@ class _AppSelectState<T> extends State<AppSelect<T>> {
                       colors: colors,
                       onTap: item.enabled
                           ? () {
+                              hapticService.selection();
                               widget.onChanged(item.value);
                               Navigator.pop(context);
                             }
@@ -353,9 +353,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
                 Icon(
                   item.icon,
                   size: 20,
-                  color: isSelected
-                      ? colors.gold
-                      : colors.textSecondary,
+                  color: isSelected ? colors.gold : colors.textSecondary,
                 ),
                 const SizedBox(width: AppSpacing.md),
               ],
@@ -366,9 +364,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
                     AppText(
                       item.label,
                       variant: AppTextVariant.bodyLarge,
-                      color: isSelected
-                          ? colors.gold
-                          : colors.textPrimary,
+                      color: isSelected ? colors.gold : colors.textPrimary,
                     ),
                     if (item.subtitle != null) ...[
                       const SizedBox(height: AppSpacing.xxs),
@@ -383,11 +379,7 @@ class _SelectMenuItem<T> extends StatelessWidget {
               ),
               if (showCheckmark && isSelected) ...[
                 const SizedBox(width: AppSpacing.sm),
-                Icon(
-                  Icons.check_circle,
-                  size: 20,
-                  color: colors.gold,
-                ),
+                Icon(Icons.check_circle, size: 20, color: colors.gold),
               ],
             ],
           ),

@@ -31,6 +31,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final selectedCategory = ref.watch(selectedBillCategoryProvider);
     final providersAsync = ref.watch(
       billProvidersProvider(BillProvidersParams(
@@ -39,21 +40,22 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: AppText(
           l10n.billPayments_title,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: Icon(Icons.history, color: colors.icon),
             onPressed: () => context.push('/bill-payments/history'),
             tooltip: l10n.billPayments_history,
           ),
@@ -106,7 +108,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   ? '${selectedCategory.displayName} ${l10n.billPayments_providers}'
                   : l10n.billPayments_allProviders,
               variant: AppTextVariant.titleSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
@@ -146,7 +148,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                 );
               },
               loading: () => Center(
-                child: CircularProgressIndicator(color: AppColors.gold500),
+                child: CircularProgressIndicator(color: colors.gold),
               ),
               error: (error, _) => _buildErrorState(l10n, error.toString()),
             ),
@@ -172,6 +174,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
   }
 
   Widget _buildEmptyState(AppLocalizations l10n) {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -179,20 +182,20 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Icon(
               Icons.search_off,
               size: 48,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             l10n.billPayments_noProvidersFound,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -202,7 +205,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   ? l10n.billPayments_tryAdjustingSearch
                   : l10n.billPayments_noProvidersAvailable,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -212,6 +215,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
   }
 
   Widget _buildErrorState(AppLocalizations l10n, String error) {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -219,20 +223,20 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.errorBase.withOpacity(0.1),
+              color: colors.errorBg,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.errorText,
+              color: colors.errorText,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             l10n.billPayments_failedToLoadProviders,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -240,7 +244,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
             child: AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),

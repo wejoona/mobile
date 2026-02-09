@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
 import '../../../design/tokens/typography.dart';
+import '../../../design/tokens/theme_colors.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_card.dart';
@@ -61,9 +62,10 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.kyc_upgrade_title,
@@ -92,7 +94,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   AppText(
                     l10n.kyc_upgrade_selectTier_description,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                   SizedBox(height: AppSpacing.lg),
                   ..._buildTierCards(l10n),
@@ -109,6 +111,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   }
 
   Widget _buildReasonCard(AppLocalizations l10n) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Row(
@@ -117,10 +120,10 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.warningBase.withOpacity(0.1),
+              color: colors.warning.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(Icons.info_outline, color: AppColors.warningBase),
+            child: Icon(Icons.info_outline, color: colors.warning),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -130,7 +133,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                 AppText(
                   l10n.kyc_upgrade_reason_title,
                   variant: AppTextVariant.labelLarge,
-                  color: AppColors.warningText,
+                  color: colors.warningText,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
@@ -147,6 +150,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
 
   Widget _buildCurrentTierCard(AppLocalizations l10n) {
     final currentBenefits = _getTierBenefits(widget.currentTier);
+    final colors = context.colors;
 
     return AppCard(
       variant: AppCardVariant.subtle,
@@ -158,7 +162,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
               AppText(
                 l10n.kyc_upgrade_currentTier,
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               const Spacer(),
               Container(
@@ -167,13 +171,13 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withOpacity(0.1),
+                  color: colors.gold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
                   currentBenefits.name,
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.gold500,
+                  color: colors.gold,
                 ),
               ),
             ],
@@ -186,7 +190,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
           AppText(
             l10n.kyc_upgrade_dailyLimit,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
@@ -194,6 +198,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   }
 
   List<Widget> _buildTierCards(AppLocalizations l10n) {
+    final colors = context.colors;
     return _availableTiers.asMap().entries.map((entry) {
       final index = entry.key;
       final tier = entry.value;
@@ -206,9 +211,9 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.charcoal : Colors.transparent,
+              color: isSelected ? colors.surface : Colors.transparent,
               border: Border.all(
-                color: isSelected ? AppColors.gold500 : AppColors.border,
+                color: isSelected ? colors.gold : colors.border,
                 width: isSelected ? 2 : 1,
               ),
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -221,7 +226,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   children: [
                     Icon(
                       isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? AppColors.gold500 : AppColors.silver,
+                      color: isSelected ? colors.gold : colors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.sm),
                     AppText(
@@ -236,13 +241,13 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.successBase.withOpacity(0.1),
+                          color: colors.success.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
                           l10n.kyc_upgrade_recommended,
                           variant: AppTextVariant.labelSmall,
-                          color: AppColors.successText,
+                          color: colors.successText,
                         ),
                       ),
                   ],
@@ -251,7 +256,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                 AppText(
                   tier.description,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
                 SizedBox(height: AppSpacing.md),
                 _buildLimitRow(
@@ -285,7 +290,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   AppText(
                     '+${tier.features.length - 4} ${l10n.kyc_upgrade_andMore}',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ],
@@ -297,14 +302,15 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   }
 
   Widget _buildLimitRow(IconData icon, String label, String value) {
+    final colors = context.colors;
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textSecondary),
+        Icon(icon, size: 16, color: colors.textSecondary),
         SizedBox(width: AppSpacing.xs),
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         const Spacer(),
         AppText(
@@ -316,25 +322,27 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   }
 
   Widget _buildFeatureChip(String feature) {
+    final colors = context.colors;
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.gold500.withOpacity(0.1),
+        color: colors.gold.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
         feature,
         variant: AppTextVariant.bodySmall,
-        color: AppColors.gold500,
+        color: colors.gold,
       ),
     );
   }
 
   Widget _buildRequirementsList(AppLocalizations l10n) {
     final selectedTier = _availableTiers[_selectedTierIndex];
+    final colors = context.colors;
     final requirements = <String>[];
 
     if (selectedTier.tier.level >= 1) {
@@ -369,7 +377,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                     Icon(
                       Icons.check_circle_outline,
                       size: 20,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
@@ -387,12 +395,13 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   }
 
   Widget _buildBottomBar(BuildContext context, AppLocalizations l10n) {
+    final colors = context.colors;
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: colors.surface,
         border: Border(
-          top: BorderSide(color: AppColors.border),
+          top: BorderSide(color: colors.border),
         ),
       ),
       child: SafeArea(
@@ -411,7 +420,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
               child: AppText(
                 l10n.common_maybeLater,
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ),
           ],

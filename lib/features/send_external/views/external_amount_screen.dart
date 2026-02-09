@@ -95,11 +95,16 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        AppText(
-                          l10n.wallet_availableBalance,
-                          variant: AppTextVariant.bodyMedium,
-                          color: AppColors.textSecondary,
+                        Flexible(
+                          child: AppText(
+                            l10n.wallet_availableBalance,
+                            variant: AppTextVariant.bodyMedium,
+                            color: AppColors.textSecondary,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: AppSpacing.sm),
                         AppText(
                           '\$${Formatters.formatCurrency(state.availableBalance)}',
                           variant: AppTextVariant.bodyLarge,

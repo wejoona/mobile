@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widget_data_service.dart';
+import '../../state/app_state.dart';
 import '../../state/wallet_state_machine.dart';
 import '../../state/user_state_machine.dart';
 
@@ -94,7 +95,7 @@ class WidgetAutoUpdater extends Notifier<void> {
 
     // Watch user state for name changes
     ref.listen(userStateMachineProvider, (previous, next) {
-      if (next.isLoaded) {
+      if (next.status == AuthStatus.authenticated) {
         _updateWidgetWithUser(next);
       }
     });
@@ -125,10 +126,10 @@ class WidgetAutoUpdater extends Notifier<void> {
   }
 
   String? _getUserDisplayName(UserState userState) {
-    if (userState.profile?.firstName != null && userState.profile?.lastName != null) {
-      return '${userState.profile!.firstName} ${userState.profile!.lastName}';
-    } else if (userState.profile?.firstName != null) {
-      return userState.profile!.firstName;
+    if (userState.firstName != null && userState.lastName != null) {
+      return '${userState.firstName} ${userState.lastName}';
+    } else if (userState.firstName != null) {
+      return userState.firstName;
     }
     return null;
   }

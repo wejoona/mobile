@@ -37,10 +37,16 @@ class _ContactsPermissionScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Spacer(flex: 1),
+              // Scrollable content
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: AppSpacing.xl),
 
-              // Icon
-              Center(
+                      // Icon
+                      Center(
                 child: Container(
                   width: 120,
                   height: 120,
@@ -107,9 +113,13 @@ class _ContactsPermissionScreenState
                 l10n.contacts_permission_benefit3_desc,
               ),
 
-              const Spacer(flex: 2),
+                      const SizedBox(height: AppSpacing.xxl),
+                    ],
+                  ),
+                ),
+              ),
 
-              // Allow button
+              // Allow button (fixed at bottom)
               AppButton(
                 label: l10n.contacts_permission_allow,
                 onPressed: _handleAllow,

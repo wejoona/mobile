@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/utils/responsive_layout.dart';
+import '../../../core/orientation/orientation_helper.dart';
 import '../../../design/theme/theme_provider.dart';
 import '../../../domain/enums/index.dart';
 import '../../../services/biometric/biometric_service.dart';
@@ -14,6 +17,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../business/providers/business_provider.dart';
 import '../../../domain/enums/account_type.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -26,6 +30,7 @@ class SettingsView extends ConsumerWidget {
     final currentLanguageName = ref
         .read(localeProvider.notifier)
         .getLanguageName(localeState.locale.languageCode);
+    final isLandscape = OrientationHelper.isLandscape(context);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -38,94 +43,352 @@ class SettingsView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/home'),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
+        child: ConstrainedContent(
+          child: Padding(
+            padding: OrientationHelper.padding(
+              context,
+              portrait: ResponsiveLayout.padding(
+                context,
+                mobile: const EdgeInsets.all(AppSpacing.screenPadding),
+                tablet: const EdgeInsets.all(AppSpacing.xl),
+              ),
+              landscape: ResponsiveLayout.padding(
+                context,
+                mobile: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xl,
+                  vertical: AppSpacing.md,
+                ),
+                tablet: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xxl,
+                  vertical: AppSpacing.lg,
+                ),
+              ),
+            ),
+            child: isLandscape
+                ? _buildLandscapeLayout(context, ref, l10n, colors, currentLanguageName)
+                : ResponsiveBuilder(
+                    mobile: _buildMobileLayout(context, ref, l10n, colors, currentLanguageName),
+                    tablet: _buildTabletLayout(context, ref, l10n, colors, currentLanguageName),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeColors colors,
+    String currentLanguageName,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ProfileCard(onTap: () => context.push('/settings/profile')),
+        const SizedBox(height: AppSpacing.xxl),
+        _buildSettingsSections(context, l10n, colors, currentLanguageName, ref),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeColors colors,
+    String currentLanguageName,
+  ) {
+    return Column(
+      children: [
+        // Profile Card full-width on tablet
+        _ProfileCard(onTap: () => context.push('/settings/profile')),
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Two-column layout for settings sections
+        Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Section
-            _ProfileCard(onTap: () => context.push('/settings/profile')),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Security Section
+                  AppText(
+                    l10n.settings_security,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _SettingsTile(
+                    icon: Icons.security,
+                    title: l10n.settings_securitySettings,
+                    subtitle: l10n.settings_securityDescription,
+                    onTap: () => context.push('/settings/security'),
+                  ),
+                  _KycTile(onTap: () => context.push('/settings/kyc')),
+                  _SettingsTile(
+                    icon: Icons.speed,
+                    title: l10n.settings_transactionLimits,
+                    subtitle: l10n.settings_limitsDescription,
+                    onTap: () => context.push('/settings/limits'),
+                  ),
 
-            const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xxl),
 
-            // Security Section
-            AppText(
-              l10n.settings_security,
-              variant: AppTextVariant.labelMedium,
-              color: colors.textSecondary,
+                  // Account Section
+                  AppText(
+                    l10n.settings_account,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  const _AccountTypeTile(),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            _SettingsTile(
-              icon: Icons.security,
-              title: l10n.settings_securitySettings,
-              subtitle: l10n.settings_securityDescription,
-              onTap: () => context.push('/settings/security'),
-            ),
-            _KycTile(onTap: () => context.push('/settings/kyc')),
-            _SettingsTile(
-              icon: Icons.speed,
-              title: l10n.settings_transactionLimits,
-              subtitle: l10n.settings_limitsDescription,
-              onTap: () => context.push('/settings/limits'),
-            ),
+            const SizedBox(width: AppSpacing.xxl),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Preferences Section
+                  AppText(
+                    l10n.settings_preferences,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _SettingsTile(
+                    icon: Icons.notifications_outlined,
+                    title: l10n.settings_notifications,
+                    onTap: () => context.push('/settings/notifications'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.language,
+                    title: l10n.settings_language,
+                    subtitle: currentLanguageName,
+                    onTap: () => context.push('/settings/language'),
+                  ),
+                  const _ThemeTile(),
+                  const _CurrencyTile(),
 
-            const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xxl),
 
-            // Account Section
-            AppText(
-              l10n.settings_account,
-              variant: AppTextVariant.labelMedium,
-              color: colors.textSecondary,
+                  // Support Section
+                  AppText(
+                    l10n.settings_support,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _SettingsTile(
+                    icon: Icons.help_outline,
+                    title: l10n.settings_helpSupport,
+                    subtitle: l10n.settings_helpDescription,
+                    onTap: () => context.push('/settings/help'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            const _AccountTypeTile(),
+          ],
+        ),
 
-            const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.xxl),
 
-            // Preferences Section
-            AppText(
-              l10n.settings_preferences,
-              variant: AppTextVariant.labelMedium,
-              color: colors.textSecondary,
+        // Referral Card - full width
+        AppCard(
+          variant: AppCardVariant.goldAccent,
+          onTap: () => context.push('/referrals'),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colors.gold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(
+                  Icons.card_giftcard,
+                  color: colors.gold,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      l10n.settings_referEarn,
+                      variant: AppTextVariant.titleSmall,
+                      color: colors.gold,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    AppText(
+                      l10n.settings_referDescription,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: colors.gold,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxxl),
+
+        // Logout Button - centered on tablet
+        SizedBox(
+          width: 400,
+          child: AppButton(
+            label: l10n.auth_logout,
+            onPressed: () => _showLogoutDialog(context, ref!),
+            variant: AppButtonVariant.secondary,
+            isFullWidth: true,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // Version
+        Center(
+          child: AppText(
+            l10n.settings_version('1.0.0'),
+            variant: AppTextVariant.labelSmall,
+            color: colors.textTertiary,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
+
+  /// Landscape layout: Three-column grid for better space usage
+  Widget _buildLandscapeLayout(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeColors colors,
+    String currentLanguageName,
+  ) {
+    return Column(
+      children: [
+        // Profile Card - full width but more compact
+        _ProfileCard(onTap: () => context.push('/settings/profile')),
+        const SizedBox(height: AppSpacing.xl),
+
+        // Three-column grid layout for settings
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Column 1: Security
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    l10n.settings_security,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _SettingsTile(
+                    icon: Icons.security,
+                    title: l10n.settings_securitySettings,
+                    subtitle: l10n.settings_securityDescription,
+                    onTap: () => context.push('/settings/security'),
+                  ),
+                  _KycTile(onTap: () => context.push('/settings/kyc')),
+                  _SettingsTile(
+                    icon: Icons.speed,
+                    title: l10n.settings_transactionLimits,
+                    subtitle: l10n.settings_limitsDescription,
+                    onTap: () => context.push('/settings/limits'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            _SettingsTile(
-              icon: Icons.notifications_outlined,
-              title: l10n.settings_notifications,
-              onTap: () => context.push('/settings/notifications'),
-            ),
-            _SettingsTile(
-              icon: Icons.language,
-              title: l10n.settings_language,
-              subtitle: currentLanguageName,
-              onTap: () => context.push('/settings/language'),
-            ),
-            const _ThemeTile(),
-            const _CurrencyTile(),
+            const SizedBox(width: AppSpacing.lg),
 
-            const SizedBox(height: AppSpacing.xxl),
-
-            // Support Section
-            AppText(
-              l10n.settings_support,
-              variant: AppTextVariant.labelMedium,
-              color: colors.textSecondary,
+            // Column 2: Preferences
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    l10n.settings_preferences,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _SettingsTile(
+                    icon: Icons.notifications_outlined,
+                    title: l10n.settings_notifications,
+                    onTap: () => context.push('/settings/notifications'),
+                  ),
+                  _SettingsTile(
+                    icon: Icons.language,
+                    title: l10n.settings_language,
+                    subtitle: currentLanguageName,
+                    onTap: () => context.push('/settings/language'),
+                  ),
+                  const _ThemeTile(),
+                  const _CurrencyTile(),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            _SettingsTile(
-              icon: Icons.help_outline,
-              title: l10n.settings_helpSupport,
-              subtitle: l10n.settings_helpDescription,
-              onTap: () => context.push('/settings/help'),
+            const SizedBox(width: AppSpacing.lg),
+
+            // Column 3: Account & Support
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    l10n.settings_account,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  const _AccountTypeTile(),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppText(
+                    l10n.settings_support,
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _SettingsTile(
+                    icon: Icons.help_outline,
+                    title: l10n.settings_helpSupport,
+                    subtitle: l10n.settings_helpDescription,
+                    onTap: () => context.push('/settings/help'),
+                  ),
+                ],
+              ),
             ),
+          ],
+        ),
 
-            const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.xl),
 
-            // Referral
-            AppCard(
+        // Referral Card - centered, constrained width
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: AppCard(
               variant: AppCardVariant.goldAccent,
               onTap: () => context.push('/referrals'),
               child: Row(
@@ -168,32 +431,192 @@ class SettingsView extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+        ),
 
-            const SizedBox(height: AppSpacing.xxxl),
+        const SizedBox(height: AppSpacing.xl),
 
-            // Logout Button
-            AppButton(
+        // Logout Button - centered, constrained width
+        Center(
+          child: SizedBox(
+            width: 300,
+            child: AppButton(
               label: l10n.auth_logout,
-              onPressed: () => _showLogoutDialog(context, ref),
+              onPressed: () => _showLogoutDialog(context, ref!),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Version
-            Center(
-              child: AppText(
-                l10n.settings_version('1.0.0'),
-                variant: AppTextVariant.labelSmall,
-                color: colors.textTertiary,
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
-          ],
+          ),
         ),
-      ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // Version
+        Center(
+          child: AppText(
+            l10n.settings_version('1.0.0'),
+            variant: AppTextVariant.labelSmall,
+            color: colors.textTertiary,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
+  }
+
+  Widget _buildSettingsSections(
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeColors colors,
+    String currentLanguageName, [
+    WidgetRef? ref,
+  ]) {
+    // ignore: unnecessary_non_null_assertion
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Security Section
+        AppText(
+          l10n.settings_security,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _SettingsTile(
+          icon: Icons.security,
+          title: l10n.settings_securitySettings,
+          subtitle: l10n.settings_securityDescription,
+          onTap: () => context.push('/settings/security'),
+        ),
+        _KycTile(onTap: () => context.push('/settings/kyc')),
+        _SettingsTile(
+          icon: Icons.speed,
+          title: l10n.settings_transactionLimits,
+          subtitle: l10n.settings_limitsDescription,
+          onTap: () => context.push('/settings/limits'),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Account Section
+        AppText(
+          l10n.settings_account,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _AccountTypeTile(),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Preferences Section
+        AppText(
+          l10n.settings_preferences,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _SettingsTile(
+          icon: Icons.notifications_outlined,
+          title: l10n.settings_notifications,
+          onTap: () => context.push('/settings/notifications'),
+        ),
+        _SettingsTile(
+          icon: Icons.language,
+          title: l10n.settings_language,
+          subtitle: currentLanguageName,
+          onTap: () => context.push('/settings/language'),
+        ),
+        const _ThemeTile(),
+        const _CurrencyTile(),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Support Section
+        AppText(
+          l10n.settings_support,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _SettingsTile(
+          icon: Icons.help_outline,
+          title: l10n.settings_helpSupport,
+          subtitle: l10n.settings_helpDescription,
+          onTap: () => context.push('/settings/help'),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+
+        // Referral
+        AppCard(
+          variant: AppCardVariant.goldAccent,
+          onTap: () => context.push('/referrals'),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colors.gold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(
+                  Icons.card_giftcard,
+                  color: colors.gold,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      l10n.settings_referEarn,
+                      variant: AppTextVariant.titleSmall,
+                      color: colors.gold,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    AppText(
+                      l10n.settings_referDescription,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: colors.gold,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxxl),
+
+        // Logout Button
+        AppButton(
+          label: l10n.auth_logout,
+          onPressed: () => _showLogoutDialog(context, ref!),
+          variant: AppButtonVariant.secondary,
+          isFullWidth: true,
+        ),
+
+        const SizedBox(height: AppSpacing.lg),
+
+        // Version
+        Center(
+          child: AppText(
+            l10n.settings_version('1.0.0'),
+            variant: AppTextVariant.labelSmall,
+            color: colors.textTertiary,
+          ),
+        ),
+
+        const SizedBox(height: AppSpacing.xxl),
+      ],
     );
   }
 
@@ -262,7 +685,10 @@ class _SettingsTile extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          hapticService.selection();
+          onTap();
+        },
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -320,14 +746,23 @@ class _KycTile extends ConsumerWidget {
         subtitle = l10n.kyc_verified;
         subtitleColor = AppColors.successText;
         icon = Icons.verified_user;
-      case KycStatus.pending:
+      case KycStatus.submitted:
         subtitle = l10n.kyc_pending;
         subtitleColor = AppColors.warningBase;
         icon = Icons.hourglass_top;
+      case KycStatus.pending:
+      case KycStatus.documentsPending:
+        subtitle = l10n.kyc_pending;
+        subtitleColor = AppColors.warningBase;
+        icon = Icons.upload_file;
       case KycStatus.rejected:
         subtitle = l10n.kyc_rejected;
         subtitleColor = AppColors.errorText;
         icon = Icons.error_outline;
+      case KycStatus.additionalInfoNeeded:
+        subtitle = l10n.kyc_pending;
+        subtitleColor = AppColors.warningBase;
+        icon = Icons.info_outline;
       case KycStatus.none:
         subtitle = l10n.kyc_notStarted;
         subtitleColor = AppColors.textTertiary;
@@ -365,6 +800,9 @@ class _BiometricTile extends ConsumerWidget {
             trailing: Switch(
               value: enabled,
               onChanged: (value) async {
+                // Haptic feedback on toggle
+                hapticService.toggle();
+
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
                   final authenticated = await service.authenticate(
@@ -421,7 +859,7 @@ class _BiometricTile extends ConsumerWidget {
   }
 }
 
-/// Theme selector tile with Light/Dark/System options
+/// Theme selector tile - navigates to theme settings
 class _ThemeTile extends ConsumerWidget {
   const _ThemeTile();
 
@@ -443,117 +881,9 @@ class _ThemeTile extends ConsumerWidget {
 
     return _SettingsTile(
       icon: Icons.brightness_6,
-      title: l10n.settings_theme,
+      title: l10n.settings_appearance,
       subtitle: getThemeLabel(themeState.mode),
-      onTap: () => _showThemeDialog(context, ref, themeState.mode, l10n),
-    );
-  }
-
-  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: dialogContext.colors.container,
-        title: AppText(
-          l10n.settings_selectTheme,
-          variant: AppTextVariant.titleMedium,
-          color: dialogContext.colors.textPrimary,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ThemeOption(
-              mode: AppThemeMode.light,
-              currentMode: currentMode,
-              icon: Icons.light_mode,
-              label: l10n.settings_themeLight,
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
-              },
-            ),
-            _ThemeOption(
-              mode: AppThemeMode.dark,
-              currentMode: currentMode,
-              icon: Icons.dark_mode,
-              label: l10n.settings_themeDark,
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
-              },
-            ),
-            _ThemeOption(
-              mode: AppThemeMode.system,
-              currentMode: currentMode,
-              icon: Icons.brightness_auto,
-              label: l10n.settings_themeSystem,
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeOption extends StatelessWidget {
-  const _ThemeOption({
-    required this.mode,
-    required this.currentMode,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final AppThemeMode mode;
-  final AppThemeMode currentMode;
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final isSelected = mode == currentMode;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? colors.gold : colors.textSecondary,
-                size: 24,
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: AppText(
-                  label,
-                  variant: AppTextVariant.bodyLarge,
-                  color: isSelected ? colors.gold : colors.textPrimary,
-                ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: colors.gold,
-                  size: 20,
-                ),
-            ],
-          ),
-        ),
-      ),
+      onTap: () => context.push('/settings/theme'),
     );
   }
 }

@@ -81,8 +81,9 @@ class _NumberButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Material(
-      color: AppColors.elevated,
+      color: colors.elevated,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: onPressed,
@@ -91,7 +92,7 @@ class _NumberButton extends StatelessWidget {
           child: Text(
             number,
             style: AppTypography.displaySmall.copyWith(
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
           ),
         ),
@@ -107,8 +108,9 @@ class _BackspaceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Material(
-      color: AppColors.elevated,
+      color: colors.elevated,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: () {
@@ -116,10 +118,10 @@ class _BackspaceButton extends StatelessWidget {
           onPressed();
         },
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.backspace_outlined,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
             size: 28,
           ),
         ),
@@ -135,6 +137,7 @@ class _BiometricButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -146,7 +149,7 @@ class _BiometricButton extends StatelessWidget {
         child: Center(
           child: Icon(
             Icons.fingerprint,
-            color: AppColors.gold500,
+            color: colors.gold,
             size: 36,
           ),
         ),

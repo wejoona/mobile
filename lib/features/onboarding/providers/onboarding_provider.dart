@@ -1,5 +1,9 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../services/api/api_client.dart';
+import '../../../services/pin/pin_service.dart';
 import '../models/onboarding_state.dart';
 
 /// Onboarding state provider
@@ -18,6 +22,9 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     });
     return const OnboardingState();
   }
+
+  Dio get _dio => ref.read(dioProvider);
+  FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
 
   /// Navigate to next step
   void nextStep() {
@@ -48,6 +55,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   /// Submit phone number for registration
+  /// Calls POST /auth/register { phone, countryCode }
   Future<void> submitPhoneNumber() async {
     if (state.phoneNumber == null || state.phoneNumber!.isEmpty) {
       state = state.copyWith(error: 'Phone number is required');
@@ -57,17 +65,26 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Call API to register phone number
-      // For now, simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      // Build E.164 phone: countryCode + phoneNumber
+      final phone = '${state.countryCode}${state.phoneNumber}';
 
-      // Mock: any phone number works
+      await _dio.post('/auth/register', data: {
+        'phone': phone,
+        'countryCode': 'CI', // Default; derive from state.countryCode if needed
+      });
+
       state = state.copyWith(
         isLoading: false,
         currentStep: OnboardingStep.otpVerification,
       );
 
       _startResendCountdown();
+    } on DioException catch (e) {
+      final message = ApiException.fromDioError(e).message;
+      state = state.copyWith(
+        isLoading: false,
+        error: message,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -85,6 +102,8 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   /// Verify OTP
+  /// Calls POST /auth/verify-otp { phone, otp }
+  /// Returns { accessToken, refreshToken, user, expiresIn, kycStatus }
   Future<void> verifyOtp() async {
     if (state.otp == null || state.otp!.length != 6) {
       state = state.copyWith(error: 'Please enter a valid 6-digit code');
@@ -94,19 +113,33 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Call API to verify OTP
-      // For now, simulate API call
-      await Future.delayed(const Duration(seconds: 1));
+      final phone = '${state.countryCode}${state.phoneNumber}';
 
-      // Mock: any 6 digits work, or specifically "123456"
+      final response = await _dio.post('/auth/verify-otp', data: {
+        'phone': phone,
+        'otp': state.otp,
+      });
+
+      final data = response.data as Map<String, dynamic>;
+
+      // Store tokens
+      await _storage.write(
+        key: StorageKeys.accessToken,
+        value: data['accessToken'] as String,
+      );
+      await _storage.write(
+        key: StorageKeys.refreshToken,
+        value: data['refreshToken'] as String,
+      );
+
       state = state.copyWith(
         isLoading: false,
         currentStep: OnboardingStep.pinSetup,
-        sessionToken: 'mock-session-token',
+        sessionToken: data['accessToken'] as String,
       );
 
       _resendTimer?.cancel();
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: 'Invalid code. Please try again.',
@@ -115,21 +148,39 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
       Future.delayed(const Duration(milliseconds: 500), () {
         state = state.copyWith(otp: '');
       });
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Invalid code. Please try again.',
+      );
+      Future.delayed(const Duration(milliseconds: 500), () {
+        state = state.copyWith(otp: '');
+      });
     }
   }
 
   /// Resend OTP
+  /// Calls POST /auth/login { phone } to trigger a new OTP
   Future<void> resendOtp() async {
     if (state.otpResendCountdown > 0) return;
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Call API to resend OTP
-      await Future.delayed(const Duration(seconds: 1));
+      final phone = '${state.countryCode}${state.phoneNumber}';
+
+      await _dio.post('/auth/login', data: {
+        'phone': phone,
+      });
 
       state = state.copyWith(isLoading: false);
       _startResendCountdown();
+    } on DioException catch (e) {
+      final message = ApiException.fromDioError(e).message;
+      state = state.copyWith(
+        isLoading: false,
+        error: message,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -160,17 +211,25 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   /// Submit PIN
+  /// Uses PinService which calls POST /wallet/pin/set
   Future<void> submitPin(String pin) async {
     state = state.copyWith(isLoading: true, error: null, pin: pin);
 
     try {
-      // TODO: Call API to set PIN
-      await Future.delayed(const Duration(seconds: 1));
+      final pinService = ref.read(pinServiceProvider);
+      final success = await pinService.setPin(pin);
 
-      state = state.copyWith(
-        isLoading: false,
-        currentStep: OnboardingStep.profileSetup,
-      );
+      if (success) {
+        state = state.copyWith(
+          isLoading: false,
+          currentStep: OnboardingStep.profileSetup,
+        );
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Failed to set PIN. Please try again.',
+        );
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -194,6 +253,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   /// Submit profile
+  /// Calls PUT /user/profile { firstName, lastName, email }
   Future<void> submitProfile() async {
     if (state.firstName == null || state.firstName!.isEmpty) {
       state = state.copyWith(error: 'First name is required');
@@ -207,12 +267,22 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Call API to update profile
-      await Future.delayed(const Duration(seconds: 1));
+      await _dio.put('/user/profile', data: {
+        'firstName': state.firstName,
+        'lastName': state.lastName,
+        if (state.email != null && state.email!.isNotEmpty)
+          'email': state.email,
+      });
 
       state = state.copyWith(
         isLoading: false,
         currentStep: OnboardingStep.kycPrompt,
+      );
+    } on DioException catch (e) {
+      final message = ApiException.fromDioError(e).message;
+      state = state.copyWith(
+        isLoading: false,
+        error: message,
       );
     } catch (e) {
       state = state.copyWith(

@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/kyc_status.dart';
 import '../models/kyc_document.dart';
@@ -5,6 +7,10 @@ import '../models/document_type.dart';
 import '../models/kyc_submission.dart';
 import '../models/kyc_tier.dart';
 import '../../../services/sdk/usdc_wallet_sdk.dart';
+import '../../../services/kyc/kyc_service.dart';
+import '../../../state/fsm/fsm_provider.dart';
+import '../../../state/fsm/kyc_fsm.dart' as fsm;
+import '../../profile/providers/profile_provider.dart';
 
 class KycState {
   final KycStatus status;
@@ -23,6 +29,13 @@ class KycState {
   final String? state;
   final String? postalCode;
   final String? country;
+  // Personal info fields
+  final String? firstName;
+  final String? lastName;
+  final DateTime? dateOfBirth;
+  final String? nationality;
+  // Verification status (from /kyc/verification/status)
+  final FullVerificationStatus? verificationStatus;
 
   const KycState({
     this.status = KycStatus.pending,
@@ -41,6 +54,11 @@ class KycState {
     this.state,
     this.postalCode,
     this.country,
+    this.firstName,
+    this.lastName,
+    this.dateOfBirth,
+    this.nationality,
+    this.verificationStatus,
   });
 
   bool get canStartVerification => status.canSubmit;
@@ -61,6 +79,13 @@ class KycState {
         selfiePath: selfiePath,
       );
 
+  bool get hasPersonalInfo =>
+      firstName != null &&
+      firstName!.isNotEmpty &&
+      lastName != null &&
+      lastName!.isNotEmpty &&
+      dateOfBirth != null;
+
   KycState copyWith({
     KycStatus? status,
     String? rejectionReason,
@@ -78,6 +103,11 @@ class KycState {
     String? state,
     String? postalCode,
     String? country,
+    String? firstName,
+    String? lastName,
+    DateTime? dateOfBirth,
+    String? nationality,
+    FullVerificationStatus? verificationStatus,
   }) {
     return KycState(
       status: status ?? this.status,
@@ -96,6 +126,11 @@ class KycState {
       state: state ?? this.state,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      nationality: nationality ?? this.nationality,
+      verificationStatus: verificationStatus ?? this.verificationStatus,
     );
   }
 
@@ -134,6 +169,20 @@ class KycNotifier extends Notifier<KycState> {
     state = state.copyWith(selectedDocumentType: type);
   }
 
+  void setPersonalInfo({
+    required String firstName,
+    required String lastName,
+    required DateTime dateOfBirth,
+    String? nationality,
+  }) {
+    state = state.copyWith(
+      firstName: firstName,
+      lastName: lastName,
+      dateOfBirth: dateOfBirth,
+      nationality: nationality,
+    );
+  }
+
   void addDocument(KycDocument document) {
     final documents = List<KycDocument>.from(state.capturedDocuments);
     documents.add(document);
@@ -166,6 +215,10 @@ class KycNotifier extends Notifier<KycState> {
 
   Future<void> submitKyc() async {
     if (!state.canSubmit) return;
+    if (!state.hasPersonalInfo) {
+      state = state.copyWith(error: 'Personal information is required');
+      return;
+    }
 
     state = state.copyWith(isLoading: true, error: '', uploadProgress: 0.0);
     try {
@@ -179,6 +232,10 @@ class KycNotifier extends Notifier<KycState> {
         documentPaths: documentPaths,
         selfiePath: state.selfiePath!,
         documentType: state.selectedDocumentType!.toApiString(),
+        firstName: state.firstName!,
+        lastName: state.lastName!,
+        dateOfBirth: state.dateOfBirth!,
+        country: state.nationality ?? 'CI',
       );
 
       state = state.copyWith(
@@ -186,12 +243,90 @@ class KycNotifier extends Notifier<KycState> {
         status: KycStatus.submitted,
         uploadProgress: 1.0,
       );
+
+      // Use selfie as profile picture
+      if (state.selfiePath != null && state.selfiePath!.isNotEmpty) {
+        try {
+          final selfieFile = File(state.selfiePath!);
+          if (await selfieFile.exists()) {
+            await ref.read(profileProvider.notifier).updateAvatar(selfieFile);
+          }
+        } catch (_) {
+          // Ignore avatar upload errors - KYC is still successful
+        }
+      }
+
+      // Sync with FSM - update KYC state to pending (submitted, awaiting review)
+      ref.read(appFsmProvider.notifier).onKycStatusLoaded(
+        tier: fsm.KycTier.none,
+        status: 'pending',
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
         uploadProgress: 0.0,
       );
+    }
+  }
+
+  /// Load full verification status from /kyc/verification/status
+  Future<void> loadVerificationStatus() async {
+    state = state.copyWith(isLoading: true, error: '');
+    try {
+      final sdk = ref.read(sdkProvider);
+      final verificationStatus = await sdk.kyc.getVerificationStatus();
+      state = state.copyWith(
+        isLoading: false,
+        status: verificationStatus.kyc.status,
+        rejectionReason: verificationStatus.kyc.rejectionReason,
+        verificationStatus: verificationStatus,
+      );
+    } catch (e) {
+      debugPrint('[KYC] Failed to load verification status: $e');
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  /// Submit document for VerifyHQ verification
+  /// Uploads front (+ optional back) image and submits S3 keys
+  Future<DocumentSubmitResponse?> submitDocumentForVerification() async {
+    if (!state.hasAllDocuments) return null;
+
+    state = state.copyWith(isLoading: true, error: '');
+    try {
+      final sdk = ref.read(sdkProvider);
+      final docType = state.selectedDocumentType!.toApiString();
+
+      // Upload front image
+      final frontPath = state.capturedDocuments[0].imagePath;
+      debugPrint('[KYC] Uploading front document image...');
+      final frontKey = await sdk.kyc.uploadFileForVerification(frontPath, 'idFront');
+
+      // Upload back image if present
+      String? backKey;
+      if (state.capturedDocuments.length > 1) {
+        final backPath = state.capturedDocuments[1].imagePath;
+        debugPrint('[KYC] Uploading back document image...');
+        backKey = await sdk.kyc.uploadFileForVerification(backPath, 'idBack');
+      }
+
+      // Submit to verification endpoint
+      debugPrint('[KYC] Submitting document for verification...');
+      final result = await sdk.kyc.submitDocumentVerification(
+        docType: docType,
+        frontImageKey: frontKey,
+        backImageKey: backKey,
+      );
+
+      state = state.copyWith(isLoading: false);
+      return result;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return null;
     }
   }
 

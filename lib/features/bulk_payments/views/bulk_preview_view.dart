@@ -144,8 +144,8 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
   }
 
-  Widget _buildFilterToggle(AppLocalizations l10n, batch) {
-    if (!batch.hasErrors) return const SizedBox.shrink();
+  Widget _buildFilterToggle(AppLocalizations l10n, dynamic batch) {
+    if (!(batch.hasErrors as bool)) return const SizedBox.shrink();
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -172,7 +172,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   Widget _buildPaymentsList(AppLocalizations l10n, batch) {
     final payments = _showInvalidOnly ? batch.invalidPayments : batch.payments;
 
-    if (payments.isEmpty) {
+    if ((payments as List).isEmpty) {
       return Center(
         child: AppText(
           l10n.bulkPayments_noPayments,
@@ -195,7 +195,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   }
 
   Widget _buildBottomBar(AppLocalizations l10n, batch, state) {
-    final canSubmit = !batch.hasErrors && batch.totalCount > 0;
+    final canSubmit = !(batch.hasErrors as bool) && (batch.totalCount as int) > 0;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),

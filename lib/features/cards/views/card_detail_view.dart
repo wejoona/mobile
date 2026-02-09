@@ -146,6 +146,9 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               decoration: BoxDecoration(
                 color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: colors.borderSubtle,
+                ),
               ),
               child: Column(
                 children: [
@@ -161,18 +164,32 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                         '${card.currency} ${card.spentAmount.toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,
                         color: colors.textPrimary,
+                        fontWeight: FontWeight.w600,
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  LinearProgressIndicator(
-                    value: card.spendingLimit > 0
-                        ? card.spentAmount / card.spendingLimit
-                        : 0,
-                    backgroundColor: colors.borderSubtle,
-                    valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
+                  const SizedBox(height: AppSpacing.md),
+
+                  // Themed progress bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    child: SizedBox(
+                      height: 8,
+                      child: LinearProgressIndicator(
+                        value: card.spendingLimit > 0
+                            ? (card.spentAmount / card.spendingLimit).clamp(0.0, 1.0)
+                            : 0,
+                        backgroundColor: colors.isDark
+                            ? colors.borderSubtle
+                            : AppColorsLight.elevated,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          _getProgressColor(colors, card.spentAmount / card.spendingLimit),
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+
+                  const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -185,11 +202,57 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                         '${card.currency} ${card.spendingLimit.toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,
                         color: colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  // Available amount
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      AppText(
+                        l10n.cards_availableLimit,
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textTertiary,
+                      ),
+                      AppText(
+                        '${card.currency} ${card.availableLimit.toStringAsFixed(2)}',
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.success,
+                        fontWeight: FontWeight.w500,
                       ),
                     ],
                   ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: AppSpacing.xxl),
+
+            // Quick stats row
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    colors,
+                    icon: Icons.account_balance_wallet_outlined,
+                    label: l10n.cards_availableLimit,
+                    value: '${card.currency} ${card.availableLimit.toStringAsFixed(0)}',
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    colors,
+                    icon: Icons.receipt_long_outlined,
+                    label: l10n.cards_transactions,
+                    value: '0', // TODO: Get transaction count
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -200,6 +263,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               onPressed: () => context.push('/cards/transactions/${card.id}'),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
+              icon: Icons.history,
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -283,6 +347,55 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
         content: Text(l10n.cards_copiedToClipboard),
         backgroundColor: context.colors.success,
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  /// Get progress bar color based on usage percentage
+  Color _getProgressColor(ThemeColors colors, double percentage) {
+    if (percentage >= 0.9) {
+      return colors.error; // 90%+ usage - red warning
+    } else if (percentage >= 0.75) {
+      return colors.warning; // 75-90% - amber warning
+    } else {
+      return colors.gold; // Below 75% - normal gold
+    }
+  }
+
+  Widget _buildStatCard(
+    BuildContext context,
+    ThemeColors colors, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: colors.elevated,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(
+          color: colors.borderSubtle,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: colors.textSecondary, size: 24),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            label,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            value,
+            variant: AppTextVariant.labelLarge,
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ],
       ),
     );
   }

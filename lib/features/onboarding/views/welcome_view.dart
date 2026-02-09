@@ -26,9 +26,10 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Column(
           children: [
@@ -41,7 +42,7 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
                   AppText(
                     l10n.appName,
                     style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                   // Skip button
@@ -57,7 +58,7 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
                       child: AppText(
                         l10n.onboarding_skip,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.silver,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -123,6 +124,7 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
   }
 
   Widget _buildSlide(String title, String description, IconData icon) {
+    final colors = context.colors;
     return Padding(
       padding: EdgeInsets.all(AppSpacing.xl),
       child: Column(
@@ -133,26 +135,28 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
             width: 200,
             height: 200,
             decoration: BoxDecoration(
-              color: AppColors.charcoal,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: Icon(
               icon,
               size: 100,
-              color: AppColors.gold500,
+              color: colors.gold,
             ),
           ),
           SizedBox(height: AppSpacing.xxl),
           AppText(
             title,
-            style: AppTypography.headlineLarge,
+            style: AppTypography.headlineLarge.copyWith(
+              color: colors.textPrimary,
+            ),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
           AppText(
             description,
             style: AppTypography.bodyLarge.copyWith(
-              color: AppColors.silver,
+              color: colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -162,13 +166,14 @@ class _WelcomeViewState extends ConsumerState<WelcomeView> {
   }
 
   Widget _buildPageIndicator(bool isActive) {
+    final colors = context.colors;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       width: isActive ? 24 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? AppColors.gold500 : AppColors.silver,
+        color: isActive ? colors.gold : colors.textSecondary,
         borderRadius: BorderRadius.circular(4),
       ),
     );

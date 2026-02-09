@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/localization/language_provider.dart';
@@ -28,10 +29,11 @@ class LanguageView extends ConsumerWidget {
         title: AppText(
           l10n.language_changeLanguage,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: ListView(

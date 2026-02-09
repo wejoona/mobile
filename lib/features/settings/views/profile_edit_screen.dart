@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../state/index.dart';
@@ -58,7 +59,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SafeArea(
@@ -311,7 +312,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             backgroundColor: AppColors.successBase,
           ),
         );
-        context.pop();
+        context.safePop(fallbackRoute: '/settings');
       }
     } catch (e) {
       if (mounted) {

@@ -25,6 +25,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final historyAsync = ref.watch(
       billPaymentHistoryProvider(BillPaymentHistoryParams(
         page: 1,
@@ -35,21 +36,22 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: AppText(
           l10n.billPayments_history,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.filter_list),
+            icon: Icon(Icons.filter_list, color: colors.icon),
             onPressed: _showFilterSheet,
             tooltip: 'Filter',
           ),
@@ -76,8 +78,8 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                   onRefresh: () async {
                     ref.invalidate(billPaymentHistoryProvider);
                   },
-                  color: AppColors.gold500,
-                  backgroundColor: AppColors.slate,
+                  color: colors.gold,
+                  backgroundColor: colors.container,
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification is ScrollEndNotification &&
@@ -96,7 +98,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                             child: Padding(
                               padding: const EdgeInsets.all(AppSpacing.lg),
                               child: CircularProgressIndicator(
-                                color: AppColors.gold500,
+                                color: colors.gold,
                               ),
                             ),
                           );
@@ -114,7 +116,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
                 );
               },
               loading: () => Center(
-                child: CircularProgressIndicator(color: AppColors.gold500),
+                child: CircularProgressIndicator(color: colors.gold),
               ),
               error: (error, _) => _buildErrorState(l10n, error.toString()),
             ),
@@ -165,7 +167,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             },
             child: Text(
               'Clear',
-              style: TextStyle(color: AppColors.gold500),
+              style: TextStyle(color: context.colors.gold),
             ),
           ),
         ],
@@ -177,22 +179,23 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
     required String label,
     required VoidCallback onRemove,
   }) {
+    final colors = context.colors;
     return Chip(
       label: Text(
         label,
         style: TextStyle(
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
           fontSize: 12,
         ),
       ),
       deleteIcon: Icon(
         Icons.close,
         size: 16,
-        color: AppColors.textSecondary,
+        color: colors.iconSecondary,
       ),
       onDeleted: onRemove,
-      backgroundColor: AppColors.elevated,
-      side: BorderSide(color: AppColors.borderSubtle),
+      backgroundColor: colors.elevated,
+      side: BorderSide(color: colors.borderSubtle),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.full),
       ),
@@ -200,6 +203,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   }
 
   Widget _buildEmptyState(AppLocalizations l10n) {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -207,20 +211,20 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Icon(
               Icons.receipt_long_outlined,
               size: 48,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             'No Payment History',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -228,7 +232,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             child: AppText(
               'Your bill payments will appear here',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -244,6 +248,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   }
 
   Widget _buildErrorState(AppLocalizations l10n, String error) {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -251,20 +256,20 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           Container(
             padding: const EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.errorBase.withOpacity(0.1),
+              color: colors.errorBg,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.error_outline,
               size: 48,
-              color: AppColors.errorText,
+              color: colors.errorText,
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
             'Failed to Load History',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Padding(
@@ -272,7 +277,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
             child: AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ),
@@ -324,9 +329,10 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
   }
 
   void _showFilterSheet() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.graphite,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
@@ -378,6 +384,7 @@ class _HistoryGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -386,7 +393,7 @@ class _HistoryGroup extends StatelessWidget {
           child: AppText(
             date,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textTertiary,
+            color: colors.textTertiary,
           ),
         ),
         ...items.map((item) => Padding(

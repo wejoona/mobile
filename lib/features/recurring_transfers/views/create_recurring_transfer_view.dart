@@ -9,6 +9,7 @@ import '../providers/create_recurring_transfer_provider.dart';
 import '../providers/recurring_transfers_provider.dart';
 import '../widgets/frequency_picker.dart';
 import '../widgets/end_condition_picker.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 class CreateRecurringTransferView extends ConsumerStatefulWidget {
   const CreateRecurringTransferView({
@@ -70,7 +71,7 @@ class _CreateRecurringTransferViewState
     final formState = ref.watch(createRecurringTransferProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.recurringTransfers_createTitle,
@@ -128,7 +129,7 @@ class _CreateRecurringTransferViewState
                 suffix: AppText(
                   formState.currency,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
@@ -215,35 +216,37 @@ class _CreateRecurringTransferViewState
     AppLocalizations l10n,
     CreateRecurringTransferFormState formState,
   ) {
-    return AppCard(
-      variant: AppCardVariant.subtle,
-      onTap: () => _selectStartDate(formState.startDate),
-      child: Padding(
-        padding: EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          children: [
-            Icon(Icons.calendar_today, color: AppColors.gold500),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    l10n.recurringTransfers_startDate,
-                    variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
-                  ),
-                  SizedBox(height: AppSpacing.xs),
-                  AppText(
-                    _formatDate(formState.startDate),
-                    variant: AppTextVariant.bodyMedium,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ],
+    return Builder(
+      builder: (context) => AppCard(
+        variant: AppCardVariant.subtle,
+        onTap: () => _selectStartDate(formState.startDate),
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: [
+              Icon(Icons.calendar_today, color: context.colors.gold),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      l10n.recurringTransfers_startDate,
+                      variant: AppTextVariant.bodySmall,
+                      color: context.colors.textSecondary,
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    AppText(
+                      _formatDate(formState.startDate),
+                      variant: AppTextVariant.bodyMedium,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Icon(Icons.chevron_right, color: AppColors.textSecondary),
-          ],
+              Icon(Icons.chevron_right, color: context.colors.textSecondary),
+            ],
+          ),
         ),
       ),
     );

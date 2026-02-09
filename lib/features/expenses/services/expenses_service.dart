@@ -32,29 +32,12 @@ class ExpensesService {
     await prefs.setString(_storageKey, json.encode(jsonList));
   }
 
-  /// Mock OCR processing - extracts data from receipt image
+  /// OCR receipt processing
+  /// Currently not available — backend OCR endpoint not yet implemented.
+  /// Throws an UnsupportedError to signal the feature is coming soon.
   static Future<OcrResult> processReceipt(String imagePath) async {
-    // Simulate OCR processing delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Mock OCR result
-    return OcrResult(
-      amount: 25000 + (DateTime.now().millisecond * 100).toDouble(),
-      date: DateTime.now(),
-      vendor: _getMockVendor(),
+    throw Exception(
+      'Receipt scanning is coming soon. Please enter expense details manually.',
     );
-  }
-
-  static String _getMockVendor() {
-    final vendors = [
-      'Restaurant Le Jardin',
-      'Hotel Ivoire',
-      'Station Shell',
-      'Supermarché Casino',
-      'Taxi VIP',
-      'Pharmacie du Plateau',
-      'Café de la Paix',
-    ];
-    return vendors[DateTime.now().second % vendors.length];
   }
 }

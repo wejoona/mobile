@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../design/components/primitives/app_toast.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+// import '../design/components/primitives/app_toast.dart';
 import '../services/api/api_client.dart';
 import 'error_messages.dart';
 
@@ -33,7 +33,9 @@ mixin ErrorHandlerMixin {
         ? '$message\n${_getLocalizedMessage(l10n, suggestion)}'
         : message;
 
-    AppToast.error(context, fullMessage);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(fullMessage), backgroundColor: Colors.red),
+    );
   }
 
   /// Show error as dialog

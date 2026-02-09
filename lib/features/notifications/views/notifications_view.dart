@@ -8,6 +8,7 @@ import '../../../domain/entities/index.dart';
 import '../../../services/sdk/usdc_wallet_sdk.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/logger.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 /// Notification item model
 class NotificationItem {
@@ -128,9 +129,10 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
   @override
   Widget build(BuildContext context) {
     final unreadCount = _notifications.where((n) => !n.isRead).length;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
@@ -138,7 +140,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             AppText(
               AppLocalizations.of(context)!.notifications_title,
               variant: AppTextVariant.titleLarge,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             if (unreadCount > 0) ...[
               const SizedBox(width: AppSpacing.sm),
@@ -148,20 +150,20 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                   vertical: AppSpacing.xxs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500,
+                  color: colors.gold,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   '$unreadCount',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.textInverse,
+                  color: colors.textInverse,
                 ),
               ),
             ],
           ],
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -171,14 +173,14 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
               child: AppText(
                 AppLocalizations.of(context)!.notifications_markAllRead,
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.gold500),
+          ? Center(
+              child: CircularProgressIndicator(color: colors.gold),
             )
           : _errorMessage != null
               ? _buildErrorState()
@@ -186,8 +188,8 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
                   ? _buildEmptyState()
                   : RefreshIndicator(
                       onRefresh: _loadNotifications,
-                      color: AppColors.gold500,
-                      backgroundColor: AppColors.slate,
+                      color: colors.gold,
+                      backgroundColor: colors.container,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(AppSpacing.screenPadding),
                         itemCount: _notifications.length,
@@ -205,6 +207,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
   }
 
   Widget _buildEmptyState() {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -213,12 +216,12 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_off_outlined,
-              color: AppColors.textTertiary,
+              color: colors.textTertiary,
               size: 40,
             ),
           ),
@@ -226,13 +229,13 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           AppText(
             AppLocalizations.of(context)!.notifications_emptyTitle,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
             AppLocalizations.of(context)!.notifications_emptyMessage,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
           ),
         ],
       ),
@@ -240,6 +243,7 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
   }
 
   Widget _buildErrorState() {
+    final colors = context.colors;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -248,12 +252,12 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.slate,
+              color: colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.error_outline,
-              color: AppColors.errorBase,
+              color: colors.error,
               size: 40,
             ),
           ),
@@ -261,13 +265,13 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
           AppText(
             AppLocalizations.of(context)!.notifications_errorTitle,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
             _errorMessage ?? AppLocalizations.of(context)!.notifications_errorGeneric,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xl),
@@ -351,10 +355,11 @@ class _NotificationsViewState extends ConsumerState<NotificationsView> {
     } catch (e) {
       // Show error snackbar
       if (mounted) {
+        final colors = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to mark all as read: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }
@@ -375,6 +380,8 @@ class _NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
@@ -383,10 +390,10 @@ class _NotificationCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.errorBase,
+          color: colors.error,
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: Icon(Icons.delete, color: colors.textInverse),
       ),
       child: GestureDetector(
         onTap: onTap,
@@ -394,18 +401,18 @@ class _NotificationCard extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: AppSpacing.md),
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: notification.isRead ? AppColors.slate : AppColors.elevated,
+            color: notification.isRead ? colors.container : colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
               color: notification.isRead
-                  ? AppColors.borderSubtle
-                  : AppColors.borderGold,
+                  ? colors.borderSubtle
+                  : colors.borderGold,
             ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildIcon(),
+              _buildIcon(context),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
@@ -418,16 +425,16 @@ class _NotificationCard extends StatelessWidget {
                             notification.title,
                             variant: AppTextVariant.bodyLarge,
                             color: notification.isRead
-                                ? AppColors.textSecondary
-                                : AppColors.textPrimary,
+                                ? colors.textSecondary
+                                : colors.textPrimary,
                           ),
                         ),
                         if (!notification.isRead)
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.gold500,
+                            decoration: BoxDecoration(
+                              color: colors.gold,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -437,7 +444,7 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       notification.message,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -445,17 +452,17 @@ class _NotificationCard extends StatelessWidget {
                     AppText(
                       _formatTime(context, notification.createdAt),
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),
               ),
               if (notification.actionRoute != null)
-                const Padding(
-                  padding: EdgeInsets.only(left: AppSpacing.sm),
+                Padding(
+                  padding: const EdgeInsets.only(left: AppSpacing.sm),
                   child: Icon(
                     Icons.chevron_right,
-                    color: AppColors.textTertiary,
+                    color: colors.textTertiary,
                     size: 20,
                   ),
                 ),
@@ -466,107 +473,108 @@ class _NotificationCard extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(BuildContext context) {
+    final colors = context.colors;
     IconData icon;
     Color color;
 
     switch (notification.type) {
       case NotificationType.transactionComplete:
         icon = Icons.check_circle;
-        color = AppColors.successBase;
+        color = colors.success;
         break;
       case NotificationType.transactionFailed:
         icon = Icons.error;
-        color = AppColors.errorBase;
+        color = colors.error;
         break;
       case NotificationType.securityAlert:
         icon = Icons.security;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.promotion:
         icon = Icons.local_offer;
-        color = AppColors.gold500;
+        color = colors.gold;
         break;
       case NotificationType.lowBalance:
         icon = Icons.account_balance_wallet;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.general:
         icon = Icons.info;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       case NotificationType.newDeviceLogin:
         icon = Icons.devices;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.largeTransaction:
         icon = Icons.attach_money;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       case NotificationType.withdrawalPending:
         icon = Icons.hourglass_empty;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.addressWhitelisted:
         icon = Icons.verified_user;
-        color = AppColors.successBase;
+        color = colors.success;
         break;
       case NotificationType.priceAlert:
         icon = Icons.trending_up;
-        color = AppColors.gold500;
+        color = colors.gold;
         break;
       case NotificationType.weeklySpendingSummary:
         icon = Icons.bar_chart;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       // Transaction monitoring alert types
       case NotificationType.unusualLocation:
         icon = Icons.location_off;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.rapidTransactions:
         icon = Icons.speed;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.newRecipient:
         icon = Icons.person_add;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       case NotificationType.suspiciousPattern:
         icon = Icons.warning_amber;
-        color = AppColors.errorBase;
+        color = colors.error;
         break;
       case NotificationType.failedAttempts:
         icon = Icons.error_outline;
-        color = AppColors.errorBase;
+        color = colors.error;
         break;
       case NotificationType.accountChange:
         icon = Icons.manage_accounts;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.balanceThreshold:
         icon = Icons.account_balance;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.externalWithdrawal:
         icon = Icons.output;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       case NotificationType.timeAnomaly:
         icon = Icons.access_time;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.roundAmount:
         icon = Icons.monetization_on;
-        color = AppColors.infoBase;
+        color = colors.info;
         break;
       case NotificationType.cumulativeDaily:
         icon = Icons.today;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
       case NotificationType.velocityLimit:
         icon = Icons.speed;
-        color = AppColors.errorBase;
+        color = colors.error;
         break;
     }
 

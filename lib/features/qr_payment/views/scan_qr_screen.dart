@@ -6,6 +6,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../utils/logger.dart';
 import '../services/qr_code_service.dart';
 import '../models/qr_payment_data.dart';
 
@@ -232,7 +233,6 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                           content: Text('Gallery import coming soon'),
                         ),
                       );
-import '../../../utils/logger.dart';
                     },
                     icon: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),

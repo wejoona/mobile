@@ -60,6 +60,7 @@ class _PinDotsState extends State<PinDots> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return AnimatedBuilder(
       animation: _shakeAnimation,
       builder: (context, child) {
@@ -78,12 +79,12 @@ class _PinDotsState extends State<PinDots> with SingleTickerProviderStateMixin {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isFilled
-                        ? (widget.showError ? AppColors.errorBase : AppColors.gold500)
+                        ? (widget.showError ? colors.error : colors.gold)
                         : Colors.transparent,
                     border: Border.all(
                       color: widget.showError
-                          ? AppColors.errorBase
-                          : (isFilled ? AppColors.gold500 : AppColors.borderDefault),
+                          ? colors.error
+                          : (isFilled ? colors.gold : colors.border),
                       width: 2,
                     ),
                   ),

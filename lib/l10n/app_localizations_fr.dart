@@ -170,7 +170,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get auth_otp => 'Code OTP';
 
   @override
-  String get auth_resendOtp => 'Renvoyer le code OTP';
+  String get auth_resendOtp => 'Renvoyer le code';
 
   @override
   String get auth_error_invalidOtp => 'Code OTP invalide. Veuillez réessayer.';
@@ -677,6 +677,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settings_themeSystem => 'Système';
 
   @override
+  String get settings_themeLightDescription => 'Apparence lumineuse et propre';
+
+  @override
+  String get settings_themeDarkDescription => 'Facile pour les yeux la nuit';
+
+  @override
+  String get settings_themeSystemDescription =>
+      'Correspond aux paramètres de votre appareil';
+
+  @override
+  String get settings_appearance => 'Apparence';
+
+  @override
   String get settings_notifications => 'Notifications';
 
   @override
@@ -798,6 +811,40 @@ class AppLocalizationsFr extends AppLocalizations {
       'Permis de conduire émis par le gouvernement';
 
   @override
+  String get kyc_personalInfo_title => 'Informations personnelles';
+
+  @override
+  String get kyc_personalInfo_subtitle =>
+      'Entrez vos informations exactement comme elles apparaissent sur votre pièce d\'identité';
+
+  @override
+  String get kyc_personalInfo_firstName => 'Prénom';
+
+  @override
+  String get kyc_personalInfo_firstNameRequired => 'Le prénom est requis';
+
+  @override
+  String get kyc_personalInfo_lastName => 'Nom de famille';
+
+  @override
+  String get kyc_personalInfo_lastNameRequired =>
+      'Le nom de famille est requis';
+
+  @override
+  String get kyc_personalInfo_dateOfBirth => 'Date de naissance';
+
+  @override
+  String get kyc_personalInfo_selectDate => 'Sélectionner une date';
+
+  @override
+  String get kyc_personalInfo_dateRequired =>
+      'La date de naissance est requise';
+
+  @override
+  String get kyc_personalInfo_matchIdHint =>
+      'Vos informations doivent correspondre exactement à ce qui figure sur votre pièce d\'identité pour que la vérification réussisse';
+
+  @override
   String get kyc_capture_frontSide_guidance =>
       'Alignez le recto de votre document dans le cadre';
 
@@ -848,6 +895,16 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get kyc_error_imageTooDark =>
       'L\'image est trop sombre. Utilisez un meilleur éclairage et réessayez.';
+
+  @override
+  String get kyc_camera_unavailable => 'Caméra non disponible';
+
+  @override
+  String get kyc_camera_unavailable_description =>
+      'La caméra de votre appareil n\'est pas accessible. Vous pouvez sélectionner une photo depuis votre galerie.';
+
+  @override
+  String get kyc_chooseFromGallery => 'Choisir depuis la galerie';
 
   @override
   String get kyc_status_pending_title => 'Démarrer la vérification';
@@ -1223,6 +1280,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get common_delete => 'Supprimer';
 
   @override
+  String get common_logout => 'Déconnexion';
+
+  @override
   String get common_save => 'Enregistrer';
 
   @override
@@ -1352,7 +1412,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deposit_quickAmounts => 'Montants rapides';
 
   @override
-  String deposit_rateUpdated(String time) {
+  String deposit_rateUpdated(String time, DateTime hora) {
     return 'Mis à jour $time';
   }
 
@@ -2494,7 +2554,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get billPayments_returnHome => 'Retour à l\'accueil';
 
   @override
-  String billPayments_payProvider(String providerName) {
+  String billPayments_payProvider(String providerName, Object providername) {
     return 'Payer $providerName';
   }
 
@@ -2561,7 +2621,7 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String billPayments_enterPinToPay(String providerName) {
+  String billPayments_enterPinToPay(String providerName, Object providername) {
     return 'Entrez votre code PIN pour payer $providerName';
   }
 
@@ -5649,6 +5709,30 @@ class AppLocalizationsFr extends AppLocalizations {
   String get transactions_completed => 'Terminé';
 
   @override
+  String get transactions_noAccountTitle => 'Aucun Portefeuille';
+
+  @override
+  String get transactions_noAccountMessage =>
+      'Créez votre portefeuille pour commencer à suivre vos transactions et votre historique de paiements.';
+
+  @override
+  String get transactions_connectionErrorTitle => 'Impossible de Charger';
+
+  @override
+  String get transactions_connectionErrorMessage =>
+      'Veuillez vérifier votre connexion internet et réessayer.';
+
+  @override
+  String get transactions_emptyStateTitle => 'Aucune Transaction';
+
+  @override
+  String get transactions_emptyStateMessage =>
+      'Une fois que vous effectuez votre premier dépôt ou transfert, votre historique de transactions apparaîtra ici.';
+
+  @override
+  String get transactions_emptyStateAction => 'Faire un Premier Dépôt';
+
+  @override
   String get common_note => 'Note';
 
   @override
@@ -6308,4 +6392,333 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get help_fees_comparison_joonapay => 'JoonaPay';
+
+  @override
+  String get offline_banner_title => 'Vous êtes hors ligne';
+
+  @override
+  String offline_banner_last_sync(String time) {
+    return 'Dernière synchro $time';
+  }
+
+  @override
+  String get offline_banner_syncing => 'Synchronisation des opérations...';
+
+  @override
+  String get offline_banner_reconnected =>
+      'De retour en ligne ! Tout est synchronisé.';
+
+  @override
+  String get state_otpExpired => 'Code OTP expiré';
+
+  @override
+  String get state_otpExpiredDescription =>
+      'Votre mot de passe à usage unique a expiré. Veuillez demander un nouveau code.';
+
+  @override
+  String get state_tokenRefreshing => 'Actualisation de votre accès...';
+
+  @override
+  String get state_accountLocked => 'Compte verrouillé';
+
+  @override
+  String get state_accountLockedDescription =>
+      'Votre compte a été verrouillé suite à plusieurs tentatives échouées. Veuillez réessayer plus tard.';
+
+  @override
+  String get state_accountSuspended => 'Compte suspendu';
+
+  @override
+  String get state_accountSuspendedDescription =>
+      'Votre compte a été suspendu. Veuillez contacter l\'assistance pour plus d\'informations.';
+
+  @override
+  String get state_walletFrozen => 'Portefeuille gelé';
+
+  @override
+  String get state_walletFrozenDescription =>
+      'Votre portefeuille a été gelé pour des raisons de sécurité. Veuillez contacter l\'assistance.';
+
+  @override
+  String get state_walletUnderReview => 'Portefeuille en révision';
+
+  @override
+  String get state_walletUnderReviewDescription =>
+      'Votre portefeuille est actuellement en révision. Les transactions sont temporairement restreintes.';
+
+  @override
+  String get state_walletLimited => 'Portefeuille limité';
+
+  @override
+  String get state_walletLimitedDescription =>
+      'Votre portefeuille a atteint sa limite de transactions ou de solde. Mettez à niveau votre compte pour augmenter les limites.';
+
+  @override
+  String get state_kycExpired => 'Vérification KYC expirée';
+
+  @override
+  String get state_kycExpiredDescription =>
+      'Votre vérification d\'identité a expiré. Veuillez mettre à jour vos informations pour continuer.';
+
+  @override
+  String get state_kycManualReview => 'Examen manuel du KYC en attente';
+
+  @override
+  String get state_kycManualReviewDescription =>
+      'Votre vérification d\'identité est actuellement examinée manuellement. Cela peut prendre 24 à 48 heures.';
+
+  @override
+  String get state_kycUpgrading => 'Niveau KYC en cours de mise à niveau';
+
+  @override
+  String get state_kycUpgradingDescription =>
+      'Votre niveau de vérification d\'identité est en cours de mise à niveau. Veuillez patienter.';
+
+  @override
+  String get state_biometricPrompt => 'Authentification biométrique requise';
+
+  @override
+  String get state_biometricPromptDescription =>
+      'Veuillez utiliser votre empreinte digitale ou votre visage pour vous authentifier.';
+
+  @override
+  String get state_deviceChanged => 'Vérification d\'appareil requise';
+
+  @override
+  String get state_deviceChangedDescription =>
+      'Cela semble être un nouvel appareil. Veuillez vérifier votre identité pour continuer.';
+
+  @override
+  String get state_sessionConflict => 'Une autre session est active';
+
+  @override
+  String get state_sessionConflictDescription =>
+      'Vous êtes connecté sur un autre appareil. Veuillez vous déconnecter là-bas ou continuer ici.';
+
+  @override
+  String get auth_lockedReason =>
+      'Votre compte a été temporairement verrouillé en raison de plusieurs tentatives échouées';
+
+  @override
+  String get auth_accountLocked => 'Compte temporairement verrouillé';
+
+  @override
+  String get auth_tryAgainIn => 'Réessayez dans';
+
+  @override
+  String get common_backToLogin => 'Retour à la connexion';
+
+  @override
+  String get auth_suspendedReason =>
+      'Votre compte a été suspendu. Veuillez contacter le support pour plus d\'informations.';
+
+  @override
+  String get auth_accountSuspended => 'Compte suspendu';
+
+  @override
+  String get auth_suspendedUntil => 'Suspendu jusqu\'au';
+
+  @override
+  String get auth_contactSupport => 'Besoin d\'aide ?';
+
+  @override
+  String get auth_suspendedContactMessage =>
+      'Si vous pensez qu\'il s\'agit d\'une erreur, veuillez contacter notre équipe d\'assistance.';
+
+  @override
+  String get common_contactSupport => 'Contacter le support';
+
+  @override
+  String get biometric_authenticateReason => 'Authentifiez-vous pour continuer';
+
+  @override
+  String get biometric_promptReason =>
+      'Veuillez utiliser votre empreinte digitale ou votre visage pour vous authentifier';
+
+  @override
+  String get biometric_promptTitle => 'Authentification biométrique';
+
+  @override
+  String get biometric_tryAgain => 'Réessayer';
+
+  @override
+  String get biometric_usePinInstead => 'Utiliser le code PIN';
+
+  @override
+  String get auth_otpExpired => 'Code OTP expiré';
+
+  @override
+  String get auth_otpExpiredMessage =>
+      'Votre code de vérification a expiré. Veuillez demander un nouveau code.';
+
+  @override
+  String get session_locked => 'Session verrouillée';
+
+  @override
+  String get session_lockedMessage =>
+      'Votre session a été verrouillée. Veuillez entrer votre code PIN pour continuer.';
+
+  @override
+  String get session_enterPinToUnlock =>
+      'Entrez le code PIN pour déverrouiller';
+
+  @override
+  String get session_useBiometric => 'Utiliser la biométrie';
+
+  @override
+  String get session_unlockReason =>
+      'Déverrouillez votre session pour continuer';
+
+  @override
+  String get session_expiring => 'Session expirante';
+
+  @override
+  String session_expiringMessage(int seconds) {
+    return 'Votre session expirera dans $seconds secondes en raison d\'inactivité.';
+  }
+
+  @override
+  String get session_stayLoggedIn => 'Rester connecté';
+
+  @override
+  String get device_newDeviceDetected => 'Nouvel appareil détecté';
+
+  @override
+  String get device_verificationRequired =>
+      'Nous avons détecté un nouvel appareil. Veuillez vérifier votre identité pour continuer à utiliser JoonaPay.';
+
+  @override
+  String get device_deviceId => 'ID de l\'appareil';
+
+  @override
+  String get device_verificationOptions => 'Options de vérification';
+
+  @override
+  String get device_verificationOptionsDesc =>
+      'Choisissez comment vous souhaitez vérifier cet appareil';
+
+  @override
+  String get device_verifyWithOtp => 'Vérifier avec un code SMS';
+
+  @override
+  String get device_verifyWithEmail => 'Vérifier avec un e-mail';
+
+  @override
+  String get session_conflict => 'Session active détectée';
+
+  @override
+  String get session_conflictMessage =>
+      'Vous êtes actuellement connecté sur un autre appareil. Vous pouvez continuer ici, ce qui vous déconnectera de l\'autre appareil.';
+
+  @override
+  String get session_otherDevice => 'Autre appareil';
+
+  @override
+  String get session_forceLogoutWarning =>
+      'Continuer ici mettra fin à votre session sur l\'autre appareil.';
+
+  @override
+  String get session_continueHere => 'Continuer ici';
+
+  @override
+  String get wallet_frozenReason =>
+      'Votre portefeuille a été gelé. Veuillez contacter le support pour plus d\'informations.';
+
+  @override
+  String get wallet_frozen => 'Portefeuille gelé';
+
+  @override
+  String get wallet_frozenTitle => 'Portefeuille temporairement gelé';
+
+  @override
+  String get wallet_frozenUntil => 'Gelé jusqu\'au';
+
+  @override
+  String get wallet_frozenContactSupport => 'Contacter le support';
+
+  @override
+  String get wallet_frozenContactMessage =>
+      'Notre équipe d\'assistance peut vous aider à comprendre pourquoi votre portefeuille a été gelé et les étapes à suivre.';
+
+  @override
+  String get common_backToHome => 'Retour à l\'accueil';
+
+  @override
+  String get wallet_underReviewReason =>
+      'Votre portefeuille est en cours d\'examen de conformité. Vous serez informé une fois l\'examen terminé.';
+
+  @override
+  String get wallet_underReview => 'En cours d\'examen';
+
+  @override
+  String get wallet_underReviewTitle => 'Portefeuille en cours d\'examen';
+
+  @override
+  String get wallet_reviewStatus => 'État de l\'examen';
+
+  @override
+  String get wallet_reviewStarted => 'Commencé';
+
+  @override
+  String get wallet_estimatedTime => 'Temps estimé';
+
+  @override
+  String get wallet_reviewEstimate => '24-48 heures';
+
+  @override
+  String get wallet_whileUnderReview => 'Pendant l\'examen';
+
+  @override
+  String get wallet_reviewRestriction1 =>
+      'Les dépôts sont temporairement désactivés';
+
+  @override
+  String get wallet_reviewRestriction2 =>
+      'Les retraits sont temporairement désactivés';
+
+  @override
+  String get wallet_reviewRestriction3 =>
+      'Vous pouvez consulter votre solde et l\'historique des transactions';
+
+  @override
+  String get wallet_checkStatus => 'Vérifier l\'état';
+
+  @override
+  String get kyc_expired => 'KYC expiré';
+
+  @override
+  String get kyc_expiredTitle => 'Documents d\'identité expirés';
+
+  @override
+  String get kyc_expiredMessage =>
+      'Vos documents de vérification d\'identité ont expiré. Veuillez les renouveler pour continuer à utiliser toutes les fonctionnalités.';
+
+  @override
+  String get kyc_expiredOn => 'Expiré le';
+
+  @override
+  String get kyc_renewalRequired => 'Renouvellement requis';
+
+  @override
+  String get kyc_renewalMessage =>
+      'Pour restaurer l\'accès complet à votre portefeuille, veuillez mettre à jour vos documents d\'identité.';
+
+  @override
+  String get kyc_currentRestrictions => 'Restrictions actuelles';
+
+  @override
+  String get kyc_restriction1 => 'Montants de transaction limités';
+
+  @override
+  String get kyc_restriction2 =>
+      'Certaines fonctionnalités peuvent être indisponibles';
+
+  @override
+  String get kyc_restriction3 => 'Les retraits peuvent être restreints';
+
+  @override
+  String get kyc_renewDocuments => 'Renouveler les documents';
+
+  @override
+  String get kyc_remindLater => 'Me le rappeler plus tard';
 }

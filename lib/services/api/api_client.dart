@@ -12,13 +12,55 @@ import '../../mocks/index.dart';
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
 class ApiConfig {
-  // Use environment-based configuration
-  // NOTE: iOS simulator cannot connect to localhost, use machine IP instead
-  static const String _devUrl = 'http://192.168.1.115:3000/api/v1';
-  static const String _prodUrl = 'https://api.joonapay.com/api/v1';
+  // Environment-based configuration using --dart-define
+  // Pass via: flutter run --dart-define=API_URL=http://YOUR_IP:3000/api/v1
+  // Or use: flutter run --dart-define-from-file=env.dev.json
 
-  // SECURITY: Always use HTTPS in production
-  static String get baseUrl => kDebugMode ? _devUrl : _prodUrl;
+  /// Get API URL from compile-time environment variable
+  /// Falls back to default dev/prod URLs if not specified
+  static const String _envApiUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: '',
+  );
+
+  /// Environment type (development, staging, production)
+  static const String _env = String.fromEnvironment(
+    'ENV',
+    defaultValue: 'development',
+  );
+
+  /// Default development URL - uses deployed K8s backend
+  static const String _defaultDevUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
+
+  /// Default production URL
+  static const String _defaultProdUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
+
+  /// Get the base URL based on environment and configuration
+  /// Priority: 1. --dart-define API_URL, 2. ENV-based default
+  /// SECURITY: Always use HTTPS in production
+  static String get baseUrl {
+    // If API_URL is explicitly set via --dart-define, use it
+    if (_envApiUrl.isNotEmpty) {
+      return _envApiUrl;
+    }
+
+    // Otherwise, use environment-appropriate default
+    switch (_env) {
+      case 'production':
+        return _defaultProdUrl;
+      case 'staging':
+        return 'https://staging-api.joonapay.com/api/v1';
+      case 'development':
+      default:
+        return kDebugMode ? _defaultDevUrl : _defaultProdUrl;
+    }
+  }
+
+  /// Check if running in production
+  static bool get isProduction => _env == 'production';
+
+  /// Check if running in development
+  static bool get isDevelopment => _env == 'development' || kDebugMode;
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -31,6 +73,7 @@ class StorageKeys {
   static const String userPin = 'user_pin';
   static const String biometricEnabled = 'biometric_enabled';
   static const String rememberedPhone = 'remembered_phone';
+  static const String avatarUrl = 'avatar_url';
 }
 
 /// Secure Storage Provider
@@ -53,6 +96,13 @@ final deduplicationInterceptorProvider = Provider<RequestDeduplicationIntercepto
 
 /// Dio Client Provider
 final dioProvider = Provider<Dio>((ref) {
+  final logger = AppLogger('API');
+
+  // Log API configuration
+  logger.info('API URL: ${ApiConfig.baseUrl}');
+  logger.info('Environment: ${ApiConfig.isDevelopment ? 'Development' : 'Production'}');
+  logger.info('Mock Mode: ${MockConfig.useMocks ? 'Enabled' : 'Disabled'}');
+
   final dio = Dio(BaseOptions(
     baseUrl: ApiConfig.baseUrl,
     connectTimeout: ApiConfig.connectTimeout,
@@ -64,15 +114,16 @@ final dioProvider = Provider<Dio>((ref) {
   ));
 
   // SECURITY: Enable certificate pinning in production (skip if using mocks)
-  if (!MockConfig.useMocks) {
+  if (!MockConfig.useMocks && ApiConfig.isProduction) {
     dio.enableCertificatePinning();
+    logger.info('Certificate pinning enabled');
   }
 
   // MOCKING: Add mock interceptor first if mocks are enabled
   if (MockConfig.useMocks) {
     MockRegistry.initialize();
     dio.interceptors.add(MockRegistry.interceptor);
-    AppLogger('API').info('Mock interceptor enabled - using mock API responses');
+    logger.info('Mock interceptor enabled - using mock API responses');
   }
 
   // PERFORMANCE: Add request deduplication
@@ -130,8 +181,43 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
+    // Check if this is an authenticated endpoint
+    final publicEndpoints = ['/auth/register', '/auth/verify-otp', '/auth/login', '/auth/refresh'];
+    final isPublicEndpoint = publicEndpoints.any((e) => err.requestOptions.path.contains(e));
+
+    // Handle connection errors on authenticated endpoints - may be server rejecting expired token
+    // Connection reset can happen when server sends 401 but connection closes before response arrives
+    if (!isPublicEndpoint &&
+        err.response == null &&
+        (err.type == DioExceptionType.connectionError ||
+         err.type == DioExceptionType.unknown)) {
+      // Try to refresh token and retry once
+      if (!MockConfig.useMocks) {
+        final refreshed = await _refreshToken(err.requestOptions);
+        if (refreshed) {
+          try {
+            final storage = _ref.read(secureStorageProvider);
+            final newToken = await storage.read(key: StorageKeys.accessToken);
+            final options = err.requestOptions;
+            options.headers['Authorization'] = 'Bearer $newToken';
+
+            final dio = Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            ));
+
+            final response = await dio.fetch(options);
+            return handler.resolve(response);
+          } catch (retryError) {
+            // Retry failed, continue with original error
+          }
+        }
+      }
+    }
+
     // Handle 401 - Token expired, try refresh
-    if (err.response?.statusCode == 401 && !err.requestOptions.path.contains('/auth/refresh')) {
+    if (err.response?.statusCode == 401 && !isPublicEndpoint) {
       // Don't try to refresh if using mocks (mock tokens aren't valid JWTs)
       if (MockConfig.useMocks) {
         // Just clear tokens and continue - user will be redirected to login

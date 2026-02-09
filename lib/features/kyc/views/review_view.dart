@@ -1,10 +1,12 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/theme_colors.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_card.dart';
@@ -17,9 +19,10 @@ class ReviewView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(kycProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(l10n.kyc_reviewDocuments, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
@@ -33,7 +36,7 @@ class ReviewView extends ConsumerWidget {
               AppText(
                 l10n.kyc_review_description,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.xxl),
               Expanded(
@@ -43,7 +46,7 @@ class ReviewView extends ConsumerWidget {
                     AppText(
                       l10n.kyc_review_documents,
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                     SizedBox(height: AppSpacing.lg),
                     ...state.capturedDocuments.asMap().entries.map((entry) {
@@ -68,7 +71,7 @@ class ReviewView extends ConsumerWidget {
                     AppText(
                       l10n.kyc_review_selfie,
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                     SizedBox(height: AppSpacing.lg),
                     if (state.selfiePath != null)
@@ -107,18 +110,25 @@ class ReviewView extends ConsumerWidget {
     String label,
     VoidCallback onEdit,
   ) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.elevated,
       padding: EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            child: Image.file(
-              File(imagePath),
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: colors.border, width: 1),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Image.file(
+                File(imagePath),
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: AppSpacing.lg),
@@ -129,7 +139,7 @@ class ReviewView extends ConsumerWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit, color: AppColors.gold500, size: 24),
+            icon: Icon(Icons.edit, color: colors.gold, size: 24),
             onPressed: onEdit,
           ),
         ],
@@ -148,22 +158,32 @@ class ReviewView extends ConsumerWidget {
   }
 
   Future<void> _handleSubmit(BuildContext context, WidgetRef ref) async {
+    // Submit KYC (existing flow: upload docs + personal info)
     await ref.read(kycProvider.notifier).submitKyc();
 
     final state = ref.read(kycProvider);
-    if (state.error != null) {
+    if (state.error != null && state.error!.isNotEmpty) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(state.error!),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
-    } else {
-      if (context.mounted) {
-        context.go('/kyc/submitted');
-      }
+      return;
+    }
+
+    // Also submit document for VerifyHQ verification (best-effort)
+    try {
+      await ref.read(kycProvider.notifier).submitDocumentForVerification();
+    } catch (_) {
+      // Don't block the flow if verification submission fails
+      debugPrint('[KYC Review] Document verification submission failed (non-blocking)');
+    }
+
+    if (context.mounted) {
+      context.go('/kyc/submitted');
     }
   }
 }

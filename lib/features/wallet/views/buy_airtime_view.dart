@@ -23,10 +23,10 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
   bool _buyForSelf = true;
 
   final List<_AirtimeProvider> _providers = [
-    _AirtimeProvider('Safaricom', Colors.green, 'assets/safaricom.png'),
-    _AirtimeProvider('Airtel', Colors.red, 'assets/airtel.png'),
-    _AirtimeProvider('Telkom', Colors.blue, 'assets/telkom.png'),
-    _AirtimeProvider('Equitel', Colors.orange, 'assets/equitel.png'),
+    _AirtimeProvider('Orange', Colors.orange, 'assets/orange.png'),
+    _AirtimeProvider('MTN', Colors.yellow.shade700, 'assets/mtn.png'),
+    _AirtimeProvider('Moov', Colors.blue, 'assets/moov.png'),
+    _AirtimeProvider('Wave', Colors.cyan, 'assets/wave.png'),
   ];
 
   final List<int> _quickAmounts = [1, 2, 5, 10, 20, 50];
@@ -465,9 +465,8 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
   }
 
   Widget _buildRecentPurchases(ThemeColors colors) {
-    final recentPurchases = [
-      _RecentPurchase('Safaricom', '+254712345678', 10.00, DateTime.now().subtract(const Duration(days: 2))),
-      _RecentPurchase('Airtel', '+254723456789', 5.00, DateTime.now().subtract(const Duration(days: 7))),
+    final recentPurchases = <_RecentPurchase>[
+      // Recent purchases will be loaded from API/local storage
     ];
 
     return Column(

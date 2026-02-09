@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 /// Accessibility utilities for WCAG AA compliance
 ///
@@ -251,10 +254,6 @@ class AccessibilityUtils {
   /// Announce message to screen reader
   /// Use for dynamic content changes that users should be aware of
   static void announce(BuildContext context, String message, {bool assertive = false}) {
-    final announcement = assertive
-        ? SemanticsAnnouncement(message, TextDirection.ltr, Assertiveness.assertive)
-        : SemanticsAnnouncement(message, TextDirection.ltr, Assertiveness.polite);
-
     SemanticsService.announce(message, TextDirection.ltr);
   }
 
@@ -377,9 +376,6 @@ class AccessibilityUtils {
 // Extension for num.pow
 extension on num {
   double pow(num exponent) {
-    return dart.math.pow(this, exponent).toDouble();
+    return math.pow(this, exponent).toDouble();
   }
 }
-
-// Import dart:math for pow
-import 'dart:math' as dart.math show pow;

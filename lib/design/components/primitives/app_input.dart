@@ -153,7 +153,7 @@ class _AppInputState extends State<AppInput> {
   @override
   Widget build(BuildContext context) {
     final currentState = _getCurrentState();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     // Build semantic label
     final String effectiveLabel = widget.semanticLabel ??
@@ -181,7 +181,7 @@ class _AppInputState extends State<AppInput> {
               child: AppText(
                 widget.label!,
                 variant: AppTextVariant.labelMedium,
-                color: _getLabelColor(currentState, isDark),
+                color: _getLabelColor(currentState, colors),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -205,8 +205,10 @@ class _AppInputState extends State<AppInput> {
           onFieldSubmitted: widget.onSubmitted,
           onTap: widget.onTap,
           validator: widget.validator,
-          style: _getTextStyle(currentState, isDark),
+          style: _getTextStyle(currentState, colors),
           textAlign: _getTextAlign(),
+          cursorColor: colors.gold,
+          selectionControls: MaterialTextSelectionControls(),
           decoration: InputDecoration(
             hintText: widget.hint,
             errorText: widget.error,
@@ -216,26 +218,26 @@ class _AppInputState extends State<AppInput> {
             prefixIcon: widget.prefixIcon != null
                 ? Icon(
                     widget.prefixIcon,
-                    color: _getIconColor(currentState, isDark),
+                    color: _getIconColor(currentState, colors),
                     size: 20,
                   )
                 : null,
             suffixIcon: widget.suffixIcon != null
                 ? Icon(
                     widget.suffixIcon,
-                    color: _getIconColor(currentState, isDark),
+                    color: _getIconColor(currentState, colors),
                     size: 20,
                   )
                 : null,
             counterText: '',
             filled: true,
-            fillColor: _getFillColor(currentState, isDark),
-            hintStyle: _getHintStyle(isDark),
+            fillColor: _getFillColor(currentState, colors),
+            hintStyle: _getHintStyle(colors),
             errorStyle: AppTypography.bodySmall.copyWith(
-              color: isDark ? AppColors.errorText : AppColorsLight.errorText,
+              color: colors.errorText,
             ),
             helperStyle: AppTypography.bodySmall.copyWith(
-              color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
+              color: colors.textSecondary,
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
@@ -243,30 +245,30 @@ class _AppInputState extends State<AppInput> {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(currentState, isDark),
+              borderSide: _getBorderSide(currentState, colors),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.idle, isDark),
+              borderSide: _getBorderSide(AppInputState.idle, colors),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.focused, isDark),
+              borderSide: _getBorderSide(AppInputState.focused, colors),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.error, isDark),
+              borderSide: _getBorderSide(AppInputState.error, colors),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
               borderSide: BorderSide(
-                color: isDark ? AppColors.errorBase : AppColorsLight.errorBase,
+                color: colors.error,
                 width: 2,
               ),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.disabled, isDark),
+              borderSide: _getBorderSide(AppInputState.disabled, colors),
             ),
           ),
         ),
@@ -276,95 +278,89 @@ class _AppInputState extends State<AppInput> {
   }
 
   /// Get fill color based on state
-  Color _getFillColor(AppInputState state, bool isDark) {
+  Color _getFillColor(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
-        return isDark
-            ? AppColors.elevated.withOpacity(0.5)
-            : AppColorsLight.elevated.withOpacity(0.5);
+        return colors.elevated.withValues(alpha: 0.5);
       case AppInputState.error:
-        return isDark
-            ? AppColors.errorBase.withOpacity(0.05)
-            : AppColorsLight.errorLight;
+        return colors.errorBg;
       case AppInputState.focused:
-        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+        return colors.elevated;
       case AppInputState.filled:
         // Subtle tint when field has value
-        return isDark
-            ? AppColors.elevated.withOpacity(0.8)
-            : AppColorsLight.container;
+        return colors.elevated.withValues(alpha: 0.8);
       case AppInputState.idle:
-        return isDark ? AppColors.elevated : AppColorsLight.elevated;
+        return colors.elevated;
     }
   }
 
   /// Get border side based on state
-  BorderSide _getBorderSide(AppInputState state, bool isDark) {
+  BorderSide _getBorderSide(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
         return BorderSide(
-          color: isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle,
+          color: colors.borderSubtle,
           width: 1,
         );
       case AppInputState.error:
         return BorderSide(
-          color: isDark ? AppColors.errorBase : AppColorsLight.errorBase,
+          color: colors.error,
           width: 1,
         );
       case AppInputState.focused:
         // Gold highlight on focus
         return BorderSide(
-          color: isDark ? AppColors.gold500 : AppColorsLight.gold500,
+          color: colors.gold,
           width: 2,
         );
       case AppInputState.filled:
         return BorderSide(
-          color: isDark ? AppColors.borderDefault : AppColorsLight.borderDefault,
+          color: colors.border,
           width: 1,
         );
       case AppInputState.idle:
         return BorderSide(
-          color: isDark ? AppColors.borderDefault : AppColorsLight.borderDefault,
+          color: colors.border,
           width: 1,
         );
     }
   }
 
   /// Get text color based on state
-  Color _getTextColor(AppInputState state, bool isDark) {
+  Color _getTextColor(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       default:
-        return isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
+        return colors.textPrimary;
     }
   }
 
   /// Get label color based on state
-  Color _getLabelColor(AppInputState state, bool isDark) {
+  Color _getLabelColor(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       case AppInputState.error:
-        return isDark ? AppColors.errorText : AppColorsLight.errorText;
+        return colors.errorText;
       case AppInputState.focused:
-        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+        return colors.gold;
       default:
-        return isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+        return colors.textSecondary;
     }
   }
 
   /// Get icon color based on state
-  Color _getIconColor(AppInputState state, bool isDark) {
+  Color _getIconColor(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
-        return isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+        return colors.textDisabled;
       case AppInputState.error:
-        return isDark ? AppColors.errorBase : AppColorsLight.errorBase;
+        return colors.error;
       case AppInputState.focused:
-        return isDark ? AppColors.gold500 : AppColorsLight.gold500;
+        return colors.gold;
       default:
-        return isDark ? AppColors.textTertiary : AppColorsLight.textTertiary;
+        return colors.textTertiary;
     }
   }
 
@@ -403,18 +399,18 @@ class _AppInputState extends State<AppInput> {
     }
   }
 
-  TextStyle _getTextStyle(AppInputState state, bool isDark) {
+  TextStyle _getTextStyle(AppInputState state, ThemeColors colors) {
     final baseStyle = widget.variant == AppInputVariant.amount ||
             widget.variant == AppInputVariant.pin
         ? AppTypography.monoLarge
         : AppTypography.bodyLarge;
 
-    return baseStyle.copyWith(color: _getTextColor(state, isDark));
+    return baseStyle.copyWith(color: _getTextColor(state, colors));
   }
 
-  TextStyle _getHintStyle(bool isDark) {
+  TextStyle _getHintStyle(ThemeColors colors) {
     return AppTypography.bodyMedium.copyWith(
-      color: isDark ? AppColors.textTertiary : AppColorsLight.textTertiary,
+      color: colors.textTertiary,
     );
   }
 
@@ -450,7 +446,7 @@ class PhoneInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -460,7 +456,7 @@ class PhoneInput extends StatelessWidget {
           AppText(
             label!,
             variant: AppTextVariant.labelMedium,
-            color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
+            color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
         ],
@@ -475,12 +471,10 @@ class PhoneInput extends StatelessWidget {
                   vertical: AppSpacing.lg,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.elevated : AppColorsLight.elevated,
+                  color: colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: isDark
-                        ? AppColors.borderDefault
-                        : AppColorsLight.borderDefault,
+                    color: colors.border,
                   ),
                 ),
                 child: Row(
@@ -489,17 +483,13 @@ class PhoneInput extends StatelessWidget {
                     AppText(
                       countryCode,
                       variant: AppTextVariant.bodyLarge,
-                      color: isDark
-                          ? AppColors.textPrimary
-                          : AppColorsLight.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Icon(
                       Icons.keyboard_arrow_down,
                       size: 20,
-                      color: isDark
-                          ? AppColors.textTertiary
-                          : AppColorsLight.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ],
                 ),

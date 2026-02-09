@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../models/beneficiary.dart';
 
 /// Beneficiary Card Widget
@@ -24,6 +25,8 @@ class BeneficiaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final appColors = context.appColors;
 
     return AppCard(
       onTap: onTap,
@@ -50,11 +53,19 @@ class BeneficiaryCard extends StatelessWidget {
                   AppText(
                     beneficiary.phoneE164!,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
                 SizedBox(height: AppSpacing.xs),
-                _buildAccountTypeLabel(l10n),
+                _buildAccountTypeLabel(l10n, colors),
+                if (beneficiary.lastTransferAt != null) ...[
+                  SizedBox(height: AppSpacing.xs),
+                  AppText(
+                    '${l10n.beneficiaries_lastTransfer}: ${_formatLastTransfer(beneficiary.lastTransferAt!)}',
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textTertiary,
+                  ),
+                ],
               ],
             ),
           ),
@@ -65,8 +76,8 @@ class BeneficiaryCard extends StatelessWidget {
               icon: Icon(
                 beneficiary.isFavorite ? Icons.star : Icons.star_border,
                 color: beneficiary.isFavorite
-                    ? AppColors.gold500
-                    : AppColors.textSecondary,
+                    ? appColors.gold500
+                    : colors.textSecondary,
               ),
               onPressed: onFavoriteToggle,
             ),
@@ -74,7 +85,7 @@ class BeneficiaryCard extends StatelessWidget {
           // Menu button
           if (showMenu && onLongPress != null)
             IconButton(
-              icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
+              icon: Icon(Icons.more_vert, color: colors.textSecondary),
               onPressed: onLongPress,
             ),
         ],
@@ -85,23 +96,25 @@ class BeneficiaryCard extends StatelessWidget {
   Widget _buildAccountTypeIcon() {
     IconData iconData;
     Color iconColor;
+    String? initial;
 
     switch (beneficiary.accountType) {
       case AccountType.joonapayUser:
         iconData = Icons.person;
-        iconColor = AppColors.gold500;
+        iconColor = AppColors.gold500; // Gold for JoonaPay users
+        initial = beneficiary.name.isNotEmpty ? beneficiary.name[0].toUpperCase() : 'J';
         break;
       case AccountType.externalWallet:
         iconData = Icons.account_balance_wallet;
-        iconColor = AppColors.infoBase;
+        iconColor = const Color(0xFF6B8DD6); // Purple accent
         break;
       case AccountType.bankAccount:
         iconData = Icons.account_balance;
-        iconColor = AppColors.successBase;
+        iconColor = const Color(0xFF5B9BD5); // Blue accent
         break;
       case AccountType.mobileMoney:
         iconData = Icons.phone_android;
-        iconColor = AppColors.warningBase;
+        iconColor = const Color(0xFFFF9955); // Orange accent
         break;
     }
 
@@ -109,38 +122,84 @@ class BeneficiaryCard extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.1),
+        color: iconColor.withOpacity(0.15),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
+      child: initial != null
+          ? Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  color: iconColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : Icon(
+              iconData,
+              color: iconColor,
+              size: 24,
+            ),
+    );
+  }
+
+  Widget _buildAccountTypeLabel(AppLocalizations l10n, ThemeColors colors) {
+    String label;
+    Color badgeColor;
+
+    switch (beneficiary.accountType) {
+      case AccountType.joonapayUser:
+        label = l10n.beneficiaries_typeJoonapay;
+        badgeColor = AppColors.gold500;
+        break;
+      case AccountType.externalWallet:
+        label = l10n.beneficiaries_typeWallet;
+        badgeColor = const Color(0xFF6B8DD6); // Purple
+        break;
+      case AccountType.bankAccount:
+        label = l10n.beneficiaries_typeBank;
+        badgeColor = const Color(0xFF5B9BD5); // Blue
+        break;
+      case AccountType.mobileMoney:
+        label = l10n.beneficiaries_typeMobileMoney;
+        badgeColor = const Color(0xFFFF9955); // Orange
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+      ),
+      child: AppText(
+        label,
+        variant: AppTextVariant.bodySmall,
+        color: badgeColor,
+        fontWeight: FontWeight.w500,
       ),
     );
   }
 
-  Widget _buildAccountTypeLabel(AppLocalizations l10n) {
-    String label;
-    switch (beneficiary.accountType) {
-      case AccountType.joonapayUser:
-        label = l10n.beneficiaries_typeJoonapay;
-        break;
-      case AccountType.externalWallet:
-        label = l10n.beneficiaries_typeWallet;
-        break;
-      case AccountType.bankAccount:
-        label = l10n.beneficiaries_typeBank;
-        break;
-      case AccountType.mobileMoney:
-        label = l10n.beneficiaries_typeMobileMoney;
-        break;
-    }
+  String _formatLastTransfer(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
 
-    return AppText(
-      label,
-      variant: AppTextVariant.bodySmall,
-      color: AppColors.textSecondary,
-    );
+    if (diff.inDays == 0) {
+      if (diff.inHours == 0) {
+        return '${diff.inMinutes}m ago';
+      }
+      return '${diff.inHours}h ago';
+    } else if (diff.inDays == 1) {
+      return 'Yesterday';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays}d ago';
+    } else {
+      return '${date.day}/${date.month}/${date.year}';
+    }
   }
 }

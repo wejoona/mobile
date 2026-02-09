@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -41,7 +42,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () {
             if (_currentStep == PinStep.current) {
-              context.pop();
+              context.safePop(fallbackRoute: '/settings/security');
             } else {
               _goBack();
             }
@@ -381,7 +382,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               backgroundColor: AppColors.successBase,
             ),
           );
-          context.pop();
+          context.safePop(fallbackRoute: '/settings/security');
         } else {
           setState(() {
             _error = l10n.changePin_errorFailedToSet;

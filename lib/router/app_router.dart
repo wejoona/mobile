@@ -7,6 +7,9 @@ import '../features/auth/views/login_pin_view.dart';
 import '../features/auth/views/otp_view.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../services/feature_flags/feature_flags_provider.dart';
+import '../state/wallet_state_machine.dart';
+import '../state/app_state.dart';
+import '../state/fsm/index.dart';
 import '../features/onboarding/views/onboarding_view.dart';
 import '../features/splash/views/splash_view.dart';
 import '../features/wallet/views/wallet_home_screen.dart';
@@ -35,14 +38,16 @@ import '../features/settings/views/kyc_view.dart';
 import '../features/kyc/views/kyc_status_view.dart';
 import '../features/kyc/views/document_type_view.dart';
 import '../features/kyc/views/document_capture_view.dart';
+import '../features/kyc/views/kyc_personal_info_view.dart';
 import '../features/kyc/views/selfie_view.dart';
+import '../features/kyc/views/kyc_liveness_view.dart';
 import '../features/kyc/views/review_view.dart';
 import '../features/kyc/views/submitted_view.dart';
 import '../features/kyc/views/kyc_upgrade_view.dart';
 import '../features/kyc/views/kyc_address_view.dart';
 import '../features/kyc/views/kyc_video_view.dart';
 import '../features/kyc/views/kyc_additional_docs_view.dart';
-import '../features/kyc/models/kyc_tier.dart';
+import '../features/kyc/models/kyc_tier.dart' as kyc_models;
 import '../features/settings/views/change_pin_view.dart';
 import '../features/settings/views/notification_settings_view.dart';
 import '../features/settings/views/security_view.dart';
@@ -51,6 +56,7 @@ import '../features/biometric/views/biometric_enrollment_view.dart';
 import '../features/settings/views/limits_view.dart';
 import '../features/settings/views/help_view.dart';
 import '../features/settings/views/language_view.dart';
+import '../features/settings/views/theme_settings_view.dart';
 import '../features/settings/views/currency_view.dart';
 import '../features/settings/views/devices_screen.dart';
 import '../features/settings/views/sessions_screen.dart';
@@ -116,6 +122,7 @@ import '../features/bank_linking/views/bank_selection_view.dart';
 import '../features/bank_linking/views/link_bank_view.dart';
 import '../features/bank_linking/views/bank_verification_view.dart';
 import '../features/bank_linking/views/bank_transfer_view.dart';
+import '../catalog/widget_catalog_view.dart';
 import '../features/send/views/recipient_screen.dart';
 import '../features/send/views/amount_screen.dart';
 import '../features/send/views/confirm_screen.dart';
@@ -136,6 +143,8 @@ import '../features/sub_business/views/sub_business_detail_view.dart';
 import '../features/sub_business/views/sub_business_staff_view.dart';
 import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
+import '../features/fsm_states/views/index.dart';
+import '../state/kyc_state_machine.dart';
 import 'page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
@@ -207,30 +216,106 @@ class MainShell extends ConsumerWidget {
   }
 }
 
+/// Router Refresh Notifier - triggers router refresh on state changes
+class RouterRefreshNotifier extends ChangeNotifier {
+  RouterRefreshNotifier(Ref ref) {
+    // Listen to auth state changes
+    ref.listen(authProvider, (_, __) => notifyListeners());
+    // Listen to wallet state changes (for onboarding redirect)
+    ref.listen(walletStateMachineProvider, (_, __) => notifyListeners());
+    // Listen to FSM state changes for navigation
+    ref.listen(appFsmProvider, (previous, next) {
+      // Only notify if the target screen changed
+      if (previous?.currentScreen != next.currentScreen) {
+        notifyListeners();
+      }
+    });
+  }
+}
+
+final _routerRefreshProvider = Provider<RouterRefreshNotifier>((ref) {
+  return RouterRefreshNotifier(ref);
+});
+
 /// App Router Provider
 final routerProvider = Provider<GoRouter>((ref) {
+  final refreshNotifier = ref.watch(_routerRefreshProvider);
+
   return GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
-      // Read auth state dynamically inside redirect
+      // Read state dynamically inside redirect
       final container = ProviderScope.containerOf(context);
       final authState = container.read(authProvider);
+      final walletState = container.read(walletStateMachineProvider);
       final flags = container.read(featureFlagsProvider);
+      final appFsmState = container.read(appFsmProvider);
 
       final isAuthenticated = authState.isAuthenticated;
       final location = state.matchedLocation;
 
+      debugPrint('[Router] Redirect check: location=$location, fsmTarget=${appFsmState.currentRoute}');
+
+      // Check if user has a wallet (walletId is set and not empty)
+      final hasWallet = walletState.walletId.isNotEmpty &&
+                        walletState.status == WalletStatus.loaded;
+      final walletLoading = walletState.status == WalletStatus.loading ||
+                            walletState.status == WalletStatus.initial;
+
       // Allow splash, onboarding, and auth routes without auth
       final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp'];
       final isPublicRoute = publicRoutes.any((route) => location.startsWith(route));
+
+      // FSM-specific routes that should bypass normal redirect logic
+      final fsmRoutes = [
+        '/otp-expired',
+        '/auth-locked',
+        '/auth-suspended',
+        '/session-locked',
+        '/biometric-prompt',
+        '/device-verification',
+        '/session-conflict',
+        '/wallet-frozen',
+        '/wallet-under-review',
+        '/kyc-expired',
+      ];
+      final isFsmRoute = fsmRoutes.any((route) => location.startsWith(route));
+
+      // FSM redirect - check if FSM wants to redirect to a different screen
+      final fsmTargetRoute = appFsmState.currentRoute;
+
+      // If user is on /loading or /create-wallet and FSM is ready for home, redirect to home
+      if ((location == '/loading' || location == '/create-wallet') && fsmTargetRoute == '/home') {
+        return '/home';
+      }
+
+      // Allow navigation within the same flow (e.g., /kyc to /kyc/document-type)
+      // Extract the base route (first segment) for comparison
+      final locationBase = '/${location.split('/').where((s) => s.isNotEmpty).take(1).join('/')}';
+      final fsmBase = '/${fsmTargetRoute.split('/').where((s) => s.isNotEmpty).take(1).join('/')}';
+      final isWithinSameFlow = locationBase == fsmBase;
+
+      debugPrint('[Router] Flow check: locationBase=$locationBase, fsmBase=$fsmBase, isWithinSameFlow=$isWithinSameFlow');
+
+      // FSM wants to redirect to a specific state screen - but allow sub-navigation
+      if (!isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow) {
+        debugPrint('[Router] Redirecting to FSM target: $fsmTargetRoute');
+        return fsmTargetRoute;
+      }
+
+      // Onboarding-related routes
+      final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
+      final isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
 
       // Auth guards
       if (!isAuthenticated && !isPublicRoute) {
         return '/login';
       }
 
-      // Redirect authenticated users away from login/otp (but not splash/onboarding)
+      // Redirect authenticated users away from login/otp to home
+      // The home screen will handle showing "Create Wallet" card if no wallet exists
       final isAuthRoute = location.startsWith('/login') || location == '/otp';
       if (isAuthenticated && isAuthRoute) {
         return '/home';
@@ -335,6 +420,96 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const OtpView(),
+        ),
+      ),
+
+      // FSM State-specific Routes
+      GoRoute(
+        path: '/otp-expired',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const OtpExpiredView(),
+        ),
+      ),
+      GoRoute(
+        path: '/auth-locked',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const AuthLockedView(),
+        ),
+      ),
+      GoRoute(
+        path: '/auth-suspended',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const AuthSuspendedView(),
+        ),
+      ),
+      GoRoute(
+        path: '/session-locked',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SessionLockedView(),
+        ),
+      ),
+      GoRoute(
+        path: '/biometric-prompt',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const BiometricPromptView(),
+        ),
+      ),
+      GoRoute(
+        path: '/device-verification',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const DeviceVerificationView(),
+        ),
+      ),
+      GoRoute(
+        path: '/session-conflict',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const SessionConflictView(),
+        ),
+      ),
+      GoRoute(
+        path: '/wallet-frozen',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const WalletFrozenView(),
+        ),
+      ),
+      GoRoute(
+        path: '/wallet-under-review',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const WalletUnderReviewView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc-expired',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const KycExpiredView(),
+        ),
+      ),
+      GoRoute(
+        path: '/loading',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const LoadingView(),
+        ),
+      ),
+      GoRoute(
+        path: '/create-wallet',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const _FsmStatePlaceholder(
+            title: 'Create Wallet',
+            message: 'You need to create a wallet to continue.',
+            actionLabel: 'Create Wallet',
+          ),
         ),
       ),
 
@@ -647,6 +822,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/kyc/personal-info',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycPersonalInfoView(),
+        ),
+      ),
+      GoRoute(
         path: '/kyc/document-capture',
         pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
           state: state,
@@ -658,6 +840,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
           state: state,
           child: const SelfieView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/liveness',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycLivenessView(),
         ),
       ),
       GoRoute(
@@ -681,8 +870,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           return AppPageTransitions.verticalSlide(
             state: state,
             child: KycUpgradeView(
-              currentTier: currentTier?['currentTier'] as KycTier? ?? KycTier.tier0,
-              targetTier: currentTier?['targetTier'] as KycTier? ?? KycTier.tier1,
+              currentTier: currentTier?['currentTier'] as kyc_models.KycTier? ?? kyc_models.KycTier.tier0,
+              targetTier: currentTier?['targetTier'] as kyc_models.KycTier? ?? kyc_models.KycTier.tier1,
               reason: currentTier?['reason'] as String?,
             ),
           );
@@ -777,6 +966,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const LanguageView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings/theme',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ThemeSettingsView(),
         ),
       ),
       GoRoute(
@@ -1418,6 +1614,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           return AppPageTransitions.verticalSlide(state: state, child: child);
         },
       ),
+      // Widget Catalog (Development Tool)
+      GoRoute(
+        path: '/catalog',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const WidgetCatalogView(),
+        ),
+      ),
     ],
   );
 });
@@ -1443,6 +1647,92 @@ class _PlaceholderPage extends StatelessWidget {
           '$title\n(Coming Soon)',
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 18),
+        ),
+      ),
+    );
+  }
+}
+
+/// Placeholder for FSM state screens (to be replaced with actual implementations)
+class _FsmStatePlaceholder extends ConsumerWidget {
+  const _FsmStatePlaceholder({
+    required this.title,
+    required this.message,
+    this.actionLabel,
+    this.showAction = true,
+  });
+
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final bool showAction;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        automaticallyImplyLeading: false,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.info_outline,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            if (showAction && actionLabel != null)
+              SizedBox(
+                width: 200,
+                child: ElevatedButton(
+                  onPressed: () {
+                  // Navigate based on the action
+                  if (actionLabel == 'Get New OTP') {
+                    context.go('/login');
+                  } else if (actionLabel == 'Contact Support') {
+                    context.push('/settings/help');
+                  } else if (actionLabel == 'Unlock') {
+                    context.go('/login/pin');
+                  } else if (actionLabel == 'Verify') {
+                    // Trigger biometric verification
+                    context.pop();
+                  } else if (actionLabel == 'Verify Device') {
+                    context.go('/login/otp');
+                  } else if (actionLabel == 'End Other Session') {
+                    context.go('/settings/sessions');
+                  } else if (actionLabel == 'View Status') {
+                    context.go('/settings');
+                  } else if (actionLabel == 'Renew KYC') {
+                    context.push('/kyc');
+                  } else if (actionLabel == 'Create Wallet') {
+                    // Trigger wallet creation
+                    final fsm = ref.read(appFsmProvider.notifier);
+                    fsm.createWallet();
+                  }
+                  },
+                  child: Text(actionLabel!),
+                ),
+              ),
+            if (!showAction)
+              const CircularProgressIndicator(),
+          ],
         ),
       ),
     );

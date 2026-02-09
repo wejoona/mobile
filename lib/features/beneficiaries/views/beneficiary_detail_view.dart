@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../models/beneficiary.dart';
 import '../providers/beneficiaries_provider.dart';
 
@@ -22,6 +23,8 @@ class BeneficiaryDetailView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final appColors = context.appColors;
     final state = ref.watch(beneficiariesProvider);
 
     final beneficiary = state.beneficiaries.firstWhere(
@@ -30,7 +33,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           beneficiary.name,
@@ -42,7 +45,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
           IconButton(
             icon: Icon(
               beneficiary.isFavorite ? Icons.star : Icons.star_border,
-              color: beneficiary.isFavorite ? AppColors.gold500 : AppColors.textSecondary,
+              color: beneficiary.isFavorite ? appColors.gold500 : colors.textSecondary,
             ),
             onPressed: () {
               ref.read(beneficiariesProvider.notifier).toggleFavorite(beneficiaryId);
@@ -55,7 +58,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit, color: AppColors.textPrimary),
+                    Icon(Icons.edit, color: colors.textPrimary),
                     SizedBox(width: AppSpacing.sm),
                     AppText(l10n.beneficiaries_menuEdit),
                   ],
@@ -65,11 +68,11 @@ class BeneficiaryDetailView extends ConsumerWidget {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete, color: AppColors.errorBase),
+                    Icon(Icons.delete, color: colors.error),
                     SizedBox(width: AppSpacing.sm),
                     AppText(
                       l10n.beneficiaries_menuDelete,
-                      color: AppColors.errorBase,
+                      color: colors.error,
                     ),
                   ],
                 ),
@@ -167,17 +170,22 @@ class BeneficiaryDetailView extends ConsumerWidget {
           // Verified badge
           if (beneficiary.isVerified) ...[
             SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.verified, size: 16, color: AppColors.successBase),
-                SizedBox(width: AppSpacing.xs),
-                AppText(
-                  l10n.common_verified,
-                  variant: AppTextVariant.bodySmall,
-                  color: AppColors.successBase,
-                ),
-              ],
+            Builder(
+              builder: (context) {
+                final colors = context.colors;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.verified, size: 16, color: colors.success),
+                    SizedBox(width: AppSpacing.xs),
+                    AppText(
+                      l10n.common_verified,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.success,
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ],
@@ -301,61 +309,71 @@ class BeneficiaryDetailView extends ConsumerWidget {
     IconData icon, {
     bool copyable = false,
   }) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.textSecondary),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  label,
-                  variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+    return Builder(
+      builder: (context) {
+        final colors = context.colors;
+        return Padding(
+          padding: EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: colors.textSecondary),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      label,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    AppText(
+                      value,
+                      variant: AppTextVariant.bodyMedium,
+                    ),
+                  ],
                 ),
-                SizedBox(height: AppSpacing.xs),
-                AppText(
-                  value,
-                  variant: AppTextVariant.bodyMedium,
+              ),
+              if (copyable)
+                IconButton(
+                  icon: Icon(Icons.copy, size: 20, color: colors.textSecondary),
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: value));
+                  },
                 ),
-              ],
-            ),
+            ],
           ),
-          if (copyable)
-            IconButton(
-              icon: Icon(Icons.copy, size: 20, color: AppColors.textSecondary),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: value));
-              },
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   Widget _buildStatRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.gold500),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: AppText(
-              label,
-              variant: AppTextVariant.bodyMedium,
-            ),
+    return Builder(
+      builder: (context) {
+        final appColors = context.appColors;
+        return Padding(
+          padding: EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: appColors.gold500),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppText(
+                  label,
+                  variant: AppTextVariant.bodyMedium,
+                ),
+              ),
+              AppText(
+                value,
+                variant: AppTextVariant.bodyMedium,
+                fontWeight: FontWeight.w600,
+              ),
+            ],
           ),
-          AppText(
-            value,
-            variant: AppTextVariant.bodyMedium,
-            fontWeight: FontWeight.w600,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -369,11 +387,12 @@ class BeneficiaryDetailView extends ConsumerWidget {
   }
 
   Color _getAccountTypeColor(AccountType type) {
+    // Note: These are fixed brand colors that don't change with theme
     return switch (type) {
       AccountType.joonapayUser => AppColors.gold500,
-      AccountType.externalWallet => AppColors.infoBase,
-      AccountType.bankAccount => AppColors.successBase,
-      AccountType.mobileMoney => AppColors.warningBase,
+      AccountType.externalWallet => const Color(0xFF6B8DD6), // Purple accent
+      AccountType.bankAccount => const Color(0xFF5B9BD5), // Blue accent
+      AccountType.mobileMoney => const Color(0xFFFF9955), // Orange accent
     };
   }
 
@@ -416,33 +435,38 @@ class BeneficiaryDetailView extends ConsumerWidget {
         break;
 
       case 'delete':
+        final colors = context.colors;
         final confirmed = await showDialog<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppColors.slate,
-            title: AppText(
-              l10n.beneficiaries_deleteTitle,
-              variant: AppTextVariant.headlineSmall,
-            ),
-            content: AppText(
-              l10n.beneficiaries_deleteMessage(beneficiary.name),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: AppText(l10n.common_cancel),
+          builder: (context) {
+            final colors = context.colors;
+            return AlertDialog(
+              backgroundColor: colors.container,
+              title: AppText(
+                l10n.beneficiaries_deleteTitle,
+                variant: AppTextVariant.headlineSmall,
               ),
-              AppButton(
-                label: l10n.common_delete,
-                onPressed: () => Navigator.pop(context, true),
-                variant: AppButtonVariant.danger,
-                size: AppButtonSize.small,
+              content: AppText(
+                l10n.beneficiaries_deleteMessage(beneficiary.name),
               ),
-            ],
-          ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: AppText(l10n.common_cancel),
+                ),
+                AppButton(
+                  label: l10n.common_delete,
+                  onPressed: () => Navigator.pop(context, true),
+                  variant: AppButtonVariant.danger,
+                  size: AppButtonSize.small,
+                ),
+              ],
+            );
+          },
         );
 
         if (confirmed == true && context.mounted) {
+          final colors = context.colors;
           final success = await ref
               .read(beneficiariesProvider.notifier)
               .deleteBeneficiary(beneficiary.id);
@@ -451,7 +475,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: AppText(l10n.beneficiaries_deleteSuccess),
-                backgroundColor: AppColors.successBase,
+                backgroundColor: colors.success,
               ),
             );
             context.pop();

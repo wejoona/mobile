@@ -6,7 +6,56 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/fsm_base.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
 import '../../../helpers/test_utils.dart';
+
+/// Mock AppFsmNotifier that does nothing (no side effects)
+class MockAppFsmNotifier extends AppFsmNotifier {
+  @override
+  AppState build() => const AppState.initial();
+
+  @override
+  void handleEffects(List<FsmEffect> effects) {
+    // No-op: prevent async side effects in tests
+  }
+}
+
+/// Mock KycStateMachine that does nothing
+class MockKycStateMachine extends KycStateMachine {
+  @override
+  KycStateMachineState build() => const KycStateMachineState();
+
+  @override
+  void updateFromAuthResponse(String? kycStatus) {
+    // No-op
+  }
+
+  @override
+  Future<void> fetch() async {
+    // No-op
+  }
+}
+
+/// Mock WalletStateMachine that does nothing
+class MockWalletStateMachine extends WalletStateMachine {
+  @override
+  WalletState build() => const WalletState();
+
+  @override
+  Future<void> fetch() async {
+    // No-op
+  }
+
+  @override
+  Future<void> createWallet() async {
+    // No-op
+  }
+}
 
 /// Mock SessionService for testing
 class MockSessionNotifier extends Notifier<SessionState> implements SessionService {
@@ -74,6 +123,9 @@ void main() {
         authServiceProvider.overrideWithValue(mockAuthService),
         secureStorageProvider.overrideWithValue(mockStorage),
         sessionServiceProvider.overrideWith(() => MockSessionNotifier()),
+        appFsmProvider.overrideWith(() => MockAppFsmNotifier()),
+        kycStateMachineProvider.overrideWith(() => MockKycStateMachine()),
+        walletStateMachineProvider.overrideWith(() => MockWalletStateMachine()),
       ],
     );
   });
@@ -195,6 +247,7 @@ void main() {
         accessToken: 'test.access.token',
         user: createTestUser(),
         walletCreated: true,
+        expiresIn: 900,
       );
       when(() => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),
@@ -230,6 +283,7 @@ void main() {
         accessToken: 'test.access.token',
         user: createTestUser(),
         walletCreated: true,
+        expiresIn: 900,
       );
       when(() => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),
@@ -398,6 +452,7 @@ void main() {
         accessToken: 'token',
         user: createTestUser(),
         walletCreated: true,
+        expiresIn: 900,
       );
       when(() => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/currency/currency_service.dart';
@@ -27,7 +28,7 @@ class CurrencyView extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(

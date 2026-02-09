@@ -8,6 +8,7 @@ class User {
   final String? firstName;
   final String? lastName;
   final String? email;
+  final String? avatarUrl;
   final String countryCode;
   final bool isPhoneVerified;
   final UserRole role;
@@ -22,6 +23,7 @@ class User {
     this.firstName,
     this.lastName,
     this.email,
+    this.avatarUrl,
     required this.countryCode,
     required this.isPhoneVerified,
     required this.role,
@@ -52,6 +54,7 @@ class User {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
       countryCode: json['countryCode'] as String? ?? 'CI',
       // Backend returns 'phoneVerified', handle both keys
       isPhoneVerified: (json['phoneVerified'] ?? json['isPhoneVerified']) as bool? ?? false,
@@ -80,6 +83,7 @@ class User {
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
+      'avatarUrl': avatarUrl,
       'countryCode': countryCode,
       'isPhoneVerified': isPhoneVerified,
       'role': role.name,
@@ -87,5 +91,38 @@ class User {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
+  }
+
+  /// Create a copy with updated fields
+  User copyWith({
+    String? id,
+    String? phone,
+    String? username,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? avatarUrl,
+    String? countryCode,
+    bool? isPhoneVerified,
+    UserRole? role,
+    UserStatus? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return User(
+      id: id ?? this.id,
+      phone: phone ?? this.phone,
+      username: username ?? this.username,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      countryCode: countryCode ?? this.countryCode,
+      isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      role: role ?? this.role,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
   }
 }

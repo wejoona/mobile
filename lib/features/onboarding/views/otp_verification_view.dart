@@ -39,14 +39,15 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(onboardingProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () => context.pop(),
         ),
       ),
@@ -61,7 +62,9 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.onboarding_otp_title,
-                style: AppTypography.headlineLarge,
+                style: AppTypography.headlineLarge.copyWith(
+                  color: colors.textPrimary,
+                ),
               ),
               SizedBox(height: AppSpacing.sm),
               AppText(
@@ -70,7 +73,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                   _formatPhoneForDisplay(state.phoneNumber ?? ''),
                 ),
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: colors.textSecondary,
                 ),
               ),
               SizedBox(height: AppSpacing.xxl),
@@ -87,19 +90,19 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: colors.errorBg,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: AppColors.error),
+                    border: Border.all(color: colors.error),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.error),
+                      Icon(Icons.error_outline, color: colors.errorText),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
                           state.error!,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.error,
+                            color: colors.errorText,
                           ),
                         ),
                       ),
@@ -114,7 +117,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                     ? AppText(
                         l10n.onboarding_otp_resendIn(state.otpResendCountdown),
                         style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.silver,
+                          color: colors.textSecondary,
                         ),
                       )
                     : TextButton(
@@ -122,7 +125,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                         child: AppText(
                           l10n.onboarding_otp_resend,
                           style: AppTypography.bodyMedium.copyWith(
-                            color: AppColors.gold500,
+                            color: colors.gold,
                           ),
                         ),
                       ),
@@ -132,14 +135,14 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                 Center(
                   child: Column(
                     children: [
-                      const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                      CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(colors.gold),
                       ),
                       SizedBox(height: AppSpacing.md),
                       AppText(
                         l10n.onboarding_otp_verifying,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.silver,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ],
@@ -153,18 +156,19 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   }
 
   Widget _buildOtpBox(int index) {
+    final colors = context.colors;
     return Container(
       width: 48,
       height: 56,
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: _hasError
-              ? AppColors.error
+              ? colors.error
               : _controllers[index].text.isNotEmpty
-                  ? AppColors.gold500
-                  : AppColors.silver.withOpacity(0.2),
+                  ? colors.gold
+                  : colors.borderSubtle,
           width: _controllers[index].text.isNotEmpty ? 2 : 1,
         ),
       ),
@@ -174,7 +178,10 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
-        style: AppTypography.headlineMedium,
+        style: AppTypography.headlineMedium.copyWith(
+          color: colors.textPrimary,
+        ),
+        cursorColor: colors.gold,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: const InputDecoration(
           counterText: '',

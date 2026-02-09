@@ -19,10 +19,20 @@ enum TransactionType {
 
 /// KYC status enum - mirrors backend
 enum KycStatus {
+  /// No KYC started
   none,
+  /// KYC pending (documents not yet submitted)
   pending,
+  /// Documents submitted, awaiting upload
+  documentsPending,
+  /// All documents submitted, under review
+  submitted,
+  /// KYC approved / verified
   verified,
+  /// KYC rejected
   rejected,
+  /// Additional info needed
+  additionalInfoNeeded,
 }
 
 /// User role enum - mirrors backend

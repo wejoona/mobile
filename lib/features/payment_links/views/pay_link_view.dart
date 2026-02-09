@@ -6,6 +6,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../utils/formatters.dart';
 import '../../../state/wallet_state_machine.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import '../models/index.dart';
 import '../providers/payment_links_provider.dart';
 
@@ -27,11 +28,13 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
   bool _isProcessing = false;
   PaymentLink? _link;
   String? _error;
+  double? _xofRate; // XOF per USD from API
 
   @override
   void initState() {
     super.initState();
     _loadLink();
+    _loadExchangeRate();
   }
 
   Future<void> _loadLink() async {
@@ -49,6 +52,25 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
           _error = e.toString();
         });
       }
+    }
+  }
+
+  Future<void> _loadExchangeRate() async {
+    try {
+      final rateResult = await ref.read(
+        exchangeRateProvider(const ExchangeRateParams(
+          sourceCurrency: 'USD',
+          targetCurrency: 'XOF',
+          amount: 1.0,
+        )).future,
+      );
+      if (mounted) {
+        setState(() {
+          _xofRate = rateResult.targetAmount;
+        });
+      }
+    } catch (_) {
+      // Fallback: rate will show as unavailable
     }
   }
 
@@ -414,7 +436,9 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
-                        '${Formatters.formatCurrency(_link!.amount * 655)} ${_link!.currency}',
+                        _xofRate != null
+                            ? '${Formatters.formatCurrency(_link!.amount * _xofRate!)} XOF'
+                            : '${_link!.currency}',
                         variant: AppTextVariant.bodyMedium,
                         color: AppColors.textSecondary,
                       ),

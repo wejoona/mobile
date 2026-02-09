@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/notification_preferences.dart';
 import '../providers/notification_preferences_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});
@@ -25,36 +27,38 @@ class _NotificationSettingsViewState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final prefsState = ref.watch(notificationPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.settings_notifications,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
           onPressed: () => _handleBack(l10n),
         ),
       ),
-      body: _buildBody(prefsState, l10n),
+      body: _buildBody(prefsState, l10n, colors),
     );
   }
 
-  Widget _buildBody(NotificationPreferencesState state, AppLocalizations l10n) {
+  Widget _buildBody(NotificationPreferencesState state, AppLocalizations l10n, ThemeColors colors) {
     // Show loading state
     if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.gold500),
+      return Center(
+        child: CircularProgressIndicator(color: colors.gold),
       );
     }
 
     // Show error state
     if (state.error != null && state.preferences == null) {
-      return _buildErrorState(state.error!, l10n);
+      return _buildErrorState(state.error!, l10n, colors);
     }
 
     // Initialize local state from loaded preferences
@@ -63,7 +67,7 @@ class _NotificationSettingsViewState
     }
 
     if (state.preferences == null) {
-      return _buildErrorState(l10n.notifications_loadError, l10n);
+      return _buildErrorState(l10n.notifications_loadError, l10n, colors);
     }
 
     final prefs = _localPrefs ?? state.preferences!;
@@ -79,6 +83,7 @@ class _NotificationSettingsViewState
               // Push Notifications Section
               _buildSectionHeader(
                 l10n: l10n,
+                colors: colors,
                 icon: Icons.notifications,
                 title: l10n.notifications_push,
                 enabled: prefs.pushEnabled,
@@ -94,6 +99,7 @@ class _NotificationSettingsViewState
               if (prefs.pushEnabled) ...[
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_transactions,
                   subtitle: l10n.notifications_transactionsDescription,
                   value: prefs.pushTransactions,
@@ -103,6 +109,7 @@ class _NotificationSettingsViewState
                 ),
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_security,
                   subtitle: l10n.notifications_securityDescription,
                   value: prefs.pushSecurity,
@@ -112,6 +119,7 @@ class _NotificationSettingsViewState
                 ),
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_marketing,
                   subtitle: l10n.notifications_marketingDescription,
                   value: prefs.pushMarketing,
@@ -126,6 +134,7 @@ class _NotificationSettingsViewState
               // Email Notifications Section
               _buildSectionHeader(
                 l10n: l10n,
+                colors: colors,
                 icon: Icons.email,
                 title: l10n.notifications_email,
                 enabled: prefs.emailEnabled,
@@ -143,6 +152,7 @@ class _NotificationSettingsViewState
               if (prefs.emailEnabled) ...[
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_emailReceipts,
                   subtitle: l10n.notifications_emailReceiptsDescription,
                   value: prefs.emailTransactions,
@@ -152,6 +162,7 @@ class _NotificationSettingsViewState
                 ),
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_monthlyStatement,
                   subtitle: l10n.notifications_monthlyStatementDescription,
                   value: prefs.emailMonthlyStatement,
@@ -161,6 +172,7 @@ class _NotificationSettingsViewState
                 ),
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_newsletter,
                   subtitle: l10n.notifications_newsletterDescription,
                   value: prefs.emailMarketing,
@@ -175,6 +187,7 @@ class _NotificationSettingsViewState
               // SMS Notifications Section
               _buildSectionHeader(
                 l10n: l10n,
+                colors: colors,
                 icon: Icons.sms,
                 title: l10n.notifications_sms,
                 enabled: prefs.smsEnabled,
@@ -189,6 +202,7 @@ class _NotificationSettingsViewState
               if (prefs.smsEnabled) ...[
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_smsTransactions,
                   subtitle: l10n.notifications_smsTransactionsDescription,
                   value: prefs.smsTransactions,
@@ -198,6 +212,7 @@ class _NotificationSettingsViewState
                 ),
                 _buildSettingTile(
                   l10n: l10n,
+                  colors: colors,
                   title: l10n.notifications_securityCodes,
                   subtitle: l10n.notifications_securityCodesDescription,
                   value: prefs.smsSecurity,
@@ -254,7 +269,7 @@ class _NotificationSettingsViewState
     );
   }
 
-  Widget _buildErrorState(String error, AppLocalizations l10n) {
+  Widget _buildErrorState(String error, AppLocalizations l10n, ThemeColors colors) {
     return Center(
       child: Padding(
         padding: EdgeInsets.all(AppSpacing.md),
@@ -266,12 +281,13 @@ class _NotificationSettingsViewState
             AppText(
               l10n.notifications_errorTitle,
               variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
             ),
             SizedBox(height: AppSpacing.sm),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -290,6 +306,7 @@ class _NotificationSettingsViewState
 
   Widget _buildSectionHeader({
     required AppLocalizations l10n,
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required bool enabled,
@@ -299,7 +316,7 @@ class _NotificationSettingsViewState
       margin: EdgeInsets.only(bottom: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -309,13 +326,13 @@ class _NotificationSettingsViewState
             height: 44,
             decoration: BoxDecoration(
               color: enabled
-                  ? AppColors.gold500.withOpacity(0.2)
-                  : AppColors.elevated,
+                  ? colors.gold.withOpacity(0.2)
+                  : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
               icon,
-              color: enabled ? AppColors.gold500 : AppColors.textTertiary,
+              color: enabled ? colors.gold : colors.textTertiary,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -323,13 +340,12 @@ class _NotificationSettingsViewState
             child: AppText(
               title,
               variant: AppTextVariant.titleSmall,
+              color: colors.textPrimary,
             ),
           ),
-          Switch.adaptive(
+          AppToggle(
             value: enabled,
             onChanged: onChanged,
-            activeTrackColor: AppColors.gold500.withOpacity(0.5),
-            activeColor: AppColors.gold500,
           ),
         ],
       ),
@@ -338,6 +354,7 @@ class _NotificationSettingsViewState
 
   Widget _buildSettingTile({
     required AppLocalizations l10n,
+    required ThemeColors colors,
     required String title,
     required String subtitle,
     required bool value,
@@ -351,7 +368,7 @@ class _NotificationSettingsViewState
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -365,6 +382,7 @@ class _NotificationSettingsViewState
                     AppText(
                       title,
                       variant: AppTextVariant.bodyLarge,
+                      color: colors.textPrimary,
                     ),
                     if (isRequired) ...[
                       SizedBox(width: AppSpacing.xs),
@@ -390,16 +408,14 @@ class _NotificationSettingsViewState
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
           ),
-          Switch.adaptive(
+          AppToggle(
             value: isRequired ? true : value,
             onChanged: isRequired ? null : onChanged,
-            activeTrackColor: AppColors.gold500.withOpacity(0.5),
-            activeColor: AppColors.gold500,
           ),
         ],
       ),
@@ -436,7 +452,7 @@ class _NotificationSettingsViewState
               backgroundColor: AppColors.successBase,
             ),
           );
-          context.pop();
+          context.safePop(fallbackRoute: '/settings');
         } else {
           setState(() => _isSaving = false);
           final l10n = AppLocalizations.of(context)!;
@@ -465,45 +481,50 @@ class _NotificationSettingsViewState
 
   void _handleBack(AppLocalizations l10n) {
     if (_hasUnsavedChanges) {
+      final colors = context.colors;
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: AppColors.slate,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
-          title: AppText(
-            l10n.notifications_unsavedChanges,
-            variant: AppTextVariant.titleMedium,
-          ),
-          content: AppText(
-            l10n.notifications_unsavedChangesMessage,
-            variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: AppText(
-                l10n.action_cancel,
-                color: AppColors.textSecondary,
-              ),
+        builder: (dialogContext) {
+          final dialogColors = dialogContext.colors;
+          return AlertDialog(
+            backgroundColor: dialogColors.container,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                context.pop();
-              },
-              child: AppText(
-                l10n.action_discard,
-                color: AppColors.errorBase,
-              ),
+            title: AppText(
+              l10n.notifications_unsavedChanges,
+              variant: AppTextVariant.titleMedium,
+              color: dialogColors.textPrimary,
             ),
-          ],
-        ),
+            content: AppText(
+              l10n.notifications_unsavedChangesMessage,
+              variant: AppTextVariant.bodyMedium,
+              color: dialogColors.textSecondary,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: AppText(
+                  l10n.action_cancel,
+                  color: dialogColors.textSecondary,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  context.safePop(fallbackRoute: '/settings');
+                },
+                child: AppText(
+                  l10n.action_discard,
+                  color: AppColors.errorBase,
+                ),
+              ),
+            ],
+          );
+        },
       );
     } else {
-      context.pop();
+      context.safePop(fallbackRoute: '/settings');
     }
   }
 }

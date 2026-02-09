@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/index.dart';
 import '../../../state/index.dart';
@@ -113,7 +114,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(),
         ),
       ),
       body: SingleChildScrollView(

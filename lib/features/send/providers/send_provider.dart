@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/api/api_client.dart';
 import '../../../services/transfers/transfers_service.dart';
 import '../../../services/wallet/wallet_service.dart';
 import '../../../services/app_review/app_review_service.dart';
 import '../models/transfer_request.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -79,45 +84,82 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     }
   }
 
-  /// Load recent recipients (from local storage or API)
+  /// Load recent recipients from API
+  /// GET /contacts/recents
   Future<void> loadRecentRecipients() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Load from local storage or API
-      // For now, empty list
-      state = state.copyWith(
-        isLoading: false,
-        recentRecipients: [],
-      );
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/contacts/recents');
+
+      final responseData = response.data as Map<String, dynamic>;
+      final contactsJson = (responseData['contacts'] as List?) ?? [];
+      final recipients = contactsJson.map((json) {
+        final c = json as Map<String, dynamic>;
+        return RecentRecipient(
+          phoneNumber: c['phone'] as String? ?? '',
+          name: c['name'] as String? ?? '',
+          lastTransferDate: c['lastTransferDate'] != null
+              ? DateTime.parse(c['lastTransferDate'] as String)
+              : DateTime.now(),
+          lastAmount: (c['lastAmount'] as num?)?.toDouble() ?? 0.0,
+        );
+      }).toList();
+
+      state = state.copyWith(isLoading: false, recentRecipients: recipients);
+    } on DioException {
+      // Non-critical: fall back to empty list
+      state = state.copyWith(isLoading: false, recentRecipients: []);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, recentRecipients: []);
     }
   }
 
   /// Validate and set recipient
+  /// Uses POST /contacts/sync with hashed phone to check if JoonaPay user
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Validate phone number with API to check if JoonaPay user
-      // For now, create recipient info
+      final dio = ref.read(dioProvider);
+
+      // Normalize phone to E.164 and hash for privacy
+      final normalized = phoneNumber.startsWith('+') ? phoneNumber : '+$phoneNumber';
+      final phoneHash = sha256.convert(utf8.encode(normalized)).toString();
+
+      final response = await dio.post('/contacts/sync', data: {
+        'phoneHashes': [phoneHash],
+      });
+
+      final syncData = response.data as Map<String, dynamic>;
+      final matches = (syncData['matches'] as List?) ?? [];
+      final isJoonaPayUser = matches.isNotEmpty;
+
+      String? userId;
+      String? displayName = name;
+      if (isJoonaPayUser) {
+        final match = matches.first as Map<String, dynamic>;
+        userId = match['userId'] as String?;
+        displayName = displayName ?? match['name'] as String?;
+      }
+
+      final recipient = RecipientInfo(
+        phoneNumber: phoneNumber,
+        name: displayName,
+        userId: userId,
+        isJoonaPayUser: isJoonaPayUser,
+      );
+
+      state = state.copyWith(isLoading: false, recipient: recipient);
+    } on DioException catch (e) {
+      // If sync fails, still allow setting recipient but mark as unknown
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,
         name: name,
-        isJoonaPayUser: true, // TODO: Check with API
+        isJoonaPayUser: false,
       );
-
-      state = state.copyWith(
-        isLoading: false,
-        recipient: recipient,
-      );
+      state = state.copyWith(isLoading: false, recipient: recipient);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -137,13 +179,18 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
       state = state.copyWith(error: 'Invalid transfer details');
+      await hapticService.error();
       return false;
     }
 
     if (!state.hasSufficientBalance) {
       state = state.copyWith(error: 'Insufficient balance');
+      await hapticService.warning();
       return false;
     }
+
+    // Payment initiated haptic
+    await hapticService.paymentStart();
 
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -154,10 +201,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         note: state.note,
       );
 
-      state = state.copyWith(
-        isLoading: false,
-        result: result,
-      );
+      state = state.copyWith(isLoading: false, result: result);
+
+      // Payment confirmed haptic
+      await hapticService.paymentConfirmed();
 
       // Track successful transaction for app review prompt
       final appReviewService = ref.read(appReviewServiceProvider);
@@ -165,10 +212,8 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
+      await hapticService.error();
       return false;
     }
   }

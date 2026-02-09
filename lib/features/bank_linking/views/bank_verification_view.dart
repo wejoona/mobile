@@ -1,6 +1,7 @@
 /// Bank Verification View
 library;
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -28,6 +29,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
   bool _isLoading = false;
   bool _canResend = false;
   int _resendCountdown = 60;
+  Timer? _countdownTimer;
 
   @override
   void initState() {
@@ -37,22 +39,31 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
 
   @override
   void dispose() {
+    _countdownTimer?.cancel();
     _otpController.dispose();
     super.dispose();
   }
 
   void _startResendCountdown() {
+    _countdownTimer?.cancel();
     setState(() {
       _canResend = false;
       _resendCountdown = 60;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _resendCountdown > 0) {
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_resendCountdown > 1) {
         setState(() => _resendCountdown--);
-        _startResendCountdown();
-      } else if (mounted) {
-        setState(() => _canResend = true);
+      } else {
+        timer.cancel();
+        setState(() {
+          _resendCountdown = 0;
+          _canResend = true;
+        });
       }
     });
   }

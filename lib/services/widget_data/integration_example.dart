@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_dynamic_calls, avoid_print, undefined_getter
 /// Example integration of widget auto-updater in main app
 ///
 /// This file shows how to integrate the widget auto-updater
@@ -254,8 +255,8 @@ class UserProfile {
 }
 
 // Import placeholders - replace with actual imports
-final walletStateMachineProvider = StateProvider((ref) => WalletState());
-final userStateMachineProvider = StateProvider((ref) => UserState());
+final walletStateMachineProvider = Provider((ref) => WalletState());
+final userStateMachineProvider = Provider((ref) => UserState());
 
 class WalletState {
   final double usdcBalance;

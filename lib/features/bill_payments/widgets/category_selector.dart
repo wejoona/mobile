@@ -83,15 +83,15 @@ class CategorySelector extends StatelessWidget {
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'bolt':
-        return Icons.bolt;
+        return Icons.bolt; // Electricity - Yellow/lightning
       case 'water_drop':
-        return Icons.water_drop;
+        return Icons.water_drop; // Water - Blue/droplet
       case 'wifi':
-        return Icons.wifi;
+        return Icons.wifi; // Internet - Purple/wifi
       case 'tv':
-        return Icons.tv;
+        return Icons.tv; // TV - Cyan/screen
       case 'phone_android':
-        return Icons.phone_android;
+        return Icons.phone_android; // Phone - Green/phone
       case 'security':
         return Icons.security;
       case 'school':
@@ -100,6 +100,30 @@ class CategorySelector extends StatelessWidget {
         return Icons.account_balance;
       default:
         return Icons.receipt_long;
+    }
+  }
+
+  Color _getCategoryColor(BuildContext context, String iconName) {
+    final colors = context.colors;
+    switch (iconName) {
+      case 'bolt':
+        return const Color(0xFFF0C674); // Yellow for electricity
+      case 'water_drop':
+        return colors.infoText; // Blue for water
+      case 'wifi':
+        return const Color(0xFFB294D1); // Purple for internet
+      case 'tv':
+        return const Color(0xFF7DD3D8); // Cyan for TV
+      case 'phone_android':
+        return colors.successText; // Green for phone
+      case 'security':
+        return colors.gold; // Gold for insurance
+      case 'school':
+        return colors.infoText; // Blue for education
+      case 'account_balance':
+        return colors.textSecondary; // Silver for government
+      default:
+        return colors.gold; // Default gold
     }
   }
 }
@@ -212,14 +236,16 @@ class _CategoryGridItem extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? colors.gold
-                    : colors.gold.withOpacity(0.1),
+                    ? _getCategoryColor(context, category.icon)
+                    : _getCategoryColor(context, category.icon).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 _getIconData(category.icon),
                 size: 24,
-                color: isSelected ? colors.canvas : colors.gold,
+                color: isSelected
+                    ? (colors.isDark ? colors.canvas : Colors.white)
+                    : _getCategoryColor(context, category.icon),
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -243,15 +269,15 @@ class _CategoryGridItem extends StatelessWidget {
   IconData _getIconData(String iconName) {
     switch (iconName) {
       case 'bolt':
-        return Icons.bolt;
+        return Icons.bolt; // Electricity - Yellow/lightning
       case 'water_drop':
-        return Icons.water_drop;
+        return Icons.water_drop; // Water - Blue/droplet
       case 'wifi':
-        return Icons.wifi;
+        return Icons.wifi; // Internet - Purple/wifi
       case 'tv':
-        return Icons.tv;
+        return Icons.tv; // TV - Cyan/screen
       case 'phone_android':
-        return Icons.phone_android;
+        return Icons.phone_android; // Phone - Green/phone
       case 'security':
         return Icons.security;
       case 'school':
@@ -260,6 +286,30 @@ class _CategoryGridItem extends StatelessWidget {
         return Icons.account_balance;
       default:
         return Icons.receipt_long;
+    }
+  }
+
+  Color _getCategoryColor(BuildContext context, String iconName) {
+    final colors = context.colors;
+    switch (iconName) {
+      case 'bolt':
+        return const Color(0xFFF0C674); // Yellow for electricity
+      case 'water_drop':
+        return colors.infoText; // Blue for water
+      case 'wifi':
+        return const Color(0xFFB294D1); // Purple for internet
+      case 'tv':
+        return const Color(0xFF7DD3D8); // Cyan for TV
+      case 'phone_android':
+        return colors.successText; // Green for phone
+      case 'security':
+        return colors.gold; // Gold for insurance
+      case 'school':
+        return colors.infoText; // Blue for education
+      case 'account_balance':
+        return colors.textSecondary; // Silver for government
+      default:
+        return colors.gold; // Default gold
     }
   }
 }

@@ -106,7 +106,7 @@ class FeesTransparencyView extends ConsumerWidget {
               l10n.help_fees_external_amount,
               l10n.help_fees_external_description,
               Icons.send_rounded,
-              AppColors.blue500,
+              AppColors.infoBase,
               colors,
             ),
             const SizedBox(height: AppSpacing.xxl),

@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/theme_colors.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 
@@ -13,9 +14,10 @@ class SubmittedView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.lg),
@@ -23,7 +25,7 @@ class SubmittedView extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              _buildSuccessAnimation(),
+              _buildSuccessAnimation(context),
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.kyc_submitted_title,
@@ -36,7 +38,7 @@ class SubmittedView extends ConsumerWidget {
                 child: AppText(
                   l10n.kyc_submitted_description,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -44,17 +46,17 @@ class SubmittedView extends ConsumerWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.infoBase.withOpacity(0.1),
+                  color: colors.info.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                   border: Border.all(
-                    color: AppColors.infoBase.withOpacity(0.3),
+                    color: colors.info.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.access_time,
-                      color: AppColors.infoText,
+                      color: colors.infoText,
                       size: 28,
                     ),
                     SizedBox(width: AppSpacing.lg),
@@ -62,7 +64,7 @@ class SubmittedView extends ConsumerWidget {
                       child: AppText(
                         l10n.kyc_submitted_timeEstimate,
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.infoText,
+                        color: colors.infoText,
                       ),
                     ),
                   ],
@@ -81,7 +83,8 @@ class SubmittedView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuccessAnimation() {
+  Widget _buildSuccessAnimation(BuildContext context) {
+    final colors = context.colors;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
       duration: const Duration(milliseconds: 600),
@@ -94,12 +97,12 @@ class SubmittedView extends ConsumerWidget {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.successBase.withOpacity(0.1),
+              color: colors.success.withOpacity(0.1),
             ),
             child: Icon(
               Icons.check_circle,
               size: 64,
-              color: AppColors.successBase,
+              color: colors.success,
             ),
           ),
         );

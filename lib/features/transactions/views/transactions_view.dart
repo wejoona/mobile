@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../design/components/composed/index.dart';
+import '../../../design/utils/responsive_layout.dart';
+import '../../../core/orientation/orientation_helper.dart';
 import '../../../domain/enums/index.dart';
 import '../../../domain/entities/index.dart';
 import '../providers/transactions_provider.dart';
@@ -72,8 +74,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                 _searchController.clear();
                 ref.read(transactionFilterProvider.notifier).setSearch(null);
               });
-            } else {
+            } else if (context.canPop()) {
               context.pop();
+            } else {
+              context.go('/home');
             }
           },
         ),
@@ -347,43 +351,89 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
     return Center(
       child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: AppSpacing.xxxl),
+            // Illustration container with gradient background
             Container(
-              width: 80,
-              height: 80,
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
-                color: colors.container,
-                borderRadius: BorderRadius.circular(AppRadius.xl),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    colors.gold.withOpacity(colors.isDark ? 0.15 : 0.1),
+                    colors.gold.withOpacity(colors.isDark ? 0.05 : 0.03),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(AppRadius.xxxl),
+                border: Border.all(
+                  color: colors.gold.withOpacity(0.2),
+                  width: 1,
+                ),
               ),
-              child: Icon(
-                hasFilters ? Icons.search_off : Icons.receipt_long_outlined,
-                color: colors.textTertiary,
-                size: 40,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Background decoration circles
+                  Positioned(
+                    top: 15,
+                    right: 15,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: colors.gold.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: colors.gold.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                  // Main icon
+                  Icon(
+                    hasFilters ? Icons.search_off_rounded : Icons.receipt_long_rounded,
+                    color: colors.gold,
+                    size: 48,
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppText(
-              hasFilters ? l10n.transactions_noResultsFound : l10n.transactions_noTransactions,
-              variant: AppTextVariant.titleMedium,
+              hasFilters ? l10n.transactions_noResultsFound : l10n.transactions_emptyStateTitle,
+              variant: AppTextVariant.headlineSmall,
               color: colors.textPrimary,
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: AppText(
                 hasFilters
                     ? l10n.transactions_adjustFilters
-                    : l10n.transactions_historyMessage,
+                    : l10n.transactions_emptyStateMessage,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
             ),
-            if (hasFilters) ...[
-              const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xxxl),
+            if (hasFilters)
               OutlinedButton.icon(
                 onPressed: () {
                   _searchController.clear();
@@ -398,9 +448,18 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                     horizontal: AppSpacing.xl,
                     vertical: AppSpacing.md,
                   ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ),
                 ),
+              )
+            else
+              AppButton(
+                label: l10n.transactions_emptyStateAction,
+                onPressed: () => context.go('/deposit'),
+                icon: Icons.add_circle_outline,
               ),
-            ],
+            const SizedBox(height: AppSpacing.xxxl),
           ],
         ),
       ),
@@ -408,48 +467,122 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   }
 
   Widget _buildErrorState(String error, ThemeColors colors, AppLocalizations l10n) {
+    // Determine error type for appropriate messaging
+    final isConnectionError = error.toLowerCase().contains('connection') ||
+        error.toLowerCase().contains('timeout') ||
+        error.toLowerCase().contains('network') ||
+        error.toLowerCase().contains('socket');
+    final isAuthError = error.toLowerCase().contains('unauthorized') ||
+        error.toLowerCase().contains('401') ||
+        error.toLowerCase().contains('authentication');
+    final isNoAccountError = error.toLowerCase().contains('wallet not found') ||
+        error.toLowerCase().contains('no wallet') ||
+        error.toLowerCase().contains('account not found');
+
+    // Select appropriate icon, title, and message
+    IconData icon;
+    Color iconColor;
+    Color bgColor;
+    String title;
+    String message;
+    String buttonLabel;
+    VoidCallback buttonAction;
+
+    if (isNoAccountError || isAuthError) {
+      icon = Icons.account_balance_wallet_outlined;
+      iconColor = colors.gold;
+      bgColor = colors.gold.withOpacity(colors.isDark ? 0.15 : 0.1);
+      title = l10n.transactions_noAccountTitle;
+      message = l10n.transactions_noAccountMessage;
+      buttonLabel = 'Create Wallet';
+      buttonAction = () => context.go('/onboarding');
+    } else if (isConnectionError) {
+      icon = Icons.wifi_off_rounded;
+      iconColor = colors.warningText;
+      bgColor = colors.warningBg;
+      title = l10n.transactions_connectionErrorTitle;
+      message = l10n.transactions_connectionErrorMessage;
+      buttonLabel = l10n.action_retry;
+      buttonAction = () {
+        ref.read(filteredPaginatedTransactionsProvider.notifier).refresh();
+      };
+    } else {
+      icon = Icons.error_outline_rounded;
+      iconColor = colors.errorText;
+      bgColor = colors.errorBg;
+      title = l10n.transactions_somethingWentWrong;
+      message = error;
+      buttonLabel = l10n.action_retry;
+      buttonAction = () {
+        ref.read(filteredPaginatedTransactionsProvider.notifier).refresh();
+      };
+    }
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.errorBase.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.xl),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: AppSpacing.xxxl),
+            // Error illustration
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(AppRadius.xxxl),
+                border: Border.all(
+                  color: iconColor.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 48,
+              ),
             ),
-            child: const Icon(
-              Icons.error_outline,
-              color: AppColors.errorText,
-              size: 40,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          AppText(
-            l10n.transactions_somethingWentWrong,
-            variant: AppTextVariant.titleMedium,
-            color: colors.textPrimary,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
-            child: AppText(
-              error,
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
+            const SizedBox(height: AppSpacing.xxl),
+            AppText(
+              title,
+              variant: AppTextVariant.headlineSmall,
+              color: colors.textPrimary,
               textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: AppSpacing.xxl),
-          AppButton(
-            label: l10n.action_retry,
-            onPressed: () {
-              ref.read(filteredPaginatedTransactionsProvider.notifier).refresh();
-            },
-            icon: Icons.refresh,
-          ),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: AppText(
+                message,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxxl),
+            AppButton(
+              label: buttonLabel,
+              onPressed: buttonAction,
+              icon: isConnectionError ? Icons.refresh : null,
+            ),
+            if (!isNoAccountError && !isAuthError && context.canPop()) ...[
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: () => context.pop(),
+                child: AppText(
+                  'Go Back',
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xxxl),
+          ],
+        ),
       ),
     );
   }
@@ -464,6 +597,8 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   ) {
     // Group transactions by date
     final grouped = _groupByDate(transactions, l10n);
+    final isTablet = ResponsiveLayout.isTabletOrLarger(context);
+    final isLandscape = OrientationHelper.isLandscape(context);
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
@@ -475,29 +610,51 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
         }
         return false;
       },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        itemCount: grouped.length + (state.hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= grouped.length) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: CircularProgressIndicator(color: colors.gold),
+      child: ConstrainedContent(
+        child: ListView.builder(
+          padding: OrientationHelper.padding(
+            context,
+            portrait: ResponsiveLayout.padding(
+              context,
+              mobile: const EdgeInsets.all(AppSpacing.screenPadding),
+              tablet: const EdgeInsets.all(AppSpacing.xl),
+            ),
+            landscape: ResponsiveLayout.padding(
+              context,
+              mobile: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xl,
+                vertical: AppSpacing.md,
               ),
-            );
-          }
+              tablet: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xxl,
+                vertical: AppSpacing.lg,
+              ),
+            ),
+          ),
+          itemCount: grouped.length + (state.hasMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= grouped.length) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(color: colors.gold),
+                ),
+              );
+            }
 
-          final entry = grouped.entries.elementAt(index);
-          return _TransactionGroup(
-            key: ValueKey('${entry.key}_${entry.value.first.id}'),
-            date: entry.key,
-            transactions: entry.value,
-            onTransactionTap: (tx) =>
-                context.push('/transactions/${tx.id}', extra: tx),
-            l10n: l10n,
-          );
-        },
+            final entry = grouped.entries.elementAt(index);
+            return _TransactionGroup(
+              key: ValueKey('${entry.key}_${entry.value.first.id}'),
+              date: entry.key,
+              transactions: entry.value,
+              onTransactionTap: (tx) =>
+                  context.push('/transactions/${tx.id}', extra: tx),
+              l10n: l10n,
+              isTablet: isTablet,
+              isLandscape: isLandscape,
+            );
+          },
+        ),
       ),
     );
   }
@@ -540,40 +697,211 @@ class _TransactionGroup extends StatelessWidget {
     required this.transactions,
     required this.onTransactionTap,
     required this.l10n,
+    this.isTablet = false,
+    this.isLandscape = false,
   });
 
   final String date;
   final List<Transaction> transactions;
   final ValueChanged<Transaction> onTransactionTap;
   final AppLocalizations l10n;
+  final bool isTablet;
+  final bool isLandscape;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
 
+    // Use grid in landscape mode or on tablet with many items
+    final shouldUseGrid = isLandscape || (isTablet && transactions.length > 3);
+    final gridColumns = isLandscape ? 3 : 2;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+          padding: EdgeInsets.symmetric(
+            vertical: (isTablet || isLandscape) ? AppSpacing.lg : AppSpacing.md,
+          ),
           child: AppText(
             date,
-            variant: AppTextVariant.labelMedium,
+            variant: (isTablet || isLandscape) ? AppTextVariant.titleSmall : AppTextVariant.labelMedium,
             color: colors.textTertiary,
           ),
         ),
-        ...transactions.map((tx) => TransactionRow(
-              key: ValueKey(tx.id),
-              title: _getTransactionTitle(tx.type, tx.description),
-              subtitle: tx.description ?? _getTransactionSubtitle(tx.type),
-              amount: tx.amount,
-              date: tx.createdAt,
-              type: _mapTransactionType(tx.type),
-              status: tx.status,
-              onTap: () => onTransactionTap(tx),
-            )),
+        // Grid layout for landscape or tablet with many items
+        if (shouldUseGrid)
+          AdaptiveGrid(
+            tabletColumns: gridColumns,
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.md,
+            children: transactions.map((tx) => _buildTransactionCard(tx, colors)).toList(),
+          )
+        else
+          ...transactions.map((tx) => TransactionRow(
+                key: ValueKey(tx.id),
+                title: _getTransactionTitle(tx.type, tx.description),
+                subtitle: tx.description ?? _getTransactionSubtitle(tx.type),
+                amount: tx.amount,
+                date: tx.createdAt,
+                type: _mapTransactionType(tx.type),
+                status: tx.status,
+                onTap: () => onTransactionTap(tx),
+              )),
       ],
     );
+  }
+
+  Widget _buildTransactionCard(Transaction tx, ThemeColors colors) {
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      onTap: () => onTransactionTap(tx),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildTransactionIcon(_mapTransactionType(tx.type), colors),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      _getTransactionTitle(tx.type, tx.description),
+                      variant: AppTextVariant.labelLarge,
+                      color: colors.textPrimary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    AppText(
+                      tx.description ?? _getTransactionSubtitle(tx.type),
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              AppText(
+                _formatAmount(tx.amount, _mapTransactionType(tx.type)),
+                variant: AppTextVariant.titleMedium,
+                color: _getAmountColor(_mapTransactionType(tx.type), colors),
+              ),
+              if (tx.status != null)
+                _buildStatusBadge(tx.status!.name, colors),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionIcon(TransactionDisplayType type, ThemeColors colors) {
+    IconData icon;
+    Color iconColor;
+
+    switch (type) {
+      case TransactionDisplayType.deposit:
+        icon = Icons.arrow_downward;
+        iconColor = colors.successText;
+      case TransactionDisplayType.withdrawal:
+        icon = Icons.arrow_upward;
+        iconColor = colors.errorText;
+      case TransactionDisplayType.transferIn:
+        icon = Icons.call_received;
+        iconColor = colors.successText;
+      case TransactionDisplayType.transferOut:
+        icon = Icons.send;
+        iconColor = colors.warningText;
+      case TransactionDisplayType.reward:
+        icon = Icons.card_giftcard;
+        iconColor = colors.gold;
+    }
+
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: iconColor.withOpacity(colors.isDark ? 0.15 : 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Icon(icon, color: iconColor, size: 20),
+    );
+  }
+
+  Widget _buildStatusBadge(String status, ThemeColors colors) {
+    Color backgroundColor;
+    Color textColor;
+    String label;
+
+    switch (status.toLowerCase()) {
+      case 'pending':
+      case 'processing':
+        backgroundColor = colors.warningBg;
+        textColor = colors.warningText;
+        label = status == 'pending' ? 'Pending' : 'Processing';
+      case 'completed':
+      case 'success':
+        backgroundColor = colors.successBg;
+        textColor = colors.successText;
+        label = 'Completed';
+      case 'failed':
+      case 'error':
+        backgroundColor = colors.errorBg;
+        textColor = colors.errorText;
+        label = 'Failed';
+      default:
+        backgroundColor = colors.elevated;
+        textColor = colors.textSecondary;
+        label = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: AppText(
+        label,
+        variant: AppTextVariant.labelSmall,
+        color: textColor,
+      ),
+    );
+  }
+
+  String _formatAmount(double amount, TransactionDisplayType type) {
+    final isPositive = type == TransactionDisplayType.deposit ||
+        type == TransactionDisplayType.transferIn ||
+        type == TransactionDisplayType.reward;
+    final sign = isPositive ? '+' : '-';
+    return '$sign\$${amount.abs().toStringAsFixed(2)}';
+  }
+
+  Color _getAmountColor(TransactionDisplayType type, ThemeColors colors) {
+    switch (type) {
+      case TransactionDisplayType.deposit:
+      case TransactionDisplayType.transferIn:
+        return colors.successText; // Green for incoming
+      case TransactionDisplayType.reward:
+        return colors.gold; // Gold for rewards
+      case TransactionDisplayType.withdrawal:
+        return colors.errorText; // Red for withdrawals
+      case TransactionDisplayType.transferOut:
+        return colors.warningText; // Orange/amber for sent transfers
+    }
   }
 
   String _getTransactionTitle(TransactionType type, String? description) {

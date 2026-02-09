@@ -38,38 +38,51 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            children: [
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.pin_enterNewPin,
-                variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xxxl),
-              PinDots(
-                filledCount: _pin.length,
-                showError: _showError,
-              ),
-              if (_errorMessage != null) ...[
-                SizedBox(height: AppSpacing.md),
-                AppText(
-                  _errorMessage!,
-                  variant: AppTextVariant.bodyMedium,
-                  color: AppColors.errorText,
-                  textAlign: TextAlign.center,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        SizedBox(height: AppSpacing.lg),
+                        AppText(
+                          l10n.pin_enterNewPin,
+                          variant: AppTextVariant.bodyLarge,
+                          color: AppColors.textSecondary,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: AppSpacing.xxl),
+                        PinDots(
+                          filledCount: _pin.length,
+                          showError: _showError,
+                        ),
+                        if (_errorMessage != null) ...[
+                          SizedBox(height: AppSpacing.md),
+                          AppText(
+                            _errorMessage!,
+                            variant: AppTextVariant.bodyMedium,
+                            color: AppColors.errorText,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                        SizedBox(height: AppSpacing.xl),
+                        _buildValidationRules(l10n),
+                        const Spacer(),
+                        PinPad(
+                          onNumberPressed: _handleNumberPressed,
+                          onBackspace: _handleBackspace,
+                        ),
+                        SizedBox(height: AppSpacing.md),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-              SizedBox(height: AppSpacing.xxxl),
-              _buildValidationRules(l10n),
-              const Spacer(),
-              PinPad(
-                onNumberPressed: _handleNumberPressed,
-                onBackspace: _handleBackspace,
-              ),
-              SizedBox(height: AppSpacing.xl),
-            ],
+              );
+            },
           ),
         ),
       ),

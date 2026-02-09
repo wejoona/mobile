@@ -27,20 +27,23 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(onboardingProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           _confirmPin == null
               ? l10n.onboarding_pin_title
               : l10n.onboarding_pin_confirmTitle,
-          style: AppTypography.headlineSmall,
+          style: AppTypography.headlineSmall.copyWith(
+            color: colors.textPrimary,
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () {
             if (_confirmPin != null) {
               setState(() {
@@ -68,7 +71,7 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
                     ? l10n.onboarding_pin_enterPin
                     : l10n.onboarding_pin_confirmPin,
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -82,17 +85,17 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
                 AppText(
                   _errorMessage!,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.error,
+                    color: colors.errorText,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ],
               SizedBox(height: AppSpacing.xxxl),
-              if (_confirmPin == null) _buildValidationRules(l10n),
+              if (_confirmPin == null) _buildValidationRules(l10n, colors),
               const Spacer(),
               if (state.isLoading)
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(colors.gold),
                 )
               else
                 PinPad(
@@ -107,13 +110,13 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
     );
   }
 
-  Widget _buildValidationRules(AppLocalizations l10n) {
+  Widget _buildValidationRules(AppLocalizations l10n, ThemeColors colors) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.silver.withOpacity(0.2)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,19 +124,19 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
           AppText(
             l10n.pin_requirements,
             style: AppTypography.labelMedium.copyWith(
-              color: AppColors.silver,
+              color: colors.textSecondary,
             ),
           ),
           SizedBox(height: AppSpacing.sm),
-          _buildRule(l10n.pin_rule_6digits, _pin.length == 6),
-          _buildRule(l10n.pin_rule_noSequential, !_isSequential(_pin)),
-          _buildRule(l10n.pin_rule_noRepeated, !_isRepeated(_pin)),
+          _buildRule(l10n.pin_rule_6digits, _pin.length == 6, colors),
+          _buildRule(l10n.pin_rule_noSequential, !_isSequential(_pin), colors),
+          _buildRule(l10n.pin_rule_noRepeated, !_isRepeated(_pin), colors),
         ],
       ),
     );
   }
 
-  Widget _buildRule(String text, bool satisfied) {
+  Widget _buildRule(String text, bool satisfied, ThemeColors colors) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
@@ -141,14 +144,14 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
           Icon(
             satisfied ? Icons.check_circle : Icons.circle_outlined,
             size: 16,
-            color: satisfied ? AppColors.success : AppColors.silver,
+            color: satisfied ? colors.success : colors.textSecondary,
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
               text,
               style: AppTypography.bodySmall.copyWith(
-                color: satisfied ? AppColors.gold500 : AppColors.silver,
+                color: satisfied ? colors.gold : colors.textSecondary,
               ),
             ),
           ),

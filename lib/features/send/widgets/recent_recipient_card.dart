@@ -17,18 +17,20 @@ class RecentRecipientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return AppCard(
       onTap: onTap,
       child: Row(
         children: [
           // Avatar
           CircleAvatar(
-            backgroundColor: AppColors.gold500.withOpacity(0.2),
+            backgroundColor: colors.gold.withOpacity(0.2),
             child: AppText(
               recipient.name[0].toUpperCase(),
               variant: AppTextVariant.bodyLarge,
-                color: AppColors.gold500,
-                fontWeight: FontWeight.w600,
+              color: colors.gold,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -41,13 +43,13 @@ class RecentRecipientCard extends StatelessWidget {
                 AppText(
                   recipient.name,
                   variant: AppTextVariant.bodyLarge,
-                    fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
                   recipient.phoneNumber,
                   variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -60,14 +62,14 @@ class RecentRecipientCard extends StatelessWidget {
               AppText(
                 '\$${Formatters.formatCurrency(recipient.lastAmount)}',
                 variant: AppTextVariant.bodyMedium,
-                  color: AppColors.gold500,
-                  fontWeight: FontWeight.w600,
+                color: colors.gold,
+                fontWeight: FontWeight.w600,
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 _formatDate(context, recipient.lastTransferDate),
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ),

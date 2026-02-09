@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:confetti/confetti.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/savings_pots_provider.dart';
 import '../models/pot_transaction.dart';
 import '../widgets/add_to_pot_sheet.dart';
@@ -211,7 +212,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
               variant: AppTextVariant.bodyMedium,
               color: AppColors.textSecondary,
             ),
-            if (pot.isGoalReached)
+            if (pot.isGoalReached as bool)
               Padding(
                 padding: EdgeInsets.only(top: AppSpacing.sm),
                 child: Container(

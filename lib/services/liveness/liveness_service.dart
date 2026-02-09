@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
@@ -162,92 +161,116 @@ class LivenessChallengeResponse {
 }
 
 /// Liveness detection service
-/// Handles face liveness verification through sequential challenges
+/// Handles face liveness verification through the backend's /kyc/liveness/* endpoints
+/// Flow: createSession() → capture video+selfie → submitLiveness() → poll getLivenessStatus()
 class LivenessService {
   final Dio _dio;
 
   LivenessService(this._dio);
 
-  /// Start a new liveness detection session
-  /// Returns session ID and list of challenges to complete
-  Future<LivenessSession> startSession({
-    String? purpose, // 'kyc', 'recovery', 'withdrawal'
-  }) async {
+  /// Create a new liveness session via POST /kyc/liveness/session
+  /// Returns sessionToken + challenge info from VerifyHQ
+  Future<LivenessSession> createSession() async {
     try {
-      final response = await _dio.post('/liveness/start', data: {
-        if (purpose != null) 'purpose': purpose,
-      });
+      final response = await _dio.post('/kyc/liveness/session');
+      final data = response.data as Map<String, dynamic>;
 
-      return LivenessSession.fromJson(response.data);
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
-  }
+      // Map backend response to LivenessSession
+      final sessionToken = data['sessionToken'] as String;
+      final challengeType = data['challengeType'] as String?;
+      final challengeData = data['challengeData'] as Map<String, dynamic>?;
 
-  /// Submit a frame for a specific challenge
-  /// Returns whether challenge passed and the next challenge if any
-  Future<LivenessChallengeResponse> submitChallenge({
-    required String sessionId,
-    required String challengeId,
-    required Uint8List frameData,
-  }) async {
-    try {
-      // Create multipart form data
-      final formData = FormData.fromMap({
-        'sessionId': sessionId,
-        'challengeId': challengeId,
-        'frame': MultipartFile.fromBytes(
-          frameData,
-          filename: 'frame.jpg',
-        ),
-      });
+      // Build challenges list from challengeData if available
+      final challenges = <LivenessChallenge>[];
+      if (challengeData != null && challengeData['challenges'] is List) {
+        for (final c in challengeData['challenges'] as List) {
+          if (c is Map<String, dynamic>) {
+            challenges.add(LivenessChallenge.fromJson(c));
+          }
+        }
+      } else if (challengeType != null) {
+        // Single challenge type — create a default challenge
+        challenges.add(LivenessChallenge(
+          challengeId: 'default',
+          type: LivenessChallengeTypeExt.fromString(challengeType),
+          instruction: _getInstructionForType(challengeType),
+          expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+        ));
+      }
 
-      final response = await _dio.post(
-        '/liveness/submit-challenge',
-        data: formData,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
+      return LivenessSession(
+        sessionId: sessionToken,
+        challenges: challenges,
       );
-
-      return LivenessChallengeResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// Complete the liveness session and get final result
-  /// Must be called after all challenges are completed
-  Future<LivenessResult> completeSession(String sessionId) async {
+  /// Submit liveness check with video + selfie S3 keys
+  /// via POST /kyc/liveness/submit
+  Future<LivenessResult> submitLiveness({
+    required String sessionToken,
+    required String videoKey,
+    required String selfieKey,
+  }) async {
     try {
-      final response = await _dio.post('/liveness/complete', data: {
-        'sessionId': sessionId,
+      final response = await _dio.post('/kyc/liveness/submit', data: {
+        'sessionToken': sessionToken,
+        'videoKey': videoKey,
+        'selfieKey': selfieKey,
       });
 
-      return LivenessResult.fromJson(response.data);
+      final data = response.data as Map<String, dynamic>;
+      return LivenessResult(
+        sessionId: data['id'] as String? ?? sessionToken,
+        isLive: data['isAlive'] as bool? ?? false,
+        confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
+        completedAt: DateTime.now(),
+        failureReason: data['status'] == 'failed' ? 'Liveness check failed' : null,
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// Cancel an ongoing liveness session
+  /// Get liveness status via GET /kyc/liveness/status
+  Future<LivenessResult?> getLivenessStatus() async {
+    try {
+      final response = await _dio.get('/kyc/liveness/status');
+      final data = response.data as Map<String, dynamic>;
+
+      if (data['status'] == 'NOT_STARTED') return null;
+
+      return LivenessResult(
+        sessionId: data['id'] as String? ?? '',
+        isLive: data['isAlive'] as bool? ?? false,
+        confidence: (data['confidence'] as num?)?.toDouble() ?? 0.0,
+        completedAt: DateTime.now(),
+        failureReason: data['status'] == 'failed' ? 'Liveness check failed' : null,
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// Cancel an ongoing liveness session (best-effort, no backend endpoint currently)
   Future<void> cancelSession(String sessionId) async {
-    try {
-      await _dio.post('/liveness/cancel', data: {
-        'sessionId': sessionId,
-      });
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
+    // No cancel endpoint in the new backend — just a no-op
   }
 
-  /// Get the current status of a liveness session
-  Future<Map<String, dynamic>> getSessionStatus(String sessionId) async {
-    try {
-      final response = await _dio.get('/liveness/session/$sessionId');
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
+  String _getInstructionForType(String type) {
+    switch (type.toLowerCase()) {
+      case 'blink':
+        return 'Please blink your eyes';
+      case 'smile':
+        return 'Please smile';
+      case 'turn_head':
+        return 'Please turn your head slowly';
+      case 'nod':
+        return 'Please nod your head';
+      default:
+        return 'Follow the on-screen instructions';
     }
   }
 }

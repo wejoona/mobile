@@ -126,7 +126,7 @@ class DepositStatusScreen extends ConsumerWidget {
           width: 120,
           height: 120,
           child: CircularProgressIndicator(
-            color: AppColors.gold500,
+            color: colors.gold,
             strokeWidth: 6,
           ),
         );
@@ -136,12 +136,12 @@ class DepositStatusScreen extends ConsumerWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.successBase.withValues(alpha: 0.2),
+            color: colors.success.withValues(alpha: colors.isDark ? 0.2 : 0.15),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.check_circle,
-            color: AppColors.successBase,
+            color: colors.success,
             size: 80,
           ),
         );
@@ -151,12 +151,12 @@ class DepositStatusScreen extends ConsumerWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.errorBase.withValues(alpha: 0.2),
+            color: colors.error.withValues(alpha: colors.isDark ? 0.2 : 0.15),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.error,
-            color: AppColors.errorBase,
+            color: colors.error,
             size: 80,
           ),
         );
@@ -166,12 +166,12 @@ class DepositStatusScreen extends ConsumerWidget {
           width: 120,
           height: 120,
           decoration: BoxDecoration(
-            color: AppColors.warningBase.withValues(alpha: 0.2),
+            color: colors.warning.withValues(alpha: colors.isDark ? 0.2 : 0.15),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.access_time,
-            color: AppColors.warningBase,
+            color: colors.warning,
             size: 80,
           ),
         );
@@ -212,7 +212,7 @@ class DepositStatusScreen extends ConsumerWidget {
               AppText(
                 '\$${response.convertedAmount?.toStringAsFixed(2) ?? '0.00'}',
                 variant: AppTextVariant.titleLarge,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ],
           ),

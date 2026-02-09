@@ -1072,6 +1072,26 @@
     "description": "System theme option (follows device)"
   },
 
+  "settings_themeLightDescription": "Bright and clean appearance",
+  "@settings_themeLightDescription": {
+    "description": "Light theme description"
+  },
+
+  "settings_themeDarkDescription": "Easy on the eyes at night",
+  "@settings_themeDarkDescription": {
+    "description": "Dark theme description"
+  },
+
+  "settings_themeSystemDescription": "Matches your device settings",
+  "@settings_themeSystemDescription": {
+    "description": "System theme description"
+  },
+
+  "settings_appearance": "Appearance",
+  "@settings_appearance": {
+    "description": "Appearance settings label"
+  },
+
   "settings_notifications": "Notifications",
   "@settings_notifications": {
     "description": "Notifications settings label"
@@ -1263,6 +1283,56 @@
     "description": "Driver's license document description"
   },
 
+  "kyc_personalInfo_title": "Personal Information",
+  "@kyc_personalInfo_title": {
+    "description": "Personal info screen title"
+  },
+
+  "kyc_personalInfo_subtitle": "Enter your details exactly as they appear on your ID document",
+  "@kyc_personalInfo_subtitle": {
+    "description": "Personal info screen subtitle"
+  },
+
+  "kyc_personalInfo_firstName": "First name",
+  "@kyc_personalInfo_firstName": {
+    "description": "First name field label"
+  },
+
+  "kyc_personalInfo_firstNameRequired": "First name is required",
+  "@kyc_personalInfo_firstNameRequired": {
+    "description": "First name required error"
+  },
+
+  "kyc_personalInfo_lastName": "Last name",
+  "@kyc_personalInfo_lastName": {
+    "description": "Last name field label"
+  },
+
+  "kyc_personalInfo_lastNameRequired": "Last name is required",
+  "@kyc_personalInfo_lastNameRequired": {
+    "description": "Last name required error"
+  },
+
+  "kyc_personalInfo_dateOfBirth": "Date of birth",
+  "@kyc_personalInfo_dateOfBirth": {
+    "description": "Date of birth field label"
+  },
+
+  "kyc_personalInfo_selectDate": "Select date",
+  "@kyc_personalInfo_selectDate": {
+    "description": "Date picker placeholder"
+  },
+
+  "kyc_personalInfo_dateRequired": "Date of birth is required",
+  "@kyc_personalInfo_dateRequired": {
+    "description": "Date of birth required error"
+  },
+
+  "kyc_personalInfo_matchIdHint": "Your information must match exactly what appears on your ID document for verification to succeed",
+  "@kyc_personalInfo_matchIdHint": {
+    "description": "Hint about matching ID info"
+  },
+
   "kyc_capture_frontSide_guidance": "Align the front of your document within the frame",
   "@kyc_capture_frontSide_guidance": {
     "description": "Front side capture guidance"
@@ -1331,6 +1401,21 @@
   "kyc_error_imageTooDark": "Image is too dark. Use better lighting and try again.",
   "@kyc_error_imageTooDark": {
     "description": "Image too dark error"
+  },
+
+  "kyc_camera_unavailable": "Camera Not Available",
+  "@kyc_camera_unavailable": {
+    "description": "Title when camera is not available"
+  },
+
+  "kyc_camera_unavailable_description": "Your device camera is not accessible. You can select a photo from your gallery instead.",
+  "@kyc_camera_unavailable_description": {
+    "description": "Description when camera is not available"
+  },
+
+  "kyc_chooseFromGallery": "Choose from Gallery",
+  "@kyc_chooseFromGallery": {
+    "description": "Button to choose photo from gallery"
   },
 
   "kyc_status_pending_title": "Start Verification",
@@ -1908,6 +1993,11 @@
     "description": "Delete button"
   },
 
+  "common_logout": "Logout",
+  "@common_logout": {
+    "description": "Logout button"
+  },
+
   "common_save": "Save",
   "@common_save": {
     "description": "Save button"
@@ -2119,6 +2209,10 @@
     "placeholders": {
       "time": {
         "type": "String"
+      },
+      "hora": {
+        "type": "DateTime",
+        "format": "Hm"
       }
     }
   },
@@ -8696,6 +8790,41 @@
     "description": "Completed transaction status"
   },
 
+  "transactions_noAccountTitle": "No Wallet Found",
+  "@transactions_noAccountTitle": {
+    "description": "Title when user has no wallet/account"
+  },
+
+  "transactions_noAccountMessage": "Create your wallet to start tracking your transactions and payment history.",
+  "@transactions_noAccountMessage": {
+    "description": "Message when user has no wallet/account"
+  },
+
+  "transactions_connectionErrorTitle": "Unable to Load",
+  "@transactions_connectionErrorTitle": {
+    "description": "Title when there's a connection error"
+  },
+
+  "transactions_connectionErrorMessage": "Please check your internet connection and try again.",
+  "@transactions_connectionErrorMessage": {
+    "description": "Message when there's a connection error"
+  },
+
+  "transactions_emptyStateTitle": "No Transactions Yet",
+  "@transactions_emptyStateTitle": {
+    "description": "Title for empty transactions state"
+  },
+
+  "transactions_emptyStateMessage": "Once you make your first deposit or transfer, your transaction history will appear here.",
+  "@transactions_emptyStateMessage": {
+    "description": "Message for empty transactions state"
+  },
+
+  "transactions_emptyStateAction": "Make First Deposit",
+  "@transactions_emptyStateAction": {
+    "description": "CTA button for empty transactions state"
+  },
+
   "common_note": "Note",
   "@common_note": {
     "description": "Note label"
@@ -9649,5 +9778,506 @@
   "help_fees_comparison_joonapay": "JoonaPay",
   "@help_fees_comparison_joonapay": {
     "description": "JoonaPay label"
+  },
+
+  "offline_banner_title": "You're offline",
+  "@offline_banner_title": {
+    "description": "Offline banner title"
+  },
+
+  "offline_banner_last_sync": "Last synced {time}",
+  "@offline_banner_last_sync": {
+    "description": "Offline banner last sync time",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "2m ago"
+      }
+    }
+  },
+
+  "offline_banner_syncing": "Syncing pending operations...",
+  "@offline_banner_syncing": {
+    "description": "Offline banner syncing message"
+  },
+
+  "offline_banner_reconnected": "Back online! All synced.",
+  "@offline_banner_reconnected": {
+    "description": "Offline banner reconnected message"
+  },
+  "state_otpExpired": "OTP code has expired",
+  "@state_otpExpired": {
+    "description": "OTP expired state message"
+  },
+
+  "state_otpExpiredDescription": "Your one-time password has expired. Please request a new code.",
+  "@state_otpExpiredDescription": {
+    "description": "OTP expired detailed message"
+  },
+
+  "state_tokenRefreshing": "Refreshing your access...",
+  "@state_tokenRefreshing": {
+    "description": "Token refreshing state message"
+  },
+
+  "state_accountLocked": "Account locked",
+  "@state_accountLocked": {
+    "description": "Account locked state message"
+  },
+
+  "state_accountLockedDescription": "Your account has been locked due to multiple failed attempts. Please try again later.",
+  "@state_accountLockedDescription": {
+    "description": "Account locked detailed message"
+  },
+
+  "state_accountSuspended": "Account suspended",
+  "@state_accountSuspended": {
+    "description": "Account suspended state message"
+  },
+
+  "state_accountSuspendedDescription": "Your account has been suspended. Please contact support for more information.",
+  "@state_accountSuspendedDescription": {
+    "description": "Account suspended detailed message"
+  },
+
+  "state_walletFrozen": "Wallet frozen",
+  "@state_walletFrozen": {
+    "description": "Wallet frozen state message"
+  },
+
+  "state_walletFrozenDescription": "Your wallet has been frozen for security reasons. Please contact support.",
+  "@state_walletFrozenDescription": {
+    "description": "Wallet frozen detailed message"
+  },
+
+  "state_walletUnderReview": "Wallet under review",
+  "@state_walletUnderReview": {
+    "description": "Wallet under review state message"
+  },
+
+  "state_walletUnderReviewDescription": "Your wallet is currently under review. Transactions are temporarily restricted.",
+  "@state_walletUnderReviewDescription": {
+    "description": "Wallet under review detailed message"
+  },
+
+  "state_walletLimited": "Wallet limited",
+  "@state_walletLimited": {
+    "description": "Wallet limited state message"
+  },
+
+  "state_walletLimitedDescription": "Your wallet has reached its transaction or balance limit. Upgrade your account to increase limits.",
+  "@state_walletLimitedDescription": {
+    "description": "Wallet limited detailed message"
+  },
+
+  "state_kycExpired": "KYC verification expired",
+  "@state_kycExpired": {
+    "description": "KYC expired state message"
+  },
+
+  "state_kycExpiredDescription": "Your identity verification has expired. Please update your information to continue.",
+  "@state_kycExpiredDescription": {
+    "description": "KYC expired detailed message"
+  },
+
+  "state_kycManualReview": "KYC manual review pending",
+  "@state_kycManualReview": {
+    "description": "KYC manual review state message"
+  },
+
+  "state_kycManualReviewDescription": "Your identity verification is being manually reviewed. This may take 24-48 hours.",
+  "@state_kycManualReviewDescription": {
+    "description": "KYC manual review detailed message"
+  },
+
+  "state_kycUpgrading": "KYC level upgrading",
+  "@state_kycUpgrading": {
+    "description": "KYC upgrading state message"
+  },
+
+  "state_kycUpgradingDescription": "Your identity verification level is being upgraded. Please wait.",
+  "@state_kycUpgradingDescription": {
+    "description": "KYC upgrading detailed message"
+  },
+
+  "state_biometricPrompt": "Biometric authentication required",
+  "@state_biometricPrompt": {
+    "description": "Biometric prompt state message"
+  },
+
+  "state_biometricPromptDescription": "Please use your fingerprint or face to authenticate.",
+  "@state_biometricPromptDescription": {
+    "description": "Biometric prompt detailed message"
+  },
+
+  "state_deviceChanged": "Device verification required",
+  "@state_deviceChanged": {
+    "description": "Device changed state message"
+  },
+
+  "state_deviceChangedDescription": "This appears to be a new device. Please verify your identity to continue.",
+  "@state_deviceChangedDescription": {
+    "description": "Device changed detailed message"
+  },
+
+  "state_sessionConflict": "Another session is active",
+  "@state_sessionConflict": {
+    "description": "Session conflict state message"
+  },
+
+  "state_sessionConflictDescription": "You are logged in on another device. Please log out there or continue here.",
+  "@state_sessionConflictDescription": {
+    "description": "Session conflict detailed message"
+  },
+
+  "auth_lockedReason": "Your account has been temporarily locked due to multiple failed attempts",
+  "@auth_lockedReason": {
+    "description": "Default reason for account lockout"
+  },
+
+  "auth_accountLocked": "Account Temporarily Locked",
+  "@auth_accountLocked": {
+    "description": "Account locked title"
+  },
+
+  "auth_tryAgainIn": "Try again in",
+  "@auth_tryAgainIn": {
+    "description": "Label for lockout countdown timer"
+  },
+
+  "common_backToLogin": "Back to Login",
+  "@common_backToLogin": {
+    "description": "Button to return to login screen"
+  },
+
+  "auth_suspendedReason": "Your account has been suspended. Please contact support for more information.",
+  "@auth_suspendedReason": {
+    "description": "Default reason for account suspension"
+  },
+
+  "auth_accountSuspended": "Account Suspended",
+  "@auth_accountSuspended": {
+    "description": "Account suspended title"
+  },
+
+  "auth_suspendedUntil": "Suspended until",
+  "@auth_suspendedUntil": {
+    "description": "Label for suspension end date"
+  },
+
+  "auth_contactSupport": "Need Help?",
+  "@auth_contactSupport": {
+    "description": "Contact support section title"
+  },
+
+  "auth_suspendedContactMessage": "If you believe this is a mistake, please contact our support team for assistance.",
+  "@auth_suspendedContactMessage": {
+    "description": "Message encouraging user to contact support"
+  },
+
+  "common_contactSupport": "Contact Support",
+  "@common_contactSupport": {
+    "description": "Button to contact support"
+  },
+
+  "biometric_authenticateReason": "Authenticate to continue",
+  "@biometric_authenticateReason": {
+    "description": "Reason shown during biometric authentication"
+  },
+
+  "biometric_promptReason": "Please use your fingerprint or face to authenticate",
+  "@biometric_promptReason": {
+    "description": "Default biometric prompt message"
+  },
+
+  "biometric_promptTitle": "Biometric Authentication",
+  "@biometric_promptTitle": {
+    "description": "Biometric prompt screen title"
+  },
+
+  "biometric_tryAgain": "Try Again",
+  "@biometric_tryAgain": {
+    "description": "Button to retry biometric authentication"
+  },
+
+  "biometric_usePinInstead": "Use PIN Instead",
+  "@biometric_usePinInstead": {
+    "description": "Button to use PIN instead of biometric"
+  },
+
+  "auth_otpExpired": "OTP Code Expired",
+  "@auth_otpExpired": {
+    "description": "OTP expired title"
+  },
+
+  "auth_otpExpiredMessage": "Your verification code has expired. Please request a new code.",
+  "@auth_otpExpiredMessage": {
+    "description": "OTP expired message"
+  },
+
+  "auth_resendOtp": "Resend Code",
+  "@auth_resendOtp": {
+    "description": "Button to resend OTP code"
+  },
+
+  "session_locked": "Session Locked",
+  "@session_locked": {
+    "description": "Session locked title"
+  },
+
+  "session_lockedMessage": "Your session has been locked. Please enter your PIN to continue.",
+  "@session_lockedMessage": {
+    "description": "Session locked message"
+  },
+
+  "session_enterPinToUnlock": "Enter PIN to Unlock",
+  "@session_enterPinToUnlock": {
+    "description": "PIN entry prompt for unlocking session"
+  },
+
+  "session_useBiometric": "Use Biometric",
+  "@session_useBiometric": {
+    "description": "Button to use biometric authentication"
+  },
+
+  "session_unlockReason": "Unlock your session to continue",
+  "@session_unlockReason": {
+    "description": "Reason for biometric unlock request"
+  },
+
+  "session_expiring": "Session Expiring",
+  "@session_expiring": {
+    "description": "Session expiring warning title"
+  },
+
+  "session_expiringMessage": "Your session will expire in {seconds} seconds due to inactivity.",
+  "@session_expiringMessage": {
+    "description": "Session expiring warning message with countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int",
+        "example": "30"
+      }
+    }
+  },
+
+  "session_stayLoggedIn": "Stay Logged In",
+  "@session_stayLoggedIn": {
+    "description": "Button to extend session"
+  },
+
+  "device_newDeviceDetected": "New Device Detected",
+  "@device_newDeviceDetected": {
+    "description": "New device detection title"
+  },
+
+  "device_verificationRequired": "We detected a new device. Please verify your identity to continue using JoonaPay.",
+  "@device_verificationRequired": {
+    "description": "Device verification required message"
+  },
+
+  "device_deviceId": "Device ID",
+  "@device_deviceId": {
+    "description": "Device ID label"
+  },
+
+  "device_verificationOptions": "Verification Options",
+  "@device_verificationOptions": {
+    "description": "Verification options title"
+  },
+
+  "device_verificationOptionsDesc": "Choose how you'd like to verify this device",
+  "@device_verificationOptionsDesc": {
+    "description": "Verification options description"
+  },
+
+  "device_verifyWithOtp": "Verify with SMS Code",
+  "@device_verifyWithOtp": {
+    "description": "Button to verify device with OTP"
+  },
+
+  "device_verifyWithEmail": "Verify with Email",
+  "@device_verifyWithEmail": {
+    "description": "Button to verify device with email"
+  },
+
+  "session_conflict": "Active Session Detected",
+  "@session_conflict": {
+    "description": "Session conflict title"
+  },
+
+  "session_conflictMessage": "You are currently logged in on another device. You can continue here, which will log you out from the other device.",
+  "@session_conflictMessage": {
+    "description": "Session conflict message"
+  },
+
+  "session_otherDevice": "Other Device",
+  "@session_otherDevice": {
+    "description": "Label for other device in conflict"
+  },
+
+  "session_forceLogoutWarning": "Continuing here will end your session on the other device.",
+  "@session_forceLogoutWarning": {
+    "description": "Warning about force logout"
+  },
+
+  "session_continueHere": "Continue Here",
+  "@session_continueHere": {
+    "description": "Button to resolve session conflict"
+  },
+
+  "wallet_frozenReason": "Your wallet has been frozen. Please contact support for more information.",
+  "@wallet_frozenReason": {
+    "description": "Default wallet frozen reason"
+  },
+
+  "wallet_frozen": "Wallet Frozen",
+  "@wallet_frozen": {
+    "description": "Wallet frozen screen title"
+  },
+
+  "wallet_frozenTitle": "Wallet Temporarily Frozen",
+  "@wallet_frozenTitle": {
+    "description": "Wallet frozen main title"
+  },
+
+  "wallet_frozenUntil": "Frozen until",
+  "@wallet_frozenUntil": {
+    "description": "Label for freeze end date"
+  },
+
+  "wallet_frozenContactSupport": "Contact Support",
+  "@wallet_frozenContactSupport": {
+    "description": "Frozen wallet contact support title"
+  },
+
+  "wallet_frozenContactMessage": "Our support team can help you understand why your wallet was frozen and what steps to take next.",
+  "@wallet_frozenContactMessage": {
+    "description": "Frozen wallet support message"
+  },
+
+  "common_backToHome": "Back to Home",
+  "@common_backToHome": {
+    "description": "Button to return to home screen"
+  },
+
+  "wallet_underReviewReason": "Your wallet is under compliance review. You'll be notified once the review is complete.",
+  "@wallet_underReviewReason": {
+    "description": "Default wallet under review reason"
+  },
+
+  "wallet_underReview": "Under Review",
+  "@wallet_underReview": {
+    "description": "Wallet under review screen title"
+  },
+
+  "wallet_underReviewTitle": "Wallet Under Review",
+  "@wallet_underReviewTitle": {
+    "description": "Wallet under review main title"
+  },
+
+  "wallet_reviewStatus": "Review Status",
+  "@wallet_reviewStatus": {
+    "description": "Review status section title"
+  },
+
+  "wallet_reviewStarted": "Started",
+  "@wallet_reviewStarted": {
+    "description": "Review started date label"
+  },
+
+  "wallet_estimatedTime": "Estimated Time",
+  "@wallet_estimatedTime": {
+    "description": "Estimated review time label"
+  },
+
+  "wallet_reviewEstimate": "24-48 hours",
+  "@wallet_reviewEstimate": {
+    "description": "Estimated review duration"
+  },
+
+  "wallet_whileUnderReview": "While Under Review",
+  "@wallet_whileUnderReview": {
+    "description": "Restrictions section title"
+  },
+
+  "wallet_reviewRestriction1": "Deposits are temporarily disabled",
+  "@wallet_reviewRestriction1": {
+    "description": "First review restriction"
+  },
+
+  "wallet_reviewRestriction2": "Withdrawals are temporarily disabled",
+  "@wallet_reviewRestriction2": {
+    "description": "Second review restriction"
+  },
+
+  "wallet_reviewRestriction3": "You can view your balance and transaction history",
+  "@wallet_reviewRestriction3": {
+    "description": "Third review restriction (what's still allowed)"
+  },
+
+  "wallet_checkStatus": "Check Status",
+  "@wallet_checkStatus": {
+    "description": "Button to check review status"
+  },
+
+  "kyc_expired": "KYC Expired",
+  "@kyc_expired": {
+    "description": "KYC expired screen title"
+  },
+
+  "kyc_expiredTitle": "Identity Documents Expired",
+  "@kyc_expiredTitle": {
+    "description": "KYC expired main title"
+  },
+
+  "kyc_expiredMessage": "Your identity verification documents have expired. Please renew them to continue using all features.",
+  "@kyc_expiredMessage": {
+    "description": "KYC expired message"
+  },
+
+  "kyc_expiredOn": "Expired on",
+  "@kyc_expiredOn": {
+    "description": "Label for expiration date"
+  },
+
+  "kyc_renewalRequired": "Renewal Required",
+  "@kyc_renewalRequired": {
+    "description": "Renewal section title"
+  },
+
+  "kyc_renewalMessage": "To restore full access to your wallet, please update your identity documents.",
+  "@kyc_renewalMessage": {
+    "description": "Renewal message"
+  },
+
+  "kyc_currentRestrictions": "Current Restrictions",
+  "@kyc_currentRestrictions": {
+    "description": "Restrictions section title"
+  },
+
+  "kyc_restriction1": "Limited transaction amounts",
+  "@kyc_restriction1": {
+    "description": "First KYC restriction"
+  },
+
+  "kyc_restriction2": "Some features may be unavailable",
+  "@kyc_restriction2": {
+    "description": "Second KYC restriction"
+  },
+
+  "kyc_restriction3": "Withdrawals may be restricted",
+  "@kyc_restriction3": {
+    "description": "Third KYC restriction"
+  },
+
+  "kyc_renewDocuments": "Renew Documents",
+  "@kyc_renewDocuments": {
+    "description": "Button to renew KYC documents"
+  },
+
+  "kyc_remindLater": "Remind Me Later",
+  "@kyc_remindLater": {
+    "description": "Button to dismiss KYC renewal reminder"
   }
 }

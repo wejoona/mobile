@@ -133,10 +133,11 @@ class KycPromptView extends ConsumerWidget {
   }
 
   void _handleVerifyNow(BuildContext context, WidgetRef ref) {
-    // TODO: Navigate to KYC flow
-    // For now, go to success
-    ref.read(onboardingProvider.notifier).skipKyc();
-    context.go('/onboarding/success');
+    // Mark that user chose to verify (for tracking)
+    ref.read(onboardingProvider.notifier).startKyc();
+    // Navigate to KYC document type selection
+    // After KYC submission, user will be redirected to home
+    context.push('/kyc/document-type');
   }
 
   void _handleMaybeLater(BuildContext context, WidgetRef ref) {

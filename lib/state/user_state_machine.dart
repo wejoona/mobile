@@ -78,6 +78,7 @@ class UserStateMachine extends Notifier<UserState> {
         firstName: profile.firstName,
         lastName: profile.lastName,
         email: profile.email,
+        avatarUrl: profile.avatarUrl,
         countryCode: profile.countryCode,
         kycStatus: _parseKycStatus(profile.kycStatus),
       );
@@ -93,11 +94,19 @@ class UserStateMachine extends Notifier<UserState> {
   KycStatus _parseKycStatus(String status) {
     switch (status.toLowerCase()) {
       case 'verified':
+      case 'approved':
         return KycStatus.verified;
       case 'pending':
         return KycStatus.pending;
+      case 'documents_pending':
+        return KycStatus.documentsPending;
+      case 'submitted':
+      case 'in_review':
+        return KycStatus.submitted;
       case 'rejected':
         return KycStatus.rejected;
+      case 'additional_info_needed':
+        return KycStatus.additionalInfoNeeded;
       default:
         return KycStatus.none;
     }
@@ -148,6 +157,11 @@ class UserStateMachine extends Notifier<UserState> {
       await _storage.write(key: _tokenKey, value: response.accessToken);
       await _storage.write(key: _phoneKey, value: state.phone);
 
+      // Reset state machines BEFORE updating auth state to ensure clean slate
+      // This prevents any residual data from previous sessions from showing
+      ref.read(walletStateMachineProvider.notifier).reset();
+      ref.read(transactionStateMachineProvider.notifier).reset();
+
       // Update state with user info
       state = state.copyWith(
         status: AuthStatus.authenticated,
@@ -156,12 +170,13 @@ class UserStateMachine extends Notifier<UserState> {
         firstName: response.user.firstName,
         lastName: response.user.lastName,
         email: response.user.email,
+        avatarUrl: response.user.avatarUrl,
         countryCode: response.user.countryCode,
         accessToken: response.accessToken,
         error: null,
       );
 
-      // Trigger wallet and transaction fetch
+      // Trigger wallet and transaction fetch with fresh state
       ref.read(walletStateMachineProvider.notifier).fetch();
       ref.read(transactionStateMachineProvider.notifier).fetch();
 
@@ -186,12 +201,14 @@ class UserStateMachine extends Notifier<UserState> {
     String? firstName,
     String? lastName,
     String? email,
+    String? avatarUrl,
     KycStatus? kycStatus,
   }) {
     state = state.copyWith(
       firstName: firstName ?? state.firstName,
       lastName: lastName ?? state.lastName,
       email: email ?? state.email,
+      avatarUrl: avatarUrl ?? state.avatarUrl,
       kycStatus: kycStatus ?? state.kycStatus,
     );
   }

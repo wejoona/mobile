@@ -4,11 +4,15 @@ import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/colors.dart';
 import '../../../design/tokens/spacing.dart';
+import '../../../design/tokens/theme_colors.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_card.dart';
 import '../providers/kyc_provider.dart';
 import '../models/kyc_status.dart';
+import '../../../services/kyc/kyc_service.dart';
+import '../../../state/fsm/fsm_provider.dart';
+import '../../../state/fsm/kyc_fsm.dart' as fsm;
 
 class KycStatusView extends ConsumerStatefulWidget {
   const KycStatusView({super.key});
@@ -21,24 +25,27 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(kycProvider.notifier).loadStatus());
+    // Load real verification status from backend
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(kycProvider.notifier).loadVerificationStatus();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(kycProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(l10n.kyc_title, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
-        child: state.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _buildContent(context, l10n, state),
+        // Always show content - don't block on loading for initial view
+        child: _buildContent(context, l10n, state),
       ),
     );
   }
@@ -48,6 +55,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     AppLocalizations l10n,
     KycState state,
   ) {
+    final colors = context.colors;
     return Padding(
       padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -58,7 +66,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
               child: Column(
                 children: [
                   SizedBox(height: AppSpacing.xxl),
-                  _buildStatusIcon(state.status),
+                  _buildStatusIcon(context, state.status),
                   SizedBox(height: AppSpacing.xxl),
                   AppText(
                     _getStatusTitle(l10n, state.status),
@@ -69,7 +77,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                   AppText(
                     _getStatusDescription(l10n, state.status),
                     variant: AppTextVariant.bodyLarge,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                     textAlign: TextAlign.center,
                   ),
                   if (state.status.isRejected && state.rejectionReason != null)
@@ -83,7 +91,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                             AppText(
                               l10n.kyc_rejectionReason,
                               variant: AppTextVariant.labelMedium,
-                              color: AppColors.errorText,
+                              color: colors.errorText,
                             ),
                             SizedBox(height: AppSpacing.sm),
                             AppText(
@@ -94,6 +102,11 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                         ),
                       ),
                     ],
+                  // Verification details when available
+                  if (state.verificationStatus?.verification != null) ...[
+                    SizedBox(height: AppSpacing.xxl),
+                    _buildVerificationDetails(state.verificationStatus!.verification!, colors),
+                  ],
                   SizedBox(height: AppSpacing.xxl),
                   _buildInfoCards(l10n),
                 ],
@@ -110,32 +123,43 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
               isFullWidth: true,
             ),
           ],
+          if (state.status == KycStatus.submitted) ...[
+            SizedBox(height: AppSpacing.lg),
+            AppButton(
+              label: l10n.common_continue,
+              onPressed: () => _handleContinueToHome(context),
+              isFullWidth: true,
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatusIcon(KycStatus status) {
+  Widget _buildStatusIcon(BuildContext context, KycStatus status) {
+    final colors = context.colors;
     IconData icon;
     Color color;
 
     switch (status) {
+      case KycStatus.none:
       case KycStatus.pending:
+      case KycStatus.documentsPending:
       case KycStatus.additionalInfoNeeded:
         icon = Icons.verified_user_outlined;
-        color = AppColors.gold500;
+        color = colors.gold;
         break;
       case KycStatus.submitted:
         icon = Icons.hourglass_empty;
-        color = AppColors.warningBase;
+        color = colors.warning;
         break;
-      case KycStatus.approved:
+      case KycStatus.verified:
         icon = Icons.check_circle;
-        color = AppColors.successBase;
+        color = colors.success;
         break;
       case KycStatus.rejected:
         icon = Icons.cancel;
-        color = AppColors.errorBase;
+        color = colors.error;
         break;
     }
 
@@ -156,11 +180,13 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
 
   String _getStatusTitle(AppLocalizations l10n, KycStatus status) {
     switch (status) {
+      case KycStatus.none:
       case KycStatus.pending:
+      case KycStatus.documentsPending:
         return l10n.kyc_status_pending_title;
       case KycStatus.submitted:
         return l10n.kyc_status_submitted_title;
-      case KycStatus.approved:
+      case KycStatus.verified:
         return l10n.kyc_status_approved_title;
       case KycStatus.rejected:
         return l10n.kyc_status_rejected_title;
@@ -171,17 +197,63 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
 
   String _getStatusDescription(AppLocalizations l10n, KycStatus status) {
     switch (status) {
+      case KycStatus.none:
       case KycStatus.pending:
+      case KycStatus.documentsPending:
         return l10n.kyc_status_pending_description;
       case KycStatus.submitted:
         return l10n.kyc_status_submitted_description;
-      case KycStatus.approved:
+      case KycStatus.verified:
         return l10n.kyc_status_approved_description;
       case KycStatus.rejected:
         return l10n.kyc_status_rejected_description;
       case KycStatus.additionalInfoNeeded:
         return l10n.kyc_status_additionalInfo_description;
     }
+  }
+
+  Widget _buildVerificationDetails(VerifyHqStatus verification, ThemeColors colors) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            'Verification Details',
+            variant: AppTextVariant.titleMedium,
+            color: colors.gold,
+          ),
+          SizedBox(height: AppSpacing.lg),
+          if (verification.overallStatus != null)
+            _buildDetailRow('Overall', verification.overallStatus!, colors),
+          if (verification.livenessCheckId != null)
+            _buildDetailRow('Liveness', 'Completed', colors),
+          if (verification.documentVerificationId != null)
+            _buildDetailRow('Document', 'Submitted', colors),
+          if (verification.faceMatchScore != null)
+            _buildDetailRow(
+              'Face Match',
+              '${(verification.faceMatchScore! * 100).toStringAsFixed(0)}%',
+              colors,
+            ),
+          if (verification.tier != null)
+            _buildDetailRow('Tier', verification.tier!, colors),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, ThemeColors colors) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          AppText(label, variant: AppTextVariant.bodyMedium, color: colors.textSecondary),
+          AppText(value, variant: AppTextVariant.labelMedium),
+        ],
+      ),
+    );
   }
 
   Widget _buildInfoCards(AppLocalizations l10n) {
@@ -209,6 +281,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   }
 
   Widget _buildInfoCard(IconData icon, String title, String description) {
+    final colors = context.colors;
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Row(
@@ -217,10 +290,10 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.1),
+              color: colors.gold.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.gold500),
+            child: Icon(icon, color: colors.gold),
           ),
           SizedBox(width: AppSpacing.lg),
           Expanded(
@@ -235,7 +308,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                 AppText(
                   description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                 ),
               ],
             ),
@@ -246,7 +319,20 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   }
 
   void _handleStartVerification(BuildContext context) {
+    debugPrint('[KYC] v4 - Start Verification tapped');
     ref.read(kycProvider.notifier).resetFlow();
+    debugPrint('[KYC] v4 - Navigating to /kyc/document-type');
     context.push('/kyc/document-type');
+    debugPrint('[KYC] v4 - Navigation called');
+  }
+
+  void _handleContinueToHome(BuildContext context) {
+    // Sync FSM state to allow navigation to home
+    // KYC is submitted (pending review), so user can proceed
+    ref.read(appFsmProvider.notifier).onKycStatusLoaded(
+      tier: fsm.KycTier.none,
+      status: 'pending',
+    );
+    context.go('/home');
   }
 }

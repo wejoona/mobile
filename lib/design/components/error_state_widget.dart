@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import '../tokens/index.dart';
 import 'primitives/index.dart';
 
@@ -127,8 +127,8 @@ class ErrorStateWidget extends StatelessWidget {
           AppButton(
             label: retryLabel ?? l10n.common_retry,
             onPressed: onRetry,
-            variant: ButtonVariant.secondary,
-            size: ButtonSize.medium,
+            variant: AppButtonVariant.secondary,
+            size: AppButtonSize.medium,
           ),
         ],
       ],
@@ -247,8 +247,8 @@ class EmptyStateWidget extends StatelessWidget {
           AppButton(
             label: actionLabel!,
             onPressed: onAction,
-            variant: ButtonVariant.secondary,
-            size: ButtonSize.medium,
+            variant: AppButtonVariant.secondary,
+            size: AppButtonSize.medium,
           ),
         ],
       ],

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../services/analytics/analytics_service.dart';
-import '../../design/components/primitives/app_toast.dart';
+// import '../../design/components/primitives/app_toast.dart';
 
 /// Deep link handler for custom scheme (joonapay://) and universal links
 class DeepLinkHandler {

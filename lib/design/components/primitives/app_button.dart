@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Button Variants
 enum AppButtonVariant {
-  /// Gold background, dark text - Primary CTA
+  /// Gold background - Primary CTA
   primary,
 
-  /// Transparent with border - Secondary actions
+  /// Outlined with border - Secondary actions
   secondary,
 
-  /// Text only - Tertiary actions
+  /// Minimal background - Tertiary actions
+  tertiary,
+
+  /// Text only - Ghost actions
   ghost,
 
-  /// Success state
+  /// Success state (green)
   success,
 
-  /// Error/Danger state
+  /// Error/Danger state (red)
   danger,
 }
 
@@ -30,8 +35,8 @@ enum AppButtonSize {
 /// Enhanced with proper text alignment, overflow handling, and accessibility
 class AppButton extends StatelessWidget {
   const AppButton({
-    super.key,
     required this.label,
+    super.key,
     this.onPressed,
     this.variant = AppButtonVariant.primary,
     this.size = AppButtonSize.medium,
@@ -40,6 +45,7 @@ class AppButton extends StatelessWidget {
     this.icon,
     this.iconPosition = IconPosition.left,
     this.semanticLabel,
+    this.enableHaptics = true,
   });
 
   final String label;
@@ -52,6 +58,32 @@ class AppButton extends StatelessWidget {
   final IconPosition iconPosition;
   /// Optional semantic label for screen readers (defaults to label)
   final String? semanticLabel;
+  /// Enable haptic feedback on tap (default: true)
+  final bool enableHaptics;
+
+  /// Handle button tap with haptic feedback
+  void _handleTap() {
+    if (enableHaptics) {
+      // Provide contextual haptic feedback based on variant
+      switch (variant) {
+        case AppButtonVariant.primary:
+          hapticService.mediumTap();
+          break;
+        case AppButtonVariant.secondary:
+        case AppButtonVariant.tertiary:
+        case AppButtonVariant.ghost:
+          hapticService.lightTap();
+          break;
+        case AppButtonVariant.success:
+          hapticService.mediumTap();
+          break;
+        case AppButtonVariant.danger:
+          hapticService.heavyTap();
+          break;
+      }
+    }
+    onPressed?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,9 +114,11 @@ class AppButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: isDisabled ? null : onPressed,
+            onTap: isDisabled ? null : _handleTap,
             borderRadius: BorderRadius.circular(AppRadius.md),
             splashColor: _getSplashColor(colors),
+            highlightColor: _getHighlightColor(colors),
+            hoverColor: _getHoverColor(colors),
             child: Padding(
               padding: _getPadding(),
               child: Center(
@@ -100,18 +134,39 @@ class AppButton extends StatelessWidget {
   BoxDecoration _buildDecoration(bool isDisabled, ThemeColors colors) {
     switch (variant) {
       case AppButtonVariant.primary:
-        return BoxDecoration(
-          gradient: isDisabled
-              ? null
-              : const LinearGradient(
-                  colors: AppColors.goldGradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-          color: isDisabled ? colors.elevated : null,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          boxShadow: isDisabled ? null : AppShadows.goldGlow,
-        );
+        if (isDisabled) {
+          return BoxDecoration(
+            color: colors.elevated,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          );
+        }
+
+        // Theme-aware primary button
+        if (colors.isDark) {
+          // Dark mode: Use gold gradient with glow
+          return BoxDecoration(
+            gradient: const LinearGradient(
+              colors: AppColors.goldGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            boxShadow: AppShadows.goldGlow,
+          );
+        } else {
+          // Light mode: Solid gold background with subtle shadow
+          return BoxDecoration(
+            color: colors.gold,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            boxShadow: [
+              BoxShadow(
+                color: colors.gold.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          );
+        }
 
       case AppButtonVariant.secondary:
         return BoxDecoration(
@@ -119,8 +174,14 @@ class AppButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isDisabled ? colors.borderSubtle : colors.border,
-            width: 1,
+            width: 1.5,
           ),
+        );
+
+      case AppButtonVariant.tertiary:
+        return BoxDecoration(
+          color: isDisabled ? Colors.transparent : colors.elevated,
+          borderRadius: BorderRadius.circular(AppRadius.md),
         );
 
       case AppButtonVariant.ghost:
@@ -146,14 +207,85 @@ class AppButton extends StatelessWidget {
   Color _getSplashColor(ThemeColors colors) {
     switch (variant) {
       case AppButtonVariant.primary:
-        return AppColors.gold700.withOpacity(0.3);
+        // Darker gold for ripple effect
+        return colors.isDark
+            ? AppColors.gold700.withOpacity(0.3)
+            : AppColorsLight.gold700.withOpacity(0.3);
+
       case AppButtonVariant.secondary:
+      case AppButtonVariant.tertiary:
+        // Subtle overlay based on theme
+        return colors.isDark
+            ? AppColors.overlayLight
+            : AppColorsLight.overlayLight;
+
       case AppButtonVariant.ghost:
-        return AppColors.overlayLight;
+        // Minimal ripple for ghost buttons
+        return colors.isDark
+            ? AppColors.overlayLight.withOpacity(0.5)
+            : AppColorsLight.overlayLight.withOpacity(0.5);
+
       case AppButtonVariant.success:
-        return AppColors.successDark.withOpacity(0.3);
+        return colors.isDark
+            ? AppColors.successDark.withOpacity(0.3)
+            : AppColorsLight.successBase.withOpacity(0.2);
+
       case AppButtonVariant.danger:
-        return AppColors.errorDark.withOpacity(0.3);
+        return colors.isDark
+            ? AppColors.errorDark.withOpacity(0.3)
+            : AppColorsLight.errorBase.withOpacity(0.2);
+    }
+  }
+
+  Color _getHighlightColor(ThemeColors colors) {
+    switch (variant) {
+      case AppButtonVariant.primary:
+        return colors.isDark
+            ? AppColors.gold800.withOpacity(0.2)
+            : AppColorsLight.gold600.withOpacity(0.2);
+
+      case AppButtonVariant.secondary:
+      case AppButtonVariant.tertiary:
+      case AppButtonVariant.ghost:
+        return colors.isDark
+            ? AppColors.overlayLight.withOpacity(0.3)
+            : AppColorsLight.overlayLight.withOpacity(0.3);
+
+      case AppButtonVariant.success:
+        return colors.isDark
+            ? AppColors.successDark.withOpacity(0.2)
+            : AppColorsLight.successBase.withOpacity(0.15);
+
+      case AppButtonVariant.danger:
+        return colors.isDark
+            ? AppColors.errorDark.withOpacity(0.2)
+            : AppColorsLight.errorBase.withOpacity(0.15);
+    }
+  }
+
+  Color _getHoverColor(ThemeColors colors) {
+    switch (variant) {
+      case AppButtonVariant.primary:
+        return colors.isDark
+            ? AppColors.gold700.withOpacity(0.1)
+            : AppColorsLight.gold600.withOpacity(0.1);
+
+      case AppButtonVariant.secondary:
+      case AppButtonVariant.tertiary:
+      case AppButtonVariant.ghost:
+        return colors.isDark
+            ? AppColors.overlayLight.withOpacity(0.15)
+            : AppColorsLight.overlayLight.withOpacity(0.15);
+
+      case AppButtonVariant.success:
+        return colors.isDark
+            ? AppColors.successDark.withOpacity(0.1)
+            : AppColorsLight.successBase.withOpacity(0.08);
+
+      case AppButtonVariant.danger:
+        return colors.isDark
+            ? AppColors.errorDark.withOpacity(0.1)
+            : AppColorsLight.errorBase.withOpacity(0.08);
     }
   }
 
@@ -162,15 +294,28 @@ class AppButton extends StatelessWidget {
 
     switch (variant) {
       case AppButtonVariant.primary:
+        // Inverse text on gold background (dark on light, light on dark)
         return colors.textInverse;
+
       case AppButtonVariant.secondary:
+        // Primary text color for outlined buttons
         return colors.textPrimary;
-      case AppButtonVariant.ghost:
+
+      case AppButtonVariant.tertiary:
+        // Gold accent for tertiary buttons
         return colors.gold;
+
+      case AppButtonVariant.ghost:
+        // Gold for ghost text
+        return colors.gold;
+
       case AppButtonVariant.success:
-        return colors.textPrimary;
+        // High contrast text on success background
+        return colors.isDark ? colors.textPrimary : AppColorsLight.textInverse;
+
       case AppButtonVariant.danger:
-        return colors.textPrimary;
+        // High contrast text on error background
+        return colors.isDark ? colors.textPrimary : AppColorsLight.textInverse;
     }
   }
 

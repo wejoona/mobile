@@ -1,7 +1,9 @@
 /// Bank Linking Provider
 library;
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/api/api_client.dart';
 import '../models/bank.dart';
 import '../models/linked_bank_account.dart';
 
@@ -51,23 +53,31 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   @override
   BankLinkingState build() => const BankLinkingState();
 
+  Dio get _dio => ref.read(dioProvider);
+
   /// Load available banks
+  /// GET /banks?country=CI
   Future<void> loadBanks() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // final banks = await sdk.banks.getAvailableBanks();
+      final response = await _dio.get('/banks', queryParameters: {
+        'country': 'CI',
+      });
 
-      // Mock delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Mock data - will be replaced by API call
-      final banks = _getMockBanks();
+      final data = response.data as Map<String, dynamic>;
+      final banksJson = data['banks'] as List;
+      final banks = banksJson
+          .map((json) => Bank.fromJson(json as Map<String, dynamic>))
+          .toList();
 
       state = state.copyWith(
         isLoading: false,
         availableBanks: banks,
+      );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
       state = state.copyWith(
@@ -78,22 +88,26 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   }
 
   /// Load linked accounts
+  /// GET /bank-accounts
   Future<void> loadLinkedAccounts() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // final accounts = await sdk.banks.getLinkedAccounts();
+      final response = await _dio.get('/bank-accounts');
 
-      // Mock delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Mock data - will be replaced by API call
-      final accounts = _getMockLinkedAccounts();
+      final data = response.data as Map<String, dynamic>;
+      final accountsJson = data['accounts'] as List;
+      final accounts = accountsJson
+          .map((json) => LinkedBankAccount.fromJson(json as Map<String, dynamic>))
+          .toList();
 
       state = state.copyWith(
         isLoading: false,
         linkedAccounts: accounts,
+      );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
       state = state.copyWith(
@@ -109,6 +123,7 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   }
 
   /// Link bank account
+  /// POST /bank-accounts { bank_code, account_number, account_holder_name, country_code }
   Future<bool> linkBankAccount({
     required String accountNumber,
     required String accountHolderName,
@@ -117,26 +132,28 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
 
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // final result = await sdk.banks.linkAccount(
-      //   bankCode: state.selectedBank!.code,
-      //   accountNumber: accountNumber,
-      //   accountHolderName: accountHolderName,
-      // );
+      final response = await _dio.post('/bank-accounts', data: {
+        'bank_code': state.selectedBank!.code,
+        'account_number': accountNumber,
+        'account_holder_name': accountHolderName,
+        'country_code': state.selectedBank!.country,
+      });
 
-      // Mock delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Mock pending account
-      final pendingId = 'bank-${DateTime.now().millisecondsSinceEpoch}';
+      final linkData = response.data as Map<String, dynamic>;
+      final accountId = linkData['id'] as String?;
 
       state = state.copyWith(
         isLoading: false,
-        pendingAccountId: pendingId,
+        pendingAccountId: accountId,
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -147,20 +164,18 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   }
 
   /// Verify account with OTP
+  /// POST /bank-accounts/:id/verify { otp }
   Future<bool> verifyWithOtp(String otp) async {
+    if (state.pendingAccountId == null) return false;
+
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.banks.verifyWithOtp(
-      //   accountId: state.pendingAccountId!,
-      //   otp: otp,
-      // );
+      await _dio.post(
+        '/bank-accounts/${state.pendingAccountId}/verify',
+        data: {'otp': otp},
+      );
 
-      // Mock delay
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Reload linked accounts
+      // Reload linked accounts to get updated list
       await loadLinkedAccounts();
 
       state = state.copyWith(
@@ -169,6 +184,12 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -179,17 +200,13 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   }
 
   /// Unlink bank account
+  /// DELETE /bank-accounts/:id
   Future<bool> unlinkAccount(String accountId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.banks.unlinkAccount(accountId);
+      await _dio.delete('/bank-accounts/$accountId');
 
-      // Mock delay
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Remove from list
+      // Remove from local list
       final updated = state.linkedAccounts
           .where((account) => account.id != accountId)
           .toList();
@@ -200,6 +217,12 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -210,15 +233,11 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
   }
 
   /// Set primary account
+  /// POST /bank-accounts/:id/set-primary
   Future<bool> setPrimaryAccount(String accountId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // In real app, call SDK
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.banks.setPrimaryAccount(accountId);
-
-      // Mock delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _dio.post('/bank-accounts/$accountId/set-primary');
 
       // Update local state
       final updated = state.linkedAccounts.map((account) {
@@ -231,6 +250,12 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -238,70 +263,6 @@ class BankLinkingNotifier extends Notifier<BankLinkingState> {
       );
       return false;
     }
-  }
-
-  /// Mock data helpers (will be removed when API is ready)
-  List<Bank> _getMockBanks() {
-    return [
-      const Bank(
-        code: 'NSIA',
-        name: 'NSIA Banque',
-        logoUrl: 'https://via.placeholder.com/100x100?text=NSIA',
-        country: 'CI',
-        verificationMethods: [BankVerificationMethod.otp],
-        supportsBalanceCheck: true,
-        supportsDirectDebit: true,
-      ),
-      const Bank(
-        code: 'ECOBANK',
-        name: 'Ecobank',
-        logoUrl: 'https://via.placeholder.com/100x100?text=ECO',
-        country: 'CI',
-        verificationMethods: [BankVerificationMethod.otp],
-        supportsBalanceCheck: false,
-        supportsDirectDebit: true,
-      ),
-      const Bank(
-        code: 'SGCI',
-        name: 'Société Générale',
-        logoUrl: 'https://via.placeholder.com/100x100?text=SG',
-        country: 'CI',
-        verificationMethods: [BankVerificationMethod.otp],
-        supportsBalanceCheck: false,
-        supportsDirectDebit: true,
-      ),
-      const Bank(
-        code: 'BOA',
-        name: 'Bank of Africa',
-        logoUrl: 'https://via.placeholder.com/100x100?text=BOA',
-        country: 'CI',
-        verificationMethods: [BankVerificationMethod.otp],
-        supportsBalanceCheck: false,
-        supportsDirectDebit: true,
-      ),
-    ];
-  }
-
-  List<LinkedBankAccount> _getMockLinkedAccounts() {
-    return [
-      LinkedBankAccount(
-        id: 'bank-1',
-        walletId: 'wallet-1',
-        bankCode: 'NSIA',
-        bankName: 'NSIA Banque',
-        bankLogoUrl: 'https://via.placeholder.com/100x100?text=NSIA',
-        accountNumber: 'CI123456789012345',
-        accountNumberMasked: '****2345',
-        accountHolderName: 'Jean Kouassi',
-        status: BankAccountStatus.verified,
-        availableBalance: 500000,
-        currency: 'XOF',
-        isPrimary: true,
-        lastVerifiedAt: DateTime.now().subtract(const Duration(hours: 2)),
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
-      ),
-    ];
   }
 
   /// Clear state

@@ -33,14 +33,15 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(onboardingProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.icon),
           onPressed: () => context.pop(),
         ),
       ),
@@ -55,13 +56,15 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.onboarding_phoneInput_title,
-                style: AppTypography.headlineLarge,
+                style: AppTypography.headlineLarge.copyWith(
+                  color: colors.textPrimary,
+                ),
               ),
               SizedBox(height: AppSpacing.sm),
               AppText(
                 l10n.onboarding_phoneInput_subtitle,
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: colors.textSecondary,
                 ),
               ),
               SizedBox(height: AppSpacing.xxl),
@@ -71,9 +74,9 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.charcoal,
+                    color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.silver.withOpacity(0.2)),
+                    border: Border.all(color: colors.borderSubtle),
                   ),
                   child: Row(
                     children: [
@@ -85,19 +88,21 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                       Expanded(
                         child: AppText(
                           _selectedCountry.name,
-                          style: AppTypography.bodyLarge,
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: colors.textPrimary,
+                          ),
                         ),
                       ),
                       AppText(
                         _selectedCountry.dialCode,
                         style: AppTypography.bodyLarge.copyWith(
-                          color: AppColors.gold500,
+                          color: colors.gold,
                         ),
                       ),
                       SizedBox(width: AppSpacing.sm),
                       Icon(
                         Icons.arrow_drop_down,
-                        color: AppColors.silver,
+                        color: colors.iconSecondary,
                       ),
                     ],
                   ),
@@ -125,7 +130,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                     onChanged: (value) {
                       setState(() => _termsAccepted = value ?? false);
                     },
-                    activeColor: AppColors.gold500,
+                    activeColor: colors.gold,
                   ),
                   Expanded(
                     child: Padding(
@@ -133,7 +138,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                       child: AppText(
                         l10n.onboarding_phoneInput_terms,
                         style: AppTypography.bodySmall.copyWith(
-                          color: AppColors.silver,
+                          color: colors.textSecondary,
                         ),
                       ),
                     ),
@@ -145,19 +150,19 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: colors.errorBg,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: AppColors.error),
+                    border: Border.all(color: colors.error),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.error),
+                      Icon(Icons.error_outline, color: colors.errorText),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
                           state.error!,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.error,
+                            color: colors.errorText,
                           ),
                         ),
                       ),
@@ -180,7 +185,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                   child: AppText(
                     l10n.onboarding_phoneInput_loginLink,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                 ),
@@ -197,9 +202,10 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   void _showCountryPicker() {
+    final colors = context.colors;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),

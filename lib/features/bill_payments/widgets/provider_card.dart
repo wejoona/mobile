@@ -215,41 +215,43 @@ class _CategoryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final categoryColor = _getCategoryColor(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: _getCategoryColor().withOpacity(0.1),
+        color: categoryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
         category.displayName,
         variant: AppTextVariant.labelSmall,
-        color: _getCategoryColor(),
+        color: categoryColor,
       ),
     );
   }
 
-  Color _getCategoryColor() {
+  Color _getCategoryColor(BuildContext context) {
+    final colors = context.colors;
     switch (category) {
       case BillCategory.electricity:
-        return AppColors.warningText;
+        return const Color(0xFFF0C674); // Yellow
       case BillCategory.water:
-        return AppColors.infoText;
+        return colors.infoText; // Blue
       case BillCategory.internet:
-        return AppColors.gold400;
+        return const Color(0xFFB294D1); // Purple
       case BillCategory.tv:
-        return AppColors.errorText;
+        return const Color(0xFF7DD3D8); // Cyan
       case BillCategory.phoneCredit:
-        return AppColors.successText;
+        return colors.successText; // Green
       case BillCategory.insurance:
-        return AppColors.infoLight;
+        return colors.gold; // Gold
       case BillCategory.education:
-        return AppColors.infoBase;
+        return colors.infoText; // Blue
       case BillCategory.government:
-        return AppColors.textTertiary;
+        return colors.textSecondary; // Silver
     }
   }
 }
@@ -337,35 +339,37 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = _getStatusColor(context);
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: _getStatusColor().withOpacity(0.1),
+        color: statusColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
         _getStatusText(context),
         variant: AppTextVariant.labelSmall,
-        color: _getStatusColor(),
+        color: statusColor,
       ),
     );
   }
 
-  Color _getStatusColor() {
+  Color _getStatusColor(BuildContext context) {
+    final colors = context.colors;
     switch (status) {
       case 'completed':
-        return AppColors.successText;
+        return colors.successText;
       case 'pending':
       case 'processing':
-        return AppColors.warningText;
+        return colors.warningText;
       case 'failed':
       case 'refunded':
-        return AppColors.errorText;
+        return colors.errorText;
       default:
-        return AppColors.textSecondary;
+        return colors.textSecondary;
     }
   }
 

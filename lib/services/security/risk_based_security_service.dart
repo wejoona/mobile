@@ -251,9 +251,7 @@ class RiskBasedSecurityService {
   /// Execute liveness verification
   Future<bool> _executeLiveness(String? challengeToken) async {
     try {
-      final session = await _livenessService.startSession(
-        purpose: 'security_verification',
-      );
+      final session = await _livenessService.createSession();
 
       // Note: In production, UI should show LivenessCheckWidget
       // and handle the actual liveness flow
@@ -410,7 +408,7 @@ class RiskBasedSecurityService {
   /// This provides early feedback to users about blocked addresses
   Future<AddressScreeningResult> screenAddress({
     required String address,
-    String blockchain = 'MATIC',
+    String blockchain = 'polygon',
   }) async {
     try {
       final response = await _dio.post('/risk/screen-address', data: {

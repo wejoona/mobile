@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -92,16 +93,17 @@ class _HelpViewState extends ConsumerState<HelpView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.settings_help,
           variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(
@@ -123,6 +125,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
             AppText(
               l10n.help_getHelp,
               variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
             ),
             SizedBox(height: AppSpacing.md),
             Row(
@@ -159,15 +162,18 @@ class _HelpViewState extends ConsumerState<HelpView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
-                  l10n.help_faq,
-                  variant: AppTextVariant.titleMedium,
+                Flexible(
+                  child: AppText(
+                    l10n.help_faq,
+                    variant: AppTextVariant.titleMedium,
+                    color: colors.textPrimary,
+                  ),
                 ),
                 if (_searchQuery.isNotEmpty)
                   AppText(
                     '${_filteredFaqs.length} ${l10n.help_results}',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
               ],
             ),
@@ -287,14 +293,15 @@ class _HelpViewState extends ConsumerState<HelpView> {
     required String label,
     required VoidCallback onTap,
   }) {
+    final colors = context.colors;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: colors.borderSubtle),
         ),
         child: Column(
           children: [
@@ -302,16 +309,16 @@ class _HelpViewState extends ConsumerState<HelpView> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withOpacity(0.1),
+                color: colors.gold.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 24),
+              child: Icon(icon, color: colors.gold, size: 24),
             ),
             SizedBox(height: AppSpacing.sm),
             AppText(
               label,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),

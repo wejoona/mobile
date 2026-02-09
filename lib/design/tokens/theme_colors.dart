@@ -77,6 +77,15 @@ class ThemeColors {
   /// Gold for backgrounds
   Color get goldSubtle => isDark ? AppColors.gold900 : AppColors.gold100;
 
+  /// Gold gradient for decorative elements
+  List<Color> get goldGradient => isDark
+    ? AppColors.goldGradient
+    : [
+        AppColorsLight.gold500,
+        AppColorsLight.gold600,
+        AppColorsLight.gold500,
+      ];
+
   // ════════════════════════════════════════════════════════════════════════════
   // SEMANTIC
   // ════════════════════════════════════════════════════════════════════════════

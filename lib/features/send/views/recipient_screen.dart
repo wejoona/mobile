@@ -46,9 +46,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(sendMoneyProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.send_selectRecipient,
@@ -70,9 +71,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                       label: l10n.send_recipientPhone,
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      prefix: const Padding(
-                        padding: EdgeInsets.only(left: 12),
-                        child: Text('+225 ', style: TextStyle(color: AppColors.textPrimary)),
+                      prefix: Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text('+225 ', style: TextStyle(color: colors.textPrimary)),
                       ),
                       validator: _validatePhone,
                       inputFormatters: [
@@ -113,7 +114,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                       AppText(
                         l10n.send_recentRecipients,
                         variant: AppTextVariant.labelLarge,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.sm),
                       ...state.recentRecipients.map(
@@ -160,6 +161,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   Future<void> _selectFromContacts() async {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     // Request permission
     final status = await Permission.contacts.request();
@@ -168,7 +170,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.send_contactsPermissionDenied),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: colors.error,
           ),
         );
       }

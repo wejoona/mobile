@@ -5,6 +5,7 @@ import '../../../design/components/primitives/index.dart';
 import '../models/recurring_transfer.dart';
 import '../models/recurring_transfer_status.dart';
 import '../models/transfer_frequency.dart';
+import '../../../design/tokens/theme_colors.dart';
 
 class RecurringTransferCard extends StatelessWidget {
   const RecurringTransferCard({
@@ -46,7 +47,7 @@ class RecurringTransferCard extends StatelessWidget {
                         AppText(
                           transfer.recipientPhone,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ],
                     ),
@@ -64,13 +65,13 @@ class RecurringTransferCard extends StatelessWidget {
                       AppText(
                         l10n.recurringTransfers_amount,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
                         '${transfer.amount.toStringAsFixed(0)} ${transfer.currency}',
                         variant: AppTextVariant.headlineSmall,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ],
                   ),
@@ -80,7 +81,7 @@ class RecurringTransferCard extends StatelessWidget {
                       AppText(
                         l10n.recurringTransfers_frequency,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
@@ -98,7 +99,7 @@ class RecurringTransferCard extends StatelessWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.obsidian.withOpacity(0.3),
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Row(
@@ -106,7 +107,7 @@ class RecurringTransferCard extends StatelessWidget {
                     Icon(
                       Icons.schedule,
                       size: 16,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     Expanded(
@@ -127,13 +128,13 @@ class RecurringTransferCard extends StatelessWidget {
                     Icon(
                       Icons.event,
                       size: 14,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     AppText(
                       '${l10n.recurringTransfers_nextExecution}: ${_formatDate(transfer.nextExecutionDate)}',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ],
                 ),
@@ -143,7 +144,7 @@ class RecurringTransferCard extends StatelessWidget {
                 AppText(
                   transfer.note!,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -156,40 +157,42 @@ class RecurringTransferCard extends StatelessWidget {
   }
 
   Widget _buildStatusBadge(AppLocalizations l10n, RecurringTransferStatus status) {
-    Color color;
-    switch (status) {
-      case RecurringTransferStatus.active:
-        color = AppColors.successBase;
-        break;
-      case RecurringTransferStatus.paused:
-        color = AppColors.warningBase;
-        break;
-      case RecurringTransferStatus.completed:
-        color = AppColors.textSecondary;
-        break;
-      case RecurringTransferStatus.cancelled:
-        color = AppColors.errorBase;
-        break;
-    }
+    return Builder(
+      builder: (context) {
+        Color color;
+        switch (status) {
+          case RecurringTransferStatus.active:
+            color = context.colors.success;
+            break;
+          case RecurringTransferStatus.paused:
+            color = context.colors.warning;
+            break;
+          case RecurringTransferStatus.completed:
+            color = context.colors.textSecondary;
+            break;
+          case RecurringTransferStatus.cancelled:
+            color = context.colors.error;
+            break;
+        }
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: color, width: 1),
-      ),
-      child: Builder(
-        builder: (context) => AppText(
-          status.getDisplayName(Localizations.localeOf(context).toString()),
-          variant: AppTextVariant.bodySmall,
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            border: Border.all(color: color, width: 1),
+          ),
+          child: AppText(
+            status.getDisplayName(Localizations.localeOf(context).toString()),
+            variant: AppTextVariant.bodySmall,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      },
     );
   }
 

@@ -22,15 +22,16 @@ class BillPaymentSuccessView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final receiptAsync = ref.watch(billPaymentReceiptProvider(paymentId));
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: receiptAsync.when(
           data: (receipt) => _buildSuccessContent(context, ref, l10n, receipt),
           loading: () => Center(
-            child: CircularProgressIndicator(color: AppColors.gold500),
+            child: CircularProgressIndicator(color: colors.gold),
           ),
           error: (error, _) => _buildErrorContent(context, ref, l10n, error.toString()),
         ),
@@ -39,6 +40,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
   }
 
   Widget _buildSuccessContent(BuildContext context, WidgetRef ref, AppLocalizations l10n, dynamic receipt) {
+    final colors = context.colors;
     return Column(
       children: [
         // Header
@@ -49,7 +51,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.close),
-                color: AppColors.textSecondary,
+                color: colors.iconSecondary,
                 onPressed: () => context.go('/home'),
               ),
             ],
@@ -62,7 +64,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             child: Column(
               children: [
                 // Success Animation
-                _buildSuccessIcon(receipt.status == 'completed'),
+                _buildSuccessIcon(context, receipt.status == 'completed'),
                 const SizedBox(height: AppSpacing.xl),
 
                 // Status Text
@@ -71,7 +73,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
                       ? l10n.billPayments_paymentSuccessful
                       : l10n.billPayments_paymentProcessing,
                   variant: AppTextVariant.headlineMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -81,18 +83,18 @@ class BillPaymentSuccessView extends ConsumerWidget {
                       ? l10n.billPayments_billPaidSuccessfully
                       : l10n.billPayments_paymentBeingProcessed,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xxxl),
 
                 // Receipt Card
-                _buildReceiptCard(l10n, receipt),
+                _buildReceiptCard(context, l10n, receipt),
                 const SizedBox(height: AppSpacing.xl),
 
                 // Token Display (for prepaid utilities)
                 if (receipt.tokenNumber != null) ...[
-                  _buildTokenCard(receipt.tokenNumber!, receipt.units),
+                  _buildTokenCard(context, receipt.tokenNumber!, receipt.units),
                   const SizedBox(height: AppSpacing.xl),
                 ],
 
@@ -133,77 +135,80 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuccessIcon(bool isCompleted) {
+  Widget _buildSuccessIcon(BuildContext context, bool isCompleted) {
+    final colors = context.colors;
     return Container(
       width: 100,
       height: 100,
       decoration: BoxDecoration(
-        color: isCompleted
-            ? AppColors.successBase.withOpacity(0.1)
-            : AppColors.warningBase.withOpacity(0.1),
+        color: isCompleted ? colors.successBg : colors.warningBg,
         shape: BoxShape.circle,
       ),
       child: Icon(
         isCompleted ? Icons.check_circle : Icons.schedule,
         size: 60,
-        color: isCompleted ? AppColors.successText : AppColors.warningText,
+        color: isCompleted ? colors.successText : colors.warningText,
       ),
     );
   }
 
-  Widget _buildReceiptCard(AppLocalizations l10n, dynamic receipt) {
+  Widget _buildReceiptCard(BuildContext context, AppLocalizations l10n, dynamic receipt) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderSubtle, width: 1),
+        border: Border.all(color: colors.borderSubtle, width: 1),
       ),
       child: Column(
         children: [
           // Receipt Number
           _buildReceiptRow(
+            context,
             'Receipt Number',
             receipt.receiptNumber,
             copyable: true,
           ),
-          Divider(color: AppColors.borderSubtle, height: AppSpacing.xl),
+          Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
           // Provider
-          _buildReceiptRow('Provider', receipt.providerName),
+          _buildReceiptRow(context, 'Provider', receipt.providerName),
           const SizedBox(height: AppSpacing.md),
 
           // Account
-          _buildReceiptRow('Account', receipt.accountNumber),
+          _buildReceiptRow(context, 'Account', receipt.accountNumber),
           const SizedBox(height: AppSpacing.md),
 
           // Customer Name
           if (receipt.customerName != null) ...[
-            _buildReceiptRow('Customer', receipt.customerName!),
+            _buildReceiptRow(context, 'Customer', receipt.customerName!),
             const SizedBox(height: AppSpacing.md),
           ],
 
-          Divider(color: AppColors.borderSubtle, height: AppSpacing.xl),
+          Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
           // Amount
-          _buildReceiptRow(l10n.billPayments_amount, '${receipt.amount.toStringAsFixed(0)} ${receipt.currency}'),
+          _buildReceiptRow(context, l10n.billPayments_amount, '${receipt.amount.toStringAsFixed(0)} ${receipt.currency}'),
           const SizedBox(height: AppSpacing.md),
 
           // Fee
-          _buildReceiptRow(l10n.billPayments_processingFee, '${receipt.fee.toStringAsFixed(0)} ${receipt.currency}'),
+          _buildReceiptRow(context, l10n.billPayments_processingFee, '${receipt.fee.toStringAsFixed(0)} ${receipt.currency}'),
           const SizedBox(height: AppSpacing.md),
 
           // Total
           _buildReceiptRow(
+            context,
             'Total Paid',
             '${receipt.totalAmount.toStringAsFixed(0)} ${receipt.currency}',
             isHighlighted: true,
           ),
 
-          Divider(color: AppColors.borderSubtle, height: AppSpacing.xl),
+          Divider(color: colors.borderSubtle, height: AppSpacing.xl),
 
           // Date
           _buildReceiptRow(
+            context,
             'Date',
             _formatDate(receipt.paidAt),
           ),
@@ -212,6 +217,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
           if (receipt.providerReference != null) ...[
             const SizedBox(height: AppSpacing.md),
             _buildReceiptRow(
+              context,
               'Reference',
               receipt.providerReference!,
               copyable: true,
@@ -223,18 +229,20 @@ class BillPaymentSuccessView extends ConsumerWidget {
   }
 
   Widget _buildReceiptRow(
+    BuildContext context,
     String label,
     String value, {
     bool isHighlighted = false,
     bool copyable = false,
   }) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: AppColors.textSecondary,
+          color: colors.textSecondary,
         ),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -244,7 +252,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
               variant: isHighlighted
                   ? AppTextVariant.titleSmall
                   : AppTextVariant.bodyMedium,
-              color: isHighlighted ? AppColors.gold500 : AppColors.textPrimary,
+              color: isHighlighted ? colors.gold : colors.textPrimary,
               fontWeight: isHighlighted ? FontWeight.bold : FontWeight.normal,
             ),
             if (copyable) ...[
@@ -256,7 +264,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
                 child: Icon(
                   Icons.copy,
                   size: 16,
-                  color: AppColors.textTertiary,
+                  color: colors.iconSecondary,
                 ),
               ),
             ],
@@ -266,27 +274,28 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
-  Widget _buildTokenCard(String token, String? units) {
+  Widget _buildTokenCard(BuildContext context, String token, String? units) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.gold500.withOpacity(0.2),
-            AppColors.gold700.withOpacity(0.2),
+            colors.gold.withOpacity(0.2),
+            colors.gold.withOpacity(0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.borderGold, width: 1),
+        border: Border.all(color: colors.borderGold, width: 1),
       ),
       child: Column(
         children: [
           AppText(
             'Your Token',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.gold500,
+            color: colors.gold,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -296,14 +305,14 @@ class BillPaymentSuccessView extends ConsumerWidget {
                 child: AppText(
                   token,
                   variant: AppTextVariant.titleMedium,
-                  color: AppColors.textPrimary,
+                  color: colors.textPrimary,
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.copy),
-                color: AppColors.gold500,
+                color: colors.gold,
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: token));
                 },
@@ -315,7 +324,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             AppText(
               units,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ],
@@ -359,6 +368,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
   }
 
   Widget _buildErrorContent(BuildContext context, WidgetRef ref, AppLocalizations l10n, String error) {
+    final colors = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -369,26 +379,26 @@ class BillPaymentSuccessView extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.errorBase.withOpacity(0.1),
+                color: colors.errorBg,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.error_outline,
                 size: 40,
-                color: AppColors.errorText,
+                color: colors.errorText,
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
             AppText(
               'Failed to Load Receipt',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),

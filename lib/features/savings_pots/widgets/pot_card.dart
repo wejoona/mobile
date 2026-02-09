@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/app_text.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../models/savings_pot.dart';
 import 'package:intl/intl.dart';
 
@@ -18,15 +19,16 @@ class PotCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final colors = context.colors;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: pot.color.withOpacity(0.3),
+            color: pot.color.withOpacity(colors.isDark ? 0.3 : 0.4),
             width: 1,
           ),
         ),
@@ -36,7 +38,7 @@ class PotCard extends StatelessWidget {
           children: [
             // Emoji with progress ring if goal is set
             if (pot.targetAmount != null)
-              _buildProgressRing()
+              _buildProgressRing(context)
             else
               Text(
                 pot.emoji,
@@ -63,12 +65,12 @@ class PotCard extends StatelessWidget {
             // Progress bar if goal is set
             if (pot.targetAmount != null) ...[
               SizedBox(height: AppSpacing.sm),
-              _buildProgressBar(),
+              _buildProgressBar(context),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 'of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress! * 100).toStringAsFixed(0)}%)',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
             ],
           ],
@@ -77,7 +79,10 @@ class PotCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressRing() {
+  Widget _buildProgressRing(BuildContext context) {
+    final colors = context.colors;
+    final trackOpacity = colors.isDark ? 0.2 : 0.15;
+
     return SizedBox(
       width: 60,
       height: 60,
@@ -90,7 +95,7 @@ class PotCard extends StatelessWidget {
             child: CircularProgressIndicator(
               value: pot.progress,
               strokeWidth: 3,
-              backgroundColor: pot.color.withOpacity(0.2),
+              backgroundColor: pot.color.withOpacity(trackOpacity),
               valueColor: AlwaysStoppedAnimation<Color>(pot.color),
             ),
           ),
@@ -103,13 +108,16 @@ class PotCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(BuildContext context) {
+    final colors = context.colors;
+    final trackOpacity = colors.isDark ? 0.2 : 0.15;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.sm),
       child: LinearProgressIndicator(
         value: pot.progress,
         minHeight: 6,
-        backgroundColor: pot.color.withOpacity(0.2),
+        backgroundColor: pot.color.withOpacity(trackOpacity),
         valueColor: AlwaysStoppedAnimation<Color>(pot.color),
       ),
     );

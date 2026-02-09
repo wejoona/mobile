@@ -132,7 +132,7 @@ abstract class ApiContract {
           ],
         if (endpoint.queryParams != null)
           'parameters': [
-            ...(paths[fullPath][methodName]['parameters'] ?? []),
+            ...(paths[fullPath][methodName]['parameters'] as List? ?? []),
             ...endpoint.queryParams!.entries.map((e) => {
                   'name': e.key,
                   'in': 'query',

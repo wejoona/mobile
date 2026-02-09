@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
@@ -22,19 +23,20 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.security_title,
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
-          onPressed: () => context.pop(),
+          icon: Icon(Icons.arrow_back, color: colors.gold),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: SingleChildScrollView(
@@ -43,7 +45,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Security Score
-            _buildSecurityScoreCard(),
+            _buildSecurityScoreCard(colors),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -51,21 +53,23 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               l10n.security_authentication,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.lock_outline,
               title: l10n.security_changePin,
               subtitle: l10n.security_changePinSubtitle,
               onTap: () => context.push('/settings/change-pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            _buildBiometricOption(l10n),
+            _buildBiometricOption(l10n, colors),
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.security,
               title: l10n.security_twoFactorAuth,
               subtitle: _twoFactorEnabled ? l10n.security_twoFactorEnabledSubtitle : l10n.security_twoFactorDisabledSubtitle,
@@ -79,11 +83,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               l10n.security_transactionSecurity,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.pin,
               title: l10n.security_requirePinForTransactions,
               subtitle: l10n.security_requirePinSubtitle,
@@ -97,11 +102,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               l10n.security_alerts,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.login,
               title: l10n.security_loginNotifications,
               subtitle: l10n.security_loginNotificationsSubtitle,
@@ -111,6 +117,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildToggleOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.devices,
               title: l10n.security_newDeviceAlerts,
               subtitle: l10n.security_newDeviceAlertsSubtitle,
@@ -124,11 +131,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               l10n.security_sessions,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.devices,
               title: l10n.security_devices,
               subtitle: l10n.security_devicesSubtitle,
@@ -137,6 +145,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.smartphone,
               title: l10n.security_activeSessions,
               subtitle: l10n.security_activeSessionsSubtitle,
@@ -145,6 +154,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.logout,
               title: l10n.security_logoutAllDevices,
               subtitle: l10n.security_logoutAllDevicesSubtitle,
@@ -158,11 +168,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               l10n.security_privacy,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.history,
               title: l10n.security_loginHistory,
               subtitle: l10n.security_loginHistorySubtitle,
@@ -171,6 +182,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             const SizedBox(height: AppSpacing.sm),
             _buildSecurityOption(
               l10n: l10n,
+              colors: colors,
               icon: Icons.delete_forever,
               title: l10n.security_deleteAccount,
               subtitle: l10n.security_deleteAccountSubtitle,
@@ -183,7 +195,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-  Widget _buildSecurityScoreCard() {
+  Widget _buildSecurityScoreCard(ThemeColors colors) {
     final l10n = AppLocalizations.of(context)!;
     final score = _calculateSecurityScore();
     final scoreColor = score >= 80
@@ -208,7 +220,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                       child: CircularProgressIndicator(
                         value: score / 100,
                         strokeWidth: 8,
-                        backgroundColor: AppColors.textSecondary.withValues(alpha: 0.2),
+                        backgroundColor: colors.textSecondary.withValues(alpha: 0.2),
                         valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                       ),
                     ),
@@ -228,13 +240,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                     AppText(
                       l10n.security_scoreTitle,
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       _getScoreDescription(score, l10n),
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
                   ],
                 ),
@@ -243,17 +255,17 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           ),
           if (score < 100) ...[
             const SizedBox(height: AppSpacing.lg),
-            Divider(color: AppColors.textSecondary.withValues(alpha: 0.2)),
+            Divider(color: colors.textSecondary.withValues(alpha: 0.2)),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
-                const Icon(Icons.lightbulb_outline, color: AppColors.gold500, size: 20),
+                Icon(Icons.lightbulb_outline, color: colors.gold, size: 20),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(
                     _getScoreTip(score, l10n),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -266,6 +278,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   Widget _buildSecurityOption({
     required AppLocalizations l10n,
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -285,12 +298,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               decoration: BoxDecoration(
                 color: isDanger
                     ? AppColors.errorBase.withValues(alpha: 0.1)
-                    : AppColors.slate,
+                    : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 icon,
-                color: isDanger ? AppColors.errorBase : AppColors.gold500,
+                color: isDanger ? AppColors.errorBase : colors.gold,
                 size: 22,
               ),
             ),
@@ -302,19 +315,19 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   AppText(
                     title,
                     variant: AppTextVariant.labelMedium,
-                    color: isDanger ? AppColors.errorBase : AppColors.textPrimary,
+                    color: isDanger ? AppColors.errorBase : colors.textPrimary,
                   ),
                   AppText(
                     subtitle,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: isDanger ? AppColors.errorBase : AppColors.textSecondary,
+              color: isDanger ? AppColors.errorBase : colors.textTertiary,
             ),
           ],
         ),
@@ -324,6 +337,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   Widget _buildToggleOption({
     required AppLocalizations l10n,
+    required ThemeColors colors,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -332,51 +346,23 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   }) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.slate,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(icon, color: AppColors.gold500, size: 22),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  title,
-                  variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
-                ),
-                AppText(
-                  subtitle,
-                  variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.gold500,
-          ),
-        ],
+      child: AppToggleTile(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        value: value,
+        onChanged: onChanged,
       ),
     );
   }
 
-  Widget _buildBiometricOption(AppLocalizations l10n) {
+  Widget _buildBiometricOption(AppLocalizations l10n, ThemeColors colors) {
     final biometricEnabled = ref.watch(biometricEnabledProvider);
 
     return biometricEnabled.when(
       data: (enabled) => _buildSecurityOption(
         l10n: l10n,
+        colors: colors,
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: enabled
@@ -386,6 +372,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       ),
       loading: () => _buildSecurityOption(
         l10n: l10n,
+        colors: colors,
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_loading,
@@ -393,6 +380,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
       ),
       error: (_, __) => _buildSecurityOption(
         l10n: l10n,
+        colors: colors,
         icon: Icons.fingerprint,
         title: l10n.security_biometricLogin,
         subtitle: l10n.security_errorLoadingState,
@@ -446,14 +434,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _showTwoFactorSetup() {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (context) {
+        final sheetColors = context.colors;
         return Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
@@ -463,23 +453,23 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withValues(alpha: 0.1),
+                  color: sheetColors.gold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.security, color: AppColors.gold500, size: 40),
+                child: Icon(Icons.security, color: sheetColors.gold, size: 40),
               ),
               const SizedBox(height: AppSpacing.lg),
               AppText(
                 l10n.security_setup2FATitle,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: sheetColors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
                 l10n.security_setup2FAMessage,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: sheetColors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -514,33 +504,35 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmDisableTwoFactor() {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        final dialogColors = dialogContext.colors;
         return AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: dialogColors.container,
           title: AppText(
             l10n.security_disable2FATitle,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: dialogColors.textPrimary,
           ),
           content: AppText(
             l10n.security_disable2FAMessage,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: dialogColors.textSecondary,
           ),
           actions: [
             AppButton(
               label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               variant: AppButtonVariant.ghost,
               size: AppButtonSize.small,
             ),
             AppButton(
               label: l10n.security_disable,
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 setState(() => _twoFactorEnabled = false);
               },
               variant: AppButtonVariant.danger,
@@ -555,33 +547,35 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmLogoutAll() {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        final dialogColors = dialogContext.colors;
         return AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: dialogColors.container,
           title: AppText(
             l10n.security_logoutAllTitle,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: dialogColors.textPrimary,
           ),
           content: AppText(
             l10n.security_logoutAllMessage,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: dialogColors.textSecondary,
           ),
           actions: [
             AppButton(
               label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               variant: AppButtonVariant.ghost,
               size: AppButtonSize.small,
             ),
             AppButton(
               label: l10n.security_logoutAll,
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(l10n.security_logoutAllSuccess),
@@ -732,12 +726,14 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmDeleteAccount() {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
+        final dialogColors = dialogContext.colors;
         return AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: dialogColors.container,
           title: AppText(
             l10n.security_deleteAccountTitle,
             variant: AppTextVariant.titleMedium,
@@ -746,19 +742,19 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           content: AppText(
             l10n.security_deleteAccountMessage,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: dialogColors.textSecondary,
           ),
           actions: [
             AppButton(
               label: l10n.action_cancel,
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               variant: AppButtonVariant.ghost,
               size: AppButtonSize.small,
             ),
             AppButton(
               label: l10n.security_delete,
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 // Would show another confirmation
               },
               variant: AppButtonVariant.danger,

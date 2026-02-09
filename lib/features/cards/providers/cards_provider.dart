@@ -1,4 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/api/api_client.dart';
 import '../models/virtual_card.dart';
 
 /// Cards State
@@ -49,22 +51,30 @@ class CardsNotifier extends Notifier<CardsState> {
   @override
   CardsState build() => const CardsState();
 
+  Dio get _dio => ref.read(dioProvider);
+
   /// Load user's cards
+  /// GET /cards
   Future<void> loadCards() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // final cards = await sdk.cards.getCards();
+      final response = await _dio.get('/cards');
 
-      // Mock response for now
-      await Future.delayed(const Duration(milliseconds: 500));
-      final cards = <VirtualCard>[];
+      final data = response.data as Map<String, dynamic>;
+      final cardsJson = data['cards'] as List;
+      final cards = cardsJson
+          .map((json) => VirtualCard.fromJson(json as Map<String, dynamic>))
+          .toList();
 
       state = state.copyWith(
         isLoading: false,
         cards: cards,
         canRequestCard: cards.isEmpty,
+      );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
       state = state.copyWith(
@@ -80,20 +90,31 @@ class CardsNotifier extends Notifier<CardsState> {
   }
 
   /// Load card transactions
+  /// GET /cards/:id (card detail includes transactions context)
   Future<void> loadCardTransactions(String cardId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // final transactions = await sdk.cards.getCardTransactions(cardId);
+      final response = await _dio.get('/cards/$cardId');
 
-      // Mock response
-      await Future.delayed(const Duration(milliseconds: 500));
-      final transactions = <CardTransaction>[];
+      final data = response.data;
+      // Update selected card with full details
+      final card = VirtualCard.fromJson(data as Map<String, dynamic>);
+
+      // Transactions may come from a separate endpoint or be part of card detail
+      final transactionsJson = (data['transactions'] as List?) ?? [];
+      final transactions = transactionsJson
+          .map((json) => CardTransaction.fromJson(json as Map<String, dynamic>))
+          .toList();
 
       state = state.copyWith(
         isLoading: false,
+        selectedCard: card,
         transactions: transactions,
+      );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
       );
     } catch (e) {
       state = state.copyWith(
@@ -104,26 +125,28 @@ class CardsNotifier extends Notifier<CardsState> {
   }
 
   /// Request new virtual card
+  /// POST /cards { cardholderName, spendingLimit }
   Future<bool> requestCard({
     required String cardholderName,
     required double spendingLimit,
   }) async {
     state = state.copyWith(isLoading: true, requestError: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // final card = await sdk.cards.requestCard(
-      //   cardholderName: cardholderName,
-      //   spendingLimit: spendingLimit,
-      // );
+      await _dio.post('/cards', data: {
+        'cardholderName': cardholderName,
+        'spendingLimit': spendingLimit,
+      });
 
-      // Mock response
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Reload cards
+      // Reload cards to get the new card
       await loadCards();
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        requestError: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -134,41 +157,32 @@ class CardsNotifier extends Notifier<CardsState> {
   }
 
   /// Freeze card
+  /// PUT /cards/:id/freeze
   Future<bool> freezeCard(String cardId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.cards.freezeCard(cardId);
+      final response = await _dio.put('/cards/$cardId/freeze');
 
-      // Mock response
-      await Future.delayed(const Duration(milliseconds: 500));
+      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
 
       // Update local state
       final updatedCards = state.cards.map((card) {
-        if (card.id == cardId) {
-          return card.copyWith(
-            status: CardStatus.frozen,
-            frozenAt: DateTime.now(),
-          );
-        }
-        return card;
+        return card.id == cardId ? updatedCard : card;
       }).toList();
-
-      final updatedSelectedCard = state.selectedCard?.id == cardId
-          ? state.selectedCard!.copyWith(
-              status: CardStatus.frozen,
-              frozenAt: DateTime.now(),
-            )
-          : state.selectedCard;
 
       state = state.copyWith(
         isLoading: false,
         cards: updatedCards,
-        selectedCard: updatedSelectedCard,
+        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -179,41 +193,31 @@ class CardsNotifier extends Notifier<CardsState> {
   }
 
   /// Unfreeze card
+  /// PUT /cards/:id/unfreeze
   Future<bool> unfreezeCard(String cardId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.cards.unfreezeCard(cardId);
+      final response = await _dio.put('/cards/$cardId/unfreeze');
 
-      // Mock response
-      await Future.delayed(const Duration(milliseconds: 500));
+      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
 
-      // Update local state
       final updatedCards = state.cards.map((card) {
-        if (card.id == cardId) {
-          return card.copyWith(
-            status: CardStatus.active,
-            frozenAt: null,
-          );
-        }
-        return card;
+        return card.id == cardId ? updatedCard : card;
       }).toList();
-
-      final updatedSelectedCard = state.selectedCard?.id == cardId
-          ? state.selectedCard!.copyWith(
-              status: CardStatus.active,
-              frozenAt: null,
-            )
-          : state.selectedCard;
 
       state = state.copyWith(
         isLoading: false,
         cards: updatedCards,
-        selectedCard: updatedSelectedCard,
+        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -224,35 +228,33 @@ class CardsNotifier extends Notifier<CardsState> {
   }
 
   /// Update spending limit
+  /// PUT /cards/:id/limit { spendingLimit }
   Future<bool> updateSpendingLimit(String cardId, double newLimit) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      // TODO: Call API
-      // final sdk = ref.read(sdkProvider);
-      // await sdk.cards.updateSpendingLimit(cardId, newLimit);
+      final response = await _dio.put('/cards/$cardId/limit', data: {
+        'spendingLimit': newLimit,
+      });
 
-      // Mock response
-      await Future.delayed(const Duration(milliseconds: 500));
+      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
 
-      // Update local state
       final updatedCards = state.cards.map((card) {
-        if (card.id == cardId) {
-          return card.copyWith(spendingLimit: newLimit);
-        }
-        return card;
+        return card.id == cardId ? updatedCard : card;
       }).toList();
-
-      final updatedSelectedCard = state.selectedCard?.id == cardId
-          ? state.selectedCard!.copyWith(spendingLimit: newLimit)
-          : state.selectedCard;
 
       state = state.copyWith(
         isLoading: false,
         cards: updatedCards,
-        selectedCard: updatedSelectedCard,
+        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
       );
 
       return true;
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: ApiException.fromDioError(e).message,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,

@@ -126,7 +126,7 @@ class _ProviderSelectionScreenState extends ConsumerState<ProviderSelectionScree
               AppText(
                 '\$${state.amountUSD.toStringAsFixed(2)}',
                 variant: AppTextVariant.titleLarge,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ],
           ),
@@ -146,10 +146,11 @@ class _ProviderSelectionScreenState extends ConsumerState<ProviderSelectionScree
       if (next.response != null && next.error == null) {
         context.push('/deposit/instructions');
       } else if (next.error != null) {
+        final errorColors = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: errorColors.error,
           ),
         );
       }
@@ -194,7 +195,7 @@ class _ProviderCard extends StatelessWidget {
                 height: 56,
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: _getProviderColor(provider).withValues(alpha:0.15),
+                  color: _getProviderColor(provider).withValues(alpha: colors.isDark ? 0.15 : 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Center(
@@ -225,7 +226,7 @@ class _ProviderCard extends StatelessWidget {
                           : '${provider.feePercentage}% ${l10n.deposit_fee}',
                       variant: AppTextVariant.bodySmall,
                       color: provider.feePercentage == 0
-                          ? AppColors.successBase
+                          ? colors.success
                           : colors.textTertiary,
                     ),
                   ],
@@ -269,11 +270,11 @@ class _ProviderCard extends StatelessWidget {
   Color _getProviderColor(MobileMoneyProvider provider) {
     switch (provider) {
       case MobileMoneyProvider.orangeMoney:
-        return const Color(0xFFFF6600);
+        return const Color(0xFFFF6600); // Orange
       case MobileMoneyProvider.wave:
-        return const Color(0xFF00D9FF);
+        return const Color(0xFF00B8D4); // Blue (adjusted for better contrast)
       case MobileMoneyProvider.mtnMomo:
-        return const Color(0xFFFFCC00);
+        return const Color(0xFFFFB300); // Yellow (adjusted for better contrast)
     }
   }
 }

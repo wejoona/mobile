@@ -1,29 +1,37 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/index.dart';
 import '../services/wallet/wallet_service.dart';
 import 'app_state.dart';
+import 'fsm/fsm_provider.dart';
 
 /// Wallet State Machine - manages wallet balance globally
 class WalletStateMachine extends Notifier<WalletState> {
   @override
   WalletState build() {
-    // Auto-fetch on initialization if authenticated
-    _autoFetch();
+    // Don't auto-fetch on build - wallet fetch is triggered by FSM after auth
+    // This prevents 401 errors when the provider is created before authentication
     return const WalletState();
   }
 
   WalletService get _service => ref.read(walletServiceProvider);
 
-  void _autoFetch() {
-    // Schedule fetch after build
-    Future.microtask(() => fetch());
-  }
-
   /// Fetch wallet balance
   Future<void> fetch() async {
+    // Guard against redundant fetches
     if (state.status == WalletStatus.loading) return;
 
+    // If already loaded with valid wallet data, don't refetch automatically
+    // Use refresh() for manual refresh instead
+    if (state.status == WalletStatus.loaded && state.walletId.isNotEmpty) {
+      debugPrint('[WalletState] Skipping fetch - already loaded with walletId: ${state.walletId}');
+      return;
+    }
+
     state = state.copyWith(status: WalletStatus.loading);
+
+    // Sync with FSM: notify fetch is starting
+    ref.read(appFsmProvider.notifier).fetchWallet();
 
     try {
       final response = await _service.getBalance();
@@ -53,6 +61,15 @@ class WalletStateMachine extends Notifier<WalletState> {
         lastUpdated: DateTime.now(),
         error: null,
       );
+
+      // Sync with FSM: notify wallet loaded
+      ref.read(appFsmProvider.notifier).onWalletLoaded(
+        walletId: response.walletId,
+        walletAddress: response.walletAddress,
+        blockchain: response.blockchain,
+        usdcBalance: usdcBalance,
+        pendingBalance: pending,
+      );
     } on ApiException catch (e) {
       // If 404 "Wallet not found", set loaded state with empty wallet
       // This triggers the "Create Wallet" card in home view
@@ -66,17 +83,26 @@ class WalletStateMachine extends Notifier<WalletState> {
           pendingBalance: 0,
           error: null,
         );
+
+        // Sync with FSM: notify wallet not found
+        ref.read(appFsmProvider.notifier).onWalletNotFound();
       } else {
         state = state.copyWith(
           status: WalletStatus.error,
           error: e.message,
         );
+
+        // Sync with FSM: notify wallet failed
+        ref.read(appFsmProvider.notifier).onWalletFailed(e.message);
       }
     } catch (e) {
       state = state.copyWith(
         status: WalletStatus.error,
         error: e.toString(),
       );
+
+      // Sync with FSM: notify wallet failed
+      ref.read(appFsmProvider.notifier).onWalletFailed(e.toString());
     }
   }
 
@@ -133,6 +159,75 @@ class WalletStateMachine extends Notifier<WalletState> {
       usdBalance: state.usdBalance + (addUsd ?? 0) - (subtractUsd ?? 0),
       pendingBalance: state.pendingBalance + (addPending ?? 0),
     );
+  }
+
+  /// Create a new wallet
+  Future<void> createWallet() async {
+    if (state.status == WalletStatus.loading) return;
+
+    state = state.copyWith(status: WalletStatus.loading);
+
+    try {
+      final response = await _service.createWallet();
+
+      // Debug: log the response data
+      debugPrint('[WalletState] createWallet response - walletId: "${response.walletId}", walletAddress: "${response.walletAddress}", balances: ${response.balances.length}');
+      for (final b in response.balances) {
+        debugPrint('[WalletState] Balance: ${b.currency} available=${b.available} pending=${b.pending}');
+      }
+
+      double usdBalance = 0;
+      double usdcBalance = 0;
+      double pending = 0;
+
+      for (final balance in response.balances) {
+        if (balance.currency == 'USD') {
+          usdBalance = balance.available;
+          pending += balance.pending;
+        } else if (balance.currency == 'USDC') {
+          usdcBalance = balance.available;
+          pending += balance.pending;
+        }
+      }
+
+      state = state.copyWith(
+        status: WalletStatus.loaded,
+        walletId: response.walletId,
+        walletAddress: response.walletAddress,
+        blockchain: response.blockchain,
+        usdBalance: usdBalance,
+        usdcBalance: usdcBalance,
+        pendingBalance: pending,
+        lastUpdated: DateTime.now(),
+        error: null,
+      );
+
+      // Debug: log the final state
+      debugPrint('[WalletState] State updated - walletId: "${state.walletId}", status: ${state.status}, usdcBalance: ${state.usdcBalance}');
+
+      // Sync with FSM: notify wallet created
+      ref.read(appFsmProvider.notifier).onWalletCreated(
+        walletId: response.walletId,
+        walletAddress: response.walletAddress,
+        blockchain: response.blockchain,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(
+        status: WalletStatus.error,
+        error: e.message,
+      );
+
+      // Sync with FSM: notify wallet failed
+      ref.read(appFsmProvider.notifier).onWalletFailed(e.message);
+    } catch (e) {
+      state = state.copyWith(
+        status: WalletStatus.error,
+        error: e.toString(),
+      );
+
+      // Sync with FSM: notify wallet failed
+      ref.read(appFsmProvider.notifier).onWalletFailed(e.toString());
+    }
   }
 
   /// Reset state (on logout)

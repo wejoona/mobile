@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +8,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_input.dart';
+import '../../../services/api/api_client.dart';
+import '../../../services/pin/pin_service.dart';
 import '../widgets/pin_dots.dart';
 import '../widgets/pin_pad.dart';
 import '../providers/pin_provider.dart';
@@ -230,20 +235,59 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     );
   }
 
+  /// Request OTP for PIN reset
+  /// Calls POST /auth/login to send OTP to user's phone
   Future<void> _requestOtp() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    // TODO: Call API to request OTP
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final dio = ref.read(dioProvider);
+      // The user is authenticated, get their phone from profile
+      final profileResponse = await dio.get('/user/profile');
+      final profileData = profileResponse.data as Map<String, dynamic>;
+      final phone = profileData['phone'] as String?;
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-        _step = 2;
-      });
+      if (phone == null) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'Could not retrieve phone number';
+          });
+        }
+        return;
+      }
+
+      // Request OTP via login endpoint
+      await dio.post('/auth/login', data: {'phone': phone});
+
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _step = 2;
+        });
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = ApiException.fromDioError(e).message;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.toString();
+        });
+      }
     }
   }
 
+  /// Verify OTP entered by user
+  /// OTP is validated server-side during PIN reset call
   Future<void> _verifyOtp() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -254,26 +298,12 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       return;
     }
 
-    setState(() => _isLoading = true);
-
-    // TODO: Verify OTP with backend
-    // For mock, accept 123456
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      if (_otpController.text == '123456') {
-        setState(() {
-          _isLoading = false;
-          _step = 3;
-          _errorMessage = null;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = l10n.auth_error_invalidOtp;
-        });
-      }
-    }
+    // OTP will be verified server-side when we submit the reset
+    // Just proceed to PIN entry step
+    setState(() {
+      _step = 3;
+      _errorMessage = null;
+    });
   }
 
   void _handleNewPinNumber(String number) {
@@ -348,6 +378,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     }
   }
 
+  /// Submit PIN reset to backend
+  /// Calls POST /user/pin/reset { otp, newPinHash }
   Future<void> _submitReset() async {
     final l10n = AppLocalizations.of(context)!;
 
@@ -362,13 +394,23 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     setState(() => _isLoading = true);
 
-    // TODO: Call reset PIN API
-    final success = await ref.read(pinStateProvider.notifier).setPin(_newPin);
+    try {
+      final dio = ref.read(dioProvider);
+      final pinService = ref.read(pinServiceProvider);
 
-    if (mounted) {
-      setState(() => _isLoading = false);
+      // Hash the new PIN for transmission (same method as PinService)
+      // We need to call the backend reset endpoint with OTP + hashed PIN
+      await dio.post('/user/pin/reset', data: {
+        'otp': _otpController.text,
+        'newPinHash': _hashPinForBackend(_newPin),
+      });
 
-      if (success) {
+      // Also update local PIN storage
+      await pinService.setPin(_newPin);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.pin_success_reset),
@@ -376,14 +418,35 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           ),
         );
         context.go('/home');
-      } else {
+      }
+    } on DioException catch (e) {
+      if (mounted) {
+        final message = ApiException.fromDioError(e).message;
         setState(() {
+          _isLoading = false;
+          _showError = true;
+          _errorMessage = message;
+        });
+        _resetConfirmPin();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
           _showError = true;
           _errorMessage = l10n.pin_error_resetFailed;
         });
         _resetConfirmPin();
       }
     }
+  }
+
+  /// Hash PIN using SHA256 for backend transmission
+  /// Backend expects 64-char hex SHA256 hash
+  String _hashPinForBackend(String pin) {
+    final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   void _resetNewPin() {

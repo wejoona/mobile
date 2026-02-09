@@ -35,6 +35,41 @@ class UserService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// POST /user/avatar - Upload avatar image
+  /// Returns the updated user profile with new avatarUrl
+  Future<UserProfile> uploadAvatar(String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(filePath),
+      });
+
+      final response = await _dio.post('/user/avatar', data: formData);
+      return UserProfile.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// DELETE /user/avatar - Remove avatar
+  Future<UserProfile> removeAvatar() async {
+    try {
+      final response = await _dio.delete('/user/avatar');
+      return UserProfile.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// GET /user/avatar - Get current avatar URL
+  Future<String?> getAvatarUrl() async {
+    try {
+      final response = await _dio.get('/user/avatar');
+      return response.data['avatarUrl'] as String?;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 
 /// User Profile DTO
@@ -45,6 +80,7 @@ class UserProfile {
   final String? firstName;
   final String? lastName;
   final String? email;
+  final String? avatarUrl;
   final String countryCode;
   final String kycStatus;
   final String role;
@@ -59,6 +95,7 @@ class UserProfile {
     this.firstName,
     this.lastName,
     this.email,
+    this.avatarUrl,
     required this.countryCode,
     required this.kycStatus,
     required this.role,
@@ -88,6 +125,7 @@ class UserProfile {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
+      avatarUrl: json['avatarUrl'] as String?,
       countryCode: json['countryCode'] as String? ?? 'CI',
       kycStatus: json['kycStatus'] as String? ?? 'none',
       role: json['role'] as String? ?? 'user',

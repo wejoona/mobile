@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/savings_pots_provider.dart';
 import '../widgets/emoji_picker.dart';
 import '../widgets/color_picker.dart';
@@ -54,9 +55,10 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.savingsPots_editTitle,
@@ -113,7 +115,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
             AppText(
               l10n.savingsPots_targetOptional,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.xl),
 
@@ -149,7 +151,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.savingsPots_updateSuccess),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
     }

@@ -123,119 +123,132 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
-          child: Column(
-            children: [
-              const Spacer(flex: 1),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 1),
 
-              // Shield Icon
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: colors.container,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colors.border),
-                ),
-                child: Icon(
-                  Icons.security,
-                  color: colors.gold,
-                  size: 40,
-                ),
-              ),
+                        // Shield Icon
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: colors.container,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: Icon(
+                            Icons.security,
+                            color: colors.gold,
+                            size: 40,
+                          ),
+                        ),
 
-              const SizedBox(height: AppSpacing.xxl),
+                        const SizedBox(height: AppSpacing.xxl),
 
-              // Title
-              AppText(
-                l10n.auth_secureLogin,
-                variant: AppTextVariant.headlineMedium,
-                color: colors.textPrimary,
-              ),
+                        // Title
+                        AppText(
+                          l10n.auth_secureLogin,
+                          variant: AppTextVariant.headlineMedium,
+                          color: colors.textPrimary,
+                        ),
 
-              const SizedBox(height: AppSpacing.sm),
+                        const SizedBox(height: AppSpacing.sm),
 
-              // Subtitle
-              AppText(
-                l10n.auth_otpMessage(authState.phone ?? "your phone"),
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
+                        // Subtitle
+                        AppText(
+                          l10n.auth_otpMessage(authState.phone ?? "your phone"),
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          textAlign: TextAlign.center,
+                        ),
 
-              // SMS autofill indicator
-              if (_isListeningForSms)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppSpacing.sm),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.sms,
-                        size: 16,
-                        color: colors.gold.withValues(alpha: 0.7),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      AppText(
-                        l10n.auth_waitingForSms,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.gold.withValues(alpha: 0.7),
-                      ),
-                    ],
+                        // SMS autofill indicator
+                        if (_isListeningForSms)
+                          Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.sm),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.sms,
+                                  size: 16,
+                                  color: colors.gold.withValues(alpha: 0.7),
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                AppText(
+                                  l10n.auth_waitingForSms,
+                                  variant: AppTextVariant.bodySmall,
+                                  color: colors.gold.withValues(alpha: 0.7),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                        const SizedBox(height: AppSpacing.xxxl),
+
+                        // PIN Dots
+                        PinDots(
+                          length: 6,
+                          filled: _otp.length,
+                          error: _hasError,
+                        ),
+
+                        const Spacer(flex: 1),
+
+                        // PIN Pad with Biometric
+                        biometricAvailable.when(
+                          data: (available) => biometricEnabled.when(
+                            data: (enabled) => PinPad(
+                              onDigitPressed: (digit) => _onDigitPressed(digit),
+                              onDeletePressed: _onDeletePressed,
+                              showBiometric: available && enabled,
+                              onBiometricPressed: available && enabled
+                                  ? () => _authenticateWithBiometric()
+                                  : null,
+                            ),
+                            loading: () => PinPad(
+                              onDigitPressed: (digit) => _onDigitPressed(digit),
+                              onDeletePressed: _onDeletePressed,
+                              showBiometric: false,
+                            ),
+                            error: (_, __) => PinPad(
+                              onDigitPressed: (digit) => _onDigitPressed(digit),
+                              onDeletePressed: _onDeletePressed,
+                              showBiometric: false,
+                            ),
+                          ),
+                          loading: () => PinPad(
+                            onDigitPressed: (digit) => _onDigitPressed(digit),
+                            onDeletePressed: _onDeletePressed,
+                            showBiometric: false,
+                          ),
+                          error: (_, __) => PinPad(
+                            onDigitPressed: (digit) => _onDigitPressed(digit),
+                            onDeletePressed: _onDeletePressed,
+                            showBiometric: false,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        // Resend code with timer
+                        _buildResendButton(colors, authState, l10n),
+
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+                    ),
                   ),
                 ),
-
-              const SizedBox(height: AppSpacing.xxxl),
-
-              // PIN Dots
-              PinDots(
-                length: 6,
-                filled: _otp.length,
-                error: _hasError,
-              ),
-
-              const Spacer(flex: 1),
-
-              // PIN Pad with Biometric
-              biometricAvailable.when(
-                data: (available) => biometricEnabled.when(
-                  data: (enabled) => PinPad(
-                    onDigitPressed: (digit) => _onDigitPressed(digit),
-                    onDeletePressed: _onDeletePressed,
-                    showBiometric: available && enabled,
-                    onBiometricPressed: available && enabled
-                        ? () => _authenticateWithBiometric()
-                        : null,
-                  ),
-                  loading: () => PinPad(
-                    onDigitPressed: (digit) => _onDigitPressed(digit),
-                    onDeletePressed: _onDeletePressed,
-                    showBiometric: false,
-                  ),
-                  error: (_, __) => PinPad(
-                    onDigitPressed: (digit) => _onDigitPressed(digit),
-                    onDeletePressed: _onDeletePressed,
-                    showBiometric: false,
-                  ),
-                ),
-                loading: () => PinPad(
-                  onDigitPressed: (digit) => _onDigitPressed(digit),
-                  onDeletePressed: _onDeletePressed,
-                  showBiometric: false,
-                ),
-                error: (_, __) => PinPad(
-                  onDigitPressed: (digit) => _onDigitPressed(digit),
-                  onDeletePressed: _onDeletePressed,
-                  showBiometric: false,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Resend code with timer
-              _buildResendButton(colors, authState, l10n),
-
-              const SizedBox(height: AppSpacing.lg),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -316,16 +329,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     // Check if there's a stored refresh token (user has logged in before)
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
     if (refreshToken == null) {
-      setState(() {
-        _hasError = true;
-      });
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          setState(() {
-            _hasError = false;
-          });
-        }
-      });
+      _showBiometricError();
       return;
     }
 
@@ -335,64 +339,27 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     );
 
     if (authenticated) {
-      // Use refresh token to get new access token
-      try {
-        final dio = ref.read(dioProvider);
-        final response = await dio.post('/auth/refresh', data: {
-          'refreshToken': refreshToken,
-        });
+      // Use AuthNotifier to handle biometric login (syncs with FSM)
+      final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
+      if (!success) {
+        _showBiometricError();
+      }
+      // Navigation happens via the authProvider listener when status becomes authenticated
+    } else {
+      _showBiometricError();
+    }
+  }
 
-        if (response.statusCode == 200) {
-          final data = response.data;
-
-          // Store new tokens
-          await storage.write(
-            key: StorageKeys.accessToken,
-            value: data['accessToken'],
-          );
-          if (data['refreshToken'] != null) {
-            await storage.write(
-              key: StorageKeys.refreshToken,
-              value: data['refreshToken'],
-            );
-          }
-
-          // Start session
-          await ref.read(sessionServiceProvider.notifier).startSession(
-            accessToken: data['accessToken'],
-            tokenValidity: const Duration(hours: 1),
-          );
-
-          // Navigate to home - the auth state will be updated by session start
-          if (mounted) {
-            context.go('/home');
-          }
-        }
-      } catch (e) {
-        // Refresh token invalid or expired, clear it and show error
-        await storage.delete(key: StorageKeys.refreshToken);
+  void _showBiometricError() {
+    setState(() {
+      _hasError = true;
+    });
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
         setState(() {
-          _hasError = true;
-        });
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            setState(() {
-              _hasError = false;
-            });
-          }
+          _hasError = false;
         });
       }
-    } else {
-      setState(() {
-        _hasError = true;
-      });
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          setState(() {
-            _hasError = false;
-          });
-        }
-      });
-    }
+    });
   }
 }

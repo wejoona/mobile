@@ -21,7 +21,7 @@ class ReducedMotionHelper {
     Duration? reduced,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return reduced ?? Duration.zero;
@@ -32,7 +32,7 @@ class ReducedMotionHelper {
 
   /// Check if reduced motion is enabled
   static bool isReducedMotionEnabled(BuildContext context) {
-    return MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+    return MediaQuery.disableAnimationsOf(context);
   }
 
   /// Get curve respecting reduced motion setting
@@ -44,7 +44,7 @@ class ReducedMotionHelper {
     Curve? reduced,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return reduced ?? Curves.linear;
@@ -63,7 +63,7 @@ class ReducedMotionHelper {
     Curve curve = Curves.easeInOut,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       // Return static widget at end state
@@ -91,7 +91,7 @@ class ReducedMotionHelper {
     Duration duration = const Duration(milliseconds: 300),
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       // Instant transition
@@ -204,7 +204,7 @@ class ReducedMotionHelper {
     Duration delay = Duration.zero,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return child;
@@ -232,7 +232,7 @@ class ReducedMotionHelper {
     Duration duration = const Duration(milliseconds: 500),
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return child;
@@ -260,7 +260,7 @@ class ReducedMotionHelper {
     Duration duration = const Duration(milliseconds: 300),
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return child;
@@ -290,7 +290,7 @@ class ReducedMotionHelper {
     int maxDelay = 5,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       return Duration.zero;
@@ -305,7 +305,7 @@ class ReducedMotionHelper {
   /// Slows down animation if reduced motion enabled (not stopped, as it's functional)
   static Duration getSpinnerDuration(BuildContext context) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       // Slower but still visible to indicate loading
@@ -325,7 +325,7 @@ class ReducedMotionHelper {
     Color? highlightColor,
   }) {
     final disableAnimations =
-        MediaQuery.of(context).accessibilityFeatures.disableAnimations;
+        MediaQuery.disableAnimationsOf(context);
 
     if (disableAnimations) {
       // Return static placeholder

@@ -184,7 +184,7 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
         children: [
           Icon(
             Icons.timer_outlined,
-            color: isExpiringSoon ? AppColors.warningBase : colors.textSecondary,
+            color: isExpiringSoon ? colors.warning : colors.textSecondary,
             size: 24,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -200,7 +200,7 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
                 AppText(
                   '$minutes:${seconds.toString().padLeft(2, '0')}',
                   variant: AppTextVariant.titleLarge,
-                  color: isExpiringSoon ? AppColors.warningBase : colors.textPrimary,
+                  color: isExpiringSoon ? colors.warning : colors.textPrimary,
                 ),
               ],
             ),
@@ -225,7 +225,7 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
           AppText(
             '${instructions.amountToPay.toStringAsFixed(0)} ${instructions.currency}',
             variant: AppTextVariant.displaySmall,
-            color: AppColors.gold500,
+            color: colors.gold,
           ),
           const SizedBox(height: AppSpacing.xs),
           AppText(
@@ -256,12 +256,12 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
                 onTap: () => _copyToClipboard(instructions.referenceNumber, l10n),
                 child: Row(
                   children: [
-                    Icon(Icons.copy, color: AppColors.gold500, size: 16),
+                    Icon(Icons.copy, color: colors.gold, size: 16),
                     const SizedBox(width: AppSpacing.xs),
                     AppText(
                       l10n.action_copy,
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ],
                 ),
@@ -311,14 +311,14 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500.withValues(alpha:0.2),
+                    color: colors.gold.withValues(alpha: colors.isDark ? 0.2 : 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
                     child: AppText(
                       '${index + 1}',
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ),
                 ),
@@ -355,19 +355,19 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha:0.1),
+                color: colors.gold.withValues(alpha: colors.isDark ? 0.1 : 0.08),
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: AppColors.gold500),
+                border: Border.all(color: colors.gold, width: 2),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.phone, color: AppColors.gold500, size: 20),
+                  Icon(Icons.phone, color: colors.gold, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   AppText(
                     instructions.ussdCode!,
                     variant: AppTextVariant.titleMedium,
-                    color: AppColors.gold500,
+                    color: colors.gold,
                   ),
                 ],
               ),
@@ -380,10 +380,11 @@ class _PaymentInstructionsScreenState extends ConsumerState<PaymentInstructionsS
 
   void _copyToClipboard(String text, AppLocalizations l10n) {
     Clipboard.setData(ClipboardData(text: text));
+    final colors = context.colors;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.deposit_copied),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: colors.success,
       ),
     );
   }

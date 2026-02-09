@@ -59,7 +59,7 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       id: json['id'] as String,
-      walletId: json['walletId'] as String,
+      walletId: json['walletId'] as String? ?? '',
       type: _parseTransactionType(json['type'] as String),
       status: TransactionStatus.values.firstWhere(
         (e) => e.name == json['status'],

@@ -65,7 +65,19 @@ class LimitsMock {
       },
     ];
 
-    // Return Tier 1 scenario by default for testing
-    return MockResponse.success(tierScenarios[1]);
+    // Return Tier 0 scenario by default for new users (no usage yet)
+    return MockResponse.success({
+      'dailyLimit': 100.0,
+      'monthlyLimit': 500.0,
+      'dailyUsed': 0.0,
+      'monthlyUsed': 0.0,
+      'singleTransactionLimit': 50.0,
+      'withdrawalLimit': 50.0,
+      'kycTier': 0,
+      'tierName': 'Unverified',
+      'nextTierName': 'Basic',
+      'nextTierDailyLimit': 500.0,
+      'nextTierMonthlyLimit': 2000.0,
+    });
   }
 }

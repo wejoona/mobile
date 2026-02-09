@@ -131,16 +131,26 @@ class SpendingSummaryCard extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        AppText(
-          label,
-          variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+        Flexible(
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodyMedium,
+            color: AppColors.textSecondary,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-        AppText(
-          value,
-          variant: isLarge ? AppTextVariant.headlineSmall : AppTextVariant.titleMedium,
-          color: valueColor,
-          fontWeight: FontWeight.bold,
+        const SizedBox(width: AppSpacing.sm),
+        Flexible(
+          child: AppText(
+            value,
+            variant: isLarge ? AppTextVariant.headlineSmall : AppTextVariant.titleMedium,
+            color: valueColor,
+            fontWeight: FontWeight.bold,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+          ),
         ),
       ],
     );

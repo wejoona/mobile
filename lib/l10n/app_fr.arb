@@ -206,6 +206,10 @@
   "settings_themeLight": "Clair",
   "settings_themeDark": "Sombre",
   "settings_themeSystem": "Système",
+  "settings_themeLightDescription": "Apparence lumineuse et propre",
+  "settings_themeDarkDescription": "Facile pour les yeux la nuit",
+  "settings_themeSystemDescription": "Correspond aux paramètres de votre appareil",
+  "settings_appearance": "Apparence",
   "settings_notifications": "Notifications",
   "settings_preferences": "Préférences",
   "settings_defaultCurrency": "Devise par défaut",
@@ -231,6 +235,16 @@
   "kyc_documentType_passport_description": "Document de voyage international",
   "kyc_documentType_driversLicense": "Permis de conduire",
   "kyc_documentType_driversLicense_description": "Permis de conduire émis par le gouvernement",
+  "kyc_personalInfo_title": "Informations personnelles",
+  "kyc_personalInfo_subtitle": "Entrez vos informations exactement comme elles apparaissent sur votre pièce d'identité",
+  "kyc_personalInfo_firstName": "Prénom",
+  "kyc_personalInfo_firstNameRequired": "Le prénom est requis",
+  "kyc_personalInfo_lastName": "Nom de famille",
+  "kyc_personalInfo_lastNameRequired": "Le nom de famille est requis",
+  "kyc_personalInfo_dateOfBirth": "Date de naissance",
+  "kyc_personalInfo_selectDate": "Sélectionner une date",
+  "kyc_personalInfo_dateRequired": "La date de naissance est requise",
+  "kyc_personalInfo_matchIdHint": "Vos informations doivent correspondre exactement à ce qui figure sur votre pièce d'identité pour que la vérification réussisse",
   "kyc_capture_frontSide_guidance": "Alignez le recto de votre document dans le cadre",
   "kyc_capture_backSide_guidance": "Alignez le verso de votre document dans le cadre",
   "kyc_capture_nationalIdInstructions": "Positionnez votre carte d'identité à plat et bien éclairée dans le cadre",
@@ -245,6 +259,9 @@
   "kyc_error_imageBlurry": "L'image est trop floue. Tenez votre téléphone stable et réessayez.",
   "kyc_error_imageGlare": "Trop de reflets détectés. Évitez la lumière directe et réessayez.",
   "kyc_error_imageTooDark": "L'image est trop sombre. Utilisez un meilleur éclairage et réessayez.",
+  "kyc_camera_unavailable": "Caméra non disponible",
+  "kyc_camera_unavailable_description": "La caméra de votre appareil n'est pas accessible. Vous pouvez sélectionner une photo depuis votre galerie.",
+  "kyc_chooseFromGallery": "Choisir depuis la galerie",
   "kyc_status_pending_title": "Démarrer la vérification",
   "kyc_status_pending_description": "Complétez votre vérification d'identité pour débloquer des limites plus élevées et toutes les fonctionnalités.",
   "kyc_status_submitted_title": "Vérification en cours",
@@ -371,6 +388,7 @@
   "beneficiaries_lastTransfer": "Dernier transfert",
   "common_cancel": "Annuler",
   "common_delete": "Supprimer",
+  "common_logout": "Déconnexion",
   "common_save": "Enregistrer",
   "common_retry": "Réessayer",
   "common_verified": "Vérifié",
@@ -413,6 +431,18 @@
   "deposit_title": "Déposer des fonds",
   "deposit_quickAmounts": "Montants rapides",
   "deposit_rateUpdated": "Mis à jour {time}",
+  "@deposit_rateUpdated": {
+    "description": "Heure de mise à jour du taux de change",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "hora": {
+        "type": "DateTime",
+        "format": "Hm"
+      }
+    }
+  },
   "deposit_youWillReceive": "Vous recevrez",
   "deposit_youWillPay": "Vous paierez",
   "deposit_limits": "Limites de dépôt",
@@ -1094,6 +1124,14 @@
   "billPayments_failedToLoadReceipt": "Échec du chargement du reçu",
   "billPayments_returnHome": "Retour à l'accueil",
   "billPayments_payProvider": "Payer {providerName}",
+  "@billPayments_payProvider": {
+    "description": "Pay provider title",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
   "billPayments_enterField": "Entrer {field}",
   "billPayments_pleaseEnterField": "Veuillez entrer {field}",
   "billPayments_fieldMustBeLength": "{field} doit contenir {length} caractères",
@@ -1109,6 +1147,14 @@
   "billPayments_available": "Disponible : {amount} {currency}",
   "billPayments_payAmount": "Payer {amount} {currency}",
   "billPayments_enterPinToPay": "Entrez votre code PIN pour payer {providerName}",
+  "@billPayments_enterPinToPay": {
+    "description": "PIN confirmation subtitle",
+    "placeholders": {
+      "providerName": {
+        "type": "String"
+      }
+    }
+  },
   "billPayments_paymentFailed": "Échec du paiement",
   "billPayments_noProvidersAvailable": "Aucun fournisseur disponible pour cette catégorie",
   "billPayments_feeNone": "Aucun frais",
@@ -2330,6 +2376,41 @@
     "description": "Completed transaction status"
   },
 
+  "transactions_noAccountTitle": "Aucun Portefeuille",
+  "@transactions_noAccountTitle": {
+    "description": "Title when user has no wallet/account"
+  },
+
+  "transactions_noAccountMessage": "Créez votre portefeuille pour commencer à suivre vos transactions et votre historique de paiements.",
+  "@transactions_noAccountMessage": {
+    "description": "Message when user has no wallet/account"
+  },
+
+  "transactions_connectionErrorTitle": "Impossible de Charger",
+  "@transactions_connectionErrorTitle": {
+    "description": "Title when there's a connection error"
+  },
+
+  "transactions_connectionErrorMessage": "Veuillez vérifier votre connexion internet et réessayer.",
+  "@transactions_connectionErrorMessage": {
+    "description": "Message when there's a connection error"
+  },
+
+  "transactions_emptyStateTitle": "Aucune Transaction",
+  "@transactions_emptyStateTitle": {
+    "description": "Title for empty transactions state"
+  },
+
+  "transactions_emptyStateMessage": "Une fois que vous effectuez votre premier dépôt ou transfert, votre historique de transactions apparaîtra ici.",
+  "@transactions_emptyStateMessage": {
+    "description": "Message for empty transactions state"
+  },
+
+  "transactions_emptyStateAction": "Faire un Premier Dépôt",
+  "@transactions_emptyStateAction": {
+    "description": "CTA button for empty transactions state"
+  },
+
   "common_note": "Note",
   "@common_note": {
     "description": "Note label"
@@ -2937,5 +3018,105 @@
   "help_fees_comparison_title": "Notre comparaison",
   "help_fees_comparison_description": "Nos frais sont nettement inférieurs à ceux des services de transfert d'argent traditionnels :",
   "help_fees_comparison_traditional": "Services traditionnels",
-  "help_fees_comparison_joonapay": "JoonaPay"
+  "help_fees_comparison_joonapay": "JoonaPay",
+
+  "offline_banner_title": "Vous êtes hors ligne",
+  "offline_banner_last_sync": "Dernière synchro {time}",
+  "offline_banner_syncing": "Synchronisation des opérations...",
+  "offline_banner_reconnected": "De retour en ligne ! Tout est synchronisé.",
+  "state_otpExpired": "Code OTP expiré",
+  "state_otpExpiredDescription": "Votre mot de passe à usage unique a expiré. Veuillez demander un nouveau code.",
+  "state_tokenRefreshing": "Actualisation de votre accès...",
+  "state_accountLocked": "Compte verrouillé",
+  "state_accountLockedDescription": "Votre compte a été verrouillé suite à plusieurs tentatives échouées. Veuillez réessayer plus tard.",
+  "state_accountSuspended": "Compte suspendu",
+  "state_accountSuspendedDescription": "Votre compte a été suspendu. Veuillez contacter l'assistance pour plus d'informations.",
+  "state_walletFrozen": "Portefeuille gelé",
+  "state_walletFrozenDescription": "Votre portefeuille a été gelé pour des raisons de sécurité. Veuillez contacter l'assistance.",
+  "state_walletUnderReview": "Portefeuille en révision",
+  "state_walletUnderReviewDescription": "Votre portefeuille est actuellement en révision. Les transactions sont temporairement restreintes.",
+  "state_walletLimited": "Portefeuille limité",
+  "state_walletLimitedDescription": "Votre portefeuille a atteint sa limite de transactions ou de solde. Mettez à niveau votre compte pour augmenter les limites.",
+  "state_kycExpired": "Vérification KYC expirée",
+  "state_kycExpiredDescription": "Votre vérification d'identité a expiré. Veuillez mettre à jour vos informations pour continuer.",
+  "state_kycManualReview": "Examen manuel du KYC en attente",
+  "state_kycManualReviewDescription": "Votre vérification d'identité est actuellement examinée manuellement. Cela peut prendre 24 à 48 heures.",
+  "state_kycUpgrading": "Niveau KYC en cours de mise à niveau",
+  "state_kycUpgradingDescription": "Votre niveau de vérification d'identité est en cours de mise à niveau. Veuillez patienter.",
+  "state_biometricPrompt": "Authentification biométrique requise",
+  "state_biometricPromptDescription": "Veuillez utiliser votre empreinte digitale ou votre visage pour vous authentifier.",
+  "state_deviceChanged": "Vérification d'appareil requise",
+  "state_deviceChangedDescription": "Cela semble être un nouvel appareil. Veuillez vérifier votre identité pour continuer.",
+  "state_sessionConflict": "Une autre session est active",
+  "state_sessionConflictDescription": "Vous êtes connecté sur un autre appareil. Veuillez vous déconnecter là-bas ou continuer ici.",
+
+  "auth_lockedReason": "Votre compte a été temporairement verrouillé en raison de plusieurs tentatives échouées",
+  "auth_accountLocked": "Compte temporairement verrouillé",
+  "auth_tryAgainIn": "Réessayez dans",
+  "common_backToLogin": "Retour à la connexion",
+  "auth_suspendedReason": "Votre compte a été suspendu. Veuillez contacter le support pour plus d'informations.",
+  "auth_accountSuspended": "Compte suspendu",
+  "auth_suspendedUntil": "Suspendu jusqu'au",
+  "auth_contactSupport": "Besoin d'aide ?",
+  "auth_suspendedContactMessage": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre équipe d'assistance.",
+  "common_contactSupport": "Contacter le support",
+  "biometric_authenticateReason": "Authentifiez-vous pour continuer",
+  "biometric_promptReason": "Veuillez utiliser votre empreinte digitale ou votre visage pour vous authentifier",
+  "biometric_promptTitle": "Authentification biométrique",
+  "biometric_tryAgain": "Réessayer",
+  "biometric_usePinInstead": "Utiliser le code PIN",
+  "auth_otpExpired": "Code OTP expiré",
+  "auth_otpExpiredMessage": "Votre code de vérification a expiré. Veuillez demander un nouveau code.",
+  "auth_resendOtp": "Renvoyer le code",
+  "session_locked": "Session verrouillée",
+  "session_lockedMessage": "Votre session a été verrouillée. Veuillez entrer votre code PIN pour continuer.",
+  "session_enterPinToUnlock": "Entrez le code PIN pour déverrouiller",
+  "session_useBiometric": "Utiliser la biométrie",
+  "session_unlockReason": "Déverrouillez votre session pour continuer",
+  "session_expiring": "Session expirante",
+  "session_expiringMessage": "Votre session expirera dans {seconds} secondes en raison d'inactivité.",
+  "session_stayLoggedIn": "Rester connecté",
+  "device_newDeviceDetected": "Nouvel appareil détecté",
+  "device_verificationRequired": "Nous avons détecté un nouvel appareil. Veuillez vérifier votre identité pour continuer à utiliser JoonaPay.",
+  "device_deviceId": "ID de l'appareil",
+  "device_verificationOptions": "Options de vérification",
+  "device_verificationOptionsDesc": "Choisissez comment vous souhaitez vérifier cet appareil",
+  "device_verifyWithOtp": "Vérifier avec un code SMS",
+  "device_verifyWithEmail": "Vérifier avec un e-mail",
+  "session_conflict": "Session active détectée",
+  "session_conflictMessage": "Vous êtes actuellement connecté sur un autre appareil. Vous pouvez continuer ici, ce qui vous déconnectera de l'autre appareil.",
+  "session_otherDevice": "Autre appareil",
+  "session_forceLogoutWarning": "Continuer ici mettra fin à votre session sur l'autre appareil.",
+  "session_continueHere": "Continuer ici",
+  "wallet_frozenReason": "Votre portefeuille a été gelé. Veuillez contacter le support pour plus d'informations.",
+  "wallet_frozen": "Portefeuille gelé",
+  "wallet_frozenTitle": "Portefeuille temporairement gelé",
+  "wallet_frozenUntil": "Gelé jusqu'au",
+  "wallet_frozenContactSupport": "Contacter le support",
+  "wallet_frozenContactMessage": "Notre équipe d'assistance peut vous aider à comprendre pourquoi votre portefeuille a été gelé et les étapes à suivre.",
+  "common_backToHome": "Retour à l'accueil",
+  "wallet_underReviewReason": "Votre portefeuille est en cours d'examen de conformité. Vous serez informé une fois l'examen terminé.",
+  "wallet_underReview": "En cours d'examen",
+  "wallet_underReviewTitle": "Portefeuille en cours d'examen",
+  "wallet_reviewStatus": "État de l'examen",
+  "wallet_reviewStarted": "Commencé",
+  "wallet_estimatedTime": "Temps estimé",
+  "wallet_reviewEstimate": "24-48 heures",
+  "wallet_whileUnderReview": "Pendant l'examen",
+  "wallet_reviewRestriction1": "Les dépôts sont temporairement désactivés",
+  "wallet_reviewRestriction2": "Les retraits sont temporairement désactivés",
+  "wallet_reviewRestriction3": "Vous pouvez consulter votre solde et l'historique des transactions",
+  "wallet_checkStatus": "Vérifier l'état",
+  "kyc_expired": "KYC expiré",
+  "kyc_expiredTitle": "Documents d'identité expirés",
+  "kyc_expiredMessage": "Vos documents de vérification d'identité ont expiré. Veuillez les renouveler pour continuer à utiliser toutes les fonctionnalités.",
+  "kyc_expiredOn": "Expiré le",
+  "kyc_renewalRequired": "Renouvellement requis",
+  "kyc_renewalMessage": "Pour restaurer l'accès complet à votre portefeuille, veuillez mettre à jour vos documents d'identité.",
+  "kyc_currentRestrictions": "Restrictions actuelles",
+  "kyc_restriction1": "Montants de transaction limités",
+  "kyc_restriction2": "Certaines fonctionnalités peuvent être indisponibles",
+  "kyc_restriction3": "Les retraits peuvent être restreints",
+  "kyc_renewDocuments": "Renouveler les documents",
+  "kyc_remindLater": "Me le rappeler plus tard"
 }

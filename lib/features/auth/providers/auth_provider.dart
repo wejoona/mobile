@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/index.dart';
 import '../../../domain/entities/index.dart';
+import '../../../state/fsm/index.dart';
+import '../../../state/kyc_state_machine.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -82,6 +84,9 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> register(String phone, String countryCode) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
 
+    // Sync with FSM: notify that login/register is starting
+    ref.read(appFsmProvider.notifier).login(phone, countryCode);
+
     try {
       final response = await _authService.register(
         phone: phone,
@@ -92,14 +97,24 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
       );
+
+      // Sync with FSM: notify that OTP was sent
+      ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
+
+      // Sync with FSM: notify auth failed
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
     }
   }
 
   /// Login existing user
   Future<void> login(String phone) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
+
+    // Sync with FSM: notify that login is starting
+    // Note: Using empty country code since login doesn't require it
+    ref.read(appFsmProvider.notifier).login(phone, '');
 
     try {
       final response = await _authService.login(phone: phone);
@@ -108,8 +123,14 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
       );
+
+      // Sync with FSM: notify that OTP was sent
+      ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
+
+      // Sync with FSM: notify auth failed
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
     }
   }
 
@@ -124,6 +145,9 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     state = state.copyWith(status: AuthStatus.loading);
+
+    // Sync with FSM: notify that OTP verification is starting
+    ref.read(appFsmProvider.notifier).verifyOtp(otp);
 
     try {
       final response = await _authService.verifyOtp(
@@ -145,11 +169,25 @@ class AuthNotifier extends Notifier<AuthState> {
         );
       }
 
-      // Start session
+      // Start session with actual token validity from backend
       await ref.read(sessionServiceProvider.notifier).startSession(
         accessToken: response.accessToken,
-        tokenValidity: const Duration(hours: 1), // Default token validity
+        tokenValidity: Duration(seconds: response.expiresIn),
       );
+
+      // Sync with FSM: notify that auth verification succeeded
+      // Do this BEFORE setting authenticated status to ensure wallet fetch is queued
+      ref.read(appFsmProvider.notifier).onAuthVerified(
+        userId: response.user.id,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+
+      // Also report KYC status from the auth response to avoid waiting for separate fetch
+      // This ensures the FSM knows the KYC state immediately
+      if (response.kycStatus != null) {
+        ref.read(kycStateMachineProvider.notifier).updateFromAuthResponse(response.kycStatus);
+      }
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
@@ -159,9 +197,64 @@ class AuthNotifier extends Notifier<AuthState> {
       return true;
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
+
+      // Sync with FSM: notify auth failed
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
       return false;
     } catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
+
+      // Sync with FSM: notify auth failed
+      ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
+      return false;
+    }
+  }
+
+  /// Login with biometric (refresh token)
+  Future<bool> loginWithBiometric(String refreshToken) async {
+    state = state.copyWith(status: AuthStatus.loading);
+
+    try {
+      final response = await _authService.refreshToken(refreshToken: refreshToken);
+
+      // Store new tokens
+      await _storage.write(
+        key: StorageKeys.accessToken,
+        value: response.accessToken,
+      );
+      if (response.refreshToken != null) {
+        await _storage.write(
+          key: StorageKeys.refreshToken,
+          value: response.refreshToken!,
+        );
+      }
+
+      // Start session with actual token validity from backend
+      await ref.read(sessionServiceProvider.notifier).startSession(
+        accessToken: response.accessToken,
+        tokenValidity: Duration(seconds: response.expiresIn),
+      );
+
+      // Sync with FSM: notify that auth verification succeeded
+      ref.read(appFsmProvider.notifier).onAuthVerified(
+        userId: response.user?.id ?? '',
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
+
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: response.user,
+      );
+
+      return true;
+    } catch (e) {
+      // Clear invalid refresh token
+      await _storage.delete(key: StorageKeys.refreshToken);
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: 'Biometric login failed. Please log in again.',
+      );
       return false;
     }
   }
@@ -175,11 +268,19 @@ class AuthNotifier extends Notifier<AuthState> {
     await _storage.delete(key: StorageKeys.refreshToken);
 
     state = const AuthState(status: AuthStatus.unauthenticated);
+
+    // Sync with FSM: notify logout
+    ref.read(appFsmProvider.notifier).logout();
   }
 
   /// Clear error
   void clearError() {
     state = state.copyWith(error: null);
+  }
+
+  /// Update user data (called from profile updates)
+  void updateUser(User user) {
+    state = state.copyWith(user: user);
   }
 }
 

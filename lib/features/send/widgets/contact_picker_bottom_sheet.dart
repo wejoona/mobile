@@ -69,11 +69,12 @@ class _ContactPickerBottomSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.lg),
         ),
@@ -86,7 +87,7 @@ class _ContactPickerBottomSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -104,7 +105,7 @@ class _ContactPickerBottomSheetState
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -127,10 +128,10 @@ class _ContactPickerBottomSheetState
           // Contacts list
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                          AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
                 : _filteredContacts.isEmpty
@@ -138,7 +139,7 @@ class _ContactPickerBottomSheetState
                         child: AppText(
                           l10n.send_noContactsFound,
                           variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textSecondary,
+                          color: colors.textSecondary,
                         ),
                       )
                     : ListView.builder(
@@ -148,7 +149,7 @@ class _ContactPickerBottomSheetState
                         itemCount: _filteredContacts.length,
                         itemBuilder: (context, index) {
                           final contact = _filteredContacts[index];
-                          return _buildContactItem(contact);
+                          return _buildContactItem(contact, colors);
                         },
                       ),
           ),
@@ -157,7 +158,7 @@ class _ContactPickerBottomSheetState
     );
   }
 
-  Widget _buildContactItem(ContactInfo contact) {
+  Widget _buildContactItem(ContactInfo contact, ThemeColors colors) {
     return InkWell(
       onTap: () => Navigator.pop(context, contact),
       child: Padding(
@@ -165,12 +166,12 @@ class _ContactPickerBottomSheetState
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: AppColors.gold500.withOpacity(0.2),
+              backgroundColor: colors.gold.withOpacity(0.2),
               child: AppText(
                 contact.name[0].toUpperCase(),
                 variant: AppTextVariant.bodyLarge,
-                  color: AppColors.gold500,
-                  fontWeight: FontWeight.w600,
+                color: colors.gold,
+                fontWeight: FontWeight.w600,
               ),
             ),
             SizedBox(width: AppSpacing.md),
@@ -181,20 +182,20 @@ class _ContactPickerBottomSheetState
                   AppText(
                     contact.name,
                     variant: AppTextVariant.bodyLarge,
-                      fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
                     contact.phoneNumber,
                     variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                    color: colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),

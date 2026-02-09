@@ -46,7 +46,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -458,14 +458,23 @@ class _KycTile extends ConsumerWidget {
         subtitle = 'Verified';
         subtitleColor = AppColors.successText;
         icon = Icons.verified_user;
-      case KycStatus.pending:
-        subtitle = 'Pending Review';
+      case KycStatus.submitted:
+        subtitle = 'Under Review';
         subtitleColor = AppColors.warningBase;
         icon = Icons.hourglass_top;
+      case KycStatus.pending:
+      case KycStatus.documentsPending:
+        subtitle = 'Documents Pending';
+        subtitleColor = AppColors.warningBase;
+        icon = Icons.upload_file;
       case KycStatus.rejected:
         subtitle = 'Rejected - Retry';
         subtitleColor = AppColors.errorText;
         icon = Icons.error_outline;
+      case KycStatus.additionalInfoNeeded:
+        subtitle = 'More Info Required';
+        subtitleColor = AppColors.warningBase;
+        icon = Icons.info_outline;
       case KycStatus.none:
         subtitle = 'Not Started';
         subtitleColor = context.colors.textTertiary;

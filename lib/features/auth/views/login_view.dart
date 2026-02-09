@@ -55,7 +55,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.status == AuthStatus.otpSent) {
-        context.push('/otp');
+        context.go('/otp');  // Use go() to replace stack, not push()
       } else if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -193,8 +193,9 @@ class _LoginViewState extends ConsumerState<LoginView>
             onTap: () => setState(() => _isRegistering = !_isRegistering),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   AppText(
                     _isRegistering
@@ -477,8 +478,9 @@ class _LoginViewState extends ConsumerState<LoginView>
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               GestureDetector(
                 onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),

@@ -5,6 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../services/wallet/wallet_service.dart';
 
 class CurrencyConverterView extends ConsumerStatefulWidget {
   const CurrencyConverterView({super.key});
@@ -18,25 +19,67 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   String _fromCurrency = 'USDC';
   String _toCurrency = 'USD';
   bool _isLoading = false;
+  String? _rateError;
 
-  // Mock exchange rates (in production, fetch from API)
-  final Map<String, double> _exchangeRates = {
+  // Exchange rates fetched from API (rates relative to USD)
+  Map<String, double> _exchangeRates = {
     'USD': 1.0,
     'USDC': 1.0,
-    'EUR': 0.92,
-    'GBP': 0.79,
-    'NGN': 1580.0,
-    'KES': 129.0,
-    'ZAR': 18.50,
-    'GHS': 15.80,
-    'INR': 83.40,
-    'BRL': 4.97,
-    'MXN': 17.15,
-    'CAD': 1.36,
-    'AUD': 1.53,
-    'JPY': 149.50,
-    'CNY': 7.24,
   };
+
+  // Supported currencies to fetch rates for
+  static const List<String> _supportedCurrencies = [
+    'USD', 'USDC', 'EUR', 'GBP', 'NGN', 'KES', 'ZAR', 'GHS',
+    'INR', 'BRL', 'MXN', 'CAD', 'AUD', 'JPY', 'CNY', 'XOF',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchExchangeRates();
+  }
+
+  Future<void> _fetchExchangeRates() async {
+    setState(() {
+      _isLoading = true;
+      _rateError = null;
+    });
+
+    try {
+      final walletService = ref.read(walletServiceProvider);
+      final rates = <String, double>{'USD': 1.0, 'USDC': 1.0};
+
+      // Fetch rates for each currency relative to USD
+      for (final currency in _supportedCurrencies) {
+        if (currency == 'USD' || currency == 'USDC') continue;
+        try {
+          final rate = await walletService.getRate(
+            sourceCurrency: 'USD',
+            targetCurrency: currency,
+            amount: 1.0,
+          );
+          // rate.targetAmount is how much of target currency you get for 1 USD
+          rates[currency] = rate.targetAmount;
+        } catch (_) {
+          // Skip currencies that fail — may not be supported by backend
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _exchangeRates = rates;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _rateError = 'Failed to load exchange rates';
+        });
+      }
+    }
+  }
 
   Map<String, String> _getCurrencyNames(AppLocalizations l10n) => {
     'USD': l10n.currency_usd,
@@ -584,18 +627,20 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   }
 
   Future<void> _refreshRates(BuildContext context, AppLocalizations l10n) async {
-    setState(() => _isLoading = true);
+    await _fetchExchangeRates();
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
-
-    if (mounted) {
+    if (mounted && _rateError == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.converter_ratesUpdated),
           backgroundColor: AppColors.successBase,
+        ),
+      );
+    } else if (mounted && _rateError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_rateError!),
+          backgroundColor: AppColors.errorBase,
         ),
       );
     }

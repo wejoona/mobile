@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../tokens/index.dart';
 import '../primitives/app_text.dart';
+import '../../../core/haptics/haptic_service.dart';
 
 /// PIN Pad for secure input
 /// Used in login, transaction confirmation, etc.
@@ -56,7 +57,7 @@ class PinPad extends StatelessWidget {
               color: colors.textPrimary,
             ),
             onTap: () {
-              HapticFeedback.lightImpact();
+              hapticService.pinDigit();
               onDigitPressed(digit);
             },
           ),
@@ -81,7 +82,7 @@ class PinPad extends StatelessWidget {
                     size: 28,
                   ),
                   onTap: () {
-                    HapticFeedback.mediumImpact();
+                    hapticService.biometricPrompt();
                     onBiometricPressed!();
                   },
                 )
@@ -137,14 +138,17 @@ class _PinButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = context.colors;
     return Material(
       color: colors.elevated,
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        splashColor: colors.gold.withOpacity(0.2),
-        highlightColor: AppColors.overlayLight,
+        splashColor: colors.gold.withValues(alpha: 0.2),
+        highlightColor: themeColors.isDark
+            ? AppColors.overlayLight
+            : AppColorsLight.overlayLight,
         child: Container(
           width: 72,
           height: 72,

@@ -2,6 +2,8 @@
 library design_tokens;
 
 export 'colors.dart';
+export 'colors_dark.dart';
+export 'colors_light.dart';
 export 'typography.dart';
 export 'spacing.dart';
 export 'shadows.dart';

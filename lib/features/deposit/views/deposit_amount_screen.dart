@@ -134,7 +134,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
         children: [
           Icon(
             Icons.currency_exchange,
-            color: AppColors.gold500,
+            color: colors.gold,
             size: 24,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -150,6 +150,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                 AppText(
                   l10n.deposit_rateUpdated(
                     _formatTimestamp(rate.timestamp),
+                    rate.timestamp,
                   ),
                   variant: AppTextVariant.bodySmall,
                   color: colors.textTertiary,
@@ -213,7 +214,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
                   ],
                   style: AppTypography.displaySmall.copyWith(
-                    color: _amountError != null ? AppColors.errorBase : colors.textPrimary,
+                    color: _amountError != null ? colors.error : colors.textPrimary,
                   ),
                   textAlign: TextAlign.right,
                   decoration: InputDecoration(
@@ -232,7 +233,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
             AppText(
               _amountError!,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.errorBase,
+              color: colors.errorText,
             ),
           ],
 
@@ -254,7 +255,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                     ? '\$${convertedAmount.toStringAsFixed(2)}'
                     : '${convertedAmount.toStringAsFixed(0)} XOF',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: colors.gold,
               ),
             ],
           ),
@@ -420,13 +421,13 @@ class _CurrencyTab extends StatelessWidget {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500 : colors.elevated,
+          color: isSelected ? colors.gold : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? AppColors.obsidian : colors.textSecondary,
+          color: isSelected ? colors.textInverse : colors.textSecondary,
         ),
       ),
     );

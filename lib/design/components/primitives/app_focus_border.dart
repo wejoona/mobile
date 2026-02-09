@@ -141,7 +141,7 @@ class HighContrastHelper {
 
   /// Check if high contrast mode is enabled
   static bool isEnabled(BuildContext context) {
-    return MediaQuery.of(context).accessibilityFeatures.highContrast;
+    return MediaQuery.highContrastOf(context);
   }
 
   /// Get focus indicator width based on contrast mode

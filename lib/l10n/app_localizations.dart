@@ -5,8 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_fr.dart';
+import 'app_localizations_pt.dart';
 
 // ignore_for_file: type=lint
 
@@ -94,8 +96,10 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('ar'),
     Locale('en'),
     Locale('fr'),
+    Locale('pt'),
   ];
 
   /// Application name
@@ -410,10 +414,10 @@ abstract class AppLocalizations {
   /// **'OTP Code'**
   String get auth_otp;
 
-  /// Resend OTP button
+  /// Button to resend OTP code
   ///
   /// In en, this message translates to:
-  /// **'Resend OTP'**
+  /// **'Resend Code'**
   String get auth_resendOtp;
 
   /// Invalid OTP error message
@@ -1340,6 +1344,30 @@ abstract class AppLocalizations {
   /// **'System'**
   String get settings_themeSystem;
 
+  /// Light theme description
+  ///
+  /// In en, this message translates to:
+  /// **'Bright and clean appearance'**
+  String get settings_themeLightDescription;
+
+  /// Dark theme description
+  ///
+  /// In en, this message translates to:
+  /// **'Easy on the eyes at night'**
+  String get settings_themeDarkDescription;
+
+  /// System theme description
+  ///
+  /// In en, this message translates to:
+  /// **'Matches your device settings'**
+  String get settings_themeSystemDescription;
+
+  /// Appearance settings label
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settings_appearance;
+
   /// Notifications settings label
   ///
   /// In en, this message translates to:
@@ -1562,6 +1590,66 @@ abstract class AppLocalizations {
   /// **'Government-issued driver\'s license'**
   String get kyc_documentType_driversLicense_description;
 
+  /// Personal info screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get kyc_personalInfo_title;
+
+  /// Personal info screen subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your details exactly as they appear on your ID document'**
+  String get kyc_personalInfo_subtitle;
+
+  /// First name field label
+  ///
+  /// In en, this message translates to:
+  /// **'First name'**
+  String get kyc_personalInfo_firstName;
+
+  /// First name required error
+  ///
+  /// In en, this message translates to:
+  /// **'First name is required'**
+  String get kyc_personalInfo_firstNameRequired;
+
+  /// Last name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Last name'**
+  String get kyc_personalInfo_lastName;
+
+  /// Last name required error
+  ///
+  /// In en, this message translates to:
+  /// **'Last name is required'**
+  String get kyc_personalInfo_lastNameRequired;
+
+  /// Date of birth field label
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth'**
+  String get kyc_personalInfo_dateOfBirth;
+
+  /// Date picker placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get kyc_personalInfo_selectDate;
+
+  /// Date of birth required error
+  ///
+  /// In en, this message translates to:
+  /// **'Date of birth is required'**
+  String get kyc_personalInfo_dateRequired;
+
+  /// Hint about matching ID info
+  ///
+  /// In en, this message translates to:
+  /// **'Your information must match exactly what appears on your ID document for verification to succeed'**
+  String get kyc_personalInfo_matchIdHint;
+
   /// Front side capture guidance
   ///
   /// In en, this message translates to:
@@ -1645,6 +1733,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Image is too dark. Use better lighting and try again.'**
   String get kyc_error_imageTooDark;
+
+  /// Title when camera is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Camera Not Available'**
+  String get kyc_camera_unavailable;
+
+  /// Description when camera is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Your device camera is not accessible. You can select a photo from your gallery instead.'**
+  String get kyc_camera_unavailable_description;
+
+  /// Button to choose photo from gallery
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from Gallery'**
+  String get kyc_chooseFromGallery;
 
   /// Pending status title
   ///
@@ -2324,6 +2430,12 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get common_delete;
 
+  /// Logout button
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get common_logout;
+
   /// Save button
   ///
   /// In en, this message translates to:
@@ -2574,7 +2686,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Updated {time}'**
-  String deposit_rateUpdated(String time);
+  String deposit_rateUpdated(String time, DateTime hora);
 
   /// Amount you will receive label
   ///
@@ -4674,7 +4786,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Pay {providerName}'**
-  String billPayments_payProvider(String providerName);
+  String billPayments_payProvider(String providerName, Object providername);
 
   /// Enter field hint
   ///
@@ -4764,7 +4876,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Enter your PIN to pay {providerName}'**
-  String billPayments_enterPinToPay(String providerName);
+  String billPayments_enterPinToPay(String providerName, Object providername);
 
   /// Payment failed error message
   ///
@@ -10364,6 +10476,48 @@ abstract class AppLocalizations {
   /// **'Completed'**
   String get transactions_completed;
 
+  /// Title when user has no wallet/account
+  ///
+  /// In en, this message translates to:
+  /// **'No Wallet Found'**
+  String get transactions_noAccountTitle;
+
+  /// Message when user has no wallet/account
+  ///
+  /// In en, this message translates to:
+  /// **'Create your wallet to start tracking your transactions and payment history.'**
+  String get transactions_noAccountMessage;
+
+  /// Title when there's a connection error
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to Load'**
+  String get transactions_connectionErrorTitle;
+
+  /// Message when there's a connection error
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your internet connection and try again.'**
+  String get transactions_connectionErrorMessage;
+
+  /// Title for empty transactions state
+  ///
+  /// In en, this message translates to:
+  /// **'No Transactions Yet'**
+  String get transactions_emptyStateTitle;
+
+  /// Message for empty transactions state
+  ///
+  /// In en, this message translates to:
+  /// **'Once you make your first deposit or transfer, your transaction history will appear here.'**
+  String get transactions_emptyStateMessage;
+
+  /// CTA button for empty transactions state
+  ///
+  /// In en, this message translates to:
+  /// **'Make First Deposit'**
+  String get transactions_emptyStateAction;
+
   /// Note label
   ///
   /// In en, this message translates to:
@@ -11497,6 +11651,588 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'JoonaPay'**
   String get help_fees_comparison_joonapay;
+
+  /// Offline banner title
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline'**
+  String get offline_banner_title;
+
+  /// Offline banner last sync time
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time}'**
+  String offline_banner_last_sync(String time);
+
+  /// Offline banner syncing message
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing pending operations...'**
+  String get offline_banner_syncing;
+
+  /// Offline banner reconnected message
+  ///
+  /// In en, this message translates to:
+  /// **'Back online! All synced.'**
+  String get offline_banner_reconnected;
+
+  /// OTP expired state message
+  ///
+  /// In en, this message translates to:
+  /// **'OTP code has expired'**
+  String get state_otpExpired;
+
+  /// OTP expired detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your one-time password has expired. Please request a new code.'**
+  String get state_otpExpiredDescription;
+
+  /// Token refreshing state message
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing your access...'**
+  String get state_tokenRefreshing;
+
+  /// Account locked state message
+  ///
+  /// In en, this message translates to:
+  /// **'Account locked'**
+  String get state_accountLocked;
+
+  /// Account locked detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been locked due to multiple failed attempts. Please try again later.'**
+  String get state_accountLockedDescription;
+
+  /// Account suspended state message
+  ///
+  /// In en, this message translates to:
+  /// **'Account suspended'**
+  String get state_accountSuspended;
+
+  /// Account suspended detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been suspended. Please contact support for more information.'**
+  String get state_accountSuspendedDescription;
+
+  /// Wallet frozen state message
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet frozen'**
+  String get state_walletFrozen;
+
+  /// Wallet frozen detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet has been frozen for security reasons. Please contact support.'**
+  String get state_walletFrozenDescription;
+
+  /// Wallet under review state message
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet under review'**
+  String get state_walletUnderReview;
+
+  /// Wallet under review detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet is currently under review. Transactions are temporarily restricted.'**
+  String get state_walletUnderReviewDescription;
+
+  /// Wallet limited state message
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet limited'**
+  String get state_walletLimited;
+
+  /// Wallet limited detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet has reached its transaction or balance limit. Upgrade your account to increase limits.'**
+  String get state_walletLimitedDescription;
+
+  /// KYC expired state message
+  ///
+  /// In en, this message translates to:
+  /// **'KYC verification expired'**
+  String get state_kycExpired;
+
+  /// KYC expired detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification has expired. Please update your information to continue.'**
+  String get state_kycExpiredDescription;
+
+  /// KYC manual review state message
+  ///
+  /// In en, this message translates to:
+  /// **'KYC manual review pending'**
+  String get state_kycManualReview;
+
+  /// KYC manual review detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification is being manually reviewed. This may take 24-48 hours.'**
+  String get state_kycManualReviewDescription;
+
+  /// KYC upgrading state message
+  ///
+  /// In en, this message translates to:
+  /// **'KYC level upgrading'**
+  String get state_kycUpgrading;
+
+  /// KYC upgrading detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification level is being upgraded. Please wait.'**
+  String get state_kycUpgradingDescription;
+
+  /// Biometric prompt state message
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric authentication required'**
+  String get state_biometricPrompt;
+
+  /// Biometric prompt detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'Please use your fingerprint or face to authenticate.'**
+  String get state_biometricPromptDescription;
+
+  /// Device changed state message
+  ///
+  /// In en, this message translates to:
+  /// **'Device verification required'**
+  String get state_deviceChanged;
+
+  /// Device changed detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'This appears to be a new device. Please verify your identity to continue.'**
+  String get state_deviceChangedDescription;
+
+  /// Session conflict state message
+  ///
+  /// In en, this message translates to:
+  /// **'Another session is active'**
+  String get state_sessionConflict;
+
+  /// Session conflict detailed message
+  ///
+  /// In en, this message translates to:
+  /// **'You are logged in on another device. Please log out there or continue here.'**
+  String get state_sessionConflictDescription;
+
+  /// Default reason for account lockout
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been temporarily locked due to multiple failed attempts'**
+  String get auth_lockedReason;
+
+  /// Account locked title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Temporarily Locked'**
+  String get auth_accountLocked;
+
+  /// Label for lockout countdown timer
+  ///
+  /// In en, this message translates to:
+  /// **'Try again in'**
+  String get auth_tryAgainIn;
+
+  /// Button to return to login screen
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get common_backToLogin;
+
+  /// Default reason for account suspension
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been suspended. Please contact support for more information.'**
+  String get auth_suspendedReason;
+
+  /// Account suspended title
+  ///
+  /// In en, this message translates to:
+  /// **'Account Suspended'**
+  String get auth_accountSuspended;
+
+  /// Label for suspension end date
+  ///
+  /// In en, this message translates to:
+  /// **'Suspended until'**
+  String get auth_suspendedUntil;
+
+  /// Contact support section title
+  ///
+  /// In en, this message translates to:
+  /// **'Need Help?'**
+  String get auth_contactSupport;
+
+  /// Message encouraging user to contact support
+  ///
+  /// In en, this message translates to:
+  /// **'If you believe this is a mistake, please contact our support team for assistance.'**
+  String get auth_suspendedContactMessage;
+
+  /// Button to contact support
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get common_contactSupport;
+
+  /// Reason shown during biometric authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to continue'**
+  String get biometric_authenticateReason;
+
+  /// Default biometric prompt message
+  ///
+  /// In en, this message translates to:
+  /// **'Please use your fingerprint or face to authenticate'**
+  String get biometric_promptReason;
+
+  /// Biometric prompt screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric Authentication'**
+  String get biometric_promptTitle;
+
+  /// Button to retry biometric authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get biometric_tryAgain;
+
+  /// Button to use PIN instead of biometric
+  ///
+  /// In en, this message translates to:
+  /// **'Use PIN Instead'**
+  String get biometric_usePinInstead;
+
+  /// OTP expired title
+  ///
+  /// In en, this message translates to:
+  /// **'OTP Code Expired'**
+  String get auth_otpExpired;
+
+  /// OTP expired message
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification code has expired. Please request a new code.'**
+  String get auth_otpExpiredMessage;
+
+  /// Session locked title
+  ///
+  /// In en, this message translates to:
+  /// **'Session Locked'**
+  String get session_locked;
+
+  /// Session locked message
+  ///
+  /// In en, this message translates to:
+  /// **'Your session has been locked. Please enter your PIN to continue.'**
+  String get session_lockedMessage;
+
+  /// PIN entry prompt for unlocking session
+  ///
+  /// In en, this message translates to:
+  /// **'Enter PIN to Unlock'**
+  String get session_enterPinToUnlock;
+
+  /// Button to use biometric authentication
+  ///
+  /// In en, this message translates to:
+  /// **'Use Biometric'**
+  String get session_useBiometric;
+
+  /// Reason for biometric unlock request
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock your session to continue'**
+  String get session_unlockReason;
+
+  /// Session expiring warning title
+  ///
+  /// In en, this message translates to:
+  /// **'Session Expiring'**
+  String get session_expiring;
+
+  /// Session expiring warning message with countdown
+  ///
+  /// In en, this message translates to:
+  /// **'Your session will expire in {seconds} seconds due to inactivity.'**
+  String session_expiringMessage(int seconds);
+
+  /// Button to extend session
+  ///
+  /// In en, this message translates to:
+  /// **'Stay Logged In'**
+  String get session_stayLoggedIn;
+
+  /// New device detection title
+  ///
+  /// In en, this message translates to:
+  /// **'New Device Detected'**
+  String get device_newDeviceDetected;
+
+  /// Device verification required message
+  ///
+  /// In en, this message translates to:
+  /// **'We detected a new device. Please verify your identity to continue using JoonaPay.'**
+  String get device_verificationRequired;
+
+  /// Device ID label
+  ///
+  /// In en, this message translates to:
+  /// **'Device ID'**
+  String get device_deviceId;
+
+  /// Verification options title
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Options'**
+  String get device_verificationOptions;
+
+  /// Verification options description
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how you\'d like to verify this device'**
+  String get device_verificationOptionsDesc;
+
+  /// Button to verify device with OTP
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with SMS Code'**
+  String get device_verifyWithOtp;
+
+  /// Button to verify device with email
+  ///
+  /// In en, this message translates to:
+  /// **'Verify with Email'**
+  String get device_verifyWithEmail;
+
+  /// Session conflict title
+  ///
+  /// In en, this message translates to:
+  /// **'Active Session Detected'**
+  String get session_conflict;
+
+  /// Session conflict message
+  ///
+  /// In en, this message translates to:
+  /// **'You are currently logged in on another device. You can continue here, which will log you out from the other device.'**
+  String get session_conflictMessage;
+
+  /// Label for other device in conflict
+  ///
+  /// In en, this message translates to:
+  /// **'Other Device'**
+  String get session_otherDevice;
+
+  /// Warning about force logout
+  ///
+  /// In en, this message translates to:
+  /// **'Continuing here will end your session on the other device.'**
+  String get session_forceLogoutWarning;
+
+  /// Button to resolve session conflict
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Here'**
+  String get session_continueHere;
+
+  /// Default wallet frozen reason
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet has been frozen. Please contact support for more information.'**
+  String get wallet_frozenReason;
+
+  /// Wallet frozen screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Frozen'**
+  String get wallet_frozen;
+
+  /// Wallet frozen main title
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Temporarily Frozen'**
+  String get wallet_frozenTitle;
+
+  /// Label for freeze end date
+  ///
+  /// In en, this message translates to:
+  /// **'Frozen until'**
+  String get wallet_frozenUntil;
+
+  /// Frozen wallet contact support title
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get wallet_frozenContactSupport;
+
+  /// Frozen wallet support message
+  ///
+  /// In en, this message translates to:
+  /// **'Our support team can help you understand why your wallet was frozen and what steps to take next.'**
+  String get wallet_frozenContactMessage;
+
+  /// Button to return to home screen
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get common_backToHome;
+
+  /// Default wallet under review reason
+  ///
+  /// In en, this message translates to:
+  /// **'Your wallet is under compliance review. You\'ll be notified once the review is complete.'**
+  String get wallet_underReviewReason;
+
+  /// Wallet under review screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Under Review'**
+  String get wallet_underReview;
+
+  /// Wallet under review main title
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet Under Review'**
+  String get wallet_underReviewTitle;
+
+  /// Review status section title
+  ///
+  /// In en, this message translates to:
+  /// **'Review Status'**
+  String get wallet_reviewStatus;
+
+  /// Review started date label
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
+  String get wallet_reviewStarted;
+
+  /// Estimated review time label
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated Time'**
+  String get wallet_estimatedTime;
+
+  /// Estimated review duration
+  ///
+  /// In en, this message translates to:
+  /// **'24-48 hours'**
+  String get wallet_reviewEstimate;
+
+  /// Restrictions section title
+  ///
+  /// In en, this message translates to:
+  /// **'While Under Review'**
+  String get wallet_whileUnderReview;
+
+  /// First review restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits are temporarily disabled'**
+  String get wallet_reviewRestriction1;
+
+  /// Second review restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals are temporarily disabled'**
+  String get wallet_reviewRestriction2;
+
+  /// Third review restriction (what's still allowed)
+  ///
+  /// In en, this message translates to:
+  /// **'You can view your balance and transaction history'**
+  String get wallet_reviewRestriction3;
+
+  /// Button to check review status
+  ///
+  /// In en, this message translates to:
+  /// **'Check Status'**
+  String get wallet_checkStatus;
+
+  /// KYC expired screen title
+  ///
+  /// In en, this message translates to:
+  /// **'KYC Expired'**
+  String get kyc_expired;
+
+  /// KYC expired main title
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Documents Expired'**
+  String get kyc_expiredTitle;
+
+  /// KYC expired message
+  ///
+  /// In en, this message translates to:
+  /// **'Your identity verification documents have expired. Please renew them to continue using all features.'**
+  String get kyc_expiredMessage;
+
+  /// Label for expiration date
+  ///
+  /// In en, this message translates to:
+  /// **'Expired on'**
+  String get kyc_expiredOn;
+
+  /// Renewal section title
+  ///
+  /// In en, this message translates to:
+  /// **'Renewal Required'**
+  String get kyc_renewalRequired;
+
+  /// Renewal message
+  ///
+  /// In en, this message translates to:
+  /// **'To restore full access to your wallet, please update your identity documents.'**
+  String get kyc_renewalMessage;
+
+  /// Restrictions section title
+  ///
+  /// In en, this message translates to:
+  /// **'Current Restrictions'**
+  String get kyc_currentRestrictions;
+
+  /// First KYC restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Limited transaction amounts'**
+  String get kyc_restriction1;
+
+  /// Second KYC restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Some features may be unavailable'**
+  String get kyc_restriction2;
+
+  /// Third KYC restriction
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawals may be restricted'**
+  String get kyc_restriction3;
+
+  /// Button to renew KYC documents
+  ///
+  /// In en, this message translates to:
+  /// **'Renew Documents'**
+  String get kyc_renewDocuments;
+
+  /// Button to dismiss KYC renewal reminder
+  ///
+  /// In en, this message translates to:
+  /// **'Remind Me Later'**
+  String get kyc_remindLater;
 }
 
 class _AppLocalizationsDelegate
@@ -11510,7 +12246,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'fr'].contains(locale.languageCode);
+      <String>['ar', 'en', 'fr', 'pt'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -11519,10 +12255,14 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar':
+      return AppLocalizationsAr();
     case 'en':
       return AppLocalizationsEn();
     case 'fr':
       return AppLocalizationsFr();
+    case 'pt':
+      return AppLocalizationsPt();
   }
 
   throw FlutterError(

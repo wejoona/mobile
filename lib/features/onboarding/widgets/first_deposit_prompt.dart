@@ -121,8 +121,6 @@ class FirstDepositPrompt extends ConsumerWidget {
             },
             variant: AppButtonVariant.secondary,
             isFullWidth: true,
-            backgroundColor: Colors.white,
-            textColor: AppColors.gold500,
           ),
         ],
       ),

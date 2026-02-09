@@ -48,9 +48,7 @@ class SecurityGuardService {
   Future<LivenessResult?> requireLiveness(String reason) async {
     try {
       // Start liveness session
-      final session = await _livenessService.startSession(
-        purpose: reason,
-      );
+      final session = await _livenessService.createSession();
 
       // In production, this would trigger UI to show liveness check widget
       // For service layer, we just verify the session was started

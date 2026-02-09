@@ -60,10 +60,13 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            AppText(
-              'Alerts',
-              variant: AppTextVariant.titleLarge,
+            Flexible(
+              child: AppText(
+                'Alerts',
+                variant: AppTextVariant.titleLarge,
+              ),
             ),
             if (state.unreadCount > 0) ...[
               const SizedBox(width: AppSpacing.sm),

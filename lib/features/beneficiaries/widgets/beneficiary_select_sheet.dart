@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/beneficiaries_provider.dart';
 import '../models/beneficiary.dart';
 
@@ -52,12 +53,14 @@ class _BeneficiarySelectSheetState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final appColors = context.appColors;
     final state = ref.watch(beneficiariesProvider);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.lg),
         ),
@@ -70,7 +73,7 @@ class _BeneficiarySelectSheetState
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -88,7 +91,7 @@ class _BeneficiarySelectSheetState
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  color: AppColors.textSecondary,
+                  color: colors.textSecondary,
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -98,9 +101,9 @@ class _BeneficiarySelectSheetState
           // Tabs
           TabBar(
             controller: _tabController,
-            indicatorColor: AppColors.gold500,
-            labelColor: AppColors.gold500,
-            unselectedLabelColor: AppColors.textSecondary,
+            indicatorColor: appColors.gold500,
+            labelColor: appColors.gold500,
+            unselectedLabelColor: colors.textSecondary,
             tabs: [
               Tab(text: l10n.beneficiaries_tabAll),
               Tab(text: l10n.beneficiaries_tabFavorites),
@@ -156,9 +159,9 @@ class _BeneficiarySelectSheetState
     BeneficiariesFilter filter,
   ) {
     if (state.isLoading && state.beneficiaries.isEmpty) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+          valueColor: AlwaysStoppedAnimation<Color>(context.appColors.gold500),
         ),
       );
     }
@@ -195,24 +198,29 @@ class _BeneficiarySelectSheetState
     }
 
     if (beneficiaries.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.bookmark_outline,
-              size: 64,
-              color: AppColors.textSecondary.withOpacity(0.5),
+      return Builder(
+        builder: (context) {
+          final colors = context.colors;
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.bookmark_outline,
+                  size: 64,
+                  color: colors.textSecondary.withOpacity(0.5),
+                ),
+                SizedBox(height: AppSpacing.md),
+                AppText(
+                  l10n.send_noBeneficiariesFound,
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            SizedBox(height: AppSpacing.md),
-            AppText(
-              l10n.send_noBeneficiariesFound,
-              variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+          );
+        },
       );
     }
 
@@ -228,6 +236,8 @@ class _BeneficiarySelectSheetState
 
   Widget _buildBeneficiaryItem(Beneficiary beneficiary) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final appColors = context.appColors;
 
     return InkWell(
       onTap: () => Navigator.pop(context, beneficiary),
@@ -235,20 +245,8 @@ class _BeneficiarySelectSheetState
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            // Avatar with account type icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _getAccountTypeColor(beneficiary.accountType).withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _getAccountTypeIcon(beneficiary.accountType),
-                color: _getAccountTypeColor(beneficiary.accountType),
-                size: 24,
-              ),
-            ),
+            // Avatar with account type icon or initial
+            _buildAvatar(beneficiary),
             SizedBox(width: AppSpacing.md),
 
             // Name and details
@@ -270,7 +268,7 @@ class _BeneficiarySelectSheetState
                         Icon(
                           Icons.star,
                           size: 16,
-                          color: AppColors.gold500,
+                          color: appColors.gold500,
                         ),
                       ],
                     ],
@@ -283,13 +281,24 @@ class _BeneficiarySelectSheetState
                           child: AppText(
                             beneficiary.phoneE164!,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: colors.textSecondary,
                           ),
                         ),
-                      AppText(
-                        _getAccountTypeLabel(beneficiary.accountType, l10n),
-                        variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getAccountTypeColor(beneficiary.accountType).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(AppRadius.xs),
+                        ),
+                        child: AppText(
+                          _getAccountTypeLabel(beneficiary.accountType, l10n),
+                          variant: AppTextVariant.bodySmall,
+                          color: _getAccountTypeColor(beneficiary.accountType),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -300,11 +309,45 @@ class _BeneficiarySelectSheetState
             // Chevron
             Icon(
               Icons.chevron_right,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatar(Beneficiary beneficiary) {
+    final iconColor = _getAccountTypeColor(beneficiary.accountType);
+    final iconData = _getAccountTypeIcon(beneficiary.accountType);
+    final initial = beneficiary.accountType == AccountType.joonapayUser &&
+                    beneficiary.name.isNotEmpty
+        ? beneficiary.name[0].toUpperCase()
+        : null;
+
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: iconColor.withOpacity(0.15),
+        shape: BoxShape.circle,
+      ),
+      child: initial != null
+          ? Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  color: iconColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : Icon(
+              iconData,
+              color: iconColor,
+              size: 24,
+            ),
     );
   }
 
@@ -318,11 +361,12 @@ class _BeneficiarySelectSheetState
   }
 
   Color _getAccountTypeColor(AccountType type) {
+    // Fixed brand colors for account types
     return switch (type) {
-      AccountType.joonapayUser => AppColors.gold500,
-      AccountType.externalWallet => AppColors.infoBase,
-      AccountType.bankAccount => AppColors.successBase,
-      AccountType.mobileMoney => AppColors.warningBase,
+      AccountType.joonapayUser => AppColors.gold500,        // Gold/primary accent
+      AccountType.externalWallet => const Color(0xFF6B8DD6), // Purple accent
+      AccountType.bankAccount => const Color(0xFF5B9BD5),    // Blue accent
+      AccountType.mobileMoney => const Color(0xFFFF9955),    // Orange accent
     };
   }
 

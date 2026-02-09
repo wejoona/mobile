@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/index.dart';
+import '../../../services/wallet/wallet_service.dart';
+import '../../../services/api/api_client.dart';
 import '../../../domain/entities/index.dart';
 
 /// Wallet Balance Provider with TTL-based caching

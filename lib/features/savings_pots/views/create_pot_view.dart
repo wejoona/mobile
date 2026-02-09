@@ -4,6 +4,7 @@ import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../design/theme/theme_extensions.dart';
 import '../providers/savings_pots_provider.dart';
 import '../widgets/emoji_picker.dart';
 import '../widgets/color_picker.dart';
@@ -35,9 +36,10 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsProvider);
+    final colors = context.colors;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.savingsPots_createTitle,
@@ -94,7 +96,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
             AppText(
               l10n.savingsPots_targetOptional,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.xl),
 
@@ -113,11 +115,13 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final colors = context.colors;
+
     if (_selectedEmoji == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.savingsPots_emojiRequired),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: colors.error,
         ),
       );
       return;
@@ -127,7 +131,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.savingsPots_colorRequired),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: colors.error,
         ),
       );
       return;
@@ -149,7 +153,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.savingsPots_createSuccess),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
     }

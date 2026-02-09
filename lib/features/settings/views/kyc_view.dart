@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../router/navigation_extensions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
@@ -146,7 +147,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Column(
@@ -173,16 +174,17 @@ class _KycViewState extends ConsumerState<KycView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStepIndicator(0, 'Info', colors),
+          Flexible(child: _buildStepIndicator(0, 'Info', colors)),
           Expanded(child: _buildStepLine(0, colors)),
-          _buildStepIndicator(1, 'Document', colors),
+          Flexible(child: _buildStepIndicator(1, 'Doc', colors)),
           Expanded(child: _buildStepLine(1, colors)),
-          _buildStepIndicator(2, 'Photos', colors),
+          Flexible(child: _buildStepIndicator(2, 'Photo', colors)),
           Expanded(child: _buildStepLine(2, colors)),
-          _buildStepIndicator(3, 'Selfie', colors),
+          Flexible(child: _buildStepIndicator(3, 'Selfie', colors)),
           Expanded(child: _buildStepLine(3, colors)),
-          _buildStepIndicator(4, 'Review', colors),
+          Flexible(child: _buildStepIndicator(4, 'Review', colors)),
         ],
       ),
     );
@@ -1217,7 +1219,7 @@ class _KycViewState extends ConsumerState<KycView> {
               backgroundColor: AppColors.successBase,
             ),
           );
-          context.pop();
+          context.safePop(fallbackRoute: '/settings');
         }
       } catch (e) {
         if (mounted) {
@@ -1276,7 +1278,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Center(
@@ -1329,7 +1331,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.gold),
-          onPressed: () => context.pop(),
+          onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
       body: Center(

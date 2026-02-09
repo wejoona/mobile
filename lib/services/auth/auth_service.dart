@@ -52,6 +52,18 @@ class AuthService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// POST /auth/refresh - Refresh access token using refresh token
+  Future<RefreshResponse> refreshToken({required String refreshToken}) async {
+    try {
+      final response = await _dio.post('/auth/refresh', data: {
+        'refreshToken': refreshToken,
+      });
+      return RefreshResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 
 /// OTP Response DTO
@@ -81,12 +93,16 @@ class AuthResponse {
   final String? refreshToken;
   final User user;
   final bool walletCreated;
+  final String? kycStatus; // API returns: none, pending, documents_pending, verified, rejected
+  final int expiresIn; // Access token expiry in seconds
 
   const AuthResponse({
     required this.accessToken,
     this.refreshToken,
     required this.user,
     required this.walletCreated,
+    this.kycStatus,
+    required this.expiresIn,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -95,6 +111,34 @@ class AuthResponse {
       refreshToken: json['refreshToken'] as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>),
       walletCreated: json['walletCreated'] as bool? ?? false,
+      kycStatus: json['kycStatus'] as String?,
+      expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
+    );
+  }
+}
+
+/// Refresh Token Response DTO
+class RefreshResponse {
+  final String accessToken;
+  final String? refreshToken;
+  final User? user;
+  final int expiresIn; // Access token expiry in seconds
+
+  const RefreshResponse({
+    required this.accessToken,
+    this.refreshToken,
+    this.user,
+    required this.expiresIn,
+  });
+
+  factory RefreshResponse.fromJson(Map<String, dynamic> json) {
+    return RefreshResponse(
+      accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String?,
+      user: json['user'] != null
+          ? User.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
+      expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
     );
   }
 }

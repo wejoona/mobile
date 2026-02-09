@@ -20,6 +20,16 @@ class WalletService {
     }
   }
 
+  /// POST /wallet/create - Create a new wallet
+  Future<WalletBalanceResponse> createWallet() async {
+    try {
+      final response = await _dio.post('/wallet/create');
+      return WalletBalanceResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// GET /wallet/deposit/channels
   Future<List<DepositChannel>> getDepositChannels({String? currency}) async {
     try {
@@ -209,14 +219,41 @@ class WalletBalanceResponse {
 
   factory WalletBalanceResponse.fromJson(Map<String, dynamic> json) {
     final List<dynamic> balanceList = json['balances'] ?? [];
-    return WalletBalanceResponse(
-      walletId: json['walletId'] as String? ?? '',
-      walletAddress: json['walletAddress'] as String? ?? json['circleWalletAddress'] as String?,
-      blockchain: json['blockchain'] as String? ?? 'MATIC',
-      currency: json['currency'] as String? ?? 'USD',
-      balances: balanceList
+
+    // Handle both GET /wallet and POST /wallet/create response formats
+    // GET returns: {walletId, walletAddress, balances: [...]}
+    // POST returns: {id, circleWalletAddress, balance: number}
+    final walletId = json['walletId'] as String? ?? json['id'] as String? ?? '';
+    final walletAddress = json['walletAddress'] as String? ?? json['circleWalletAddress'] as String?;
+
+    // If balances array is empty but balance field exists, create a synthetic balance
+    List<WalletBalance> balances;
+    if (balanceList.isNotEmpty) {
+      balances = balanceList
           .map((e) => WalletBalance.fromJson(e as Map<String, dynamic>))
-          .toList(),
+          .toList();
+    } else if (json['balance'] != null) {
+      // Create synthetic balance from single balance field
+      final balance = (json['balance'] as num).toDouble();
+      final currency = json['currency'] as String? ?? 'USDC';
+      balances = [
+        WalletBalance(
+          currency: currency,
+          available: balance,
+          pending: 0,
+          total: balance,
+        ),
+      ];
+    } else {
+      balances = [];
+    }
+
+    return WalletBalanceResponse(
+      walletId: walletId,
+      walletAddress: walletAddress,
+      blockchain: json['blockchain'] as String? ?? 'polygon',
+      currency: json['currency'] as String? ?? 'USD',
+      balances: balances,
     );
   }
 }

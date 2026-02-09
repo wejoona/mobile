@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../tokens/colors.dart';
 import '../../tokens/spacing.dart';
+import '../../tokens/theme_colors.dart';
 
 /// Skeleton loading placeholder with shimmer animation.
 /// Use for content placeholders while data is loading.
@@ -72,6 +73,8 @@ class _AppSkeletonState extends State<AppSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -86,10 +89,10 @@ class _AppSkeletonState extends State<AppSkeleton>
             gradient: LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
-              colors: const [
-                AppColors.slate,
-                AppColors.elevated,
-                AppColors.slate,
+              colors: [
+                colors.container,
+                colors.elevated,
+                colors.container,
               ],
               stops: [
                 (_animation.value - 1).clamp(0.0, 1.0),
@@ -170,12 +173,13 @@ class SkeletonLayouts {
   }
 
   /// Skeleton for balance card.
-  static Widget balanceCard() {
+  static Widget balanceCard(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: EdgeInsets.all(AppSpacing.lg),
       padding: EdgeInsets.all(AppSpacing.xxl),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
@@ -198,12 +202,13 @@ class SkeletonLayouts {
   }
 
   /// Skeleton for beneficiary card.
-  static Widget beneficiaryCard() {
+  static Widget beneficiaryCard(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -220,9 +225,9 @@ class SkeletonLayouts {
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
-            color: AppColors.textTertiary,
+            color: colors.iconSecondary,
           ),
         ],
       ),
@@ -230,7 +235,8 @@ class SkeletonLayouts {
   }
 
   /// Skeleton for session item.
-  static Widget sessionItem() {
+  static Widget sessionItem(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -238,7 +244,7 @@ class SkeletonLayouts {
       ),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -263,7 +269,8 @@ class SkeletonLayouts {
   }
 
   /// Skeleton for a settings item.
-  static Widget settingsItem() {
+  static Widget settingsItem(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -283,9 +290,9 @@ class SkeletonLayouts {
               ],
             ),
           ),
-          const Icon(
+          Icon(
             Icons.chevron_right,
-            color: AppColors.textTertiary,
+            color: colors.iconSecondary,
           ),
         ],
       ),
@@ -293,7 +300,8 @@ class SkeletonLayouts {
   }
 
   /// Skeleton for payment link card.
-  static Widget paymentLinkCard() {
+  static Widget paymentLinkCard(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
@@ -301,7 +309,7 @@ class SkeletonLayouts {
       ),
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(

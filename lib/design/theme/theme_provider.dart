@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'app_theme.dart';
 import '../tokens/colors.dart';
+import 'theme_transition.dart';
 
 /// Theme mode state - supports system, light, and dark
 enum AppThemeMode {
@@ -45,15 +46,19 @@ class ThemeState {
       return const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
         systemNavigationBarColor: AppColors.graphite,
         systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarDividerColor: Colors.transparent,
       );
     } else {
       return const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
         systemNavigationBarColor: AppColorsLight.container,
         systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarDividerColor: Colors.transparent,
       );
     }
   }
@@ -102,22 +107,99 @@ class ThemeNotifier extends Notifier<ThemeState> {
     }
   }
 
-  /// Set theme mode and persist
-  Future<void> setThemeMode(AppThemeMode mode) async {
+  /// Set theme mode and persist with smooth status bar transition
+  Future<void> setThemeMode(
+    AppThemeMode mode, {
+    Brightness? systemBrightness,
+    bool animated = true,
+  }) async {
+    final previousState = state;
     state = state.copyWith(mode: mode);
+
     try {
       await _storage.write(key: _storageKey, value: mode.name);
     } catch (e) {
       // Ignore storage errors
     }
+
+    // Smooth status bar transition
+    if (systemBrightness != null) {
+      final wasDark = previousState.isDark(systemBrightness);
+      final isDark = state.isDark(systemBrightness);
+
+      if (wasDark != isDark) {
+        if (animated) {
+          // Animated transition with color interpolation
+          final previousStyle = previousState.getSystemUiStyle(systemBrightness);
+          final newStyle = state.getSystemUiStyle(systemBrightness);
+          await StatusBarTransition.animate(
+            from: previousStyle,
+            to: newStyle,
+            duration: const Duration(milliseconds: 300),
+          );
+        } else {
+          // Immediate transition
+          StatusBarTransition.setImmediate(
+            state.getSystemUiStyle(systemBrightness),
+          );
+        }
+      }
+    }
   }
 
   /// Toggle between light and dark (ignoring system)
-  Future<void> toggleTheme() async {
+  /// Optionally provide system brightness for smooth status bar transition
+  Future<void> toggleTheme({
+    Brightness? systemBrightness,
+    bool animated = true,
+  }) async {
     final newMode = state.mode == AppThemeMode.dark
         ? AppThemeMode.light
         : AppThemeMode.dark;
-    await setThemeMode(newMode);
+    await setThemeMode(
+      newMode,
+      systemBrightness: systemBrightness,
+      animated: animated,
+    );
+  }
+
+  /// Toggle with circular reveal animation from a specific point
+  /// Typically used when tapping a theme toggle button
+  Future<void> toggleThemeWithReveal({
+    required BuildContext context,
+    Offset? revealCenter,
+  }) async {
+    final systemBrightness = MediaQuery.platformBrightnessOf(context);
+    final newMode = state.mode == AppThemeMode.dark
+        ? AppThemeMode.light
+        : AppThemeMode.dark;
+
+    await setThemeMode(
+      newMode,
+      systemBrightness: systemBrightness,
+      animated: true,
+    );
+
+    // Note: Circular reveal is handled by AnimatedThemeSwitcher widget
+    // This is just for API consistency
+  }
+
+  /// Reset to system theme mode
+  Future<void> resetToSystem({
+    Brightness? systemBrightness,
+    bool animated = true,
+  }) async {
+    await setThemeMode(
+      AppThemeMode.system,
+      systemBrightness: systemBrightness,
+      animated: animated,
+    );
+  }
+
+  /// Initialize status bar style on app start
+  void initializeStatusBar(Brightness systemBrightness) {
+    final style = state.getSystemUiStyle(systemBrightness);
+    StatusBarTransition.setImmediate(style);
   }
 }
 
@@ -125,3 +207,83 @@ class ThemeNotifier extends Notifier<ThemeState> {
 final themeProvider = NotifierProvider<ThemeNotifier, ThemeState>(
   ThemeNotifier.new,
 );
+
+/// System brightness observer that tracks platform brightness changes
+/// This ensures real-time theme updates when system mode is active
+///
+/// Usage:
+/// ```dart
+/// SystemBrightnessObserver(
+///   child: MaterialApp(...),
+/// )
+/// ```
+class SystemBrightnessObserver extends ConsumerStatefulWidget {
+  final Widget child;
+
+  const SystemBrightnessObserver({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  ConsumerState<SystemBrightnessObserver> createState() => _SystemBrightnessObserverState();
+}
+
+class _SystemBrightnessObserverState extends ConsumerState<SystemBrightnessObserver>
+    with WidgetsBindingObserver {
+  Brightness? _lastBrightness;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _lastBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+
+    final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+    // Only update if brightness actually changed
+    if (_lastBrightness != currentBrightness) {
+      final previousBrightness = _lastBrightness;
+      _lastBrightness = currentBrightness;
+
+      // Update system UI overlay to match new brightness with smooth transition
+      final themeState = ref.read(themeProvider);
+
+      // Only animate if theme is in system mode
+      if (themeState.mode == AppThemeMode.system && previousBrightness != null) {
+        final previousStyle = themeState.getSystemUiStyle(previousBrightness);
+        final newStyle = themeState.getSystemUiStyle(currentBrightness);
+
+        // Animate status bar transition smoothly
+        StatusBarTransition.animate(
+          from: previousStyle,
+          to: newStyle,
+          duration: const Duration(milliseconds: 400),
+        );
+      } else {
+        SystemChrome.setSystemUIOverlayStyle(
+          themeState.getSystemUiStyle(currentBrightness),
+        );
+      }
+
+      // Trigger rebuild to update UI
+      setState(() {});
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
+  }
+}
