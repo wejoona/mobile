@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,15 +11,66 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../state/index.dart';
 import '../../qr_payment/widgets/qr_display.dart';
+import '../../auth/providers/auth_provider.dart';
 
-class ReceiveView extends ConsumerWidget {
+class ReceiveView extends ConsumerStatefulWidget {
   const ReceiveView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ReceiveView> createState() => _ReceiveViewState();
+}
+
+class _ReceiveViewState extends ConsumerState<ReceiveView> {
+  Timer? _refreshTimer;
+  String _nonce = _generateNonce();
+  int _timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+
+  static String _generateNonce() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final rng = Random();
+    return String.fromCharCodes(
+      Iterable.generate(4, (_) => chars.codeUnitAt(rng.nextInt(chars.length))),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted) {
+        setState(() {
+          _nonce = _generateNonce();
+          _timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
+
+  String _buildQrData(String userId, String? phone) {
+    final data = {
+      'type': 'payment',
+      'userId': userId,
+      if (phone != null) 'phone': phone,
+      'timestamp': _timestamp,
+      'nonce': _nonce,
+    };
+    return 'joonapay://pay?data=${base64Url.encode(utf8.encode(jsonEncode(data)))}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
+    final authState = ref.watch(authProvider);
+    final userId = authState.user?.id ?? walletState.walletId;
+    final phone = authState.phone ?? authState.user?.phone;
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,
@@ -38,10 +92,10 @@ class ReceiveView extends ConsumerWidget {
           children: [
             const SizedBox(height: AppSpacing.xxl),
 
-            // QR Code
-            if (walletState.hasWalletAddress)
+            // Dynamic QR Code
+            if (walletState.hasWalletAddress || userId.isNotEmpty)
               QrDisplay(
-                data: walletState.walletAddress!,
+                data: _buildQrData(userId, phone),
                 size: 220,
                 title: l10n.receive_receiveUsdc,
                 subtitle: l10n.receive_onlySendUsdc,

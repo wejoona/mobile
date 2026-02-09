@@ -36,6 +36,10 @@ class TransactionsService {
       final response = await _dio.get(
         '/wallet/transactions',
         queryParameters: queryParameters,
+        options: Options(
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 10),
+        ),
       );
       return TransactionPage.fromJson(response.data);
     } on DioException catch (e) {

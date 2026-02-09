@@ -86,7 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: Icons.lock_outline,
               title: 'Change PIN',
               subtitle: 'Update your 4-digit security PIN',
-              onTap: () => context.push('/settings/change-pin'),
+              onTap: () => context.push('/settings/pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(

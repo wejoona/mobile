@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/index.dart';
 import '../../../domain/entities/index.dart';
@@ -174,6 +175,13 @@ class FilteredPaginatedTransactionsNotifier
       );
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
+    } on DioException catch (e) {
+      final message = (e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout)
+          ? 'Connection timeout. Please check your network and try again.'
+          : e.message ?? 'Network error';
+      state = state.copyWith(isLoading: false, error: message);
     }
   }
 
