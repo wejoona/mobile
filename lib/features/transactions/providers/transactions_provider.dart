@@ -77,21 +77,6 @@ final filteredTransactionsProvider =
   return service.getTransactions(filter: filter);
 });
 
-/// Single Transaction Provider with TTL-based caching
-/// Cache duration: 5 minutes (individual transactions don't change often)
-final transactionProvider =
-    FutureProvider.family<Transaction, String>((ref, id) async {
-  final service = ref.watch(transactionsServiceProvider);
-  final link = ref.keepAlive();
-
-  // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
-
-  return service.getTransaction(id);
-});
-
 /// Deposit Status Provider with TTL-based caching
 /// Cache duration: 30 seconds (status changes frequently during deposit)
 final depositStatusProvider = FutureProvider

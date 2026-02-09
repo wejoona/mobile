@@ -47,21 +47,6 @@ final referralHistoryProvider =
   return service.getHistory();
 });
 
-/// Leaderboard Provider with TTL-based caching
-/// Cache duration: 5 minutes (leaderboard updates periodically)
-final leaderboardProvider =
-    FutureProvider<List<LeaderboardEntry>>((ref) async {
-  final service = ref.watch(referralsServiceProvider);
-  final link = ref.keepAlive();
-
-  // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
-
-  return service.getLeaderboard();
-});
-
 /// Apply Referral State
 class ApplyReferralState {
   final bool isLoading;

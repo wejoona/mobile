@@ -242,16 +242,8 @@ final walletStateMachineProvider =
 );
 
 /// Convenience providers for specific balance values
-final usdBalanceProvider = Provider<double>((ref) {
-  return ref.watch(walletStateMachineProvider).usdBalance;
-});
-
 final usdcBalanceProvider = Provider<double>((ref) {
   return ref.watch(walletStateMachineProvider).usdcBalance;
-});
-
-final totalBalanceProvider = Provider<double>((ref) {
-  return ref.watch(walletStateMachineProvider).totalBalance;
 });
 
 final walletIdProvider = Provider<String>((ref) {
