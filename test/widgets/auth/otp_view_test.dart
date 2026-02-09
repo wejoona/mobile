@@ -103,8 +103,7 @@ void main() {
     testWidgets('shows loading state during verification', (tester) async {
       when(() => mockAuthNotifier.build())
           .thenReturn(const AuthState(
-            status: AuthStatus.otpSent,
-            isLoading: true,
+            status: AuthStatus.loading,
           ));
 
       await tester.pumpWidget(
@@ -186,7 +185,7 @@ void main() {
         when(() => mockAuthNotifier.build())
             .thenReturn(const AuthState(status: AuthStatus.otpSent));
         when(() => mockAuthNotifier.verifyOtp(any()))
-            .thenAnswer((_) async {});
+            .thenAnswer((_) async => true);
 
         await tester.pumpWidget(
           TestWrapper(

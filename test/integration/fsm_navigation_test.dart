@@ -104,7 +104,7 @@ void main() {
           frozenAt: DateTime.now(),
           reason: 'Suspicious activity detected',
         ),
-        kyc: const KycInitial(),
+        kyc: KycVerified(tier: KycTier.tier1, verifiedAt: DateTime.now()),
         session: const SessionNone(),
       );
 

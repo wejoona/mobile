@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:joonapay_wallet/design/components/primitives/user_avatar.dart';
-import 'package:joonapay_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 void main() {
   group('UserAvatar', () {

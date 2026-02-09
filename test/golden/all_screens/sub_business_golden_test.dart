@@ -16,13 +16,14 @@ void main() {
   group('SubBusinessesView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: SubBusinessesView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -32,13 +33,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: SubBusinessesView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -50,13 +52,14 @@ void main() {
   group('CreateSubBusinessView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: CreateSubBusinessView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -66,13 +69,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: CreateSubBusinessView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -84,13 +88,14 @@ void main() {
   group('SubBusinessDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: SubBusinessDetailView(subBusinessId: 'test-sub-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -100,13 +105,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: SubBusinessDetailView(subBusinessId: 'test-sub-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -118,13 +124,14 @@ void main() {
   group('SubBusinessStaffView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: SubBusinessStaffView(subBusinessId: 'test-sub-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -134,13 +141,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: SubBusinessStaffView(subBusinessId: 'test-sub-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),

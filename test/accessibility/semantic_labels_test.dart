@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction, SemanticsFlag;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -186,7 +188,7 @@ void main() {
               body: AppInput(
                 label: 'Email',
                 controller: controller,
-                errorText: 'Invalid email format',
+                error: 'Invalid email format',
               ),
             ),
           ),
@@ -220,7 +222,7 @@ void main() {
               body: AppInput(
                 label: 'Password',
                 controller: controller,
-                helperText: 'At least 8 characters',
+                helper: 'At least 8 characters',
               ),
             ),
           ),
@@ -262,7 +264,7 @@ void main() {
 
         // Read-only fields should not allow text input action
         expect(
-          semantics.hasAction(SemanticsAction.setText),
+          semantics.getSemanticsData().hasAction(SemanticsAction.setText),
           isFalse,
           reason: 'Read-only state should prevent editing',
         );
@@ -495,7 +497,7 @@ void main() {
 
       testWidgets('Empty list state has clear message', (tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
+          MaterialApp(
             home: Scaffold(
               body: Center(
                 child: Column(
@@ -634,7 +636,7 @@ void main() {
               body: AppInput(
                 label: 'Phone Number',
                 controller: controller,
-                helperText: 'Format: +225 XX XX XX XX',
+                helper: 'Format: +225 XX XX XX XX',
                 keyboardType: TextInputType.phone,
               ),
             ),

@@ -9,10 +9,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/main.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 import '../helpers/test_utils.dart';
@@ -21,10 +23,13 @@ void main() {
   group('App Startup Performance', () {
     late MockSecureStorage mockStorage;
     late MockAuthService mockAuthService;
+    late SharedPreferences mockPrefs;
 
-    setUp(() {
+    setUp(() async {
       mockStorage = MockSecureStorage();
       mockAuthService = MockAuthService();
+      SharedPreferences.setMockInitialValues({});
+      mockPrefs = await SharedPreferences.getInstance();
     });
 
     tearDown(() {
@@ -43,6 +48,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
         );
 
@@ -68,6 +74,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
           child: const JoonaPayApp(),
         ),
@@ -94,6 +101,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
         );
 
@@ -126,6 +134,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
           child: const JoonaPayApp(),
         ),
@@ -154,6 +163,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
         );
 
@@ -162,7 +172,7 @@ void main() {
         // Initialize multiple providers concurrently
         await Future.wait([
           Future(() => container.read(authProvider)),
-          Future(() => container.read(appRouterProvider)),
+          Future(() => container.read(routerProvider)),
         ]);
 
         stopwatch.stop();
@@ -185,6 +195,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
           child: const JoonaPayApp(),
         ),
@@ -203,6 +214,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
         );
 
@@ -242,6 +254,7 @@ void main() {
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
+            sharedPreferencesProvider.overrideWithValue(mockPrefs),
           ],
         );
 

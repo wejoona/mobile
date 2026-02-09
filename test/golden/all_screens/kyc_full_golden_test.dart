@@ -25,13 +25,14 @@ void main() {
   group('DocumentTypeView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: DocumentTypeView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -41,13 +42,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: DocumentTypeView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -59,13 +61,14 @@ void main() {
   group('DocumentCaptureView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: DocumentCaptureView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -75,13 +78,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: DocumentCaptureView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -93,13 +97,14 @@ void main() {
   group('KycPersonalInfoView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycPersonalInfoView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -109,13 +114,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycPersonalInfoView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -127,13 +133,14 @@ void main() {
   group('KycAddressView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycAddressView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -143,13 +150,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycAddressView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -161,13 +169,14 @@ void main() {
   group('SelfieView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: SelfieView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -177,13 +186,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: SelfieView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -195,13 +205,14 @@ void main() {
   group('KycLivenessView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycLivenessView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -211,13 +222,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycLivenessView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -229,13 +241,14 @@ void main() {
   group('KycVideoView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycVideoView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -245,13 +258,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycVideoView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -263,13 +277,14 @@ void main() {
   group('KycAdditionalDocsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycAdditionalDocsView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -279,13 +294,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycAdditionalDocsView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -297,13 +313,14 @@ void main() {
   group('ReviewView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: ReviewView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -313,13 +330,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: ReviewView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -331,13 +349,14 @@ void main() {
   group('SubmittedView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: SubmittedView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -347,13 +366,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: SubmittedView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -365,13 +385,14 @@ void main() {
   group('KycUpgradeView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: KycUpgradeView(currentTier: KycTier.tier1, targetTier: KycTier.tier2),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -381,13 +402,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: KycUpgradeView(currentTier: KycTier.tier1, targetTier: KycTier.tier2),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),

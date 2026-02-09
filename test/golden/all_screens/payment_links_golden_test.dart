@@ -17,13 +17,14 @@ void main() {
   group('PaymentLinksListView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: PaymentLinksListView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -33,13 +34,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: PaymentLinksListView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -51,13 +53,14 @@ void main() {
   group('CreateLinkView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: CreateLinkView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -67,13 +70,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: CreateLinkView(),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -85,15 +89,16 @@ void main() {
   group('LinkCreatedView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: LinkCreatedView(
             linkId: 'link_001',
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -103,15 +108,16 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: LinkCreatedView(
             linkId: 'link_001',
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -123,13 +129,14 @@ void main() {
   group('LinkDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: LinkDetailView(linkId: 'test-link-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -139,13 +146,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: LinkDetailView(linkId: 'test-link-123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -157,13 +165,14 @@ void main() {
   group('PayLinkView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: false,
           child: PayLinkView(linkCode: 'abc123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -173,13 +182,14 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         GoldenTestWrapper(
           isDarkMode: true,
           child: PayLinkView(linkCode: 'abc123'),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),

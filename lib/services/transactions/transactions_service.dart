@@ -41,7 +41,7 @@ class TransactionsService {
           sendTimeout: const Duration(seconds: 10),
         ),
       );
-      return TransactionPage.fromJson(response.data);
+      return TransactionPage.fromJson(Map<String, dynamic>.from(response.data as Map));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

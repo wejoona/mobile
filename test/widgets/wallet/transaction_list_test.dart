@@ -30,6 +30,19 @@ void main() {
       },
     ];
 
+    String formatTimestamp(DateTime timestamp) {
+      final now = DateTime.now();
+      final diff = now.difference(timestamp);
+
+      if (diff.inDays == 0) {
+        return '${diff.inHours}h ago';
+      } else if (diff.inDays == 1) {
+        return 'Yesterday';
+      } else {
+        return '${diff.inDays}d ago';
+      }
+    }
+
     Widget buildTransactionList({
       List<Map<String, dynamic>>? transactions,
       bool isLoading = false,
@@ -65,7 +78,7 @@ void main() {
                       : 'Deposit via ${tx['method']}',
             ),
             subtitle: AppText(
-              _formatTimestamp(tx['timestamp'] as DateTime),
+              formatTimestamp(tx['timestamp'] as DateTime),
               variant: AppTextVariant.bodySmall,
             ),
             trailing: AppText(
@@ -75,19 +88,6 @@ void main() {
           );
         },
       );
-    }
-
-    String _formatTimestamp(DateTime timestamp) {
-      final now = DateTime.now();
-      final diff = now.difference(timestamp);
-
-      if (diff.inDays == 0) {
-        return '${diff.inHours}h ago';
-      } else if (diff.inDays == 1) {
-        return 'Yesterday';
-      } else {
-        return '${diff.inDays}d ago';
-      }
     }
 
     testWidgets('renders transaction list', (tester) async {

@@ -117,11 +117,15 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
       severity: ErrorSeverity.error,
     );
 
-    // Update UI to show error
+    // Schedule UI update to avoid setState during build
     if (mounted) {
-      setState(() {
-        _error = error;
-        _stackTrace = stackTrace;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _error = error;
+            _stackTrace = stackTrace;
+          });
+        }
       });
     }
   }

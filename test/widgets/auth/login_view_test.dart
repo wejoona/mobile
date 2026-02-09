@@ -22,7 +22,7 @@ void main() {
 
     testWidgets('renders login form', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -42,7 +42,7 @@ void main() {
 
     testWidgets('accepts phone number input', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -106,7 +106,7 @@ void main() {
 
     testWidgets('shows country picker', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -125,7 +125,7 @@ void main() {
 
     testWidgets('toggles between login and register mode', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -150,7 +150,7 @@ void main() {
 
     testWidgets('validates empty phone number', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -176,7 +176,7 @@ void main() {
 
     testWidgets('animates on view entry', (tester) async {
       when(() => mockAuthNotifier.build())
-          .thenReturn(const AuthState.initial());
+          .thenReturn(const AuthState());
 
       await tester.pumpWidget(
         TestWrapper(
@@ -199,7 +199,7 @@ void main() {
     group('Accessibility', () {
       testWidgets('has proper semantic labels', (tester) async {
         when(() => mockAuthNotifier.build())
-            .thenReturn(const AuthState.initial());
+            .thenReturn(const AuthState());
 
         await tester.pumpWidget(
           TestWrapper(
@@ -219,7 +219,7 @@ void main() {
     group('Edge Cases', () {
       testWidgets('handles rapid button taps', (tester) async {
         when(() => mockAuthNotifier.build())
-            .thenReturn(const AuthState.initial());
+            .thenReturn(const AuthState());
 
         await tester.pumpWidget(
           TestWrapper(
@@ -254,7 +254,7 @@ void main() {
 
       testWidgets('dismisses keyboard on tap outside', (tester) async {
         when(() => mockAuthNotifier.build())
-            .thenReturn(const AuthState.initial());
+            .thenReturn(const AuthState());
 
         await tester.pumpWidget(
           TestWrapper(

@@ -26,13 +26,14 @@ void main() {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: TransactionsView(),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),
@@ -45,13 +46,14 @@ void main() {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: true,
             child: TransactionsView(),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),

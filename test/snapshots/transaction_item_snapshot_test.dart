@@ -76,10 +76,14 @@ void main() {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Amount
-                    AppText(
-                      amount,
-                      variant: AppTextVariant.titleMedium,
-                      color: amountColor,
+                    Flexible(
+                      child: AppText(
+                        amount,
+                        variant: AppTextVariant.titleMedium,
+                        color: amountColor,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     // Status badge
                     if (status != null)

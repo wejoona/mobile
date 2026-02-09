@@ -661,20 +661,17 @@ Future<void> pumpGoldenTolerant(
   Widget widget, {
   Duration pumpDuration = const Duration(milliseconds: 100),
 }) async {
-  final errors = <FlutterErrorDetails>[];
-  final originalOnError = FlutterError.onError;
-  FlutterError.onError = (details) {
-    errors.add(details);
-  };
+  // Don't override FlutterError.onError — Flutter 3.38 asserts that
+  // _pendingExceptionDetails is set after reportError. Instead, let
+  // errors flow through normally and drain them via takeException().
+  await tester.pumpWidget(widget);
+  tester.takeException(); // drain if error during build/layout/paint
 
-  try {
-    await tester.pumpWidget(widget);
-    await tester.pump(pumpDuration);
-    // Do another pump to settle deferred callbacks
-    await tester.pump(const Duration(milliseconds: 50));
-  } finally {
-    FlutterError.onError = originalOnError;
-  }
+  await tester.pump(pumpDuration);
+  tester.takeException();
+
+  await tester.pump(const Duration(milliseconds: 50));
+  tester.takeException();
 }
 
 /// Test wrapper for golden tests with proper provider overrides

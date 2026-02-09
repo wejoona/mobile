@@ -12,15 +12,18 @@ class TestWrapper extends StatelessWidget {
     required this.child,
     this.locale = const Locale('en'),
     this.useDarkTheme = true,
+    this.overrides = const [],
   });
 
   final Widget child;
   final Locale locale;
   final bool useDarkTheme;
+  final List<dynamic> overrides;
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
+      overrides: overrides.cast(),
       child: MaterialApp(
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,

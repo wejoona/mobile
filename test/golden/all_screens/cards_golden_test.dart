@@ -114,7 +114,8 @@ void main() {
   group('CardsScreen Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_emptyState)),
@@ -124,8 +125,8 @@ void main() {
             child: CardsScreen(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -135,7 +136,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_emptyState)),
@@ -145,8 +147,8 @@ void main() {
             child: CardsScreen(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -158,7 +160,8 @@ void main() {
   group('CardsListView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -168,8 +171,8 @@ void main() {
             child: CardsListView(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -179,7 +182,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -189,8 +193,8 @@ void main() {
             child: CardsListView(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -202,7 +206,8 @@ void main() {
   group('CardDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -212,8 +217,8 @@ void main() {
             child: CardDetailView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -223,7 +228,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -233,8 +239,8 @@ void main() {
             child: CardDetailView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -246,7 +252,8 @@ void main() {
   group('CardSettingsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -256,8 +263,8 @@ void main() {
             child: CardSettingsView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -267,7 +274,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -277,8 +285,8 @@ void main() {
             child: CardSettingsView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -290,7 +298,8 @@ void main() {
   group('CardTransactionsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -300,8 +309,8 @@ void main() {
             child: CardTransactionsView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -311,7 +320,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_loadedState)),
@@ -321,8 +331,8 @@ void main() {
             child: CardTransactionsView(cardId: 'card_001'),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -334,7 +344,8 @@ void main() {
   group('RequestCardView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_emptyState)),
@@ -344,8 +355,8 @@ void main() {
             child: RequestCardView(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
@@ -355,7 +366,8 @@ void main() {
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-      await tester.pumpWidget(
+      await pumpGoldenTolerant(
+        tester,
         ProviderScope(
           overrides: [
             cardsProvider.overrideWith(() => MockCardsNotifier(_emptyState)),
@@ -365,8 +377,8 @@ void main() {
             child: RequestCardView(),
           ),
         ),
+        pumpDuration: const Duration(milliseconds: 100),
       );
-      await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),

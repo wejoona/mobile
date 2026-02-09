@@ -11,7 +11,7 @@ final errorReporterProvider = Provider<ErrorReporter>((ref) {
 });
 
 class ErrorReporter {
-  final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
+  late final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;
 
   /// Report a standard error
   ///

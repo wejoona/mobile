@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+import 'dart:ui' show SemanticsAction, SemanticsFlag;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SemanticsNode;
 import 'package:flutter_test/flutter_test.dart';
 
 /// Accessibility testing helper for automated WCAG 2.1 compliance checks
@@ -34,7 +38,7 @@ class AccessibilityTestHelper {
     }
 
     if (checkTouchTargets) {
-      await checkTouchTargets(tester);
+      await AccessibilityTestHelper.checkTouchTargets(tester);
     }
 
     if (checkContrast) {
@@ -58,7 +62,7 @@ class AccessibilityTestHelper {
       if (node.hasFlag(SemanticsFlag.isButton) ||
           node.hasFlag(SemanticsFlag.isTextField) ||
           node.hasFlag(SemanticsFlag.isLink) ||
-          node.hasAction(SemanticsAction.tap)) {
+          node.getSemanticsData().hasAction(SemanticsAction.tap)) {
         expect(
           node.label.isNotEmpty || node.value.isNotEmpty,
           isTrue,
@@ -105,11 +109,6 @@ class AccessibilityTestHelper {
   }
 
   /// Basic contrast checking (requires manual verification for full compliance)
-  ///
-  /// This is a simplified check. For full contrast compliance, use:
-  /// - Manual tools (WebAIM Contrast Checker)
-  /// - Visual inspection
-  /// - Design system token verification
   static void checkBasicContrast(WidgetTester tester) {
     final texts = find.byType(Text);
 
@@ -152,19 +151,15 @@ class AccessibilityTestHelper {
     }
 
     // Check that positions generally increase (allowing for multi-column layouts)
-    // This is a basic check - manual verification still needed
     for (int i = 0; i < positions.length - 1; i++) {
       final current = positions[i];
       final next = positions[i + 1];
 
-      // If next item is on a new "row", Y should increase
-      // If on same row, X should increase
-      final isNewRow = (next.dy - current.dy).abs() > 40; // Threshold for row change
+      final isNewRow = (next.dy - current.dy).abs() > 40;
 
       if (!isNewRow) {
-        // Same row - X should increase or be close
         expect(
-          next.dx >= current.dx - 10, // Small tolerance
+          next.dx >= current.dx - 10,
           isTrue,
           reason: 'Focus order may not match visual order',
         );
@@ -203,7 +198,7 @@ class AccessibilityTestHelper {
 
         expect(
           scaledSize.height,
-          greaterThan(entry.value * 1.5), // At least 1.5x larger
+          greaterThan(entry.value * 1.5),
           reason: 'Text "${entry.key}" did not scale properly',
         );
       }
@@ -211,8 +206,6 @@ class AccessibilityTestHelper {
   }
 
   /// Verify screen reader announcements
-  ///
-  /// Checks that live region updates are properly announced
   static Future<void> checkLiveRegionAnnouncements(
     WidgetTester tester,
   ) async {
@@ -235,7 +228,6 @@ class AccessibilityTestHelper {
     WidgetTester tester,
     String errorMessage,
   ) async {
-    // Find semantics nodes with error message
     final errorNodes = find.bySemanticsLabel(errorMessage);
 
     expect(
@@ -250,7 +242,6 @@ class AccessibilityTestHelper {
     final loadingIndicators = find.byType(CircularProgressIndicator);
 
     for (final indicator in loadingIndicators.evaluate()) {
-      // Check that parent has semantic label
       final parent = find.ancestor(
         of: find.byWidget(indicator.widget),
         matching: find.byType(Semantics),
@@ -300,7 +291,6 @@ class AccessibilityTestHelper {
     for (final field in textFields.evaluate()) {
       final semantics = tester.getSemantics(find.byWidget(field.widget));
 
-      // Text field should have label or hint
       expect(
         semantics.label.isNotEmpty ||
             semantics.hint.isNotEmpty ||
@@ -309,7 +299,6 @@ class AccessibilityTestHelper {
         reason: 'Text field missing label or hint',
       );
 
-      // Text field should have text field flag
       expect(
         semantics.hasFlag(SemanticsFlag.isTextField),
         isTrue,
@@ -320,7 +309,6 @@ class AccessibilityTestHelper {
 
   /// Check that navigation maintains focus context
   static Future<void> checkNavigationFocus(WidgetTester tester) async {
-    // Find back button
     final backButton = find.byTooltip('Back');
 
     if (backButton.evaluate().isNotEmpty) {
@@ -333,7 +321,6 @@ class AccessibilityTestHelper {
       );
     }
 
-    // Check bottom navigation
     final bottomNav = find.byType(BottomNavigationBar);
 
     if (bottomNav.evaluate().isNotEmpty) {
@@ -362,8 +349,6 @@ class AccessibilityTestHelper {
   }
 
   /// Check for keyboard traps
-  ///
-  /// Verifies that all focusable elements can be exited
   static Future<void> checkNoKeyboardTraps(WidgetTester tester) async {
     final focusableWidgets = find.byWidgetPredicate(
       (widget) =>
@@ -373,15 +358,11 @@ class AccessibilityTestHelper {
           widget is TextButton,
     );
 
-    // This is a basic check - manual testing still needed
     expect(
       focusableWidgets,
       findsWidgets,
       reason: 'Should have focusable widgets',
     );
-
-    // Verify focus can move forward and backward
-    // (Actual implementation would simulate tab/shift-tab)
   }
 
   /// Verify images have alt text or are marked decorative
@@ -389,7 +370,6 @@ class AccessibilityTestHelper {
     final images = find.byType(Image);
 
     for (final image in images.evaluate()) {
-      // Check for semantic label on image or parent
       final semantics = find.ancestor(
         of: find.byWidget(image.widget),
         matching: find.byType(Semantics),
@@ -404,11 +384,6 @@ class AccessibilityTestHelper {
   }
 
   /// Check contrast ratios for specific color pairs
-  ///
-  /// Returns contrast ratio. Minimum:
-  /// - Normal text: 4.5:1
-  /// - Large text (18pt+): 3:1
-  /// - UI components: 3:1
   static double calculateContrastRatio(Color foreground, Color background) {
     final fgLuminance = _calculateRelativeLuminance(foreground);
     final bgLuminance = _calculateRelativeLuminance(background);
@@ -433,7 +408,7 @@ class AccessibilityTestHelper {
     if (value <= 0.03928) {
       return value / 12.92;
     } else {
-      return ((value + 0.055) / 1.055).pow(2.4);
+      return math.pow((value + 0.055) / 1.055, 2.4).toDouble();
     }
   }
 
@@ -473,12 +448,3 @@ class AccessibilityTestHelper {
     );
   }
 }
-
-/// Extension to add pow method
-extension on double {
-  double pow(num exponent) {
-    return dart.math.pow(this, exponent).toDouble();
-  }
-}
-
-import 'dart:math' as dart.math;

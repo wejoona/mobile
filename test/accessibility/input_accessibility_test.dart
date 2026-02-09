@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile/design/components/primitives/app_input.dart';
-import 'package:mobile/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 import '../helpers/accessibility_test_helper.dart';
 
 void main() {

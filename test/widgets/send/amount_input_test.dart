@@ -56,7 +56,7 @@ void main() {
       );
 
       // Input formatters should limit to 2 decimal places
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.inputFormatters, isNotEmpty);
     });
 
@@ -70,7 +70,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(
         textField.keyboardType,
         const TextInputType.numberWithOptions(decimal: true),
@@ -87,7 +87,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.textAlign, TextAlign.center);
     });
 
@@ -297,7 +297,7 @@ void main() {
 
         // Input formatter should prevent multiple decimals
         await tester.enterText(find.byType(TextFormField), '12.34.56');
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.inputFormatters, isNotEmpty);
       });
 

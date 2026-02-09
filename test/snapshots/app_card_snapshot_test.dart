@@ -360,7 +360,7 @@ void main() {
             child: Container(
               width: 300,
               height: 200,
-              color: AppColors.canvas,
+              color: AppColors.obsidian,
               child: AppCard(
                 margin: const EdgeInsets.all(AppSpacing.md),
                 child: const AppText('Card with margin'),

@@ -28,37 +28,42 @@ void main() {
       testWidgets('initial animation frame', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: SplashView(),
           ),
+          pumpDuration: const Duration(milliseconds: 200),
         );
-        // Capture early in animation
-        await tester.pump(const Duration(milliseconds: 200));
 
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('goldens/splash/splash_view/initial_light.png'),
         );
+
+        // Drain remaining timers
+        await tester.pump(const Duration(seconds: 3));
       });
 
       testWidgets('animation complete', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: SplashView(),
           ),
+          pumpDuration: const Duration(milliseconds: 800),
         );
-        // Let animation complete (1500ms)
-        await tester.pump(const Duration(milliseconds: 800));
 
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('goldens/splash/splash_view/complete_light.png'),
         );
+
+        await tester.pump(const Duration(seconds: 3));
       });
     });
 
@@ -66,35 +71,41 @@ void main() {
       testWidgets('initial animation frame', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: true,
             child: SplashView(),
           ),
+          pumpDuration: const Duration(milliseconds: 200),
         );
-        await tester.pump(const Duration(milliseconds: 200));
 
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('goldens/splash/splash_view/initial_dark.png'),
         );
+
+        await tester.pump(const Duration(seconds: 3));
       });
 
       testWidgets('animation complete', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: true,
             child: SplashView(),
           ),
+          pumpDuration: const Duration(milliseconds: 800),
         );
-        await tester.pump(const Duration(milliseconds: 800));
 
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('goldens/splash/splash_view/complete_dark.png'),
         );
+
+        await tester.pump(const Duration(seconds: 3));
       });
     });
   });

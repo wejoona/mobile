@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
+import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 
 import '../../helpers/test_wrapper.dart';
@@ -40,8 +42,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -70,8 +72,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -101,8 +103,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -132,8 +134,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -174,8 +176,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -206,8 +208,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        TransactionState(
-          status: TransactionStatus.loaded,
+        TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [
             createTestTransaction(id: '1', amount: 100),
             createTestTransaction(id: '2', amount: 200),
@@ -237,7 +239,7 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(status: TransactionStatus.loading),
+        const TransactionListState(status: TransactionListStatus.loading),
       );
 
       await tester.pumpWidget(
@@ -264,8 +266,8 @@ void main() {
       );
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -297,8 +299,8 @@ void main() {
       when(() => mockWalletState.refresh()).thenAnswer((_) async {});
 
       when(() => mockTxState.build()).thenReturn(
-        const TransactionState(
-          status: TransactionStatus.loaded,
+        const TransactionListState(
+          status: TransactionListStatus.loaded,
           transactions: [],
         ),
       );
@@ -333,13 +335,12 @@ void main() {
           const WalletState(
             status: WalletStatus.loaded,
             usdcBalance: 0,
-            kycStatus: KycStatus.pending,
           ),
         );
 
         when(() => mockTxState.build()).thenReturn(
-          const TransactionState(
-            status: TransactionStatus.loaded,
+          const TransactionListState(
+            status: TransactionListStatus.loaded,
             transactions: [],
           ),
         );
@@ -371,8 +372,8 @@ void main() {
         );
 
         when(() => mockTxState.build()).thenReturn(
-          const TransactionState(
-            status: TransactionStatus.loaded,
+          const TransactionListState(
+            status: TransactionListStatus.loaded,
             transactions: [],
           ),
         );
@@ -404,8 +405,8 @@ void main() {
         );
 
         when(() => mockTxState.build()).thenReturn(
-          const TransactionState(
-            status: TransactionStatus.loaded,
+          const TransactionListState(
+            status: TransactionListStatus.loaded,
             transactions: [],
           ),
         );
@@ -429,14 +430,17 @@ void main() {
 }
 
 // Helper function to create test transaction
-dynamic createTestTransaction({
+Transaction createTestTransaction({
   required String id,
   required double amount,
 }) {
-  return {
-    'id': id,
-    'amount': amount,
-    'timestamp': DateTime.now().toIso8601String(),
-    'type': 'transfer',
-  };
+  return Transaction(
+    id: id,
+    walletId: 'test-wallet',
+    type: TransactionType.deposit,
+    status: TransactionStatus.completed,
+    amount: amount,
+    currency: 'USDC',
+    createdAt: DateTime.now(),
+  );
 }

@@ -57,7 +57,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.obscureText, isTrue);
     });
 
@@ -72,7 +72,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.maxLength, 6);
     });
 
@@ -86,7 +86,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.keyboardType, TextInputType.number);
     });
 
@@ -100,7 +100,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.textAlign, TextAlign.center);
     });
 
@@ -200,7 +200,7 @@ void main() {
 
         await tester.enterText(find.byType(TextFormField), '123456');
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.obscureText, isTrue);
 
         // Text should be obscured in UI
@@ -282,7 +282,7 @@ void main() {
         await tester.enterText(find.byType(TextFormField), 'abc123');
 
         // Only digits should be accepted
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.keyboardType, TextInputType.number);
       });
 
@@ -297,7 +297,7 @@ void main() {
         );
 
         // Input formatters should filter non-numeric
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.inputFormatters, isNotEmpty);
       });
 

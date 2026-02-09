@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
@@ -107,7 +108,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.obscureText, isTrue);
     });
 
@@ -121,7 +122,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.enabled, isFalse);
     });
 
@@ -135,7 +136,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.readOnly, isTrue);
     });
 
@@ -150,7 +151,7 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.keyboardType, TextInputType.phone);
       });
 
@@ -164,7 +165,7 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.keyboardType, TextInputType.number);
       });
 
@@ -178,7 +179,7 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.keyboardType, const TextInputType.numberWithOptions(decimal: true));
       });
 
@@ -192,7 +193,7 @@ void main() {
           ),
         );
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.textAlign, TextAlign.center);
       });
     });
@@ -276,7 +277,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.maxLength, 5);
     });
 
@@ -290,7 +291,7 @@ void main() {
         ),
       );
 
-      final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+      final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.maxLines, 3);
     });
 
@@ -327,7 +328,7 @@ void main() {
 
         await tester.pumpAndSettle();
 
-        final textField = tester.widget<TextFormField>(find.byType(TextFormField));
+        final textField = tester.widget<TextField>(find.byType(TextField));
         expect(textField.autofocus, isTrue);
       });
     });

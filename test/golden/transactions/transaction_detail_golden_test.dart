@@ -65,13 +65,14 @@ void main() {
       testWidgets('completed deposit', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: TransactionDetailView(transaction: completedDeposit),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),
@@ -82,13 +83,14 @@ void main() {
       testWidgets('pending transfer', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: TransactionDetailView(transaction: pendingTransfer),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),
@@ -99,13 +101,14 @@ void main() {
       testWidgets('failed withdrawal', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: false,
             child: TransactionDetailView(transaction: failedWithdrawal),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),
@@ -118,13 +121,14 @@ void main() {
       testWidgets('completed deposit', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
         
-        await tester.pumpWidget(
+        await pumpGoldenTolerant(
+          tester,
           GoldenTestWrapper(
             isDarkMode: true,
             child: TransactionDetailView(transaction: completedDeposit),
           ),
+          pumpDuration: const Duration(milliseconds: 500),
         );
-        await tester.pump(const Duration(milliseconds: 500));
 
         await expectLater(
           find.byType(MaterialApp),

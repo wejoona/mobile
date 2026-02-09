@@ -12,7 +12,7 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // Allow Google Fonts to fetch at runtime (needed for tests that use app screens)
   // Tests should use pump() with short duration instead of pumpAndSettle() to avoid
   // waiting for network requests
-  GoogleFonts.config.allowRuntimeFetching = true;
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Override HTTP client with short timeout to fail font requests quickly
   HttpOverrides.global = _TestHttpOverrides();
