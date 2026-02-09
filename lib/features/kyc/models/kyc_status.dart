@@ -37,9 +37,13 @@ enum KycStatus {
       case 'documents_pending':
         return KycStatus.documentsPending;
       case 'submitted':
+      case 'pending_verification':
+      case 'manual_review':
+      case 'in_review':
         return KycStatus.submitted;
       case 'approved':
       case 'verified':
+      case 'auto_approved':
         return KycStatus.verified;
       case 'rejected':
         return KycStatus.rejected;

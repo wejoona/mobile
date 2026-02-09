@@ -29,7 +29,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
 
   // Supported currencies to fetch rates for
   static const List<String> _supportedCurrencies = [
-    'USD', 'USDC', 'EUR', 'GBP', 'NGN', 'KES', 'ZAR', 'GHS',
+    'USD', 'USDC', 'EUR', 'GBP', 'NGN', 'ZAR', 'GHS',
     'INR', 'BRL', 'MXN', 'CAD', 'AUD', 'JPY', 'CNY', 'XOF',
   ];
 
@@ -87,7 +87,6 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'EUR': l10n.currency_eur,
     'GBP': l10n.currency_gbp,
     'NGN': l10n.currency_ngn,
-    'KES': l10n.currency_kes,
     'ZAR': l10n.currency_zar,
     'GHS': l10n.currency_ghs,
     'INR': 'Indian Rupee',
@@ -105,7 +104,6 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'EUR': '\u20AC',
     'GBP': '\u00A3',
     'NGN': '\u20A6',
-    'KES': 'KSh',
     'ZAR': 'R',
     'GHS': 'GH\u20B5',
     'INR': '\u20B9',
@@ -395,7 +393,6 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       'EUR': Colors.blue,
       'GBP': Colors.purple,
       'NGN': Colors.green.shade800,
-      'KES': Colors.red,
       'ZAR': Colors.orange,
       'GHS': Colors.yellow.shade700,
       'INR': Colors.orange.shade800,
@@ -490,7 +487,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   }
 
   Widget _buildPopularCurrencies(ThemeColors colors, Map<String, String> currencyNames, AppLocalizations l10n) {
-    final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'KES'];
+    final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'XOF'];
 
     return Column(
       children: popularCurrencies.map((currency) {

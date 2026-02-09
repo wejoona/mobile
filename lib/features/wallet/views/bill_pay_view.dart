@@ -25,13 +25,13 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
   String? _verifiedName;
 
   final Map<BillCategory, List<String>> _providers = {
-    BillCategory.electricity: ['KPLC', 'REA', 'Stima', 'UMEME'],
-    BillCategory.water: ['Nairobi Water', 'Mombasa Water', 'Kisumu Water'],
-    BillCategory.internet: ['Safaricom Home', 'Zuku', 'Faiba', 'JTL'],
-    BillCategory.tv: ['DSTV', 'GOtv', 'StarTimes', 'Showmax'],
-    BillCategory.phone: ['Safaricom', 'Airtel', 'Telkom', 'Equitel'],
-    BillCategory.insurance: ['Jubilee', 'AAR', 'Britam', 'CIC'],
-    BillCategory.tax: ['KRA', 'County Government', 'NHIF', 'NSSF'],
+    BillCategory.electricity: ['CIE'],
+    BillCategory.water: ['SODECI'],
+    BillCategory.internet: ['Orange CI', 'MTN CI', 'Moov CI'],
+    BillCategory.tv: ['Canal+', 'StarTimes', 'Showmax'],
+    BillCategory.phone: ['Orange CI', 'MTN CI', 'Moov CI', 'Wave'],
+    BillCategory.insurance: ['NSIA', 'Allianz CI', 'AXA'],
+    BillCategory.tax: ['DGI', 'Commune', 'CNPS'],
     BillCategory.other: ['School Fees', 'Rent', 'Other'],
   };
 
@@ -375,9 +375,9 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
 
   Widget _buildRecentBills(ThemeColors colors) {
     final recentBills = [
-      _RecentBill('KPLC', 'Electricity', 45.50, DateTime.now().subtract(const Duration(days: 5))),
-      _RecentBill('Safaricom', 'Internet', 30.00, DateTime.now().subtract(const Duration(days: 12))),
-      _RecentBill('DSTV', 'TV', 25.00, DateTime.now().subtract(const Duration(days: 20))),
+      _RecentBill('CIE', 'Electricity', 45.50, DateTime.now().subtract(const Duration(days: 5))),
+      _RecentBill('Orange CI', 'Internet', 30.00, DateTime.now().subtract(const Duration(days: 12))),
+      _RecentBill('Canal+', 'TV', 25.00, DateTime.now().subtract(const Duration(days: 20))),
     ];
 
     return Column(

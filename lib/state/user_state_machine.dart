@@ -95,6 +95,7 @@ class UserStateMachine extends Notifier<UserState> {
     switch (status.toLowerCase()) {
       case 'verified':
       case 'approved':
+      case 'auto_approved':
         return KycStatus.verified;
       case 'pending':
         return KycStatus.pending;
@@ -102,12 +103,14 @@ class UserStateMachine extends Notifier<UserState> {
         return KycStatus.documentsPending;
       case 'submitted':
       case 'in_review':
+      case 'pending_verification':
         return KycStatus.submitted;
       case 'rejected':
         return KycStatus.rejected;
       case 'additional_info_needed':
         return KycStatus.additionalInfoNeeded;
       default:
+        print('[KYC] Unknown KYC status: $status, defaulting to none');
         return KycStatus.none;
     }
   }

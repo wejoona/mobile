@@ -423,7 +423,6 @@ class _DepositViewState extends ConsumerState<DepositView> {
     final currencies = [
       ('XOF', 'CFA Franc', 'CI, SN, ML...'),
       ('NGN', 'Nigerian Naira', 'Nigeria'),
-      ('KES', 'Kenyan Shilling', 'Kenya'),
       ('GHS', 'Ghanaian Cedi', 'Ghana'),
     ];
 
@@ -502,10 +501,6 @@ class _DepositViewState extends ConsumerState<DepositView> {
       case 'NGN':
         _minAmount = 1000;
         _maxAmount = 10000000;
-        break;
-      case 'KES':
-        _minAmount = 100;
-        _maxAmount = 500000;
         break;
       case 'GHS':
         _minAmount = 10;

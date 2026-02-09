@@ -19,4 +19,4 @@ export 'balance_update_animation.dart';
 export 'micro_interactions.dart';
 export 'slide_reveal.dart';
 export 'animation_utils.dart';
-export 'animation_showcase.dart';
+// animation_showcase.dart removed (dead example file)

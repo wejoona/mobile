@@ -132,8 +132,9 @@ class _KycViewState extends ConsumerState<KycView> {
       return _buildVerifiedView(colors);
     }
 
-    // If pending, show pending status
-    if (userState.kycStatus == KycStatus.pending) {
+    // If submitted/pending review, show pending status
+    if (userState.kycStatus == KycStatus.submitted ||
+        userState.kycStatus == KycStatus.pending) {
       return _buildPendingView(colors);
     }
 

@@ -582,13 +582,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: '/deposit/instructions',
-        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-          state: state,
-          child: const PaymentInstructionsScreen(),
-        ),
-      ),
-      GoRoute(
         path: '/deposit/status',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
@@ -903,13 +896,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const NotificationSettingsView(),
-        ),
-      ),
-      GoRoute(
-        path: '/notifications',
-        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
-          state: state,
-          child: const NotificationsView(),
         ),
       ),
       GoRoute(

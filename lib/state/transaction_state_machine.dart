@@ -42,7 +42,7 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
         page: 1,
         pageSize: _pageSize,
         filter: _filter,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       state = state.copyWith(
         status: TransactionListStatus.loaded,

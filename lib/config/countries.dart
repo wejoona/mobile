@@ -206,15 +206,7 @@ class SupportedCountries {
       currencies: ['NGN', 'USD'],
       phoneFormat: 'XXX XXX XXXX',
     ),
-    CountryConfig(
-      code: 'KE',
-      name: 'Kenya',
-      prefix: '254',
-      phoneLength: 9,
-      flag: '\u{1F1F0}\u{1F1EA}',
-      currencies: ['KES', 'USD'],
-      phoneFormat: 'XXX XXX XXX',
-    ),
+    // Kenya removed — not a target market
     CountryConfig(
       code: 'TZ',
       name: 'Tanzania',

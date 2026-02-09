@@ -258,8 +258,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         return l10n.profile_countryIvoryCoast;
       case 'NG':
         return l10n.profile_countryNigeria;
-      case 'KE':
-        return l10n.profile_countryKenya;
       case 'GH':
         return l10n.profile_countryGhana;
       case 'SN':

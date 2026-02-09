@@ -9,7 +9,6 @@ enum ReferenceCurrency {
   xaf, // Central African CFA Franc
   ngn, // Nigerian Naira
   ghs, // Ghanaian Cedi
-  kes, // Kenyan Shilling
   eur, // Euro
   usd, // US Dollar (for non-USD users)
 }
@@ -27,8 +26,6 @@ extension ReferenceCurrencyExt on ReferenceCurrency {
         return 'NGN';
       case ReferenceCurrency.ghs:
         return 'GHS';
-      case ReferenceCurrency.kes:
-        return 'KES';
       case ReferenceCurrency.eur:
         return 'EUR';
       case ReferenceCurrency.usd:
@@ -48,8 +45,6 @@ extension ReferenceCurrencyExt on ReferenceCurrency {
         return 'Nigerian Naira';
       case ReferenceCurrency.ghs:
         return 'Ghanaian Cedi';
-      case ReferenceCurrency.kes:
-        return 'Kenyan Shilling';
       case ReferenceCurrency.eur:
         return 'Euro';
       case ReferenceCurrency.usd:
@@ -68,8 +63,6 @@ extension ReferenceCurrencyExt on ReferenceCurrency {
         return '\u20A6';
       case ReferenceCurrency.ghs:
         return 'GH\u20B5';
-      case ReferenceCurrency.kes:
-        return 'KSh';
       case ReferenceCurrency.eur:
         return '\u20AC';
       case ReferenceCurrency.usd:
@@ -89,8 +82,6 @@ extension ReferenceCurrencyExt on ReferenceCurrency {
         return '\u{1F1F3}\u{1F1EC}'; // Nigeria flag
       case ReferenceCurrency.ghs:
         return '\u{1F1EC}\u{1F1ED}'; // Ghana flag
-      case ReferenceCurrency.kes:
-        return '\u{1F1F0}\u{1F1EA}'; // Kenya flag
       case ReferenceCurrency.eur:
         return '\u{1F1EA}\u{1F1FA}'; // EU flag
       case ReferenceCurrency.usd:
@@ -112,8 +103,6 @@ extension ReferenceCurrencyExt on ReferenceCurrency {
         return 1550.0; // 1 USD ≈ 1550 NGN
       case ReferenceCurrency.ghs:
         return 15.5; // 1 USD ≈ 15.5 GHS
-      case ReferenceCurrency.kes:
-        return 155.0; // 1 USD ≈ 155 KES
       case ReferenceCurrency.eur:
         return 0.92; // 1 USD ≈ 0.92 EUR
       case ReferenceCurrency.usd:
@@ -204,8 +193,6 @@ class CurrencyService {
         return ReferenceCurrency.ngn;
       case 'GH': // Ghana
         return ReferenceCurrency.ghs;
-      case 'KE': // Kenya
-        return ReferenceCurrency.kes;
       default:
         return ReferenceCurrency.xof;
     }

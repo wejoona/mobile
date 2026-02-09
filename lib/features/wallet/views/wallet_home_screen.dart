@@ -103,11 +103,21 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final l10n = AppLocalizations.of(context)!;
     final isLandscape = OrientationHelper.isLandscape(context);
 
-    // Debug: log wallet state on build
-    print('[WalletHomeScreen] BUILD: status=${walletState.status}, walletId="${walletState.walletId}", isLoading=${walletState.isLoading}, usdcBalance=${walletState.usdcBalance}');
+    // Trigger transaction fetch once wallet is loaded
+    if (walletState.status == WalletStatus.loaded && walletState.walletId.isNotEmpty) {
+      final txStatus = txState.status;
+      if (txStatus == TransactionListStatus.initial) {
+        Future.microtask(() => ref.read(transactionStateMachineProvider.notifier).fetch());
+      }
+    }
 
     // Trigger balance animation when loaded
     if (walletState.status == WalletStatus.loaded &&
+        !_balanceAnimationController.isAnimating &&
+        _balanceAnimationController.status != AnimationStatus.completed) {
+      _displayedBalance = walletState.usdcBalance;
+      _balanceAnimationController.forward(from: 0);
+    } else if (walletState.status == WalletStatus.loaded &&
         _displayedBalance != walletState.usdcBalance) {
       _displayedBalance = walletState.usdcBalance;
       _balanceAnimationController.forward(from: 0);
@@ -790,8 +800,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     final kycStatus = userState.kycStatus;
 
-    // Don't show banner if already verified
-    if (kycStatus == KycStatus.verified) {
+    // Don't show banner if verified or already submitted (in review)
+    if (kycStatus == KycStatus.verified || kycStatus == KycStatus.submitted) {
       return const SizedBox.shrink();
     }
 
