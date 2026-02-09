@@ -27,8 +27,8 @@ class AppColors {
 
   static const Color textPrimary = Color(0xFFF5F5F0);   // High emphasis - ivory
   static const Color textSecondary = Color(0xFF9A9A9E); // Medium emphasis - labels
-  static const Color textTertiary = Color(0xFF6B6B70);  // Low emphasis - hints
-  static const Color textDisabled = Color(0xFF4A4A4E);  // Disabled states
+  static const Color textTertiary = Color(0xFF6E6E73);  // Low emphasis - hints
+  static const Color textDisabled = Color(0xFF555559);  // Disabled states
   static const Color textInverse = Color(0xFF0A0A0C);   // On gold/light backgrounds
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -63,16 +63,16 @@ class AppColors {
   static const Color successDark = Color(0xFF1E4D38);
   static const Color successText = Color(0xFF7DD3A8);
 
-  // Warning - Amber
-  static const Color warningBase = Color(0xFFC9943A);
-  static const Color warningLight = Color(0xFFDAA84E);
-  static const Color warningDark = Color(0xFFA67828);
+  // Warning - Amber (darkened for WCAG AA text contrast)
+  static const Color warningBase = Color(0xFF8A6A28);
+  static const Color warningLight = Color(0xFFC9943A);
+  static const Color warningDark = Color(0xFF6B5020);
   static const Color warningText = Color(0xFFF0C674);
 
   // Error - Crimson velvet
-  static const Color errorBase = Color(0xFF8B2942);
-  static const Color errorLight = Color(0xFFA63D4E);
-  static const Color errorDark = Color(0xFF6D1F33);
+  static const Color errorBase = Color(0xFFA63352);
+  static const Color errorLight = Color(0xFFB8455E);
+  static const Color errorDark = Color(0xFF8B2942);
   static const Color errorText = Color(0xFFE57B8D);
 
   // Info - Steel blue

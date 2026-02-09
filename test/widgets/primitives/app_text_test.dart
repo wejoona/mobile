@@ -172,6 +172,9 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('uses custom semantic label when provided', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           const TestWrapper(
             child: AppText(

@@ -335,6 +335,9 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('has proper semantic label', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppInput(
@@ -350,6 +353,9 @@ void main() {
       });
 
       testWidgets('indicates text field in semantics', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppInput(
@@ -363,6 +369,9 @@ void main() {
       });
 
       testWidgets('includes error in semantic hint', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppInput(

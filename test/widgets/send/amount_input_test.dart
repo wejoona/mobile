@@ -322,6 +322,9 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('announces amount to screen readers', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppInput(

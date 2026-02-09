@@ -256,6 +256,9 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('has proper semantic label', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppButton(
@@ -271,6 +274,9 @@ void main() {
       });
 
       testWidgets('indicates button role in semantics', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppButton(
@@ -285,6 +291,9 @@ void main() {
       });
 
       testWidgets('indicates enabled state in semantics', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppButton(
@@ -299,6 +308,9 @@ void main() {
       });
 
       testWidgets('indicates loading state in semantics', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppButton(

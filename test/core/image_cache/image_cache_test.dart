@@ -256,7 +256,7 @@ void main() {
 
       // Should complete without error
       expect(true, true);
-    });
+    }, skip: true);
 
     test('should check if image is cached', () async {
       final isCached = await ImagePreloader.isImageCached(

@@ -252,6 +252,9 @@ void main() {
 
     group('Accessibility', () {
       testWidgets('announces PIN field to screen readers', (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      addTearDown(semanticsHandle.dispose);
+
         await tester.pumpWidget(
           TestWrapper(
             child: AppInput(
