@@ -199,7 +199,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           child: Row(
             children: [
               UserAvatar(
-                imageUrl: null, // TODO: Add profile image URL when available
+                imageUrl: userState.avatarUrl,
                 firstName: userState.firstName,
                 lastName: userState.lastName,
                 size: UserAvatar.sizeMedium,

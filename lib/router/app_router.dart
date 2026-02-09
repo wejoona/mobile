@@ -196,8 +196,16 @@ class MainShell extends ConsumerWidget {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.credit_card_outlined),
-            selectedIcon: Icon(Icons.credit_card),
+            icon: Badge(
+              label: Text('Soon', style: TextStyle(fontSize: 8)),
+              backgroundColor: Colors.orange,
+              child: Icon(Icons.credit_card_outlined),
+            ),
+            selectedIcon: Badge(
+              label: Text('Soon', style: TextStyle(fontSize: 8)),
+              backgroundColor: Colors.orange,
+              child: Icon(Icons.credit_card),
+            ),
             label: 'Cards',
           ),
           NavigationDestination(

@@ -16,11 +16,32 @@ class NotificationsService {
   Future<List<AppNotification>> getNotifications() async {
     try {
       final response = await _dio.get('/notifications');
-      final List<dynamic> data = response.data ?? [];
+      final responseData = response.data;
+
+      // Handle different response formats
+      List<dynamic> data;
+      if (responseData is List) {
+        data = responseData;
+      } else if (responseData is Map<String, dynamic>) {
+        if (responseData.containsKey('data')) {
+          data = responseData['data'] as List<dynamic>? ?? [];
+        } else if (responseData.containsKey('notifications')) {
+          data = responseData['notifications'] as List<dynamic>? ?? [];
+        } else {
+          data = [];
+        }
+      } else {
+        data = [];
+      }
+
       return data
           .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
+      // Return empty list for 404 (endpoint not yet deployed)
+      if (e.response?.statusCode == 404) {
+        return [];
+      }
       throw ApiException.fromDioError(e);
     }
   }
@@ -29,7 +50,8 @@ class NotificationsService {
   Future<int> getUnreadCount() async {
     try {
       final response = await _dio.get('/notifications/unread/count');
-      return response.data['count'] as int? ?? 0;
+      final countData = response.data as Map<String, dynamic>?;
+      return countData?['count'] as int? ?? 0;
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }

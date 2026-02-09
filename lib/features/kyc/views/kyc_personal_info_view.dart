@@ -9,6 +9,7 @@ import '../../../design/components/primitives/app_button.dart';
 import '../../../design/components/primitives/app_text.dart';
 import '../../../design/components/primitives/app_input.dart';
 import '../providers/kyc_provider.dart';
+import '../../../state/index.dart';
 
 class KycPersonalInfoView extends ConsumerStatefulWidget {
   const KycPersonalInfoView({super.key});
@@ -23,6 +24,21 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   DateTime? _dateOfBirth;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill from user profile
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final userState = ref.read(userStateMachineProvider);
+      if (_firstNameController.text.isEmpty && userState.firstName != null) {
+        _firstNameController.text = userState.firstName!;
+      }
+      if (_lastNameController.text.isEmpty && userState.lastName != null) {
+        _lastNameController.text = userState.lastName!;
+      }
+    });
+  }
 
   @override
   void dispose() {

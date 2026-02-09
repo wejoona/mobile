@@ -905,26 +905,14 @@ class _ProfileCard extends ConsumerWidget {
       onTap: onTap,
       child: Row(
         children: [
-          // Avatar with initials
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: AppColors.goldGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.full),
-              boxShadow: AppShadows.goldGlow,
-            ),
-            child: Center(
-              child: AppText(
-                _getInitials(userState),
-                variant: AppTextVariant.titleLarge,
-                color: AppColors.textInverse,
-              ),
-            ),
+          // Avatar with profile image or initials
+          UserAvatar(
+            imageUrl: userState.avatarUrl,
+            firstName: userState.firstName,
+            lastName: userState.lastName,
+            size: 56,
+            showBorder: true,
+            borderColor: colors.gold,
           ),
           const SizedBox(width: AppSpacing.lg),
           Expanded(
