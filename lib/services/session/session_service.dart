@@ -254,10 +254,29 @@ class SessionService extends Notifier<SessionState> {
 
       if (expiryStr != null) {
         expiresAt = DateTime.tryParse(expiryStr);
-        // Check if token is expired
+        // Check if token is expired - try to refresh before giving up
         if (expiresAt != null && DateTime.now().isAfter(expiresAt)) {
-          await endSession();
-          return;
+          final refreshToken = await _storage.read(key: _refreshTokenKey);
+          if (refreshToken != null) {
+            // Attempt to refresh the token
+            await _refreshToken();
+            // Re-read to check if refresh succeeded
+            final newToken = await _storage.read(key: _accessTokenKey);
+            if (newToken == null || newToken == token) {
+              // Refresh failed, end session
+              await endSession();
+              return;
+            }
+            // Refresh succeeded, update expiry
+            final newExpiryStr = await _storage.read(key: _tokenExpiryKey);
+            if (newExpiryStr != null) {
+              expiresAt = DateTime.tryParse(newExpiryStr);
+            }
+          } else {
+            // No refresh token, end session
+            await endSession();
+            return;
+          }
         }
       }
 
@@ -275,6 +294,7 @@ class SessionService extends Notifier<SessionState> {
 
       // Start inactivity timer
       _startInactivityTimer();
+      _startTokenRefreshTimer();
     }
   }
 

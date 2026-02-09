@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
+import '../../../services/api/api_client.dart';
 import '../../../state/index.dart';
 
 class SplashView extends ConsumerStatefulWidget {

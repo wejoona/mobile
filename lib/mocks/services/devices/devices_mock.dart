@@ -88,6 +88,13 @@ class DevicesMockState {
 /// Devices mock registration
 class DevicesMock {
   static void register(MockInterceptor interceptor) {
+    // POST /api/v1/devices - Register a device
+    interceptor.register(
+      method: 'POST',
+      path: '/api/v1/devices',
+      handler: _handleRegisterDevice,
+    );
+
     // GET /api/v1/devices - Get all devices
     interceptor.register(
       method: 'GET',
@@ -108,6 +115,29 @@ class DevicesMock {
       path: r'/api/v1/devices/[\w-]+',
       handler: _handleRemoveDevice,
     );
+  }
+
+  /// Handle register device
+  static Future<MockResponse> _handleRegisterDevice(RequestOptions options) async {
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final newDevice = {
+      'id': 'device-${DateTime.now().millisecondsSinceEpoch}',
+      'device_identifier': data['deviceId'] ?? 'unknown',
+      'brand': data['brand'],
+      'model': data['model'],
+      'os': data['platform'] == 'ios' ? 'iOS' : 'Android',
+      'os_version': data['osVersion'],
+      'app_version': data['appVersion'],
+      'platform': data['platform'],
+      'is_trusted': false,
+      'trusted_at': null,
+      'is_active': true,
+      'last_login_at': DateTime.now().toIso8601String(),
+      'last_ip_address': '127.0.0.1',
+      'login_count': 1,
+    };
+    DevicesMockState.devices.add(newDevice);
+    return MockResponse.success(newDevice);
   }
 
   /// Handle get all devices

@@ -6,6 +6,8 @@ import '../../../config/countries.dart';
 import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/legal/legal_documents_service.dart';
+import '../../../services/biometric/biometric_service.dart';
+import '../../../services/api/api_client.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'legal_document_view.dart';
@@ -38,6 +40,35 @@ class _LoginViewState extends ConsumerState<LoginView>
       curve: Curves.easeOut,
     );
     _animationController.forward();
+
+    // Auto-prompt biometric login if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tryBiometricLogin();
+    });
+  }
+
+  Future<void> _tryBiometricLogin() async {
+    final biometricService = ref.read(biometricServiceProvider);
+    final storage = ref.read(secureStorageProvider);
+
+    // Check if biometric is enabled and refresh token exists
+    final isEnabled = await biometricService.isBiometricEnabled();
+    if (!isEnabled) return;
+
+    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+    if (refreshToken == null) return;
+
+    // Prompt biometric
+    final authenticated = await biometricService.authenticate(
+      reason: 'Authenticate to access JoonaPay',
+    );
+
+    if (authenticated && mounted) {
+      final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
+      if (success && mounted) {
+        context.go('/home');
+      }
+    }
   }
 
   @override
@@ -214,6 +245,57 @@ class _LoginViewState extends ConsumerState<LoginView>
             ),
           ),
         ),
+
+        // Biometric Login Button
+        if (!_isRegistering)
+          Consumer(
+            builder: (context, ref, _) {
+              final biometricAvailable = ref.watch(biometricAvailableProvider);
+              final biometricEnabled = ref.watch(biometricEnabledProvider);
+
+              return biometricAvailable.when(
+                data: (available) => biometricEnabled.when(
+                  data: (enabled) {
+                    if (!available || !enabled) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: AppSpacing.md),
+                      child: GestureDetector(
+                        onTap: _tryBiometricLogin,
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: context.colors.elevated,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: context.colors.borderSubtle),
+                              ),
+                              child: Icon(
+                                Icons.fingerprint,
+                                color: context.colors.gold,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            AppText(
+                              'Use Face ID / Fingerprint',
+                              variant: AppTextVariant.bodySmall,
+                              color: context.colors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                ),
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+              );
+            },
+          ),
       ],
     );
   }

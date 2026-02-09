@@ -9,6 +9,30 @@ class DevicesRepository {
 
   DevicesRepository(this._dio);
 
+  /// POST /api/v1/devices - Register current device
+  Future<Device> registerDevice({
+    required String deviceId,
+    required String platform,
+    String? model,
+    String? brand,
+    String? osVersion,
+    String? appVersion,
+    String? fcmToken,
+    String? locale,
+  }) async {
+    final response = await _dio.post('/api/v1/devices', data: {
+      'deviceId': deviceId,
+      'platform': platform,
+      if (model != null) 'model': model,
+      if (brand != null) 'brand': brand,
+      if (osVersion != null) 'osVersion': osVersion,
+      if (appVersion != null) 'appVersion': appVersion,
+      if (fcmToken != null) 'fcmToken': fcmToken,
+      if (locale != null) 'locale': locale,
+    });
+    return Device.fromJson(response.data);
+  }
+
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
     final response = await _dio.get('/api/v1/devices');

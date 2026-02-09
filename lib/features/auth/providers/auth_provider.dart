@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../services/index.dart';
+import '../../../services/device/device_registration_service.dart';
 import '../../../domain/entities/index.dart';
 import '../../../state/fsm/index.dart';
 import '../../../state/kyc_state_machine.dart';
@@ -172,6 +173,7 @@ class AuthNotifier extends Notifier<AuthState> {
       // Start session with actual token validity from backend
       await ref.read(sessionServiceProvider.notifier).startSession(
         accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
         tokenValidity: Duration(seconds: response.expiresIn),
       );
 
@@ -193,6 +195,9 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.authenticated,
         user: response.user,
       );
+
+      // Register device with backend (fire-and-forget)
+      ref.read(deviceRegistrationServiceProvider).registerCurrentDevice();
 
       return true;
     } on ApiException catch (e) {
