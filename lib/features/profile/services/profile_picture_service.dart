@@ -74,7 +74,7 @@ class ProfilePictureService {
       });
 
       final response = await _dio.post(
-        '/api/v1/user/avatar',
+        '/user/avatar',
         data: formData,
         onSendProgress: (sent, total) {
           final progress = sent / total;
@@ -96,7 +96,7 @@ class ProfilePictureService {
   Future<void> deleteAvatar() async {
     try {
       _logger.info('Deleting avatar');
-      await _dio.delete('/api/v1/user/avatar');
+      await _dio.delete('/user/avatar');
       _logger.info('Avatar deleted successfully');
     } catch (e) {
       _logger.error('Error deleting avatar: $e');

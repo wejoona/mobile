@@ -20,7 +20,7 @@ class DevicesRepository {
     String? fcmToken,
     String? locale,
   }) async {
-    final response = await _dio.post('/api/v1/devices', data: {
+    final response = await _dio.post('/devices/register', data: {
       'deviceId': deviceId,
       'platform': platform,
       if (model != null) 'model': model,
@@ -35,20 +35,20 @@ class DevicesRepository {
 
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
-    final response = await _dio.get('/api/v1/devices');
+    final response = await _dio.get('/devices');
     final List<dynamic> devicesJson = response.data['devices'] ?? [];
     return devicesJson.map((json) => Device.fromJson(json)).toList();
   }
 
   /// Trust a device
   Future<Device> trustDevice(String deviceId) async {
-    final response = await _dio.post('/api/v1/devices/$deviceId/trust');
+    final response = await _dio.post('/devices/$deviceId/trust');
     return Device.fromJson(response.data);
   }
 
   /// Revoke/remove a device
   Future<void> revokeDevice(String deviceId) async {
-    await _dio.delete('/api/v1/devices/$deviceId');
+    await _dio.delete('/devices/$deviceId');
   }
 }
 

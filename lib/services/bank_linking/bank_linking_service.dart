@@ -11,7 +11,7 @@ class BankLinkingService {
   /// Get available banks for a country
   Future<Map<String, dynamic>> getBanks({String? country}) async {
     final response = await _dio.get(
-      '/api/v1/banks',
+      '/banks',
       queryParameters: {
         if (country != null) 'country': country,
       },
@@ -21,13 +21,13 @@ class BankLinkingService {
 
   /// Get all linked bank accounts
   Future<Map<String, dynamic>> getLinkedAccounts() async {
-    final response = await _dio.get('/api/v1/bank-accounts');
+    final response = await _dio.get('/bank-accounts');
     return response.data as Map<String, dynamic>;
   }
 
   /// Get a single linked bank account
   Future<Map<String, dynamic>> getLinkedAccount(String accountId) async {
-    final response = await _dio.get('/api/v1/bank-accounts/$accountId');
+    final response = await _dio.get('/bank-accounts/$accountId');
     return response.data as Map<String, dynamic>;
   }
 
@@ -39,7 +39,7 @@ class BankLinkingService {
     required String countryCode,
   }) async {
     final response = await _dio.post(
-      '/api/v1/bank-accounts',
+      '/bank-accounts',
       data: {
         'bank_code': bankCode,
         'account_number': accountNumber,
@@ -56,7 +56,7 @@ class BankLinkingService {
     required String otp,
   }) async {
     final response = await _dio.post(
-      '/api/v1/bank-accounts/$accountId/verify',
+      '/bank-accounts/$accountId/verify',
       data: {'otp': otp},
     );
     return response.data as Map<String, dynamic>;
@@ -64,13 +64,13 @@ class BankLinkingService {
 
   /// Set a bank account as primary
   Future<Map<String, dynamic>> setPrimaryAccount(String accountId) async {
-    final response = await _dio.post('/api/v1/bank-accounts/$accountId/set-primary');
+    final response = await _dio.post('/bank-accounts/$accountId/set-primary');
     return response.data as Map<String, dynamic>;
   }
 
   /// Get bank account balance
   Future<Map<String, dynamic>> getAccountBalance(String accountId) async {
-    final response = await _dio.get('/api/v1/bank-accounts/$accountId/balance');
+    final response = await _dio.get('/bank-accounts/$accountId/balance');
     return response.data as Map<String, dynamic>;
   }
 
@@ -81,7 +81,7 @@ class BankLinkingService {
     String? description,
   }) async {
     final response = await _dio.post(
-      '/api/v1/bank-accounts/$accountId/deposit',
+      '/bank-accounts/$accountId/deposit',
       data: {
         'amount': amount,
         if (description != null) 'description': description,
@@ -97,7 +97,7 @@ class BankLinkingService {
     String? description,
   }) async {
     final response = await _dio.post(
-      '/api/v1/bank-accounts/$accountId/withdraw',
+      '/bank-accounts/$accountId/withdraw',
       data: {
         'amount': amount,
         if (description != null) 'description': description,
@@ -108,7 +108,7 @@ class BankLinkingService {
 
   /// Unlink a bank account
   Future<Map<String, dynamic>> unlinkAccount(String accountId) async {
-    final response = await _dio.delete('/api/v1/bank-accounts/$accountId');
+    final response = await _dio.delete('/bank-accounts/$accountId');
     return response.data as Map<String, dynamic>;
   }
 }

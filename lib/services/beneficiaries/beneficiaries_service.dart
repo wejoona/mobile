@@ -22,7 +22,7 @@ class BeneficiariesService {
       if (type != null) queryParams['type'] = type;
 
       final response = await _dio.get(
-        '/api/v1/beneficiaries',
+        '/beneficiaries',
         queryParameters: queryParams,
       );
 
@@ -37,7 +37,7 @@ class BeneficiariesService {
   /// GET /api/v1/beneficiaries/:id
   Future<Beneficiary> getBeneficiary(String id) async {
     try {
-      final response = await _dio.get('/api/v1/beneficiaries/$id');
+      final response = await _dio.get('/beneficiaries/$id');
       return Beneficiary.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _handleError(e);
@@ -50,7 +50,7 @@ class BeneficiariesService {
   ) async {
     try {
       final response = await _dio.post(
-        '/api/v1/beneficiaries',
+        '/beneficiaries',
         data: request.toJson(),
       );
       return Beneficiary.fromJson(response.data as Map<String, dynamic>);
@@ -66,7 +66,7 @@ class BeneficiariesService {
   ) async {
     try {
       final response = await _dio.put(
-        '/api/v1/beneficiaries/$id',
+        '/beneficiaries/$id',
         data: request.toJson(),
       );
       return Beneficiary.fromJson(response.data as Map<String, dynamic>);
@@ -78,7 +78,7 @@ class BeneficiariesService {
   /// DELETE /api/v1/beneficiaries/:id
   Future<void> deleteBeneficiary(String id) async {
     try {
-      await _dio.delete('/api/v1/beneficiaries/$id');
+      await _dio.delete('/beneficiaries/$id');
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -87,7 +87,7 @@ class BeneficiariesService {
   /// POST /api/v1/beneficiaries/:id/favorite
   Future<Beneficiary> toggleFavorite(String id) async {
     try {
-      final response = await _dio.post('/api/v1/beneficiaries/$id/favorite');
+      final response = await _dio.post('/beneficiaries/$id/favorite');
       return Beneficiary.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _handleError(e);

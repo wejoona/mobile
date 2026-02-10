@@ -10,13 +10,13 @@ class CardsService {
 
   /// Get all cards for the user
   Future<Map<String, dynamic>> getCards() async {
-    final response = await _dio.get('/api/v1/cards');
+    final response = await _dio.get('/cards');
     return response.data as Map<String, dynamic>;
   }
 
   /// Get a single card by ID
   Future<Map<String, dynamic>> getCard(String cardId) async {
-    final response = await _dio.get('/api/v1/cards/$cardId');
+    final response = await _dio.get('/cards/$cardId');
     return response.data as Map<String, dynamic>;
   }
 
@@ -27,7 +27,7 @@ class CardsService {
     String? nickname,
   }) async {
     final response = await _dio.post(
-      '/api/v1/cards',
+      '/cards',
       data: {
         'cardType': cardType,
         'currency': currency,
@@ -39,13 +39,13 @@ class CardsService {
 
   /// Freeze a card
   Future<Map<String, dynamic>> freezeCard(String cardId) async {
-    final response = await _dio.put('/api/v1/cards/$cardId/freeze');
+    final response = await _dio.put('/cards/$cardId/freeze');
     return response.data as Map<String, dynamic>;
   }
 
   /// Unfreeze a card
   Future<Map<String, dynamic>> unfreezeCard(String cardId) async {
-    final response = await _dio.put('/api/v1/cards/$cardId/unfreeze');
+    final response = await _dio.put('/cards/$cardId/unfreeze');
     return response.data as Map<String, dynamic>;
   }
 
@@ -56,7 +56,7 @@ class CardsService {
     required double transactionLimit,
   }) async {
     final response = await _dio.put(
-      '/api/v1/cards/$cardId/limit',
+      '/cards/$cardId/limit',
       data: {
         'dailyLimit': dailyLimit,
         'transactionLimit': transactionLimit,
@@ -67,7 +67,7 @@ class CardsService {
 
   /// Cancel a card
   Future<void> cancelCard(String cardId) async {
-    await _dio.delete('/api/v1/cards/$cardId');
+    await _dio.delete('/cards/$cardId');
   }
 
   /// Get card transactions
@@ -77,7 +77,7 @@ class CardsService {
     int? offset,
   }) async {
     final response = await _dio.get(
-      '/api/v1/cards/$cardId/transactions',
+      '/cards/$cardId/transactions',
       queryParameters: {
         if (limit != null) 'limit': limit,
         if (offset != null) 'offset': offset,

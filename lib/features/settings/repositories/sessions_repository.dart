@@ -11,7 +11,7 @@ class SessionsRepository {
 
   /// Get all active sessions
   Future<List<Session>> getSessions() async {
-    final response = await _dio.get('/api/v1/sessions');
+    final response = await _dio.get('/sessions');
     return (response.data['sessions'] as List)
         .map((json) => Session.fromJson(json))
         .toList();
@@ -19,12 +19,12 @@ class SessionsRepository {
 
   /// Revoke a specific session
   Future<void> revokeSession(String sessionId) async {
-    await _dio.delete('/api/v1/sessions/$sessionId');
+    await _dio.delete('/sessions/$sessionId');
   }
 
   /// Logout from all devices (revoke all sessions)
   Future<void> logoutAllDevices() async {
-    await _dio.delete('/api/v1/sessions');
+    await _dio.delete('/sessions');
   }
 }
 

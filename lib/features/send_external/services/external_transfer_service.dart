@@ -47,7 +47,7 @@ class ExternalTransferService {
   ) async {
     try {
       final response = await _dio.post(
-        '/api/v1/wallet/transfer/external',
+        '/wallet/transfer/external',
         data: request.toJson(),
       );
       return ExternalTransferResult.fromJson(response.data);

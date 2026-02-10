@@ -11,7 +11,7 @@ class PaymentLinksRepository {
 
   /// Get all payment links
   Future<List<PaymentLink>> getPaymentLinks() async {
-    final response = await _dio.get('/api/v1/payment-links');
+    final response = await _dio.get('/payment-links');
     return (response.data['payment_links'] as List)
         .map((json) => PaymentLink.fromJson(json))
         .toList();
@@ -19,14 +19,14 @@ class PaymentLinksRepository {
 
   /// Get single payment link
   Future<PaymentLink> getPaymentLink(String id) async {
-    final response = await _dio.get('/api/v1/payment-links/$id');
+    final response = await _dio.get('/payment-links/$id');
     return PaymentLink.fromJson(response.data);
   }
 
   /// Create payment link
   Future<PaymentLink> createPaymentLink(CreateLinkRequest request) async {
     final response = await _dio.post(
-      '/api/v1/payment-links',
+      '/payment-links',
       data: request.toJson(),
     );
     return PaymentLink.fromJson(response.data);
@@ -34,7 +34,7 @@ class PaymentLinksRepository {
 
   /// Delete payment link
   Future<void> deletePaymentLink(String id) async {
-    await _dio.delete('/api/v1/payment-links/$id');
+    await _dio.delete('/payment-links/$id');
   }
 }
 
