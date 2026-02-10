@@ -1,40 +1,75 @@
 import 'package:dio/dio.dart';
-import '../../features/deposit/models/deposit_request.dart';
-import '../../features/deposit/models/deposit_response.dart';
-import '../../features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
+import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 
 /// Deposit Service
 ///
-/// Handles mobile money deposit operations.
+/// Handles mobile money deposit operations via the Korido API.
+/// Mobile only talks to /deposits/* — never to payment providers directly.
 class DepositService {
   final Dio _dio;
 
   DepositService(this._dio);
 
-  /// Initiate a deposit
-  Future<DepositResponse> initiateDeposit(DepositRequest request) async {
+  /// Get available deposit providers
+  Future<List<Map<String, dynamic>>> getProviders() async {
+    final response = await _dio.get('/deposits/providers');
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['providers'] != null) {
+      return List<Map<String, dynamic>>.from(data['providers'] as List);
+    }
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    }
+    return [];
+  }
+
+  /// Initiate a deposit — returns payment method type + instructions
+  Future<DepositResponse> initiateDeposit(InitiateDepositRequest request) async {
     final response = await _dio.post(
-      '/wallet/deposit',
+      '/deposits/initiate',
       data: request.toJson(),
     );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Get deposit status
-  Future<DepositResponse> getDepositStatus(String depositId) async {
-    final response = await _dio.get('/wallet/deposit/$depositId');
+  /// Confirm a deposit (submit OTP or trigger PUSH)
+  Future<DepositResponse> confirmDeposit(ConfirmDepositRequest request) async {
+    final response = await _dio.post(
+      '/deposits/confirm',
+      data: request.toJson(),
+    );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Get deposit channels
-  Future<Map<String, dynamic>> getDepositChannels({String? currency}) async {
+  /// Get deposit status (for polling)
+  Future<DepositResponse> getDepositStatus(String depositId) async {
+    final response = await _dio.get('/deposits/$depositId');
+    return DepositResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// List user's deposits
+  Future<List<DepositResponse>> listDeposits({
+    int page = 1,
+    int limit = 20,
+  }) async {
     final response = await _dio.get(
-      '/wallet/deposit/channels',
-      queryParameters: {
-        if (currency != null) 'currency': currency,
-      },
+      '/deposits',
+      queryParameters: {'page': page, 'limit': limit},
     );
-    return response.data as Map<String, dynamic>;
+    final data = response.data;
+    if (data is Map<String, dynamic> && data['deposits'] != null) {
+      return (data['deposits'] as List)
+          .map((e) => DepositResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    if (data is List) {
+      return data
+          .map((e) => DepositResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
   }
 
   /// Get exchange rate (XOF to USD)
@@ -43,7 +78,7 @@ class DepositService {
     String to = 'USD',
   }) async {
     final response = await _dio.get(
-      '/wallet/rate',
+      '/deposits/rate',
       queryParameters: {
         'sourceCurrency': from,
         'targetCurrency': to,

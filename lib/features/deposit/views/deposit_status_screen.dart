@@ -1,249 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/deposit_provider.dart';
-import '../models/deposit_response.dart';
+import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 
 /// Deposit Status Screen
+///
+/// Shows completion or failure state after deposit.
 class DepositStatusScreen extends ConsumerWidget {
   const DepositStatusScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = context.colors;
-    final depositState = ref.watch(depositProvider);
-
-    if (depositState.response == null) {
-      return Scaffold(
-        backgroundColor: colors.canvas,
-        body: Center(
-          child: CircularProgressIndicator(color: colors.gold),
-        ),
-      );
-    }
-
-    final response = depositState.response!;
+    final state = ref.watch(depositProvider);
+    final isCompleted = state.step == DepositFlowStep.completed;
 
     return Scaffold(
-      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
-
-              // Status Animation/Icon
-              _buildStatusIcon(response.status, colors),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Status Title
-              AppText(
-                _getStatusTitle(response.status, l10n),
-                variant: AppTextVariant.displaySmall,
-                color: colors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              // Status Message
-              AppText(
-                _getStatusMessage(response.status, l10n),
-                variant: AppTextVariant.bodyLarge,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              // Amount Card (if completed)
-              if (response.status == DepositStatus.completed)
-                _buildAmountCard(response, colors, l10n),
-
-              const Spacer(),
-
-              // Action Buttons
-              if (response.status == DepositStatus.completed)
-                AppButton(
-                  label: l10n.action_done,
-                  onPressed: () {
-                    ref.read(depositProvider.notifier).reset();
-                    context.go('/home');
-                  },
-                  isFullWidth: true,
-                )
-              else if (response.status == DepositStatus.failed)
-                Column(
-                  children: [
-                    AppButton(
-                      label: l10n.action_retry,
-                      onPressed: () {
-                        ref.read(depositProvider.notifier).reset();
-                        context.go('/deposit/amount');
-                      },
-                      isFullWidth: true,
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    AppButton(
-                      label: l10n.action_cancel,
-                      onPressed: () {
-                        ref.read(depositProvider.notifier).reset();
-                        context.go('/home');
-                      },
-                      variant: AppButtonVariant.secondary,
-                      isFullWidth: true,
-                    ),
-                  ],
-                )
-              else
-                AppButton(
-                  label: l10n.deposit_backToHome,
-                  onPressed: () {
-                    ref.read(depositProvider.notifier).reset();
-                    context.go('/home');
-                  },
-                  variant: AppButtonVariant.secondary,
-                  isFullWidth: true,
+              // Status icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isCompleted
+                      ? Colors.green.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                 ),
+                child: Icon(
+                  isCompleted ? Icons.check_circle : Icons.error,
+                  size: 48,
+                  color: isCompleted ? Colors.green : Colors.red,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              Text(
+                isCompleted ? 'Deposit Successful!' : 'Deposit Failed',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+
+              // Details
+              if (isCompleted && state.response != null) ...[
+                Text(
+                  '${state.amountXOF.toStringAsFixed(0)} XOF → ${state.amountUSD.toStringAsFixed(2)} USDC',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.grey[700],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your USDC balance has been updated',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[500],
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+
+              if (!isCompleted && state.error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    state.error!,
+                    style: TextStyle(color: Colors.red[400]),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+              const SizedBox(height: 48),
+
+              // Actions
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    ref.read(depositProvider.notifier).reset();
+                    context.go('/home');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Back to Home',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
+              if (!isCompleted) ...[
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    ref.read(depositProvider.notifier).reset();
+                  },
+                  child: const Text('Try Again'),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildStatusIcon(DepositStatus status, ThemeColors colors) {
-    switch (status) {
-      case DepositStatus.pending:
-        return SizedBox(
-          width: 120,
-          height: 120,
-          child: CircularProgressIndicator(
-            color: colors.gold,
-            strokeWidth: 6,
-          ),
-        );
-
-      case DepositStatus.completed:
-        return Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: colors.success.withValues(alpha: colors.isDark ? 0.2 : 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.check_circle,
-            color: colors.success,
-            size: 80,
-          ),
-        );
-
-      case DepositStatus.failed:
-        return Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: colors.error.withValues(alpha: colors.isDark ? 0.2 : 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.error,
-            color: colors.error,
-            size: 80,
-          ),
-        );
-
-      case DepositStatus.expired:
-        return Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: colors.warning.withValues(alpha: colors.isDark ? 0.2 : 0.15),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.access_time,
-            color: colors.warning,
-            size: 80,
-          ),
-        );
-    }
-  }
-
-  Widget _buildAmountCard(DepositResponse response, ThemeColors colors, AppLocalizations l10n) {
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppText(
-                l10n.deposit_deposited,
-                variant: AppTextVariant.labelMedium,
-                color: colors.textSecondary,
-              ),
-              AppText(
-                '${response.amount.toStringAsFixed(0)} XOF',
-                variant: AppTextVariant.bodyLarge,
-                color: colors.textPrimary,
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Divider(color: colors.borderSubtle, height: 1),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppText(
-                l10n.deposit_received,
-                variant: AppTextVariant.labelMedium,
-                color: colors.textSecondary,
-              ),
-              AppText(
-                '\$${response.convertedAmount?.toStringAsFixed(2) ?? '0.00'}',
-                variant: AppTextVariant.titleLarge,
-                color: colors.gold,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getStatusTitle(DepositStatus status, AppLocalizations l10n) {
-    switch (status) {
-      case DepositStatus.pending:
-        return l10n.deposit_processing;
-      case DepositStatus.completed:
-        return l10n.deposit_success;
-      case DepositStatus.failed:
-        return l10n.deposit_failed;
-      case DepositStatus.expired:
-        return l10n.deposit_expired;
-    }
-  }
-
-  String _getStatusMessage(DepositStatus status, AppLocalizations l10n) {
-    switch (status) {
-      case DepositStatus.pending:
-        return l10n.deposit_processingMessage;
-      case DepositStatus.completed:
-        return l10n.deposit_successMessage;
-      case DepositStatus.failed:
-        return l10n.deposit_failedMessage;
-      case DepositStatus.expired:
-        return l10n.deposit_expiredMessage;
-    }
   }
 }

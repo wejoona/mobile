@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/deposit_provider.dart';
-import '../models/exchange_rate.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 
 /// Deposit Amount Screen
 class DepositAmountScreen extends ConsumerStatefulWidget {

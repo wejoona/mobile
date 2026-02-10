@@ -1,16 +1,27 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/deposit/deposit_service.dart';
-import '../models/deposit_request.dart';
-import '../models/deposit_response.dart';
-import '../models/exchange_rate.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/deposit/deposit_service.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
+import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 
 /// Deposit Service Provider
 final depositServiceProvider = Provider<DepositService>((ref) {
   final dio = ref.watch(dioProvider);
   return DepositService(dio);
 });
+
+/// Deposit Flow Steps
+enum DepositFlowStep {
+  selectProvider,
+  enterAmount,
+  instructions,  // OTP entry / Push waiting / QR display
+  processing,
+  completed,
+  failed,
+}
 
 /// Deposit State
 class DepositState {
@@ -19,8 +30,10 @@ class DepositState {
   final DepositResponse? response;
   final double amountXOF;
   final double amountUSD;
-  final String selectedProvider;
+  final MobileMoneyProvider? selectedProvider;
   final DepositFlowStep step;
+  final String? otpInput;
+  final Timer? statusPollTimer;
 
   const DepositState({
     this.isLoading = false,
@@ -28,8 +41,10 @@ class DepositState {
     this.response,
     this.amountXOF = 0,
     this.amountUSD = 0,
-    this.selectedProvider = '',
-    this.step = DepositFlowStep.amount,
+    this.selectedProvider,
+    this.step = DepositFlowStep.selectProvider,
+    this.otpInput,
+    this.statusPollTimer,
   });
 
   DepositState copyWith({
@@ -38,27 +53,40 @@ class DepositState {
     DepositResponse? response,
     double? amountXOF,
     double? amountUSD,
-    String? selectedProvider,
+    MobileMoneyProvider? selectedProvider,
     DepositFlowStep? step,
+    String? otpInput,
+    Timer? statusPollTimer,
+    bool clearError = false,
+    bool clearTimer = false,
   }) {
     return DepositState(
       isLoading: isLoading ?? this.isLoading,
-      error: error,
+      error: clearError ? null : (error ?? this.error),
       response: response ?? this.response,
       amountXOF: amountXOF ?? this.amountXOF,
       amountUSD: amountUSD ?? this.amountUSD,
       selectedProvider: selectedProvider ?? this.selectedProvider,
       step: step ?? this.step,
+      otpInput: otpInput ?? this.otpInput,
+      statusPollTimer: clearTimer ? null : (statusPollTimer ?? this.statusPollTimer),
     );
   }
-}
 
-enum DepositFlowStep {
-  amount,
-  provider,
-  instructions,
-  processing,
-  completed,
+  /// Whether the current flow step needs an OTP input
+  bool get needsOtpInput =>
+      response?.paymentMethodType == PaymentMethodType.otp &&
+      step == DepositFlowStep.instructions;
+
+  /// Whether the current flow step shows a push waiting screen
+  bool get isPushWaiting =>
+      response?.paymentMethodType == PaymentMethodType.push &&
+      step == DepositFlowStep.instructions;
+
+  /// Whether the current flow step shows QR/link
+  bool get isQrLink =>
+      response?.paymentMethodType == PaymentMethodType.qrLink &&
+      step == DepositFlowStep.instructions;
 }
 
 /// Deposit Notifier
@@ -66,7 +94,16 @@ class DepositNotifier extends Notifier<DepositState> {
   @override
   DepositState build() => const DepositState();
 
-  /// Set amount in XOF
+  /// Select provider
+  void selectProvider(MobileMoneyProvider provider) {
+    state = state.copyWith(
+      selectedProvider: provider,
+      step: DepositFlowStep.enterAmount,
+      clearError: true,
+    );
+  }
+
+  /// Set amount in XOF and calculate USD equivalent
   void setAmountXOF(double amount, ExchangeRate rate) {
     state = state.copyWith(
       amountXOF: amount,
@@ -74,7 +111,7 @@ class DepositNotifier extends Notifier<DepositState> {
     );
   }
 
-  /// Set amount in USD
+  /// Set amount in USD and calculate XOF equivalent
   void setAmountUSD(double amount, ExchangeRate rate) {
     state = state.copyWith(
       amountXOF: rate.convertBack(amount),
@@ -82,80 +119,165 @@ class DepositNotifier extends Notifier<DepositState> {
     );
   }
 
-  /// Set selected provider
-  void setProvider(String provider) {
-    state = state.copyWith(selectedProvider: provider);
+  /// Set OTP input value
+  void setOtp(String otp) {
+    state = state.copyWith(otpInput: otp);
   }
 
-  /// Move to next step
-  void nextStep() {
-    final currentIndex = DepositFlowStep.values.indexOf(state.step);
-    if (currentIndex < DepositFlowStep.values.length - 1) {
-      state = state.copyWith(
-        step: DepositFlowStep.values[currentIndex + 1],
-      );
-    }
-  }
-
-  /// Move to previous step
-  void previousStep() {
-    final currentIndex = DepositFlowStep.values.indexOf(state.step);
-    if (currentIndex > 0) {
-      state = state.copyWith(
-        step: DepositFlowStep.values[currentIndex - 1],
-      );
-    }
-  }
-
-  /// Initiate deposit
+  /// Initiate deposit — calls POST /deposits/initiate
   Future<void> initiateDeposit() async {
-    state = state.copyWith(isLoading: true, error: null);
+    if (state.selectedProvider == null || state.amountXOF <= 0) return;
+
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final service = ref.read(depositServiceProvider);
-      final request = DepositRequest(
+      final request = InitiateDepositRequest(
         amount: state.amountXOF,
         currency: 'XOF',
-        provider: state.selectedProvider,
+        providerCode: state.selectedProvider!.code,
       );
       final response = await service.initiateDeposit(request);
+
       state = state.copyWith(
         isLoading: false,
         response: response,
         step: DepositFlowStep.instructions,
       );
+
+      // For PUSH type, start polling immediately
+      if (response.paymentMethodType == PaymentMethodType.push) {
+        _startStatusPolling();
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: _parseError(e),
       );
     }
   }
 
-  /// Check deposit status
+  /// Confirm deposit — calls POST /deposits/confirm
+  /// For OTP: sends the OTP code
+  /// For PUSH: triggers the push notification to user's phone
+  /// For QR_LINK: not needed (webhook handles it)
+  Future<void> confirmDeposit() async {
+    if (state.response == null) return;
+
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final service = ref.read(depositServiceProvider);
+      final request = ConfirmDepositRequest(
+        token: state.response!.token,
+        otp: state.otpInput,
+      );
+      final response = await service.confirmDeposit(request);
+
+      if (response.status == DepositStatus.completed) {
+        _stopPolling();
+        state = state.copyWith(
+          isLoading: false,
+          response: response,
+          step: DepositFlowStep.completed,
+        );
+      } else if (response.isFailed) {
+        _stopPolling();
+        state = state.copyWith(
+          isLoading: false,
+          response: response,
+          step: DepositFlowStep.failed,
+          error: response.failureReason ?? 'Payment failed',
+        );
+      } else {
+        // Still processing — show processing screen and poll
+        state = state.copyWith(
+          isLoading: false,
+          response: response,
+          step: DepositFlowStep.processing,
+        );
+        _startStatusPolling();
+      }
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e),
+      );
+    }
+  }
+
+  /// Poll deposit status (for PUSH and processing states)
   Future<void> checkStatus() async {
     if (state.response == null) return;
 
     try {
       final service = ref.read(depositServiceProvider);
       final response = await service.getDepositStatus(state.response!.depositId);
-      state = state.copyWith(response: response);
 
-      if (response.status == DepositStatus.completed) {
-        state = state.copyWith(step: DepositFlowStep.completed);
-      } else if (response.status == DepositStatus.failed ||
-          response.status == DepositStatus.expired) {
+      if (response.isCompleted) {
+        _stopPolling();
         state = state.copyWith(
-          error: 'Deposit ${response.status.value}',
+          response: response,
+          step: DepositFlowStep.completed,
         );
+      } else if (response.isFailed) {
+        _stopPolling();
+        state = state.copyWith(
+          response: response,
+          step: DepositFlowStep.failed,
+          error: response.failureReason ?? 'Payment failed',
+        );
+      } else {
+        state = state.copyWith(response: response);
       }
-    } catch (e) {
-      // Silently fail status checks (don't interrupt the flow)
+    } catch (_) {
+      // Silently fail polling — don't interrupt the flow
     }
   }
 
-  /// Reset state
+  /// Start polling for status updates (every 3 seconds)
+  void _startStatusPolling() {
+    _stopPolling();
+    final timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      checkStatus();
+    });
+    state = state.copyWith(statusPollTimer: timer);
+  }
+
+  /// Stop polling
+  void _stopPolling() {
+    state.statusPollTimer?.cancel();
+    state = state.copyWith(clearTimer: true);
+  }
+
+  /// Go back one step
+  void goBack() {
+    _stopPolling();
+    switch (state.step) {
+      case DepositFlowStep.enterAmount:
+        state = state.copyWith(step: DepositFlowStep.selectProvider);
+        break;
+      case DepositFlowStep.instructions:
+        state = state.copyWith(step: DepositFlowStep.enterAmount);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /// Reset the entire flow
   void reset() {
+    _stopPolling();
     state = const DepositState();
+  }
+
+  String _parseError(dynamic e) {
+    if (e is Exception) {
+      final msg = e.toString();
+      if (msg.contains('DioException')) {
+        return 'Network error. Please try again.';
+      }
+      return msg.replaceAll('Exception: ', '');
+    }
+    return e.toString();
   }
 }
 
@@ -165,7 +287,8 @@ final depositProvider = NotifierProvider<DepositNotifier, DepositState>(
 );
 
 /// Exchange Rate Provider (with caching)
-final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((ref) async {
+final exchangeRateProvider =
+    FutureProvider.autoDispose<ExchangeRate>((ref) async {
   final service = ref.watch(depositServiceProvider);
   return service.getExchangeRate();
 });

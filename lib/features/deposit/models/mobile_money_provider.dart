@@ -1,8 +1,61 @@
 /// Mobile Money Provider Model
+///
+/// Each provider has a payment method type that determines the UX flow:
+/// - OTP: User dials USSD, gets OTP, enters in app
+/// - PUSH: Backend initiates, user approves via push notification
+/// - QR_LINK: QR code + deep link to open provider app
+
+enum PaymentMethodType {
+  otp,
+  push,
+  qrLink,
+  card,
+}
+
+extension PaymentMethodTypeExt on PaymentMethodType {
+  String get value {
+    switch (this) {
+      case PaymentMethodType.otp:
+        return 'OTP';
+      case PaymentMethodType.push:
+        return 'PUSH';
+      case PaymentMethodType.qrLink:
+        return 'QR_LINK';
+      case PaymentMethodType.card:
+        return 'CARD';
+    }
+  }
+
+  static PaymentMethodType fromString(String value) {
+    switch (value.toUpperCase()) {
+      case 'OTP':
+        return PaymentMethodType.otp;
+      case 'PUSH':
+        return PaymentMethodType.push;
+      case 'QR_LINK':
+        return PaymentMethodType.qrLink;
+      case 'CARD':
+        return PaymentMethodType.card;
+      default:
+        return PaymentMethodType.push;
+    }
+  }
+
+  /// Whether this type requires an OTP input field
+  bool get requiresOtp => this == PaymentMethodType.otp;
+
+  /// Whether this type shows a "waiting for confirmation" screen
+  bool get isAsyncConfirmation => this == PaymentMethodType.push;
+
+  /// Whether this type shows a QR code and/or deep link
+  bool get hasQrOrLink => this == PaymentMethodType.qrLink;
+}
+
 enum MobileMoneyProvider {
   orangeMoney,
-  wave,
   mtnMomo,
+  moovMoney,
+  wave,
 }
 
 extension MobileMoneyProviderExt on MobileMoneyProvider {
@@ -10,21 +63,26 @@ extension MobileMoneyProviderExt on MobileMoneyProvider {
     switch (this) {
       case MobileMoneyProvider.orangeMoney:
         return 'Orange Money';
-      case MobileMoneyProvider.wave:
-        return 'Wave';
       case MobileMoneyProvider.mtnMomo:
         return 'MTN MoMo';
+      case MobileMoneyProvider.moovMoney:
+        return 'Moov Money';
+      case MobileMoneyProvider.wave:
+        return 'Wave';
     }
   }
 
-  String get id {
+  /// Provider code sent to the API
+  String get code {
     switch (this) {
       case MobileMoneyProvider.orangeMoney:
-        return 'orange_money';
-      case MobileMoneyProvider.wave:
-        return 'wave';
+        return 'OMCI';
       case MobileMoneyProvider.mtnMomo:
-        return 'mtn_momo';
+        return 'MTNCI';
+      case MobileMoneyProvider.moovMoney:
+        return 'MOOVCI';
+      case MobileMoneyProvider.wave:
+        return 'WAVECI';
     }
   }
 
@@ -32,43 +90,41 @@ extension MobileMoneyProviderExt on MobileMoneyProvider {
     switch (this) {
       case MobileMoneyProvider.orangeMoney:
         return 'assets/images/providers/orange_money.png';
-      case MobileMoneyProvider.wave:
-        return 'assets/images/providers/wave.png';
       case MobileMoneyProvider.mtnMomo:
         return 'assets/images/providers/mtn_momo.png';
+      case MobileMoneyProvider.moovMoney:
+        return 'assets/images/providers/moov_money.png';
+      case MobileMoneyProvider.wave:
+        return 'assets/images/providers/wave.png';
     }
   }
 
-  String? get ussdCode {
+  /// Default payment method type (can be overridden by API response)
+  PaymentMethodType get defaultPaymentMethodType {
     switch (this) {
       case MobileMoneyProvider.orangeMoney:
-        return '#144#';
-      case MobileMoneyProvider.wave:
-        return null; // Wave uses app-only
+        return PaymentMethodType.otp;
       case MobileMoneyProvider.mtnMomo:
-        return '*133#';
+        return PaymentMethodType.push;
+      case MobileMoneyProvider.moovMoney:
+        return PaymentMethodType.push;
+      case MobileMoneyProvider.wave:
+        return PaymentMethodType.qrLink;
     }
   }
 
-  String? get deepLink {
-    switch (this) {
-      case MobileMoneyProvider.orangeMoney:
-        return 'orangemoney://';
-      case MobileMoneyProvider.wave:
-        return 'wave://';
-      case MobileMoneyProvider.mtnMomo:
-        return 'momo://';
-    }
-  }
-
-  double get feePercentage {
-    switch (this) {
-      case MobileMoneyProvider.orangeMoney:
-        return 1.5;
-      case MobileMoneyProvider.wave:
-        return 0.0;
-      case MobileMoneyProvider.mtnMomo:
-        return 1.5;
+  static MobileMoneyProvider? fromCode(String code) {
+    switch (code.toUpperCase()) {
+      case 'OMCI':
+        return MobileMoneyProvider.orangeMoney;
+      case 'MTNCI':
+        return MobileMoneyProvider.mtnMomo;
+      case 'MOOVCI':
+        return MobileMoneyProvider.moovMoney;
+      case 'WAVECI':
+        return MobileMoneyProvider.wave;
+      default:
+        return null;
     }
   }
 }
