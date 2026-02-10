@@ -23,6 +23,38 @@ enum DepositFlowStep {
   failed,
 }
 
+/// Provider Data (from API response)
+class ProviderData {
+  final String code;
+  final String name;
+  final PaymentMethodType paymentMethodType;
+  final String? logoUrl;
+  final bool isActive;
+
+  const ProviderData({
+    required this.code,
+    required this.name,
+    required this.paymentMethodType,
+    this.logoUrl,
+    this.isActive = true,
+  });
+
+  factory ProviderData.fromJson(Map<String, dynamic> json) {
+    return ProviderData(
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      paymentMethodType: PaymentMethodTypeExt.fromString(
+        json['paymentMethodType'] as String? ?? 'PUSH',
+      ),
+      logoUrl: json['logoUrl'] as String?,
+      isActive: json['isActive'] as bool? ?? true,
+    );
+  }
+
+  /// Convert to enum if available
+  MobileMoneyProvider? get enumProvider => MobileMoneyProviderExt.fromCode(code);
+}
+
 /// Deposit State
 class DepositState {
   final bool isLoading;
@@ -31,6 +63,8 @@ class DepositState {
   final double amountXOF;
   final double amountUSD;
   final MobileMoneyProvider? selectedProvider;
+  final ProviderData? selectedProviderData;
+  final List<ProviderData> availableProviders;
   final DepositFlowStep step;
   final String? otpInput;
   final Timer? statusPollTimer;
@@ -42,6 +76,8 @@ class DepositState {
     this.amountXOF = 0,
     this.amountUSD = 0,
     this.selectedProvider,
+    this.selectedProviderData,
+    this.availableProviders = const [],
     this.step = DepositFlowStep.selectProvider,
     this.otpInput,
     this.statusPollTimer,
@@ -54,6 +90,8 @@ class DepositState {
     double? amountXOF,
     double? amountUSD,
     MobileMoneyProvider? selectedProvider,
+    ProviderData? selectedProviderData,
+    List<ProviderData>? availableProviders,
     DepositFlowStep? step,
     String? otpInput,
     Timer? statusPollTimer,
@@ -67,6 +105,8 @@ class DepositState {
       amountXOF: amountXOF ?? this.amountXOF,
       amountUSD: amountUSD ?? this.amountUSD,
       selectedProvider: selectedProvider ?? this.selectedProvider,
+      selectedProviderData: selectedProviderData ?? this.selectedProviderData,
+      availableProviders: availableProviders ?? this.availableProviders,
       step: step ?? this.step,
       otpInput: otpInput ?? this.otpInput,
       statusPollTimer: clearTimer ? null : (statusPollTimer ?? this.statusPollTimer),
@@ -94,10 +134,50 @@ class DepositNotifier extends Notifier<DepositState> {
   @override
   DepositState build() => const DepositState();
 
-  /// Select provider
+  /// Load available providers from API
+  Future<void> loadProviders() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final service = ref.read(depositServiceProvider);
+      final providerMaps = await service.getProviders();
+      
+      final providers = providerMaps
+          .map((map) => ProviderData.fromJson(map))
+          .where((p) => p.isActive)
+          .toList();
+
+      state = state.copyWith(
+        isLoading: false,
+        availableProviders: providers,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _parseError(e),
+      );
+    }
+  }
+
+  /// Select provider (using ProviderData from API)
+  void selectProviderData(ProviderData providerData) {
+    state = state.copyWith(
+      selectedProviderData: providerData,
+      selectedProvider: providerData.enumProvider, // For backward compatibility
+      step: DepositFlowStep.enterAmount,
+      clearError: true,
+    );
+  }
+
+  /// Legacy method - select provider by enum
   void selectProvider(MobileMoneyProvider provider) {
+    // Find the matching provider data if available
+    final matchingProviders = state.availableProviders
+        .where((p) => p.enumProvider == provider);
+    final providerData = matchingProviders.isNotEmpty ? matchingProviders.first : null;
+    
     state = state.copyWith(
       selectedProvider: provider,
+      selectedProviderData: providerData,
       step: DepositFlowStep.enterAmount,
       clearError: true,
     );
@@ -126,7 +206,8 @@ class DepositNotifier extends Notifier<DepositState> {
 
   /// Initiate deposit — calls POST /deposits/initiate
   Future<void> initiateDeposit() async {
-    if (state.selectedProvider == null || state.amountXOF <= 0) return;
+    final providerCode = state.selectedProviderData?.code ?? state.selectedProvider?.code;
+    if (providerCode == null || state.amountXOF <= 0) return;
 
     state = state.copyWith(isLoading: true, clearError: true);
     try {
@@ -134,7 +215,7 @@ class DepositNotifier extends Notifier<DepositState> {
       final request = InitiateDepositRequest(
         amount: state.amountXOF,
         currency: 'XOF',
-        providerCode: state.selectedProvider!.code,
+        providerCode: providerCode,
       );
       final response = await service.initiateDeposit(request);
 
@@ -291,4 +372,15 @@ final exchangeRateProvider =
     FutureProvider.autoDispose<ExchangeRate>((ref) async {
   final service = ref.watch(depositServiceProvider);
   return service.getExchangeRate();
+});
+
+/// Providers List Provider
+final providersListProvider = FutureProvider.autoDispose<List<ProviderData>>((ref) async {
+  final service = ref.read(depositServiceProvider);
+  final providerMaps = await service.getProviders();
+  
+  return providerMaps
+      .map((map) => ProviderData.fromJson(map))
+      .where((p) => p.isActive)
+      .toList();
 });

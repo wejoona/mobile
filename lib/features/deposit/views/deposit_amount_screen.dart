@@ -290,7 +290,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
   Widget _buildLimitsInfo(ThemeColors colors, AppLocalizations l10n) {
     return AppCard(
-      variant: AppCardVariant.subtle,
+      variant: AppCardVariant.flat,
       child: Row(
         children: [
           Icon(Icons.info_outline, color: colors.textTertiary, size: 20),

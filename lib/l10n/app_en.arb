@@ -2262,9 +2262,10 @@
     "description": "Payment instructions screen title"
   },
 
-  "deposit_expiresIn": "Expires in",
+  "deposit_expiresIn": "Expires in {time}",
   "@deposit_expiresIn": {
-    "description": "Expiration countdown label"
+    "description": "Expiration countdown label",
+    "placeholders": { "time": { "type": "String" } }
   },
 
   "deposit_via": "via {provider}",
@@ -10279,5 +10280,44 @@
   "kyc_remindLater": "Remind Me Later",
   "@kyc_remindLater": {
     "description": "Button to dismiss KYC renewal reminder"
-  }
+  },
+
+  "action_backToHome": "Back to Home",
+  "action_checkStatus": "Check Status",
+  "action_ok": "OK",
+  "common_errorTryAgain": "Something went wrong. Please try again.",
+  "common_loading": "Loading...",
+  "common_unknownError": "An unknown error occurred",
+
+  "deposit_amount": "Amount",
+  "deposit_approveOnPhone": "Approve the payment on your phone by entering your PIN",
+  "deposit_balanceUpdated": "Your balance has been updated",
+  "deposit_cardPaymentComingSoon": "Card payment coming soon",
+  "deposit_choosePaymentMethod": "Choose Payment Method",
+  "deposit_dialUSSD": "Dial the USSD code below to get your OTP",
+  "deposit_enterOTP": "Enter OTP",
+  "deposit_errorReason": "Error: {reason}",
+  "@deposit_errorReason": {
+    "placeholders": { "reason": { "type": "String" } }
+  },
+  "deposit_failedDesc": "Your deposit could not be completed",
+  "deposit_failedTitle": "Deposit Failed",
+  "deposit_noDepositData": "No deposit data available",
+  "deposit_noProvidersAvailable": "No Providers Available",
+  "deposit_noProvidersAvailableDesc": "No deposit providers are currently available. Please try again later.",
+  "deposit_openInWave": "Open in Wave",
+  "deposit_orScanQR": "Or scan the QR code below",
+  "deposit_payment": "Payment",
+  "deposit_processingDesc": "We are processing your deposit. This may take a moment.",
+  "deposit_processingSubtitle": "Please wait while we verify your payment",
+  "deposit_processingTitle": "Processing Deposit",
+  "deposit_scanQRCode": "Scan QR Code",
+  "deposit_selectHowToDeposit": "Select how you want to deposit",
+  "deposit_submitOTP": "Submit OTP",
+  "deposit_successDesc": "Your deposit has been completed successfully",
+  "deposit_successTitle": "Deposit Successful",
+  "deposit_waitingForApproval": "Waiting for approval on your phone",
+  "deposit_waitingForPayment": "Waiting for payment",
+  "deposit_youPay": "You Pay",
+  "deposit_youReceive": "You Receive"
 }

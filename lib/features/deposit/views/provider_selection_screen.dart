@@ -1,52 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 
 /// Provider Selection Screen
 ///
-/// Shows available mobile money providers (Orange, MTN, Moov, Wave).
+/// Fetches providers from API and shows list: Orange Money, MTN MoMo, Moov Money, Wave
+/// Each shows its PaymentMethodType (OTP, PUSH, QR_LINK)
+/// User selects → calls initiate API → navigates to payment instructions
 class ProviderSelectionScreen extends ConsumerWidget {
   const ProviderSelectionScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final depositState = ref.watch(depositProvider);
+    final providersAsync = ref.watch(providersListProvider);
+
     return Scaffold(
+      backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: const Text('Deposit'),
+        backgroundColor: Colors.transparent,
+        title: AppText(
+          l10n.deposit_title,
+          variant: AppTextVariant.titleLarge,
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Choose payment method',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Select how you want to deposit funds',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-              ),
-              const SizedBox(height: 24),
+              // Amount Summary Card
+              if (depositState.amountXOF > 0) ...[
+                AppCard(
+                  variant: AppCardVariant.elevated,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            l10n.deposit_amount,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                          ),
+                          AppText(
+                            '${depositState.amountXOF.toStringAsFixed(0)} XOF',
+                            variant: AppTextVariant.titleMedium,
+                            color: colors.textPrimary,
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          AppText(
+                            l10n.deposit_youWillReceive,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                          ),
+                          AppText(
+                            '\$${depositState.amountUSD.toStringAsFixed(2)}',
+                            variant: AppTextVariant.titleMedium,
+                            color: colors.gold,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
 
-              // Provider list
+              // Title
+              AppText(
+                l10n.deposit_choosePaymentMethod,
+                variant: AppTextVariant.headlineSmall,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.deposit_selectHowToDeposit,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Providers List
               Expanded(
-                child: ListView(
-                  children: MobileMoneyProvider.values.map((provider) {
-                    return _ProviderTile(
-                      provider: provider,
-                      onTap: () {
-                        ref.read(depositProvider.notifier).selectProvider(provider);
-                      },
-                    );
-                  }).toList(),
+                child: providersAsync.when(
+                  data: (providers) => _buildProvidersList(
+                    providers, 
+                    colors, 
+                    l10n, 
+                    ref,
+                    depositState.isLoading,
+                  ),
+                  loading: () => _buildLoadingState(colors, l10n),
+                  error: (err, stack) => _buildErrorState(colors, l10n, ref),
                 ),
               ),
             ],
@@ -55,74 +118,267 @@ class ProviderSelectionScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _ProviderTile extends StatelessWidget {
-  final MobileMoneyProvider provider;
-  final VoidCallback onTap;
+  Widget _buildProvidersList(
+    List<ProviderData> providers,
+    ThemeColors colors,
+    AppLocalizations l10n,
+    WidgetRef ref,
+    bool isLoading,
+  ) {
+    if (providers.isEmpty) {
+      return _buildEmptyState(colors, l10n);
+    }
 
-  const _ProviderTile({required this.provider, required this.onTap});
+    return ListView.separated(
+      itemCount: providers.length,
+      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      itemBuilder: (context, index) {
+        final provider = providers[index];
+        return _ProviderTile(
+          provider: provider,
+          colors: colors,
+          isLoading: isLoading,
+          onTap: () => _selectProvider(context, provider, ref),
+        );
+      },
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: _providerColor(provider).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+  Widget _buildLoadingState(ThemeColors colors, AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: colors.gold),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.common_loading,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
           ),
-          child: Icon(
-            _providerIcon(provider),
-            color: _providerColor(provider),
-          ),
-        ),
-        title: Text(
-          provider.name,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          _providerSubtitle(provider),
-          style: TextStyle(color: Colors.grey[600], fontSize: 12),
-        ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onTap,
+        ],
       ),
     );
   }
 
-  Color _providerColor(MobileMoneyProvider p) {
-    switch (p) {
-      case MobileMoneyProvider.orangeMoney:
-        return Colors.orange;
-      case MobileMoneyProvider.mtnMomo:
-        return Colors.yellow.shade800;
-      case MobileMoneyProvider.moovMoney:
-        return Colors.blue;
-      case MobileMoneyProvider.wave:
-        return Colors.indigo;
-    }
+  Widget _buildErrorState(ThemeColors colors, AppLocalizations l10n, WidgetRef ref) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 64,
+            color: colors.error,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.common_error,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.common_errorTryAgain,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            label: l10n.action_retry,
+            onPressed: () => ref.refresh(providersListProvider),
+          ),
+        ],
+      ),
+    );
   }
 
-  IconData _providerIcon(MobileMoneyProvider p) {
-    switch (p) {
-      case MobileMoneyProvider.orangeMoney:
-        return Icons.phone_android;
-      case MobileMoneyProvider.mtnMomo:
-        return Icons.phone_android;
-      case MobileMoneyProvider.moovMoney:
-        return Icons.phone_android;
-      case MobileMoneyProvider.wave:
+  Widget _buildEmptyState(ThemeColors colors, AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.payment_outlined,
+            size: 64,
+            color: colors.textTertiary,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.deposit_noProvidersAvailable,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.deposit_noProvidersAvailableDesc,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _selectProvider(BuildContext context, ProviderData provider, WidgetRef ref) async {
+    // Select the provider
+    ref.read(depositProvider.notifier).selectProviderData(provider);
+    
+    // Initiate the deposit immediately
+    await ref.read(depositProvider.notifier).initiateDeposit();
+    
+    // Navigate to payment instructions if successful
+    if (ref.read(depositProvider).response != null) {
+      context.push('/deposit/instructions');
+    }
+  }
+}
+
+class _ProviderTile extends StatelessWidget {
+  final ProviderData provider;
+  final ThemeColors colors;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  const _ProviderTile({
+    required this.provider,
+    required this.colors,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      onTap: isLoading ? null : onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            // Provider Logo/Icon
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: _getProviderColor().withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+              ),
+              child: Center(
+                child: _buildProviderIcon(),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.lg),
+
+            // Provider Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    provider.name,
+                    variant: AppTextVariant.titleMedium,
+                    color: colors.textPrimary,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Row(
+                    children: [
+                      Icon(
+                        _getPaymentMethodIcon(),
+                        size: 16,
+                        color: colors.textSecondary,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      AppText(
+                        _getPaymentMethodDescription(),
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textSecondary,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // Loading or Arrow
+            if (isLoading)
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.gold,
+                ),
+              )
+            else
+              Icon(
+                Icons.chevron_right,
+                color: colors.textTertiary,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getProviderColor() {
+    // Use enum provider for color if available, otherwise default
+    final enumProvider = provider.enumProvider;
+    if (enumProvider != null) {
+      switch (enumProvider) {
+        case MobileMoneyProvider.orangeMoney:
+          return const Color(0xFFFF6B35);
+        case MobileMoneyProvider.mtnMomo:
+          return const Color(0xFFFFCB05);
+        case MobileMoneyProvider.moovMoney:
+          return const Color(0xFF0066CC);
+        case MobileMoneyProvider.wave:
+          return const Color(0xFF4A148C);
+      }
+    }
+    return colors.gold;
+  }
+
+  Widget _buildProviderIcon() {
+    // Try to load from assets first, fallback to generic icon
+    final enumProvider = provider.enumProvider;
+    if (enumProvider != null) {
+      return Image.asset(
+        enumProvider.logoPath,
+        width: 32,
+        height: 32,
+        errorBuilder: (context, error, stackTrace) => _getGenericIcon(),
+      );
+    }
+    return _getGenericIcon();
+  }
+
+  Widget _getGenericIcon() {
+    return Icon(
+      _getPaymentMethodIcon(),
+      color: _getProviderColor(),
+      size: 32,
+    );
+  }
+
+  IconData _getPaymentMethodIcon() {
+    switch (provider.paymentMethodType) {
+      case PaymentMethodType.otp:
+        return Icons.dialpad;
+      case PaymentMethodType.push:
+        return Icons.notifications_active;
+      case PaymentMethodType.qrLink:
         return Icons.qr_code;
+      case PaymentMethodType.card:
+        return Icons.credit_card;
     }
   }
 
-  String _providerSubtitle(MobileMoneyProvider p) {
-    switch (p.defaultPaymentMethodType) {
+  String _getPaymentMethodDescription() {
+    switch (provider.paymentMethodType) {
       case PaymentMethodType.otp:
         return 'Enter OTP code';
       case PaymentMethodType.push:

@@ -1444,7 +1444,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deposit_paymentInstructions => 'Instructions de paiement';
 
   @override
-  String get deposit_expiresIn => 'Expire dans';
+  String deposit_expiresIn(String time) {
+    return 'Expire dans $time';
+  }
 
   @override
   String deposit_via(String provider) {
@@ -6721,4 +6723,116 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get kyc_remindLater => 'Me le rappeler plus tard';
+
+  @override
+  String get action_backToHome => 'Retour à l\'accueil';
+
+  @override
+  String get action_checkStatus => 'Vérifier le statut';
+
+  @override
+  String get action_ok => 'OK';
+
+  @override
+  String get common_errorTryAgain =>
+      'Une erreur est survenue. Veuillez réessayer.';
+
+  @override
+  String get common_loading => 'Chargement...';
+
+  @override
+  String get common_unknownError => 'Une erreur inconnue est survenue';
+
+  @override
+  String get deposit_amount => 'Montant';
+
+  @override
+  String get deposit_approveOnPhone =>
+      'Approuvez le paiement sur votre téléphone en saisissant votre code PIN';
+
+  @override
+  String get deposit_balanceUpdated => 'Votre solde a été mis à jour';
+
+  @override
+  String get deposit_cardPaymentComingSoon =>
+      'Paiement par carte bientôt disponible';
+
+  @override
+  String get deposit_choosePaymentMethod => 'Choisir le mode de paiement';
+
+  @override
+  String get deposit_dialUSSD =>
+      'Composez le code USSD ci-dessous pour obtenir votre OTP';
+
+  @override
+  String get deposit_enterOTP => 'Entrer le code OTP';
+
+  @override
+  String deposit_errorReason(String reason) {
+    return 'Erreur : $reason';
+  }
+
+  @override
+  String get deposit_failedDesc => 'Votre dépôt n\'a pas pu être effectué';
+
+  @override
+  String get deposit_failedTitle => 'Dépôt échoué';
+
+  @override
+  String get deposit_noDepositData => 'Aucune donnée de dépôt disponible';
+
+  @override
+  String get deposit_noProvidersAvailable => 'Aucun fournisseur disponible';
+
+  @override
+  String get deposit_noProvidersAvailableDesc =>
+      'Aucun fournisseur de dépôt n\'est actuellement disponible. Veuillez réessayer plus tard.';
+
+  @override
+  String get deposit_openInWave => 'Ouvrir dans Wave';
+
+  @override
+  String get deposit_orScanQR => 'Ou scannez le code QR ci-dessous';
+
+  @override
+  String get deposit_payment => 'Paiement';
+
+  @override
+  String get deposit_processingDesc =>
+      'Nous traitons votre dépôt. Cela peut prendre un moment.';
+
+  @override
+  String get deposit_processingSubtitle =>
+      'Veuillez patienter pendant la vérification de votre paiement';
+
+  @override
+  String get deposit_processingTitle => 'Dépôt en cours';
+
+  @override
+  String get deposit_scanQRCode => 'Scanner le code QR';
+
+  @override
+  String get deposit_selectHowToDeposit => 'Sélectionnez comment déposer';
+
+  @override
+  String get deposit_submitOTP => 'Valider le code OTP';
+
+  @override
+  String get deposit_successDesc => 'Votre dépôt a été effectué avec succès';
+
+  @override
+  String get deposit_successTitle => 'Dépôt réussi';
+
+  @override
+  String get deposit_waitingForApproval =>
+      'En attente d\'approbation sur votre téléphone';
+
+  @override
+  String get deposit_waitingForPayment => 'En attente de paiement';
+
+  @override
+  String get deposit_youPay => 'Vous payez';
+
+  @override
+  String get deposit_youReceive => 'Vous recevez';
 }

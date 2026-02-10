@@ -2,17 +2,22 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 
 /// Payment Instructions Screen
 ///
-/// Adapts UI based on payment method type:
-/// - OTP: Shows instructions + OTP input field + confirm button
-/// - PUSH: Shows instructions + "waiting for confirmation" with spinner
-/// - QR_LINK: Shows QR code + deep link button + instructions
+/// Receives DepositResponse with token + paymentMethodType:
+/// - OTP flow: Shows "Dial #144*82# on your phone" + OTP input field + Confirm button
+/// - PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
+/// - QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
 class PaymentInstructionsScreen extends ConsumerStatefulWidget {
   const PaymentInstructionsScreen({super.key});
 
@@ -26,6 +31,17 @@ class _PaymentInstructionsScreenState
   final _otpController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Start polling for push and QR flows
+    final state = ref.read(depositProvider);
+    if (state.response?.paymentMethodType.isAsyncConfirmation == true ||
+        state.response?.paymentMethodType.hasQrOrLink == true) {
+      // Polling is already started in the provider
+    }
+  }
+
+  @override
   void dispose() {
     _otpController.dispose();
     super.dispose();
@@ -33,48 +49,97 @@ class _PaymentInstructionsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final state = ref.watch(depositProvider);
     final response = state.response;
 
+    // Error handling
+    if (state.error != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showErrorDialog(context, state.error!, colors, l10n);
+      });
+    }
+
+    // Auto-navigate on completion/failure
+    ref.listen(depositProvider, (previous, current) {
+      if (current.step == DepositFlowStep.completed ||
+          current.step == DepositFlowStep.failed) {
+        context.push('/deposit/status');
+      }
+    });
+
     if (response == null) {
-      return const Scaffold(
-        body: Center(child: Text('No deposit data')),
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: Center(
+          child: AppText(
+            l10n.deposit_noDepositData,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+          ),
+        ),
       );
     }
 
     return Scaffold(
+      backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: const Text('Payment'),
+        backgroundColor: Colors.transparent,
+        title: AppText(
+          l10n.deposit_payment,
+          variant: AppTextVariant.titleLarge,
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => ref.read(depositProvider.notifier).goBack(),
+          onPressed: () => _handleBack(),
         ),
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Amount display
-              _buildAmountCard(state),
-              const SizedBox(height: 24),
+              // Amount Summary Card
+              _buildAmountCard(state, colors, l10n),
+              const SizedBox(height: AppSpacing.xl),
 
               // Instructions
-              Text(
-                response.instructions,
-                style: Theme.of(context).textTheme.bodyLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
+              if (response.instructions.isNotEmpty) ...[
+                AppCard(
+                  variant: AppCardVariant.flat,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: colors.gold,
+                        size: 24,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: AppText(
+                          response.instructions,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
 
               // Type-specific content
               Expanded(
-                child: _buildTypeSpecificContent(state, response),
+                child: _buildTypeSpecificContent(state, response, colors, l10n),
               ),
+              
+              const SizedBox(height: AppSpacing.md),
 
-              // Action button
-              if (!state.isPushWaiting) _buildActionButton(state),
+              // Action button (only for OTP flow)
+              if (response.paymentMethodType.requiresOtp) 
+                _buildActionButton(state, colors, l10n),
             ],
           ),
         ),
@@ -82,47 +147,51 @@ class _PaymentInstructionsScreenState
     );
   }
 
-  Widget _buildAmountCard(DepositState state) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'You pay',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  '${state.amountXOF.toStringAsFixed(0)} XOF',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
-            ),
-            const Icon(Icons.arrow_forward, color: Colors.grey),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  'You receive',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                Text(
-                  '${state.amountUSD.toStringAsFixed(2)} USDC',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                ),
-              ],
-            ),
-          ],
-        ),
+  Widget _buildAmountCard(
+    DepositState state, 
+    ThemeColors colors, 
+    AppLocalizations l10n,
+  ) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                l10n.deposit_youPay,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+              AppText(
+                '${state.amountXOF.toStringAsFixed(0)} XOF',
+                variant: AppTextVariant.headlineSmall,
+                color: colors.textPrimary,
+              ),
+            ],
+          ),
+          Icon(
+            Icons.arrow_forward,
+            color: colors.textTertiary,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              AppText(
+                l10n.deposit_youReceive,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+              AppText(
+                '\$${state.amountUSD.toStringAsFixed(2)}',
+                variant: AppTextVariant.headlineSmall,
+                color: colors.gold,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -130,52 +199,100 @@ class _PaymentInstructionsScreenState
   Widget _buildTypeSpecificContent(
     DepositState state,
     DepositResponse response,
+    ThemeColors colors,
+    AppLocalizations l10n,
   ) {
     switch (response.paymentMethodType) {
       case PaymentMethodType.otp:
-        return _buildOtpContent(state);
+        return _buildOtpContent(state, colors, l10n);
       case PaymentMethodType.push:
-        return _buildPushContent(state);
+        return _buildPushContent(state, response, colors, l10n);
       case PaymentMethodType.qrLink:
-        return _buildQrLinkContent(state, response);
+        return _buildQrLinkContent(state, response, colors, l10n);
       case PaymentMethodType.card:
-        return const Center(child: Text('Card payment coming soon'));
+        return _buildCardContent(colors, l10n);
     }
   }
 
-  /// OTP flow: USSD instruction + OTP input
-  Widget _buildOtpContent(DepositState state) {
+  /// OTP flow: Shows "Dial #144*82# on your phone" + OTP input field + Confirm button
+  Widget _buildOtpContent(
+    DepositState state, 
+    ThemeColors colors, 
+    AppLocalizations l10n,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Icon(
-          Icons.dialpad,
-          size: 48,
-          color: Colors.orange,
+        // Dial instruction
+        AppCard(
+          variant: AppCardVariant.elevated,
+          child: Column(
+            children: [
+              Icon(
+                Icons.dialpad,
+                size: 48,
+                color: colors.gold,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppText(
+                l10n.deposit_dialUSSD,
+                variant: AppTextVariant.titleMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.md,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.elevated,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: AppText(
+                  '#144*82#',
+                  variant: AppTextVariant.headlineSmall,
+                  color: colors.gold,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Enter the OTP code you received',
-          style: Theme.of(context).textTheme.titleMedium,
+        const SizedBox(height: AppSpacing.xl),
+
+        // OTP Input
+        AppText(
+          l10n.deposit_enterOTP,
+          variant: AppTextVariant.titleMedium,
+          color: colors.textPrimary,
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: AppSpacing.lg),
         TextField(
           controller: _otpController,
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
           maxLength: 8,
-          style: const TextStyle(
-            fontSize: 24,
+          style: AppTypography.headlineSmall.copyWith(
+            color: colors.textPrimary,
             letterSpacing: 8,
             fontWeight: FontWeight.bold,
           ),
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
             hintText: '------',
+            hintStyle: AppTypography.headlineSmall.copyWith(
+              color: colors.textTertiary,
+            ),
             counterText: '',
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide(color: colors.borderSubtle),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderSide: BorderSide(color: colors.gold),
             ),
           ),
           onChanged: (value) {
@@ -186,126 +303,248 @@ class _PaymentInstructionsScreenState
     );
   }
 
-  /// PUSH flow: Waiting for user to approve on their phone
-  Widget _buildPushContent(DepositState state) {
+  /// PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
+  Widget _buildPushContent(
+    DepositState state,
+    DepositResponse response, 
+    ThemeColors colors, 
+    AppLocalizations l10n,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(
-          width: 64,
-          height: 64,
-          child: CircularProgressIndicator(strokeWidth: 3),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Waiting for your approval...',
-          style: Theme.of(context).textTheme.titleMedium,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Check your phone and approve the payment\nusing your Mobile Money PIN',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
+        AppCard(
+          variant: AppCardVariant.elevated,
+          child: Column(
+            children: [
+              SizedBox(
+                width: 64,
+                height: 64,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: colors.gold,
+                ),
               ),
-          textAlign: TextAlign.center,
+              const SizedBox(height: AppSpacing.xl),
+              AppText(
+                l10n.deposit_waitingForApproval,
+                variant: AppTextVariant.titleLarge,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppText(
+                l10n.deposit_approveOnPhone,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 32),
-        if (state.response?.expiresAt != null)
-          _CountdownTimer(expiresAt: state.response!.expiresAt),
+        const SizedBox(height: AppSpacing.xl),
+        
+        // Countdown timer
+        if (response.expiresAt.isAfter(DateTime.now()))
+          _CountdownTimer(
+            expiresAt: response.expiresAt,
+            colors: colors,
+            l10n: l10n,
+          ),
       ],
     );
   }
 
-  /// QR/Link flow: Display QR code + open link button
-  Widget _buildQrLinkContent(DepositState state, DepositResponse response) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // QR Code placeholder (would use qr_flutter package)
-        if (response.qrCodeData != null)
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
+  /// QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
+  Widget _buildQrLinkContent(
+    DepositState state,
+    DepositResponse response, 
+    ThemeColors colors, 
+    AppLocalizations l10n,
+  ) {
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // QR Code
+          if (response.qrCodeData?.isNotEmpty == true) ...[
+            AppCard(
+              variant: AppCardVariant.elevated,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.qr_code, size: 80, color: Colors.blue),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Scan to pay',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  AppText(
+                    l10n.deposit_scanQRCode,
+                    variant: AppTextVariant.titleMedium,
+                    color: colors.textPrimary,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: colors.canvas,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                    ),
+                    child: QrImageView(
+                      data: response.qrCodeData!,
+                      version: QrVersions.auto,
+                      size: 200.0,
+                      foregroundColor: colors.textPrimary,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
+          ],
 
-        // Deep link button
-        if (response.deepLinkUrl != null)
-          ElevatedButton.icon(
-            onPressed: () => _openDeepLink(response.deepLinkUrl as String),
-            icon: const Icon(Icons.open_in_new),
-            label: const Text('Open Wave'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          // Deep link button
+          if (response.deepLinkUrl?.isNotEmpty == true) ...[
+            AppButton(
+              label: l10n.deposit_openInWave,
+              icon: Icons.open_in_new,
+              onPressed: () => _openDeepLink(response.deepLinkUrl!),
+              isFullWidth: true,
             ),
-          ),
+            const SizedBox(height: AppSpacing.md),
+            AppText(
+              l10n.deposit_orScanQR,
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+          ],
 
-        const SizedBox(height: 16),
-        Text(
-          'Or scan the QR code above',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+          const SizedBox(height: AppSpacing.xl),
+
+          // Status polling indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: colors.textSecondary,
+                ),
               ),
-        ),
-      ],
+              const SizedBox(width: AppSpacing.sm),
+              AppText(
+                l10n.deposit_waitingForPayment,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildActionButton(DepositState state) {
-    final isOtp = state.response?.paymentMethodType == PaymentMethodType.otp;
-    final canConfirm = !isOtp || (state.otpInput?.length ?? 0) >= 4;
+  /// Card flow: Placeholder for card payments
+  Widget _buildCardContent(ThemeColors colors, AppLocalizations l10n) {
+    return Center(
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.credit_card,
+              size: 64,
+              color: colors.textTertiary,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              l10n.deposit_cardPaymentComingSoon,
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-    return ElevatedButton(
-      onPressed: state.isLoading || !canConfirm
+  Widget _buildActionButton(
+    DepositState state, 
+    ThemeColors colors, 
+    AppLocalizations l10n,
+  ) {
+    final canSubmit = (state.otpInput?.length ?? 0) >= 4;
+
+    return AppButton(
+      label: l10n.deposit_submitOTP,
+      onPressed: state.isLoading || !canSubmit
           ? null
           : () => ref.read(depositProvider.notifier).confirmDeposit(),
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: state.isLoading
-          ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Text(
-              isOtp ? 'Submit OTP' : 'Confirm Payment',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      isLoading: state.isLoading,
+      isFullWidth: true,
+    );
+  }
+
+  void _showErrorDialog(
+    BuildContext context,
+    String error,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: AppText(
+          l10n.common_error,
+          variant: AppTextVariant.titleMedium,
+          color: colors.error,
+        ),
+        content: AppText(
+          error,
+          variant: AppTextVariant.bodyMedium,
+          color: colors.textPrimary,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: AppText(
+              l10n.action_ok,
+              variant: AppTextVariant.labelMedium,
+              color: colors.gold,
             ),
+          ),
+        ],
+      ),
     );
   }
 
   Future<void> _openDeepLink(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      // Handle error silently or show a message
     }
+  }
+
+  void _handleBack() {
+    // Stop polling and go back
+    ref.read(depositProvider.notifier).goBack();
+    context.pop();
   }
 }
 
 /// Countdown timer widget for expiration
 class _CountdownTimer extends StatefulWidget {
   final DateTime expiresAt;
-  const _CountdownTimer({required this.expiresAt});
+  final ThemeColors colors;
+  final AppLocalizations l10n;
+
+  const _CountdownTimer({
+    required this.expiresAt,
+    required this.colors,
+    required this.l10n,
+  });
 
   @override
   State<_CountdownTimer> createState() => _CountdownTimerState();
@@ -320,9 +559,11 @@ class _CountdownTimerState extends State<_CountdownTimer> {
     super.initState();
     _remaining = widget.expiresAt.difference(DateTime.now());
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() {
-        _remaining = widget.expiresAt.difference(DateTime.now());
-      });
+      if (mounted) {
+        setState(() {
+          _remaining = widget.expiresAt.difference(DateTime.now());
+        });
+      }
     });
   }
 
@@ -335,16 +576,21 @@ class _CountdownTimerState extends State<_CountdownTimer> {
   @override
   Widget build(BuildContext context) {
     if (_remaining.isNegative) {
-      return Text(
-        'Expired',
-        style: TextStyle(color: Colors.red[400], fontWeight: FontWeight.bold),
+      return AppText(
+        widget.l10n.deposit_expired,
+        variant: AppTextVariant.bodyMedium,
+        color: widget.colors.error,
       );
     }
+    
     final minutes = _remaining.inMinutes;
     final seconds = _remaining.inSeconds % 60;
-    return Text(
-      'Expires in ${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-      style: TextStyle(color: Colors.grey[600]),
+    final timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    
+    return AppText(
+      widget.l10n.deposit_expiresIn(timeString),
+      variant: AppTextVariant.bodyMedium,
+      color: widget.colors.textSecondary,
     );
   }
 }

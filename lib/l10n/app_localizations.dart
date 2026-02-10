@@ -2745,8 +2745,8 @@ abstract class AppLocalizations {
   /// Expiration countdown label
   ///
   /// In en, this message translates to:
-  /// **'Expires in'**
-  String get deposit_expiresIn;
+  /// **'Expires in {time}'**
+  String deposit_expiresIn(String time);
 
   /// Payment via provider label
   ///
@@ -12233,6 +12233,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remind Me Later'**
   String get kyc_remindLater;
+
+  /// No description provided for @action_backToHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get action_backToHome;
+
+  /// No description provided for @action_checkStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Status'**
+  String get action_checkStatus;
+
+  /// No description provided for @action_ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get action_ok;
+
+  /// No description provided for @common_errorTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get common_errorTryAgain;
+
+  /// No description provided for @common_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get common_loading;
+
+  /// No description provided for @common_unknownError.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred'**
+  String get common_unknownError;
+
+  /// No description provided for @deposit_amount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get deposit_amount;
+
+  /// No description provided for @deposit_approveOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve the payment on your phone by entering your PIN'**
+  String get deposit_approveOnPhone;
+
+  /// No description provided for @deposit_balanceUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Your balance has been updated'**
+  String get deposit_balanceUpdated;
+
+  /// No description provided for @deposit_cardPaymentComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Card payment coming soon'**
+  String get deposit_cardPaymentComingSoon;
+
+  /// No description provided for @deposit_choosePaymentMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Payment Method'**
+  String get deposit_choosePaymentMethod;
+
+  /// No description provided for @deposit_dialUSSD.
+  ///
+  /// In en, this message translates to:
+  /// **'Dial the USSD code below to get your OTP'**
+  String get deposit_dialUSSD;
+
+  /// No description provided for @deposit_enterOTP.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter OTP'**
+  String get deposit_enterOTP;
+
+  /// No description provided for @deposit_errorReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {reason}'**
+  String deposit_errorReason(String reason);
+
+  /// No description provided for @deposit_failedDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deposit could not be completed'**
+  String get deposit_failedDesc;
+
+  /// No description provided for @deposit_failedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Failed'**
+  String get deposit_failedTitle;
+
+  /// No description provided for @deposit_noDepositData.
+  ///
+  /// In en, this message translates to:
+  /// **'No deposit data available'**
+  String get deposit_noDepositData;
+
+  /// No description provided for @deposit_noProvidersAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No Providers Available'**
+  String get deposit_noProvidersAvailable;
+
+  /// No description provided for @deposit_noProvidersAvailableDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No deposit providers are currently available. Please try again later.'**
+  String get deposit_noProvidersAvailableDesc;
+
+  /// No description provided for @deposit_openInWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in Wave'**
+  String get deposit_openInWave;
+
+  /// No description provided for @deposit_orScanQR.
+  ///
+  /// In en, this message translates to:
+  /// **'Or scan the QR code below'**
+  String get deposit_orScanQR;
+
+  /// No description provided for @deposit_payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get deposit_payment;
+
+  /// No description provided for @deposit_processingDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'We are processing your deposit. This may take a moment.'**
+  String get deposit_processingDesc;
+
+  /// No description provided for @deposit_processingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait while we verify your payment'**
+  String get deposit_processingSubtitle;
+
+  /// No description provided for @deposit_processingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing Deposit'**
+  String get deposit_processingTitle;
+
+  /// No description provided for @deposit_scanQRCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR Code'**
+  String get deposit_scanQRCode;
+
+  /// No description provided for @deposit_selectHowToDeposit.
+  ///
+  /// In en, this message translates to:
+  /// **'Select how you want to deposit'**
+  String get deposit_selectHowToDeposit;
+
+  /// No description provided for @deposit_submitOTP.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit OTP'**
+  String get deposit_submitOTP;
+
+  /// No description provided for @deposit_successDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your deposit has been completed successfully'**
+  String get deposit_successDesc;
+
+  /// No description provided for @deposit_successTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit Successful'**
+  String get deposit_successTitle;
+
+  /// No description provided for @deposit_waitingForApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for approval on your phone'**
+  String get deposit_waitingForApproval;
+
+  /// No description provided for @deposit_waitingForPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for payment'**
+  String get deposit_waitingForPayment;
+
+  /// No description provided for @deposit_youPay.
+  ///
+  /// In en, this message translates to:
+  /// **'You Pay'**
+  String get deposit_youPay;
+
+  /// No description provided for @deposit_youReceive.
+  ///
+  /// In en, this message translates to:
+  /// **'You Receive'**
+  String get deposit_youReceive;
 }
 
 class _AppLocalizationsDelegate
