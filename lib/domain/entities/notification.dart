@@ -26,19 +26,21 @@ class AppNotification {
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
+      id: (json['id'] ?? '') as String,
+      userId: (json['userId'] ?? '') as String,
       type: NotificationType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => NotificationType.general,
       ),
-      title: json['title'] as String,
-      body: json['body'] as String,
+      title: (json['title'] ?? '') as String,
+      body: (json['body'] ?? json['message'] ?? '') as String,
       data: json['data'] as Map<String, dynamic>?,
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      isRead: json['isRead'] as bool? ?? json['read'] as bool? ?? false,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
       readAt: json['readAt'] != null
-          ? DateTime.parse(json['readAt'] as String)
+          ? DateTime.tryParse(json['readAt'] as String)
           : null,
     );
   }

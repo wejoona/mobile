@@ -6,6 +6,7 @@ import '../../../design/tokens/index.dart';
 import '../../../design/components/primitives/index.dart';
 import '../../../services/api/api_client.dart';
 import '../../../state/index.dart';
+import '../../../domain/enums/index.dart';
 
 class SplashView extends ConsumerStatefulWidget {
   const SplashView({super.key});
@@ -61,12 +62,25 @@ class _SplashViewState extends ConsumerState<SplashView>
 
     if (!mounted) return;
 
-    // Check auth status
-    final authState = ref.read(userStateMachineProvider);
-
     if (!onboardingCompleted) {
       context.go('/onboarding');
-    } else if (authState.isAuthenticated) {
+      return;
+    }
+
+    // Wait for auth state to finish loading (up to 3s)
+    // _checkStoredAuth runs async via Future.delayed(Duration.zero)
+    var authState = ref.read(userStateMachineProvider);
+    final deadline = DateTime.now().add(const Duration(seconds: 3));
+    while ((authState.status == AuthStatus.initial || authState.status == AuthStatus.loading) &&
+        DateTime.now().isBefore(deadline)) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      authState = ref.read(userStateMachineProvider);
+    }
+
+    if (!mounted) return;
+
+    if (authState.isAuthenticated) {
       context.go('/home');
     } else {
       context.go('/login');
@@ -117,7 +131,7 @@ class _SplashViewState extends ConsumerState<SplashView>
                       ),
                       child: Center(
                         child: Text(
-                          'J',
+                          'K',
                           style: TextStyle(
                             color: colors.canvas,
                             fontSize: 60,
@@ -131,7 +145,7 @@ class _SplashViewState extends ConsumerState<SplashView>
 
                     // App name
                     AppText(
-                      'JoonaPay',
+                      'Korido',
                       variant: AppTextVariant.headlineLarge,
                       color: colors.gold,
                     ),
@@ -140,7 +154,7 @@ class _SplashViewState extends ConsumerState<SplashView>
 
                     // Tagline
                     AppText(
-                      'Your Digital Wallet',
+                      'Send Money Home',
                       variant: AppTextVariant.bodyLarge,
                       color: colors.textSecondary,
                     ),

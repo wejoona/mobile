@@ -116,7 +116,7 @@ class LocalNotificationService {
 
     await show(
       id: message.hashCode,
-      title: notification.title ?? 'JoonaPay',
+      title: notification.title ?? 'Korido',
       body: notification.body ?? '',
       payload: _encodePayload(message.data),
       channelId: _getChannelForMessageType(message.data['type']),

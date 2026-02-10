@@ -217,6 +217,14 @@ class UserStateMachine extends Notifier<UserState> {
   }
 
   /// Logout
+  /// Update user's name (e.g. after KYC submission)
+  void updateName({required String firstName, required String lastName}) {
+    state = state.copyWith(
+      firstName: firstName,
+      lastName: lastName,
+    );
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _phoneKey);

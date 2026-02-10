@@ -164,7 +164,7 @@ class VirtualCardWidget extends StatelessWidget {
                 right: AppSpacing.lg,
                 top: AppSpacing.md,
                 child: AppText(
-                  'JoonaPay',
+                  'Korido',
                   variant: AppTextVariant.labelLarge,
                   color: _buildTextColor(isDark),
                   fontWeight: FontWeight.bold,

@@ -73,7 +73,7 @@ class JoonaPayApp extends ConsumerWidget {
 
     return SystemBrightnessObserver(
       child: MaterialApp.router(
-        title: 'JoonaPay',
+        title: 'Korido',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

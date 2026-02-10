@@ -11,6 +11,7 @@ import '../../../services/kyc/kyc_service.dart';
 import '../../../state/fsm/fsm_provider.dart';
 import '../../../state/fsm/kyc_fsm.dart' as fsm;
 import '../../profile/providers/profile_provider.dart';
+import '../../../state/index.dart';
 
 class KycState {
   final KycStatus status;
@@ -243,6 +244,22 @@ class KycNotifier extends Notifier<KycState> {
         status: KycStatus.submitted,
         uploadProgress: 1.0,
       );
+
+      // Update user profile with name from KYC
+      try {
+        final sdk2 = ref.read(sdkProvider);
+        await sdk2.user.updateProfile(
+          firstName: state.firstName!,
+          lastName: state.lastName!,
+        );
+        // Update local user state
+        ref.read(userStateMachineProvider.notifier).updateName(
+          firstName: state.firstName!,
+          lastName: state.lastName!,
+        );
+      } catch (_) {
+        // Non-critical — name will sync on next profile fetch
+      }
 
       // Use selfie as profile picture
       if (state.selfiePath != null && state.selfiePath!.isNotEmpty) {

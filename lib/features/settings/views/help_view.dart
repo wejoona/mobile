@@ -623,7 +623,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
   void _showLicenses() {
     showLicensePage(
       context: context,
-      applicationName: 'JoonaPay',
+      applicationName: 'Korido',
       applicationVersion: '1.0.0',
     );
   }

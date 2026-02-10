@@ -138,7 +138,7 @@ class _ScanViewState extends ConsumerState<ScanView>
             child: QrDisplay(
               data: qrData,
               size: 200,
-              title: 'JoonaPay',
+              title: 'Korido',
               subtitle: phone,
               footer: walletAddress.isNotEmpty
                   ? _buildWalletAddressFooter(walletAddress)

@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay'**
+  /// **'Korido'**
   String get appName;
 
   /// Home navigation label
@@ -11649,7 +11649,7 @@ abstract class AppLocalizations {
   /// JoonaPay label
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay'**
+  /// **'Korido'**
   String get help_fees_comparison_joonapay;
 
   /// Offline banner title

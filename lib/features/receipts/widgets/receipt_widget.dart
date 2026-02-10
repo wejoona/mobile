@@ -243,7 +243,7 @@ class ReceiptWidget extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         const AppText(
-          'JoonaPay',
+          'Korido',
           variant: AppTextVariant.titleMedium,
           color: AppColors.gold500,
           fontWeight: FontWeight.bold,

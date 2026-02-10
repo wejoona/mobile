@@ -150,7 +150,7 @@ class QrDisplayWithInfo extends StatelessWidget {
 
           // Branding
           AppText(
-            'JoonaPay',
+            'Korido',
             variant: AppTextVariant.titleLarge,
             color: colors.gold,
           ),

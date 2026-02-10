@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,15 +31,29 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
   bool _isSharing = false;
   bool _isSaving = false;
   double? _brightness;
+  int _qrTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+  Timer? _qrRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _increaseBrightness();
+    _startQrRefresh();
+  }
+
+  void _startQrRefresh() {
+    _qrRefreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted) {
+        setState(() {
+          _qrTimestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _qrRefreshTimer?.cancel();
     _amountController.dispose();
     _restoreBrightness();
     super.dispose();
@@ -166,7 +181,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
 
                     // App branding
                     AppText(
-                      'JoonaPay',
+                      'Korido',
                       variant: AppTextVariant.titleLarge,
                       color: colors.gold,
                     ),
@@ -259,7 +274,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   AppText(
-                    'Share this QR code with the sender. They can scan it with their JoonaPay app to send you money instantly.',
+                    'Share this QR code with the sender. They can scan it with their Korido app to send you money instantly.',
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -283,6 +298,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       amount: amount,
       currency: 'USD',
       name: name,
+      reference: 't=$_qrTimestamp',
     );
   }
 
@@ -304,7 +320,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       final result = await ImageGallerySaverPlus.saveImage(
         imageBytes,
         quality: 100,
-        name: 'joonapay_qr_${DateTime.now().millisecondsSinceEpoch}',
+        name: 'korido_qr_${DateTime.now().millisecondsSinceEpoch}',
       );
 
       if (mounted) {
@@ -350,10 +366,10 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       }
 
       final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/joonapay_qr.png');
+      final file = File('${tempDir.path}/korido_qr.png');
       await file.writeAsBytes(imageBytes);
 
-      String shareText = 'Scan this QR code to send me money on JoonaPay!\n\n';
+      String shareText = 'Scan this QR code to send me money on Korido!\n\n';
       shareText += 'Phone: ${_qrService.formatPhone(phone)}';
 
       if (name != null && name.isNotEmpty) {
@@ -367,7 +383,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       await Share.shareXFiles(
         [XFile(file.path)],
         text: shareText,
-        subject: 'JoonaPay Payment QR Code',
+        subject: 'Korido Payment QR Code',
       );
     } catch (e) {
       if (mounted) {

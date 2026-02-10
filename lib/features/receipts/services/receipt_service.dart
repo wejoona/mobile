@@ -211,7 +211,7 @@ class ReceiptService {
                       ),
                       pw.SizedBox(height: 4),
                       pw.Text(
-                        'JoonaPay',
+                        'Korido',
                         style: pw.TextStyle(
                           fontSize: 18,
                           fontWeight: pw.FontWeight.bold,
