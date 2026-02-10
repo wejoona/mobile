@@ -92,8 +92,15 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     ref.listen<AuthState>(authProvider, (prev, next) {
       AppLogger('Debug').debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
       if (next.status == AuthStatus.authenticated) {
-        AppLogger('Debug').debug('Authentication successful! Navigating to /home...');
-        context.go('/home');
+        AppLogger('Debug').debug('Authentication successful! Checking PIN...');
+        // Check if user has PIN set — if not, go to PIN setup
+        final user = next.user;
+        final hasPin = user?.hasPin ?? false;
+        if (!hasPin) {
+          context.go('/pin/setup');
+        } else {
+          context.go('/home');
+        }
       } else if (next.error != null) {
         AppLogger('Debug').debug('OTP verification error: ${next.error}');
         setState(() {

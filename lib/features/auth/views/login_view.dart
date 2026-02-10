@@ -12,6 +12,9 @@ import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'legal_document_view.dart';
 
+/// Login screen with two modes:
+/// 1. Returning user with biometric → full-screen biometric prompt
+/// 2. New/phone login → country + phone number form
 class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
 
@@ -19,14 +22,18 @@ class LoginView extends ConsumerStatefulWidget {
   ConsumerState<LoginView> createState() => _LoginViewState();
 }
 
+enum _LoginMode { checking, biometric, phone }
+
 class _LoginViewState extends ConsumerState<LoginView>
     with SingleTickerProviderStateMixin {
   final _phoneController = TextEditingController();
   final _phoneFocusNode = FocusNode();
   CountryConfig _selectedCountry = SupportedCountries.defaultCountry;
   bool _isRegistering = false;
-  bool _hasBiometricSession = false;
+  _LoginMode _mode = _LoginMode.checking;
   bool _biometricInProgress = false;
+  String? _biometricError;
+
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -35,42 +42,49 @@ class _LoginViewState extends ConsumerState<LoginView>
     super.initState();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
     );
-    _animationController.forward();
 
-    // Auto-prompt biometric login if available
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tryBiometricLogin();
+      _determineLoginMode();
     });
   }
 
-  Future<void> _tryBiometricLogin() async {
+  Future<void> _determineLoginMode() async {
     final biometricService = ref.read(biometricServiceProvider);
     final storage = ref.read(secureStorageProvider);
 
-    // Check if biometric is enabled and refresh token exists
     final isEnabled = await biometricService.isBiometricEnabled();
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
 
-    if (isEnabled && refreshToken != null) {
-      if (mounted) setState(() => _hasBiometricSession = true);
+    if (isEnabled && refreshToken != null && mounted) {
+      setState(() => _mode = _LoginMode.biometric);
+      _animationController.forward();
+      // Auto-prompt biometric
       await _doBiometricAuth(refreshToken);
+    } else {
+      if (mounted) {
+        setState(() => _mode = _LoginMode.phone);
+        _animationController.forward();
+      }
     }
   }
 
   Future<void> _doBiometricAuth(String refreshToken) async {
     if (_biometricInProgress) return;
-    setState(() => _biometricInProgress = true);
+    setState(() {
+      _biometricInProgress = true;
+      _biometricError = null;
+    });
 
     try {
       final biometricService = ref.read(biometricServiceProvider);
       final authenticated = await biometricService.authenticate(
-        reason: 'Authenticate to access Korido',
+        reason: 'Unlock Korido',
       );
 
       if (authenticated && mounted) {
@@ -79,16 +93,25 @@ class _LoginViewState extends ConsumerState<LoginView>
           context.go('/home');
           return;
         }
+        if (mounted) {
+          setState(() => _biometricError = 'Session expired. Please log in again.');
+          // Clear invalid tokens and switch to phone
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) _switchToPhone();
+        }
       }
     } catch (_) {
-      // Biometric failed — user can retry or use phone
+      // User cancelled or biometric failed
     }
 
     if (mounted) setState(() => _biometricInProgress = false);
   }
 
-  void _switchToPhoneLogin() {
-    setState(() => _hasBiometricSession = false);
+  void _switchToPhone() {
+    setState(() {
+      _mode = _LoginMode.phone;
+      _biometricError = null;
+    });
   }
 
   @override
@@ -106,7 +129,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next.status == AuthStatus.otpSent) {
-        context.go('/otp');  // Use go() to replace stack, not push()
+        context.go('/otp');
       } else if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -123,6 +146,15 @@ class _LoginViewState extends ConsumerState<LoginView>
       }
     });
 
+    if (_mode == _LoginMode.checking) {
+      return Scaffold(
+        backgroundColor: colors.canvas,
+        body: Center(
+          child: CircularProgressIndicator(color: colors.gold, strokeWidth: 2),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: colors.canvas,
       body: GestureDetector(
@@ -130,295 +162,234 @@ class _LoginViewState extends ConsumerState<LoginView>
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.screenPadding,
-                      ),
-                      child: _hasBiometricSession
-                          ? _buildBiometricOnlyUI(colors)
-                          : Column(
-                              children: [
-                                const SizedBox(height: AppSpacing.giant),
-                                _buildHeader(),
-                                const SizedBox(height: AppSpacing.giant),
-                                _buildForm(authState),
-                                const SizedBox(height: AppSpacing.xxxl),
-                                _buildFooter(),
-                                const SizedBox(height: AppSpacing.xl),
-                              ],
-                            ),
-                    ),
-                  ),
-                );
-              },
-            ),
+            child: _mode == _LoginMode.biometric
+                ? _buildBiometricScreen(colors)
+                : _buildPhoneScreen(colors, authState),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBiometricOnlyUI(ThemeColors colors) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const SizedBox(height: AppSpacing.giant * 2),
+  // ──────────────────────────────────────────
+  // BIOMETRIC SCREEN (returning user)
+  // ──────────────────────────────────────────
 
-        // Logo
-        Container(
-          width: 88,
-          height: 88,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: AppColors.goldGradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            boxShadow: AppShadows.goldGlow,
-          ),
-          child: Center(
-            child: Text(
-              'K',
-              style: TextStyle(
-                color: colors.textInverse,
-                fontSize: 44,
-                fontWeight: FontWeight.bold,
+  Widget _buildBiometricScreen(ThemeColors colors) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SizedBox(
+          height: constraints.maxHeight,
+          child: Column(
+            children: [
+              const Spacer(flex: 3),
+
+              // Logo
+              _buildLogo(colors, size: 80),
+              const SizedBox(height: AppSpacing.xl),
+
+              AppText(
+                'Korido',
+                variant: AppTextVariant.headlineLarge,
+                color: colors.textPrimary,
               ),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
 
-        AppText(
-          l10n.appName,
-          variant: AppTextVariant.headlineLarge,
-          color: colors.textPrimary,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        AppText(
-          l10n.auth_welcomeBack,
-          variant: AppTextVariant.bodyLarge,
-          color: colors.textSecondary,
-        ),
+              const Spacer(flex: 2),
 
-        const SizedBox(height: AppSpacing.giant),
-
-        // Biometric button
-        if (_biometricInProgress)
-          CircularProgressIndicator(color: colors.gold)
-        else
-          GestureDetector(
-            onTap: () async {
-              final storage = ref.read(secureStorageProvider);
-              final refreshToken = await storage.read(key: StorageKeys.refreshToken);
-              if (refreshToken != null) {
-                _doBiometricAuth(refreshToken);
-              }
-            },
-            child: Column(
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: colors.gold.withValues(alpha: 0.12),
-                    border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
-                  ),
-                  child: Icon(
-                    Icons.fingerprint,
-                    size: 40,
-                    color: colors.gold,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                AppText(
-                  'Tap to unlock',
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-
-        const SizedBox(height: AppSpacing.giant),
-
-        // Switch to phone login
-        TextButton(
-          onPressed: _switchToPhoneLogin,
-          child: AppText(
-            'Use phone number instead',
-            variant: AppTextVariant.labelMedium,
-            color: colors.gold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHeader() {
-    final colors = context.colors;
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        // Logo
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: AppColors.goldGradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            boxShadow: AppShadows.goldGlow,
-          ),
-          child: Icon(
-            Icons.account_balance_wallet_rounded,
-            color: colors.textInverse,
-            size: 36,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xxl),
-
-        // Title
-        AppText(
-          l10n.appName,
-          variant: AppTextVariant.headlineLarge,
-          color: colors.textPrimary,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-
-        // Subtitle with animation
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: AppText(
-            _isRegistering
-                ? l10n.auth_createWallet
-                : l10n.auth_welcomeBack,
-            key: ValueKey(_isRegistering),
-            variant: AppTextVariant.bodyLarge,
-            color: colors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildForm(AuthState authState) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Country Selector
-        _buildCountrySelector(),
-        const SizedBox(height: AppSpacing.xl),
-
-        // Phone Input
-        _buildPhoneInput(),
-        const SizedBox(height: AppSpacing.xxxl),
-
-        // Submit Button
-        AppButton(
-          label: _isRegistering ? l10n.auth_createAccount : l10n.action_continue,
-          onPressed: _isPhoneValid() ? _submit : null,
-          variant: AppButtonVariant.primary,
-          size: AppButtonSize.large,
-          isFullWidth: true,
-          isLoading: authState.isLoading,
-        ),
-        const SizedBox(height: AppSpacing.xl),
-
-        // Toggle Mode
-        Center(
-          child: GestureDetector(
-            onTap: () => setState(() => _isRegistering = !_isRegistering),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  AppText(
-                    _isRegistering
-                        ? l10n.auth_alreadyHaveAccount
-                        : l10n.auth_dontHaveAccount,
+              // Biometric area
+              if (_biometricError != null) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                  child: AppText(
+                    _biometricError!,
                     variant: AppTextVariant.bodyMedium,
-                    color: context.colors.textSecondary,
+                    color: colors.errorText,
+                    textAlign: TextAlign.center,
                   ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
+
+              if (_biometricInProgress)
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    color: colors.gold,
+                    strokeWidth: 2.5,
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: () async {
+                    final storage = ref.read(secureStorageProvider);
+                    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+                    if (refreshToken != null) _doBiometricAuth(refreshToken);
+                  },
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: colors.gold.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: colors.gold.withValues(alpha: 0.25),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.fingerprint,
+                      size: 44,
+                      color: colors.gold,
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              AppText(
+                _biometricInProgress ? 'Authenticating...' : 'Tap to unlock',
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+              ),
+
+              const Spacer(flex: 3),
+
+              // Switch to phone
+              TextButton(
+                onPressed: _switchToPhone,
+                child: AppText(
+                  'Use phone number instead',
+                  variant: AppTextVariant.labelMedium,
+                  color: colors.gold,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // PHONE LOGIN SCREEN
+  // ──────────────────────────────────────────
+
+  Widget _buildPhoneScreen(ThemeColors colors, AuthState authState) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+              child: Column(
+                children: [
+                  const SizedBox(height: AppSpacing.giant),
+
+                  // Header
+                  _buildLogo(colors, size: 64),
+                  const SizedBox(height: AppSpacing.xl),
                   AppText(
-                    _isRegistering ? l10n.auth_signIn : l10n.auth_signUp,
-                    variant: AppTextVariant.labelLarge,
-                    color: context.colors.gold,
+                    l10n.appName,
+                    variant: AppTextVariant.headlineLarge,
+                    color: colors.textPrimary,
                   ),
+                  const SizedBox(height: AppSpacing.xs),
+                  AppText(
+                    _isRegistering ? l10n.auth_createWallet : l10n.auth_welcomeBack,
+                    variant: AppTextVariant.bodyLarge,
+                    color: colors.textSecondary,
+                  ),
+
+                  const SizedBox(height: AppSpacing.giant),
+
+                  // Form
+                  _buildCountrySelector(),
+                  const SizedBox(height: AppSpacing.xl),
+                  _buildPhoneInput(),
+                  const SizedBox(height: AppSpacing.xxxl),
+
+                  // Submit
+                  AppButton(
+                    label: _isRegistering ? l10n.auth_createAccount : l10n.action_continue,
+                    onPressed: _isPhoneValid() ? _submit : null,
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                    isFullWidth: true,
+                    isLoading: authState.isLoading,
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Toggle register/login
+                  GestureDetector(
+                    onTap: () => setState(() => _isRegistering = !_isRegistering),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          AppText(
+                            _isRegistering ? l10n.auth_alreadyHaveAccount : l10n.auth_dontHaveAccount,
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.textSecondary,
+                          ),
+                          AppText(
+                            _isRegistering ? l10n.auth_signIn : l10n.auth_signUp,
+                            variant: AppTextVariant.labelLarge,
+                            color: colors.gold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xxxl),
+
+                  // Legal
+                  _buildFooter(colors),
+                  const SizedBox(height: AppSpacing.xl),
                 ],
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // SHARED COMPONENTS
+  // ──────────────────────────────────────────
+
+  Widget _buildLogo(ThemeColors colors, {double size = 72}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: AppColors.goldGradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-
-        // Biometric Login Button
-        if (!_isRegistering)
-          Consumer(
-            builder: (context, ref, _) {
-              final biometricAvailable = ref.watch(biometricAvailableProvider);
-              final biometricEnabled = ref.watch(biometricEnabledProvider);
-
-              return biometricAvailable.when(
-                data: (available) => biometricEnabled.when(
-                  data: (enabled) {
-                    if (!available || !enabled) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(top: AppSpacing.md),
-                      child: GestureDetector(
-                        onTap: _tryBiometricLogin,
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: context.colors.elevated,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: context.colors.borderSubtle),
-                              ),
-                              child: Icon(
-                                Icons.fingerprint,
-                                color: context.colors.gold,
-                                size: 32,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            AppText(
-                              'Use Face ID / Fingerprint',
-                              variant: AppTextVariant.bodySmall,
-                              color: context.colors.textSecondary,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
-                ),
-                loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
-              );
-            },
+        borderRadius: BorderRadius.circular(size * 0.28),
+        boxShadow: AppShadows.goldGlow,
+      ),
+      child: Center(
+        child: Text(
+          'K',
+          style: TextStyle(
+            color: colors.textInverse,
+            fontSize: size * 0.5,
+            fontWeight: FontWeight.bold,
           ),
-      ],
+        ),
+      ),
     );
   }
 
@@ -445,82 +416,36 @@ class _LoginViewState extends ConsumerState<LoginView>
             ),
             child: Row(
               children: [
-                // Flag with scale animation
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(
-                      scale: animation,
-                      child: FadeTransition(opacity: animation, child: child),
-                    );
-                  },
-                  child: Container(
-                    key: ValueKey(_selectedCountry.code),
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colors.elevated,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      _selectedCountry.flag,
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-
-                // Country info with slide animation
-                Expanded(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 250),
-                    transitionBuilder: (child, animation) {
-                      return SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.2, 0),
-                          end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: animation,
-                          curve: Curves.easeOut,
-                        )),
-                        child: FadeTransition(opacity: animation, child: child),
-                      );
-                    },
-                    child: Column(
-                      key: ValueKey(_selectedCountry.code),
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          _selectedCountry.name,
-                          variant: AppTextVariant.bodyLarge,
-                          color: colors.textPrimary,
-                        ),
-                        const SizedBox(height: 2),
-                        AppText(
-                          '${_selectedCountry.fullPrefix} • ${_selectedCountry.currencies.first}',
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.textTertiary,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Arrow
                 Container(
-                  width: 32,
-                  height: 32,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: colors.elevated,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: Icon(
-                    Icons.unfold_more_rounded,
-                    color: colors.textSecondary,
-                    size: 20,
+                  alignment: Alignment.center,
+                  child: Text(_selectedCountry.flag, style: const TextStyle(fontSize: 24)),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        _selectedCountry.name,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textPrimary,
+                      ),
+                      const SizedBox(height: 2),
+                      AppText(
+                        '${_selectedCountry.fullPrefix} • ${_selectedCountry.currencies.first}',
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textTertiary,
+                      ),
+                    ],
                   ),
                 ),
+                Icon(Icons.unfold_more_rounded, color: colors.textSecondary, size: 20),
               ],
             ),
           ),
@@ -534,7 +459,6 @@ class _LoginViewState extends ConsumerState<LoginView>
     final l10n = AppLocalizations.of(context)!;
     final isValid = _isPhoneValid();
     final hasText = _phoneController.text.isNotEmpty;
-    final showError = hasText && !isValid;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -550,7 +474,7 @@ class _LoginViewState extends ConsumerState<LoginView>
             color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             border: Border.all(
-              color: showError
+              color: hasText && !isValid
                   ? colors.error.withValues(alpha: 0.5)
                   : isValid && hasText
                       ? colors.success.withValues(alpha: 0.5)
@@ -559,16 +483,13 @@ class _LoginViewState extends ConsumerState<LoginView>
           ),
           child: Row(
             children: [
-              // Prefix
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.lg + 2,
                 ),
                 decoration: BoxDecoration(
-                  border: Border(
-                    right: BorderSide(color: colors.borderSubtle),
-                  ),
+                  border: Border(right: BorderSide(color: colors.borderSubtle)),
                 ),
                 child: AppText(
                   _selectedCountry.fullPrefix,
@@ -576,150 +497,94 @@ class _LoginViewState extends ConsumerState<LoginView>
                   color: colors.textSecondary,
                 ),
               ),
-
-              // Input
               Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colors.elevated,
-                    borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(AppRadius.lg),
-                      bottomRight: Radius.circular(AppRadius.lg),
-                    ),
+                child: TextField(
+                  controller: _phoneController,
+                  focusNode: _phoneFocusNode,
+                  keyboardType: TextInputType.phone,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: colors.textPrimary,
+                    letterSpacing: 1.2,
                   ),
-                  child: TextField(
-                    controller: _phoneController,
-                    focusNode: _phoneFocusNode,
-                    keyboardType: TextInputType.phone,
-                    style: AppTypography.bodyLarge.copyWith(
-                      color: colors.textPrimary,
+                  cursorColor: colors.gold,
+                  decoration: InputDecoration(
+                    hintText: _getFormattedHint(),
+                    hintStyle: AppTypography.bodyLarge.copyWith(
+                      color: colors.textTertiary,
                       letterSpacing: 1.2,
                     ),
-                    cursorColor: colors.gold,
-                    decoration: InputDecoration(
-                      hintText: _getFormattedHint(),
-                      hintStyle: AppTypography.bodyLarge.copyWith(
-                        color: colors.textTertiary,
-                        letterSpacing: 1.2,
-                      ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.lg,
-                      ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.lg,
                     ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
-                    ],
-                    onChanged: (_) => setState(() {}),
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
+                  ],
+                  onChanged: (_) => setState(() {}),
                 ),
               ),
-
-              // Status indicator
               if (hasText)
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.md),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: isValid
-                          ? colors.success.withValues(alpha: 0.15)
-                          : colors.error.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isValid ? Icons.check_rounded : Icons.close_rounded,
-                      color: isValid ? colors.successText : colors.errorText,
-                      size: 16,
-                    ),
+                  child: Icon(
+                    isValid ? Icons.check_circle : Icons.error_outline,
+                    color: isValid ? colors.success : colors.error,
+                    size: 20,
                   ),
                 ),
             ],
           ),
         ),
-
-        // Helper text
         const SizedBox(height: AppSpacing.sm),
-        Row(
+        AppText(
+          l10n.auth_enterDigits(_selectedCountry.phoneLength),
+          variant: AppTextVariant.bodySmall,
+          color: colors.textTertiary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      children: [
+        AppText(
+          l10n.auth_termsPrompt,
+          variant: AppTextVariant.bodySmall,
+          color: colors.textTertiary,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          alignment: WrapAlignment.center,
           children: [
-            Expanded(
-              child: AppText(
-                l10n.auth_enterDigits(_selectedCountry.phoneLength),
-                variant: AppTextVariant.bodySmall,
-                color: showError ? colors.errorText : colors.textTertiary,
-              ),
+            GestureDetector(
+              onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
+              child: AppText(l10n.auth_termsOfService, variant: AppTextVariant.bodySmall, color: colors.gold),
             ),
-            if (hasText)
-              AppText(
-                '${_phoneController.text.length}/${_selectedCountry.phoneLength}',
-                variant: AppTextVariant.bodySmall,
-                color: isValid ? colors.successText : colors.textTertiary,
-              ),
+            AppText(' ${l10n.auth_and} ', variant: AppTextVariant.bodySmall, color: colors.textTertiary),
+            GestureDetector(
+              onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
+              child: AppText(l10n.auth_privacyPolicy, variant: AppTextVariant.bodySmall, color: colors.gold),
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildFooter() {
-    final colors = context.colors;
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Column(
-        children: [
-          AppText(
-            l10n.auth_termsPrompt,
-            variant: AppTextVariant.bodySmall,
-            color: colors.textTertiary,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
-                child: AppText(
-                  l10n.auth_termsOfService,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.gold,
-                ),
-              ),
-              AppText(
-                l10n.auth_and,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textTertiary,
-              ),
-              GestureDetector(
-                onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
-                child: AppText(
-                  l10n.auth_privacyPolicy,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.gold,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+  // ──────────────────────────────────────────
+  // ACTIONS
+  // ──────────────────────────────────────────
 
   void _openLegalDocument(LegalDocumentType type) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => LegalDocumentView(documentType: type),
-      ),
+      MaterialPageRoute(builder: (context) => LegalDocumentView(documentType: type)),
     );
   }
 
@@ -755,9 +620,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
   void _submit() {
     if (!_isPhoneValid()) return;
-
     final phone = '${_selectedCountry.fullPrefix}${_phoneController.text}';
-
     if (_isRegistering) {
       ref.read(authProvider.notifier).register(phone, _selectedCountry.code);
     } else {
@@ -766,7 +629,10 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 }
 
-/// Country Picker Bottom Sheet
+// ──────────────────────────────────────────
+// COUNTRY PICKER
+// ──────────────────────────────────────────
+
 class _CountryPickerSheet extends StatefulWidget {
   const _CountryPickerSheet({
     required this.selectedCountry,
@@ -821,7 +687,6 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
           Container(
             margin: const EdgeInsets.only(top: AppSpacing.md),
             width: 36,
@@ -831,39 +696,19 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-
-          // Header
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
-                AppText(
-                  l10n.auth_selectCountry,
-                  variant: AppTextVariant.titleMedium,
-                  color: colors.textPrimary,
-                ),
+                AppText(l10n.auth_selectCountry, variant: AppTextVariant.titleMedium, color: colors.textPrimary),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: colors.elevated,
-                      borderRadius: BorderRadius.circular(AppRadius.sm),
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      color: colors.textSecondary,
-                      size: 20,
-                    ),
-                  ),
+                  child: Icon(Icons.close_rounded, color: colors.textSecondary, size: 24),
                 ),
               ],
             ),
           ),
-
-          // Search
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: AppInput(
@@ -875,11 +720,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-
-          // Divider
           Divider(color: colors.borderSubtle, height: 1),
-
-          // Country list
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
@@ -895,75 +736,37 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     Navigator.pop(context);
                   },
                   child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.xs,
-                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? colors.gold.withValues(alpha: 0.1)
-                          : Colors.transparent,
+                      color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: isSelected
-                          ? Border.all(
-                              color: colors.gold.withValues(alpha: 0.3))
-                          : null,
+                      border: isSelected ? Border.all(color: colors.gold.withValues(alpha: 0.3)) : null,
                     ),
                     child: Row(
                       children: [
-                        // Flag
                         Container(
                           width: 40,
                           height: 40,
-                          decoration: BoxDecoration(
-                            color: colors.elevated,
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
-                          ),
                           alignment: Alignment.center,
-                          child: Text(
-                            country.flag,
-                            style: const TextStyle(fontSize: 24),
-                          ),
+                          child: Text(country.flag, style: const TextStyle(fontSize: 24)),
                         ),
                         const SizedBox(width: AppSpacing.md),
-
-                        // Info
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              AppText(
-                                country.name,
-                                variant: AppTextVariant.bodyLarge,
-                                color: isSelected
-                                    ? colors.gold
-                                    : colors.textPrimary,
-                              ),
-                              const SizedBox(height: 2),
-                              AppText(
-                                '${country.fullPrefix} • ${country.currencies.join(", ")}',
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.textTertiary,
-                              ),
+                              AppText(country.name, variant: AppTextVariant.bodyLarge, color: isSelected ? colors.gold : colors.textPrimary),
+                              AppText('${country.fullPrefix} • ${country.currencies.join(", ")}', variant: AppTextVariant.bodySmall, color: colors.textTertiary),
                             ],
                           ),
                         ),
-
-                        // Check
                         if (isSelected)
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(
-                              color: colors.gold,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check_rounded,
-                              color: colors.textInverse,
-                              size: 16,
-                            ),
+                            decoration: BoxDecoration(color: colors.gold, shape: BoxShape.circle),
+                            child: Icon(Icons.check_rounded, color: colors.textInverse, size: 16),
                           ),
                       ],
                     ),

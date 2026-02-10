@@ -6272,7 +6272,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get help_fees_comparison_traditional => 'Traditional Services';
 
   @override
-  String get help_fees_comparison_joonapay => 'Korido';
+  String get help_fees_comparison_joonapay => 'JoonaPay';
 
   @override
   String get offline_banner_title => 'You\'re offline';

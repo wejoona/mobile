@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appName => 'Korido';
+  String get appName => 'JoonaPay';
 
   @override
   String get navigation_home => 'Início';
@@ -6291,7 +6291,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get help_fees_comparison_traditional => 'Traditional serviços';
 
   @override
-  String get help_fees_comparison_joonapay => 'Korido';
+  String get help_fees_comparison_joonapay => 'JoonaPay';
 
   @override
   String get offline_banner_title => 'You\'re offline';

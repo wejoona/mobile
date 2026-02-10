@@ -13,6 +13,7 @@ class User {
   final bool isPhoneVerified;
   final UserRole role;
   final UserStatus status;
+  final bool hasPin;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,6 +29,7 @@ class User {
     required this.isPhoneVerified,
     required this.role,
     required this.status,
+    this.hasPin = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -66,6 +68,7 @@ class User {
         (e) => e.name == json['status'],
         orElse: () => UserStatus.active,
       ),
+      hasPin: json['hasPin'] as bool? ?? false,
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as String)
           : DateTime.now(),
@@ -88,6 +91,7 @@ class User {
       'isPhoneVerified': isPhoneVerified,
       'role': role.name,
       'status': status.name,
+      'hasPin': hasPin,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -106,6 +110,7 @@ class User {
     bool? isPhoneVerified,
     UserRole? role,
     UserStatus? status,
+    bool? hasPin,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -121,6 +126,7 @@ class User {
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
       role: role ?? this.role,
       status: status ?? this.status,
+      hasPin: hasPin ?? this.hasPin,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

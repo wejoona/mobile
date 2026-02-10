@@ -145,6 +145,8 @@ import '../domain/entities/index.dart';
 import '../services/wallet/wallet_service.dart';
 import '../features/fsm_states/views/index.dart';
 import '../state/kyc_state_machine.dart';
+import '../features/pin/views/set_pin_view.dart';
+import '../features/pin/views/confirm_pin_view.dart';
 import 'page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
@@ -273,7 +275,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                             walletState.status == WalletStatus.initial;
 
       // Allow splash, onboarding, and auth routes without auth
-      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp'];
+      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp', '/pin/setup', '/pin/confirm'];
       final isPublicRoute = publicRoutes.any((route) => location.startsWith(route));
 
       // FSM-specific routes that should bypass normal redirect logic
@@ -799,6 +801,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           state: state,
           child: const ChangePinView(),
         ),
+      ),
+      // PIN Setup (post-registration)
+      GoRoute(
+        path: '/pin/setup',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const SetPinView(),
+        ),
+      ),
+      GoRoute(
+        path: '/pin/confirm',
+        pageBuilder: (context, state) {
+          final originalPin = state.extra as String? ?? '';
+          return AppPageTransitions.horizontalSlide(
+            state: state,
+            child: ConfirmPinView(originalPin: originalPin),
+          );
+        },
       ),
       GoRoute(
         path: '/settings/kyc',
