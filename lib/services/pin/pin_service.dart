@@ -53,7 +53,7 @@ class PinService {
     // SECURITY: Hash PIN before transmission to prevent plaintext exposure
     try {
       final hashedPin = _hashPinForTransmission(pin);
-      await _dio.post('/wallet/pin/set', data: {'pin': hashedPin});
+      await _dio.post('/user/pin/set', data: {'pinHash': hashedPin});
     } catch (e) {
       // Backend call failed, but local PIN is set
       // This will be synced later
@@ -139,7 +139,7 @@ class PinService {
     try {
       // SECURITY: Hash PIN before transmission to prevent plaintext exposure
       final hashedPin = _hashPinForTransmission(pin);
-      final response = await _dio.post('/wallet/pin/verify', data: {'pin': hashedPin});
+      final response = await _dio.post('/user/pin/verify', data: {'pinHash': hashedPin});
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -219,17 +219,11 @@ class PinService {
   /// This provides defense-in-depth: even if network traffic is intercepted,
   /// the PIN cannot be recovered without knowing the salt and performing brute-force
   String _hashPinForTransmission(String pin) {
-    // Use PBKDF2 with a fixed client-side salt
-    // 10,000 iterations is enough for transmission (backend will re-hash)
-    const clientSalt = 'joonapay_client_salt_v1';
-    const iterations = 10000;
-    const keyLength = 32; // 256 bits
-
-    final saltBytes = utf8.encode(clientSalt);
-    final pinBytes = utf8.encode(pin);
-
-    final derivedKey = _pbkdf2(pinBytes, saltBytes, iterations, keyLength);
-    return base64.encode(derivedKey);
+    // SHA256 hash — backend expects 64-char lowercase hex
+    // Backend re-hashes with bcrypt for storage
+    final bytes = utf8.encode(pin);
+    final digest = sha256.convert(bytes);
+    return digest.toString(); // 64-char lowercase hex
   }
 
   /// Hash PIN with salt using PBKDF2
