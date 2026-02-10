@@ -2,7 +2,7 @@
 
 /// Initiate Deposit Request
 class InitiateDepositRequest {
-  final double amount;
+  final int amount;
   final String currency;
   final String providerCode;
   final String? phoneNumber;
