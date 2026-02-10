@@ -25,6 +25,8 @@ class _LoginViewState extends ConsumerState<LoginView>
   final _phoneFocusNode = FocusNode();
   CountryConfig _selectedCountry = SupportedCountries.defaultCountry;
   bool _isRegistering = false;
+  bool _hasBiometricSession = false;
+  bool _biometricInProgress = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -53,22 +55,40 @@ class _LoginViewState extends ConsumerState<LoginView>
 
     // Check if biometric is enabled and refresh token exists
     final isEnabled = await biometricService.isBiometricEnabled();
-    if (!isEnabled) return;
-
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
-    if (refreshToken == null) return;
 
-    // Prompt biometric
-    final authenticated = await biometricService.authenticate(
-      reason: 'Authenticate to access JoonaPay',
-    );
-
-    if (authenticated && mounted) {
-      final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
-      if (success && mounted) {
-        context.go('/home');
-      }
+    if (isEnabled && refreshToken != null) {
+      if (mounted) setState(() => _hasBiometricSession = true);
+      await _doBiometricAuth(refreshToken);
     }
+  }
+
+  Future<void> _doBiometricAuth(String refreshToken) async {
+    if (_biometricInProgress) return;
+    setState(() => _biometricInProgress = true);
+
+    try {
+      final biometricService = ref.read(biometricServiceProvider);
+      final authenticated = await biometricService.authenticate(
+        reason: 'Authenticate to access Korido',
+      );
+
+      if (authenticated && mounted) {
+        final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
+        if (success && mounted) {
+          context.go('/home');
+          return;
+        }
+      }
+    } catch (_) {
+      // Biometric failed — user can retry or use phone
+    }
+
+    if (mounted) setState(() => _biometricInProgress = false);
+  }
+
+  void _switchToPhoneLogin() {
+    setState(() => _hasBiometricSession = false);
   }
 
   @override
@@ -122,17 +142,19 @@ class _LoginViewState extends ConsumerState<LoginView>
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.screenPadding,
                       ),
-                      child: Column(
-                        children: [
-                          const SizedBox(height: AppSpacing.giant),
-                          _buildHeader(),
-                          const SizedBox(height: AppSpacing.giant),
-                          _buildForm(authState),
-                          const SizedBox(height: AppSpacing.xxxl),
-                          _buildFooter(),
-                          const SizedBox(height: AppSpacing.xl),
-                        ],
-                      ),
+                      child: _hasBiometricSession
+                          ? _buildBiometricOnlyUI(colors)
+                          : Column(
+                              children: [
+                                const SizedBox(height: AppSpacing.giant),
+                                _buildHeader(),
+                                const SizedBox(height: AppSpacing.giant),
+                                _buildForm(authState),
+                                const SizedBox(height: AppSpacing.xxxl),
+                                _buildFooter(),
+                                const SizedBox(height: AppSpacing.xl),
+                              ],
+                            ),
                     ),
                   ),
                 );
@@ -141,6 +163,106 @@ class _LoginViewState extends ConsumerState<LoginView>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBiometricOnlyUI(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const SizedBox(height: AppSpacing.giant * 2),
+
+        // Logo
+        Container(
+          width: 88,
+          height: 88,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: AppColors.goldGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            boxShadow: AppShadows.goldGlow,
+          ),
+          child: Center(
+            child: Text(
+              'K',
+              style: TextStyle(
+                color: colors.textInverse,
+                fontSize: 44,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+
+        AppText(
+          l10n.appName,
+          variant: AppTextVariant.headlineLarge,
+          color: colors.textPrimary,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppText(
+          l10n.auth_welcomeBack,
+          variant: AppTextVariant.bodyLarge,
+          color: colors.textSecondary,
+        ),
+
+        const SizedBox(height: AppSpacing.giant),
+
+        // Biometric button
+        if (_biometricInProgress)
+          CircularProgressIndicator(color: colors.gold)
+        else
+          GestureDetector(
+            onTap: () async {
+              final storage = ref.read(secureStorageProvider);
+              final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+              if (refreshToken != null) {
+                _doBiometricAuth(refreshToken);
+              }
+            },
+            child: Column(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: colors.gold.withValues(alpha: 0.12),
+                    border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
+                  ),
+                  child: Icon(
+                    Icons.fingerprint,
+                    size: 40,
+                    color: colors.gold,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppText(
+                  'Tap to unlock',
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+
+        const SizedBox(height: AppSpacing.giant),
+
+        // Switch to phone login
+        TextButton(
+          onPressed: _switchToPhoneLogin,
+          child: AppText(
+            'Use phone number instead',
+            variant: AppTextVariant.labelMedium,
+            color: colors.gold,
+          ),
+        ),
+      ],
     );
   }
 

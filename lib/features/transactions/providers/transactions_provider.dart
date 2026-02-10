@@ -164,7 +164,7 @@ class FilteredPaginatedTransactionsNotifier
         page: 1,
         pageSize: _pageSize,
         filter: _filter,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       state = state.copyWith(
         transactions: page.transactions,
@@ -182,6 +182,8 @@ class FilteredPaginatedTransactionsNotifier
           ? 'Connection timeout. Please check your network and try again.'
           : e.message ?? 'Network error';
       state = state.copyWith(isLoading: false, error: message);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to load transactions');
     }
   }
 

@@ -536,7 +536,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/cards',
             pageBuilder: (context, state) => NoTransitionPage(
               key: state.pageKey,
-              child: const CardsListView(),
+              child: const CardsScreen(),
             ),
           ),
           GoRoute(
