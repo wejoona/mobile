@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/design/components/primitives/section_header.dart';
+import 'package:usdc_wallet/design/components/primitives/error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';

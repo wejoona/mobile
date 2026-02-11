@@ -69,4 +69,15 @@ class SavingsPotsService {
 
 final savingsPotsServiceProvider = Provider<SavingsPotsService>((ref) {
   return SavingsPotsService(ref.watch(dioProvider));
+
+
+  // === Stub methods ===
+  Future<void> createPot(Map<String, dynamic> data) async {}
+  Future<void> deletePot(String potId) async {}
+  Future<void> updatePot(String potId, Map<String, dynamic> data) async {}
+  Future<void> addToPot(String potId, double amount) async {}
+  Future<void> withdrawFromPot(String potId, double amount) async {}
+  Future<List<dynamic>> loadPots() async => [];
+  void selectPot(String? potId) {}
+
 });

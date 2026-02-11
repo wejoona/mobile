@@ -135,7 +135,7 @@ class _ScanViewState extends ConsumerState<ScanView>
           // QR Code with screenshot wrapper
           Screenshot(
             controller: _screenshotController,
-            child: QrDisplay(
+            child: QrCodeDisplay(
               data: qrData,
               size: 200,
               title: 'Korido',

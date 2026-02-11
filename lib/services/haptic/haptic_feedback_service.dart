@@ -36,4 +36,7 @@ class HapticFeedbackService {
 
   /// Notification received.
   static Future<void> notification() => HapticFeedback.mediumImpact();
+
+  // Aliases for compatibility
+  static Future<void> lightImpact() => lightTap();
 }

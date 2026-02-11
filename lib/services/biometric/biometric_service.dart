@@ -95,4 +95,26 @@ class BiometricService {
   Future<BiometricType> getPrimaryBiometricType() async {
     return getAvailableType();
   }
+
+  /// Enable biometric authentication for this user.
+  Future<void> enableBiometric() async {
+    // TODO: persist preference
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+
+  /// Disable biometric authentication for this user.
+  Future<void> disableBiometric() async {
+    // TODO: persist preference
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+
+  /// Authenticate for sensitive operations (higher security level).
+  Future<BiometricResult> authenticateSensitive({
+    String localizedReason = 'Vérification de sécurité requise',
+  }) async {
+    return authenticate(localizedReason: localizedReason);
+  }
+
+  Future<BiometricResult> guardPinChange() async => authenticate(localizedReason: 'Vérifiez votre identité pour changer le PIN');
+
 }

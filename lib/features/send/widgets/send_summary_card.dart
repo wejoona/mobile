@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/design/components/primitives/info_row.dart';
+import 'package:usdc_wallet/design/components/primitives/app_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';

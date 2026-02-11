@@ -91,3 +91,11 @@ enum AlertSeverity {
   warning,
   critical,
 }
+
+/// Alert visual variant
+enum AlertVariant {
+  info,
+  warning,
+  error,
+  success,
+}

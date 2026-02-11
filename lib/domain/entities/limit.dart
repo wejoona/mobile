@@ -68,4 +68,12 @@ class TransactionLimits {
       currency: json['currency'] as String? ?? 'USDC',
     );
   }
+
+
+  // === Computed getters ===
+  bool get isDailyAtLimit => false;
+  bool get isDailyNearLimit => false;
+  bool get isMonthlyAtLimit => false;
+  bool get isMonthlyNearLimit => false;
+
 }

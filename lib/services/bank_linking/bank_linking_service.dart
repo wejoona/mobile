@@ -111,4 +111,10 @@ class BankLinkingService {
     final response = await _dio.delete('/bank-accounts/$accountId');
     return response.data as Map<String, dynamic>;
   }
+
+
+  // === Stub aliases ===
+  Future<List<dynamic>> getBankAccounts() async => (await getLinkedAccounts())['accounts'] as List<dynamic>? ?? [];
+  Future<void> remove(String accountId) async => unlinkAccount(accountId);
+
 }

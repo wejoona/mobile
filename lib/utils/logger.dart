@@ -50,4 +50,7 @@ class AppLogger {
     final timestamp = DateTime.now().toIso8601String();
     debugPrint('[$timestamp] [SECURITY][$level] [$tag] $message');
   }
+
+  void warning(String message, [dynamic error]) => info('[WARN] \$message');
+
 }

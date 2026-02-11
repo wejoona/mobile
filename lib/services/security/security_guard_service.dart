@@ -31,9 +31,9 @@ class SecurityGuardService {
       return true;
     }
 
-    final success = await _biometricService.authenticate(localizedReason: reason);
+    final _bioResult = await _biometricService.authenticate(localizedReason: reason);
 
-    if (!success) {
+    if (!_bioResult.success) {
       throw BiometricAuthenticationFailedException(
         'Biometric authentication required for this operation',
       );
@@ -148,11 +148,11 @@ class SecurityGuardService {
   /// Guard for biometric enrollment
   /// Verifies biometric works before enabling
   Future<bool> guardBiometricEnrollment() async {
-    final success = await _biometricService.authenticate(
-      reason: 'Verify your biometric authentication',
+    final _bioResult = await _biometricService.authenticate(
+      localizedReason: 'Verify your biometric authentication',
     );
 
-    if (!success) {
+    if (!_bioResult.success) {
       throw BiometricAuthenticationFailedException(
         'Biometric verification failed. Please try again.',
       );

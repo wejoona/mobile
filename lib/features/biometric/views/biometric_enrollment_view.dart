@@ -318,8 +318,8 @@ class _BiometricEnrollmentViewState
       }
 
       // Authenticate to verify biometric works
-      final authenticated = await biometricService.authenticate(
-        reason: l10n.biometric_enrollment_authenticate_reason,
+      final authenticatedBio = await biometricService.authenticate(
+        localizedReason: l10n.biometric_enrollment_authenticate_reason,
       );
 
       if (authenticated) {

@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,7 +40,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(transactionFilterProvider.notifier).setSearch(query);
+      ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: query);
     });
   }
 
@@ -72,7 +74,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               setState(() {
                 _showSearch = false;
                 _searchController.clear();
-                ref.read(transactionFilterProvider.notifier).setSearch(null);
+                ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
               });
             } else if (context.canPop()) {
               context.pop();
@@ -92,7 +94,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   _searchFocusNode.requestFocus();
                 } else {
                   _searchController.clear();
-                  ref.read(transactionFilterProvider.notifier).setSearch(null);
+                  ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
                 }
               });
             },
@@ -194,7 +196,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             icon: Icon(Icons.clear, color: colors.textTertiary),
             onPressed: () {
               _searchController.clear();
-              ref.read(transactionFilterProvider.notifier).setSearch(null);
+              ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
               setState(() {});
             },
           ),

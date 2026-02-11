@@ -341,8 +341,8 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     }
 
     // Authenticate with biometric
-    final authenticated = await biometricService.authenticate(
-      reason: 'Authenticate to access JoonaPay',
+    final authenticatedBio = await biometricService.authenticate(
+      localizedReason: 'Authenticate to access JoonaPay',
     );
 
     if (authenticated) {

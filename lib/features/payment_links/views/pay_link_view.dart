@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,6 +1,7 @@
 /// West African bank directory for bank linking.
 class WestAfricanBanks {
   WestAfricanBanks._();
+  static List<BankInfo> get ivoireBanks => coteDivoire;
 
   static const List<BankInfo> coteDivoire = [
     BankInfo(code: 'SGBCI', name: 'Société Générale CI', swiftCode: 'SGBFCIAB'),

@@ -6,13 +6,62 @@ class OnboardingState {
   final int currentPage;
   final bool isComplete;
   final bool isLoading;
+  final String? error;
+  final String? phoneNumber;
+  final String? countryCode;
+  final String? otp;
+  final String? pin;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final int otpResendCountdown;
+  final String? sessionToken;
 
-  const OnboardingState({this.currentPage = 0, this.isComplete = false, this.isLoading = true});
+  const OnboardingState({
+    this.currentPage = 0,
+    this.isComplete = false,
+    this.isLoading = true,
+    this.error,
+    this.phoneNumber,
+    this.countryCode,
+    this.otp,
+    this.pin,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.otpResendCountdown = 0,
+    this.sessionToken,
+  });
 
-  OnboardingState copyWith({int? currentPage, bool? isComplete, bool? isLoading}) => OnboardingState(
+  OnboardingState copyWith({
+    int? currentPage,
+    bool? isComplete,
+    bool? isLoading,
+    String? error,
+    String? phoneNumber,
+    String? countryCode,
+    String? otp,
+    String? pin,
+    String? firstName,
+    String? lastName,
+    String? email,
+    int? otpResendCountdown,
+    String? sessionToken,
+    bool clearError = false,
+  }) => OnboardingState(
     currentPage: currentPage ?? this.currentPage,
     isComplete: isComplete ?? this.isComplete,
     isLoading: isLoading ?? this.isLoading,
+    error: clearError ? null : (error ?? this.error),
+    phoneNumber: phoneNumber ?? this.phoneNumber,
+    countryCode: countryCode ?? this.countryCode,
+    otp: otp ?? this.otp,
+    pin: pin ?? this.pin,
+    firstName: firstName ?? this.firstName,
+    lastName: lastName ?? this.lastName,
+    email: email ?? this.email,
+    otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
+    sessionToken: sessionToken ?? this.sessionToken,
   );
 }
 
@@ -57,6 +106,31 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     await prefs.remove(_key);
     state = const OnboardingState(isLoading: false);
   }
+
+  // === Stub methods for view compatibility ===
+  Future<void> submitPhoneNumber(String phone) async {
+    state = state.copyWith(phoneNumber: phone, isLoading: true);
+    // TODO: call API
+    state = state.copyWith(isLoading: false);
+  }
+  Future<void> verifyOtp(String otp) async {
+    state = state.copyWith(otp: otp, isLoading: true);
+    // TODO: verify OTP
+    state = state.copyWith(isLoading: false);
+  }
+  void updateOtp(String otp) => state = state.copyWith(otp: otp);
+  void updatePhoneNumber(String phone) => state = state.copyWith(phoneNumber: phone);
+  Future<void> submitPin(String pin) async => state = state.copyWith(pin: pin);
+  Future<void> submitProfile(Map<String, dynamic> data) async {
+    state = state.copyWith(firstName: data['firstName'] as String?, lastName: data['lastName'] as String?, email: data['email'] as String?);
+  }
+  Future<void> updateProfile(Map<String, dynamic> data) async => submitProfile(data);
+  Future<void> resendOtp() async {
+    state = state.copyWith(otpResendCountdown: 60);
+  }
+  void startKyc() {}
+  void skipKyc() => state = state.copyWith(isComplete: true);
+
 }
 
 final onboardingProvider = NotifierProvider<OnboardingNotifier, OnboardingState>(OnboardingNotifier.new);

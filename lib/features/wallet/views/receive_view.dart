@@ -94,7 +94,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
 
             // Dynamic QR Code
             if (walletState.hasWalletAddress || userId.isNotEmpty)
-              QrDisplay(
+              QrCodeDisplay(
                 data: _buildQrData(userId, phone),
                 size: 220,
                 title: l10n.receive_receiveUsdc,

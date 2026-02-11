@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';

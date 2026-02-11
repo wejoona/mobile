@@ -80,4 +80,11 @@ class PaymentResponse {
       status: json['status'] as String,
     );
   }
+
+
+  // === Stub methods ===
+  Future<List<dynamic>> getPaymentLinks() async => [];
+  Future<void> createPaymentLink(Map<String, dynamic> data) async {}
+  Future<dynamic> loadLink(String linkId) async => {};
+
 }

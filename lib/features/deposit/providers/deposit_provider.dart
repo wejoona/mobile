@@ -17,17 +17,25 @@ class DepositState {
   final String? error;
   final DepositMethod? selectedMethod;
   final double? amount;
+  final double? amountXOF;
+  final double? amountUSD;
   final DepositResult? result;
+  final Map<String, dynamic>? response;
+  final String? otpInput;
   final DepositFlowStep step;
 
-  const DepositState({this.isLoading = false, this.error, this.selectedMethod, this.amount, this.result, this.step = DepositFlowStep.selectProvider});
+  const DepositState({this.isLoading = false, this.error, this.selectedMethod, this.amount, this.amountXOF, this.amountUSD, this.result, this.response, this.otpInput, this.step = DepositFlowStep.selectProvider});
 
-  DepositState copyWith({bool? isLoading, String? error, DepositMethod? selectedMethod, double? amount, DepositResult? result, DepositFlowStep? step}) => DepositState(
+  DepositState copyWith({bool? isLoading, String? error, DepositMethod? selectedMethod, double? amount, double? amountXOF, double? amountUSD, DepositResult? result, Map<String, dynamic>? response, String? otpInput, DepositFlowStep? step}) => DepositState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     selectedMethod: selectedMethod ?? this.selectedMethod,
     amount: amount ?? this.amount,
+    amountXOF: amountXOF ?? this.amountXOF,
+    amountUSD: amountUSD ?? this.amountUSD,
     result: result ?? this.result,
+    response: response ?? this.response,
+    otpInput: otpInput ?? this.otpInput,
     step: step ?? this.step,
   );
 }
@@ -106,7 +114,18 @@ class DepositNotifier extends Notifier<DepositState> {
     }
   }
 
+  void setAmountXOF(double amount) => state = state.copyWith(amountXOF: amount);
+  void setAmountUSD(double amount) => state = state.copyWith(amountUSD: amount);
+  Future<void> checkStatus() async {
+    // TODO: poll backend for deposit status
+  }
   void reset() => state = const DepositState();
 }
+
+  // === Stub methods for views ===
+  Future<void> confirmDeposit() async => initiate();
+  Future<void> initiateDeposit() async => initiate();
+  void selectProviderData(dynamic data) {}
+  void setOtp(String otp) => state = state.copyWith(otpInput: otp);
 
 final depositProvider = NotifierProvider<DepositNotifier, DepositState>(DepositNotifier.new);

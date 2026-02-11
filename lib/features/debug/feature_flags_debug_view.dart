@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/components/primitives/error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';

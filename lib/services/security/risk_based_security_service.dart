@@ -173,7 +173,7 @@ class RiskBasedSecurityService {
         riskLevel: 'medium',
         stepUpRequired: true,
         stepUpType: StepUpType.biometric,
-        reason: 'Unable to assess risk, verification required',
+        localizedReason: 'Unable to assess risk, verification required',
         factors: ['risk_service_unavailable'],
         expiresAt: DateTime.now().add(const Duration(minutes: 5)),
       );
@@ -310,7 +310,7 @@ class RiskBasedSecurityService {
       riskLevel: flow == RiskFlow.green ? 'low' : flow == RiskFlow.yellow ? 'medium' : 'high',
       stepUpRequired: stepUpType != StepUpType.none,
       stepUpType: stepUpType,
-      reason: 'Verification required for $operation',
+      localizedReason: 'Verification required for $operation',
       factors: ['operation:$operation', 'fallback_mode'],
       expiresAt: DateTime.now().add(const Duration(minutes: 5)),
     );

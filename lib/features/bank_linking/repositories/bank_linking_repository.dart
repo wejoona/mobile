@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/bank_linking/bank_linking_service.dart';
 import 'package:usdc_wallet/domain/entities/bank_account.dart';

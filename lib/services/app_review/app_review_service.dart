@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';

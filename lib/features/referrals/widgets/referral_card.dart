@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';

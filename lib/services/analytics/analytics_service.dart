@@ -116,4 +116,7 @@ class AnalyticsEvent {
     this.properties = const {},
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
+
+  void setUserProperty(String name, String value) {}
+
 }

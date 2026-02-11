@@ -34,4 +34,10 @@ class BulkPaymentsService {
         await _dio.get('/bulk-payments/batches/$batchId/failed-report');
     return response.data['csv'] as String;
   }
+
+
+  // === Stub methods ===
+  Future<List<dynamic>> getBulkPayments() async => [];
+  Future<List<Map<String, dynamic>>> parseCsvFile(String path) async => [];
+
 }

@@ -166,7 +166,7 @@ class _PaymentInstructionsScreenState
                 color: colors.textSecondary,
               ),
               AppText(
-                '${state.amountXOF.toStringAsFixed(0)} XOF',
+                '${(state.amountXOF ?? 0).toStringAsFixed(0)} XOF',
                 variant: AppTextVariant.headlineSmall,
                 color: colors.textPrimary,
               ),
@@ -185,7 +185,7 @@ class _PaymentInstructionsScreenState
                 color: colors.textSecondary,
               ),
               AppText(
-                '\$${state.amountUSD.toStringAsFixed(2)}',
+                '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}',
                 variant: AppTextVariant.headlineSmall,
                 color: colors.gold,
               ),

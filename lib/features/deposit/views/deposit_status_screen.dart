@@ -72,7 +72,7 @@ class DepositStatusScreen extends ConsumerWidget {
                                 color: colors.textSecondary,
                               ),
                               AppText(
-                                '${state.amountXOF.toStringAsFixed(0)} XOF',
+                                '${(state.amountXOF ?? 0).toStringAsFixed(0)} XOF',
                                 variant: AppTextVariant.titleMedium,
                                 color: colors.textPrimary,
                               ),
@@ -91,7 +91,7 @@ class DepositStatusScreen extends ConsumerWidget {
                                 color: colors.textSecondary,
                               ),
                               AppText(
-                                '\$${state.amountUSD.toStringAsFixed(2)}',
+                                '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}',
                                 variant: AppTextVariant.titleMedium,
                                 color: colors.gold,
                               ),

@@ -444,4 +444,31 @@ class VerifyHqStatus {
       tier: json['tier'] as String?,
     );
   }
+
+  /// Convenience method: submit KYC from a data map.
+  /// Used by providers that collect form data as Map.
+  Future<void> submitKycFromData({required Map<String, dynamic> data}) async {
+    await submitKyc(
+      firstName: data['firstName'] as String? ?? '',
+      lastName: data['lastName'] as String? ?? '',
+      country: data['country'] as String? ?? 'CI',
+      dateOfBirth: data['dateOfBirth'] as String? ?? '',
+      documentType: data['documentType'] as String? ?? 'passport',
+      documentPaths: (data['documentPaths'] as List<String>?) ?? [],
+      selfiePath: data['selfiePath'] as String? ?? '',
+    );
+  }
+
+  /// Upload document for KYC verification.
+  Future<Map<String, dynamic>> uploadDocument({
+    required String path,
+    required String type,
+  }) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(path),
+      'type': type,
+    });
+    final response = await _dio.post('/kyc/documents', data: formData);
+    return response.data as Map<String, dynamic>;
+  }
 }

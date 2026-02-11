@@ -50,3 +50,10 @@ String smartDate(DateTime date) {
   if (isYesterday(date)) return 'Yesterday';
   return formatDate(date);
 }
+
+/// Convenience class wrapper for date utilities
+class AppDateUtils {
+  AppDateUtils._();
+  static String relativeTimeFromNow(DateTime date) => relativeTime(date);
+  static String format(DateTime date) => formatDate(date);
+}

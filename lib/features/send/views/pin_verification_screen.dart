@@ -198,8 +198,8 @@ class _PinVerificationScreenState
 
     try {
       final biometricService = ref.read(biometricServiceProvider);
-      final authenticated = await biometricService.authenticate(
-        reason: l10n.send_biometricReason,
+      final authenticatedBio = await biometricService.authenticate(
+        localizedReason: l10n.send_biometricReason,
       );
 
       if (!authenticated) {

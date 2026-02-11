@@ -93,6 +93,11 @@ class KoridoCard {
         'spendingLimit': spendingLimit,
         'currentSpend': currentSpend,
       };
+  // Computed getters
+  String get maskedNumber => '•••• $last4';
+  String? get cardNumber => null; // Full number never exposed client-side
+  bool get isFrozen => status == CardStatus.frozen;
+  String get expiryDate => '${expiryMonth.toString().padLeft(2, '0')}/${expiryYear.toString().substring(2)}';
 }
 
 enum CardType { virtual, physical }

@@ -13,7 +13,7 @@ final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   Timer(const Duration(minutes: 5), () => link.close());
 
   final data = await service.getKycStatus();
-  return KycProfile.fromJson(data);
+  return KycProfile(userId: '', level: KycLevel.none, status: data.status, rejectionReason: data.rejectionReason);
 });
 
 /// Whether KYC is verified.
@@ -136,7 +136,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKyc(data: state.personalInfo);
+      await service.submitKycFromData(data: state.personalInfo);
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -147,7 +147,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKyc(data: address);
+      await service.submitKycFromData(data: address);
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -158,7 +158,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKyc(data: {'additionalDocs': paths.join(',')});
+      await service.submitKycFromData(data: {'additionalDocs': paths.join(',')});
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -169,7 +169,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKyc(data: state.personalInfo);
+      await service.submitKycFromData(data: state.personalInfo);
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

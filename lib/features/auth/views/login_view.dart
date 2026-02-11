@@ -83,8 +83,8 @@ class _LoginViewState extends ConsumerState<LoginView>
 
     try {
       final biometricService = ref.read(biometricServiceProvider);
-      final authenticated = await biometricService.authenticate(
-        reason: 'Unlock Korido',
+      final authenticatedBio = await biometricService.authenticate(
+        localizedReason: 'Unlock Korido',
       );
 
       if (authenticated && mounted) {

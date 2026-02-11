@@ -85,4 +85,15 @@ class CardsService {
     );
     return response.data as Map<String, dynamic>;
   }
+
+
+  // === Stub methods ===
+  Future<void> freeze(String cardId) async {}
+  Future<void> block(String cardId) async {}
+  Future<void> toggleCardFreeze(String cardId) async {}
+  Future<void> requestCard(Map<String, dynamic> data) async {}
+  Future<void> requestVirtual(Map<String, dynamic> data) async {}
+  Future<void> setSpendLimit(String cardId, double limit) async {}
+  Future<List<dynamic>> loadCardTransactions(String cardId) async => [];
+
 }

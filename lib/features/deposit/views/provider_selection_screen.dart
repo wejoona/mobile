@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -57,7 +59,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
                             color: colors.textSecondary,
                           ),
                           AppText(
-                            '${depositState.amountXOF.toStringAsFixed(0)} XOF',
+                            '${(depositState.amountXOF ?? 0).toStringAsFixed(0)} XOF',
                             variant: AppTextVariant.titleMedium,
                             color: colors.textPrimary,
                           ),
@@ -72,7 +74,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
                             color: colors.textSecondary,
                           ),
                           AppText(
-                            '\$${depositState.amountUSD.toStringAsFixed(2)}',
+                            '\$${(depositState.amountUSD ?? 0).toStringAsFixed(2)}',
                             variant: AppTextVariant.titleMedium,
                             color: colors.gold,
                           ),
