@@ -24,5 +24,5 @@ export 'package:usdc_wallet/services/compliance/source_of_funds_validator.dart';
 export 'package:usdc_wallet/services/compliance/watchlist_service.dart';
 export 'package:usdc_wallet/services/compliance/risk_assessment_service.dart';
 export 'package:usdc_wallet/services/compliance/audit_trail_service.dart';
-export 'package:usdc_wallet/services/compliance/compliance_facade.dart';
+export 'package:usdc_wallet/services/compliance/compliance_facade.dart' hide ComplianceCheckResult;
 export 'package:usdc_wallet/services/compliance/compliance_config.dart';

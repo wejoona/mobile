@@ -6,7 +6,7 @@ export 'package:usdc_wallet/features/insights/models/spending_category.dart';
 export 'package:usdc_wallet/features/insights/models/spending_summary.dart';
 export 'package:usdc_wallet/features/insights/models/spending_trend.dart';
 export 'package:usdc_wallet/features/insights/models/top_recipient.dart';
-export 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
+export 'package:usdc_wallet/features/insights/providers/insights_provider.dart' hide InsightsPeriod;
 export 'package:usdc_wallet/features/insights/views/insights_view.dart';
 export 'package:usdc_wallet/features/insights/widgets/daily_spending_chart.dart';
 export 'package:usdc_wallet/features/insights/widgets/daily_spending_section.dart';

@@ -41,6 +41,7 @@ class AppColors {
   static const Color gold300 = Color(0xFFE5C266);
   static const Color gold400 = Color(0xFFD9AE40);
   static const Color gold500 = Color(0xFFC9A962);       // PRIMARY - CTAs, rewards
+  static const Color gold = gold500;                      // Alias for convenience
   static const Color gold600 = Color(0xFFB89852);       // Pressed state
   static const Color gold700 = Color(0xFF9A7A3D);       // Borders
   static const Color gold800 = Color(0xFF7A5E2F);       // Dark accent

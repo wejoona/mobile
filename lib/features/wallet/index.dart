@@ -22,7 +22,7 @@ export 'package:usdc_wallet/features/wallet/views/request_money_view.dart';
 export 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
 export 'package:usdc_wallet/features/wallet/views/savings_goals_view.dart';
 export 'package:usdc_wallet/features/wallet/views/scan_view.dart';
-export 'package:usdc_wallet/features/wallet/views/scheduled_transfers_view.dart';
+export 'package:usdc_wallet/features/wallet/views/scheduled_transfers_view.dart' hide ScheduledTransfer;
 export 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
 export 'package:usdc_wallet/features/wallet/views/transaction_filter_view.dart';
 export 'package:usdc_wallet/features/wallet/views/transfer_success_view.dart';

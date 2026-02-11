@@ -6,7 +6,7 @@ export 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 export 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 export 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 export 'package:usdc_wallet/features/deposit/providers/deposit_method_provider.dart';
-export 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+export 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart' hide DepositMethod;
 export 'package:usdc_wallet/features/deposit/repositories/deposit_repository.dart';
 export 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
 export 'package:usdc_wallet/features/deposit/views/deposit_screen.dart';

@@ -70,6 +70,7 @@ class ThemeColors {
 
   /// Primary gold
   Color get gold => isDark ? AppColors.gold500 : AppColorsLight.gold500;
+  Color get primary => gold;
 
   /// Gold for text/icons on dark backgrounds
   Color get goldLight => AppColors.gold400;
