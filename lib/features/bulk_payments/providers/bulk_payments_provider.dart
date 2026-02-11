@@ -10,9 +10,14 @@ final bulkPaymentsProvider = FutureProvider<List<BulkPayment>>((ref) async {
   Timer(const Duration(minutes: 2), () => link.close());
 
   final data = await service.getBulkPayments();
-  final items = (data['data'] as List?) ?? [];
-  return items.map((e) => BulkPayment.fromJson(e as Map<String, dynamic>)).toList();
+  return data.map((e) => BulkPayment.fromJson(e as Map<String, dynamic>)).toList();
 });
 
 /// Bulk payment actions delegate.
 final bulkPaymentActionsProvider = Provider((ref) => ref.watch(bulkPaymentsServiceProvider));
+
+/// Batch detail provider.
+final batchDetailProvider = FutureProvider.family<dynamic, String>((ref, batchId) async {
+  final service = ref.watch(bulkPaymentsServiceProvider);
+  return service.getBatchStatus(batchId);
+});

@@ -5,7 +5,7 @@ import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Run 383: Virtual/physical card display widget
 class CardDisplay extends StatelessWidget {
-  final WalletCard card;
+  final KoridoCard card;
   final bool showDetails;
   final VoidCallback? onTap;
 
@@ -66,8 +66,8 @@ class CardDisplay extends StatelessWidget {
                       color: AppColors.gold,
                     ),
                     PillBadge(
-                      label: card.isVirtual ? 'Virtuelle' : 'Physique',
-                      color: AppColors.gold,
+                      label: card.type == CardType.virtual ? 'Virtuelle' : 'Physique',
+                      backgroundColor: AppColors.gold,
                     ),
                   ],
                 ),

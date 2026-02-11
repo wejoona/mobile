@@ -4,7 +4,7 @@ import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Run 385: Card details provider with sensitive data reveal
 class CardDetailsState {
-  final WalletCard? card;
+  final KoridoCard? card;
   final bool isRevealed;
   final bool isLoading;
   final String? error;
@@ -25,7 +25,7 @@ class CardDetailsState {
   }
 
   CardDetailsState copyWith({
-    WalletCard? card,
+    KoridoCard? card,
     bool? isRevealed,
     bool? isLoading,
     String? error,

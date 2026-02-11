@@ -132,6 +132,7 @@ class _BiometricEnrollmentViewState
             color = AppColors.gold500;
             break;
           case BiometricType.none:
+          case null:
             icon = Icons.security;
             color = AppColors.textSecondary;
             break;

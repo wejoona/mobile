@@ -67,13 +67,15 @@ class SavingsPotsService {
   }
 
   // Aliases used by views
-  Future<SavingsPot> createPot(Map<String, dynamic> data) => create(
-    name: data['name'] as String? ?? '',
-    targetAmount: (data['targetAmount'] as num?)?.toDouble() ?? 0,
+  Future<dynamic> createPot({String? name, String? emoji, String? color, double? targetAmount, Map<String, dynamic>? data}) => create(
+    name: data?['name'] as String? ?? name ?? '',
+    targetAmount: (data?['targetAmount'] as num?)?.toDouble() ?? targetAmount ?? 0,
   );
   Future<void> deletePot(String potId) => delete(potId);
-  Future<SavingsPot> updatePot(String potId, Map<String, dynamic> data) async {
-    final response = await _dio.patch('/savings-pots/$potId', data: data);
+  Future<dynamic> updatePot({String? id, String? name, String? emoji, String? color, double? targetAmount, Map<String, dynamic>? data}) async {
+    final potId = id ?? '';
+    final payload = data ?? {'name': name, 'targetAmount': targetAmount};
+    final response = await _dio.patch('/savings-pots/$potId', data: payload);
     return SavingsPot.fromJson(response.data as Map<String, dynamic>);
   }
   Future<SavingsPot> addToPot(String potId, double amount) => deposit(potId, amount);

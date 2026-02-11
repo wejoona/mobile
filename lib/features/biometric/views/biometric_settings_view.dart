@@ -145,7 +145,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     return biometricType.when(
       data: (type) => biometricEnabled.when(
         data: (enabled) {
-          final typeName = _getBiometricTypeName(type, l10n);
+          final typeName = _getBiometricTypeName(type ?? BiometricType.none, l10n);
           final statusColor = enabled ? AppColors.successBase : AppColors.textSecondary;
 
           return AppCard(
@@ -160,7 +160,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    _getBiometricIcon(type),
+                    _getBiometricIcon(type ?? BiometricType.none),
                     color: statusColor,
                     size: 32,
                   ),

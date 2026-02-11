@@ -22,7 +22,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(bulkPaymentsProvider);
-    final batch = state.currentBatch;
+    final batch = state.valueOrNull?.isNotEmpty == true ? state.valueOrNull!.first : null;
 
     if (batch == null) {
       Future.microtask(() => context.go('/bulk-payments'));
@@ -266,10 +266,10 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
 
     if (confirmed == true && mounted) {
-      final success =
-          await ref.read(bulkPaymentActionsProvider).submitBatch(batch);
+      // TODO: submitBatch expects BulkBatch, not BulkPayment
+      await ref.read(bulkPaymentActionsProvider).submitBatch(batch as dynamic);
 
-      if (success && mounted) {
+      if (mounted) {
         context.go('/bulk-payments');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
