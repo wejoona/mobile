@@ -9,6 +9,7 @@ class User {
   final String? lastName;
   final String? email;
   final String? avatarUrl;
+  final String preferredLocale;
   final String countryCode;
   final bool isPhoneVerified;
   final UserRole role;
@@ -25,6 +26,7 @@ class User {
     this.lastName,
     this.email,
     this.avatarUrl,
+    this.preferredLocale = 'fr',
     required this.countryCode,
     required this.isPhoneVerified,
     required this.role,
@@ -42,6 +44,31 @@ class User {
     return '${firstName ?? ''} ${lastName ?? ''}'.trim();
   }
 
+  /// Profile completion percentage (0.0 - 1.0)
+  double get profileCompletion {
+    int total = 6;
+    int completed = 0;
+    if (firstName != null && firstName!.isNotEmpty) completed++;
+    if (lastName != null && lastName!.isNotEmpty) completed++;
+    if (email != null && email!.isNotEmpty) completed++;
+    if (username != null && username!.isNotEmpty) completed++;
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) completed++;
+    if (hasPin) completed++;
+    return completed / total;
+  }
+
+  /// List of missing profile fields
+  List<String> get missingProfileFields {
+    final missing = <String>[];
+    if (firstName == null || firstName!.isEmpty) missing.add('First name');
+    if (lastName == null || lastName!.isEmpty) missing.add('Last name');
+    if (email == null || email!.isEmpty) missing.add('Email');
+    if (username == null || username!.isEmpty) missing.add('Username');
+    if (avatarUrl == null || avatarUrl!.isEmpty) missing.add('Profile photo');
+    if (!hasPin) missing.add('PIN');
+    return missing;
+  }
+
   String get displayName {
     if (username != null) return '@$username';
     if (fullName.isNotEmpty) return fullName;
@@ -57,6 +84,7 @@ class User {
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
+      preferredLocale: json['preferredLocale'] as String? ?? 'fr',
       countryCode: json['countryCode'] as String? ?? 'CI',
       // Backend returns 'phoneVerified', handle both keys
       isPhoneVerified: (json['phoneVerified'] ?? json['isPhoneVerified']) as bool? ?? false,
@@ -87,6 +115,7 @@ class User {
       'lastName': lastName,
       'email': email,
       'avatarUrl': avatarUrl,
+      'preferredLocale': preferredLocale,
       'countryCode': countryCode,
       'isPhoneVerified': isPhoneVerified,
       'role': role.name,
@@ -106,6 +135,7 @@ class User {
     String? lastName,
     String? email,
     String? avatarUrl,
+    String? preferredLocale,
     String? countryCode,
     bool? isPhoneVerified,
     UserRole? role,
@@ -122,6 +152,7 @@ class User {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      preferredLocale: preferredLocale ?? this.preferredLocale,
       countryCode: countryCode ?? this.countryCode,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
       role: role ?? this.role,
