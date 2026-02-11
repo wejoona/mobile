@@ -1,61 +1,50 @@
-import '../enums/index.dart';
-
-/// Notification entity - mirrors backend Notification entity
+/// Notification entity.
 class AppNotification {
   final String id;
-  final String userId;
-  final NotificationType type;
   final String title;
   final String body;
-  final Map<String, dynamic>? data;
+  final NotificationType type;
   final bool isRead;
+  final String? actionUrl;
+  final String? transactionId;
+  final Map<String, dynamic>? data;
   final DateTime createdAt;
-  final DateTime? readAt;
 
   const AppNotification({
     required this.id,
-    required this.userId,
-    required this.type,
     required this.title,
     required this.body,
+    required this.type,
+    this.isRead = false,
+    this.actionUrl,
+    this.transactionId,
     this.data,
-    required this.isRead,
     required this.createdAt,
-    this.readAt,
   });
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
-      id: (json['id'] ?? '') as String,
-      userId: (json['userId'] ?? '') as String,
+      id: json['id'] as String,
+      title: json['title'] as String,
+      body: json['body'] as String,
       type: NotificationType.values.firstWhere(
         (e) => e.name == json['type'],
         orElse: () => NotificationType.general,
       ),
-      title: (json['title'] ?? '') as String,
-      body: (json['body'] ?? json['message'] ?? '') as String,
+      isRead: json['isRead'] as bool? ?? false,
+      actionUrl: json['actionUrl'] as String?,
+      transactionId: json['transactionId'] as String?,
       data: json['data'] as Map<String, dynamic>?,
-      isRead: json['isRead'] as bool? ?? json['read'] as bool? ?? false,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
-          : DateTime.now(),
-      readAt: json['readAt'] != null
-          ? DateTime.tryParse(json['readAt'] as String)
-          : null,
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
+}
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'type': type.name,
-      'title': title,
-      'body': body,
-      'data': data,
-      'isRead': isRead,
-      'createdAt': createdAt.toIso8601String(),
-      'readAt': readAt?.toIso8601String(),
-    };
-  }
+enum NotificationType {
+  transaction,
+  security,
+  kyc,
+  promotion,
+  system,
+  general,
 }

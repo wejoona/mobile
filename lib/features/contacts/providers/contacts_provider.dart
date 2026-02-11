@@ -1,195 +1,63 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/synced_contact.dart';
-import '../models/contact_sync_result.dart';
-import '../../../services/contacts/contacts_service.dart';
+import '../../../domain/entities/contact.dart';
 import '../../../services/api/api_client.dart';
 
-/// Contact permission state
-enum PermissionState {
-  unknown,
-  granted,
-  denied,
-  permanentlyDenied,
-}
+/// App contacts provider (Korido contacts, not phone contacts).
+final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final link = ref.keepAlive();
 
-/// Contacts State
-class ContactsState {
-  final List<SyncedContact> contacts;
-  final bool isLoading;
-  final bool isSyncing;
-  final String? error;
-  final PermissionState permissionState;
-  final ContactSyncResult? lastSyncResult;
-  final DateTime? lastSyncTime;
+  Timer(const Duration(minutes: 5), () => link.close());
 
-  const ContactsState({
-    this.contacts = const [],
-    this.isLoading = false,
-    this.isSyncing = false,
-    this.error,
-    this.permissionState = PermissionState.unknown,
-    this.lastSyncResult,
-    this.lastSyncTime,
-  });
+  final response = await dio.get('/contacts');
+  final data = response.data as Map<String, dynamic>;
+  final items = data['data'] as List? ?? [];
+  return items
+      .map((e) => Contact.fromJson(e as Map<String, dynamic>))
+      .toList();
+});
 
-  ContactsState copyWith({
-    List<SyncedContact>? contacts,
-    bool? isLoading,
-    bool? isSyncing,
-    String? error,
-    PermissionState? permissionState,
-    ContactSyncResult? lastSyncResult,
-    DateTime? lastSyncTime,
-  }) {
-    return ContactsState(
-      contacts: contacts ?? this.contacts,
-      isLoading: isLoading ?? this.isLoading,
-      isSyncing: isSyncing ?? this.isSyncing,
-      error: error,
-      permissionState: permissionState ?? this.permissionState,
-      lastSyncResult: lastSyncResult ?? this.lastSyncResult,
-      lastSyncTime: lastSyncTime ?? this.lastSyncTime,
-    );
+/// Favorite contacts.
+final favoriteContactsProvider = Provider<List<Contact>>((ref) {
+  final contacts = ref.watch(appContactsProvider).valueOrNull ?? [];
+  return contacts.where((c) => c.isFavorite).toList();
+});
+
+/// Search contacts.
+final contactSearchProvider =
+    Provider.family<List<Contact>, String>((ref, query) {
+  final contacts = ref.watch(appContactsProvider).valueOrNull ?? [];
+  if (query.isEmpty) return contacts;
+  final lower = query.toLowerCase();
+  return contacts.where((c) {
+    return c.name.toLowerCase().contains(lower) ||
+        (c.phone?.contains(query) ?? false);
+  }).toList();
+});
+
+/// Contact actions.
+class ContactActions {
+  final Dio _dio;
+
+  ContactActions(this._dio);
+
+  Future<void> syncPhoneContacts(List<String> phones) async {
+    await _dio.post('/contacts/sync', data: {'phones': phones});
   }
 
-  /// Get only JoonaPay users
-  List<SyncedContact> get joonaPayUsers =>
-      contacts.where((c) => c.isJoonaPayUser).toList();
+  Future<void> invite(String phone) async {
+    await _dio.post('/contacts/invite', data: {'phone': phone});
+  }
 
-  /// Get non-JoonaPay users
-  List<SyncedContact> get nonJoonaPayUsers =>
-      contacts.where((c) => !c.isJoonaPayUser).toList();
-
-  /// Search contacts
-  List<SyncedContact> searchContacts(String query) {
-    if (query.isEmpty) return contacts;
-
-    final lowerQuery = query.toLowerCase();
-    return contacts
-        .where((c) =>
-            c.name.toLowerCase().contains(lowerQuery) ||
-            c.phone.contains(lowerQuery))
-        .toList();
+  Future<void> toggleFavorite(String contactId, bool isFavorite) async {
+    await _dio.patch('/contacts/$contactId', data: {
+      'isFavorite': isFavorite,
+    });
   }
 }
 
-/// Contacts Notifier
-class ContactsNotifier extends Notifier<ContactsState> {
-  @override
-  ContactsState build() => const ContactsState();
-
-  /// Check permission status
-  Future<void> checkPermission() async {
-    final service = ref.read(contactsServiceProvider);
-    final hasPermission = await service.hasContactsPermission();
-
-    state = state.copyWith(
-      permissionState:
-          hasPermission ? PermissionState.granted : PermissionState.denied,
-    );
-  }
-
-  /// Request contacts permission
-  Future<bool> requestPermission() async {
-    final service = ref.read(contactsServiceProvider);
-    final granted = await service.requestContactsPermission();
-
-    state = state.copyWith(
-      permissionState:
-          granted ? PermissionState.granted : PermissionState.denied,
-    );
-
-    if (granted) {
-      await loadAndSyncContacts();
-    }
-
-    return granted;
-  }
-
-  /// Load device contacts and sync with JoonaPay
-  Future<void> loadAndSyncContacts() async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final service = ref.read(contactsServiceProvider);
-      final dio = ref.read(dioProvider);
-
-      // Get device contacts
-      final deviceContacts = await service.getDeviceContacts();
-      final syncedContacts =
-          service.deviceContactsToSyncedContacts(deviceContacts);
-
-      // Get JoonaPay matches
-      final matchedContacts =
-          await service.getJoonaPayContacts(dio, syncedContacts);
-
-      // Count JoonaPay users
-      final joonaPayCount =
-          matchedContacts.where((c) => c.isJoonaPayUser).length;
-
-      final result = ContactSyncResult(
-        totalContacts: matchedContacts.length,
-        joonaPayUsersFound: joonaPayCount,
-        syncedAt: DateTime.now(),
-      );
-
-      state = state.copyWith(
-        contacts: matchedContacts,
-        isLoading: false,
-        lastSyncResult: result,
-        lastSyncTime: DateTime.now(),
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
-
-  /// Sync contacts (refresh JoonaPay status)
-  Future<void> syncContacts() async {
-    if (state.contacts.isEmpty) {
-      await loadAndSyncContacts();
-      return;
-    }
-
-    state = state.copyWith(isSyncing: true, error: null);
-
-    try {
-      final service = ref.read(contactsServiceProvider);
-      final dio = ref.read(dioProvider);
-
-      // Get updated JoonaPay matches
-      final matchedContacts =
-          await service.getJoonaPayContacts(dio, state.contacts);
-
-      // Count JoonaPay users
-      final joonaPayCount =
-          matchedContacts.where((c) => c.isJoonaPayUser).length;
-
-      final result = ContactSyncResult(
-        totalContacts: matchedContacts.length,
-        joonaPayUsersFound: joonaPayCount,
-        syncedAt: DateTime.now(),
-      );
-
-      state = state.copyWith(
-        contacts: matchedContacts,
-        isSyncing: false,
-        lastSyncResult: result,
-        lastSyncTime: DateTime.now(),
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isSyncing: false,
-        error: e.toString(),
-      );
-    }
-  }
-}
-
-/// Contacts Provider
-final contactsProvider = NotifierProvider<ContactsNotifier, ContactsState>(
-  ContactsNotifier.new,
-);
+final contactActionsProvider = Provider<ContactActions>((ref) {
+  return ContactActions(ref.watch(dioProvider));
+});
