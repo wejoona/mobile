@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/login_state.dart';
 import '../../../services/index.dart';
+import '../../../services/device/device_registration_service.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(
@@ -190,11 +191,13 @@ class LoginNotifier extends Notifier<LoginState> {
         );
       }
 
-      // Register device
-      // TODO: Call device registration API
-
-      // Update FCM token
-      // TODO: Update FCM token on backend
+      // Register device + FCM token with backend
+      try {
+        final deviceService = ref.read(deviceRegistrationServiceProvider);
+        await deviceService.registerCurrentDevice();
+      } catch (_) {
+        // Non-blocking — don't fail login if device registration fails
+      }
 
       state = state.copyWith(
         isLoading: false,
