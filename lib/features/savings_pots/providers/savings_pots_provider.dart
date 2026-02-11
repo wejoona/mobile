@@ -1,22 +1,20 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/savings_pot.dart';
-import '../../../services/api/api_client.dart';
+import '../../../services/savings_pots/savings_pots_service.dart';
 
-/// Savings pots list provider.
+/// Savings pots list provider — wired to SavingsPotsService (real API with mock fallback via interceptor).
 final savingsPotsProvider = FutureProvider<List<SavingsPot>>((ref) async {
-  final dio = ref.watch(dioProvider);
+  final service = ref.watch(savingsPotsServiceProvider);
   final link = ref.keepAlive();
-
   Timer(const Duration(minutes: 2), () => link.close());
+  return service.getAll();
+});
 
-  final response = await dio.get('/savings-pots');
-  final data = response.data as Map<String, dynamic>;
-  final items = data['data'] as List? ?? [];
-  return items
-      .map((e) => SavingsPot.fromJson(e as Map<String, dynamic>))
-      .toList();
+/// Single savings pot by ID.
+final savingsPotByIdProvider = FutureProvider.family<SavingsPot, String>((ref, id) async {
+  final service = ref.watch(savingsPotsServiceProvider);
+  return service.getById(id);
 });
 
 /// Total savings across all pots.
@@ -25,42 +23,7 @@ final totalSavingsProvider = Provider<double>((ref) {
   return pots.fold(0.0, (sum, pot) => sum + pot.currentAmount);
 });
 
-/// Create savings pot action.
-class SavingsPotsActions {
-  final Dio _dio;
-
-  SavingsPotsActions(this._dio);
-
-  Future<SavingsPot> create({
-    required String name,
-    required double targetAmount,
-    DateTime? targetDate,
-  }) async {
-    final response = await _dio.post('/savings-pots', data: {
-      'name': name,
-      'targetAmount': targetAmount,
-      if (targetDate != null) 'targetDate': targetDate.toIso8601String(),
-    });
-    return SavingsPot.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<void> deposit(String potId, double amount) async {
-    await _dio.post('/savings-pots/$potId/deposit', data: {
-      'amount': amount,
-    });
-  }
-
-  Future<void> withdraw(String potId, double amount) async {
-    await _dio.post('/savings-pots/$potId/withdraw', data: {
-      'amount': amount,
-    });
-  }
-
-  Future<void> delete(String potId) async {
-    await _dio.delete('/savings-pots/$potId');
-  }
-}
-
-final savingsPotsActionsProvider = Provider<SavingsPotsActions>((ref) {
-  return SavingsPotsActions(ref.watch(dioProvider));
+/// Savings pot actions — delegates to SavingsPotsService.
+final savingsPotsActionsProvider = Provider<SavingsPotsService>((ref) {
+  return ref.watch(savingsPotsServiceProvider);
 });
