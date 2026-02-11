@@ -1,66 +1,114 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Run 380: App-wide preferences provider (language, theme, currency display)
+/// App-level preferences (non-sensitive, stored in SharedPreferences).
 class AppPreferences {
   final String locale;
-  final String themeMode; // light, dark, system
+  final bool isDarkMode;
+  final bool showBalance;
+  final bool hapticFeedback;
+  final bool pushNotifications;
+  final bool transactionAlerts;
+  final bool marketingEmails;
   final String defaultCurrency;
-  final bool showBalanceOnHome;
-  final bool enableHaptics;
-  final bool enableAnimations;
-  final bool compactTransactionList;
-  final int decimalPlaces;
 
   const AppPreferences({
     this.locale = 'fr',
-    this.themeMode = 'dark',
+    this.isDarkMode = false,
+    this.showBalance = true,
+    this.hapticFeedback = true,
+    this.pushNotifications = true,
+    this.transactionAlerts = true,
+    this.marketingEmails = false,
     this.defaultCurrency = 'USDC',
-    this.showBalanceOnHome = true,
-    this.enableHaptics = true,
-    this.enableAnimations = true,
-    this.compactTransactionList = false,
-    this.decimalPlaces = 2,
   });
 
   AppPreferences copyWith({
     String? locale,
-    String? themeMode,
+    bool? isDarkMode,
+    bool? showBalance,
+    bool? hapticFeedback,
+    bool? pushNotifications,
+    bool? transactionAlerts,
+    bool? marketingEmails,
     String? defaultCurrency,
-    bool? showBalanceOnHome,
-    bool? enableHaptics,
-    bool? enableAnimations,
-    bool? compactTransactionList,
-    int? decimalPlaces,
   }) => AppPreferences(
     locale: locale ?? this.locale,
-    themeMode: themeMode ?? this.themeMode,
+    isDarkMode: isDarkMode ?? this.isDarkMode,
+    showBalance: showBalance ?? this.showBalance,
+    hapticFeedback: hapticFeedback ?? this.hapticFeedback,
+    pushNotifications: pushNotifications ?? this.pushNotifications,
+    transactionAlerts: transactionAlerts ?? this.transactionAlerts,
+    marketingEmails: marketingEmails ?? this.marketingEmails,
     defaultCurrency: defaultCurrency ?? this.defaultCurrency,
-    showBalanceOnHome: showBalanceOnHome ?? this.showBalanceOnHome,
-    enableHaptics: enableHaptics ?? this.enableHaptics,
-    enableAnimations: enableAnimations ?? this.enableAnimations,
-    compactTransactionList: compactTransactionList ?? this.compactTransactionList,
-    decimalPlaces: decimalPlaces ?? this.decimalPlaces,
   );
 }
 
-class AppPreferencesNotifier extends StateNotifier<AppPreferences> {
-  AppPreferencesNotifier() : super(const AppPreferences());
+/// App preferences notifier — persists to SharedPreferences.
+class AppPreferencesNotifier extends Notifier<AppPreferences> {
+  static const _prefix = 'korido_pref_';
 
-  void setLocale(String locale) => state = state.copyWith(locale: locale);
-  void setThemeMode(String mode) => state = state.copyWith(themeMode: mode);
-  void setDefaultCurrency(String currency) =>
-      state = state.copyWith(defaultCurrency: currency);
-  void toggleBalanceVisibility() =>
-      state = state.copyWith(showBalanceOnHome: !state.showBalanceOnHome);
-  void toggleHaptics() =>
-      state = state.copyWith(enableHaptics: !state.enableHaptics);
-  void toggleAnimations() =>
-      state = state.copyWith(enableAnimations: !state.enableAnimations);
-  void setCompactList(bool compact) =>
-      state = state.copyWith(compactTransactionList: compact);
+  @override
+  AppPreferences build() {
+    _load();
+    return const AppPreferences();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = AppPreferences(
+      locale: prefs.getString('${_prefix}locale') ?? 'fr',
+      isDarkMode: prefs.getBool('${_prefix}darkMode') ?? false,
+      showBalance: prefs.getBool('${_prefix}showBalance') ?? true,
+      hapticFeedback: prefs.getBool('${_prefix}haptic') ?? true,
+      pushNotifications: prefs.getBool('${_prefix}push') ?? true,
+      transactionAlerts: prefs.getBool('${_prefix}txAlerts') ?? true,
+      marketingEmails: prefs.getBool('${_prefix}marketing') ?? false,
+      defaultCurrency: prefs.getString('${_prefix}currency') ?? 'USDC',
+    );
+  }
+
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('${_prefix}locale', state.locale);
+    await prefs.setBool('${_prefix}darkMode', state.isDarkMode);
+    await prefs.setBool('${_prefix}showBalance', state.showBalance);
+    await prefs.setBool('${_prefix}haptic', state.hapticFeedback);
+    await prefs.setBool('${_prefix}push', state.pushNotifications);
+    await prefs.setBool('${_prefix}txAlerts', state.transactionAlerts);
+    await prefs.setBool('${_prefix}marketing', state.marketingEmails);
+    await prefs.setString('${_prefix}currency', state.defaultCurrency);
+  }
+
+  Future<void> setLocale(String locale) async {
+    state = state.copyWith(locale: locale);
+    await _save();
+  }
+
+  Future<void> toggleDarkMode() async {
+    state = state.copyWith(isDarkMode: !state.isDarkMode);
+    await _save();
+  }
+
+  Future<void> toggleBalanceVisibility() async {
+    state = state.copyWith(showBalance: !state.showBalance);
+    await _save();
+  }
+
+  Future<void> setHapticFeedback(bool enabled) async {
+    state = state.copyWith(hapticFeedback: enabled);
+    await _save();
+  }
+
+  Future<void> setPushNotifications(bool enabled) async {
+    state = state.copyWith(pushNotifications: enabled);
+    await _save();
+  }
+
+  Future<void> setTransactionAlerts(bool enabled) async {
+    state = state.copyWith(transactionAlerts: enabled);
+    await _save();
+  }
 }
 
-final appPreferencesProvider =
-    StateNotifierProvider<AppPreferencesNotifier, AppPreferences>((ref) {
-  return AppPreferencesNotifier();
-});
+final appPreferencesProvider = NotifierProvider<AppPreferencesNotifier, AppPreferences>(AppPreferencesNotifier.new);
