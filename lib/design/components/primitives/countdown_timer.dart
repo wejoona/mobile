@@ -1,43 +1,52 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../../tokens/index.dart';
 
-/// A countdown timer widget for OTP expiry, session timeout, etc.
+/// Countdown timer widget (e.g. for OTP expiry).
 class CountdownTimer extends StatefulWidget {
-  final Duration duration;
-  final VoidCallback? onComplete;
-  final Widget Function(Duration remaining)? builder;
-  final TextStyle? style;
-
   const CountdownTimer({
     super.key,
-    required this.duration,
+    required this.durationSeconds,
     this.onComplete,
-    this.builder,
-    this.style,
+    this.onResend,
+    this.resendLabel = 'Resend code',
   });
+
+  final int durationSeconds;
+  final VoidCallback? onComplete;
+  final VoidCallback? onResend;
+  final String resendLabel;
 
   @override
   State<CountdownTimer> createState() => _CountdownTimerState();
 }
 
 class _CountdownTimerState extends State<CountdownTimer> {
-  late Duration _remaining;
+  late int _remaining;
   Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _remaining = widget.duration;
+    _remaining = widget.durationSeconds;
+    _startTimer();
+  }
+
+  void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_remaining.inSeconds <= 0) {
+      if (_remaining <= 0) {
         _timer?.cancel();
         widget.onComplete?.call();
       } else {
-        setState(() {
-          _remaining -= const Duration(seconds: 1);
-        });
+        setState(() => _remaining--);
       }
     });
+  }
+
+  void _handleResend() {
+    widget.onResend?.call();
+    setState(() => _remaining = widget.durationSeconds);
+    _startTimer();
   }
 
   @override
@@ -46,28 +55,34 @@ class _CountdownTimerState extends State<CountdownTimer> {
     super.dispose();
   }
 
+  String get _formattedTime {
+    final minutes = _remaining ~/ 60;
+    final seconds = _remaining % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.builder != null) {
-      return widget.builder!(_remaining);
+    final colors = context.colors;
+    if (_remaining > 0) {
+      return Text(
+        'Resend in $_formattedTime',
+        style: TextStyle(
+          color: colors.textSecondary,
+          fontSize: 14,
+        ),
+      );
     }
-
-    final m = _remaining.inMinutes;
-    final s = _remaining.inSeconds % 60;
-    final text = '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-
-    final isUrgent = _remaining.inSeconds <= 30;
-
-    return Text(
-      text,
-      style: widget.style ??
-          Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: isUrgent
-                    ? Theme.of(context).colorScheme.error
-                    : Theme.of(context).colorScheme.onSurface,
-                fontWeight: FontWeight.w600,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+    return GestureDetector(
+      onTap: _handleResend,
+      child: Text(
+        widget.resendLabel,
+        style: TextStyle(
+          color: colors.primary,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }
