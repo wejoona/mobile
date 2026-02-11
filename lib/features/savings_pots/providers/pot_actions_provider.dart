@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/savings_pots/savings_pots_service.dart';
+import 'package:usdc_wallet/services/savings_pots/savings_pots_service.dart';
 import 'savings_pots_provider.dart';
-import '../../wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// Savings pot deposit/withdraw state.
 class PotActionState {

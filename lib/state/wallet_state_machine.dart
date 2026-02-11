@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/index.dart';
-import '../services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'app_state.dart';
 import 'fsm/fsm_provider.dart';
 

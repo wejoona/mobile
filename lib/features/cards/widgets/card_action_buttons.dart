@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Run 384: Card action buttons row (freeze, settings, details, etc.)
 class CardActionButtons extends StatelessWidget {

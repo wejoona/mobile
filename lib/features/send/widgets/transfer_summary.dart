@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/info_row.dart';
+import 'package:usdc_wallet/design/components/primitives/info_row.dart';
 
 /// Transfer summary before confirmation.
 class TransferSummary extends StatelessWidget {

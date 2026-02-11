@@ -8,7 +8,7 @@
 /// then include it in the X-Pin-Token header for transfer requests.
 library;
 
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 // ==================== REQUEST/RESPONSE TYPES ====================
 

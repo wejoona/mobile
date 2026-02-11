@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../widgets/pin_dots.dart';
-import '../widgets/pin_pad.dart';
-import '../providers/pin_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Confirm PIN View
 /// Used to confirm PIN entry during setup

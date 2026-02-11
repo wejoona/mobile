@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/states/empty_state.dart';
+import 'package:usdc_wallet/design/components/states/empty_state.dart';
 
 /// Empty state when user has no payment links.
 class PaymentLinkEmptyState extends StatelessWidget {

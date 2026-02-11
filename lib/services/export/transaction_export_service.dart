@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../../domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
 
 /// Service for exporting transaction history to CSV.
 class TransactionExportService {

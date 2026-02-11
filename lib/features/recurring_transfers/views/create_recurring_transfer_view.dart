@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/create_recurring_transfer_provider.dart';
-import '../providers/recurring_transfers_provider.dart';
-import '../widgets/frequency_picker.dart';
-import '../widgets/end_condition_picker.dart';
-import '../../../design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_transfer_provider.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
+import 'package:usdc_wallet/features/recurring_transfers/widgets/frequency_picker.dart';
+import 'package:usdc_wallet/features/recurring_transfers/widgets/end_condition_picker.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CreateRecurringTransferView extends ConsumerStatefulWidget {
   const CreateRecurringTransferView({

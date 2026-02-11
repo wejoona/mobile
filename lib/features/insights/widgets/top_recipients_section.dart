@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../providers/insights_provider.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'top_recipients_chart.dart';
 
 class TopRecipientsSection extends ConsumerWidget {

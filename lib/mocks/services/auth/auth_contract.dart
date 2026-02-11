@@ -4,7 +4,7 @@
 /// This serves as the specification for backend implementation.
 library;
 
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 // ==================== REQUEST/RESPONSE TYPES ====================
 

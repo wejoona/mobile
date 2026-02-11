@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../utils/formatters.dart';
-import '../models/transfer_request.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
+import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 
 class RecentRecipientCard extends StatelessWidget {
   final RecentRecipient recipient;

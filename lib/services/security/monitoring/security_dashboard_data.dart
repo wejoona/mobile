@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 import 'security_metrics_collector.dart';
 import 'app_security_score.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/notification.dart';
-import '../../../utils/date_utils.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
+import 'package:usdc_wallet/utils/date_utils.dart';
 
 /// Run 359: Individual notification list tile widget
 class NotificationTile extends StatelessWidget {

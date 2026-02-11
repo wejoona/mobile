@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import '../../design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 /// Ripple effect animation for touch feedback
 class RippleEffect extends StatefulWidget {

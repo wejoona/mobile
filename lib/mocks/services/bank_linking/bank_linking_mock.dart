@@ -1,10 +1,10 @@
 /// Bank Linking Mock Implementation
 library;
 
-import '../../../features/bank_linking/models/bank.dart';
-import '../../../features/bank_linking/models/linked_bank_account.dart';
-import '../../base/api_contract.dart';
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
+import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Bank Linking Mock State
 class BankLinkingMockState {

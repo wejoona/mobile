@@ -6,7 +6,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// HTTP methods
 enum HttpMethod { get, post, put, patch, delete }

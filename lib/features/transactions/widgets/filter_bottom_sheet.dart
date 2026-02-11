@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/index.dart';
-import '../providers/transactions_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 
 /// Bottom sheet for advanced transaction filtering
 class FilterBottomSheet extends ConsumerStatefulWidget {

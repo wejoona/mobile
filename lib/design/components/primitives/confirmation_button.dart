@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// A button that requires a second tap to confirm (slide or hold pattern).
 class ConfirmationButton extends StatefulWidget {

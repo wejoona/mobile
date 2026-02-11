@@ -3,18 +3,18 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../router/navigation_extensions.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/enums/index.dart';
-import '../../../state/index.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/liveness/liveness_service.dart';
-import '../../liveness/widgets/liveness_check_widget.dart';
-import '../../../config/countries.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/config/countries.dart';
 
 /// KYC Document Type
 enum KycDocumentType {

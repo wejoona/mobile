@@ -8,8 +8,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../../utils/logger.dart';
-import '../mock_config.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'api_contract.dart';
 
 /// Type definition for mock handlers

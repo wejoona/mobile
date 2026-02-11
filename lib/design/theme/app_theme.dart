@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'theme_extensions.dart';
 
 /// App Theme Configuration

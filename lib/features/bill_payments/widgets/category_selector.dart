@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 
 /// Bill Category Selector Widget
 /// Displays categories as horizontal scrollable chips or grid

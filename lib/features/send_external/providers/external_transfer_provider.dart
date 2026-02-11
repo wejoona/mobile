@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/wallet/wallet_service.dart';
-import '../../../services/app_review/app_review_service.dart';
-import '../../../domain/entities/wallet.dart';
-import '../services/external_transfer_service.dart';
-import '../models/external_transfer_request.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/domain/entities/wallet.dart';
+import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
+import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 
 /// External Transfer State
 class ExternalTransferState {

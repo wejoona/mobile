@@ -1,6 +1,6 @@
 import 'dart:math';
-import '../../../domain/entities/transaction.dart';
-import '../../../domain/enums/index.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Mock data generator for insights testing
 class InsightsMock {

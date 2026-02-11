@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../utils/input_formatters.dart';
-import '../../../config/fee_schedule.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
+import 'package:usdc_wallet/config/fee_schedule.dart';
 
 /// Amount input widget with fee preview and balance check.
 class AmountInput extends StatelessWidget {

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Feature flag keys from backend
 class FeatureFlagKeys {

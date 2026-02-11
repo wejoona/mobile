@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'image_cache_config.dart';
-import '../../design/tokens/colors.dart';
-import '../../design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
 
 /// Optimized cached network image widget with built-in error handling
 /// and loading states for different image types

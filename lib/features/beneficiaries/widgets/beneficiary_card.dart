@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/theme/theme_extensions.dart';
-import '../models/beneficiary.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/theme/theme_extensions.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// Beneficiary Card Widget
 class BeneficiaryCard extends StatelessWidget {

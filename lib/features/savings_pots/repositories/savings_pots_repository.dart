@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/wallet/wallet_service.dart';
-import '../../../domain/entities/savings_pot.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 
 /// Repository for savings pot operations.
 class SavingsPotsRepository {

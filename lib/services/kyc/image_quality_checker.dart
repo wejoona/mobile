@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
-import '../../features/kyc/models/image_quality_result.dart';
+import 'package:usdc_wallet/features/kyc/models/image_quality_result.dart';
 
 /// Image quality checker for KYC document validation
 ///

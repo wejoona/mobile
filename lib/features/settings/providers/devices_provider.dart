@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/device.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Registered devices provider — wired to GET /devices.
 final devicesProvider = FutureProvider<List<Device>>((ref) async {

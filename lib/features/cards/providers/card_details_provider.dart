@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/card.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Run 385: Card details provider with sensitive data reveal
 class CardDetailsState {

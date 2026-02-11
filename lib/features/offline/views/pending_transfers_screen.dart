@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../utils/formatters.dart';
-import '../providers/offline_provider.dart';
-import '../../../services/offline/pending_transfer_queue.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
+import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
+import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
 
 /// Helper function to format currency
 String formatCurrency(double amount) => Formatters.formatCurrency(amount);

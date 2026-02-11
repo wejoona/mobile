@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Décision du moteur de risque
 enum RiskDecision { approve, challenge, review, decline }

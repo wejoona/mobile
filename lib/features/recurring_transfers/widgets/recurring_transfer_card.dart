@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/recurring_transfer.dart';
-import '../../../utils/color_utils.dart';
+import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Card showing a recurring transfer summary.
 class RecurringTransferCard extends StatelessWidget {

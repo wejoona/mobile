@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/theme_colors.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../../../design/components/primitives/app_card.dart';
-import '../providers/kyc_provider.dart';
-import '../models/kyc_status.dart';
-import '../../../services/kyc/kyc_service.dart';
-import '../../../state/fsm/fsm_provider.dart';
-import '../../../state/fsm/kyc_fsm.dart' as fsm;
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart' as fsm;
 
 class KycStatusView extends ConsumerStatefulWidget {
   const KycStatusView({super.key});

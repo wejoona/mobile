@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/contact.dart';
-import '../../../utils/color_utils.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Standard contact list tile with avatar.
 class ContactTile extends StatelessWidget {

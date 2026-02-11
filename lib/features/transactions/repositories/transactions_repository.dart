@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/transactions/transactions_service.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../domain/entities/transaction_filter.dart';
+import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
 /// Repository for transaction operations.
 ///

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/business_profile.dart';
-import '../../domain/enums/account_type.dart';
-import '../api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/business_profile.dart';
+import 'package:usdc_wallet/domain/enums/account_type.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Business Service - handles business account operations
 class BusinessService {

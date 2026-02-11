@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/theme_colors.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../liveness/widgets/liveness_check_widget.dart';
-import '../../../services/liveness/liveness_service.dart';
-import '../widgets/kyc_instruction_screen.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
 
 /// KYC Liveness verification step
 /// Uses the reusable LivenessCheckWidget for face verification

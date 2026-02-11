@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/components/composed/index.dart';
-import '../../../design/utils/responsive_layout.dart';
-import '../../../core/orientation/orientation_helper.dart';
-import '../../../domain/enums/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../state/index.dart';
-import '../../../services/currency/currency_provider.dart';
-import '../../../services/api/api_client.dart';
-import '../../limits/providers/limits_provider.dart';
-import '../../limits/widgets/limit_warning_banner.dart';
-import '../../../design/components/primitives/offline_banner.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/index.dart';
+import 'package:usdc_wallet/design/utils/responsive_layout.dart';
+import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
+import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
 
 /// Enhanced Wallet Home Screen
 ///

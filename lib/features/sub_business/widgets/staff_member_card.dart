@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../models/sub_business.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 
 /// Card widget displaying a staff member
 class StaffMemberCard extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/contact.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
 
 /// Run 349: Saved recipients provider for quick-send feature
 class SavedRecipientsState {

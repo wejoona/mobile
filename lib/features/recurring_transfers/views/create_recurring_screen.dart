@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/recurring_transfer.dart';
-import '../providers/create_recurring_provider.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../design/theme/spacing.dart';
+import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Create recurring transfer screen.
 class CreateRecurringScreen extends ConsumerStatefulWidget {

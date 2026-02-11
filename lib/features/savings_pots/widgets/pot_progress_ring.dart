@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Run 386: Animated progress ring for savings pot goals
 class PotProgressRing extends StatefulWidget {

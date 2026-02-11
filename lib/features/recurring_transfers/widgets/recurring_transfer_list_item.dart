@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/entities/recurring_transfer.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// A single recurring transfer list item.
 class RecurringTransferListItem extends StatelessWidget {

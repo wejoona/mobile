@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/bill_payment_provider.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../design/theme/spacing.dart';
+import 'package:usdc_wallet/features/bill_payments/providers/bill_payment_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Wired bill payment screen.
 class BillPaymentScreenWired extends ConsumerStatefulWidget {

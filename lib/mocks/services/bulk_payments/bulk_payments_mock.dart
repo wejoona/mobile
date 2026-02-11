@@ -1,7 +1,7 @@
-import '../../../features/bulk_payments/models/bulk_batch.dart';
-import '../../../features/bulk_payments/models/bulk_payment.dart';
-import '../../base/api_contract.dart';
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_payment.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 class BulkPaymentsMock {
   static void register(MockInterceptor interceptor) {

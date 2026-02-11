@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'request_encryptor.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Dio interceptor that encrypts request bodies and decrypts responses
 /// for endpoints marked as sensitive.

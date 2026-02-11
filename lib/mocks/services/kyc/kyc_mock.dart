@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import '../../base/mock_interceptor.dart';
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 class KycMock {
   static void register(MockInterceptor interceptor) {

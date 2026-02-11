@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/bank_account.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/bank_account.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Bank accounts list provider — wired to BankLinkingService.
 final bankAccountsProvider = FutureProvider<List<BankAccount>>((ref) async {

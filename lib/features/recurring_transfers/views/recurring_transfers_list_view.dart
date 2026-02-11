@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/recurring_transfers_provider.dart';
-import '../widgets/recurring_transfer_card.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
+import 'package:usdc_wallet/features/recurring_transfers/widgets/recurring_transfer_card.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Recurring transfers list screen.
 class RecurringTransfersListView extends ConsumerWidget {

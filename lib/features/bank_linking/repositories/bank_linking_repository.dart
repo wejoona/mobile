@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/bank_linking/bank_linking_service.dart';
-import '../../../domain/entities/bank_account.dart';
+import 'package:usdc_wallet/services/bank_linking/bank_linking_service.dart';
+import 'package:usdc_wallet/domain/entities/bank_account.dart';
 
 /// Repository for bank linking operations.
 class BankLinkingRepository {

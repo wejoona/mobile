@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// In-flight request tracker
 class InFlightRequest {

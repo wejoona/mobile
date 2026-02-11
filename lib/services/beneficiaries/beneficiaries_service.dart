@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../../features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// Beneficiaries Service - mirrors backend BeneficiariesController
 class BeneficiariesService {

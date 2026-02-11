@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/transfers/transfers_service.dart';
-import '../../../services/wallet/wallet_service.dart';
-import '../../../services/app_review/app_review_service.dart';
-import '../models/transfer_request.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/transfers/transfers_service.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/features/send/models/transfer_request.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// Send Money State
 class SendMoneyState {

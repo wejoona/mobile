@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../security/device_fingerprint_service.dart';
-import '../../domain/entities/index.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {

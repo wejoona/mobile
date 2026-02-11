@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Handles data subject access requests.
 enum GdprRequestType { access, rectification, erasure, portability, objection }

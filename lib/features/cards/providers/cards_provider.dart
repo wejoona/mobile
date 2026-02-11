@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/card.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Cards list provider — wired to CardsService (real API with mock fallback).
 final cardsProvider = FutureProvider<List<KoridoCard>>((ref) async {

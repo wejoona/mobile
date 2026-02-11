@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'balance_provider.dart';
-import '../../notifications/providers/notifications_provider.dart';
-import '../../savings_pots/providers/savings_pots_provider.dart';
-import '../../alerts/providers/alerts_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/features/alerts/providers/alerts_provider.dart';
 
 /// Home screen aggregated state.
 class HomeState {

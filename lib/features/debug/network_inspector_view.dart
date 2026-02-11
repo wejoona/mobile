@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../design/tokens/index.dart';
-import '../../design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Run 343: Network inspector debug view for dev builds
 class NetworkInspectorView extends ConsumerStatefulWidget {

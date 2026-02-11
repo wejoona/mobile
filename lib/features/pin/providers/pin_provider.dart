@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/pin/pin_service.dart';
-import '../models/pin_state.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/features/pin/models/pin_state.dart';
 
 /// PIN state provider
 final pinStateProvider = NotifierProvider<PinNotifier, PinState>(PinNotifier.new);

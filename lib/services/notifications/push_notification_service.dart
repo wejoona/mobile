@@ -7,8 +7,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../utils/logger.dart';
-import '../api/api_client.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 final _logger = AppLogger('PushNotifications');
 

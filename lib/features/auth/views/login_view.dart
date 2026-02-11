@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../config/countries.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../services/legal/legal_documents_service.dart';
-import '../../../services/biometric/biometric_service.dart';
-import '../../../services/api/api_client.dart';
-import '../../../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
+import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'legal_document_view.dart';
 
 /// Login screen with two modes:

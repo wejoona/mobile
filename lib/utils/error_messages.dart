@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../services/api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Centralized Error Message Mapping
 ///

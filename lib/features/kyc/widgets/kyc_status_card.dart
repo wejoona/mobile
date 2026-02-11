@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/kyc_profile.dart';
+import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 
 /// KYC status overview card.
 class KycStatusCard extends StatelessWidget {

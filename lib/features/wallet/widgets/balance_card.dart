@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/balance_display.dart';
-import '../../../design/components/primitives/gradient_card.dart';
+import 'package:usdc_wallet/design/components/primitives/balance_display.dart';
+import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
 
 /// Main wallet balance card on home screen.
 class BalanceCard extends StatelessWidget {

@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/theme/theme_provider.dart';
-import '../../../domain/enums/index.dart';
-import '../../../services/biometric/biometric_service.dart';
-import '../../../services/localization/language_provider.dart';
-import '../../../state/index.dart';
-import '../../../services/currency/currency_provider.dart';
-import '../../../services/currency/currency_service.dart';
-import '../../auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/services/currency/currency_service.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Comprehensive Settings Screen

@@ -1,19 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../auth/auth_service.dart';
-import '../user/user_service.dart';
-import '../wallet/wallet_service.dart';
-import '../transactions/transactions_service.dart';
-import '../transfers/transfers_service.dart';
-import '../notifications/notifications_service.dart';
-import '../referrals/referrals_service.dart';
-import '../beneficiaries/beneficiaries_service.dart';
-import '../kyc/kyc_service.dart';
-import '../deposit/deposit_service.dart';
-import '../recurring_transfers/recurring_transfers_service.dart';
-import '../bulk_payments/bulk_payments_service.dart';
-import '../cards/cards_service.dart';
-import '../bank_linking/bank_linking_service.dart';
-import '../api/api_client.dart';
+import 'package:usdc_wallet/services/auth/auth_service.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+import 'package:usdc_wallet/services/transfers/transfers_service.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/referrals/referrals_service.dart';
+import 'package:usdc_wallet/services/beneficiaries/beneficiaries_service.dart';
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
+import 'package:usdc_wallet/services/deposit/deposit_service.dart';
+import 'package:usdc_wallet/services/recurring_transfers/recurring_transfers_service.dart';
+import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
+import 'package:usdc_wallet/services/cards/cards_service.dart';
+import 'package:usdc_wallet/services/bank_linking/bank_linking_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// USDC Wallet SDK
 ///

@@ -4,11 +4,11 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/bulk_payments_provider.dart';
-import '../models/bulk_batch.dart';
-import '../../../utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
+import 'package:usdc_wallet/utils/formatting.dart';
 
 class BulkStatusView extends ConsumerStatefulWidget {
   final String batchId;

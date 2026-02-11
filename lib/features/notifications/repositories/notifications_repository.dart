@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/notifications/notifications_service.dart';
-import '../../../domain/entities/notification.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
 
 /// Repository for notification operations.
 class NotificationsRepository {

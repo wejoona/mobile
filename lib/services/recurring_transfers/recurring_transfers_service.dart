@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import '../../features/recurring_transfers/models/recurring_transfer.dart';
-import '../../features/recurring_transfers/models/create_recurring_transfer_request.dart';
-import '../../features/recurring_transfers/models/update_recurring_transfer_request.dart';
-import '../../features/recurring_transfers/models/execution_history.dart';
-import '../../features/recurring_transfers/models/upcoming_execution.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/update_recurring_transfer_request.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/execution_history.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/upcoming_execution.dart';
 
 class RecurringTransfersService {
   final Dio _dio;

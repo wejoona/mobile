@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Manages backup recovery codes for MFA.
 class RecoveryCodeService {

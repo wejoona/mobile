@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../settings/providers/app_preferences_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/app_preferences_provider.dart';
 
 /// Whether the wallet balance is visible or hidden (eye toggle).
 final balanceVisibilityProvider = Provider<bool>((ref) {

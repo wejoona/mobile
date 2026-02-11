@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 import 'network_trust_evaluator.dart';
 
 /// Periodically monitors network security posture.

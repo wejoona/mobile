@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/auth/providers/auth_provider.dart';
-import '../../services/analytics/analytics_service.dart';
-// import '../../design/components/primitives/app_toast.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+// import 'package:usdc_wallet/design/components/primitives/app_toast.dart';
 
 /// Deep link handler for custom scheme (joonapay://) and universal links
 class DeepLinkHandler {

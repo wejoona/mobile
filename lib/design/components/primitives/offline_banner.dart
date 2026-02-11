@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'app_text.dart';
-import '../../../features/offline/providers/offline_provider.dart';
+import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 
 /// Offline Banner Widget
 /// Shows when user is offline with optional pending transfer count

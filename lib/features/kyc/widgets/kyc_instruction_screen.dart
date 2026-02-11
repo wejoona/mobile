@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/theme_colors.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 
 /// Reusable instruction screen shown before each KYC step
 class KycInstructionScreen extends StatelessWidget {

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/home_provider.dart';
-import '../providers/balance_provider.dart';
-import '../providers/balance_visibility_provider.dart';
-import '../../notifications/providers/notifications_provider.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../core/error/error_handler.dart';
-import '../../../design/theme/spacing.dart';
+import 'package:usdc_wallet/features/wallet/providers/home_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_visibility_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/core/error/error_handler.dart';
+import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Wired home screen with real data from providers.
 class HomeScreenWired extends ConsumerWidget {

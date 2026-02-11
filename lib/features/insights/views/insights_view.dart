@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/insights_provider.dart';
-import '../widgets/spending_chart.dart';
+import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
+import 'package:usdc_wallet/features/insights/widgets/spending_chart.dart';
 
 /// Spending insights screen.
 class InsightsView extends ConsumerWidget {

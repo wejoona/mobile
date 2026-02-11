@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import '../../design/tokens/index.dart';
-import '../../design/components/primitives/app_button.dart';
-import '../../design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'error_types.dart';
 
 /// Fallback UI displayed when an error is caught by ErrorBoundary

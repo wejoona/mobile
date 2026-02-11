@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../design/index.dart';
-import '../../../design/components/composed/pin_confirmation_sheet.dart';
-import '../../../services/pin/pin_service.dart';
-import '../../wallet/providers/wallet_provider.dart';
-import '../providers/merchant_provider.dart';
-import '../services/merchant_service.dart';
+import 'package:usdc_wallet/design/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 
 /// Payment Confirm View
 /// Bottom sheet for confirming merchant payment

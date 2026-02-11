@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../design/components/primitives/bottom_sheet_handle.dart';
-import '../../../design/components/primitives/info_row.dart';
-import '../../../design/components/primitives/pill_badge.dart';
-import '../../../utils/clipboard_utils.dart';
-import '../../../utils/color_utils.dart';
-import '../../../utils/share_utils.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dart';
+import 'package:usdc_wallet/design/components/primitives/info_row.dart';
+import 'package:usdc_wallet/design/components/primitives/pill_badge.dart';
+import 'package:usdc_wallet/utils/clipboard_utils.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/utils/share_utils.dart';
 
 /// Transaction detail bottom sheet.
 class TransactionDetailSheet extends StatelessWidget {

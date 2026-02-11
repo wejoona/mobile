@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/create_payment_link_provider.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../design/theme/spacing.dart';
+import 'package:usdc_wallet/features/payment_links/providers/create_payment_link_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Create payment link screen.
 class CreatePaymentLinkScreen extends ConsumerStatefulWidget {

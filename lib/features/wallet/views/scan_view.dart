@@ -8,13 +8,13 @@ import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../qr_payment/widgets/qr_display.dart';
-import '../../merchant_pay/widgets/qr_scanner_widget.dart';
-import '../../../state/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
+import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
+import 'package:usdc_wallet/state/index.dart';
 
 class ScanView extends ConsumerStatefulWidget {
   const ScanView({super.key});

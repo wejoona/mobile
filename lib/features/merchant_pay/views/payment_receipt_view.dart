@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../features/receipts/widgets/receipt_widget.dart';
-import '../../../features/receipts/models/receipt_data.dart';
-import '../../../domain/enums/index.dart';
-import '../services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/receipts/widgets/receipt_widget.dart';
+import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 
 /// Payment Receipt View
 /// Shows animated success and receipt after payment

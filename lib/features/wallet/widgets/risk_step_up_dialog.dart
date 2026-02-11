@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/security/risk_based_security_service.dart';
-import '../../../services/liveness/liveness_service.dart';
-import '../../liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 
 /// Dialog that handles risk-based step-up verification
 /// Shows appropriate UI based on the step-up type required

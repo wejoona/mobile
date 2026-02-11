@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'performance_service.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// API Performance Interceptor Provider
 final apiPerformanceInterceptorProvider = Provider<ApiPerformanceInterceptor>((ref) {

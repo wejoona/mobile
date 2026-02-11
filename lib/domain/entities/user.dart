@@ -1,4 +1,4 @@
-import '../enums/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// User entity - mirrors backend User domain entity
 class User {

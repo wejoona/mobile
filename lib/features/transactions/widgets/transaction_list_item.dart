@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../domain/enums/index.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// A single transaction list item with icon, title, subtitle, and amount.
 class TransactionListItem extends StatelessWidget {

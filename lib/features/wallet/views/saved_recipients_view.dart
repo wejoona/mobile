@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/contact.dart';
-import '../providers/contacts_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
 
 class SavedRecipientsView extends ConsumerStatefulWidget {
   const SavedRecipientsView({super.key});

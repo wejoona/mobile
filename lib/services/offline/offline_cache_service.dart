@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/transaction.dart';
-import '../../features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// Offline Cache Service
 /// Caches essential data for offline access using SharedPreferences

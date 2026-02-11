@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Countdown timer widget (e.g. for OTP expiry).
 class CountdownTimer extends StatefulWidget {

@@ -4,15 +4,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_input.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/pin/pin_service.dart';
-import '../widgets/pin_dots.dart';
-import '../widgets/pin_pad.dart';
-import '../providers/pin_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/notification.dart';
-import '../../domain/enums/index.dart';
-import '../../design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Rich Notification Helper - provides formatted display data for notifications
 class RichNotificationHelper {

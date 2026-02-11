@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/onboarding_page_data.dart';
+import 'package:usdc_wallet/features/onboarding/models/onboarding_page_data.dart';
 
 /// Single onboarding page.
 class OnboardingPage extends StatelessWidget {

@@ -5,10 +5,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:crypto/crypto.dart';
 import 'dart:convert';
-import '../api/api_client.dart';
-import '../../domain/entities/contact.dart' as domain;
-import '../../features/contacts/models/synced_contact.dart';
-import '../../features/contacts/models/contact_sync_result.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart' as domain;
+import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/contacts/models/contact_sync_result.dart';
 
 /// Simple contact info for contact picker
 class ContactInfo {

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:confetti/confetti.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/theme/theme_extensions.dart';
-import '../providers/savings_pots_provider.dart';
-import '../models/pot_transaction.dart';
-import '../widgets/add_to_pot_sheet.dart';
-import '../widgets/withdraw_from_pot_sheet.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/theme/theme_extensions.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
+import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart';
+import 'package:usdc_wallet/features/savings_pots/widgets/withdraw_from_pot_sheet.dart';
 
 /// Detail view for a single savings pot
 class PotDetailView extends ConsumerStatefulWidget {

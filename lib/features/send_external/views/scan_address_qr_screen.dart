@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../merchant_pay/widgets/qr_scanner_widget.dart';
-import '../services/external_transfer_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
+import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 
 /// Screen for scanning QR codes containing wallet addresses
 class ScanAddressQrScreen extends ConsumerWidget {

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../models/device.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/settings/models/device.dart';
 
 /// Repository for managing user devices
 class DevicesRepository {

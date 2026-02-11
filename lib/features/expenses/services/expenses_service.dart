@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/expense.dart';
+import 'package:usdc_wallet/features/expenses/models/expense.dart';
 
 class ExpensesService {
   static const _storageKey = 'expenses';

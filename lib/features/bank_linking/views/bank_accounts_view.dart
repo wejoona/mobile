@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/bank_accounts_provider.dart';
-import '../widgets/bank_account_card.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../design/components/primitives/confirmation_dialog.dart';
+import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provider.dart';
+import 'package:usdc_wallet/features/bank_linking/widgets/bank_account_card.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/confirmation_dialog.dart';
 
 /// Bank accounts list screen.
 class BankAccountsView extends ConsumerWidget {

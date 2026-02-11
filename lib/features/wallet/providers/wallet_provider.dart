@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/wallet/wallet_service.dart';
-import '../../../services/api/api_client.dart';
-import '../../../domain/entities/index.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
 
 /// Wallet Balance Provider with TTL-based caching
 /// Cache duration: 30 seconds

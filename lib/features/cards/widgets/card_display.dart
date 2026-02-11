@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/card.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Run 383: Virtual/physical card display widget
 class CardDisplay extends StatelessWidget {

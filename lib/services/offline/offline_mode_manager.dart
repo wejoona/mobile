@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/transaction.dart';
-import '../../features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'offline_cache_service.dart';
 import 'pending_transfer_queue.dart';
-import '../connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:uuid/uuid.dart';
 
 /// Offline Mode Manager

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// Run 381: Referral share card widget with copy-to-clipboard
 class ReferralCard extends StatelessWidget {

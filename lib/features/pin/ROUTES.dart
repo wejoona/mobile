@@ -70,12 +70,12 @@ GoRoute(
 ),
 
 // Add imports at the top of app_router.dart:
-import '../features/pin/views/set_pin_view.dart';
-import '../features/pin/views/confirm_pin_view.dart';
-import '../features/pin/views/change_pin_view.dart';
-import '../features/pin/views/reset_pin_view.dart';
-import '../features/pin/views/pin_locked_view.dart';
-import '../features/pin/views/enter_pin_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/set_pin_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/confirm_pin_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/change_pin_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/reset_pin_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/pin_locked_view.dart';
+import 'package:usdc_wallet/features/features/pin/views/enter_pin_view.dart';
 
 */
 

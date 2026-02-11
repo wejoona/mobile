@@ -1,8 +1,8 @@
-import '../../lib/services/security/network/network_trust_evaluator.dart';
-import '../../lib/services/security/network/vpn_proxy_detector.dart';
-import '../../lib/services/security/network/mitm_detector.dart';
-import '../../lib/services/security/auth/brute_force_lockout_service.dart';
-import '../../lib/services/security/auth/mfa_provider.dart';
+import 'package:usdc_wallet/lib/services/security/network/network_trust_evaluator.dart';
+import 'package:usdc_wallet/lib/services/security/network/vpn_proxy_detector.dart';
+import 'package:usdc_wallet/lib/services/security/network/mitm_detector.dart';
+import 'package:usdc_wallet/lib/services/security/auth/brute_force_lockout_service.dart';
+import 'package:usdc_wallet/lib/services/security/auth/mfa_provider.dart';
 
 /// Mock network trust evaluator for testing.
 class MockNetworkTrustEvaluator extends NetworkTrustEvaluator {

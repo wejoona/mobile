@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/deposit/deposit_service.dart';
+import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 
 /// Repository for deposit operations.
 class DepositRepository {

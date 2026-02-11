@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/limit.dart';
-import '../../../services/limits/limits_service.dart';
+import 'package:usdc_wallet/domain/entities/limit.dart';
+import 'package:usdc_wallet/services/limits/limits_service.dart';
 
 /// User transaction limits provider — wired to LimitsService.
 final transactionLimitsProvider = FutureProvider<TransactionLimits>((ref) async {

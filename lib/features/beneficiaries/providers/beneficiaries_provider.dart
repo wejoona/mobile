@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/beneficiary.dart';
-import '../repositories/beneficiaries_repository.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/features/beneficiaries/repositories/beneficiaries_repository.dart';
 
 /// Beneficiaries State
 class BeneficiariesState {

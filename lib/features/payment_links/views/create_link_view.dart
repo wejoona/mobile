@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../models/index.dart';
-import '../providers/payment_links_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/payment_links/models/index.dart';
+import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 
 class CreateLinkView extends ConsumerStatefulWidget {
   const CreateLinkView({super.key});

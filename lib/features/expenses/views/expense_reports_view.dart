@@ -8,14 +8,14 @@ import 'package:pdf/widgets.dart' as pw;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../../../design/components/primitives/app_card.dart';
-import '../providers/expenses_provider.dart';
-import '../models/expense.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
+import 'package:usdc_wallet/features/expenses/models/expense.dart';
 
 class ExpenseReportsView extends ConsumerStatefulWidget {
   const ExpenseReportsView({super.key});

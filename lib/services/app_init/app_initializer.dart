@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../device/device_registration_service.dart';
-import '../time/server_time_service.dart';
+import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/services/time/server_time_service.dart';
 
 /// Application initialization service.
 ///

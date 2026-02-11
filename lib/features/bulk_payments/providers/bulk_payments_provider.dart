@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/bulk_payment.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/bulk_payment.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Bulk payments list provider — wired to BulkPaymentsService.
 final bulkPaymentsProvider = FutureProvider<List<BulkPayment>>((ref) async {

@@ -4,10 +4,10 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../design/components/primitives/app_text.dart';
-import '../../../design/tokens/theme_colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 
 /// Provider to detect simulator (mock flow)
 final isSimulatorProvider = Provider<bool>((ref) => false);

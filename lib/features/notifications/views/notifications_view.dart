@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/notifications_provider.dart';
-import '../widgets/notification_tile.dart';
-import '../../../design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 
 /// Notifications list screen.
 class NotificationsView extends ConsumerWidget {

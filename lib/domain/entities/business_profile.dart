@@ -1,4 +1,4 @@
-import '../enums/account_type.dart';
+import 'package:usdc_wallet/domain/enums/account_type.dart';
 
 /// Business Profile entity
 class BusinessProfile {

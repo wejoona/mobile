@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/security_settings_provider.dart';
-import '../widgets/settings_section.dart';
+import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
+import 'package:usdc_wallet/features/settings/widgets/settings_section.dart';
 
 /// Security settings screen.
 class SecuritySettingsView extends ConsumerWidget {

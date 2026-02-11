@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../domain/entities/index.dart';
-import '../domain/enums/index.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Wallet Balance State Machine
 enum WalletStatus {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../tokens/index.dart';
-import '../primitives/app_text.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// PIN Pad for secure input
 /// Used in login, transaction confirmation, etc.

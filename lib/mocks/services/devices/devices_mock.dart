@@ -4,8 +4,8 @@
 library;
 
 import 'package:dio/dio.dart';
-import '../../base/api_contract.dart';
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Devices mock state
 class DevicesMockState {

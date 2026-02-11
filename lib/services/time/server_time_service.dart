@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service to sync local clock with server time.
 /// Used to prevent clock-skew issues with token expiry, OTP timing, etc.

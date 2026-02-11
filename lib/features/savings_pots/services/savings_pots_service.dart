@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import '../models/savings_pot.dart';
-import '../models/pot_transaction.dart';
+import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
+import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 
 /// Service for managing savings pots
 class SavingsPotsService {

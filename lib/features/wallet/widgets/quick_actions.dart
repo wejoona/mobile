@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/quick_action_button.dart';
+import 'package:usdc_wallet/design/components/primitives/quick_action_button.dart';
 
 /// Home screen quick action buttons.
 class HomeQuickActions extends StatelessWidget {

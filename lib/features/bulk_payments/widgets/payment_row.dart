@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../models/bulk_payment.dart';
-import '../../../utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_payment.dart';
+import 'package:usdc_wallet/utils/formatting.dart';
 
 class PaymentRow extends StatelessWidget {
   final BulkPayment payment;

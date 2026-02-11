@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/transaction.dart';
-import '../models/receipt_format.dart';
-import '../services/receipt_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
+import 'package:usdc_wallet/features/receipts/services/receipt_service.dart';
 
 /// Bottom sheet for sharing transaction receipt
 /// TODO: Replace hardcoded strings with AppLocalizations after running flutter gen-l10n

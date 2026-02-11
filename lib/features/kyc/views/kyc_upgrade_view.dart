@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
-import '../../../design/tokens/theme_colors.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../../../design/components/primitives/app_card.dart';
-import '../models/kyc_tier.dart';
-import '../providers/kyc_provider.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 
 class KycUpgradeView extends ConsumerStatefulWidget {
   final KycTier currentTier;

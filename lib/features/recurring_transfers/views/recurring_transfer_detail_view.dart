@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/recurring_transfers_provider.dart';
-import '../models/recurring_transfer_status.dart';
-import '../models/transfer_frequency.dart';
-import '../widgets/execution_history_list.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/features/recurring_transfers/widgets/execution_history_list.dart';
 
 class RecurringTransferDetailView extends ConsumerWidget {
   const RecurringTransferDetailView({

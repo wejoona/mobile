@@ -3,15 +3,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../utils/logger.dart';
-import '../security/certificate_pinning.dart';
-import '../security/device_fingerprint_service.dart';
-import '../security/client_risk_score_service.dart';
-import '../security/security_headers_interceptor.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/services/security/certificate_pinning.dart';
+import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
+import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
+import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
 import 'cache_interceptor.dart';
 import 'deduplication_interceptor.dart';
 import 'retry_interceptor.dart';
-import '../../mocks/index.dart';
+import 'package:usdc_wallet/mocks/index.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Retry interceptor for transient network failures.
 /// Retries GET requests up to [maxRetries] times with exponential backoff.

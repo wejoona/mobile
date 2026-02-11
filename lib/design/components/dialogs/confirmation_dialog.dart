@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
-import '../primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Confirmation dialog with customizable actions
 ///

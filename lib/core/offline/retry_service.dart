@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 
 /// Retry Strategy
 enum RetryStrategy {

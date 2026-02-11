@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Search + list pattern with filtering.
 class SearchListView<T> extends StatefulWidget {

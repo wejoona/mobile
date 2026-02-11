@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../tokens/colors.dart';
-import '../../tokens/theme_colors.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// Custom pull-to-refresh indicator with JoonaPay styling.
 /// Provides haptic feedback and uses brand colors.

@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/connectivity/connectivity_service.dart';
-import '../../../services/offline/offline_cache_service.dart';
-import '../../../services/offline/pending_transfer_queue.dart';
-import '../../../services/sdk/usdc_wallet_sdk.dart';
-import '../../../state/app_state.dart';
-import '../../../state/wallet_state_machine.dart';
-import '../../../state/transaction_state_machine.dart';
-import '../../beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/services/connectivity/connectivity_service.dart';
+import 'package:usdc_wallet/services/offline/offline_cache_service.dart';
+import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
+import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 
 /// Offline State
 class OfflineState {

@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../providers/bank_linking_provider.dart';
-import '../models/bank.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
+import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
 
 class BankSelectionView extends ConsumerStatefulWidget {
   const BankSelectionView({super.key});

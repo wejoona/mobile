@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/expense.dart';
-import '../../../utils/color_utils.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Simple spending breakdown chart (horizontal bars).
 class SpendingChart extends StatelessWidget {

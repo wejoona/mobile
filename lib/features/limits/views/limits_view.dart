@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/limits_provider.dart';
-import '../widgets/limit_usage_card.dart';
-import '../../kyc/providers/kyc_provider.dart';
-import '../../kyc/widgets/kyc_status_card.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/widgets/limit_usage_card.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/kyc/widgets/kyc_status_card.dart';
 
 /// Transaction limits overview screen.
 class LimitsView extends ConsumerWidget {

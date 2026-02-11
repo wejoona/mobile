@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../limits/providers/limits_provider.dart';
+import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 
 /// Whether a specific send amount would exceed limits.
 final sendLimitCheckProvider = Provider.family<SendLimitResult, double>((ref, amount) {

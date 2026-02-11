@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/qr_data.dart';
-import '../../../services/api/api_client.dart';
-import '../../wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// QR payment state.
 class QrPaymentState {

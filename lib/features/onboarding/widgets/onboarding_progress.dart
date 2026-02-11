@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Progress indicator for onboarding steps
 class OnboardingProgress extends StatelessWidget {

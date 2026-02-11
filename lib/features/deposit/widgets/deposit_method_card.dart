@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/deposit_method_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/deposit/providers/deposit_method_provider.dart';
 
 /// Run 364: Deposit method selection card widget
 class DepositMethodCard extends StatelessWidget {

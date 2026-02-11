@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'balance_provider.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.

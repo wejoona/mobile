@@ -5,11 +5,11 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/index.dart';
-import '../../../domain/enums/index.dart';
-import '../../receipts/views/share_receipt_sheet.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 
 class TransactionDetailView extends ConsumerWidget {
   const TransactionDetailView({super.key, required this.transaction});

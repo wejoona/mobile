@@ -4,8 +4,8 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../design/tokens/index.dart';
-import '../providers/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/alerts/providers/index.dart';
 
 class AlertBadge extends ConsumerWidget {
   const AlertBadge({

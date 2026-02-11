@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../services/contacts/contacts_service.dart';
-import '../providers/send_provider.dart';
-import '../widgets/contact_picker_bottom_sheet.dart';
-import '../widgets/beneficiary_picker_bottom_sheet.dart';
-import '../widgets/recent_recipient_card.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/features/send/widgets/contact_picker_bottom_sheet.dart';
+import 'package:usdc_wallet/features/send/widgets/beneficiary_picker_bottom_sheet.dart';
+import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({super.key});

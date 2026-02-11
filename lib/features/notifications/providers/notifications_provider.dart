@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/notification.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Notifications list provider — wired to Dio (mock interceptor handles fallback).
 final notificationsProvider = FutureProvider<List<AppNotification>>((ref) async {

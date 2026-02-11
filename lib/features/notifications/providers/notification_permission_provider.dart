@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/notifications/push_notification_service.dart';
-import '../../../services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
+import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
 
 /// Notification Permission State
 class NotificationPermissionState {

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/savings_pot.dart';
-import '../../../services/savings_pots/savings_pots_service.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
+import 'package:usdc_wallet/services/savings_pots/savings_pots_service.dart';
 
 /// Savings pots list provider — wired to SavingsPotsService (real API with mock fallback via interceptor).
 final savingsPotsProvider = FutureProvider<List<SavingsPot>>((ref) async {

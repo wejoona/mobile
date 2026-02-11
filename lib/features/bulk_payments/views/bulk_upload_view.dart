@@ -4,9 +4,9 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:convert';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
 
 class BulkUploadView extends ConsumerStatefulWidget {
   const BulkUploadView({super.key});

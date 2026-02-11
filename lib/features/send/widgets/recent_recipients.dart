@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../utils/color_utils.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Horizontal list of recent recipients for quick send.
 class RecentRecipients extends StatelessWidget {

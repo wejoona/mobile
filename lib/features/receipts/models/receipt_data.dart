@@ -1,5 +1,5 @@
-import '../../../domain/entities/transaction.dart';
-import '../../../domain/enums/index.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Receipt data extracted from a transaction
 class ReceiptData {

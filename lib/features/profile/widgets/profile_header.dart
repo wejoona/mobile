@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/user.dart';
-import '../../../utils/color_utils.dart';
-import '../../../design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/domain/entities/user.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
 
 /// Profile header with avatar, name, and completion progress.
 class ProfileHeader extends StatelessWidget {

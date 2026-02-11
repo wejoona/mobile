@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/entities/payment_link.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/payment_link.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// A single payment link list item.
 class PaymentLinkListItem extends StatelessWidget {

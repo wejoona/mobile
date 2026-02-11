@@ -1,4 +1,4 @@
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Referrals mock service.
 class ReferralsMock {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/action_chip_row.dart';
-import '../../../domain/entities/transaction_filter.dart';
+import 'package:usdc_wallet/design/components/primitives/action_chip_row.dart';
+import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
 /// Filter bar for transaction list.
 class TransactionFilterBar extends StatelessWidget {

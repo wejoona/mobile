@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sms_autofill/sms_autofill.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/components/composed/index.dart';
-import '../../../services/biometric/biometric_service.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/session/session_service.dart';
-import '../../../l10n/app_localizations.dart';
-import '../providers/auth_provider.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/index.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 class OtpView extends ConsumerStatefulWidget {
   const OtpView({super.key});

@@ -1,4 +1,4 @@
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 /// Feature Flags API Contract
 class FeatureFlagsContract extends ApiContract {

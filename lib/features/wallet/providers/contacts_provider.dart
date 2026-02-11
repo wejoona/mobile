@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/contact.dart';
-import '../../../services/contacts/contacts_service.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 // =============================================================================
 // CONTACTS PROVIDERS

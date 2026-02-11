@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../tokens/colors.dart';
-import '../../tokens/spacing.dart';
-import '../../tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'app_skeleton.dart';
 
 /// UserAvatar - Displays user profile picture with fallback

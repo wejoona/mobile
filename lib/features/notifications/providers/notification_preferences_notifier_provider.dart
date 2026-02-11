@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/notifications/notifications_service.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 
 /// Notification Preferences Notifier
 class NotificationPreferencesNotifier

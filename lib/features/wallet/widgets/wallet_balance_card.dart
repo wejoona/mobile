@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// Main wallet balance card shown on home screen.
 class WalletBalanceCard extends StatelessWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/create_pot_provider.dart';
-import '../../../core/l10n/app_strings.dart';
-import '../../../design/theme/spacing.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/create_pot_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Create savings pot screen — wired to CreatePotNotifier.
 class CreatePotScreen extends ConsumerStatefulWidget {

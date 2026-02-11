@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../tokens/colors.dart';
-import '../../tokens/spacing.dart';
-import '../../tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Skeleton loading placeholder with shimmer animation.
 /// Use for content placeholders while data is loading.

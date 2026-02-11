@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/kyc_profile.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// KYC profile provider — wired to KycService.
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {

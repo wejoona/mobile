@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/entities/notification.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/notification.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// A single notification list item.
 class NotificationListItem extends StatelessWidget {

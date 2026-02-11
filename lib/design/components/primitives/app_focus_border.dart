@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Focus indicator component for accessibility (WCAG 2.4.7)
 ///

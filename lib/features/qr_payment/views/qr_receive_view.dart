@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../widgets/qr_display.dart';
-import '../models/qr_data.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 
 /// QR code display screen for receiving payments.
 class QrReceiveView extends StatelessWidget {

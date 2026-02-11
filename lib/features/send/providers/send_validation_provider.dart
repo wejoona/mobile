@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// Validates send form before submission.
 final sendValidationProvider = Provider.family<SendValidation, SendFormData>((ref, data) {

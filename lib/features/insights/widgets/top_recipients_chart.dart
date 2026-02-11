@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../models/top_recipient.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 
 /// Horizontal bar chart for top recipients
 class TopRecipientsChart extends StatefulWidget {

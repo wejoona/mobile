@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/bulk_payment.dart';
-import '../../../design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/domain/entities/bulk_payment.dart';
+import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
 
 /// Card displaying a bulk payment status.
 class BulkPaymentCard extends StatelessWidget {

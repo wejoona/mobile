@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/bulk_payments_provider.dart';
-import '../widgets/bulk_payment_card.dart';
-import '../../../design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/features/bulk_payments/widgets/bulk_payment_card.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 
 /// Bulk payments list screen.
 class BulkPaymentsView extends ConsumerWidget {

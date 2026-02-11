@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
-import '../network/network_trust_evaluator.dart';
-import '../auth/brute_force_lockout_service.dart';
-import '../auth/biometric_reenrollment_detector.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/services/security/network/network_trust_evaluator.dart';
+import 'package:usdc_wallet/services/security/auth/brute_force_lockout_service.dart';
+import 'package:usdc_wallet/services/security/auth/biometric_reenrollment_detector.dart';
 
 /// Individual health check result.
 class HealthCheckItem {

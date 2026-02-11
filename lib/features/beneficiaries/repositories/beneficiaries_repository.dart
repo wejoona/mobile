@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/beneficiaries/beneficiaries_service.dart';
-import '../models/beneficiary.dart';
+import 'package:usdc_wallet/services/beneficiaries/beneficiaries_service.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// Beneficiaries Repository
 ///

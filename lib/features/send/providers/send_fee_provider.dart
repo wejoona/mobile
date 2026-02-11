@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../wallet/providers/wallet_actions_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_actions_provider.dart';
 
 /// Fee estimate for a transfer.
 class FeeEstimate {

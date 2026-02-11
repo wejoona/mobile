@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/enums/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Filter chip row for transactions.
 class TransactionFilterChips extends StatelessWidget {

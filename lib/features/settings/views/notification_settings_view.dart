@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../router/navigation_extensions.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../domain/entities/notification_preferences.dart';
-import '../providers/notification_preferences_provider.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
+import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});

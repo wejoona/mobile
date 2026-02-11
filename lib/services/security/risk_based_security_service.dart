@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../biometric/biometric_service.dart';
-import '../liveness/liveness_service.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Risk flow colors (like Visa 3DS / Apple)
 enum RiskFlow { green, yellow, red }

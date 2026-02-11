@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../design/tokens/colors.dart';
-import '../../design/tokens/typography.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
 
 /// Animated balance display with smooth number transitions
 /// Shows increment/decrement animations with color feedback

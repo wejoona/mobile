@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/bottom_sheet_handle.dart';
-import '../../../utils/form_validators.dart';
-import '../../../utils/input_formatters.dart';
+import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dart';
+import 'package:usdc_wallet/utils/form_validators.dart';
+import 'package:usdc_wallet/utils/input_formatters.dart';
 
 /// Bottom sheet for creating a new savings pot.
 class CreatePotSheet extends StatefulWidget {

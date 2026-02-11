@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/cards_provider.dart';
-import '../widgets/card_visual.dart';
-import '../widgets/card_actions_row.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
+import 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 /// QR Code generator for deep links
 /// Supports payment requests, receive money, and payment links

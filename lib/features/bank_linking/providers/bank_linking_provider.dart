@@ -3,9 +3,9 @@ library;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../models/bank.dart';
-import '../models/linked_bank_account.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
+import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
 
 // State
 class BankLinkingState {

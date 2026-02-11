@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/kyc/kyc_service.dart';
-import '../../../domain/entities/kyc_profile.dart';
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
+import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 
 /// Repository for KYC operations.
 class KycRepository {

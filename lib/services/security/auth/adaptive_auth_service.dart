@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
-import '../../security/client_risk_score_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
 
 /// Authentication level required based on risk.
 enum AuthLevel { none, pin, biometric, mfa, blocked }

@@ -4,7 +4,7 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// PIN Service - Handles secure PIN storage and verification
 /// SECURITY: PIN is hashed before storage, never stored in plain text

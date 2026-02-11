@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'feature_flags_service.dart';
 
 // Re-export for convenience

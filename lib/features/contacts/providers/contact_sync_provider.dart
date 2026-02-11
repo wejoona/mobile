@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/contact.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
 
 /// Run 362: Contact sync provider - syncs device contacts with Korido backend
 enum ContactSyncStatus { idle, syncing, synced, error }

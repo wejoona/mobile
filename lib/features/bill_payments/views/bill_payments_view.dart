@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../services/bill_payments/bill_payments_service.dart';
-import '../providers/bill_payments_provider.dart';
-import '../widgets/category_selector.dart';
-import '../widgets/provider_card.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
+import 'package:usdc_wallet/features/bill_payments/widgets/category_selector.dart';
+import 'package:usdc_wallet/features/bill_payments/widgets/provider_card.dart';
 
 /// Main Bill Payments Screen
 /// Shows categories and providers for bill payments

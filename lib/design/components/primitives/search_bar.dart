@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../utils/debounce.dart';
+import 'package:usdc_wallet/utils/debounce.dart';
 
 /// App-wide search bar with debounced input.
 class AppSearchBar extends StatefulWidget {

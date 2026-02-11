@@ -3,7 +3,7 @@
 /// Defines the API contract for bill payment endpoints.
 library;
 
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 /// Bill Payments API Contract
 class BillPaymentsContract extends ApiContract {

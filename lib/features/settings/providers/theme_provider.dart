@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/storage/secure_prefs.dart';
+import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
 /// Theme mode preference.
 class ThemeNotifier extends Notifier<ThemeMode> {

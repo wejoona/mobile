@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/components/composed/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../services/bill_payments/bill_payments_service.dart';
-import '../../../features/wallet/providers/wallet_provider.dart';
-import '../providers/bill_payments_provider.dart';
-import '../../pin/providers/pin_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
+import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input

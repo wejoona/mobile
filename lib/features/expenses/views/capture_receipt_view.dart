@@ -6,17 +6,17 @@ import 'package:go_router/go_router.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
-import '../../../design/components/primitives/app_button.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../../../design/components/primitives/app_input.dart';
-import '../../../design/components/primitives/app_select.dart';
-import '../services/expenses_service.dart';
-import '../providers/expenses_provider.dart';
-import '../models/expense.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/app_select.dart';
+import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
+import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
+import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 class CaptureReceiptView extends ConsumerStatefulWidget {
   const CaptureReceiptView({super.key});

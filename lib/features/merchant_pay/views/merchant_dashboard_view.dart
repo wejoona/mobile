@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/merchant_provider.dart';
-import '../services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 
 /// Merchant Dashboard View
 /// Main dashboard for business users to manage their merchant account

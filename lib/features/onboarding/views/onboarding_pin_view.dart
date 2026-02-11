@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../pin/widgets/pin_dots.dart';
-import '../../pin/widgets/pin_pad.dart';
-import '../providers/onboarding_provider.dart';
-import '../widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
+import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// PIN setup screen for onboarding
 class OnboardingPinView extends ConsumerStatefulWidget {

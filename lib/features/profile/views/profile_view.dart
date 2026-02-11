@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../providers/profile_provider.dart';
-import '../widgets/profile_header.dart';
-import '../../settings/widgets/settings_section.dart';
-import '../../kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
+import 'package:usdc_wallet/features/profile/widgets/profile_header.dart';
+import 'package:usdc_wallet/features/settings/widgets/settings_section.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 
 /// Profile screen with user info, settings shortcuts, and KYC status.
 class ProfileView extends ConsumerWidget {

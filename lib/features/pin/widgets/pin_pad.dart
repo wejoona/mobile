@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// PIN Pad Widget
 /// Custom number pad for PIN entry

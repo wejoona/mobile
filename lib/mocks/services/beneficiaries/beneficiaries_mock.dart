@@ -3,9 +3,9 @@
 /// Mock handlers for beneficiary endpoints.
 library;
 
-import '../../../features/beneficiaries/models/beneficiary.dart';
-import '../../base/mock_interceptor.dart';
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 /// Beneficiaries Mock State
 class BeneficiariesMockState {

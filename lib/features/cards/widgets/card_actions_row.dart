@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/card.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Quick action row for card management.
 class CardActionsRow extends StatelessWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/session.dart';
-import '../repositories/sessions_repository.dart';
+import 'package:usdc_wallet/features/settings/models/session.dart';
+import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 
 /// Sessions State
 class SessionsState {

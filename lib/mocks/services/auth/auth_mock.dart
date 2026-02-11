@@ -5,11 +5,11 @@ library;
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import '../../base/api_contract.dart';
-import '../../base/mock_data_generator.dart';
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 import 'auth_contract.dart';
-import '../wallet/wallet_mock.dart';
+import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
 
 /// Auth mock state (simulates backend state)
 class AuthMockState {

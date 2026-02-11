@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/transfer_frequency.dart';
-import '../models/create_recurring_transfer_request.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
 
 enum EndCondition {
   never,

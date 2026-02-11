@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/transaction.dart';
-import '../../domain/enums/index.dart';
-import '../../features/insights/models/insights_period.dart';
-import '../../features/insights/models/spending_category.dart';
-import '../../features/insights/models/spending_summary.dart';
-import '../../features/insights/models/spending_trend.dart';
-import '../../features/insights/models/top_recipient.dart';
-import '../../design/tokens/colors.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/insights/models/insights_period.dart';
+import 'package:usdc_wallet/features/insights/models/spending_category.dart';
+import 'package:usdc_wallet/features/insights/models/spending_summary.dart';
+import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
+import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 /// Service for calculating spending insights and analytics
 class InsightsService {

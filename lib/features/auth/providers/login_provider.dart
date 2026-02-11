@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../models/login_state.dart';
-import '../../../services/index.dart';
-import '../../../services/device/device_registration_service.dart';
+import 'package:usdc_wallet/features/auth/models/login_state.dart';
+import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/device/device_registration_service.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(

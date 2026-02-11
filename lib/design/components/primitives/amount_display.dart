@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../tokens/semantic_colors.dart';
-import '../../../utils/currency_utils.dart';
+import 'package:usdc_wallet/design/tokens/semantic_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Display a monetary amount with appropriate formatting and color.
 class AmountDisplay extends StatelessWidget {

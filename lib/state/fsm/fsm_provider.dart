@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../utils/logger.dart';
-import '../wallet_state_machine.dart';
-import '../kyc_state_machine.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'fsm_base.dart';
 import 'auth_fsm.dart';
 import 'wallet_fsm.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// A read-only field with a copy button (e.g. wallet address, referral code).
 class CopyField extends StatelessWidget {

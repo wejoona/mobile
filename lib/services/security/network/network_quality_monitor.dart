@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Monitors network quality and adjusts security accordingly.
 enum NetworkQuality { excellent, good, fair, poor, offline }

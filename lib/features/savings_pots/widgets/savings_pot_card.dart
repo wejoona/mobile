@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/entities/savings_pot.dart';
-import '../../../utils/formatters.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
+import 'package:usdc_wallet/utils/formatters.dart';
 
 /// Card widget for a single savings pot.
 class SavingsPotCard extends StatelessWidget {

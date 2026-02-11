@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
-import '../../../core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// App-styled toggle switch with haptic feedback
 ///

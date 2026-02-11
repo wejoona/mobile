@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/wallet/wallet_service.dart';
-import '../../../domain/entities/wallet.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/domain/entities/wallet.dart';
 
 /// Repository for wallet operations.
 ///

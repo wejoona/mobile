@@ -17,22 +17,22 @@ library deferred_imports;
 // RARELY USED FEATURES - Load on demand
 
 /// Analytics & Insights (fl_chart dependency - 212KB)
-import '../features/insights/views/insights_view.dart' deferred as insights;
+import 'package:usdc_wallet/features/insights/views/insights_view.dart' deferred as insights;
 
 /// PDF Receipts (pdf dependency - 156KB)
-import '../features/receipts/views/receipt_view.dart' deferred as receipts;
+import 'package:usdc_wallet/features/receipts/views/receipt_view.dart' deferred as receipts;
 
 /// Liveness Detection (camera + ML kit - heavy)
-import '../features/liveness/views/liveness_check_view.dart' deferred as liveness;
+import 'package:usdc_wallet/features/liveness/views/liveness_check_view.dart' deferred as liveness;
 
 /// Payment Links (low usage)
-import '../features/payment_links/views/payment_links_list_view.dart' deferred as payment_links;
+import 'package:usdc_wallet/features/payment_links/views/payment_links_list_view.dart' deferred as payment_links;
 
 /// Bulk Payments (business feature)
-import '../features/bulk_payments/views/bulk_payments_view.dart' deferred as bulk_payments;
+import 'package:usdc_wallet/features/bulk_payments/views/bulk_payments_view.dart' deferred as bulk_payments;
 
 /// Expenses Tracking (fl_chart dependency)
-import '../features/expenses/views/expenses_view.dart' deferred as expenses;
+import 'package:usdc_wallet/features/expenses/views/expenses_view.dart' deferred as expenses;
 
 // LOADING HELPERS
 

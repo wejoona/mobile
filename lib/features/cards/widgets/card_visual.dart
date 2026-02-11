@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/card.dart';
+import 'package:usdc_wallet/domain/entities/card.dart';
 
 /// Visual representation of a virtual/physical card.
 class CardVisual extends StatelessWidget {

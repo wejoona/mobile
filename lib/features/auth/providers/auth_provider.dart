@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../../services/index.dart';
-import '../../../services/device/device_registration_service.dart';
-import '../../../domain/entities/index.dart';
-import '../../../state/fsm/index.dart';
-import '../../../state/kyc_state_machine.dart';
+import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/state/fsm/index.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 
 /// Auth State
 enum AuthStatus {

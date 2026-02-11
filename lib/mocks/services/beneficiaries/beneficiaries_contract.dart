@@ -3,7 +3,7 @@
 /// Defines the API contract for beneficiary endpoints.
 library;
 
-import '../../base/api_contract.dart';
+import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 /// Beneficiaries API Contract
 class BeneficiariesContract extends ApiContract {

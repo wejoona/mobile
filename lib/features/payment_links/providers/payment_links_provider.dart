@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/payment_link.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/payment_link.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Payment links list provider — wired to PaymentLinksService.
 final paymentLinksProvider = FutureProvider<List<PaymentLink>>((ref) async {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Step/progress indicator for multi-step flows.
 class StepIndicator extends StatelessWidget {

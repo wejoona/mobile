@@ -5,7 +5,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import '../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 import 'base/mock_interceptor.dart';
 import 'mock_config.dart';
 import 'services/auth/auth_mock.dart';

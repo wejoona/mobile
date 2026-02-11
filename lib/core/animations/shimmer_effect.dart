@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../design/tokens/colors.dart';
-import '../../design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
 
 /// Shimmer loading effect for skeleton screens
 ///

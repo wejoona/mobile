@@ -3,11 +3,11 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import '../../../design/tokens/colors.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/tokens/typography.dart';
-import '../../../design/components/primitives/app_text.dart';
-import '../models/linked_bank_account.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
 
 class LinkedAccountCard extends StatelessWidget {
   const LinkedAccountCard({

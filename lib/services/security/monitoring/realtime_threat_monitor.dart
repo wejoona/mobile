@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Surveillance en temps réel des menaces.
 enum ThreatType { rootDetected, debuggerAttached, tamperingDetected, networkCompromised, mitmDetected }

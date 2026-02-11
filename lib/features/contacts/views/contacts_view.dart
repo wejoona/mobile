@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/contacts_provider.dart';
-import '../../../design/components/primitives/contact_tile.dart';
-import '../../../design/components/primitives/search_bar.dart';
-import '../../../design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
+import 'package:usdc_wallet/design/components/primitives/contact_tile.dart';
+import 'package:usdc_wallet/design/components/primitives/search_bar.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 
 /// Contacts list screen.
 class ContactsView extends ConsumerStatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Run 358: Notification badge widget with animated count
 class NotificationBadge extends StatefulWidget {

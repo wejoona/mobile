@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/referrals_provider.dart';
-import '../widgets/referral_card.dart';
-import '../../../utils/duration_extensions.dart';
+import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
+import 'package:usdc_wallet/features/referrals/widgets/referral_card.dart';
+import 'package:usdc_wallet/utils/duration_extensions.dart';
 
 /// Referrals program screen.
 class ReferralsListView extends ConsumerWidget {

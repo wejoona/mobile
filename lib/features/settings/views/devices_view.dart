@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/device_tile.dart';
-import '../../../design/components/primitives/confirmation_dialog.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../services/api/api_client.dart';
-import '../../../domain/entities/device.dart';
+import 'package:usdc_wallet/features/settings/widgets/device_tile.dart';
+import 'package:usdc_wallet/design/components/primitives/confirmation_dialog.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
 
 /// Active devices / sessions screen.
 class DevicesView extends ConsumerWidget {

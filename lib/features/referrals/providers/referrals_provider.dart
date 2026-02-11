@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/referrals/referrals_service.dart';
+import 'package:usdc_wallet/services/referrals/referrals_service.dart';
 
 /// Referral program state provider — wired to ReferralsService.
 final referralProvider = FutureProvider<ReferralInfo>((ref) async {

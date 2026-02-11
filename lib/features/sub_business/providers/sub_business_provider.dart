@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/sub_business.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// State for sub-business management
 class SubBusinessState {

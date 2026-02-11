@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/payment_links_provider.dart';
-import '../widgets/payment_link_card.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
+import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Payment links list screen.
 class PaymentLinksListView extends ConsumerWidget {

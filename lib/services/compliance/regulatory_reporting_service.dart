@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 enum ReportType { ctr, sar, periodicReport, incidentReport }
 enum ReportStatus { draft, submitted, accepted, rejected }

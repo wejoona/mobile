@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'app_theme.dart';
-import '../tokens/colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'theme_transition.dart';
 
 /// Theme mode state - supports system, light, and dark

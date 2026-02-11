@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/storage/secure_prefs.dart';
+import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
 /// Security settings state.
 class SecuritySettings {

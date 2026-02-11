@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../../../services/preferences/notification_preferences_service.dart';
-import '../../../domain/entities/notification_preferences.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/preferences/notification_preferences_service.dart';
+import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 
 /// State for notification preferences
 class NotificationPreferencesState {

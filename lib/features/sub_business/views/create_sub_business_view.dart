@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../providers/sub_business_provider.dart';
-import '../models/sub_business.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
+import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 
 /// Screen for creating a new sub-business
 class CreateSubBusinessView extends ConsumerStatefulWidget {

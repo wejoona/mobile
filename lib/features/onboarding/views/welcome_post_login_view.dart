@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:confetti/confetti.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../state/index.dart';
-import '../providers/onboarding_progress_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
 
 /// Welcome screen shown after successful registration
 class WelcomePostLoginView extends ConsumerStatefulWidget {

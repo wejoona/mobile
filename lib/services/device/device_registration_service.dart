@@ -3,8 +3,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../features/settings/repositories/devices_repository.dart';
-import '../../utils/logger.dart';
+import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service to collect device info and register with the backend
 class DeviceRegistrationService {

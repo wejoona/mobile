@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/payment_link.dart';
-import '../../../utils/clipboard_utils.dart';
-import '../../../utils/share_utils.dart';
+import 'package:usdc_wallet/domain/entities/payment_link.dart';
+import 'package:usdc_wallet/utils/clipboard_utils.dart';
+import 'package:usdc_wallet/utils/share_utils.dart';
 
 /// Card displaying a payment link.
 class PaymentLinkCard extends StatelessWidget {

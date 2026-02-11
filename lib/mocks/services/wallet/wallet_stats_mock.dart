@@ -1,4 +1,4 @@
-import '../../base/mock_interceptor.dart';
+import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Wallet balance and stats mock.
 class WalletStatsMock {

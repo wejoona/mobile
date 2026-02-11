@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/search_bar.dart';
-import '../../../domain/entities/contact.dart';
-import '../../../design/components/primitives/contact_tile.dart';
+import 'package:usdc_wallet/design/components/primitives/search_bar.dart';
+import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/design/components/primitives/contact_tile.dart';
 
 /// Recipient search field with contact suggestions.
 class RecipientSearchField extends StatelessWidget {

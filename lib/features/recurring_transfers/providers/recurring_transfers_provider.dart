@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/recurring_transfer.dart';
-import '../../../services/service_providers.dart';
+import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Recurring transfers list provider — wired to RecurringTransfersService.
 final recurringTransfersProvider = FutureProvider<List<RecurringTransfer>>((ref) async {

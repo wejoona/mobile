@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// PIN Dots Widget
 /// Shows 6 dots representing PIN entry state

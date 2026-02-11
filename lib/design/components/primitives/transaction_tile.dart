@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../utils/color_utils.dart';
-import '../../../utils/duration_extensions.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/utils/duration_extensions.dart';
 
 /// Standard transaction list tile.
 class TransactionTile extends StatelessWidget {

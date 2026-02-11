@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/savings_pots_provider.dart';
-import '../widgets/savings_pot_card.dart';
-import '../widgets/create_pot_sheet.dart';
-import '../../../design/components/primitives/empty_state.dart';
-import '../../../design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/features/savings_pots/widgets/savings_pot_card.dart';
+import 'package:usdc_wallet/features/savings_pots/widgets/create_pot_sheet.dart';
+import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Savings pots list screen.
 class SavingsPotsListView extends ConsumerWidget {

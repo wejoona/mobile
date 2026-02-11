@@ -8,11 +8,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../domain/enums/index.dart';
-import '../models/receipt_data.dart';
-import '../models/receipt_format.dart';
-import '../../../utils/logger.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
+import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service for generating and sharing transaction receipts
 class ReceiptService {

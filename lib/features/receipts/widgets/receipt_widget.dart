@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../design/tokens/index.dart';
-import '../../../domain/enums/index.dart';
-import '../models/receipt_data.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
 
 /// Receipt widget for rendering as image or PDF
 /// This widget can be captured using RepaintBoundary or screenshot package

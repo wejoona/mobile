@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../features/payment_links/models/index.dart';
+import 'package:usdc_wallet/features/payment_links/models/index.dart';
 
 class PaymentLinksService {
   final Dio _dio;

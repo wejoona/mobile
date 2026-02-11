@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Shimmer skeleton loader for both light and dark themes
 /// Shows animated placeholder while content is loading

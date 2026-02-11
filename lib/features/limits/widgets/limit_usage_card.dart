@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/limit.dart';
-import '../../../design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/domain/entities/limit.dart';
+import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
 
 /// Card showing transaction limit usage.
 class LimitUsageCard extends StatelessWidget {

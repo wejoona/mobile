@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Loading skeleton for the wallet screen.
 class WalletLoadingState extends StatelessWidget {

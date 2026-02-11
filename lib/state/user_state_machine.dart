@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../domain/enums/index.dart';
-import '../services/index.dart';
-import '../services/user/user_service.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
 import 'app_state.dart';
 import 'wallet_state_machine.dart';
 import 'transaction_state_machine.dart';

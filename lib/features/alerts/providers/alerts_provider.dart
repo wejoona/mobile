@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Alert types in the app.
 enum AlertType { info, warning, error, promotion }

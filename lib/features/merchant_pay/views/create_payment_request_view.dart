@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../features/qr_payment/widgets/qr_display.dart';
-import '../providers/merchant_provider.dart';
-import '../services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
+import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 
 /// Create Payment Request View
 /// Allows merchants to create dynamic QR codes with specific amounts

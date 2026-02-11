@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../api/api_client.dart';
-import '../../domain/entities/whitelisted_address.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/whitelisted_address.dart';
 
 /// Whitelisted Address Service - manages trusted withdrawal addresses
 class WhitelistedAddressService {

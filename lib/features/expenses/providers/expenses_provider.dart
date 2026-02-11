@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/expense.dart';
-import '../../../services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Expenses provider — aggregates transaction data into expense categories.
 final expensesProvider = FutureProvider<List<Expense>>((ref) async {

@@ -6,10 +6,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../../../features/qr_payment/widgets/qr_display.dart';
-import '../services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
+import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 
 /// Merchant QR View
 /// Displays the merchant's static QR code for customers to scan

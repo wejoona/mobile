@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/bank_account.dart';
+import 'package:usdc_wallet/domain/entities/bank_account.dart';
 
 /// Card displaying a linked bank account.
 class BankAccountCard extends StatelessWidget {

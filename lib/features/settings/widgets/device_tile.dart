@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/device.dart';
-import '../../../utils/duration_extensions.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
+import 'package:usdc_wallet/utils/duration_extensions.dart';
 
 /// Tile showing a registered device.
 class DeviceTile extends StatelessWidget {

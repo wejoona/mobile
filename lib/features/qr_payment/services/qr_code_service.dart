@@ -1,4 +1,4 @@
-import '../models/qr_payment_data.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 
 /// Service for generating and parsing QR payment data
 class QrCodeService {

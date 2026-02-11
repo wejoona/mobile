@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../features/bulk_payments/models/bulk_batch.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 
 class BulkPaymentsService {
   final Dio _dio;

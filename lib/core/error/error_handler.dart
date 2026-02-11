@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../exceptions/app_exception.dart';
-import '../l10n/app_strings.dart';
+import 'package:usdc_wallet/core/exceptions/app_exception.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Centralized error handler. Converts exceptions to user-facing messages.
 class ErrorHandler {

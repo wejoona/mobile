@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../tokens/semantic_colors.dart';
+import 'package:usdc_wallet/design/tokens/semantic_colors.dart';
 
 /// A compact status badge for displaying transaction/KYC/account status.
 class StatusBadge extends StatelessWidget {

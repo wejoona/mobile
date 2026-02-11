@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../l10n/app_localizations.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../providers/onboarding_provider.dart';
-import '../models/country_data.dart';
-import '../widgets/country_picker_widget.dart';
-import '../widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
+import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
+import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
 /// Phone input screen for registration
 class PhoneInputView extends ConsumerStatefulWidget {

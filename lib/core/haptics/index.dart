@@ -4,7 +4,7 @@
 ///
 /// Usage:
 /// ```dart
-/// import '../../../core/haptics/index.dart';
+/// import 'package:usdc_wallet/../core/haptics/index.dart';
 ///
 /// // In button callback
 /// hapticService.mediumTap();

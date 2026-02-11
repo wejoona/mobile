@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../models/external_transfer_request.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 
 /// External Transfer Service - handles crypto transfers to wallet addresses
 class ExternalTransferService {

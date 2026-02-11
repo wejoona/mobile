@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/business_profile.dart';
-import '../../../domain/enums/account_type.dart';
-import '../../../services/business/business_service.dart';
+import 'package:usdc_wallet/domain/entities/business_profile.dart';
+import 'package:usdc_wallet/domain/enums/account_type.dart';
+import 'package:usdc_wallet/services/business/business_service.dart';
 
 /// Business State
 class BusinessState {

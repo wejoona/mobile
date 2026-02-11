@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/transfers/transfers_service.dart';
-import '../../../domain/dto/requests/send_transfer_request.dart';
-import '../../../domain/entities/transfer.dart';
+import 'package:usdc_wallet/services/transfers/transfers_service.dart';
+import 'package:usdc_wallet/domain/dto/requests/send_transfer_request.dart';
+import 'package:usdc_wallet/domain/entities/transfer.dart';
 
 /// Repository for transfer operations.
 class TransfersRepository {

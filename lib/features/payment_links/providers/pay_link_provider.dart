@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api/api_client.dart';
-import '../../wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// State for paying a payment link (from deep link or QR).
 class PayLinkState {
