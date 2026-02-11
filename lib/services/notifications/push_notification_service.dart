@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../utils/logger.dart';
 import '../api/api_client.dart';
 
@@ -247,13 +248,16 @@ class PushNotificationService {
   /// Get device information
   Future<Map<String, String>> _getDeviceInfo() async {
     try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final appVersion = packageInfo.version;
+
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfo.androidInfo;
         return {
           'deviceId': androidInfo.id,
           'deviceName': '${androidInfo.brand} ${androidInfo.model}',
           'osVersion': 'Android ${androidInfo.version.release}',
-          'appVersion': '1.0.0', // TODO: Get from package_info_plus
+          'appVersion': appVersion,
         };
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfo.iosInfo;
@@ -261,7 +265,7 @@ class PushNotificationService {
           'deviceId': iosInfo.identifierForVendor ?? '',
           'deviceName': iosInfo.name,
           'osVersion': 'iOS ${iosInfo.systemVersion}',
-          'appVersion': '1.0.0', // TODO: Get from package_info_plus
+          'appVersion': appVersion,
         };
       }
     } catch (e) {
