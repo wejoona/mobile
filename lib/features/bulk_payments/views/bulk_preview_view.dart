@@ -22,7 +22,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(bulkPaymentsProvider);
-    final batch = state.valueOrNull?.isNotEmpty == true ? state.valueOrNull!.first : null;
+    final batch = state.value?.isNotEmpty == true ? state.value!.first : null;
 
     if (batch == null) {
       Future.microtask(() => context.go('/bulk-payments'));

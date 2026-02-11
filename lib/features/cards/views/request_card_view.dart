@@ -313,14 +313,14 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       final name = _nameController.text.trim();
       final limit = double.parse(_limitController.text);
 
-      final success = await ref.read(cardActionsProvider).requestCard(
-            cardholderName: name,
-            spendingLimit: limit,
-          );
+      await ref.read(cardActionsProvider).requestCard({
+            'cardholderName': name,
+            'spendingLimit': limit,
+          });
 
       if (!mounted) return;
 
-      if (success) {
+      {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(AppLocalizations.of(context)!.cards_requestSuccess),
@@ -328,14 +328,6 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           ),
         );
         context.pop();
-      } else {
-        final error = ref.read(cardsProvider).requestError;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error ?? AppLocalizations.of(context)!.cards_requestFailed),
-            backgroundColor: context.colors.error,
-          ),
-        );
       }
     } catch (e) {
       if (!mounted) return;

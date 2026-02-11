@@ -25,7 +25,7 @@ final cardActionsProvider = Provider((ref) => ref.watch(cardsServiceProvider));
 
 /// Selected card by ID.
 final selectedCardProvider = Provider.family<KoridoCard?, String>((ref, cardId) {
-  final cards = ref.watch(cardsProvider).valueOrNull ?? [];
+  final cards = ref.watch(cardsProvider).value ?? [];
   try {
     return cards.firstWhere((c) => c.id == cardId);
   } catch (_) {

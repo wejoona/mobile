@@ -41,7 +41,7 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
     try {
       final service = ref.read(bankLinkingServiceProvider);
       await service.linkBankAccount(
-        bankCode: state.selectedBank!.swiftCode,
+        bankCode: state.selectedBank!.swiftCode ?? state.selectedBank!.code,
         accountNumber: state.accountNumber!,
         accountHolderName: state.accountName ?? '',
         countryCode: 'CI',

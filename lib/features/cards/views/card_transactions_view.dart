@@ -35,8 +35,13 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final state = ref.watch(cardsProvider);
-    final card = state.selectedCard;
+    final asyncState = ref.watch(cardsProvider);
+    final card = ref.watch(selectedCardProvider(widget.cardId));
+    final cardsState = CardsState(
+      cards: asyncState.valueOrNull ?? [],
+      selectedCard: card,
+      isLoading: asyncState.isLoading,
+    );
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -51,11 +56,11 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(cardActionsProvider).loadCardTransactions(widget.cardId),
-        child: state.isLoading && state.transactions.isEmpty
+        child: cardsState.isLoading && cardsState.transactions.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : state.transactions.isEmpty
+            : cardsState.transactions.isEmpty
                 ? _buildEmptyState(context, l10n, colors)
-                : _buildTransactionsList(context, l10n, colors, state),
+                : _buildTransactionsList(context, l10n, colors, cardsState),
       ),
     );
   }

@@ -35,7 +35,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(cardsProvider);
-    final card = state.selectedCard;
+    final card = ref.watch(selectedCardProvider(widget.cardId));
 
     if (card == null) {
       return Scaffold(
@@ -249,14 +249,16 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     AppLocalizations l10n,
     String cardId,
   ) async {
-    final card = ref.read(cardsProvider).selectedCard;
+    final card = ref.read(selectedCardProvider(cardId));
     if (card == null) return;
 
-    final success = card.isFrozen
-        ? await ref.read(cardActionsProvider).unfreezeCard(cardId)
-        : await ref.read(cardActionsProvider).freezeCard(cardId);
+    if (card.isFrozen) {
+      await ref.read(cardActionsProvider).unfreezeCard(cardId);
+    } else {
+      await ref.read(cardActionsProvider).freezeCard(cardId);
+    }
 
-    if (success && context.mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -331,11 +333,11 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     );
 
     if (result != null && context.mounted) {
-      final success = await ref
+      await ref
           .read(cardActionsProvider)
-          .updateSpendingLimit(card.id, result);
+          .updateSpendingLimit(card.id, dailyLimit: result, transactionLimit: result);
 
-      if (success && context.mounted) {
+      if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.cards_limitUpdated),

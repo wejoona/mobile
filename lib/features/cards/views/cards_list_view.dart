@@ -28,7 +28,7 @@ class CardsListView extends ConsumerWidget {
               actionLabel: 'Request Card',
               onAction: () async {
                 final actions = ref.read(cardActionsProvider);
-                await actions.requestVirtual();
+                await actions.requestVirtual({});
                 ref.invalidate(cardsProvider);
               },
             );

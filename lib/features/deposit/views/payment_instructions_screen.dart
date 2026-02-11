@@ -35,8 +35,8 @@ class _PaymentInstructionsScreenState
     super.initState();
     // Start polling for push and QR flows
     final state = ref.read(depositProvider);
-    if (state.response?.paymentMethodType.isAsyncConfirmation == true ||
-        state.response?.paymentMethodType.hasQrOrLink == true) {
+    if (state.response?['paymentMethodType'].isAsyncConfirmation == true ||
+        state.response?['paymentMethodType'].hasQrOrLink == true) {
       // Polling is already started in the provider
     }
   }
@@ -138,7 +138,7 @@ class _PaymentInstructionsScreenState
               const SizedBox(height: AppSpacing.md),
 
               // Action button (only for OTP flow)
-              if (response.paymentMethodType.requiresOtp) 
+              if (response['paymentMethodType'].requiresOtp) 
                 _buildActionButton(state, colors, l10n),
             ],
           ),
@@ -202,7 +202,7 @@ class _PaymentInstructionsScreenState
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
-    switch (response.paymentMethodType) {
+    switch (response['paymentMethodType']) {
       case PaymentMethodType.otp:
         return _buildOtpContent(state, colors, l10n);
       case PaymentMethodType.push:

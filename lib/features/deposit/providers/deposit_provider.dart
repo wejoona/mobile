@@ -114,8 +114,8 @@ class DepositNotifier extends Notifier<DepositState> {
     }
   }
 
-  void setAmountXOF(double amount) => state = state.copyWith(amountXOF: amount);
-  void setAmountUSD(double amount) => state = state.copyWith(amountUSD: amount);
+  void setAmountXOF(double amount, [double? rate]) => state = state.copyWith(amountXOF: amount);
+  void setAmountUSD(double amount, [double? rate]) => state = state.copyWith(amountUSD: amount);
   Future<void> checkStatus() async {
     // TODO: poll backend for deposit status
   }

@@ -450,11 +450,13 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
 
     if (confirmed != true || !context.mounted) return;
 
-    final success = card.isFrozen
-        ? await ref.read(cardActionsProvider).unfreezeCard(cardId)
-        : await ref.read(cardActionsProvider).freezeCard(cardId);
+    if (card.isFrozen) {
+      await ref.read(cardActionsProvider).unfreezeCard(cardId);
+    } else {
+      await ref.read(cardActionsProvider).freezeCard(cardId);
+    }
 
-    if (success && context.mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(

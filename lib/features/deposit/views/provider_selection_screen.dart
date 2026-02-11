@@ -349,7 +349,7 @@ class _ProviderTile extends StatelessWidget {
     final enumProvider = provider.enumProvider;
     if (enumProvider != null) {
       return Image.asset(
-        enumProvider.logoPath,
+        enumProvider,
         width: 32,
         height: 32,
         errorBuilder: (context, error, stackTrace) => _getGenericIcon(),
