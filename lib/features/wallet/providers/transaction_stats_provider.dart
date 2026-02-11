@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/api/api_client.dart';
 
-/// Transaction statistics from GET /wallet/transactions/stats.
+/// Transaction statistics from GET /wallet/transactions/stats — wired to Dio.
 class TransactionStats {
   final int totalCount;
   final int depositCount;
@@ -14,35 +14,25 @@ class TransactionStats {
   final double netFlow;
 
   const TransactionStats({
-    this.totalCount = 0,
-    this.depositCount = 0,
-    this.withdrawalCount = 0,
-    this.transferCount = 0,
-    this.totalDeposited = 0,
-    this.totalWithdrawn = 0,
-    this.totalTransferred = 0,
-    this.netFlow = 0,
+    this.totalCount = 0, this.depositCount = 0, this.withdrawalCount = 0, this.transferCount = 0,
+    this.totalDeposited = 0, this.totalWithdrawn = 0, this.totalTransferred = 0, this.netFlow = 0,
   });
 
-  factory TransactionStats.fromJson(Map<String, dynamic> json) {
-    return TransactionStats(
-      totalCount: json['totalCount'] as int? ?? 0,
-      depositCount: json['depositCount'] as int? ?? 0,
-      withdrawalCount: json['withdrawalCount'] as int? ?? 0,
-      transferCount: json['transferCount'] as int? ?? 0,
-      totalDeposited: (json['totalDeposited'] as num?)?.toDouble() ?? 0,
-      totalWithdrawn: (json['totalWithdrawn'] as num?)?.toDouble() ?? 0,
-      totalTransferred: (json['totalTransferred'] as num?)?.toDouble() ?? 0,
-      netFlow: (json['netFlow'] as num?)?.toDouble() ?? 0,
-    );
-  }
+  factory TransactionStats.fromJson(Map<String, dynamic> json) => TransactionStats(
+    totalCount: json['totalCount'] as int? ?? 0,
+    depositCount: json['depositCount'] as int? ?? 0,
+    withdrawalCount: json['withdrawalCount'] as int? ?? 0,
+    transferCount: json['transferCount'] as int? ?? 0,
+    totalDeposited: (json['totalDeposited'] as num?)?.toDouble() ?? 0,
+    totalWithdrawn: (json['totalWithdrawn'] as num?)?.toDouble() ?? 0,
+    totalTransferred: (json['totalTransferred'] as num?)?.toDouble() ?? 0,
+    netFlow: (json['netFlow'] as num?)?.toDouble() ?? 0,
+  );
 }
 
-final transactionStatsProvider =
-    FutureProvider<TransactionStats>((ref) async {
+final transactionStatsProvider = FutureProvider<TransactionStats>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-
   Timer(const Duration(minutes: 5), () => link.close());
 
   final response = await dio.get('/wallet/transactions/stats');

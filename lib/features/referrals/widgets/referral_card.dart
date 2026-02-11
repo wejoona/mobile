@@ -1,69 +1,106 @@
 import 'package:flutter/material.dart';
-import '../../../utils/clipboard_utils.dart';
-import '../../../utils/share_utils.dart';
-import '../providers/referrals_provider.dart';
+import 'package:flutter/services.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+import '../../../core/haptics/haptic_service.dart';
 
-/// Referral program overview card.
+/// Run 381: Referral share card widget with copy-to-clipboard
 class ReferralCard extends StatelessWidget {
-  final ReferralInfo info;
+  final String referralCode;
+  final int referralCount;
+  final double earnedAmount;
 
-  const ReferralCard({super.key, required this.info});
+  const ReferralCard({
+    super.key,
+    required this.referralCode,
+    this.referralCount = 0,
+    this.earnedAmount = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]),
-          borderRadius: BorderRadius.circular(16),
-        ),
+    return GradientCard(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Invite Friends', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text('Earn rewards for every friend who joins', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13)),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-              child: Row(
-                children: [
-                  Expanded(child: Text(info.referralCode, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700, letterSpacing: 2))),
-                  IconButton(
-                    onPressed: () => ClipboardUtils.copy(context, info.referralCode, label: 'Referral code copied'),
-                    icon: const Icon(Icons.copy_rounded, color: Colors.white, size: 20),
-                    visualDensity: VisualDensity.compact,
+            const Icon(Icons.card_giftcard, color: AppColors.gold, size: 40),
+            const SizedBox(height: AppSpacing.lg),
+            const AppText(
+              'Invitez vos amis',
+              style: AppTextStyle.headingSmall,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            AppText(
+              'Gagnez 5 USDC pour chaque ami qui rejoint Korido',
+              style: AppTextStyle.bodySmall,
+              color: AppColors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xxl),
+            // Referral code
+            Semantics(
+              label: 'Code de parrainage: $referralCode',
+              child: GestureDetector(
+                onTap: () => _copyCode(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                    vertical: AppSpacing.md,
                   ),
-                ],
+                  decoration: BoxDecoration(
+                    color: AppColors.elevated,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppText(
+                        referralCode,
+                        style: AppTextStyle.headingSmall,
+                        color: AppColors.gold,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      const Icon(Icons.copy, color: AppColors.gold, size: 18),
+                    ],
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.xxl),
+            // Stats
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _StatItem(label: 'Invited', value: '${info.totalReferrals}'),
-                const SizedBox(width: 24),
-                _StatItem(label: 'Joined', value: '${info.successfulReferrals}'),
-                const SizedBox(width: 24),
-                _StatItem(label: 'Earned', value: '\$${info.totalEarned.toStringAsFixed(2)}'),
+                _StatItem(
+                  label: 'Invitations',
+                  value: '$referralCount',
+                ),
+                Container(
+                  height: 30,
+                  width: 1,
+                  color: AppColors.elevated,
+                ),
+                _StatItem(
+                  label: 'Gains',
+                  value: '${earnedAmount.toStringAsFixed(2)} USDC',
+                ),
               ],
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () => ShareUtils.shareApp(referralCode: info.referralCode),
-                icon: const Icon(Icons.share_rounded, size: 18),
-                label: const Text('Share Invite Link'),
-                style: FilledButton.styleFrom(backgroundColor: Colors.white, foregroundColor: theme.colorScheme.primary),
-              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _copyCode(BuildContext context) {
+    Clipboard.setData(ClipboardData(text: referralCode));
+    HapticService.lightImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Code copie!'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -78,10 +115,10 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 11)),
+        AppText(value, style: AppTextStyle.labelLarge, color: AppColors.textPrimary),
+        const SizedBox(height: AppSpacing.xxs),
+        AppText(label, style: AppTextStyle.bodySmall, color: AppColors.textTertiary),
       ],
     );
   }
