@@ -78,7 +78,7 @@ class KycSubmissionNotifier extends Notifier<KycSubmissionState> {
     try {
       final service = ref.read(kycServiceProvider);
       // Submit personal info
-      await service.submitKyc(data: state.personalInfo);
+      await service.submitKycFromData(data: state.personalInfo);
 
       // Upload documents
       if (state.idFront != null) {

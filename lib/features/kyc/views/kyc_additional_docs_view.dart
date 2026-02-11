@@ -440,12 +440,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
 
     try {
       await ref.read(kycProvider.notifier).submitAdditionalDocuments(
-            occupation: _occupationController.text,
-            employer: _employerController.text,
-            monthlyIncome: _monthlyIncomeController.text,
-            sourceOfFunds: _selectedSourceType!.toApiString(),
-            sourceDetails: _sourceDetailsController.text,
-            supportingDocuments: _uploadedDocuments,
+            _uploadedDocuments,
           );
 
       if (!mounted) return;

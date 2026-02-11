@@ -1,9 +1,9 @@
-import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_provider.dart';
 
 /// App Review Service Provider
 final appReviewServiceProvider = Provider<AppReviewService>((ref) {

@@ -1,4 +1,5 @@
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 
 /// KYC profile entity - user verification state.
 class KycProfile {
@@ -104,5 +105,4 @@ class KycProfile {
 
 enum KycLevel { none, basic, standard, enhanced, premium }
 
-// Re-export KycStatus from the canonical location
-export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+// Re-export moved to top of file

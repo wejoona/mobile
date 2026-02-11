@@ -112,7 +112,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     }
   }
 
-  Future<void> _pickFromGallery(BuildContext context, KycState state) async {
+  Future<void> _pickFromGallery(BuildContext context, KycFlowState state) async {
     try {
       final picker = ImagePicker();
       debugPrint('[DocumentCapture] Opening gallery picker...');
@@ -329,7 +329,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   Widget _buildInstructionScreen(
     BuildContext context,
     AppLocalizations l10n,
-    KycState state,
+    KycFlowState state,
   ) {
     final documentType = state.selectedDocumentType;
     final documentName = _getDocumentTypeName(l10n, documentType);
@@ -354,7 +354,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   Widget _buildCaptureScreen(
     BuildContext context,
     AppLocalizations l10n,
-    KycState state,
+    KycFlowState state,
   ) {
     final documentType = state.selectedDocumentType!;
     final requiresBackSide = documentType.requiresBackSide;
@@ -506,7 +506,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   Widget _buildReviewScreen(
     BuildContext context,
     AppLocalizations l10n,
-    KycState state,
+    KycFlowState state,
   ) {
     final colors = context.colors;
     return Scaffold(

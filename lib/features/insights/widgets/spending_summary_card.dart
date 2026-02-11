@@ -13,7 +13,21 @@ class SpendingSummaryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final summary = ref.watch(spendingSummaryProvider);
+    final summaryAsync = ref.watch(spendingSummaryProvider);
+
+    return summaryAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error: $e')),
+      data: (summary) => _buildCard(context, l10n, summary),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, AppLocalizations l10n, Map<String, dynamic> summary) {
+    final percentageChange = (summary['percentageChange'] as num?)?.toDouble() ?? 0.0;
+    final isIncrease = (summary['isIncrease'] as bool?) ?? false;
+    final totalSpent = (summary['totalSpent'] as num?)?.toDouble() ?? 0.0;
+    final totalReceived = (summary['totalReceived'] as num?)?.toDouble() ?? 0.0;
+    final netFlow = (summary['netFlow'] as num?)?.toDouble() ?? 0.0;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
@@ -44,14 +58,14 @@ class SpendingSummaryCard extends ConsumerWidget {
                 variant: AppTextVariant.titleMedium,
                 color: AppColors.textPrimary,
               ),
-              if (summary.percentageChange > 0)
+              if (percentageChange > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: summary.isIncrease
+                    color: isIncrease
                         ? AppColors.errorBase.withValues(alpha: 0.2)
                         : AppColors.successBase.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -60,19 +74,19 @@ class SpendingSummaryCard extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        summary.isIncrease
+                        isIncrease
                             ? Icons.arrow_upward
                             : Icons.arrow_downward,
                         size: 12,
-                        color: summary.isIncrease
+                        color: isIncrease
                             ? AppColors.errorText
                             : AppColors.successText,
                       ),
                       const SizedBox(width: 4),
                       AppText(
-                        '${summary.percentageChange.toStringAsFixed(1)}%',
+                        '${percentageChange.toStringAsFixed(1)}%',
                         variant: AppTextVariant.bodySmall,
-                        color: summary.isIncrease
+                        color: isIncrease
                             ? AppColors.errorText
                             : AppColors.successText,
                         fontWeight: FontWeight.bold,
@@ -88,7 +102,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Total spent
           _buildStatItem(
             l10n.insights_total_spent,
-            '\$${summary.totalSpent.toStringAsFixed(2)}',
+            '\$${totalSpent.toStringAsFixed(2)}',
             AppColors.errorText,
           ),
 
@@ -97,7 +111,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Total received
           _buildStatItem(
             l10n.insights_total_received,
-            '\$${summary.totalReceived.toStringAsFixed(2)}',
+            '\$${totalReceived.toStringAsFixed(2)}',
             AppColors.successText,
           ),
 
@@ -114,8 +128,8 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Net flow
           _buildStatItem(
             l10n.insights_net_flow,
-            '${summary.netFlow >= 0 ? '+' : ''}\$${summary.netFlow.toStringAsFixed(2)}',
-            summary.netFlow >= 0 ? AppColors.successText : AppColors.errorText,
+            '${netFlow >= 0 ? '+' : ''}\$${netFlow.toStringAsFixed(2)}',
+            netFlow >= 0 ? AppColors.successText : AppColors.errorText,
             isLarge: true,
           ),
         ],

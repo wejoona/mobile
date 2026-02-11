@@ -40,7 +40,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: query);
+      ref.read(transactionFilterProvider.notifier).setSearch(query);
     });
   }
 
@@ -74,7 +74,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               setState(() {
                 _showSearch = false;
                 _searchController.clear();
-                ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
+                ref.read(transactionFilterProvider.notifier).setSearch(null);
               });
             } else if (context.canPop()) {
               context.pop();
@@ -94,7 +94,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   _searchFocusNode.requestFocus();
                 } else {
                   _searchController.clear();
-                  ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
+                  ref.read(transactionFilterProvider.notifier).setSearch(null);
                 }
               });
             },
@@ -196,7 +196,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             icon: Icon(Icons.clear, color: colors.textTertiary),
             onPressed: () {
               _searchController.clear();
-              ref.read(transactionFilterProvider.notifier).state = ref.read(transactionFilterProvider).copyWith(search: null);
+              ref.read(transactionFilterProvider.notifier).setSearch(null);
               setState(() {});
             },
           ),

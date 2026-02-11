@@ -5,6 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/features/insights/models/spending_category.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_pie_chart.dart';
 
@@ -14,86 +15,102 @@ class SpendingByCategorySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final categories = ref.watch(spendingByCategoryProvider);
+    final categoriesAsync = ref.watch(spendingByCategoryProvider);
 
-    if (categories.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    return categoriesAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => const SizedBox.shrink(),
+      data: (categoriesMap) {
+        if (categoriesMap.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-      decoration: BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: AppColors.borderDefault,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            l10n.insights_categories,
-            variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+        // Convert Map<String, double> to List<SpendingCategory>
+        final total = categoriesMap.values.fold(0.0, (a, b) => a + b);
+        final categoryColors = [
+          AppColors.gold500,
+          AppColors.successBase,
+          AppColors.errorBase,
+          AppColors.warningBase,
+          Colors.blue,
+          Colors.purple,
+        ];
+        int colorIdx = 0;
+        final categories = categoriesMap.entries.map((e) {
+          final cat = SpendingCategory(
+            name: e.key,
+            amount: e.value,
+            percentage: total > 0 ? (e.value / total) * 100 : 0,
+            color: categoryColors[colorIdx++ % categoryColors.length],
+            transactionCount: 0,
+          );
+          return cat;
+        }).toList();
+
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+          decoration: BoxDecoration(
+            color: AppColors.slate,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: AppColors.borderDefault,
+              width: 1,
+            ),
           ),
-          const SizedBox(height: AppSpacing.xxl),
-
-          // Pie chart
-          SpendingPieChart(categories: categories),
-
-          const SizedBox(height: AppSpacing.xxl),
-
-          // Legend
-          ...categories.map((category) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: Row(
-                children: [
-                  // Color indicator
-                  Container(
-                    width: 16,
-                    height: 16,
-                    decoration: BoxDecoration(
-                      color: category.color,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-
-                  // Category name
-                  Expanded(
-                    child: AppText(
-                      category.name,
-                      variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-
-                  // Amount and percentage
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                l10n.insights_categories,
+                variant: AppTextVariant.titleMedium,
+                color: AppColors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              SpendingPieChart(categories: categories),
+              const SizedBox(height: AppSpacing.xxl),
+              ...categories.map((category) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                  child: Row(
                     children: [
-                      AppText(
-                        '\$${category.amount.toStringAsFixed(2)}',
-                        variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.bold,
+                      Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: category.color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
                       ),
-                      AppText(
-                        '${category.percentage.toStringAsFixed(1)}%',
-                        variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: AppText(
+                          category.name,
+                          variant: AppTextVariant.bodyMedium,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          AppText(
+                            '\$${category.amount.toStringAsFixed(2)}',
+                            variant: AppTextVariant.bodyMedium,
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          AppText(
+                            '${category.percentage.toStringAsFixed(1)}%',
+                            variant: AppTextVariant.bodySmall,
+                            color: AppColors.textSecondary,
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 }

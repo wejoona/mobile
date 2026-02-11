@@ -410,16 +410,16 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(kycProvider.notifier).submitAddressVerification(
-            addressLine1: _addressLine1Controller.text,
-            addressLine2: _addressLine2Controller.text,
-            city: _cityController.text,
-            state: _stateController.text,
-            postalCode: _postalCodeController.text,
-            country: _countryController.text,
-            documentType: _selectedDocumentType!.toApiString(),
-            documentPath: _uploadedDocumentPath!,
-          );
+      await ref.read(kycProvider.notifier).submitAddressVerification({
+            'addressLine1': _addressLine1Controller.text,
+            'addressLine2': _addressLine2Controller.text,
+            'city': _cityController.text,
+            'state': _stateController.text,
+            'postalCode': _postalCodeController.text,
+            'country': _countryController.text,
+            'documentType': _selectedDocumentType!.toApiString(),
+            'documentPath': _uploadedDocumentPath!,
+          });
 
       if (!mounted) return;
 

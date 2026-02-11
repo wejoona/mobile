@@ -72,6 +72,17 @@ class DepositService {
     return [];
   }
 
+  /// Initiate a mobile money deposit
+  Future<DepositResponse> initiateMobileMoneyDeposit(Map<String, dynamic> data) async {
+    final response = await _dio.post('/deposits/initiate', data: data);
+    return DepositResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Get available deposit methods (alias for getProviders)
+  Future<List<Map<String, dynamic>>> getDepositMethods() async {
+    return getProviders();
+  }
+
   /// Get exchange rate (XOF to USD)
   Future<ExchangeRate> getExchangeRate({
     String from = 'XOF',

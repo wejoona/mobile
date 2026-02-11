@@ -237,11 +237,11 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       return;
     }
 
-    ref.read(kycProvider.notifier).setPersonalInfo(
-          firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-          dateOfBirth: _dateOfBirth!,
-        );
+    ref.read(kycProvider.notifier).setPersonalInfo({
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          'dateOfBirth': _dateOfBirth!.toIso8601String(),
+        });
 
     context.push('/kyc/document-capture');
   }

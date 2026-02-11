@@ -15,52 +15,51 @@ class TopRecipientsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final recipients = ref.watch(topRecipientsProvider);
+    final recipientsAsync = ref.watch(topRecipientsProvider);
 
-    if (recipients.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    return recipientsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (e, _) => const SizedBox.shrink(),
+      data: (recipients) {
+        if (recipients.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-      decoration: BoxDecoration(
-        color: AppColors.slate,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: AppColors.borderDefault,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Container(
+          padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+          decoration: BoxDecoration(
+            color: AppColors.slate,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+            border: Border.all(
+              color: AppColors.borderDefault,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
-                l10n.insights_top_recipients,
-                variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AppText(
+                    l10n.insights_top_recipients,
+                    variant: AppTextVariant.titleMedium,
+                    color: AppColors.textPrimary,
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/insights/recipients'),
+                    child: AppText(
+                      'View All',
+                      variant: AppTextVariant.bodySmall,
+                      color: AppColors.gold500,
+                    ),
+                  ),
+                ],
               ),
-              TextButton(
-                onPressed: () {
-                  // Navigate to full recipient details
-                  context.push('/insights/recipients');
-                },
-                child: AppText(
-                  'View All',
-                  variant: AppTextVariant.bodySmall,
-                  color: AppColors.gold500,
-                ),
-              ),
+              const SizedBox(height: AppSpacing.lg),
+              TopRecipientsChart(recipients: recipients.take(5).toList()),
             ],
           ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // Horizontal bar chart
-          TopRecipientsChart(recipients: recipients.take(5).toList()),
-        ],
-      ),
+        );
+      },
     );
   }
 }

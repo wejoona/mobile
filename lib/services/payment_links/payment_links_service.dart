@@ -59,6 +59,14 @@ class PaymentLinksService {
     final response = await _dio.post('/payment-links/code/$shortCode/pay');
     return PaymentResponse.fromJson(response.data);
   }
+
+  // Aliases used by views
+  Future<List<PaymentLink>> getPaymentLinks() => getLinks();
+  Future<PaymentLink> createPaymentLink(Map<String, dynamic> data) async {
+    final response = await _dio.post('/payment-links', data: data);
+    return PaymentLink.fromJson(response.data);
+  }
+  Future<PaymentLink> loadLink(String linkId) => getLink(linkId);
 }
 
 /// Response from paying a link
@@ -80,11 +88,4 @@ class PaymentResponse {
       status: json['status'] as String,
     );
   }
-
-
-  // === Stub methods ===
-  Future<List<dynamic>> getPaymentLinks() async => [];
-  Future<void> createPaymentLink(Map<String, dynamic> data) async {}
-  Future<dynamic> loadLink(String linkId) async => {};
-
 }

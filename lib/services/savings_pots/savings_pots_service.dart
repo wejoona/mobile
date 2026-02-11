@@ -65,19 +65,23 @@ class SavingsPotsService {
   Future<void> delete(String potId) async {
     await _dio.delete('/savings-pots/$potId');
   }
+
+  // Aliases used by views
+  Future<SavingsPot> createPot(Map<String, dynamic> data) => create(
+    name: data['name'] as String? ?? '',
+    targetAmount: (data['targetAmount'] as num?)?.toDouble() ?? 0,
+  );
+  Future<void> deletePot(String potId) => delete(potId);
+  Future<SavingsPot> updatePot(String potId, Map<String, dynamic> data) async {
+    final response = await _dio.patch('/savings-pots/$potId', data: data);
+    return SavingsPot.fromJson(response.data as Map<String, dynamic>);
+  }
+  Future<SavingsPot> addToPot(String potId, double amount) => deposit(potId, amount);
+  Future<SavingsPot> withdrawFromPot(String potId, double amount) => withdraw(potId, amount);
+  Future<List<SavingsPot>> loadPots() => getAll();
+  void selectPot(String? potId) {}
 }
 
 final savingsPotsServiceProvider = Provider<SavingsPotsService>((ref) {
   return SavingsPotsService(ref.watch(dioProvider));
-
-
-  // === Stub methods ===
-  Future<void> createPot(Map<String, dynamic> data) async {}
-  Future<void> deletePot(String potId) async {}
-  Future<void> updatePot(String potId, Map<String, dynamic> data) async {}
-  Future<void> addToPot(String potId, double amount) async {}
-  Future<void> withdrawFromPot(String potId, double amount) async {}
-  Future<List<dynamic>> loadPots() async => [];
-  void selectPot(String? potId) {}
-
 });

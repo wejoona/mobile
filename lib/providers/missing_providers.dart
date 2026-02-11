@@ -1,17 +1,33 @@
 /// Stub providers for views that reference providers not yet created.
 /// These are temporary — wire to real implementations as features complete.
-library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 
 /// Filtered+paginated transactions (used by transactions_view.dart)
 final filteredPaginatedTransactionsProvider =
-    FutureProvider.autoDispose<List<Transaction>>((ref) async {
-  return [];
+    StateNotifierProvider.autoDispose<FilteredPaginatedTransactionsNotifier, FilteredPaginatedTransactionsState>((ref) {
+  return FilteredPaginatedTransactionsNotifier();
 });
+
+class FilteredPaginatedTransactionsNotifier extends StateNotifier<FilteredPaginatedTransactionsState> {
+  FilteredPaginatedTransactionsNotifier() : super(const FilteredPaginatedTransactionsState());
+
+  Future<void> refresh() async {
+    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: false, transactions: [], hasMore: false);
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoading || !state.hasMore) return;
+    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: false);
+  }
+}
 
 /// Exchange rate provider
 final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((ref) async {
@@ -66,5 +82,4 @@ final profileNotifierProvider =
 final providersListProvider =
     Provider<List<String>>((ref) => []);
 
-/// Analytics service provider
-final analyticsServiceProvider = Provider<dynamic>((ref) => null);
+// analyticsServiceProvider is in lib/services/analytics/analytics_provider.dart

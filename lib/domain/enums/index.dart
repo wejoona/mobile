@@ -1,4 +1,5 @@
 export 'package:usdc_wallet/domain/enums/account_type.dart';
+export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 
 /// Transaction status enum - mirrors backend
 enum TransactionStatus {
@@ -17,8 +18,7 @@ enum TransactionType {
   transferExternal,
 }
 
-// KycStatus is defined in features/kyc/models/kyc_status.dart — re-export for compatibility.
-export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+// KycStatus re-export moved to top of file
 
 /// User role enum - mirrors backend
 enum UserRole {
