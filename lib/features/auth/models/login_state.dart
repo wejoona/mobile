@@ -48,7 +48,7 @@ class LoginState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
-      sessionToken: sessionToken ?? this.sessionToken, refreshToken: refreshToken ?? this.refreshToken, this.refreshToken,
+      sessionToken: sessionToken ?? this.sessionToken, refreshToken: refreshToken ?? this.refreshToken,
       rememberDevice: rememberDevice ?? this.rememberDevice,
       pinAttempts: pinAttempts ?? this.pinAttempts,
       isLocked: isLocked ?? this.isLocked,

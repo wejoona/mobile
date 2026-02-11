@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart' hide StorageKeys, secureStorageProvider;
 import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
 /// Authentication session state.
@@ -8,8 +8,8 @@ enum AuthState { unknown, authenticated, unauthenticated, expired }
 
 /// Session management provider.
 class SessionNotifier extends Notifier<AuthState> {
-  static const _tokenKey = StorageKeys.accessToken;  // 'access_token'
-  static const _refreshKey = StorageKeys.refreshToken;  // 'refresh_token'
+  static const _tokenKey = 'access_token';
+  static const _refreshKey = 'refresh_token';
   static const _expiryKey = 'token_expiry';
 
   @override
