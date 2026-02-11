@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/transfer.dart';
 
 /// Run 350: Scheduled transfers provider

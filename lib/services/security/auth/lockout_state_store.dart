@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Persists lockout state across app restarts.

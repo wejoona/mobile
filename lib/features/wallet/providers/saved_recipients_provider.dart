@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
 
 /// Run 349: Saved recipients provider for quick-send feature

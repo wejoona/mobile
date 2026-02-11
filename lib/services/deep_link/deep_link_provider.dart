@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/deep_link/deep_link_service.dart';
 
 /// Provides a stream of deep link actions as they arrive.
