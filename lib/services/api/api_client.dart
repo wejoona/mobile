@@ -11,6 +11,8 @@ import 'package:usdc_wallet/services/security/security_headers_interceptor.dart'
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
 import 'package:usdc_wallet/services/api/retry_interceptor.dart';
+import 'package:usdc_wallet/services/security/jwe/jwe_service.dart';
+import 'package:usdc_wallet/services/security/jwe/jwe_interceptor.dart';
 import 'package:usdc_wallet/mocks/index.dart';
 
 /// API Configuration
@@ -33,11 +35,11 @@ class ApiConfig {
     defaultValue: 'development',
   );
 
-  /// Default development URL - uses deployed K8s backend
-  static const String _defaultDevUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
+  /// Default development URL — dev API with debug endpoints
+  static const String _defaultDevUrl = 'https://dev-api.joonapay.com/api/v1';
 
   /// Default production URL
-  static const String _defaultProdUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
+  static const String _defaultProdUrl = 'https://api.joonapay.com/api/v1';
 
   /// Get the base URL based on environment and configuration
   /// Priority: 1. --dart-define API_URL, 2. ENV-based default
@@ -144,6 +146,11 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Add auth interceptor
   dio.interceptors.add(AuthInterceptor(ref));
+
+  // SECURITY: JWE encryption for sensitive endpoints (transfers, PIN, etc.)
+  final jweService = ref.read(jweServiceProvider);
+  jweService.init(dio); // Needs Dio to fetch server public key
+  dio.interceptors.add(JweInterceptor(jweService));
 
   // Retry transient failures (GET only, exponential backoff)
   dio.interceptors.add(RetryInterceptor(dio: dio));
