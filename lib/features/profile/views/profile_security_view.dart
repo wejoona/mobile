@@ -1,0 +1,148 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
+
+/// Run 341: Profile security overview - shows security status and actions
+class ProfileSecurityView extends ConsumerWidget {
+  const ProfileSecurityView({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundPrimary,
+      appBar: AppBar(
+        title: const AppText(
+          'Securite du compte',
+          style: AppTextStyle.headingSmall,
+        ),
+        backgroundColor: AppColors.backgroundSecondary,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          _SecurityScoreCard(),
+          const SizedBox(height: AppSpacing.xxl),
+          const SectionHeader(title: 'Authentification'),
+          const SizedBox(height: AppSpacing.sm),
+          _SecurityOption(
+            icon: Icons.pin_outlined,
+            title: 'Code PIN',
+            subtitle: 'Modifier votre code PIN',
+            status: _SecurityStatus.active,
+            onTap: () => Navigator.of(context).pushNamed('/pin/change'),
+          ),
+          _SecurityOption(
+            icon: Icons.fingerprint,
+            title: 'Biometrie',
+            subtitle: 'Empreinte digitale ou Face ID',
+            status: _SecurityStatus.active,
+            onTap: () =>
+                Navigator.of(context).pushNamed('/settings/biometric'),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          const SectionHeader(title: 'Appareils'),
+          const SizedBox(height: AppSpacing.sm),
+          _SecurityOption(
+            icon: Icons.devices,
+            title: 'Appareils connectes',
+            subtitle: 'Gerer vos appareils',
+            status: _SecurityStatus.info,
+            onTap: () => Navigator.of(context).pushNamed('/settings/devices'),
+          ),
+          _SecurityOption(
+            icon: Icons.history,
+            title: 'Sessions actives',
+            subtitle: 'Voir les sessions en cours',
+            status: _SecurityStatus.info,
+            onTap: () => Navigator.of(context).pushNamed('/settings/sessions'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _SecurityStatus { active, inactive, info }
+
+class _SecurityScoreCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Score de securite: Eleve',
+      child: GradientCard(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            children: [
+              const Icon(Icons.shield, color: AppColors.gold, size: 48),
+              const SizedBox(height: AppSpacing.md),
+              const AppText(
+                'Securite Elevee',
+                style: AppTextStyle.headingSmall,
+                color: AppColors.gold,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              AppText(
+                'Votre compte est bien protege',
+                style: AppTextStyle.bodySmall,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SecurityOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final _SecurityStatus status;
+  final VoidCallback onTap;
+
+  const _SecurityOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.status,
+    required this.onTap,
+  });
+
+  Color get _statusColor {
+    switch (status) {
+      case _SecurityStatus.active:
+        return AppColors.success;
+      case _SecurityStatus.inactive:
+        return AppColors.error;
+      case _SecurityStatus.info:
+        return AppColors.textTertiary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$title: $subtitle',
+      child: ListTileCard(
+        leading: Icon(icon, color: AppColors.gold),
+        title: title,
+        subtitle: subtitle,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (status == _SecurityStatus.active)
+              Icon(Icons.check_circle, color: _statusColor, size: 18),
+            const SizedBox(width: AppSpacing.xs),
+            const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+          ],
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+}
