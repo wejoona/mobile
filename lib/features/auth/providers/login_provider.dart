@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(
@@ -128,6 +129,7 @@ class LoginNotifier extends Notifier<LoginState> {
         isLoading: false,
         currentStep: LoginStep.pin,
         sessionToken: response.accessToken,
+        refreshToken: response.refreshToken,
       );
 
       _resendTimer?.cancel();
@@ -188,6 +190,11 @@ class LoginNotifier extends Notifier<LoginState> {
         await _storage.write(
           key: StorageKeys.accessToken,
           value: state.sessionToken!,
+        );
+        // Notify session provider so app knows we're authenticated
+        await ref.read(sessionProvider.notifier).setTokens(
+          accessToken: state.sessionToken!,
+          refreshToken: state.refreshToken ?? state.sessionToken!,
         );
       }
 
@@ -259,6 +266,10 @@ class LoginNotifier extends Notifier<LoginState> {
           await _storage.write(
             key: StorageKeys.accessToken,
             value: state.sessionToken!,
+          );
+          await ref.read(sessionProvider.notifier).setTokens(
+            accessToken: state.sessionToken!,
+            refreshToken: state.refreshToken ?? state.sessionToken!,
           );
         }
 

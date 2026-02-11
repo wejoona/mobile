@@ -8,6 +8,7 @@ class LoginState {
   final String? error;
   final int otpResendCountdown;
   final String? sessionToken;
+  final String? refreshToken;
   final bool rememberDevice;
   final int pinAttempts;
   final bool isLocked;
@@ -20,7 +21,7 @@ class LoginState {
     this.isLoading = false,
     this.error,
     this.otpResendCountdown = 0,
-    this.sessionToken,
+    this.sessionToken, this.refreshToken,
     this.rememberDevice = true,
     this.pinAttempts = 0,
     this.isLocked = false,
@@ -34,7 +35,7 @@ class LoginState {
     bool? isLoading,
     String? error,
     int? otpResendCountdown,
-    String? sessionToken,
+    String? sessionToken, String? refreshToken,
     bool? rememberDevice,
     int? pinAttempts,
     bool? isLocked,
@@ -47,7 +48,7 @@ class LoginState {
       isLoading: isLoading ?? this.isLoading,
       error: error,
       otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
-      sessionToken: sessionToken ?? this.sessionToken,
+      sessionToken: sessionToken ?? this.sessionToken, refreshToken: refreshToken ?? this.refreshToken, this.refreshToken,
       rememberDevice: rememberDevice ?? this.rememberDevice,
       pinAttempts: pinAttempts ?? this.pinAttempts,
       isLocked: isLocked ?? this.isLocked,
