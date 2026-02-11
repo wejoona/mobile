@@ -10,6 +10,7 @@ import '../security/client_risk_score_service.dart';
 import '../security/security_headers_interceptor.dart';
 import 'cache_interceptor.dart';
 import 'deduplication_interceptor.dart';
+import 'retry_interceptor.dart';
 import '../../mocks/index.dart';
 
 /// API Configuration
@@ -143,6 +144,9 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Add auth interceptor
   dio.interceptors.add(AuthInterceptor(ref));
+
+  // Retry transient failures (GET only, exponential backoff)
+  dio.interceptors.add(RetryInterceptor(dio: dio));
 
   // SECURITY: Only add log interceptor in debug mode to prevent sensitive data leakage
   if (kDebugMode) {
@@ -304,8 +308,8 @@ class AuthInterceptor extends Interceptor {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        await storage.write(key: StorageKeys.accessToken, value: data['accessToken']);
-        await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken']);
+        await storage.write(key: StorageKeys.accessToken, value: data['accessToken'] as String?);
+        await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken'] as String?);
         _refreshCompleter!.complete(true);
         return true;
       }
