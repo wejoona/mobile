@@ -6,8 +6,8 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 /// Run 360: Unread notification count provider with auto-refresh
 final unreadNotificationCountProvider = Provider<int>((ref) {
   final notificationsState = ref.watch(notificationsNotifierProvider);
-  return notificationsState.notifications
-      .where((n) => !n.isRead)
+  return ((notificationsState.value ?? []) as List)
+      
       .length;
 });
 

@@ -2,6 +2,7 @@ import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';
+typedef WestAfricanBank = BankInfo;
 import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provider.dart';
 
 /// Link bank account flow state.
@@ -42,7 +43,8 @@ class LinkBankNotifier extends Notifier<LinkBankState> {
       await service.linkBankAccount(
         bankCode: state.selectedBank!.swiftCode,
         accountNumber: state.accountNumber!,
-        accountName: state.accountName,
+        accountHolderName: state.accountName ?? '',
+        countryCode: 'CI',
       );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(bankAccountsProvider);

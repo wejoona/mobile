@@ -74,7 +74,7 @@ class _LinkBankScreenState extends ConsumerState<LinkBankScreen> {
                           children: [
                             Icon(Icons.account_balance, color: selected ? Theme.of(context).colorScheme.primary : Colors.grey),
                             const SizedBox(height: AppSpacing.xs),
-                            Text(bank.shortName, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
+                            Text(bank.code, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
                           ],
                         ),
                       ),

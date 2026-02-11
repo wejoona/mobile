@@ -10,8 +10,7 @@ final bankAccountsProvider = FutureProvider<List<BankAccount>>((ref) async {
   Timer(const Duration(minutes: 2), () => link.close());
 
   final data = await service.getBankAccounts();
-  final items = (data['data'] as List?) ?? [];
-  return items.map((e) => BankAccount.fromJson(e as Map<String, dynamic>)).toList();
+  return data.map((e) => BankAccount.fromJson(e as Map<String, dynamic>)).toList();
 });
 
 /// Default bank account.

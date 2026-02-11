@@ -1,33 +1,15 @@
-import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/deposit/deposit_service.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 
-/// Repository for deposit operations.
 class DepositRepository {
-  final DepositService _service;
-
+  final WalletService _service;
   DepositRepository(this._service);
 
-  /// Initiate a deposit via mobile money.
-  Future<Map<String, dynamic>> initiateMobileMoneyDeposit({
-    required double amount,
-    required String mobileNumber,
-    required String provider,
-  }) async {
-    return _service.initiateMobileMoneyDeposit(
-      amount: amount,
-      mobileNumber: mobileNumber,
-      provider: provider,
-    );
-  }
-
-  /// Get available deposit methods.
-  Future<List<Map<String, dynamic>>> getDepositMethods() async {
-    return _service.getDepositMethods();
-  }
+  Future<dynamic> getDepositMethods() => _service.getDepositChannels();
+  Future<dynamic> initiateMobileMoneyDeposit({String? amount, String? provider, String? mobileNumber}) =>
+    _service.initiateDeposit(amount: double.tryParse(amount ?? '0') ?? 0, sourceCurrency: 'XOF', channelId: provider ?? 'orange_money');
 }
 
 final depositRepositoryProvider = Provider<DepositRepository>((ref) {
-  final service = ref.watch(depositServiceProvider);
-  return DepositRepository(service);
+  return DepositRepository(ref.watch(walletServiceProvider));
 });

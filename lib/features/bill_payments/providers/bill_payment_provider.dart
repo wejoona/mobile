@@ -91,13 +91,11 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(billPaymentsServiceProvider);
-      final response = await service.payBill(
-        billerId: state.selectedBiller.id ?? 'unknown',
+      final result = await service.payBill(
+        providerId: state.selectedBiller.id ?? 'unknown',
+        accountNumber: state.subscriberNumber!,
         amount: state.amount!,
-        subscriberNumber: state.subscriberNumber!,
-        pin: pin,
       );
-      final result = BillPaymentResult.fromJson(response);
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);
     } catch (e) {
