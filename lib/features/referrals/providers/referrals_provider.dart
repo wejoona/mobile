@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/referral.dart';
-import '../../../services/api/api_client.dart';
+import '../../../services/referrals/referrals_service.dart';
 
-/// Referral program state provider.
+/// Referral program state provider — wired to ReferralsService.
 final referralProvider = FutureProvider<ReferralInfo>((ref) async {
-  final dio = ref.watch(dioProvider);
+  final service = ref.watch(referralsServiceProvider);
   final link = ref.keepAlive();
-
   Timer(const Duration(minutes: 5), () => link.close());
 
-  final response = await dio.get('/referrals');
-  return ReferralInfo.fromJson(response.data as Map<String, dynamic>);
+  final data = await service.getReferralInfo();
+  return ReferralInfo.fromJson(data);
 });
 
 /// Referral info model.
@@ -43,10 +41,8 @@ class ReferralInfo {
       totalEarned: (json['totalEarned'] as num?)?.toDouble() ?? 0,
       currency: json['currency'] as String? ?? 'USDC',
       referrals: (json['referrals'] as List?)
-              ?.map((e) =>
-                  ReferralEntry.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+              ?.map((e) => ReferralEntry.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [],
     );
   }
 }
@@ -58,13 +54,7 @@ class ReferralEntry {
   final double? reward;
   final DateTime createdAt;
 
-  const ReferralEntry({
-    required this.id,
-    required this.referredName,
-    required this.status,
-    this.reward,
-    required this.createdAt,
-  });
+  const ReferralEntry({required this.id, required this.referredName, required this.status, this.reward, required this.createdAt});
 
   factory ReferralEntry.fromJson(Map<String, dynamic> json) {
     return ReferralEntry(

@@ -1,22 +1,18 @@
 import 'dart:async';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../domain/entities/contact.dart';
 import '../../../services/api/api_client.dart';
 
-/// App contacts provider (Korido contacts, not phone contacts).
+/// App contacts provider — wired to Dio (mock interceptor handles fallback).
 final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-
   Timer(const Duration(minutes: 5), () => link.close());
 
   final response = await dio.get('/contacts');
   final data = response.data as Map<String, dynamic>;
   final items = data['data'] as List? ?? [];
-  return items
-      .map((e) => Contact.fromJson(e as Map<String, dynamic>))
-      .toList();
+  return items.map((e) => Contact.fromJson(e as Map<String, dynamic>)).toList();
 });
 
 /// Favorite contacts.
@@ -26,21 +22,18 @@ final favoriteContactsProvider = Provider<List<Contact>>((ref) {
 });
 
 /// Search contacts.
-final contactSearchProvider =
-    Provider.family<List<Contact>, String>((ref, query) {
+final contactSearchProvider = Provider.family<List<Contact>, String>((ref, query) {
   final contacts = ref.watch(appContactsProvider).valueOrNull ?? [];
   if (query.isEmpty) return contacts;
   final lower = query.toLowerCase();
   return contacts.where((c) {
-    return c.name.toLowerCase().contains(lower) ||
-        (c.phone?.contains(query) ?? false);
+    return c.name.toLowerCase().contains(lower) || (c.phone?.contains(query) ?? false);
   }).toList();
 });
 
 /// Contact actions.
 class ContactActions {
-  final Dio _dio;
-
+  final dynamic _dio;
   ContactActions(this._dio);
 
   Future<void> syncPhoneContacts(List<String> phones) async {
@@ -52,9 +45,7 @@ class ContactActions {
   }
 
   Future<void> toggleFavorite(String contactId, bool isFavorite) async {
-    await _dio.patch('/contacts/$contactId', data: {
-      'isFavorite': isFavorite,
-    });
+    await _dio.patch('/contacts/$contactId', data: {'isFavorite': isFavorite});
   }
 }
 

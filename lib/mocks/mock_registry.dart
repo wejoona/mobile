@@ -38,6 +38,9 @@ import 'services/bulk_payments/bulk_payments_mock.dart';
 import 'services/sub_business/sub_business_mock.dart';
 import 'services/cards/cards_mock.dart';
 import 'services/bank_linking/bank_linking_mock.dart';
+import 'services/referrals/referrals_mock.dart';
+import 'services/contacts/contacts_mock.dart';
+import 'services/user/user_mock.dart';
 
 /// Mock Registry
 ///
@@ -84,6 +87,9 @@ class MockRegistry {
     SubBusinessMock.register(_interceptor);
     CardsMock.register(_interceptor);
     BankLinkingMock.register(_interceptor);
+    ReferralsMock.register(_interceptor);
+    ContactsMock.register(_interceptor);
+    UserMock.register(_interceptor);
 
     // Add more mock services here as they are created:
     // MerchantMock.register(_interceptor);

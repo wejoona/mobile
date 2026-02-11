@@ -14,9 +14,9 @@ import 'bulk_payments/bulk_payments_service.dart';
 import 'kyc/kyc_service.dart';
 import 'deposit/deposit_service.dart';
 import 'user/user_service.dart';
-import 'savings_pots/savings_pots_service.dart';
-import 'limits/limits_service.dart';
-import 'referrals/referrals_service.dart';
+
+// Note: SavingsPotsService, LimitsService, ReferralsService
+// have providers defined in their own files.
 
 // ── Cards ──
 final cardsServiceProvider = Provider<CardsService>((ref) {
