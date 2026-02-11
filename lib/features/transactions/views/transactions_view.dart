@@ -11,7 +11,7 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
 import 'package:usdc_wallet/features/transactions/widgets/filter_bottom_sheet.dart';
 
 class TransactionsView extends ConsumerStatefulWidget {

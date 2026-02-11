@@ -26,7 +26,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(cardsProvider.notifier).loadCardTransactions(widget.cardId);
+      ref.read(cardActionsProvider).loadCardTransactions(widget.cardId);
     });
   }
 
@@ -49,7 +49,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
       ),
       body: RefreshIndicator(
         onRefresh: () =>
-            ref.read(cardsProvider.notifier).loadCardTransactions(widget.cardId),
+            ref.read(cardActionsProvider).loadCardTransactions(widget.cardId),
         child: state.isLoading && state.transactions.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.transactions.isEmpty

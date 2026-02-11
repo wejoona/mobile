@@ -399,7 +399,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     final success = await ref
-        .read(recurringTransfersProvider.notifier)
+        .read(recurringTransferActionsProvider)
         .pauseRecurringTransfer(id);
 
     if (!context.mounted) return;
@@ -427,7 +427,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
   ) async {
     final l10n = AppLocalizations.of(context)!;
     final success = await ref
-        .read(recurringTransfersProvider.notifier)
+        .read(recurringTransferActionsProvider)
         .resumeRecurringTransfer(id);
 
     if (!context.mounted) return;
@@ -482,7 +482,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     if (confirmed != true || !context.mounted) return;
 
     final success = await ref
-        .read(recurringTransfersProvider.notifier)
+        .read(recurringTransferActionsProvider)
         .cancelRecurringTransfer(id);
 
     if (!context.mounted) return;

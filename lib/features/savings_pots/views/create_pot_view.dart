@@ -141,7 +141,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
         ? null
         : double.tryParse(_targetController.text);
 
-    final success = await ref.read(savingsPotsProvider.notifier).createPot(
+    final success = await ref.read(savingsPotsActionsProvider).createPot(
           name: _nameController.text,
           emoji: _selectedEmoji!,
           color: _selectedColor!,

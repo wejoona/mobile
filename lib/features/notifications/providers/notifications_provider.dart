@@ -17,7 +17,7 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((ref) async 
 
 /// Unread notification count.
 final unreadNotificationCountProvider = Provider<int>((ref) {
-  final notifications = ref.watch(notificationsProvider).valueOrNull ?? [];
+  final notifications = ref.watch(notificationsProvider).value ?? [];
   return notifications.where((n) => !n.isRead).length;
 });
 

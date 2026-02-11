@@ -11,10 +11,18 @@ import 'package:flutter/foundation.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/mocks/base/api_contract.dart';
+export 'package:usdc_wallet/mocks/base/api_contract.dart' show MockResponse;
 
-/// Type definition for mock handlers
+/// Type definition for mock handlers (single-arg: RequestOptions)
 typedef MockHandler = Future<MockResponse<dynamic>> Function(
   RequestOptions options,
+);
+
+/// Legacy mock handler (3-arg: uri, headers, data) used by service mocks
+typedef LegacyMockHandler = Future<MockResponse<dynamic>> Function(
+  Uri uri,
+  Map<String, dynamic>? headers,
+  dynamic data,
 );
 
 /// Mock interceptor for Dio
@@ -28,14 +36,25 @@ class MockInterceptor extends Interceptor {
   /// Logger
   static final _logger = AppLogger('MockInterceptor');
 
-  /// Register a mock handler for a specific endpoint
+  /// Register a mock handler for a specific endpoint.
+  /// Accepts either a [MockHandler] (single RequestOptions arg) or a
+  /// [LegacyMockHandler] (uri, headers, data) via the [legacyHandler] param.
   void register({
     required String method,
     required String path,
-    required MockHandler handler,
+    MockHandler? handler,
+    LegacyMockHandler? legacyHandler,
   }) {
+    assert(handler != null || legacyHandler != null,
+        'Provide either handler or legacyHandler');
+    final resolvedHandler = handler ??
+        (RequestOptions options) => legacyHandler!(
+              options.uri,
+              options.headers.cast<String, dynamic>(),
+              options.data,
+            );
     _handlers[method.toUpperCase()] ??= {};
-    _handlers[method.toUpperCase()]![path] = handler;
+    _handlers[method.toUpperCase()]![path] = resolvedHandler;
 
     _logger.debug('Registered: ${method.toUpperCase()} $path');
   }

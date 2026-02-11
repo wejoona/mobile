@@ -285,7 +285,7 @@ class _CreateRecurringTransferViewState
       final request = formState.toRequest();
 
       final transfer = await ref
-          .read(recurringTransfersProvider.notifier)
+          .read(recurringTransferActionsProvider)
           .createRecurringTransfer(request);
 
       if (!mounted) return;

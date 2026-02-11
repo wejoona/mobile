@@ -241,7 +241,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
         if (file.bytes != null) {
           final csvContent = utf8.decode(file.bytes!);
           final batch = await ref
-              .read(bulkPaymentsProvider.notifier)
+              .read(bulkPaymentActionsProvider)
               .parseCsvFile(csvContent, file.name);
 
           if (batch != null && mounted) {

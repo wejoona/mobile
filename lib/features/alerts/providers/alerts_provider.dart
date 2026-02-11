@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/alerts/models/alert_model.dart';
 
 /// Alert types in the app.
 enum AlertType { info, warning, error, promotion }
@@ -62,7 +63,121 @@ final dismissedAlertsProvider = StateProvider<Set<String>>((ref) => {});
 
 /// Visible alerts (active minus dismissed).
 final visibleAlertsProvider = Provider<List<AppAlert>>((ref) {
-  final alerts = ref.watch(activeAlertsProvider).valueOrNull ?? [];
+  final alerts = ref.watch(activeAlertsProvider).value ?? [];
   final dismissed = ref.watch(dismissedAlertsProvider);
   return alerts.where((a) => !dismissed.contains(a.id)).toList();
+});
+
+/// Alerts list state for the full alerts feature.
+class AlertsListState {
+  final List<TransactionAlert> alerts;
+  final AlertStatistics? statistics;
+  final bool isLoading;
+  final String? error;
+  final bool hasMore;
+
+  const AlertsListState({
+    this.alerts = const [],
+    this.statistics,
+    this.isLoading = false,
+    this.error,
+    this.hasMore = false,
+  });
+
+  AlertsListState copyWith({
+    List<TransactionAlert>? alerts,
+    AlertStatistics? statistics,
+    bool? isLoading,
+    String? error,
+    bool? hasMore,
+  }) => AlertsListState(
+    alerts: alerts ?? this.alerts,
+    statistics: statistics ?? this.statistics,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    hasMore: hasMore ?? this.hasMore,
+  );
+}
+
+/// Alerts notifier — manages paginated alerts list.
+class AlertsNotifier extends Notifier<AlertsListState> {
+  int _page = 1;
+
+  @override
+  AlertsListState build() {
+    Future.microtask(() => loadAlerts());
+    return const AlertsListState(isLoading: true);
+  }
+
+  Future<void> loadAlerts({bool refresh = false}) async {
+    if (refresh) _page = 1;
+    state = state.copyWith(isLoading: true);
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/alerts', queryParameters: {'page': _page, 'limit': 20});
+      final data = response.data as Map<String, dynamic>;
+      final paginated = PaginatedAlerts.fromJson(data);
+      state = state.copyWith(
+        alerts: refresh ? paginated.alerts : [...state.alerts, ...paginated.alerts],
+        isLoading: false,
+        hasMore: paginated.hasNext,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (!state.hasMore || state.isLoading) return;
+    _page++;
+    await loadAlerts();
+  }
+
+  Future<void> loadStatistics() async {
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/alerts/statistics');
+      final stats = AlertStatistics.fromJson(response.data as Map<String, dynamic>);
+      state = state.copyWith(statistics: stats);
+    } catch (_) {}
+  }
+
+  Future<void> markAsRead(String alertId) async {
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.put('/alerts/$alertId/read');
+      state = state.copyWith(
+        alerts: state.alerts.map((a) => a.alertId == alertId ? a.copyWith(isRead: true) : a).toList(),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> markAllAsRead() async {
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.put('/alerts/read-all');
+      state = state.copyWith(
+        alerts: state.alerts.map((a) => a.copyWith(isRead: true)).toList(),
+      );
+    } catch (_) {}
+  }
+
+  Future<bool> takeAction(String alertId, String action) async {
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/alerts/$alertId/action', data: {'action': action});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+}
+
+/// Main alerts provider with full notifier.
+final alertsProvider = NotifierProvider<AlertsNotifier, AlertsListState>(AlertsNotifier.new);
+
+/// Unread alerts count provider.
+final alertsUnreadCountProvider = Provider<int>((ref) {
+  final state = ref.watch(alertsProvider);
+  return state.alerts.where((a) => !a.isRead).length;
 });

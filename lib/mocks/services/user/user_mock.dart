@@ -7,8 +7,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/user/profile',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'id': 'usr_001',
           'phone': '+22507080910',
           'displayName': 'Ben Ouattara',
@@ -30,8 +30,8 @@ class UserMock {
     interceptor.register(
       method: 'PUT',
       path: '/user/profile',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'id': 'usr_001',
           'phone': '+22507080910',
           'displayName': data?['firstName'] ?? 'Ben Ouattara',
@@ -51,8 +51,8 @@ class UserMock {
     interceptor.register(
       method: 'POST',
       path: '/user/avatar',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'avatarUrl': 'https://api.korido.co/uploads/avatars/usr_001_mock.jpg',
           'message': 'Avatar uploaded',
         });
@@ -63,8 +63,8 @@ class UserMock {
     interceptor.register(
       method: 'DELETE',
       path: '/user/avatar',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'message': 'Avatar removed'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'message': 'Avatar removed'});
       },
     );
 
@@ -72,8 +72,8 @@ class UserMock {
     interceptor.register(
       method: 'PUT',
       path: '/user/locale',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'locale': data?['locale'] ?? 'fr', 'message': 'Locale updated'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'locale': data?['locale'] ?? 'fr', 'message': 'Locale updated'});
       },
     );
 
@@ -81,8 +81,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/user/limits',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'dailyLimit': 1000.0,
           'dailyUsed': 150.0,
           'weeklyLimit': 5000.0,
@@ -99,8 +99,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/user/limits/usage',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'dailyUsed': 150.0,
           'weeklyUsed': 850.0,
           'monthlyUsed': 2500.0,
@@ -113,8 +113,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/wallet/transactions/stats',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'totalCount': 47,
           'depositCount': 12,
           'withdrawalCount': 8,
@@ -138,8 +138,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/notifications',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'data': [
             {'id': 'ntf_001', 'title': 'Transfer Received', 'body': 'You received \$50.00 from Amadou Diallo', 'type': 'transaction', 'isRead': false, 'createdAt': '2026-02-11T05:30:00Z'},
             {'id': 'ntf_002', 'title': 'KYC Approved', 'body': 'Your identity verification has been approved', 'type': 'kyc', 'isRead': true, 'createdAt': '2026-02-10T14:00:00Z'},
@@ -154,8 +154,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/health/time',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'serverTime': DateTime.now().toIso8601String(),
           'timestamp': DateTime.now().millisecondsSinceEpoch,
           'timezone': 'UTC',
@@ -167,8 +167,8 @@ class UserMock {
     interceptor.register(
       method: 'GET',
       path: '/health/version',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'version': '1.2.3', 'buildDate': '2026-02-11', 'environment': 'mock'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'version': '1.2.3', 'buildDate': '2026-02-11', 'environment': 'mock'});
       },
     );
   }

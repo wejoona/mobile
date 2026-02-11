@@ -7,8 +7,8 @@ class ReferralsMock {
     interceptor.register(
       method: 'GET',
       path: '/referrals',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'referralCode': 'KORIDO-BEN2026',
           'referralLink': 'https://korido.app/referral/KORIDO-BEN2026',
           'totalReferrals': 5,
@@ -30,8 +30,8 @@ class ReferralsMock {
     interceptor.register(
       method: 'GET',
       path: '/referrals/code',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'code': 'KORIDO-BEN2026'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'code': 'KORIDO-BEN2026'});
       },
     );
 
@@ -39,8 +39,8 @@ class ReferralsMock {
     interceptor.register(
       method: 'POST',
       path: '/referrals/apply',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'success': true, 'message': 'Referral code applied', 'bonus': 5.00});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'success': true, 'message': 'Referral code applied', 'bonus': 5.00});
       },
     );
   }

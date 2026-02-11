@@ -1,11 +1,12 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service to sync local clock with server time.
 /// Used to prevent clock-skew issues with token expiry, OTP timing, etc.
 class ServerTimeService {
-  final ApiClient _api;
+  final Dio _api;
   final _logger = AppLogger('ServerTime');
 
   /// Offset in milliseconds: serverTime - localTime
@@ -52,6 +53,6 @@ class ServerTimeService {
 }
 
 final serverTimeServiceProvider = Provider<ServerTimeService>((ref) {
-  final api = ref.watch(apiClientProvider);
+  final api = ref.watch(dioProvider);
   return ServerTimeService(api);
 });

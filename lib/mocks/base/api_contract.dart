@@ -105,6 +105,7 @@ class MockResponse<T> {
   final Map<String, dynamic>? headers;
   final Duration delay;
 
+  /// Named constructor (preferred).
   const MockResponse({
     this.statusCode = 200,
     this.data,
@@ -112,6 +113,11 @@ class MockResponse<T> {
     this.headers,
     this.delay = const Duration(milliseconds: 500),
   });
+
+  /// Positional convenience: MockResponse(statusCode, data)
+  factory MockResponse.of(int statusCode, [T? data]) {
+    return MockResponse(statusCode: statusCode, data: data);
+  }
 
   bool get isSuccess => statusCode >= 200 && statusCode < 300;
 

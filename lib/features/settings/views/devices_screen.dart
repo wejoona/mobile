@@ -32,7 +32,7 @@ class DevicesScreen extends ConsumerWidget {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(devicesProvider.notifier).refresh(),
+        onRefresh: () => ref.read(deviceActionsProvider).refresh(),
         color: AppColors.gold500,
         backgroundColor: AppColors.slate,
         child: _buildBody(context, ref, state, l10n),
@@ -72,7 +72,7 @@ class DevicesScreen extends ConsumerWidget {
         // Devices list
         ...state.devices.map((device) {
           final isCurrentDevice =
-              ref.read(devicesProvider.notifier).isCurrentDevice(device);
+              ref.read(deviceActionsProvider).isCurrentDevice(device);
           return Padding(
             padding: EdgeInsets.only(bottom: AppSpacing.md),
             child: _buildDeviceCard(
@@ -351,7 +351,7 @@ class DevicesScreen extends ConsumerWidget {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: l10n.action_retry,
-              onPressed: () => ref.read(devicesProvider.notifier).refresh(),
+              onPressed: () => ref.read(deviceActionsProvider).refresh(),
               variant: AppButtonVariant.primary,
             ),
           ],
@@ -399,7 +399,7 @@ class DevicesScreen extends ConsumerWidget {
     AppLocalizations l10n,
   ) async {
     try {
-      await ref.read(devicesProvider.notifier).trustDevice(device.id);
+      await ref.read(deviceActionsProvider).trustDevice(device.id);
 
       if (context.mounted) {
         await context.showSuccessAlert(
@@ -431,7 +431,7 @@ class DevicesScreen extends ConsumerWidget {
 
     if (confirmed) {
       try {
-        await ref.read(devicesProvider.notifier).revokeDevice(device.id);
+        await ref.read(deviceActionsProvider).revokeDevice(device.id);
 
         if (context.mounted) {
           await context.showSuccessAlert(

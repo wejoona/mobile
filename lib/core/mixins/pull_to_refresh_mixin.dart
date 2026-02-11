@@ -11,7 +11,7 @@ mixin PullToRefreshMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   bool get isRefreshing => _isRefreshing;
 
   /// Override to provide the list of providers to invalidate on refresh.
-  List<ProviderOrFamily> get refreshProviders;
+  List<dynamic> get refreshProviders;
 
   /// Called after all providers are invalidated.
   Future<void> onPostRefresh() async {}

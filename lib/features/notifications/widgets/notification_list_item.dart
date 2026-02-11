@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';

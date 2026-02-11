@@ -16,7 +16,7 @@ final recurringTransfersProvider = FutureProvider<List<RecurringTransfer>>((ref)
 
 /// Active recurring transfers only.
 final activeRecurringTransfersProvider = Provider<List<RecurringTransfer>>((ref) {
-  final transfers = ref.watch(recurringTransfersProvider).valueOrNull ?? [];
+  final transfers = ref.watch(recurringTransfersProvider).value ?? [];
   return transfers.where((t) => t.isActive).toList();
 });
 

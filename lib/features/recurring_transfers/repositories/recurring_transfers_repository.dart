@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/recurring_transfers/recurring_transfers_service.dart';
-import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Repository for recurring transfer operations.
 class RecurringTransfersRepository {

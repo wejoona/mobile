@@ -7,8 +7,8 @@ class WalletStatsMock {
     interceptor.register(
       method: 'GET',
       path: '/wallet/balance',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'balance': 2450.75,
           'available': 2450.75,
           'pending': 0.00,
@@ -23,8 +23,8 @@ class WalletStatsMock {
     interceptor.register(
       method: 'GET',
       path: '/alerts',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'data': [
             {
               'id': 'alert_001',
@@ -44,8 +44,8 @@ class WalletStatsMock {
     interceptor.register(
       method: 'GET',
       path: '/devices',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'data': [
             {
               'id': 'dev_001',
@@ -74,8 +74,8 @@ class WalletStatsMock {
     interceptor.register(
       method: 'DELETE',
       path: '/devices/dev_002',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'message': 'Device removed'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'message': 'Device removed'});
       },
     );
 
@@ -83,8 +83,8 @@ class WalletStatsMock {
     interceptor.register(
       method: 'GET',
       path: '/referrals/stats',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'totalReferred': 5,
           'activeReferred': 3,
           'totalEarned': 15.00,

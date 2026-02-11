@@ -253,8 +253,8 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     if (card == null) return;
 
     final success = card.isFrozen
-        ? await ref.read(cardsProvider.notifier).unfreezeCard(cardId)
-        : await ref.read(cardsProvider.notifier).freezeCard(cardId);
+        ? await ref.read(cardActionsProvider).unfreezeCard(cardId)
+        : await ref.read(cardActionsProvider).freezeCard(cardId);
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -332,7 +332,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
 
     if (result != null && context.mounted) {
       final success = await ref
-          .read(cardsProvider.notifier)
+          .read(cardActionsProvider)
           .updateSpendingLimit(card.id, result);
 
       if (success && context.mounted) {

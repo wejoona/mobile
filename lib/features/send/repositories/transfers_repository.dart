@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
-import 'package:usdc_wallet/domain/dto/requests/send_transfer_request.dart';
-import 'package:usdc_wallet/domain/entities/transfer.dart';
 
 /// Repository for transfer operations.
 class TransfersRepository {
@@ -9,22 +7,28 @@ class TransfersRepository {
 
   TransfersRepository(this._service);
 
-  /// Send a transfer to another Korido user.
-  Future<Transfer> sendTransfer(SendTransferRequest request) async {
-    return _service.sendTransfer(
-      recipientPhone: request.recipientPhone,
-      amount: request.amount,
-      currency: request.currency,
-      description: request.description,
+  /// Send an internal transfer to another Korido user.
+  Future<dynamic> sendTransfer({
+    required String recipientPhone,
+    required double amount,
+    String currency = 'USDC',
+    String? description,
+  }) async {
+    return _service.createInternalTransfer(
+      recipientPhone: recipientPhone,
+      amount: amount,
+      
+      note: description,
     );
   }
 
-  /// Get transfer fee estimate.
+  /// Get transfer fee estimate (flat for now).
   Future<double> estimateFee({
     required double amount,
     required String currency,
   }) async {
-    return _service.estimateFee(amount: amount, currency: currency);
+    // TODO: Call backend fee endpoint when available
+    return 0.0;
   }
 }
 

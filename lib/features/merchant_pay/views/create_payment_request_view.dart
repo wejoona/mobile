@@ -143,7 +143,7 @@ Powered by JoonaPay
       ),
       body: SafeArea(
         child: state.paymentRequest != null
-            ? _buildQrDisplay(context, l10n, state.paymentRequest!)
+            ? _buildQrCodeDisplay(context, l10n, state.paymentRequest!)
             : _buildRequestForm(context, l10n, state),
       ),
     );
@@ -319,7 +319,7 @@ Powered by JoonaPay
     );
   }
 
-  Widget _buildQrDisplay(BuildContext context, AppLocalizations l10n, PaymentRequestResponse pr) {
+  Widget _buildQrCodeDisplay(BuildContext context, AppLocalizations l10n, PaymentRequestResponse pr) {
     final isExpired = _remainingSeconds <= 0;
 
     return SingleChildScrollView(
@@ -356,10 +356,9 @@ Powered by JoonaPay
 
                 // QR Code or Expired state
                 if (!isExpired)
-                  QrDisplay(
+                  QrCodeDisplay(
                     data: pr.qrData,
                     size: 200,
-                    showBorder: true,
                   )
                 else
                   Container(

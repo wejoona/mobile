@@ -5,7 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
 
 /// Bottom sheet for advanced transaction filtering
 class FilterBottomSheet extends ConsumerStatefulWidget {

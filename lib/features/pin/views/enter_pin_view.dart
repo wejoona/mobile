@@ -127,10 +127,10 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
 
   Future<void> _handleBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
-    final success = await biometricService.authenticate(
-      reason: 'Authenticate to continue',
+    final _result = await biometricService.authenticate(
+      localizedReason: 'Authenticate to continue',
     );
-    if (success && mounted) {
+    if (_result.success && mounted) {
       if (widget.onSuccess != null) {
         widget.onSuccess!('');
       } else {

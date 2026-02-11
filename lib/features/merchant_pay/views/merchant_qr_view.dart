@@ -147,10 +147,9 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                       SizedBox(height: AppSpacing.lg),
 
                       // QR Display using existing widget
-                      QrDisplay(
+                      QrCodeDisplay(
                         data: widget.merchant.qrCode,
                         size: 220,
-                        showBorder: true,
                       ),
                       SizedBox(height: AppSpacing.lg),
 

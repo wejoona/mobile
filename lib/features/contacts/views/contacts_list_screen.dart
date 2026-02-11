@@ -38,7 +38,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 
   Future<void> _loadContacts() async {
     final notifier = ref.read(contactsProvider.notifier);
-    await notifier.loadAndSyncContacts();
+    await notifier.syncContacts();
   }
 
   @override

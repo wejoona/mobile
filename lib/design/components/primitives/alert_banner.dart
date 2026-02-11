@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+/// Alias for AlertBannerType used in some views.
+typedef AlertVariant = AlertBannerType;
+
 /// In-app alert banner for KYC reminders, promotions, warnings.
 class AlertBanner extends StatelessWidget {
   final String message;

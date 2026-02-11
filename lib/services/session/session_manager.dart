@@ -506,11 +506,11 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
     }
 
     // Authenticate with biometric
-    final success = await biometricService.authenticate(
-      reason: 'Unlock your JoonaPay wallet',
+    final _biometricResult = await biometricService.authenticate(
+      localizedReason: 'Unlock your JoonaPay wallet',
     );
 
-    if (success) {
+    if (_biometricResult.success) {
       _unlockSession();
     } else {
       setState(() {

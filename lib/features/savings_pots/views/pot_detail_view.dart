@@ -406,7 +406,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await ref.read(savingsPotsProvider.notifier).deletePot(potId);
+      final success = await ref.read(savingsPotsActionsProvider).deletePot(potId);
       if (success && mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(

@@ -16,7 +16,7 @@ final bankAccountsProvider = FutureProvider<List<BankAccount>>((ref) async {
 
 /// Default bank account.
 final defaultBankAccountProvider = Provider<BankAccount?>((ref) {
-  final accounts = ref.watch(bankAccountsProvider).valueOrNull ?? [];
+  final accounts = ref.watch(bankAccountsProvider).value ?? [];
   try {
     return accounts.firstWhere((a) => a.isDefault);
   } catch (_) {

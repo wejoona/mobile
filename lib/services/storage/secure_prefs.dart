@@ -24,3 +24,18 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device),
   );
 });
+
+/// Convenience wrapper around FlutterSecureStorage with positional args.
+class SecurePrefs {
+  final FlutterSecureStorage _storage;
+  const SecurePrefs(this._storage);
+
+  Future<String?> read(String key) => _storage.read(key: key);
+  Future<void> write(String key, String value) => _storage.write(key: key, value: value);
+  Future<void> delete(String key) => _storage.delete(key: key);
+}
+
+/// Provider for SecurePrefs convenience wrapper.
+final securePrefsProvider = Provider<SecurePrefs>((ref) {
+  return SecurePrefs(ref.watch(secureStorageProvider));
+});

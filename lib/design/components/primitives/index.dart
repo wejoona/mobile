@@ -7,3 +7,4 @@ export 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 export 'package:usdc_wallet/design/components/primitives/app_refresh_indicator.dart';
 export 'package:usdc_wallet/design/components/primitives/app_toggle.dart';
 export 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
+export 'package:usdc_wallet/design/components/primitives/pill_badge.dart';

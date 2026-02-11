@@ -31,7 +31,7 @@ class SecurityGuardService {
       return true;
     }
 
-    final success = await _biometricService.authenticate(reason: reason);
+    final success = await _biometricService.authenticate(localizedReason: reason);
 
     if (!success) {
       throw BiometricAuthenticationFailedException(

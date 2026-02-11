@@ -138,7 +138,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
         ? null
         : double.tryParse(_targetController.text);
 
-    final success = await ref.read(savingsPotsProvider.notifier).updatePot(
+    final success = await ref.read(savingsPotsActionsProvider).updatePot(
           id: widget.potId,
           name: _nameController.text,
           emoji: _selectedEmoji,

@@ -16,7 +16,7 @@ final paymentLinksProvider = FutureProvider<List<PaymentLink>>((ref) async {
 
 /// Active payment links only.
 final activePaymentLinksProvider = Provider<List<PaymentLink>>((ref) {
-  final links = ref.watch(paymentLinksProvider).valueOrNull ?? [];
+  final links = ref.watch(paymentLinksProvider).value ?? [];
   return links.where((l) => l.isActive).toList();
 });
 

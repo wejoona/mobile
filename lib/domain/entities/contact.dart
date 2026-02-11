@@ -9,6 +9,8 @@ class Contact {
   final int transactionCount;
   final DateTime? lastTransactionAt;
   final bool isJoonaPayUser;
+  final String? avatarUrl;
+  final bool isKoridoUser;
 
   const Contact({
     required this.id,
@@ -20,7 +22,15 @@ class Contact {
     this.transactionCount = 0,
     this.lastTransactionAt,
     this.isJoonaPayUser = false,
+    this.avatarUrl,
+    this.isKoridoUser = false,
   });
+
+  /// Display name (alias for name)
+  String get displayName => name;
+
+  /// Phone number (alias for phone)
+  String? get phoneNumber => phone;
 
   /// Returns @username if set
   String? get usernameDisplay => username != null ? '@$username' : null;
@@ -52,6 +62,8 @@ class Contact {
           ? DateTime.parse(json['lastTransactionAt'] as String)
           : null,
       isJoonaPayUser: json['isJoonaPayUser'] as bool? ?? false,
+      avatarUrl: json['avatarUrl'] as String?,
+      isKoridoUser: json['isKoridoUser'] as bool? ?? false,
     );
   }
 
@@ -66,6 +78,8 @@ class Contact {
       'transactionCount': transactionCount,
       'lastTransactionAt': lastTransactionAt?.toIso8601String(),
       'isJoonaPayUser': isJoonaPayUser,
+      'avatarUrl': avatarUrl,
+      'isKoridoUser': isKoridoUser,
     };
   }
 
@@ -79,6 +93,8 @@ class Contact {
     int? transactionCount,
     DateTime? lastTransactionAt,
     bool? isJoonaPayUser,
+    String? avatarUrl,
+    bool? isKoridoUser,
   }) {
     return Contact(
       id: id ?? this.id,
@@ -90,6 +106,8 @@ class Contact {
       transactionCount: transactionCount ?? this.transactionCount,
       lastTransactionAt: lastTransactionAt ?? this.lastTransactionAt,
       isJoonaPayUser: isJoonaPayUser ?? this.isJoonaPayUser,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isKoridoUser: isKoridoUser ?? this.isKoridoUser,
     );
   }
 }

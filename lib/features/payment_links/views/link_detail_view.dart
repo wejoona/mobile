@@ -29,7 +29,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(paymentLinksProvider.notifier).loadLink(widget.linkId);
+      ref.read(paymentLinkActionsProvider).loadLink(widget.linkId);
     });
   }
 
@@ -332,7 +332,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
 
   Future<void> _handleRefresh(String id) async {
     setState(() => _isRefreshing = true);
-    await ref.read(paymentLinksProvider.notifier).refreshLink(id);
+    await ref.read(paymentLinkActionsProvider).refreshLink(id);
     if (mounted) {
       setState(() => _isRefreshing = false);
     }
@@ -370,7 +370,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await ref.read(paymentLinksProvider.notifier).cancelLink(id);
+      final success = await ref.read(paymentLinkActionsProvider).cancelLink(id);
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(

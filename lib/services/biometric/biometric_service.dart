@@ -1,7 +1,9 @@
 import 'dart:async';
 
+export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
+
 /// Run 372: Biometric authentication service
-enum BiometricType { fingerprint, faceId, none }
+enum BiometricType { fingerprint, faceId, iris, none }
 
 class BiometricResult {
   final bool success;
@@ -65,5 +67,32 @@ class BiometricService {
 
   Future<void> unenroll() async {
     // Disable biometric for this account
+  }
+
+  /// Check if biometric authentication is enabled for this user
+  Future<bool> isBiometricEnabled() async {
+    return isEnrolled();
+  }
+
+  /// Get list of available biometric types on this device
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    final type = await getAvailableType();
+    if (type == BiometricType.none) return [];
+    return [type];
+  }
+
+  /// Check if the device supports biometric authentication
+  Future<bool> isDeviceSupported() async {
+    return isAvailable();
+  }
+
+  /// Check if the device can check biometrics (alias for isAvailable)
+  Future<bool> canCheckBiometrics() async {
+    return isAvailable();
+  }
+
+  /// Get the primary biometric type available on this device
+  Future<BiometricType> getPrimaryBiometricType() async {
+    return getAvailableType();
   }
 }

@@ -7,8 +7,8 @@ class ContactsMock {
     interceptor.register(
       method: 'GET',
       path: '/contacts',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {
           'data': [
             {'id': 'ct_001', 'name': 'Amadou Diallo', 'phone': '+22507080910', 'identifier': '+22507080910', 'identifierType': 'phone', 'isKoridoUser': true, 'avatarUrl': null, 'isFavorite': true, 'createdAt': '2026-01-10T08:00:00Z'},
             {'id': 'ct_002', 'name': 'Fatou Koné', 'phone': '+22505060708', 'identifier': '+22505060708', 'identifierType': 'phone', 'isKoridoUser': true, 'avatarUrl': null, 'isFavorite': true, 'createdAt': '2026-01-12T10:30:00Z'},
@@ -25,8 +25,8 @@ class ContactsMock {
     interceptor.register(
       method: 'POST',
       path: '/contacts/sync',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'synced': 5, 'newKoridoUsers': 2, 'message': 'Contacts synced'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'synced': 5, 'newKoridoUsers': 2, 'message': 'Contacts synced'});
       },
     );
 
@@ -34,8 +34,8 @@ class ContactsMock {
     interceptor.register(
       method: 'POST',
       path: '/contacts/invite',
-      handler: (uri, headers, data) async {
-        return MockResponse(200, {'success': true, 'message': 'Invitation sent'});
+      legacyHandler: (uri, headers, data) async {
+        return MockResponse(statusCode: 200, data: {'success': true, 'message': 'Invitation sent'});
       },
     );
   }

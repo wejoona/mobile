@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
+import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
 import 'package:usdc_wallet/utils/duration_extensions.dart';
 

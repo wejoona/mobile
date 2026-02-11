@@ -23,7 +23,7 @@ class HomeState {
 
 /// Home screen composite provider — aggregates multiple data sources.
 final homeProvider = Provider<HomeState>((ref) {
-  final balance = ref.watch(walletBalanceProvider).valueOrNull;
+  final balance = ref.watch(walletBalanceProvider).value;
   final unread = ref.watch(unreadNotificationCountProvider);
   final savings = ref.watch(totalSavingsProvider);
   final alerts = ref.watch(visibleAlertsProvider);

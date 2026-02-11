@@ -245,7 +245,7 @@ class RiskBasedSecurityService {
       return true;
     }
 
-    return await _biometricService.authenticate(reason: reason);
+    return await _biometricService.authenticate(localizedReason: reason);
   }
 
   /// Execute liveness verification

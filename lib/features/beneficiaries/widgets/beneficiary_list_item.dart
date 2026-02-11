@@ -40,7 +40,7 @@ class BeneficiaryListItem extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        beneficiary.phone,
+        beneficiary.phoneE164 ?? "",
         style: TextStyle(
           color: colors.textSecondary,
           fontSize: 13,

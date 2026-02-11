@@ -23,7 +23,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
     super.initState();
     // Load pots on mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(savingsPotsProvider.notifier).loadPots();
+      ref.read(savingsPotsActionsProvider).loadPots();
     });
   }
 
@@ -44,7 +44,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
         backgroundColor: Colors.transparent,
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(savingsPotsProvider.notifier).loadPots(),
+        onRefresh: () => ref.read(savingsPotsActionsProvider).loadPots(),
         color: colors.gold,
         backgroundColor: colors.container,
         child: state.isLoading && state.pots.isEmpty
@@ -155,7 +155,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
             return PotCard(
               pot: pot,
               onTap: () {
-                ref.read(savingsPotsProvider.notifier).selectPot(pot.id);
+                ref.read(savingsPotsActionsProvider).selectPot(pot.id);
                 context.push('/savings-pots/detail/${pot.id}');
               },
             );

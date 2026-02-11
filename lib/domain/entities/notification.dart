@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/domain/enums/index.dart';
+
 /// Notification entity.
 class AppNotification {
   final String id;
@@ -38,13 +40,4 @@ class AppNotification {
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
-}
-
-enum NotificationType {
-  transaction,
-  security,
-  kyc,
-  promotion,
-  system,
-  general,
 }

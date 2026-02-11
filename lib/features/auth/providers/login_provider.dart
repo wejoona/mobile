@@ -249,11 +249,11 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       // Call biometric service
       final biometricService = ref.read(biometricServiceProvider);
-      final success = await biometricService.authenticate(
-        reason: 'Verify your identity to login',
+      final result = await biometricService.authenticate(
+        localizedReason: 'Verify your identity to login',
       );
 
-      if (success) {
+      if (result.success) {
         // Store auth token and complete login
         if (state.sessionToken != null) {
           await _storage.write(

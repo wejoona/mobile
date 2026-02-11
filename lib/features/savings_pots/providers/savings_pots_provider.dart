@@ -19,7 +19,7 @@ final savingsPotByIdProvider = FutureProvider.family<SavingsPot, String>((ref, i
 
 /// Total savings across all pots.
 final totalSavingsProvider = Provider<double>((ref) {
-  final pots = ref.watch(savingsPotsProvider).valueOrNull ?? [];
+  final pots = ref.watch(savingsPotsProvider).value ?? [];
   return pots.fold(0.0, (sum, pot) => sum + pot.currentAmount);
 });
 

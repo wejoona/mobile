@@ -313,7 +313,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       final name = _nameController.text.trim();
       final limit = double.parse(_limitController.text);
 
-      final success = await ref.read(cardsProvider.notifier).requestCard(
+      final success = await ref.read(cardActionsProvider).requestCard(
             cardholderName: name,
             spendingLimit: limit,
           );

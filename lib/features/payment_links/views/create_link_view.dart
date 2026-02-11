@@ -199,7 +199,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
         expiryHours: _expiryHours,
       );
 
-      final link = await ref.read(paymentLinksProvider.notifier).createLink(request);
+      final link = await ref.read(paymentLinkActionsProvider).createLink(request);
 
       if (mounted && link != null) {
         context.go('/payment-links/created/${link.id}');

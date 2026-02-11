@@ -57,6 +57,12 @@ enum NotificationType {
   promotion,
   lowBalance,
   general,
+  // Aliases used by UI widgets
+  transfer,
+  deposit,
+  withdrawal,
+  security,
+  kyc,
   // Enhanced notification types
   newDeviceLogin,
   largeTransaction,

@@ -16,7 +16,7 @@ final cardsProvider = FutureProvider<List<KoridoCard>>((ref) async {
 
 /// Active cards only.
 final activeCardsProvider = Provider<List<KoridoCard>>((ref) {
-  final cards = ref.watch(cardsProvider).valueOrNull ?? [];
+  final cards = ref.watch(cardsProvider).value ?? [];
   return cards.where((c) => c.isActive && !c.isExpired).toList();
 });
 

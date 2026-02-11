@@ -38,7 +38,7 @@ class ContactListItem extends StatelessWidget {
                 Stack(
                   children: [
                     UserAvatar(
-                      name: contact.displayName ?? '?',
+                      firstName: contact.displayName ?? '?',
                       imageUrl: contact.avatarUrl,
                       size: 44,
                     ),
@@ -88,7 +88,7 @@ class ContactListItem extends StatelessWidget {
                 if (contact.isKoridoUser && trailing == null)
                   PillBadge(
                     label: 'Korido',
-                    color: AppColors.gold,
+                    backgroundColor: AppColors.gold,
                   ),
               ],
             ),

@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
@@ -13,19 +13,12 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
 
   @override
   TransactionListState build() {
-    // Listen to filter changes and reload
-    ref.listen(transactionFilterProvider, (previous, next) {
-      if (previous != next) {
-        fetch();
-      }
-    });
-
     _autoFetch();
     return const TransactionListState();
   }
 
   TransactionsService get _service => ref.read(transactionsServiceProvider);
-  TransactionFilter get _filter => ref.read(transactionFilterProvider);
+  TransactionFilter get _filter => const TransactionFilter();
 
   void _autoFetch() {
     Future.microtask(() => fetch());

@@ -169,7 +169,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
 
     setState(() => _isLoading = true);
     try {
-      final success = await ref.read(savingsPotsProvider.notifier).withdrawFromPot(
+      final success = await ref.read(savingsPotsActionsProvider).withdrawFromPot(
             widget.potId,
             amount,
           );

@@ -17,7 +17,7 @@ final devicesProvider = FutureProvider<List<Device>>((ref) async {
 
 /// Current device.
 final currentDeviceProvider = Provider<Device?>((ref) {
-  final devices = ref.watch(devicesProvider).valueOrNull ?? [];
+  final devices = ref.watch(devicesProvider).value ?? [];
   try {
     return devices.firstWhere((d) => d.isCurrent);
   } catch (_) {

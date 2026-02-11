@@ -11,13 +11,13 @@ class WalletRepository {
   WalletRepository(this._service);
 
   /// Fetch the current wallet balance.
-  Future<Wallet> getWallet() async {
-    return _service.getWallet();
+  Future<dynamic> getWallet() async {
+    return _service.getBalance();
   }
 
   /// Refresh the wallet balance from the server.
-  Future<Wallet> refreshWallet() async {
-    return _service.getWallet();
+  Future<dynamic> refreshWallet() async {
+    return _service.getBalance();
   }
 }
 

@@ -39,7 +39,7 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
 
 /// Available balance shortcut.
 final availableBalanceProvider = Provider<double>((ref) {
-  return ref.watch(walletBalanceProvider).valueOrNull?.available ?? 0;
+  return ref.watch(walletBalanceProvider).value?.available ?? 0;
 });
 
 /// Whether balance is sufficient for a given amount.

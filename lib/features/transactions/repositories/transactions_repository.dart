@@ -12,7 +12,7 @@ class TransactionsRepository {
   TransactionsRepository(this._service);
 
   /// Get paginated transactions.
-  Future<List<Transaction>> getTransactions({
+  Future<dynamic> getTransactions({
     int page = 1,
     int pageSize = 20,
     TransactionFilter? filter,

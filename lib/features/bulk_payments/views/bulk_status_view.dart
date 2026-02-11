@@ -31,7 +31,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
 
   Future<void> _loadBatchStatus() async {
     await ref
-        .read(bulkPaymentsProvider.notifier)
+        .read(bulkPaymentActionsProvider)
         .getBatchStatus(widget.batchId);
   }
 
@@ -319,7 +319,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
 
     try {
       final csvContent = await ref
-          .read(bulkPaymentsProvider.notifier)
+          .read(bulkPaymentActionsProvider)
           .downloadFailedPayments(batch.id);
 
       if (csvContent == null || !mounted) return;

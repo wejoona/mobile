@@ -267,7 +267,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
 
     if (confirmed == true && mounted) {
       final success =
-          await ref.read(bulkPaymentsProvider.notifier).submitBatch(batch);
+          await ref.read(bulkPaymentActionsProvider).submitBatch(batch);
 
       if (success && mounted) {
         context.go('/bulk-payments');

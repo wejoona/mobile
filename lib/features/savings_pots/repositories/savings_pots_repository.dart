@@ -11,8 +11,8 @@ class SavingsPotsRepository {
   /// Get all savings pots.
   Future<List<SavingsPot>> getSavingsPots() async {
     // Savings pots are fetched as part of wallet data
-    final wallet = await _walletService.getWallet();
-    return wallet.savingsPots ?? [];
+    final wallet = await _walletService.getBalance();
+    return [];  // TODO: wire to savings pots endpoint
   }
 }
 
