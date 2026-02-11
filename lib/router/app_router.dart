@@ -10,6 +10,7 @@ import '../services/feature_flags/feature_flags_provider.dart';
 import '../state/wallet_state_machine.dart';
 import '../state/app_state.dart';
 import '../state/fsm/index.dart';
+import '../services/connectivity/connectivity_provider.dart';
 import '../features/onboarding/views/onboarding_view.dart';
 import '../features/splash/views/splash_view.dart';
 import '../features/wallet/views/wallet_home_screen.dart';
@@ -171,7 +172,12 @@ class MainShell extends ConsumerWidget {
     final selectedIndex = _getSelectedIndex(location);
 
     return Scaffold(
-      body: child,
+      body: Column(
+        children: [
+          const _ConnectivityBanner(),
+          Expanded(child: child),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
@@ -221,6 +227,28 @@ class MainShell extends ConsumerWidget {
             label: 'Settings',
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Thin connectivity banner shown at top when offline
+class _ConnectivityBanner extends ConsumerWidget {
+  const _ConnectivityBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(connectivityProvider);
+    if (state.isOnline) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      color: Colors.red.shade700,
+      child: const Text(
+        'No internet connection',
+        textAlign: TextAlign.center,
+        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
       ),
     );
   }
