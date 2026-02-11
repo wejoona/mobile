@@ -1,6 +1,15 @@
 export 'security_health_check_provider.dart';
-export 'app_security_score.dart';
 export 'security_event_analytics.dart';
+export 'app_security_score.dart';
 export 'crash_reporter.dart';
-export 'security_audit_service.dart';
 export 'threat_intelligence_service.dart';
+export 'security_audit_service.dart';
+export 'anomaly_detector.dart';
+export 'security_metrics_collector.dart';
+export 'incident_reporter.dart';
+export 'realtime_threat_monitor.dart';
+export 'security_dashboard_data.dart';
+export 'pii_scrubber.dart';
+export 'security_log_aggregator.dart';
+export 'compliance_monitor.dart';
+export 'uptime_tracker.dart';
