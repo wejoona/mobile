@@ -1,0 +1,36 @@
+/// Barrel exports for wallet feature.
+library;
+
+export 'providers/balance_visibility_provider.dart';
+export 'providers/budget_provider.dart';
+export 'providers/contacts_provider.dart';
+export 'providers/currency_converter_provider.dart';
+export 'providers/saved_recipients_provider.dart';
+export 'providers/scheduled_transfers_provider.dart';
+export 'providers/transaction_stats_provider.dart';
+export 'providers/wallet_provider.dart';
+export 'repositories/wallet_repository.dart';
+export 'views/analytics_view.dart';
+export 'views/bill_pay_view.dart';
+export 'views/budget_view.dart';
+export 'views/buy_airtime_view.dart';
+export 'views/currency_converter_view.dart';
+export 'views/deposit_instructions_view.dart';
+export 'views/deposit_view.dart';
+export 'views/receive_view.dart';
+export 'views/request_money_view.dart';
+export 'views/saved_recipients_view.dart';
+export 'views/savings_goals_view.dart';
+export 'views/scan_view.dart';
+export 'views/scheduled_transfers_view.dart';
+export 'views/split_bill_view.dart';
+export 'views/transaction_filter_view.dart';
+export 'views/transfer_success_view.dart';
+export 'views/virtual_card_view.dart';
+export 'views/wallet_home_screen.dart';
+export 'views/withdraw_view.dart';
+export 'widgets/balance_card.dart';
+export 'widgets/quick_actions.dart';
+export 'widgets/risk_step_up_dialog.dart';
+export 'widgets/wallet_balance_card.dart';
+export 'widgets/wallet_loading_state.dart';
