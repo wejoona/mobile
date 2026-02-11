@@ -381,7 +381,6 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: LivenessCheckWidget(
-        purpose: 'transaction_verification',
         onComplete: _onLivenessComplete,
         onCancel: () {
           setState(() {

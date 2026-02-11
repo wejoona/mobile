@@ -239,7 +239,7 @@ class ReceiptService {
         name: fileName,
         quality: 100,
       );
-      return result['isSuccess'] ?? false;
+      return (result as Map<dynamic, dynamic>)['isSuccess'] as bool? ?? false;
     } catch (e) {
       AppLogger('Error saving to gallery').error('Error saving to gallery', e);
       return false;

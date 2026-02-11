@@ -52,7 +52,7 @@ class SecurityGuardService {
 
       // In production, this would trigger UI to show liveness check widget
       // For service layer, we just verify the session was started
-      AppLogger('Debug').debug('Liveness session started: ${session.sessionId}');
+      AppLogger('Debug').debug('Liveness session started: ${session.sessionToken}');
 
       // Return null to indicate UI should handle liveness check
       return null;
