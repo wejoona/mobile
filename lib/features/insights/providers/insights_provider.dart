@@ -1,93 +1,85 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../domain/entities/transaction.dart';
-import '../../../services/insights/insights_service.dart';
-import '../../transactions/providers/transactions_provider.dart';
-import '../../../mocks/services/insights/insights_mock.dart';
-import '../../../mocks/mock_config.dart';
-import '../models/insights_period.dart';
-import '../models/spending_category.dart';
-import '../models/spending_summary.dart';
-import '../models/spending_trend.dart';
-import '../models/top_recipient.dart';
+import '../../../domain/entities/expense.dart';
+import '../../../services/api/api_client.dart';
 
-/// Selected period state
-class SelectedPeriodNotifier extends Notifier<InsightsPeriod> {
-  @override
-  InsightsPeriod build() => InsightsPeriod.month;
+/// Spending insights provider.
+final spendingInsightsProvider =
+    FutureProvider<SpendingInsights>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final link = ref.keepAlive();
 
-  void setPeriod(InsightsPeriod period) => state = period;
+  Timer(const Duration(minutes: 10), () => link.close());
+
+  final response = await dio.get('/wallet/transactions/stats');
+  return SpendingInsights.fromJson(response.data as Map<String, dynamic>);
+});
+
+/// Spending insights model.
+class SpendingInsights {
+  final double totalSpent;
+  final double totalReceived;
+  final double netFlow;
+  final int transactionCount;
+  final List<SpendingSummary> categoryBreakdown;
+  final List<DailySpending> dailySpending;
+
+  const SpendingInsights({
+    this.totalSpent = 0,
+    this.totalReceived = 0,
+    this.netFlow = 0,
+    this.transactionCount = 0,
+    this.categoryBreakdown = const [],
+    this.dailySpending = const [],
+  });
+
+  factory SpendingInsights.fromJson(Map<String, dynamic> json) {
+    return SpendingInsights(
+      totalSpent: (json['totalWithdrawn'] as num?)?.toDouble() ?? 0,
+      totalReceived: (json['totalDeposited'] as num?)?.toDouble() ?? 0,
+      netFlow: (json['netFlow'] as num?)?.toDouble() ?? 0,
+      transactionCount: json['totalCount'] as int? ?? 0,
+      categoryBreakdown: (json['categories'] as List?)
+              ?.map((e) =>
+                  SpendingSummary.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
 }
 
-final selectedPeriodProvider =
-    NotifierProvider<SelectedPeriodNotifier, InsightsPeriod>(
-  SelectedPeriodNotifier.new,
-);
+/// Daily spending data point.
+class DailySpending {
+  final DateTime date;
+  final double amount;
+  final int count;
 
-/// Insights service provider
-final insightsServiceProvider = Provider<InsightsService>((ref) {
-  return InsightsService();
-});
+  const DailySpending({
+    required this.date,
+    required this.amount,
+    required this.count,
+  });
 
-/// All transactions for insights (use mock data in dev mode)
-final insightsTransactionsProvider = Provider<List<Transaction>>((ref) {
-  // In mock mode, use generated mock data
-  if (MockConfig.useMocks) {
-    return InsightsMock.generateMockTransactions();
+  factory DailySpending.fromJson(Map<String, dynamic> json) {
+    return DailySpending(
+      date: DateTime.parse(json['date'] as String),
+      amount: (json['amount'] as num).toDouble(),
+      count: json['count'] as int? ?? 0,
+    );
   }
+}
 
-  // In production, get from paginated transactions
-  final paginatedState = ref.watch(filteredPaginatedTransactionsProvider);
-  return paginatedState.transactions;
-});
+/// Time period filter for insights.
+enum InsightsPeriod {
+  week('This Week', 7),
+  month('This Month', 30),
+  quarter('This Quarter', 90),
+  year('This Year', 365);
 
-/// Spending summary provider
-final spendingSummaryProvider = Provider<SpendingSummary>((ref) {
-  final period = ref.watch(selectedPeriodProvider);
-  final transactions = ref.watch(insightsTransactionsProvider);
-  final service = ref.watch(insightsServiceProvider);
+  final String label;
+  final int days;
+  const InsightsPeriod(this.label, this.days);
+}
 
-  if (transactions.isEmpty) {
-    return SpendingSummary.empty();
-  }
-
-  return service.getSpendingSummary(transactions, period);
-});
-
-/// Spending by category provider
-final spendingByCategoryProvider = Provider<List<SpendingCategory>>((ref) {
-  final period = ref.watch(selectedPeriodProvider);
-  final transactions = ref.watch(insightsTransactionsProvider);
-  final service = ref.watch(insightsServiceProvider);
-
-  if (transactions.isEmpty) {
-    return [];
-  }
-
-  return service.getSpendingByCategory(transactions, period);
-});
-
-/// Spending trend provider
-final spendingTrendProvider = Provider<List<SpendingTrend>>((ref) {
-  final period = ref.watch(selectedPeriodProvider);
-  final transactions = ref.watch(insightsTransactionsProvider);
-  final service = ref.watch(insightsServiceProvider);
-
-  if (transactions.isEmpty) {
-    return [];
-  }
-
-  return service.getSpendingTrend(transactions, period);
-});
-
-/// Top recipients provider
-final topRecipientsProvider = Provider<List<TopRecipient>>((ref) {
-  final period = ref.watch(selectedPeriodProvider);
-  final transactions = ref.watch(insightsTransactionsProvider);
-  final service = ref.watch(insightsServiceProvider);
-
-  if (transactions.isEmpty) {
-    return [];
-  }
-
-  return service.getTopRecipients(transactions, period);
-});
+final insightsPeriodProvider =
+    StateProvider<InsightsPeriod>((ref) => InsightsPeriod.month);

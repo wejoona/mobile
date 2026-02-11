@@ -1,115 +1,78 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/index.dart';
-import '../../../domain/entities/index.dart';
+import '../../../domain/entities/referral.dart';
+import '../../../services/api/api_client.dart';
 
-/// Referral Code Provider with TTL-based caching
-/// Cache duration: 1 hour (referral code rarely changes)
-final referralCodeProvider = FutureProvider<String>((ref) async {
-  final service = ref.watch(referralsServiceProvider);
+/// Referral program state provider.
+final referralProvider = FutureProvider<ReferralInfo>((ref) async {
+  final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 1 hour
-  Timer(const Duration(hours: 1), () {
-    link.close();
-  });
+  Timer(const Duration(minutes: 5), () => link.close());
 
-  return service.getReferralCode();
+  final response = await dio.get('/referrals');
+  return ReferralInfo.fromJson(response.data as Map<String, dynamic>);
 });
 
-/// Referral Stats Provider with TTL-based caching
-/// Cache duration: 2 minutes (stats update relatively slowly)
-final referralStatsProvider =
-    FutureProvider<ReferralStats>((ref) async {
-  final service = ref.watch(referralsServiceProvider);
-  final link = ref.keepAlive();
+/// Referral info model.
+class ReferralInfo {
+  final String referralCode;
+  final String referralLink;
+  final int totalReferrals;
+  final int successfulReferrals;
+  final double totalEarned;
+  final String currency;
+  final List<ReferralEntry> referrals;
 
-  // Auto-invalidate after 2 minutes
-  Timer(const Duration(minutes: 2), () {
-    link.close();
+  const ReferralInfo({
+    required this.referralCode,
+    required this.referralLink,
+    this.totalReferrals = 0,
+    this.successfulReferrals = 0,
+    this.totalEarned = 0,
+    this.currency = 'USDC',
+    this.referrals = const [],
   });
 
-  return service.getStats();
-});
-
-/// Referral History Provider with TTL-based caching
-/// Cache duration: 5 minutes (history doesn't change frequently)
-final referralHistoryProvider =
-    FutureProvider<List<Referral>>((ref) async {
-  final service = ref.watch(referralsServiceProvider);
-  final link = ref.keepAlive();
-
-  // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
-
-  return service.getHistory();
-});
-
-/// Apply Referral State
-class ApplyReferralState {
-  final bool isLoading;
-  final bool success;
-  final String? message;
-  final String? error;
-
-  const ApplyReferralState({
-    this.isLoading = false,
-    this.success = false,
-    this.message,
-    this.error,
-  });
-
-  ApplyReferralState copyWith({
-    bool? isLoading,
-    bool? success,
-    String? message,
-    String? error,
-  }) {
-    return ApplyReferralState(
-      isLoading: isLoading ?? this.isLoading,
-      success: success ?? this.success,
-      message: message ?? this.message,
-      error: error,
+  factory ReferralInfo.fromJson(Map<String, dynamic> json) {
+    return ReferralInfo(
+      referralCode: json['referralCode'] as String? ?? '',
+      referralLink: json['referralLink'] as String? ?? '',
+      totalReferrals: json['totalReferrals'] as int? ?? 0,
+      successfulReferrals: json['successfulReferrals'] as int? ?? 0,
+      totalEarned: (json['totalEarned'] as num?)?.toDouble() ?? 0,
+      currency: json['currency'] as String? ?? 'USDC',
+      referrals: (json['referrals'] as List?)
+              ?.map((e) =>
+                  ReferralEntry.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 }
 
-/// Apply Referral Notifier
-class ApplyReferralNotifier extends Notifier<ApplyReferralState> {
-  @override
-  ApplyReferralState build() {
-    return const ApplyReferralState();
-  }
+class ReferralEntry {
+  final String id;
+  final String referredName;
+  final String status;
+  final double? reward;
+  final DateTime createdAt;
 
-  ReferralsService get _service => ref.read(referralsServiceProvider);
+  const ReferralEntry({
+    required this.id,
+    required this.referredName,
+    required this.status,
+    this.reward,
+    required this.createdAt,
+  });
 
-  Future<bool> apply(String code) async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    try {
-      final response = await _service.applyReferralCode(code);
-
-      state = state.copyWith(
-        isLoading: false,
-        success: response.success,
-        message: response.message,
-      );
-
-      return response.success;
-    } on ApiException catch (e) {
-      state = state.copyWith(isLoading: false, error: e.message);
-      return false;
-    }
-  }
-
-  void reset() {
-    state = const ApplyReferralState();
+  factory ReferralEntry.fromJson(Map<String, dynamic> json) {
+    return ReferralEntry(
+      id: json['id'] as String,
+      referredName: json['referredName'] as String? ?? 'Unknown',
+      status: json['status'] as String? ?? 'pending',
+      reward: (json['reward'] as num?)?.toDouble(),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
   }
 }
-
-final applyReferralProvider =
-    NotifierProvider.autoDispose<ApplyReferralNotifier, ApplyReferralState>(
-  ApplyReferralNotifier.new,
-);

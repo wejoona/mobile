@@ -1,276 +1,69 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/card.dart';
 import '../../../services/api/api_client.dart';
-import '../models/virtual_card.dart';
 
-/// Cards State
-class CardsState {
-  final bool isLoading;
-  final String? error;
-  final List<VirtualCard> cards;
-  final VirtualCard? selectedCard;
-  final List<CardTransaction> transactions;
-  final bool canRequestCard;
-  final String? requestError;
+/// Cards list provider.
+final cardsProvider = FutureProvider<List<KoridoCard>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final link = ref.keepAlive();
 
-  const CardsState({
-    this.isLoading = false,
-    this.error,
-    this.cards = const [],
-    this.selectedCard,
-    this.transactions = const [],
-    this.canRequestCard = false,
-    this.requestError,
-  });
+  Timer(const Duration(minutes: 2), () => link.close());
 
-  CardsState copyWith({
-    bool? isLoading,
-    String? error,
-    List<VirtualCard>? cards,
-    VirtualCard? selectedCard,
-    List<CardTransaction>? transactions,
-    bool? canRequestCard,
-    String? requestError,
-  }) {
-    return CardsState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      cards: cards ?? this.cards,
-      selectedCard: selectedCard ?? this.selectedCard,
-      transactions: transactions ?? this.transactions,
-      canRequestCard: canRequestCard ?? this.canRequestCard,
-      requestError: requestError,
-    );
+  final response = await dio.get('/cards');
+  final data = response.data as Map<String, dynamic>;
+  final items = data['data'] as List? ?? [];
+  return items
+      .map((e) => KoridoCard.fromJson(e as Map<String, dynamic>))
+      .toList();
+});
+
+/// Active cards only.
+final activeCardsProvider = Provider<List<KoridoCard>>((ref) {
+  final cards = ref.watch(cardsProvider).valueOrNull ?? [];
+  return cards.where((c) => c.isActive && !c.isExpired).toList();
+});
+
+/// Card actions.
+class CardActions {
+  final Dio _dio;
+
+  CardActions(this._dio);
+
+  Future<KoridoCard> requestVirtual({String? nickname}) async {
+    final response = await _dio.post('/cards', data: {
+      'type': 'virtual',
+      if (nickname != null) 'nickname': nickname,
+    });
+    return KoridoCard.fromJson(response.data as Map<String, dynamic>);
   }
 
-  CardsState clearError() => copyWith(error: null, requestError: null);
-}
-
-/// Cards Notifier
-class CardsNotifier extends Notifier<CardsState> {
-  @override
-  CardsState build() => const CardsState();
-
-  Dio get _dio => ref.read(dioProvider);
-
-  /// Load user's cards
-  /// GET /cards
-  Future<void> loadCards() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _dio.get('/cards');
-
-      final data = response.data as Map<String, dynamic>;
-      final cardsJson = data['cards'] as List;
-      final cards = cardsJson
-          .map((json) => VirtualCard.fromJson(json as Map<String, dynamic>))
-          .toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        cards: cards,
-        canRequestCard: cards.isEmpty,
-      );
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: ApiException.fromDioError(e).message,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
+  Future<void> block(String cardId) async {
+    await _dio.patch('/cards/$cardId/block');
   }
 
-  /// Select card for details view
-  void selectCard(VirtualCard card) {
-    state = state.copyWith(selectedCard: card);
+  Future<void> unblock(String cardId) async {
+    await _dio.patch('/cards/$cardId/unblock');
   }
 
-  /// Load card transactions
-  /// GET /cards/:id (card detail includes transactions context)
-  Future<void> loadCardTransactions(String cardId) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _dio.get('/cards/$cardId');
-
-      final data = response.data;
-      // Update selected card with full details
-      final card = VirtualCard.fromJson(data as Map<String, dynamic>);
-
-      // Transactions may come from a separate endpoint or be part of card detail
-      final transactionsJson = (data['transactions'] as List?) ?? [];
-      final transactions = transactionsJson
-          .map((json) => CardTransaction.fromJson(json as Map<String, dynamic>))
-          .toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        selectedCard: card,
-        transactions: transactions,
-      );
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: ApiException.fromDioError(e).message,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
+  Future<void> freeze(String cardId) async {
+    await _dio.patch('/cards/$cardId/freeze');
   }
 
-  /// Request new virtual card
-  /// POST /cards { cardholderName, spendingLimit }
-  Future<bool> requestCard({
-    required String cardholderName,
-    required double spendingLimit,
-  }) async {
-    state = state.copyWith(isLoading: true, requestError: null);
-    try {
-      await _dio.post('/cards', data: {
-        'cardholderName': cardholderName,
-        'spendingLimit': spendingLimit,
-      });
-
-      // Reload cards to get the new card
-      await loadCards();
-
-      return true;
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        requestError: ApiException.fromDioError(e).message,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        requestError: e.toString(),
-      );
-      return false;
-    }
+  Future<void> setSpendingLimit(String cardId, double limit) async {
+    await _dio.patch('/cards/$cardId/limit', data: {
+      'spendingLimit': limit,
+    });
   }
 
-  /// Freeze card
-  /// PUT /cards/:id/freeze
-  Future<bool> freezeCard(String cardId) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _dio.put('/cards/$cardId/freeze');
-
-      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
-
-      // Update local state
-      final updatedCards = state.cards.map((card) {
-        return card.id == cardId ? updatedCard : card;
-      }).toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        cards: updatedCards,
-        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
-      );
-
-      return true;
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: ApiException.fromDioError(e).message,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return false;
-    }
-  }
-
-  /// Unfreeze card
-  /// PUT /cards/:id/unfreeze
-  Future<bool> unfreezeCard(String cardId) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _dio.put('/cards/$cardId/unfreeze');
-
-      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
-
-      final updatedCards = state.cards.map((card) {
-        return card.id == cardId ? updatedCard : card;
-      }).toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        cards: updatedCards,
-        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
-      );
-
-      return true;
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: ApiException.fromDioError(e).message,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return false;
-    }
-  }
-
-  /// Update spending limit
-  /// PUT /cards/:id/limit { spendingLimit }
-  Future<bool> updateSpendingLimit(String cardId, double newLimit) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final response = await _dio.put('/cards/$cardId/limit', data: {
-        'spendingLimit': newLimit,
-      });
-
-      final updatedCard = VirtualCard.fromJson(response.data as Map<String, dynamic>);
-
-      final updatedCards = state.cards.map((card) {
-        return card.id == cardId ? updatedCard : card;
-      }).toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        cards: updatedCards,
-        selectedCard: state.selectedCard?.id == cardId ? updatedCard : state.selectedCard,
-      );
-
-      return true;
-    } on DioException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: ApiException.fromDioError(e).message,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return false;
-    }
-  }
-
-  /// Clear error
-  void clearError() {
-    state = state.clearError();
+  Future<void> rename(String cardId, String nickname) async {
+    await _dio.patch('/cards/$cardId', data: {
+      'nickname': nickname,
+    });
   }
 }
 
-/// Cards Provider
-final cardsProvider = NotifierProvider<CardsNotifier, CardsState>(
-  CardsNotifier.new,
-);
+final cardActionsProvider = Provider<CardActions>((ref) {
+  return CardActions(ref.watch(dioProvider));
+});

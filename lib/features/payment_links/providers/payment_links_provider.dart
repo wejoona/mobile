@@ -1,191 +1,57 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/payment_link.dart';
 import '../../../services/api/api_client.dart';
-import '../../../services/payment_links/payment_links_service.dart';
-import '../models/index.dart';
 
-// Service Provider
-final paymentLinksServiceProvider = Provider<PaymentLinksService>((ref) {
+/// Payment links list provider.
+final paymentLinksProvider =
+    FutureProvider<List<PaymentLink>>((ref) async {
   final dio = ref.watch(dioProvider);
-  return PaymentLinksService(dio);
+  final link = ref.keepAlive();
+
+  Timer(const Duration(minutes: 2), () => link.close());
+
+  final response = await dio.get('/payment-links');
+  final data = response.data as Map<String, dynamic>;
+  final items = data['data'] as List? ?? [];
+  return items
+      .map((e) => PaymentLink.fromJson(e as Map<String, dynamic>))
+      .toList();
 });
 
-// State
-class PaymentLinksState {
-  final bool isLoading;
-  final String? error;
-  final List<PaymentLink> links;
-  final PaymentLink? currentLink;
-  final PaymentLinkStatus? filterStatus;
+/// Active payment links only.
+final activePaymentLinksProvider = Provider<List<PaymentLink>>((ref) {
+  final links = ref.watch(paymentLinksProvider).valueOrNull ?? [];
+  return links.where((l) => l.isActive).toList();
+});
 
-  const PaymentLinksState({
-    this.isLoading = false,
-    this.error,
-    this.links = const [],
-    this.currentLink,
-    this.filterStatus,
-  });
+/// Payment link actions.
+class PaymentLinkActions {
+  final Dio _dio;
 
-  PaymentLinksState copyWith({
-    bool? isLoading,
-    String? error,
-    List<PaymentLink>? links,
-    PaymentLink? currentLink,
-    PaymentLinkStatus? filterStatus,
-  }) {
-    return PaymentLinksState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      links: links ?? this.links,
-      currentLink: currentLink ?? this.currentLink,
-      filterStatus: filterStatus ?? this.filterStatus,
-    );
+  PaymentLinkActions(this._dio);
+
+  Future<PaymentLink> create({
+    required double amount,
+    String? description,
+    String? recipientName,
+    Duration? expiry,
+  }) async {
+    final response = await _dio.post('/payment-links', data: {
+      'amount': amount,
+      if (description != null) 'description': description,
+      if (recipientName != null) 'recipientName': recipientName,
+      if (expiry != null) 'expiresInHours': expiry.inHours,
+    });
+    return PaymentLink.fromJson(response.data as Map<String, dynamic>);
   }
 
-  List<PaymentLink> get filteredLinks {
-    if (filterStatus == null) return links;
-    return links.where((link) => link.status == filterStatus).toList();
-  }
-
-  int get activeLinksCount =>
-      links.where((link) => link.isActive).length;
-
-  int get paidLinksCount =>
-      links.where((link) => link.isPaid).length;
-
-  double get totalEarned =>
-      links.where((link) => link.isPaid).fold(0.0, (sum, link) => sum + link.amount);
-}
-
-// Notifier
-class PaymentLinksNotifier extends Notifier<PaymentLinksState> {
-  @override
-  PaymentLinksState build() => const PaymentLinksState();
-
-  /// Load all payment links
-  Future<void> loadLinks({PaymentLinkStatus? status}) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final service = ref.read(paymentLinksServiceProvider);
-      final links = await service.getLinks(status: status);
-      state = state.copyWith(
-        isLoading: false,
-        links: links,
-        filterStatus: status,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
-
-  /// Create a new payment link
-  Future<PaymentLink?> createLink(CreateLinkRequest request) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final service = ref.read(paymentLinksServiceProvider);
-      final link = await service.createLink(request);
-
-      // Add to list
-      final updatedLinks = [link, ...state.links];
-      state = state.copyWith(
-        isLoading: false,
-        currentLink: link,
-        links: updatedLinks,
-      );
-      return link;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return null;
-    }
-  }
-
-  /// Get a specific link
-  Future<void> loadLink(String id) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final service = ref.read(paymentLinksServiceProvider);
-      final link = await service.getLink(id);
-      state = state.copyWith(
-        isLoading: false,
-        currentLink: link,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  }
-
-  /// Cancel a payment link
-  Future<bool> cancelLink(String id) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final service = ref.read(paymentLinksServiceProvider);
-      await service.cancelLink(id);
-
-      // Update local state
-      final updatedLinks = state.links.map((link) {
-        if (link.id == id) {
-          return link.copyWith(status: PaymentLinkStatus.cancelled);
-        }
-        return link;
-      }).toList();
-
-      state = state.copyWith(
-        isLoading: false,
-        links: updatedLinks,
-      );
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
-      return false;
-    }
-  }
-
-  /// Refresh a link's status
-  Future<void> refreshLink(String id) async {
-    try {
-      final service = ref.read(paymentLinksServiceProvider);
-      final updatedLink = await service.refreshLink(id);
-
-      // Update in list
-      final updatedLinks = state.links.map((link) {
-        if (link.id == id) {
-          return updatedLink;
-        }
-        return link;
-      }).toList();
-
-      state = state.copyWith(
-        links: updatedLinks,
-        currentLink: state.currentLink?.id == id ? updatedLink : state.currentLink,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-    }
-  }
-
-  /// Set filter status
-  void setFilter(PaymentLinkStatus? status) {
-    state = state.copyWith(filterStatus: status);
-  }
-
-  /// Clear current link
-  void clearCurrentLink() {
-    state = state.copyWith(currentLink: null);
+  Future<void> cancel(String linkId) async {
+    await _dio.patch('/payment-links/$linkId/cancel');
   }
 }
 
-// Provider
-final paymentLinksProvider = NotifierProvider<PaymentLinksNotifier, PaymentLinksState>(
-  PaymentLinksNotifier.new,
-);
+final paymentLinkActionsProvider = Provider<PaymentLinkActions>((ref) {
+  return PaymentLinkActions(ref.watch(dioProvider));
+});

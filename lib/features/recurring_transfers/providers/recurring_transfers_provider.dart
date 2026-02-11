@@ -1,219 +1,90 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/recurring_transfer.dart';
-import '../models/create_recurring_transfer_request.dart';
-import '../models/update_recurring_transfer_request.dart';
-import '../models/execution_history.dart';
-import '../models/upcoming_execution.dart';
-import '../../../services/recurring_transfers/recurring_transfers_service.dart';
+import '../../../domain/entities/recurring_transfer.dart';
 import '../../../services/api/api_client.dart';
 
-// Service provider
-final recurringTransfersServiceProvider = Provider<RecurringTransfersService>((ref) {
+/// Recurring transfers list provider.
+final recurringTransfersProvider =
+    FutureProvider<List<RecurringTransfer>>((ref) async {
   final dio = ref.watch(dioProvider);
-  return RecurringTransfersService(dio);
+  final link = ref.keepAlive();
+
+  Timer(const Duration(minutes: 2), () => link.close());
+
+  final response = await dio.get('/recurring-transfers');
+  final data = response.data as Map<String, dynamic>;
+  final items = data['data'] as List? ?? [];
+  return items
+      .map((e) => RecurringTransfer.fromJson(e as Map<String, dynamic>))
+      .toList();
 });
 
-// State classes
-class RecurringTransfersState {
-  final bool isLoading;
-  final String? error;
-  final List<RecurringTransfer> transfers;
-  final List<UpcomingExecution> upcoming;
+/// Active recurring transfers only.
+final activeRecurringTransfersProvider =
+    Provider<List<RecurringTransfer>>((ref) {
+  final transfers =
+      ref.watch(recurringTransfersProvider).valueOrNull ?? [];
+  return transfers.where((t) => t.isActive).toList();
+});
 
-  const RecurringTransfersState({
-    this.isLoading = false,
-    this.error,
-    this.transfers = const [],
-    this.upcoming = const [],
+/// Total monthly recurring amount.
+final monthlyRecurringAmountProvider = Provider<double>((ref) {
+  final transfers = ref.watch(activeRecurringTransfersProvider);
+  return transfers.fold(0.0, (sum, t) {
+    switch (t.frequency) {
+      case RecurringFrequency.daily:
+        return sum + t.amount * 30;
+      case RecurringFrequency.weekly:
+        return sum + t.amount * 4;
+      case RecurringFrequency.biweekly:
+        return sum + t.amount * 2;
+      case RecurringFrequency.monthly:
+        return sum + t.amount;
+      case RecurringFrequency.quarterly:
+        return sum + t.amount / 3;
+    }
   });
+});
 
-  RecurringTransfersState copyWith({
-    bool? isLoading,
-    String? error,
-    List<RecurringTransfer>? transfers,
-    List<UpcomingExecution>? upcoming,
-  }) {
-    return RecurringTransfersState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      transfers: transfers ?? this.transfers,
-      upcoming: upcoming ?? this.upcoming,
-    );
+/// Recurring transfer actions.
+class RecurringTransferActions {
+  final Dio _dio;
+
+  RecurringTransferActions(this._dio);
+
+  Future<RecurringTransfer> create({
+    required String recipientPhone,
+    required double amount,
+    required RecurringFrequency frequency,
+    String? note,
+    int? maxExecutions,
+  }) async {
+    final response = await _dio.post('/recurring-transfers', data: {
+      'recipientPhone': recipientPhone,
+      'amount': amount,
+      'frequency': frequency.name,
+      if (note != null) 'note': note,
+      if (maxExecutions != null) 'maxExecutions': maxExecutions,
+    });
+    return RecurringTransfer.fromJson(
+        response.data as Map<String, dynamic>);
   }
 
-  List<RecurringTransfer> get activeTransfers =>
-      transfers.where((t) => t.isActive).toList();
-
-  List<RecurringTransfer> get pausedTransfers =>
-      transfers.where((t) => t.isPaused).toList();
-
-  List<RecurringTransfer> get inactiveTransfers =>
-      transfers.where((t) => t.isCompleted || t.isCancelled).toList();
-}
-
-// Main provider
-class RecurringTransfersNotifier extends Notifier<RecurringTransfersState> {
-  @override
-  RecurringTransfersState build() => const RecurringTransfersState();
-
-  RecurringTransfersService get _service =>
-      ref.read(recurringTransfersServiceProvider);
-
-  Future<void> loadRecurringTransfers() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final transfers = await _service.getRecurringTransfers();
-      state = state.copyWith(isLoading: false, transfers: transfers);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
+  Future<void> pause(String id) async {
+    await _dio.patch('/recurring-transfers/$id/pause');
   }
 
-  Future<void> loadUpcoming() async {
-    try {
-      final upcoming = await _service.getUpcomingExecutions();
-      state = state.copyWith(upcoming: upcoming);
-    } catch (e) {
-      // Silently fail for upcoming - not critical
-    }
+  Future<void> resume(String id) async {
+    await _dio.patch('/recurring-transfers/$id/resume');
   }
 
-  Future<RecurringTransfer?> createRecurringTransfer(
-    CreateRecurringTransferRequest request,
-  ) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final transfer = await _service.createRecurringTransfer(request);
-      state = state.copyWith(
-        isLoading: false,
-        transfers: [...state.transfers, transfer],
-      );
-      return transfer;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return null;
-    }
-  }
-
-  Future<bool> updateRecurringTransfer(
-    String id,
-    UpdateRecurringTransferRequest request,
-  ) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final updated = await _service.updateRecurringTransfer(id, request);
-      final transfers = state.transfers.map((t) {
-        return t.id == id ? updated : t;
-      }).toList();
-      state = state.copyWith(isLoading: false, transfers: transfers);
-      return true;
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-      return false;
-    }
-  }
-
-  Future<bool> pauseRecurringTransfer(String id) async {
-    try {
-      final updated = await _service.pauseRecurringTransfer(id);
-      final transfers = state.transfers.map((t) {
-        return t.id == id ? updated : t;
-      }).toList();
-      state = state.copyWith(transfers: transfers);
-      return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-      return false;
-    }
-  }
-
-  Future<bool> resumeRecurringTransfer(String id) async {
-    try {
-      final updated = await _service.resumeRecurringTransfer(id);
-      final transfers = state.transfers.map((t) {
-        return t.id == id ? updated : t;
-      }).toList();
-      state = state.copyWith(transfers: transfers);
-      return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-      return false;
-    }
-  }
-
-  Future<bool> cancelRecurringTransfer(String id) async {
-    try {
-      await _service.cancelRecurringTransfer(id);
-      final transfers = state.transfers.where((t) => t.id != id).toList();
-      state = state.copyWith(transfers: transfers);
-      return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-      return false;
-    }
+  Future<void> cancel(String id) async {
+    await _dio.delete('/recurring-transfers/$id');
   }
 }
 
-final recurringTransfersProvider =
-    NotifierProvider<RecurringTransfersNotifier, RecurringTransfersState>(
-  RecurringTransfersNotifier.new,
-);
-
-// Detail provider for a single transfer
-class RecurringTransferDetailState {
-  final bool isLoading;
-  final String? error;
-  final RecurringTransfer? transfer;
-  final List<ExecutionHistory> history;
-  final List<DateTime> nextDates;
-
-  const RecurringTransferDetailState({
-    this.isLoading = false,
-    this.error,
-    this.transfer,
-    this.history = const [],
-    this.nextDates = const [],
-  });
-
-  RecurringTransferDetailState copyWith({
-    bool? isLoading,
-    String? error,
-    RecurringTransfer? transfer,
-    List<ExecutionHistory>? history,
-    List<DateTime>? nextDates,
-  }) {
-    return RecurringTransferDetailState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      transfer: transfer ?? this.transfer,
-      history: history ?? this.history,
-      nextDates: nextDates ?? this.nextDates,
-    );
-  }
-}
-
-// Detail provider using FutureProvider.family
-final recurringTransferDetailProvider =
-    FutureProvider.autoDispose.family<RecurringTransferDetailState, String>(
-  (ref, transferId) async {
-    final service = ref.read(recurringTransfersServiceProvider);
-
-    try {
-      final transfer = await service.getRecurringTransfer(transferId);
-      final history = await service.getExecutionHistory(transferId);
-      final nextDates = await service.getNextExecutionDates(transferId);
-
-      return RecurringTransferDetailState(
-        isLoading: false,
-        transfer: transfer,
-        history: history,
-        nextDates: nextDates,
-      );
-    } catch (e) {
-      return RecurringTransferDetailState(
-        isLoading: false,
-        error: e.toString(),
-      );
-    }
-  },
-);
+final recurringTransferActionsProvider =
+    Provider<RecurringTransferActions>((ref) {
+  return RecurringTransferActions(ref.watch(dioProvider));
+});

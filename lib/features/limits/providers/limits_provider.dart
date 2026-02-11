@@ -1,54 +1,29 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/sdk/usdc_wallet_sdk.dart';
-import '../models/transaction_limits.dart';
+import '../../../domain/entities/limit.dart';
+import '../../../services/api/api_client.dart';
 
-// State
-class LimitsState {
-  final bool isLoading;
-  final String? error;
-  final TransactionLimits? limits;
+/// User transaction limits provider.
+final transactionLimitsProvider =
+    FutureProvider<TransactionLimits>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final link = ref.keepAlive();
 
-  const LimitsState({
-    this.isLoading = false,
-    this.error,
-    this.limits,
-  });
+  Timer(const Duration(minutes: 5), () => link.close());
 
-  LimitsState copyWith({
-    bool? isLoading,
-    String? error,
-    TransactionLimits? limits,
-  }) {
-    return LimitsState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      limits: limits ?? this.limits,
-    );
-  }
-}
+  final response = await dio.get('/user/limits');
+  return TransactionLimits.fromJson(response.data as Map<String, dynamic>);
+});
 
-// Notifier
-class LimitsNotifier extends Notifier<LimitsState> {
-  @override
-  LimitsState build() => const LimitsState();
+/// Effective max for next transaction.
+final effectiveMaxProvider = Provider<double>((ref) {
+  final limits = ref.watch(transactionLimitsProvider).valueOrNull;
+  return limits?.effectiveMax ?? 0;
+});
 
-  Future<void> fetchLimits() async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final sdk = ref.read(sdkProvider);
-      final limits = await sdk.wallet.getTransactionLimits();
-      state = state.copyWith(isLoading: false, limits: limits);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-
-  void refresh() {
-    fetchLimits();
-  }
-}
-
-// Provider
-final limitsProvider = NotifierProvider<LimitsNotifier, LimitsState>(
-  LimitsNotifier.new,
-);
+/// Check if a specific amount would exceed limits.
+final limitCheckProvider =
+    Provider.family<String?, double>((ref, amount) {
+  final limits = ref.watch(transactionLimitsProvider).valueOrNull;
+  return limits?.limitHitBy(amount);
+});
