@@ -47,3 +47,23 @@ class Formatters {
     return number.toStringAsFixed(0);
   }
 }
+
+/// Format an amount with currency symbol
+String formatAmount(double amount, {String currency = 'USDC', int decimals = 2}) {
+  final formatted = amount.toStringAsFixed(decimals);
+  // Add thousand separators
+  final parts = formatted.split('.');
+  final intPart = parts[0].replaceAllMapped(
+    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+    (m) => '${m[1]},',
+  );
+  final result = parts.length > 1 ? '$intPart.${parts[1]}' : intPart;
+  return '$result $currency';
+}
+
+/// Format amount in compact form (1.2K, 3.5M)
+String formatCompactAmount(double amount) {
+  if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
+  if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(1)}K';
+  return amount.toStringAsFixed(2);
+}
