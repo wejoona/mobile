@@ -11,6 +11,8 @@ analyzer:
     - "**/generated/**"
     - "**/l10n/**"
     - "build/**"
+    - "packages/**"
+    - "lib/test_utils/**"
 
   errors:
     # Treat these as errors instead of warnings
