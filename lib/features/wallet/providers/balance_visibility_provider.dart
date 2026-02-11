@@ -1,50 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/storage/secure_prefs.dart';
+import '../../settings/providers/app_preferences_provider.dart';
 
-/// Controls whether wallet balance is visible or hidden.
-class BalanceVisibilityNotifier extends Notifier<bool> {
-  static const _key = 'balance_visible';
+/// Whether the wallet balance is visible or hidden (eye toggle).
+final balanceVisibilityProvider = Provider<bool>((ref) {
+  return ref.watch(appPreferencesProvider).showBalance;
+});
 
-  @override
-  bool build() {
-    _loadSaved();
-    return true; // Default: visible
-  }
-
-  Future<void> _loadSaved() async {
-    try {
-      final prefs = ref.read(securePrefsProvider);
-      final saved = await prefs.read(_key);
-      if (saved != null) {
-        state = saved == 'true';
-      }
-    } catch (_) {}
-  }
-
-  void toggle() {
-    state = !state;
-    _save();
-  }
-
-  void show() {
-    state = true;
-    _save();
-  }
-
-  void hide() {
-    state = false;
-    _save();
-  }
-
-  Future<void> _save() async {
-    try {
-      final prefs = ref.read(securePrefsProvider);
-      await prefs.write(_key, state.toString());
-    } catch (_) {}
-  }
-}
-
-final balanceVisibilityProvider =
-    NotifierProvider<BalanceVisibilityNotifier, bool>(
-  BalanceVisibilityNotifier.new,
-);
+/// Toggle balance visibility.
+final toggleBalanceVisibilityProvider = Provider<Future<void> Function()>((ref) {
+  return () => ref.read(appPreferencesProvider.notifier).toggleBalanceVisibility();
+});
