@@ -32,7 +32,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
     super.initState();
     // Pre-fill with current pot data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final state = ref.read(savingsPotsProvider);
+      final state = ref.read(savingsPotsStateProvider);
       final pot = state.pots.firstWhere((p) => p.id == widget.potId);
 
       _nameController.text = pot.name;
@@ -54,7 +54,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(savingsPotsProvider);
+    final state = ref.watch(savingsPotsStateProvider);
     final colors = context.colors;
 
     return Scaffold(
@@ -142,7 +142,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
           id: widget.potId,
           name: _nameController.text,
           emoji: _selectedEmoji,
-          color: _selectedColor,
+          color: _selectedColor != null ? '#${_selectedColor!.value.toRadixString(16).padLeft(8, '0')}' : null,
           targetAmount: targetAmount,
         );
 

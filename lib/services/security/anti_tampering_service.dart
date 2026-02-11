@@ -87,7 +87,8 @@ class AntiTamperingService {
       // via method channel
       for (final lib in suspiciousLibs) {
         // Placeholder pour vérification native
-        _ = lib;
+        // ignore: unused_local_variable
+        final _ = lib;
       }
     }
     return violations;

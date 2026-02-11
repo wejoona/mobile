@@ -146,9 +146,9 @@ class AppReviewService {
       await _saveState();
 
       // Track analytics
-      await _analytics.setUserProperty(
-        name: 'review_prompt_shown',
-        value: 'true',
+      _analytics.setUserProperty(
+        'review_prompt_shown',
+        'true',
       );
 
       _logger.info('App review prompt shown');
@@ -217,9 +217,9 @@ class AppReviewService {
       await _saveState();
 
       // Track analytics
-      await _analytics.setUserProperty(
-        name: 'user_reviewed',
-        value: 'true',
+      _analytics.setUserProperty(
+        'user_reviewed',
+        'true',
       );
 
       _logger.info('User marked as reviewed');
@@ -235,9 +235,9 @@ class AppReviewService {
       await _inAppReview.openStoreListing();
 
       // Track analytics
-      await _analytics.setUserProperty(
-        name: 'manual_review_opened',
-        value: 'true',
+      _analytics.setUserProperty(
+        'manual_review_opened',
+        'true',
       );
 
       _logger.info('App store opened for review');

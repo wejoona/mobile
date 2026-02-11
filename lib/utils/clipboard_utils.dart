@@ -14,4 +14,7 @@ class ClipboardUtils {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
     return data?.text;
   }
+
+  /// Copy a transaction ID to clipboard.
+  static Future<void> copyTransactionId(String txId) => copy(txId);
 }

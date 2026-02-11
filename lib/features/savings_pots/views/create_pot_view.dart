@@ -35,7 +35,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(savingsPotsProvider);
+    final state = ref.watch(savingsPotsStateProvider);
     final colors = context.colors;
 
     return Scaffold(
@@ -144,7 +144,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
     final success = await ref.read(savingsPotsActionsProvider).createPot(
           name: _nameController.text,
           emoji: _selectedEmoji!,
-          color: _selectedColor!,
+          color: '#${_selectedColor!.value.toRadixString(16).padLeft(8, '0')}',
           targetAmount: targetAmount,
         );
 

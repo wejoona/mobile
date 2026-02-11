@@ -50,8 +50,7 @@ class _NetworkInspectorViewState extends ConsumerState<NetworkInspectorView> {
       ),
       body: _filteredLogs.isEmpty
           ? const Center(
-              child: EmptyState(
-                message: 'Aucune requete reseau capturee',
+              child: EmptyState(title: 'Aucune requete reseau capturee',
                 icon: Icons.wifi_off,
               ),
             )
@@ -106,15 +105,9 @@ class _NetworkLogTile extends StatelessWidget {
           children: [
             Row(
               children: [
-                StatusBadge(
-                  label: log.method,
-                  color: AppColors.gold,
-                ),
+                StatusBadge(status: log.method),
                 const SizedBox(width: AppSpacing.sm),
-                StatusBadge(
-                  label: '${log.statusCode}',
-                  color: _statusColor,
-                ),
+                StatusBadge(status: '${log.statusCode}'),
                 const Spacer(),
                 AppText(
                   '${log.durationMs}ms',

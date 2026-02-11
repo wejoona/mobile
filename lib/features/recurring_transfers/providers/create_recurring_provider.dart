@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 
@@ -58,10 +60,14 @@ class CreateRecurringNotifier extends Notifier<CreateRecurringState> {
     try {
       final service = ref.read(recurringTransfersServiceProvider);
       await service.createRecurringTransfer(
-        recipientIdentifier: state.recipientPhone!,
-        amount: state.amount!,
-        currency: 'USDC',
-        frequency: state.frequency.name,
+        CreateRecurringTransferRequest(
+          recipientPhone: state.recipientPhone!,
+          recipientName: state.recipientName ?? '',
+          amount: state.amount!,
+          currency: 'USDC',
+          frequency: TransferFrequency.values.firstWhere((f) => f.name == state.frequency.name, orElse: () => TransferFrequency.monthly),
+          startDate: state.startDate ?? DateTime.now(),
+        ),
       );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(recurringTransfersProvider);

@@ -26,7 +26,7 @@ class NotificationListItem extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: colors.primary.withValues(alpha: 0.1),
         child: Icon(
-          _getIcon(notification.type),
+          _getIcon(notification.type.name),
           color: colors.primary,
           size: 20,
         ),

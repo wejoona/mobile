@@ -43,7 +43,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
         child: Column(
           children: [
             _buildSummaryCard(l10n, batch),
-            if (batch.hasErrors) _buildErrorBanner(l10n, batch),
+            if (batch.failureCount > 0) _buildErrorBanner(l10n, batch),
             _buildFilterToggle(l10n, batch),
             Expanded(
               child: _buildPaymentsList(l10n, batch),
@@ -145,7 +145,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   }
 
   Widget _buildFilterToggle(AppLocalizations l10n, dynamic batch) {
-    if (!(batch.hasErrors as bool)) return const SizedBox.shrink();
+    if (!(batch.failureCount > 0 as bool)) return const SizedBox.shrink();
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -195,7 +195,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   }
 
   Widget _buildBottomBar(AppLocalizations l10n, batch, state) {
-    final canSubmit = !(batch.hasErrors as bool) && (batch.totalCount as int) > 0;
+    final canSubmit = !(batch.failureCount > 0 as bool) && (batch.totalCount as int) > 0;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),

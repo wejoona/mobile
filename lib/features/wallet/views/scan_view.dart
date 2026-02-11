@@ -140,9 +140,7 @@ class _ScanViewState extends ConsumerState<ScanView>
               size: 200,
               title: 'Korido',
               subtitle: phone,
-              footer: walletAddress.isNotEmpty
-                  ? _buildWalletAddressFooter(walletAddress)
-                  : null,
+              footer: walletAddress.isNotEmpty ? walletAddress : null,
             ),
           ),
 

@@ -32,14 +32,11 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(expensesProvider);
-    final expenses = ref.invalidate(expensesProvider) /* getExpensesByDateRange */(
-          _startDate,
-          _endDate,
-        );
+    final state = ref.watch(expensesStateProvider);
+    final expenses = state.expenses;
 
     final totalAmount = expenses.fold<double>(
-      0,
+      0.0,
       (sum, expense) => sum + expense.amount,
     );
 
@@ -254,7 +251,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
 
   List<Widget> _buildCategoryBreakdown(
     AppLocalizations l10n,
-    List<Expense> expenses,
+    List<dynamic> expenses,
     double totalAmount,
   ) {
     final categoryTotals = <String, double>{};
@@ -345,7 +342,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   Future<void> _generatePdfReport(
     BuildContext context,
     AppLocalizations l10n,
-    List<Expense> expenses,
+    List<dynamic> expenses,
   ) async {
     setState(() => _isGenerating = true);
 
@@ -435,7 +432,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   Future<void> _generateCsvReport(
     BuildContext context,
     AppLocalizations l10n,
-    List<Expense> expenses,
+    List<dynamic> expenses,
   ) async {
     setState(() => _isGenerating = true);
 

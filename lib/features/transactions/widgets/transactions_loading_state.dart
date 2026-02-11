@@ -12,8 +12,7 @@ class TransactionsLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShimmerLoading(
-      child: ListView.builder(
+    return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: itemCount,
@@ -68,7 +67,6 @@ class TransactionsLoadingState extends StatelessWidget {
             ),
           );
         },
-      ),
     );
   }
 }

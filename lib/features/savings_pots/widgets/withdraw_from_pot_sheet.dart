@@ -29,8 +29,8 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(savingsPotsProvider);
-    final pot = state.selectedPot;
+    final state = ref.watch(savingsPotsStateProvider);
+    final pot = state.pots.where((p) => p.id == widget.potId).firstOrNull;
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     if (pot == null) {
@@ -152,8 +152,8 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
       return;
     }
 
-    final state = ref.read(savingsPotsProvider);
-    final pot = state.selectedPot;
+    final state = ref.read(savingsPotsStateProvider);
+    final pot = state.pots.where((p) => p.id == widget.potId).firstOrNull;
 
     if (pot == null) return;
 
@@ -169,12 +169,12 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
 
     setState(() => _isLoading = true);
     try {
-      final success = await ref.read(savingsPotsActionsProvider).withdrawFromPot(
+      await ref.read(savingsPotsActionsProvider).withdrawFromPot(
             widget.potId,
             amount,
           );
 
-      if (success && mounted) {
+      if (mounted) {
         Navigator.pop(context, true);
       }
     } finally {

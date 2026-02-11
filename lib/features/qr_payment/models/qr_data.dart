@@ -13,7 +13,7 @@ class QrPaymentData {
   final String? paymentLinkId;
 
   const QrPaymentData({
-    required this.userId,
+    this.userId = "",
     this.phone,
     this.displayName,
     this.amount,

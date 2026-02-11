@@ -22,7 +22,7 @@ class ReferralsListView extends ConsumerWidget {
           onRefresh: () => ref.refresh(referralProvider.future),
           child: ListView(
             children: [
-              ReferralCard(info: info),
+              ReferralCard(referralCode: info.referralCode, referralCount: info.referrals.length),
               const SizedBox(height: 16),
               if (info.referrals.isNotEmpty) ...[
                 Padding(

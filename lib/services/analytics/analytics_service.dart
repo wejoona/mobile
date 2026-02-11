@@ -93,6 +93,10 @@ class AnalyticsService {
     // Set user-level properties for analytics segmentation
   }
 
+  void setUserProperty(String name, dynamic value) {
+    // Set a single user property
+  }
+
   void _track(AnalyticsEvent event) {
     if (!_initialized) {
       _pendingEvents.add(event);

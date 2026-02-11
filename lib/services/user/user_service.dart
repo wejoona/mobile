@@ -70,6 +70,15 @@ class UserService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// PUT /user/locale - Update preferred locale
+  Future<void> updateLocale(String locale) async {
+    try {
+      await _dio.put('/user/locale', data: {'preferredLocale': locale});
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
 
 /// User Profile DTO
@@ -136,6 +145,15 @@ class UserProfile {
           : null,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'phone': phone, 'phoneVerified': phoneVerified,
+    'firstName': firstName, 'lastName': lastName, 'email': email,
+    'avatarUrl': avatarUrl, 'countryCode': countryCode,
+    'kycStatus': kycStatus, 'role': role, 'status': status,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt?.toIso8601String(),
+  };
 }
 
 /// User Service Provider

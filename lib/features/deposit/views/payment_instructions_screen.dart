@@ -106,7 +106,7 @@ class _PaymentInstructionsScreenState
               const SizedBox(height: AppSpacing.xl),
 
               // Instructions
-              if (response.instructions.isNotEmpty) ...[
+              if (((response['instructions'] as String?) ?? '').isNotEmpty) ...[
                 AppCard(
                   variant: AppCardVariant.flat,
                   child: Row(
@@ -119,7 +119,7 @@ class _PaymentInstructionsScreenState
                       const SizedBox(width: AppSpacing.md),
                       Expanded(
                         child: AppText(
-                          response.instructions,
+                          ((response['instructions'] as String?) ?? ''),
                           variant: AppTextVariant.bodyMedium,
                           color: colors.textPrimary,
                         ),
@@ -198,7 +198,7 @@ class _PaymentInstructionsScreenState
 
   Widget _buildTypeSpecificContent(
     DepositState state,
-    DepositResponse response,
+    Map<String, dynamic> response,
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
@@ -211,6 +211,8 @@ class _PaymentInstructionsScreenState
         return _buildQrLinkContent(state, response, colors, l10n);
       case PaymentMethodType.card:
         return _buildCardContent(colors, l10n);
+      default:
+        return const SizedBox.shrink();
     }
   }
 
@@ -306,7 +308,7 @@ class _PaymentInstructionsScreenState
   /// PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
   Widget _buildPushContent(
     DepositState state,
-    DepositResponse response, 
+    Map<String, dynamic> response, 
     ThemeColors colors, 
     AppLocalizations l10n,
   ) {
@@ -345,9 +347,9 @@ class _PaymentInstructionsScreenState
         const SizedBox(height: AppSpacing.xl),
         
         // Countdown timer
-        if (response.expiresAt.isAfter(DateTime.now()))
+        if (response['expiresAt'].isAfter(DateTime.now()))
           _CountdownTimer(
-            expiresAt: response.expiresAt,
+            expiresAt: response['expiresAt'],
             colors: colors,
             l10n: l10n,
           ),
@@ -358,7 +360,7 @@ class _PaymentInstructionsScreenState
   /// QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
   Widget _buildQrLinkContent(
     DepositState state,
-    DepositResponse response, 
+    Map<String, dynamic> response, 
     ThemeColors colors, 
     AppLocalizations l10n,
   ) {
@@ -367,7 +369,7 @@ class _PaymentInstructionsScreenState
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // QR Code
-          if (response.qrCodeData?.isNotEmpty == true) ...[
+          if (response['qrCodeData']?.isNotEmpty == true) ...[
             AppCard(
               variant: AppCardVariant.elevated,
               child: Column(
@@ -385,7 +387,7 @@ class _PaymentInstructionsScreenState
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: QrImageView(
-                      data: response.qrCodeData!,
+                      data: response['qrCodeData']!,
                       version: QrVersions.auto,
                       size: 200.0,
                       foregroundColor: colors.textPrimary,
@@ -398,11 +400,11 @@ class _PaymentInstructionsScreenState
           ],
 
           // Deep link button
-          if (response.deepLinkUrl?.isNotEmpty == true) ...[
+          if (response['deepLinkUrl']?.isNotEmpty == true) ...[
             AppButton(
               label: l10n.deposit_openInWave,
               icon: Icons.open_in_new,
-              onPressed: () => _openDeepLink(response.deepLinkUrl!),
+              onPressed: () => _openDeepLink(response['deepLinkUrl']!),
               isFullWidth: true,
             ),
             const SizedBox(height: AppSpacing.md),

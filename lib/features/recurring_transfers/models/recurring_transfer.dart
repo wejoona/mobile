@@ -154,6 +154,8 @@ class RecurringTransfer {
         final day = dayOfMonth ?? 1;
         final suffix = _getDaySuffix(day);
         return isFrench ? 'Le $day de chaque mois' : '$day$suffix of every month';
+      case TransferFrequency.quarterly:
+        return isFrench ? 'Tous les 3 mois' : 'Every 3 months';
     }
   }
 

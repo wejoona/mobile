@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart' hide BillPaymentResult;
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
@@ -91,10 +91,15 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(billPaymentsServiceProvider);
-      final result = await service.payBill(
+      final svcResult = await service.payBill(
         providerId: state.selectedBiller.id ?? 'unknown',
         accountNumber: state.subscriberNumber!,
         amount: state.amount!,
+      );
+      final result = BillPaymentResult(
+        id: svcResult.paymentId,
+        status: svcResult.status,
+        reference: svcResult.receiptNumber,
       );
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);

@@ -5,6 +5,9 @@ import 'package:qr_flutter/qr_flutter.dart';
 class QrCodeDisplay extends StatelessWidget {
   final String data;
   final String? displayName;
+  final String? title;
+  final String? subtitle;
+  final String? footer;
   final double size;
   final VoidCallback? onShare;
 
@@ -12,6 +15,9 @@ class QrCodeDisplay extends StatelessWidget {
     super.key,
     required this.data,
     this.displayName,
+    this.title,
+    this.subtitle,
+    this.footer,
     this.size = 240,
     this.onShare,
   });

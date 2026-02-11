@@ -96,6 +96,8 @@ class BulkPayment {
     return phoneRegex.hasMatch(phone);
   }
 
+  bool get hasErrors => !isValid || error != null;
+
   Map<String, dynamic> toJson() => {
         'phone': phone,
         'amount': amount,

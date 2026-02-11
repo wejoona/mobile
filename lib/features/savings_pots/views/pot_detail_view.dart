@@ -41,7 +41,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(savingsPotsProvider);
+    final state = ref.watch(savingsPotsStateProvider);
     final pot = state.selectedPot;
 
     if (pot == null) {
@@ -407,8 +407,8 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await ref.read(savingsPotsActionsProvider).deletePot(potId);
-      if (success && mounted) {
+      await ref.read(savingsPotsActionsProvider).deletePot(potId);
+      if (mounted) {
         context.pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

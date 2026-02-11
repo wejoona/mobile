@@ -38,6 +38,7 @@ class StepUpDecision {
     required this.stepUpRequired,
     required this.stepUpType,
     this.reason,
+    String? localizedReason,
     required this.factors,
     this.challengeToken,
     required this.expiresAt,
@@ -245,7 +246,8 @@ class RiskBasedSecurityService {
       return true;
     }
 
-    return await _biometricService.authenticate(localizedReason: reason);
+    final result = await _biometricService.authenticate(localizedReason: reason);
+    return result.success;
   }
 
   /// Execute liveness verification

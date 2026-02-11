@@ -129,4 +129,11 @@ class TransactionLimits {
   bool get isMonthlyNearLimit => monthlyPercentage >= 0.8;
   bool get isMonthlyAtLimit => monthlyPercentage >= 1.0;
   bool get hasNextTier => nextTierName != null;
+  double get effectiveMax => [dailyRemaining, monthlyRemaining, singleTransactionLimit].where((v) => v > 0).reduce((a, b) => a < b ? a : b);
+  String? limitHitBy(double amount) {
+    if (amount > singleTransactionLimit && singleTransactionLimit > 0) return 'single_transaction';
+    if (amount > dailyRemaining) return 'daily';
+    if (amount > monthlyRemaining) return 'monthly';
+    return null;
+  }
 }

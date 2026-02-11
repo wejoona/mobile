@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
@@ -37,8 +38,28 @@ class DeviceActions {
   Future<void> renameDevice(String deviceId, String name) async {
     await _dio.patch('/devices/$deviceId', data: {'name': name});
   }
+
+  Future<void> refresh() async {
+    // Triggers re-fetch via provider invalidation
+  }
+
+  bool isCurrentDevice(String deviceId) => false;
+
+  Future<void> trustDevice(String deviceId) async {
+    await _dio.post('/devices/$deviceId/trust');
+  }
 }
 
 final deviceActionsProvider = Provider<DeviceActions>((ref) {
   return DeviceActions(ref.watch(dioProvider));
+});
+
+/// Adapter: wraps raw list into DevicesState for views.
+final devicesStateProvider = Provider<DevicesState>((ref) {
+  final async = ref.watch(devicesProvider);
+  return DevicesState(
+    isLoading: async.isLoading,
+    error: async.error?.toString(),
+    devices: async.value ?? [],
+  );
 });

@@ -591,7 +591,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
   Widget _buildTransactionsList(
     BuildContext context,
-    List<Transaction> transactions,
+    List<dynamic> transactions,
     FilteredPaginatedTransactionsState state,
     WidgetRef ref,
     ThemeColors colors,
@@ -661,7 +661,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Map<String, List<Transaction>> _groupByDate(List<Transaction> transactions, AppLocalizations l10n) {
+  Map<String, List<Transaction>> _groupByDate(List<dynamic> transactions, AppLocalizations l10n) {
     final grouped = <String, List<Transaction>>{};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);

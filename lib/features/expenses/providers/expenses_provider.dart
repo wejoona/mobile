@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
@@ -29,4 +30,14 @@ final topExpenseCategoryProvider = Provider<Expense?>((ref) {
   final expenses = ref.watch(expensesProvider).value ?? [];
   if (expenses.isEmpty) return null;
   return expenses.reduce((a, b) => a.amount > b.amount ? a : b);
+});
+
+/// Adapter: wraps raw list into ExpensesState for views.
+final expensesStateProvider = Provider<ExpensesState>((ref) {
+  final async = ref.watch(expensesProvider);
+  return ExpensesState(
+    isLoading: async.isLoading,
+    error: async.error?.toString(),
+    expenses: async.value ?? [],
+  );
 });

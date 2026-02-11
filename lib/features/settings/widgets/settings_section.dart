@@ -32,7 +32,7 @@ class SettingsSection extends StatelessWidget {
               children: [
                 for (var i = 0; i < items.length; i++) ...[
                   items[i],
-                  if (i < items.length - 1) Divider(height: 0.5, indent: items[i].leading != null ? 56 : 16, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                  if (i < items.length - 1) Divider(height: 0.5, indent: items[i] is ListTile ? 56 : 16, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
                 ],
               ],
             ),

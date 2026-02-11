@@ -3,6 +3,7 @@ enum TransferFrequency {
   weekly,
   biweekly,
   monthly,
+  quarterly,
 }
 
 extension TransferFrequencyExtension on TransferFrequency {
@@ -16,6 +17,8 @@ extension TransferFrequencyExtension on TransferFrequency {
         return 'biweekly';
       case TransferFrequency.monthly:
         return 'monthly';
+      case TransferFrequency.quarterly:
+        return 'quarterly';
     }
   }
 
@@ -29,6 +32,8 @@ extension TransferFrequencyExtension on TransferFrequency {
         return TransferFrequency.biweekly;
       case 'monthly':
         return TransferFrequency.monthly;
+      case 'quarterly':
+        return TransferFrequency.quarterly;
       default:
         throw ArgumentError('Invalid frequency: $json');
     }
@@ -45,6 +50,8 @@ extension TransferFrequencyExtension on TransferFrequency {
           return 'Bi-hebdomadaire';
         case TransferFrequency.monthly:
           return 'Mensuel';
+        case TransferFrequency.quarterly:
+          return 'Trimestriel';
       }
     }
     switch (this) {
@@ -56,6 +63,8 @@ extension TransferFrequencyExtension on TransferFrequency {
         return 'Bi-weekly';
       case TransferFrequency.monthly:
         return 'Monthly';
+      case TransferFrequency.quarterly:
+        return 'Quarterly';
     }
   }
 }

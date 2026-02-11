@@ -13,7 +13,7 @@ class KycRepository {
     String? dateOfBirth, String? country, List<String>? documentPaths, String? selfiePath,
   }) => _service.submitKyc(
     firstName: firstName ?? '', lastName: lastName ?? '',
-    country: country ?? 'CI', dateOfBirth: dateOfBirth ?? '',
+    country: country ?? 'CI', dateOfBirth: DateTime.tryParse(dateOfBirth ?? '') ?? DateTime(2000),
     documentType: documentType ?? 'passport',
     documentPaths: documentPaths ?? (documentPath != null ? [documentPath] : []),
     selfiePath: selfiePath ?? '',

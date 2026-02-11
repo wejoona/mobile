@@ -5,7 +5,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
-import 'package:usdc_wallet/features/insights/models/insights_period.dart';
+import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 
 class SpendingLineChart extends StatefulWidget {
   final List<SpendingTrend> trends;
@@ -198,6 +198,9 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
         break;
       case InsightsPeriod.year:
         label = DateFormat('MMM').format(trend.date); // Jan, Feb, etc.
+        break;
+      case InsightsPeriod.quarter:
+        label = DateFormat('MMM').format(trend.date);
         break;
     }
 

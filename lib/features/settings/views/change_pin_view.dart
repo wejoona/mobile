@@ -270,7 +270,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       final biometricGuard = ref.read(biometricGuardProvider);
       final biometricConfirmed = await biometricGuard.guardPinChange();
 
-      if (!biometricConfirmed) {
+      if (biometricConfirmed != BiometricResult.success) {
         setState(() {
           _error = l10n.changePin_errorBiometricRequired;
           _currentPin = '';
@@ -295,9 +295,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           _isLoading = false;
         });
       }
-    } on BiometricRequiredException catch (e) {
+    } catch (e) {
       setState(() {
-        _error = e.message;
+        _error = e.toString();
         _currentPin = '';
         _isLoading = false;
       });

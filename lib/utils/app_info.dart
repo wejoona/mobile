@@ -12,4 +12,8 @@ class AppInfo {
   static String get versionSync => _instance?.version ?? '0.0.0';
   static String get buildSync => _instance?.buildNumber ?? '0';
   static String get fullVersion => '${versionSync}+${buildSync}';
+  static Future<String> getVersion() async {
+    final info = await instance;
+    return '${info.version}+${info.buildNumber}';
+  }
 }

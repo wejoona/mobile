@@ -19,7 +19,7 @@ class LinkCreatedView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(paymentLinksProvider);
+    final state = ref.watch(paymentLinksStateProvider);
     final link = state.currentLink ?? state.links.firstWhere((l) => l.id == linkId);
 
     return Scaffold(

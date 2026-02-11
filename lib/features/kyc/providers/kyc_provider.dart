@@ -122,7 +122,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     try {
       final service = ref.read(kycServiceProvider);
       final data = await service.getKycStatus();
-      final profile = KycProfile.fromJson(data);
+      final profile = KycProfile.fromJson({'status': data.status.name, 'rejectionReason': data.rejectionReason});
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),

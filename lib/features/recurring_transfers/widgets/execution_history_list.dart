@@ -10,7 +10,7 @@ class ExecutionHistoryList extends StatelessWidget {
     required this.history,
   });
 
-  final List<ExecutionHistory> history;
+  final List<dynamic> history;
 
   @override
   Widget build(BuildContext context) {

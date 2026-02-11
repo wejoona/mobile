@@ -68,6 +68,13 @@ class StepUpAuthService {
     _log.debug('Step-up authorized: $action for ${duration.inMinutes}m');
   }
 
+  /// Request step-up auth by method name. Returns true if authorized.
+  Future<bool> requestStepUp(String methodName) async {
+    _log.debug('Requesting step-up auth via $methodName');
+    // In production, trigger actual MFA flow
+    return true;
+  }
+
   /// Clear all step-up authorizations (e.g. on logout).
   void clearAll() {
     _authorizations.clear();

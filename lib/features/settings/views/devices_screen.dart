@@ -17,7 +17,7 @@ class DevicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(devicesProvider);
+    final state = ref.watch(devicesStateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,

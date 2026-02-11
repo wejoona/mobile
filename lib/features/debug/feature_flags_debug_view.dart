@@ -22,17 +22,11 @@ class FeatureFlagsDebugView extends ConsumerWidget {
         ),
         backgroundColor: AppColors.backgroundSecondary,
       ),
-      body: flags.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => ErrorView(
-          message: 'Erreur de chargement: $err',
-          onRetry: () => ref.invalidate(featureFlagsProvider),
-        ),
-        data: (flagMap) => ListView.builder(
+      body: ListView.builder(
           padding: const EdgeInsets.all(AppSpacing.lg),
-          itemCount: flagMap.entries.length,
+          itemCount: flags.entries.length,
           itemBuilder: (context, index) {
-            final entry = flagMap.entries.elementAt(index);
+            final entry = flags.entries.elementAt(index);
             return Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: AppCard(
@@ -75,7 +69,8 @@ class FeatureFlagsDebugView extends ConsumerWidget {
             );
           },
         ),
-      ),
-    );
+      );
   }
 }
+
+

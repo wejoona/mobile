@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 /// Stub providers for views that reference providers not yet created.
 /// These are temporary — wire to real implementations as features complete.
 
@@ -62,7 +63,7 @@ final spendingSummaryProvider =
 
 /// Top recipients provider
 final topRecipientsProvider =
-    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
+    FutureProvider.autoDispose<List<TopRecipient>>((ref) async {
   return [];
 });
 
@@ -80,6 +81,6 @@ final profileNotifierProvider =
 
 /// Providers list (debug)
 final providersListProvider =
-    Provider<List<String>>((ref) => []);
+    FutureProvider<List<String>>((ref) async => []);
 
 // analyticsServiceProvider is in lib/services/analytics/analytics_provider.dart

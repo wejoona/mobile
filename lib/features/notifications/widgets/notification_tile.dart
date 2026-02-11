@@ -60,7 +60,9 @@ class NotificationTile extends StatelessWidget {
       label: '${notification.title}: ${notification.body}',
       button: onTap != null,
       child: SwipeActionCell(
-        onDismissed: onDismiss,
+        actions: [
+          if (onDismiss != null) SwipeAction(label: 'Supprimer', icon: Icons.delete, color: AppColors.errorBase, onTap: onDismiss!),
+        ],
         child: Material(
           color: notification.isRead
               ? Colors.transparent
@@ -120,7 +122,7 @@ class NotificationTile extends StatelessWidget {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
-                          AppDateUtils.relativeTime(notification.createdAt),
+                          AppDateUtils.relativeTimeFromNow(notification.createdAt),
                           style: AppTextStyle.bodySmall,
                           color: AppColors.textTertiary,
                         ),

@@ -7,7 +7,7 @@ import 'package:usdc_wallet/services/security/testing/mock_network_service.dart'
 /// Helper utilities for security testing.
 class SecurityTestHelpers {
   /// Create a fully configured test container with mock services.
-  static List<Override> createMockOverrides({
+  static List<dynamic> createMockOverrides({
     bool isSecure = true,
     bool isCompliant = true,
     bool isAuthenticated = true,

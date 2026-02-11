@@ -54,7 +54,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   Widget _buildContent(
     BuildContext context,
     AppLocalizations l10n,
-    KycState state,
+    dynamic state,
   ) {
     final colors = context.colors;
     return Padding(
@@ -103,11 +103,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
                         ),
                       ),
                     ],
-                  // Verification details when available
-                  if (state.verificationStatus?.verification != null) ...[
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildVerificationDetails(state.verificationStatus!.verification!, colors),
-                  ],
+                  // Verification details placeholder
                   SizedBox(height: AppSpacing.xxl),
                   _buildInfoCards(l10n),
                 ],

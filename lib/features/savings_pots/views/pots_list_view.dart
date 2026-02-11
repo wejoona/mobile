@@ -31,7 +31,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(savingsPotsProvider);
+    final state = ref.watch(savingsPotsStateProvider);
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     final colors = context.colors;
 

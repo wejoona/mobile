@@ -41,7 +41,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       // Try as plain phone number
       if (rawData.startsWith('+') || rawData.startsWith('00')) {
         state = state.copyWith(scannedData: QrPaymentData(
-          type: QrPaymentType.p2p,
+          type: "p2p",
           recipient: rawData,
         ));
       } else {

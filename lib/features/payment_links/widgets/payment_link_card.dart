@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/domain/entities/payment_link.dart';
+import 'package:usdc_wallet/features/payment_links/models/payment_link.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
 
@@ -58,7 +58,7 @@ class PaymentLinkCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => ClipboardUtils.copy(context, link.url, label: 'Link copied'),
+                        onPressed: () => ClipboardUtils.copy(link.url),
                         icon: const Icon(Icons.copy_rounded, size: 16),
                         label: const Text('Copy'),
                         style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),

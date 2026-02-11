@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Card showing a recurring transfer summary.
@@ -51,7 +52,7 @@ class RecurringTransferCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          '${transfer.frequencyLabel} • ${transfer.status.name}',
+                          '${transfer.frequency.getDisplayName('fr')} • ${transfer.status.name}',
                           style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
@@ -63,7 +64,7 @@ class RecurringTransferCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text('\$${transfer.amount.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                  Text('${transfer.executionCount} sent', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                  Text('${0} sent', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),
             ],

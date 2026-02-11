@@ -62,8 +62,9 @@ class PaymentLinksService {
 
   // Aliases used by views
   Future<List<PaymentLink>> getPaymentLinks() => getLinks();
-  Future<PaymentLink> createPaymentLink(Map<String, dynamic> data) async {
-    final response = await _dio.post('/payment-links', data: data);
+  Future<PaymentLink> createPaymentLink({double? amount, String? currency, String? description, Map<String, dynamic>? data}) async {
+    final payload = data ?? {'amount': amount, 'currency': currency ?? 'USDC', 'description': description};
+    final response = await _dio.post('/payment-links', data: payload);
     return PaymentLink.fromJson(response.data);
   }
   Future<PaymentLink> loadLink(String linkId) => getLink(linkId);

@@ -13,7 +13,7 @@ class NotificationsRepository {
     int page = 1,
     int pageSize = 20,
   }) async {
-    return _service.getNotifications(page: page, pageSize: pageSize);
+    return _service.getNotifications();
   }
 
   /// Mark a notification as read.

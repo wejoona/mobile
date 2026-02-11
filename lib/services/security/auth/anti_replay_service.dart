@@ -9,8 +9,8 @@ class AntiReplayService {
   final Duration _nonceLifetime;
 
   AntiReplayService({
-    this._nonceLifetime = const Duration(minutes: 10),
-  });
+    Duration nonceLifetime = const Duration(minutes: 10),
+  }) : _nonceLifetime = nonceLifetime;
 
   /// Check if a nonce has been used. If not, mark it as used.
   bool validateNonce(String nonce, DateTime timestamp) {

@@ -44,7 +44,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Amount Summary Card
-              if (depositState.amountXOF > 0) ...[
+              if ((depositState.amountXOF ?? 0) > 0) ...[
                 AppCard(
                   variant: AppCardVariant.elevated,
                   child: Row(
@@ -122,7 +122,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
   }
 
   Widget _buildProvidersList(
-    List<ProviderData> providers,
+    List<dynamic> providers,
     ThemeColors colors,
     AppLocalizations l10n,
     WidgetRef ref,
@@ -376,6 +376,8 @@ class _ProviderTile extends StatelessWidget {
         return Icons.qr_code;
       case PaymentMethodType.card:
         return Icons.credit_card;
+      default:
+        return Icons.payment;
     }
   }
 
@@ -389,6 +391,8 @@ class _ProviderTile extends StatelessWidget {
         return 'Scan QR or open app';
       case PaymentMethodType.card:
         return 'Card payment';
+      default:
+        return '';
     }
   }
 }

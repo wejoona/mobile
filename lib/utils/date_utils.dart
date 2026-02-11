@@ -55,5 +55,7 @@ String smartDate(DateTime date) {
 class AppDateUtils {
   AppDateUtils._();
   static String relativeTimeFromNow(DateTime date) => relativeTime(date);
+  // ignore: non_constant_identifier_names 
+  static String relativeTime_(DateTime date) => relativeTime(date);
   static String format(DateTime date) => formatDate(date);
 }

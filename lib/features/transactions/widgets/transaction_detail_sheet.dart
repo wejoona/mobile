@@ -81,7 +81,7 @@ class TransactionDetailSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => ClipboardUtils.copyTransactionId(context, transaction.id),
+                        onPressed: () => ClipboardUtils.copyTransactionId(transaction.id),
                         icon: const Icon(Icons.copy_rounded, size: 16),
                         label: const Text('Copy ID'),
                       ),

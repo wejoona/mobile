@@ -14,7 +14,7 @@ class ReferralLeaderboard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (entries.isEmpty) {
       return const EmptyState(
-        message: 'Aucun classement disponible',
+        title: 'Aucun classement disponible',
         icon: Icons.leaderboard_outlined,
       );
     }
@@ -93,14 +93,12 @@ class _LeaderboardTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
-                UserAvatar(name: entry.name, size: 36),
+                UserAvatar(firstName: entry.name, size: 36),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: AppText(entry.name, style: AppTextStyle.labelMedium),
                 ),
-                PillBadge(
-                  label: '${entry.referralCount}',
-                  color: _rankColor,
+                PillBadge(label: '${entry.referralCount}', backgroundColor: _rankColor,
                 ),
               ],
             ),

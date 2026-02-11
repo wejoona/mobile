@@ -62,7 +62,7 @@ class DebugDetectionService {
       try {
         final socket = await Socket.connect('127.0.0.1', port,
             timeout: const Duration(milliseconds: 100));
-        await socket.destroy();
+        socket.destroy();
         return true;
       } catch (_) {}
     }

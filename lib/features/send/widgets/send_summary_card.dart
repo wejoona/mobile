@@ -37,7 +37,7 @@ class SendSummaryCard extends StatelessWidget {
               // Recipient
               Row(
                 children: [
-                  UserAvatar(name: recipientName, size: 48),
+                  UserAvatar(firstName: recipientName, size: 48),
                   const SizedBox(width: AppSpacing.lg),
                   Expanded(
                     child: Column(

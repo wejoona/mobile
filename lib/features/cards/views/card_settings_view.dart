@@ -155,7 +155,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
-                        '${card.currency} ${card.spendingLimit.toStringAsFixed(2)}',
+                        '${card.currency} ${(card.spendingLimit ?? 0).toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,
                         color: colors.textPrimary,
                       ),
@@ -276,7 +276,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     ThemeColors colors,
     dynamic card,
   ) async {
-    _limitController.text = card.spendingLimit.toStringAsFixed(0);
+    _limitController.text = (card.spendingLimit ?? 0).toStringAsFixed(0);
 
     final result = await showDialog<double>(
       context: context,

@@ -12,7 +12,7 @@ class AccountVerificationView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(profileNotifierProvider);
-    final user = profileState.user;
+    final user = profileState.value;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundPrimary,
@@ -37,8 +37,8 @@ class AccountVerificationView extends ConsumerWidget {
           _VerificationStep(
             step: 2,
             title: 'Information personnelle',
-            subtitle: user?.firstName != null ? 'Complete' : 'A remplir',
-            isComplete: user?.firstName != null,
+            subtitle: user?['firstName'] != null ? 'Complete' : 'A remplir',
+            isComplete: user?['firstName'] != null,
             icon: Icons.person_outline,
           ),
           _VerificationStep(

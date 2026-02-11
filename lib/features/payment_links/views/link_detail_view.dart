@@ -36,7 +36,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(paymentLinksProvider);
+    final state = ref.watch(paymentLinksStateProvider);
     final link = state.currentLink ??
         state.links.firstWhere(
           (l) => l.id == widget.linkId,
@@ -370,7 +370,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     );
 
     if (confirmed == true && mounted) {
-      final success = await ref.read(paymentLinkActionsProvider).cancelLink(id);
+      bool success = true; try { await ref.read(paymentLinkActionsProvider).cancelLink(id); } catch (_) { success = false; }
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(

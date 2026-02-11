@@ -108,23 +108,30 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   // === Stub methods for view compatibility ===
-  Future<void> submitPhoneNumber(String phone) async {
-    state = state.copyWith(phoneNumber: phone, isLoading: true);
+  Future<void> submitPhoneNumber([String? phone]) async {
+    if (phone != null) state = state.copyWith(phoneNumber: phone);
+    state = state.copyWith(isLoading: true);
     // TODO: call API
     state = state.copyWith(isLoading: false);
   }
-  Future<void> verifyOtp(String otp) async {
-    state = state.copyWith(otp: otp, isLoading: true);
+  Future<void> verifyOtp([String? otp]) async {
+    if (otp != null) state = state.copyWith(otp: otp);
+    state = state.copyWith(isLoading: true);
     // TODO: verify OTP
     state = state.copyWith(isLoading: false);
   }
   void updateOtp(String otp) => state = state.copyWith(otp: otp);
-  void updatePhoneNumber(String phone) => state = state.copyWith(phoneNumber: phone);
+  void updatePhoneNumber(String phone, [String? countryCode]) => state = state.copyWith(phoneNumber: phone, countryCode: countryCode);
   Future<void> submitPin(String pin) async => state = state.copyWith(pin: pin);
-  Future<void> submitProfile(Map<String, dynamic> data) async {
-    state = state.copyWith(firstName: data['firstName'] as String?, lastName: data['lastName'] as String?, email: data['email'] as String?);
+  Future<void> submitProfile([Map<String, dynamic>? data, String? firstName, String? lastName, String? email]) async {
+    final fn = firstName ?? data?['firstName'] as String?;
+    final ln = lastName ?? data?['lastName'] as String?;
+    final em = email ?? data?['email'] as String?;
+    state = state.copyWith(firstName: fn, lastName: ln, email: em);
   }
-  Future<void> updateProfile(Map<String, dynamic> data) async => submitProfile(data);
+  Future<void> updateProfile({Map<String, dynamic>? data, String? firstName, String? lastName, String? email}) async {
+    await submitProfile(data, firstName, lastName, email);
+  }
   Future<void> resendOtp() async {
     state = state.copyWith(otpResendCountdown: 60);
   }

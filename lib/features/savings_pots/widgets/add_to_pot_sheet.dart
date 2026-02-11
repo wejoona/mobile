@@ -176,12 +176,12 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
 
     setState(() => _isLoading = true);
     try {
-      final success = await ref.read(savingsPotsActionsProvider).addToPot(
+      await ref.read(savingsPotsActionsProvider).addToPot(
             widget.potId,
             amount,
           );
 
-      if (success && mounted) {
+      if (mounted) {
         Navigator.pop(context, true);
       }
     } finally {

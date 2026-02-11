@@ -24,7 +24,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(expensesProvider);
+    final state = ref.watch(expensesStateProvider);
 
     return Scaffold(
       backgroundColor: AppColors.obsidian,
@@ -48,7 +48,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             : state.expenses.isEmpty
                 ? _buildEmptyState(context, l10n)
                 : RefreshIndicator(
-                    onRefresh: () => ref.invalidate(expensesProvider),
+                    onRefresh: () async { ref.invalidate(expensesProvider); },
                     child: Column(
                       children: [
                         _buildSummaryCard(context, l10n, state),

@@ -56,7 +56,7 @@ class CreatePaymentLinkNotifier extends Notifier<CreatePaymentLinkState> {
         currency: 'USDC',
         description: state.description,
       );
-      final result = CreatedPaymentLink.fromJson(response);
+      final result = CreatedPaymentLink(id: response.id, url: response.url ?? '', shortCode: response.shortCode ?? response.id);
       state = state.copyWith(isLoading: false, result: result);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
