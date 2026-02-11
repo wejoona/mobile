@@ -1,209 +1,75 @@
 import 'package:flutter/material.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../design/tokens/index.dart';
-import '../../../design/components/primitives/index.dart';
-import '../models/recurring_transfer.dart';
-import '../models/recurring_transfer_status.dart';
-import '../models/transfer_frequency.dart';
-import '../../../design/tokens/theme_colors.dart';
+import '../../../domain/entities/recurring_transfer.dart';
+import '../../../utils/color_utils.dart';
 
+/// Card showing a recurring transfer summary.
 class RecurringTransferCard extends StatelessWidget {
-  const RecurringTransferCard({
-    super.key,
-    required this.transfer,
-    this.onTap,
-  });
-
   final RecurringTransfer transfer;
   final VoidCallback? onTap;
 
+  const RecurringTransferCard({super.key, required this.transfer, this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final statusColor = transfer.isActive
+        ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
+        : (isDark ? Colors.orange.shade300 : Colors.orange.shade700);
+    final avatarColor = ColorUtils.pastelFromString(transfer.recipientPhone);
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacing.md),
-      child: AppCard(
-        variant: transfer.isActive
-            ? AppCardVariant.elevated
-            : AppCardVariant.subtle,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(14),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: avatarColor,
+                child: const Icon(Icons.repeat_rounded, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      transfer.recipientName ?? transfer.recipientPhone,
+                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
                       children: [
-                        AppText(
-                          transfer.recipientName,
-                          variant: AppTextVariant.headlineSmall,
+                        Container(
+                          width: 6, height: 6,
+                          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
                         ),
-                        SizedBox(height: AppSpacing.xs),
-                        AppText(
-                          transfer.recipientPhone,
-                          variant: AppTextVariant.bodySmall,
-                          color: context.colors.textSecondary,
+                        const SizedBox(width: 6),
+                        Text(
+                          '${transfer.frequencyLabel} • ${transfer.status.name}',
+                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                         ),
                       ],
                     ),
-                  ),
-                  _buildStatusBadge(l10n, transfer.status),
-                ],
+                  ],
+                ),
               ),
-              SizedBox(height: AppSpacing.md),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        l10n.recurringTransfers_amount,
-                        variant: AppTextVariant.bodySmall,
-                        color: context.colors.textSecondary,
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        '${transfer.amount.toStringAsFixed(0)} ${transfer.currency}',
-                        variant: AppTextVariant.headlineSmall,
-                        color: context.colors.gold,
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      AppText(
-                        l10n.recurringTransfers_frequency,
-                        variant: AppTextVariant.bodySmall,
-                        color: context.colors.textSecondary,
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        transfer.frequency.getDisplayName(
-                          Localizations.localeOf(context).toString(),
-                        ),
-                        variant: AppTextVariant.bodyMedium,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ],
-                  ),
+                  Text('\$${transfer.amount.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  Text('${transfer.executionCount} sent', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                 ],
               ),
-              SizedBox(height: AppSpacing.md),
-              Container(
-                padding: EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: context.colors.elevated,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.schedule,
-                      size: 16,
-                      color: context.colors.gold,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: AppText(
-                        transfer.getFrequencyDescription(
-                          Localizations.localeOf(context).toString(),
-                        ),
-                        variant: AppTextVariant.bodySmall,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (transfer.isActive) ...[
-                SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.event,
-                      size: 14,
-                      color: context.colors.textSecondary,
-                    ),
-                    SizedBox(width: AppSpacing.xs),
-                    AppText(
-                      '${l10n.recurringTransfers_nextExecution}: ${_formatDate(transfer.nextExecutionDate)}',
-                      variant: AppTextVariant.bodySmall,
-                      color: context.colors.textSecondary,
-                    ),
-                  ],
-                ),
-              ],
-              if (transfer.note != null) ...[
-                SizedBox(height: AppSpacing.sm),
-                AppText(
-                  transfer.note!,
-                  variant: AppTextVariant.bodySmall,
-                  color: context.colors.textSecondary,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
             ],
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildStatusBadge(AppLocalizations l10n, RecurringTransferStatus status) {
-    return Builder(
-      builder: (context) {
-        Color color;
-        switch (status) {
-          case RecurringTransferStatus.active:
-            color = context.colors.success;
-            break;
-          case RecurringTransferStatus.paused:
-            color = context.colors.warning;
-            break;
-          case RecurringTransferStatus.completed:
-            color = context.colors.textSecondary;
-            break;
-          case RecurringTransferStatus.cancelled:
-            color = context.colors.error;
-            break;
-        }
-
-        return Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xs,
-          ),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(color: color, width: 1),
-          ),
-          child: AppText(
-            status.getDisplayName(Localizations.localeOf(context).toString()),
-            variant: AppTextVariant.bodySmall,
-            color: color,
-            fontWeight: FontWeight.w600,
-          ),
-        );
-      },
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = date.difference(now).inDays;
-
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Tomorrow';
-    if (diff < 7) return 'In $diff days';
-
-    return '${date.day}/${date.month}/${date.year}';
   }
 }
