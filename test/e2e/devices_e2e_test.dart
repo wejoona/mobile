@@ -16,7 +16,7 @@ void main() {
   group('Devices E2E', () {
     test('POST /devices/register — register device', () async {
       final res = await client.post('/devices/register', {
-        'deviceId': 'e2e-test-device-001',
+        'deviceIdentifier': 'e2e-test-device-001',
         'platform': 'ios',
         'model': 'iPhone 16',
         'osVersion': '26.3',
@@ -32,7 +32,7 @@ void main() {
 
     test('POST /devices/register — duplicate device is idempotent', () async {
       final res = await client.post('/devices/register', {
-        'deviceId': 'e2e-test-device-001',
+        'deviceIdentifier': 'e2e-test-device-001',
         'platform': 'ios',
         'model': 'iPhone 16',
         'osVersion': '26.3',

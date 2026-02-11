@@ -20,7 +20,6 @@ void main() {
         'name': 'E2E Test Pot',
         'targetAmount': 50000,
         'currency': 'XOF',
-        'color': '#4CAF50',
       });
       expect(res.statusCode, anyOf(200, 201));
       final data = res.data?['data'] ?? res.data;

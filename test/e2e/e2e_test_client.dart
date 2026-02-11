@@ -79,6 +79,15 @@ class E2EClient {
     return E2EResponse(res);
   }
 
+  Future<E2EResponse> patch(String path, [Map<String, dynamic>? body]) async {
+    final res = await http.patch(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
+    return E2EResponse(res);
+  }
+
   // ── Auth helpers ──
 
   /// Register → get OTP from dev endpoint → verify OTP → get tokens.
