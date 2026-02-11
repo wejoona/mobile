@@ -98,6 +98,17 @@ class KoridoCard {
   String? get cardNumber => null; // Full number never exposed client-side
   bool get isFrozen => status == CardStatus.frozen;
   String get expiryDate => '${expiryMonth.toString().padLeft(2, '0')}/${expiryYear.toString().substring(2)}';
+
+  // Aliases expected by generated views
+  String? get cvv => null; // Never exposed client-side
+  String get expiry => expiryFormatted;
+  String get currency => 'USD';
+  double get spentAmount => currentSpend ?? 0;
+  double get availableLimit => (spendingLimit ?? 0) - spentAmount;
+  bool get isVirtual => type == CardType.virtual;
+  String get lastFourDigits => last4;
+  double? get dailyLimit => spendingLimit;
+  double? get transactionLimit => spendingLimit;
 }
 
 enum CardType { virtual, physical }

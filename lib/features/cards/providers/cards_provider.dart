@@ -33,19 +33,4 @@ final selectedCardProvider = Provider.family<KoridoCard?, String>((ref, cardId) 
   }
 });
 
-/// CardsState compatibility wrapper.
-class CardsState {
-  final List<KoridoCard> cards;
-  final KoridoCard? selectedCard;
-  final List<dynamic> transactions;
-  final String? requestError;
-  final bool isLoading;
-
-  const CardsState({
-    this.cards = const [],
-    this.selectedCard,
-    this.transactions = const [],
-    this.requestError,
-    this.isLoading = false,
-  });
-}
+// CardsState is defined in missing_states.dart

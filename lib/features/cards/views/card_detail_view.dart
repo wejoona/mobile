@@ -94,12 +94,12 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               l10n,
               colors,
               label: l10n.cards_cardNumber,
-              value: _showFullNumber ? card.cardNumber : card.maskedNumber,
+              value: _showFullNumber ? (card.cardNumber ?? card.maskedNumber) : card.maskedNumber,
               icon: _showFullNumber ? Icons.visibility_off : Icons.visibility,
               onIconPressed: () {
                 setState(() => _showFullNumber = !_showFullNumber);
               },
-              onCopy: () => _copyToClipboard(context, l10n, card.cardNumber),
+              onCopy: () => _copyToClipboard(context, l10n, card.cardNumber ?? card.maskedNumber),
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -110,12 +110,12 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
               l10n,
               colors,
               label: l10n.cards_cvv,
-              value: _showCVV ? card.cvv : '***',
+              value: _showCVV ? (card.cvv ?? '***') : '***',
               icon: _showCVV ? Icons.visibility_off : Icons.visibility,
               onIconPressed: () {
                 setState(() => _showCVV = !_showCVV);
               },
-              onCopy: () => _copyToClipboard(context, l10n, card.cvv),
+              onCopy: () => _copyToClipboard(context, l10n, card.cvv ?? '***'),
             ),
 
             const SizedBox(height: AppSpacing.md),
@@ -176,14 +176,14 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                     child: SizedBox(
                       height: 8,
                       child: LinearProgressIndicator(
-                        value: card.spendingLimit > 0
-                            ? (card.spentAmount / card.spendingLimit).clamp(0.0, 1.0)
+                        value: (card.spendingLimit ?? 0) > 0
+                            ? ((card.currentSpend ?? 0) / card.spendingLimit!).clamp(0.0, 1.0)
                             : 0,
                         backgroundColor: colors.isDark
                             ? colors.borderSubtle
                             : AppColorsLight.elevated,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _getProgressColor(colors, card.spentAmount / card.spendingLimit),
+                          _getProgressColor(colors, (card.spendingLimit ?? 0) > 0 ? (card.currentSpend ?? 0) / card.spendingLimit! : 0),
                         ),
                       ),
                     ),
@@ -199,7 +199,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                         color: colors.textSecondary,
                       ),
                       AppText(
-                        '${card.currency} ${card.spendingLimit.toStringAsFixed(2)}',
+                        'USDC ${(card.spendingLimit ?? 0).toStringAsFixed(2)}',
                         variant: AppTextVariant.labelLarge,
                         color: colors.textPrimary,
                         fontWeight: FontWeight.w600,

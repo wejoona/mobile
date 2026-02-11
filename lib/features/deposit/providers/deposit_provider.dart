@@ -114,18 +114,18 @@ class DepositNotifier extends Notifier<DepositState> {
     }
   }
 
-  void setAmountXOF(double amount, [double? rate]) => state = state.copyWith(amountXOF: amount);
-  void setAmountUSD(double amount, [double? rate]) => state = state.copyWith(amountUSD: amount);
+  void setAmountXOF(double amount, [dynamic rate]) => state = state.copyWith(amountXOF: amount);
+  void setAmountUSD(double amount, [dynamic rate]) => state = state.copyWith(amountUSD: amount);
   Future<void> checkStatus() async {
     // TODO: poll backend for deposit status
   }
   void reset() => state = const DepositState();
-}
 
   // === Stub methods for views ===
   Future<void> confirmDeposit() async => initiate();
   Future<void> initiateDeposit() async => initiate();
   void selectProviderData(dynamic data) {}
   void setOtp(String otp) => state = state.copyWith(otpInput: otp);
+}
 
 final depositProvider = NotifierProvider<DepositNotifier, DepositState>(DepositNotifier.new);

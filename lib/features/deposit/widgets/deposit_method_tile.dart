@@ -1,22 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 
 /// A tile representing a deposit method.
 class DepositMethodTile extends StatelessWidget {
   const DepositMethodTile({
     super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
+    this.icon,
+    this.title,
+    this.subtitle,
     this.onTap,
     this.isEnabled = true,
+    this.method,
+    this.isSelected = false,
   });
 
-  final IconData icon;
-  final String title;
-  final String subtitle;
+  final IconData? icon;
+  final String? title;
+  final String? subtitle;
   final VoidCallback? onTap;
   final bool isEnabled;
+  final DepositMethod? method;
+  final bool isSelected;
+
+  IconData get _icon => icon ?? _iconForMethod(method);
+  String get _title => title ?? method?.label ?? '';
+  String get _subtitle => subtitle ?? method?.prefix ?? '';
+
+  static IconData _iconForMethod(DepositMethod? m) {
+    switch (m) {
+      case DepositMethod.orangeMoney: return Icons.phone_android;
+      case DepositMethod.mtnMomo: return Icons.phone_android;
+      case DepositMethod.moovMoney: return Icons.phone_android;
+      case DepositMethod.wave: return Icons.waves;
+      case DepositMethod.bankTransfer: return Icons.account_balance;
+      default: return Icons.payment;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,17 +52,17 @@ class DepositMethodTile extends StatelessWidget {
             color: colors.primary.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: colors.primary),
+          child: Icon(_icon, color: colors.primary),
         ),
         title: Text(
-          title,
+          _title,
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: colors.textPrimary,
           ),
         ),
         subtitle: Text(
-          subtitle,
+          _subtitle,
           style: TextStyle(
             color: colors.textSecondary,
             fontSize: 13,

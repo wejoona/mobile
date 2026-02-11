@@ -38,9 +38,8 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
     final asyncState = ref.watch(cardsProvider);
     final card = ref.watch(selectedCardProvider(widget.cardId));
     final cardsState = CardsState(
-      cards: asyncState.valueOrNull ?? [],
+      cards: asyncState.value ?? [],
       selectedCard: card,
-      isLoading: asyncState.isLoading,
     );
 
     return Scaffold(

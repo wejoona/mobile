@@ -74,7 +74,7 @@ class VirtualCardWidget extends StatelessWidget {
             ),
             Text(
               showDetails
-                  ? card.cardNumber
+                  ? (card.cardNumber ?? card.maskedNumber)
                   : card.maskedNumber,
               style: const TextStyle(
                 color: Colors.white,
