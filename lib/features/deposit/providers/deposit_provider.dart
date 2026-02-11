@@ -213,7 +213,7 @@ class DepositNotifier extends Notifier<DepositState> {
     try {
       final service = ref.read(depositServiceProvider);
       final request = InitiateDepositRequest(
-        amount: state.amountXOF,
+        amount: state.amountXOF.toInt(),
         currency: 'XOF',
         providerCode: providerCode,
       );

@@ -179,6 +179,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     return LayoutBuilder(
       builder: (context, constraints) {
         return SizedBox(
+          width: double.infinity,
           height: constraints.maxHeight,
           child: Column(
             children: [
