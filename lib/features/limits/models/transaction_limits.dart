@@ -1,10 +1,14 @@
 class TransactionLimits {
   final double dailyLimit;
+  final double weeklyLimit;
   final double monthlyLimit;
   final double singleTransactionLimit;
+  final double singleTransactionMax;
   final double withdrawalLimit;
   final double dailyUsed;
+  final double weeklyUsed;
   final double monthlyUsed;
+  final String currency;
   final int kycTier;
   final String tierName;
   final String? nextTierName;
@@ -16,11 +20,15 @@ class TransactionLimits {
 
   const TransactionLimits({
     required this.dailyLimit,
+    this.weeklyLimit = 0,
     required this.monthlyLimit,
     required this.singleTransactionLimit,
+    this.singleTransactionMax = 0,
     required this.withdrawalLimit,
     required this.dailyUsed,
+    this.weeklyUsed = 0,
     required this.monthlyUsed,
+    this.currency = 'USDC',
     required this.kycTier,
     required this.tierName,
     this.nextTierName,
@@ -34,11 +42,15 @@ class TransactionLimits {
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
     return TransactionLimits(
       dailyLimit: (json['dailyLimit'] as num).toDouble(),
+      weeklyLimit: (json['weeklyLimit'] as num?)?.toDouble() ?? 0.0,
       monthlyLimit: (json['monthlyLimit'] as num).toDouble(),
       singleTransactionLimit: (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
+      singleTransactionMax: (json['singleTransactionMax'] as num?)?.toDouble() ?? (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
       withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
       dailyUsed: (json['dailyUsed'] as num).toDouble(),
+      weeklyUsed: (json['weeklyUsed'] as num?)?.toDouble() ?? 0.0,
       monthlyUsed: (json['monthlyUsed'] as num).toDouble(),
+      currency: json['currency'] as String? ?? 'USDC',
       kycTier: json['kycTier'] as int,
       tierName: json['tierName'] as String,
       nextTierName: json['nextTierName'] as String?,

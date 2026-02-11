@@ -97,7 +97,7 @@ class ReferralCard extends StatelessWidget {
 
   void _copyCode(BuildContext context) {
     Clipboard.setData(ClipboardData(text: referralCode));
-    HapticService.lightImpact();
+    HapticService().lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Code copie!'),

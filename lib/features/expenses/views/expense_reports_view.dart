@@ -33,7 +33,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(expensesProvider);
-    final expenses = ref.read(expensesProvider.notifier).getExpensesByDateRange(
+    final expenses = ref.invalidate(expensesProvider) /* getExpensesByDateRange */(
           _startDate,
           _endDate,
         );

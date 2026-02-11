@@ -168,7 +168,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
         createdAt: DateTime.now(),
       );
 
-      await ref.read(expensesProvider.notifier).addExpense(expense);
+      ref.invalidate(expensesProvider);
 
       if (mounted) {
         context.pop();

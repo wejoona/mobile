@@ -230,7 +230,7 @@ class ExpenseDetailView extends ConsumerWidget {
 
     if (confirmed == true && context.mounted) {
       try {
-        await ref.read(expensesProvider.notifier).deleteExpense(expense.id);
+        ref.invalidate(expensesProvider);
         if (context.mounted) {
           context.pop();
           ScaffoldMessenger.of(context).showSnackBar(

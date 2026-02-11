@@ -48,7 +48,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             : state.expenses.isEmpty
                 ? _buildEmptyState(context, l10n)
                 : RefreshIndicator(
-                    onRefresh: () => ref.read(expensesProvider.notifier).refresh(),
+                    onRefresh: () => ref.invalidate(expensesProvider),
                     child: Column(
                       children: [
                         _buildSummaryCard(context, l10n, state),

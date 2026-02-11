@@ -45,7 +45,7 @@ class SendAmountKeypad extends StatelessWidget {
             child: _KeypadButton(
               label: d,
               onTap: () {
-                HapticService.lightImpact();
+                HapticService().lightImpact();
                 onDigit(d);
               },
             ),
@@ -65,7 +65,7 @@ class SendAmountKeypad extends StatelessWidget {
                 ? _KeypadButton(
                     label: '.',
                     onTap: () {
-                      HapticService.lightImpact();
+                      HapticService().lightImpact();
                       onDecimal?.call();
                     },
                   )
@@ -78,7 +78,7 @@ class SendAmountKeypad extends StatelessWidget {
             child: _KeypadButton(
               label: '0',
               onTap: () {
-                HapticService.lightImpact();
+                HapticService().lightImpact();
                 onDigit('0');
               },
             ),
@@ -90,7 +90,7 @@ class SendAmountKeypad extends StatelessWidget {
             child: _KeypadButton(
               icon: Icons.backspace_outlined,
               onTap: () {
-                HapticService.lightImpact();
+                HapticService().lightImpact();
                 onDelete();
               },
               semanticLabel: 'Supprimer',

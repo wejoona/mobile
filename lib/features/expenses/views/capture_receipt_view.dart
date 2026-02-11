@@ -501,7 +501,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         createdAt: DateTime.now(),
       );
 
-      await ref.read(expensesProvider.notifier).addExpense(expense);
+      ref.invalidate(expensesProvider);
 
       if (mounted) {
         context.go('/expenses');
