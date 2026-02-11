@@ -1,105 +1,135 @@
 import 'package:flutter/material.dart';
+import '../../../design/tokens/index.dart';
+import '../../../design/components/primitives/index.dart';
 import '../../../domain/entities/notification.dart';
-import '../../../utils/duration_extensions.dart';
+import '../../../utils/date_utils.dart';
 
-/// Notification list tile.
+/// Run 359: Individual notification list tile widget
 class NotificationTile extends StatelessWidget {
   final AppNotification notification;
   final VoidCallback? onTap;
   final VoidCallback? onDismiss;
 
-  const NotificationTile({super.key, required this.notification, this.onTap, this.onDismiss});
+  const NotificationTile({
+    super.key,
+    required this.notification,
+    this.onTap,
+    this.onDismiss,
+  });
+
+  IconData get _icon {
+    switch (notification.type) {
+      case NotificationType.transfer:
+        return Icons.swap_horiz;
+      case NotificationType.deposit:
+        return Icons.arrow_downward;
+      case NotificationType.withdrawal:
+        return Icons.arrow_upward;
+      case NotificationType.security:
+        return Icons.shield_outlined;
+      case NotificationType.kyc:
+        return Icons.verified_user_outlined;
+      case NotificationType.promotion:
+        return Icons.local_offer_outlined;
+      default:
+        return Icons.notifications_outlined;
+    }
+  }
+
+  Color get _iconColor {
+    switch (notification.type) {
+      case NotificationType.transfer:
+        return AppColors.gold;
+      case NotificationType.deposit:
+        return AppColors.success;
+      case NotificationType.withdrawal:
+        return AppColors.warning;
+      case NotificationType.security:
+        return AppColors.error;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isUnread = !notification.isRead;
-
-    return Dismissible(
-      key: Key(notification.id),
-      direction: DismissDirection.endToStart,
-      onDismissed: (_) => onDismiss?.call(),
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        child: const Icon(Icons.delete_rounded, color: Colors.white),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          color: isUnread ? theme.colorScheme.primaryContainer.withOpacity(0.1) : null,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _typeIcon(theme),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      notification.title,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: isUnread ? FontWeight.w600 : FontWeight.normal,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      notification.body,
-                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      notification.createdAt.timeAgo,
-                      style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
+    return Semantics(
+      label: '${notification.title}: ${notification.body}',
+      button: onTap != null,
+      child: SwipeActionCell(
+        onDismissed: onDismiss,
+        child: Material(
+          color: notification.isRead
+              ? Colors.transparent
+              : AppColors.gold.withOpacity(0.03),
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
               ),
-              if (isUnread)
-                Container(
-                  width: 8, height: 8,
-                  margin: const EdgeInsets.only(top: 6),
-                  decoration: BoxDecoration(color: theme.colorScheme.primary, shape: BoxShape.circle),
-                ),
-            ],
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _iconColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(_icon, color: _iconColor, size: 20),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppText(
+                                notification.title,
+                                style: AppTextStyle.labelMedium,
+                                color: notification.isRead
+                                    ? AppColors.textSecondary
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                            if (!notification.isRead)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.gold,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        AppText(
+                          notification.body,
+                          style: AppTextStyle.bodySmall,
+                          color: AppColors.textTertiary,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        AppText(
+                          AppDateUtils.relativeTime(notification.createdAt),
+                          style: AppTextStyle.bodySmall,
+                          color: AppColors.textTertiary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _typeIcon(ThemeData theme) {
-    IconData icon;
-    Color color;
-    switch (notification.type) {
-      case NotificationType.transaction:
-        icon = Icons.swap_horiz_rounded;
-        color = Colors.blue;
-      case NotificationType.security:
-        icon = Icons.shield_rounded;
-        color = Colors.red;
-      case NotificationType.kyc:
-        icon = Icons.verified_user_rounded;
-        color = Colors.orange;
-      case NotificationType.promotion:
-        icon = Icons.local_offer_rounded;
-        color = Colors.purple;
-      case NotificationType.system:
-        icon = Icons.settings_rounded;
-        color = Colors.grey;
-      case NotificationType.general:
-        icon = Icons.notifications_rounded;
-        color = theme.colorScheme.primary;
-    }
-    return Container(
-      width: 40, height: 40,
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-      child: Icon(icon, color: color, size: 20),
     );
   }
 }

@@ -1,65 +1,93 @@
 import 'package:flutter/material.dart';
+import '../../../design/tokens/index.dart';
 import '../../../domain/entities/savings_pot.dart';
-import '../../../design/components/primitives/progress_bar.dart';
+import '../../../utils/formatters.dart';
 
-/// Card displaying a savings pot with progress.
+/// Card widget for a single savings pot.
 class SavingsPotCard extends StatelessWidget {
+  const SavingsPotCard({
+    super.key,
+    required this.pot,
+    this.onTap,
+  });
+
   final SavingsPot pot;
   final VoidCallback? onTap;
 
-  const SavingsPotCard({super.key, required this.pot, this.onTap});
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.savings_rounded, color: theme.colorScheme.onPrimaryContainer, size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(pot.name, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-                        if (pot.daysRemaining != null)
-                          Text('${pot.daysRemaining} days left', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                      ],
+    final colors = context.colors;
+    final progress = pot.targetAmount > 0
+        ? (pot.currentAmount / pot.targetAmount).clamp(0.0, 1.0)
+        : 0.0;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: colors.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.savings_outlined, color: colors.primary, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    pot.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textPrimary,
+                      fontSize: 16,
                     ),
                   ),
-                  if (pot.isGoalReached)
-                    Icon(Icons.check_circle_rounded, color: Colors.green.shade600, size: 22),
-                ],
+                ),
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: colors.border,
+                valueColor: AlwaysStoppedAnimation(colors.primary),
+                minHeight: 6,
               ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('\$${pot.currentAmount.toStringAsFixed(2)}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                  Text('of \$${pot.targetAmount.toStringAsFixed(2)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ProgressBar(value: pot.progress, height: 6, showPercentage: false),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatCurrency(pot.currentAmount, pot.currency),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: colors.textPrimary,
+                  ),
+                ),
+                Text(
+                  'of ${formatCurrency(pot.targetAmount, pot.currency)}',
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
