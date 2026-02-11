@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'fraud_case_model.dart';
+import 'package:usdc_wallet/services/fraud/fraud_case_model.dart';
 
 /// Service de signalement de fraude.
 ///

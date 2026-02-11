@@ -2,7 +2,7 @@
 /// Data model for user alert preferences
 library;
 
-import 'alert_model.dart';
+import 'package:usdc_wallet/features/alerts/models/alert_model.dart';
 
 /// Digest frequency options
 enum DigestFrequency {

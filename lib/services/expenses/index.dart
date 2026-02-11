@@ -1,4 +1,4 @@
 /// Barrel exports for expenses service.
 library;
 
-export 'expenses_service.dart';
+export 'package:usdc_wallet/services/expenses/expenses_service.dart';

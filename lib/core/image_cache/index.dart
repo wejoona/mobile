@@ -28,7 +28,7 @@
 /// await ImageCacheConfig.clearAllCaches()
 /// ```
 
-export 'image_cache_config.dart';
-export 'cached_image_widget.dart';
-export 'image_preloader.dart';
-export 'image_cache_manager_service.dart';
+export 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
+export 'package:usdc_wallet/core/image_cache/cached_image_widget.dart';
+export 'package:usdc_wallet/core/image_cache/image_preloader.dart';
+export 'package:usdc_wallet/core/image_cache/image_cache_manager_service.dart';

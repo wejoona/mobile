@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'security_config.dart';
+import 'package:flutter_security_kit/src/security_config.dart';
 
 /// Device Security Service
 ///

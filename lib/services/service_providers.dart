@@ -5,15 +5,15 @@
 library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'api/api_client.dart';
-import 'cards/cards_service.dart';
-import 'recurring_transfers/recurring_transfers_service.dart';
-import 'payment_links/payment_links_service.dart';
-import 'bank_linking/bank_linking_service.dart';
-import 'bulk_payments/bulk_payments_service.dart';
-import 'kyc/kyc_service.dart';
-import 'deposit/deposit_service.dart';
-import 'user/user_service.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/cards/cards_service.dart';
+import 'package:usdc_wallet/services/recurring_transfers/recurring_transfers_service.dart';
+import 'package:usdc_wallet/services/payment_links/payment_links_service.dart';
+import 'package:usdc_wallet/services/bank_linking/bank_linking_service.dart';
+import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
+import 'package:usdc_wallet/services/kyc/kyc_service.dart';
+import 'package:usdc_wallet/services/deposit/deposit_service.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
 
 // Note: SavingsPotsService, LimitsService, ReferralsService
 // have providers defined in their own files.

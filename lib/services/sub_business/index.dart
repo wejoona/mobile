@@ -1,4 +1,4 @@
 /// Barrel exports for sub-business service.
 library;
 
-export 'sub_business_service.dart';
+export 'package:usdc_wallet/services/sub_business/sub_business_service.dart';

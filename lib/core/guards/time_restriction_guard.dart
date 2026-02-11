@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'guard_base.dart';
+import 'package:usdc_wallet/core/guards/guard_base.dart';
 
 /// Restricts certain actions to specific time windows.
 class TimeRestrictionGuard extends GuardBase {

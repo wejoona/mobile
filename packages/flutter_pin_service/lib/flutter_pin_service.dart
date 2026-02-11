@@ -26,7 +26,7 @@
 /// ```
 library flutter_pin_service;
 
-export 'src/pin_service.dart';
-export 'src/pin_config.dart';
-export 'src/pin_hasher.dart';
-export 'src/pin_validator.dart';
+export 'package:flutter_pin_service/src/pin_service.dart';
+export 'package:flutter_pin_service/src/pin_config.dart';
+export 'package:flutter_pin_service/src/pin_hasher.dart';
+export 'package:flutter_pin_service/src/pin_validator.dart';

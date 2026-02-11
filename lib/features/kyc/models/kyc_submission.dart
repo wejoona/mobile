@@ -1,4 +1,4 @@
-import 'kyc_document.dart';
+import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 
 class KycSubmission {
   final List<KycDocument> documents;

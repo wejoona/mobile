@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'pin_config.dart';
+import 'package:flutter_pin_service/src/pin_config.dart';
 
 /// Secure PIN hashing utilities using PBKDF2.
 ///

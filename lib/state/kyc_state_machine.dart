@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
-import 'fsm/fsm_provider.dart';
-import 'fsm/kyc_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 
 /// KYC State for the state machine
 class KycStateMachineState {

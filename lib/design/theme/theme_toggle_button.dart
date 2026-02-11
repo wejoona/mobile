@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'theme_provider.dart';
-import 'theme_transition.dart';
+import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/design/theme/theme_transition.dart';
 
 /// Theme toggle button with smooth animations
 /// Provides multiple visual styles for theme switching

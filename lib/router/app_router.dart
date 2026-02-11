@@ -148,7 +148,7 @@ import 'package:usdc_wallet/features/fsm_states/views/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
-import 'page_transitions.dart';
+import 'package:usdc_wallet/router/page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
 class MainShell extends ConsumerWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 
 /// Input Field Variants
 enum AppInputVariant {

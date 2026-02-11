@@ -1,2 +1,2 @@
 // Liveness detection feature exports
-export 'widgets/liveness_check_widget.dart';
+export 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';

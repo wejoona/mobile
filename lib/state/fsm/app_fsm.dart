@@ -1,8 +1,8 @@
-import 'fsm_base.dart';
-import 'auth_fsm.dart';
-import 'wallet_fsm.dart';
-import 'kyc_fsm.dart';
-import 'session_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_base.dart';
+import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
+import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │                    APP FSM (ORCHESTRATOR)                        │

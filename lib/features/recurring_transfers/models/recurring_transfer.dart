@@ -1,5 +1,5 @@
-import 'transfer_frequency.dart';
-import 'recurring_transfer_status.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
 
 class RecurringTransfer {
   final String id;

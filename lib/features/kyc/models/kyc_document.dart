@@ -1,4 +1,4 @@
-import 'document_type.dart';
+import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 
 enum DocumentSide { front, back }
 

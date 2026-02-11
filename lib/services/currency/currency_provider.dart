@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'currency_service.dart';
+import 'package:usdc_wallet/services/currency/currency_service.dart';
 
 /// State for managing currency preferences
 class CurrencyState {

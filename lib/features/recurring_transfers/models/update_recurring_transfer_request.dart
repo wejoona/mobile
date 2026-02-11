@@ -1,4 +1,4 @@
-import 'transfer_frequency.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 
 class UpdateRecurringTransferRequest {
   final double? amount;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'error_reporter.dart';
-import 'error_types.dart';
-import 'error_fallback_ui.dart';
+import 'package:usdc_wallet/core/error_handling/error_reporter.dart';
+import 'package:usdc_wallet/core/error_handling/error_types.dart';
+import 'package:usdc_wallet/core/error_handling/error_fallback_ui.dart';
 
 /// Mixin for handling errors in widgets
 ///

@@ -1,2 +1,2 @@
 // Liveness service exports
-export 'liveness_service.dart';
+export 'package:usdc_wallet/services/liveness/liveness_service.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
-import 'cards_provider.dart';
+import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 
 /// Card action state (freeze/unfreeze/cancel).
 class CardActionState {

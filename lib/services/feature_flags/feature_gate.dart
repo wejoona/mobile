@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'feature_flags_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 
 /// Feature Gate Widget
 ///

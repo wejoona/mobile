@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 /// Theme-aware colors extension on BuildContext.
 ///

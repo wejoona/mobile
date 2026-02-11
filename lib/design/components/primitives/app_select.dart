@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// Select/Dropdown Item Model

@@ -1,4 +1,4 @@
-import 'spending_category.dart';
+import 'package:usdc_wallet/features/insights/models/spending_category.dart';
 
 /// Summary of spending for a period
 class SpendingSummary {

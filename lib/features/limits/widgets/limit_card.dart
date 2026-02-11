@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'limit_progress_bar.dart';
+import 'package:usdc_wallet/features/limits/widgets/limit_progress_bar.dart';
 
 class LimitCard extends StatelessWidget {
   final String title;

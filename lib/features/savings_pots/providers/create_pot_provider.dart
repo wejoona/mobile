@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/savings_pots/savings_pots_service.dart';
-import 'savings_pots_provider.dart';
+import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 
 /// Create savings pot flow state.
 class CreatePotState {

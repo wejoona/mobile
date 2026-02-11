@@ -1,1 +1,1 @@
-export 'profile_provider.dart';
+export 'package:usdc_wallet/features/profile/providers/profile_provider.dart';

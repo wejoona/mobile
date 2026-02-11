@@ -5,7 +5,7 @@
 ///
 /// Usage:
 /// ```dart
-/// import 'config/deferred_imports.dart' as deferred;
+/// import 'package:usdc_wallet/config/config/deferred_imports.dart' as deferred;
 ///
 /// // Later, when needed:
 /// await deferred.loadInsights();

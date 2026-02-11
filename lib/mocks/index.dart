@@ -39,22 +39,22 @@
 library mocks;
 
 // Configuration
-export 'mock_config.dart';
+export 'package:usdc_wallet/mocks/mock_config.dart';
 
 // Registry
-export 'mock_registry.dart';
+export 'package:usdc_wallet/mocks/mock_registry.dart';
 
 // Base classes
-export 'base/api_contract.dart';
-export 'base/mock_interceptor.dart';
-export 'base/mock_data_generator.dart';
+export 'package:usdc_wallet/mocks/base/api_contract.dart';
+export 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
+export 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 
 // Service contracts (API interfaces)
-export 'services/auth/auth_contract.dart';
-export 'services/wallet/wallet_contract.dart';
-export 'services/transactions/transactions_contract.dart';
+export 'package:usdc_wallet/mocks/services/auth/auth_contract.dart';
+export 'package:usdc_wallet/mocks/services/wallet/wallet_contract.dart';
+export 'package:usdc_wallet/mocks/services/transactions/transactions_contract.dart';
 
 // Service mocks (implementations)
-export 'services/auth/auth_mock.dart';
-export 'services/wallet/wallet_mock.dart';
-export 'services/transactions/transactions_mock.dart';
+export 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';
+export 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
+export 'package:usdc_wallet/mocks/services/transactions/transactions_mock.dart';

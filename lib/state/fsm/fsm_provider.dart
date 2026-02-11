@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
-import 'fsm_base.dart';
-import 'auth_fsm.dart';
-import 'wallet_fsm.dart';
-import 'kyc_fsm.dart';
-import 'app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/fsm_base.dart';
+import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
+import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
+import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │               FSM + RIVERPOD INTEGRATION                         │

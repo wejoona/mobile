@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'daily_aggregation_service.dart';
+import 'package:usdc_wallet/services/compliance/daily_aggregation_service.dart';
 
 /// Agrégation mensuelle des transactions.
 class MonthlyAggregationService {

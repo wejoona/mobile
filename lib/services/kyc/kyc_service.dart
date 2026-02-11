@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
-import 'image_quality_checker.dart';
+import 'package:usdc_wallet/services/kyc/image_quality_checker.dart';
 
 class KycService {
   final Dio _dio;

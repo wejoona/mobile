@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'vpn_proxy_detector.dart';
-import 'mitm_detector.dart';
-import 'dns_security_service.dart';
+import 'package:usdc_wallet/services/security/network/vpn_proxy_detector.dart';
+import 'package:usdc_wallet/services/security/network/mitm_detector.dart';
+import 'package:usdc_wallet/services/security/network/dns_security_service.dart';
 
 /// Overall network trust level.
 enum NetworkTrustLevel { trusted, cautious, untrusted }

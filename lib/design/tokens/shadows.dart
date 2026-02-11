@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'colors.dart';
+import 'package:usdc_wallet/design/tokens/colors.dart';
 
 /// Shadow System for Elevation
 /// Shadows adapt to light/dark themes - use theme-aware getters when possible

@@ -28,5 +28,5 @@
 /// final balance = await sdk.wallet.getBalance().withRetry(ref);
 /// ```
 
-export 'offline_banner.dart';
-export 'retry_service.dart';
+export 'package:usdc_wallet/core/offline/offline_banner.dart';
+export 'package:usdc_wallet/core/offline/retry_service.dart';

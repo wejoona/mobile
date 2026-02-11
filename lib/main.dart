@@ -5,16 +5,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'design/theme/app_theme.dart';
-import 'design/theme/theme_provider.dart';
-import 'router/app_router.dart';
-import 'services/session/session_manager.dart';
-import 'services/security/security_gate.dart';
-import 'services/security/device_security.dart';
-import 'services/localization/language_provider.dart';
-import 'services/feature_flags/feature_flags_provider.dart';
-import 'services/analytics/crash_reporting_service.dart';
-import 'utils/logger.dart';
+import 'package:usdc_wallet/design/theme/app_theme.dart';
+import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/router/app_router.dart';
+import 'package:usdc_wallet/services/session/session_manager.dart';
+import 'package:usdc_wallet/services/security/security_gate.dart';
+import 'package:usdc_wallet/services/security/device_security.dart';
+import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

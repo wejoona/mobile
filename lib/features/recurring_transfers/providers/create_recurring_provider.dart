@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
-import 'recurring_transfers_provider.dart';
+import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 
 /// Create recurring transfer flow state.
 class CreateRecurringState {

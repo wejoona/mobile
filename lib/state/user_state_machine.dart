@@ -3,9 +3,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
-import 'app_state.dart';
-import 'wallet_state_machine.dart';
-import 'transaction_state_machine.dart';
+import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/transaction_state_machine.dart';
 
 /// User/Auth State Machine - manages user authentication globally
 class UserStateMachine extends Notifier<UserState> {

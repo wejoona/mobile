@@ -27,7 +27,7 @@
 /// ```
 library flutter_security_kit;
 
-export 'src/device_security.dart';
-export 'src/device_attestation.dart';
-export 'src/screenshot_protection.dart';
-export 'src/security_config.dart';
+export 'package:flutter_security_kit/src/device_security.dart';
+export 'package:flutter_security_kit/src/device_attestation.dart';
+export 'package:flutter_security_kit/src/screenshot_protection.dart';
+export 'package:flutter_security_kit/src/security_config.dart';

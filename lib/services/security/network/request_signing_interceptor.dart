@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'api_request_signer.dart';
+import 'package:usdc_wallet/services/security/network/api_request_signer.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Dio interceptor that signs outgoing requests using [ApiRequestSigner].

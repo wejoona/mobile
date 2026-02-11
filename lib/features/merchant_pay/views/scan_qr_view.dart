@@ -7,7 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
-import 'payment_confirm_view.dart';
+import 'package:usdc_wallet/features/merchant_pay/views/payment_confirm_view.dart';
 
 /// Scan QR View
 /// Customer interface for scanning merchant QR codes

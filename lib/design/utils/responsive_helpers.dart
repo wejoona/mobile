@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'responsive_layout.dart';
+import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 
 /// Additional responsive helpers for common UI patterns

@@ -4,9 +4,9 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'error_reporter.dart';
-import 'error_types.dart';
-import 'error_fallback_ui.dart';
+import 'package:usdc_wallet/core/error_handling/error_reporter.dart';
+import 'package:usdc_wallet/core/error_handling/error_types.dart';
+import 'package:usdc_wallet/core/error_handling/error_fallback_ui.dart';
 
 /// Error Boundary Widget - Catches errors in child widget tree
 ///

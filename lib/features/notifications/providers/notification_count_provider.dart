@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'notifications_provider.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 
 /// Run 360: Unread notification count provider with auto-refresh
 final unreadNotificationCountProvider = Provider<int>((ref) {

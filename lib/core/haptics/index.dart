@@ -20,5 +20,5 @@
 /// ref.read(hapticPreferencesProvider.notifier).toggle();
 /// ```
 
-export 'haptic_service.dart';
-export 'haptic_preferences_provider.dart';
+export 'package:usdc_wallet/core/haptics/haptic_service.dart';
+export 'package:usdc_wallet/core/haptics/haptic_preferences_provider.dart';

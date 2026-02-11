@@ -16,8 +16,8 @@
 /// DirectionalRow(children: [...])
 /// ```
 
-export 'rtl_support.dart';
+export 'package:usdc_wallet/core/rtl/rtl_support.dart';
 
 // Export example widgets (remove this export in production if not needed)
 // Only use for development reference
-// export 'examples/rtl_compatible_examples.dart';
+// export 'package:usdc_wallet/core/rtl/examples/rtl_compatible_examples.dart';

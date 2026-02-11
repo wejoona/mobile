@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'guard_base.dart';
+import 'package:usdc_wallet/core/guards/guard_base.dart';
 
 /// Checks device integrity before sensitive operations.
 class DeviceIntegrityGuard extends GuardBase {

@@ -4,7 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'route_names.dart';
+import 'package:usdc_wallet/router/route_names.dart';
 
 /// Routes that do not require authentication.
 const _publicRoutes = {

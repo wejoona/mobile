@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'api_contract.dart';
-import 'mock_interceptor.dart';
+import 'package:flutter_mock_api/src/api_contract.dart';
+import 'package:flutter_mock_api/src/mock_interceptor.dart';
 
 /// Central registry for managing mock services.
 ///

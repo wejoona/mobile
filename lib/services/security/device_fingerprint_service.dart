@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'device_security.dart';
+import 'package:usdc_wallet/services/security/device_security.dart';
 
 /// Collected device fingerprint data sent to backend
 class DeviceFingerprint {

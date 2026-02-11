@@ -22,6 +22,6 @@
 /// ```
 library dio_performance_kit;
 
-export 'src/cache_interceptor.dart';
-export 'src/deduplication_interceptor.dart';
-export 'src/cache_config.dart';
+export 'package:dio_performance_kit/src/cache_interceptor.dart';
+export 'package:dio_performance_kit/src/deduplication_interceptor.dart';
+export 'package:dio_performance_kit/src/cache_config.dart';

@@ -1,4 +1,4 @@
-import 'bulk_payment.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_payment.dart';
 
 enum BatchStatus {
   draft,

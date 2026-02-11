@@ -1,4 +1,4 @@
-import 'payment_link_status.dart';
+import 'package:usdc_wallet/features/payment_links/models/payment_link_status.dart';
 
 class PaymentLink {
   final String id;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'push_notification_service.dart';
-import 'rich_notification_helper.dart';
+import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
+import 'package:usdc_wallet/services/notifications/rich_notification_helper.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 
 /// Notification Handler Widget

@@ -1,4 +1,4 @@
-import 'pin_config.dart';
+import 'package:flutter_pin_service/src/pin_config.dart';
 
 /// PIN validation utilities.
 ///

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'error_types.dart';
+import 'package:usdc_wallet/core/error_handling/error_types.dart';
 
 /// Error Reporter Service - Reports errors to Crashlytics
 ///

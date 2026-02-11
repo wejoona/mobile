@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'primitives/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Error State Widget
 ///

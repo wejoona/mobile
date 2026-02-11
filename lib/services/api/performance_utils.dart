@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'api_client.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Performance utilities for cache and request management
 class PerformanceUtils {

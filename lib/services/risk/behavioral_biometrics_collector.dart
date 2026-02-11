@@ -1,7 +1,7 @@
 import 'dart:collection';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'behavioral_biometrics_model.dart';
+import 'package:usdc_wallet/services/risk/behavioral_biometrics_model.dart';
 
 /// Collecteur de données biométriques comportementales.
 ///

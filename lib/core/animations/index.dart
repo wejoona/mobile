@@ -12,11 +12,11 @@
 /// )
 /// ```
 
-export 'fade_slide.dart';
-export 'scale_in.dart';
-export 'shimmer_effect.dart';
-export 'balance_update_animation.dart';
-export 'micro_interactions.dart';
-export 'slide_reveal.dart';
-export 'animation_utils.dart';
+export 'package:usdc_wallet/core/animations/fade_slide.dart';
+export 'package:usdc_wallet/core/animations/scale_in.dart';
+export 'package:usdc_wallet/core/animations/shimmer_effect.dart';
+export 'package:usdc_wallet/core/animations/balance_update_animation.dart';
+export 'package:usdc_wallet/core/animations/micro_interactions.dart';
+export 'package:usdc_wallet/core/animations/slide_reveal.dart';
+export 'package:usdc_wallet/core/animations/animation_utils.dart';
 // animation_showcase.dart removed (dead example file)

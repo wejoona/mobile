@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'mfa_provider.dart';
-import 'step_up_auth_service.dart';
+import 'package:usdc_wallet/services/security/auth/mfa_provider.dart';
+import 'package:usdc_wallet/services/security/auth/step_up_auth_service.dart';
 
 /// Coordonne les flux d'authentification renforcée.
 enum StepUpReason { highValueTransfer, settingsChange, export, withdrawal }

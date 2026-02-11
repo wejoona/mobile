@@ -1,4 +1,4 @@
-import 'feature_flags_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_service.dart';
 
 /// Extension on Map<String, bool> for convenient feature flag checks
 /// Used in router redirects for cleaner code

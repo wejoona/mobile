@@ -7,7 +7,7 @@ import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/insights_period.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
-import 'daily_spending_chart.dart';
+import 'package:usdc_wallet/features/insights/widgets/daily_spending_chart.dart';
 
 /// Daily spending section with bar chart for week view
 class DailySpendingSection extends ConsumerWidget {

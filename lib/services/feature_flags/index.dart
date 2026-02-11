@@ -1,3 +1,3 @@
-export 'feature_flags_service.dart';
-export 'feature_flags_provider.dart';
-export 'feature_gate.dart';
+export 'package:usdc_wallet/services/feature_flags/feature_flags_service.dart';
+export 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+export 'package:usdc_wallet/services/feature_flags/feature_gate.dart';

@@ -8,7 +8,7 @@ import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 import 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';
-import 'wallet_contract.dart';
+import 'package:usdc_wallet/mocks/services/wallet/wallet_contract.dart';
 
 /// Wallet mock state
 class WalletMockState {

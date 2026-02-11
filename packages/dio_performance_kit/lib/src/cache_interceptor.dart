@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'cache_config.dart';
+import 'package:dio_performance_kit/src/cache_config.dart';
 
 /// Cached response entry.
 class _CacheEntry {

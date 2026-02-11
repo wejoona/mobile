@@ -1,4 +1,4 @@
-export 'account_type.dart';
+export 'package:usdc_wallet/domain/enums/account_type.dart';
 
 /// Transaction status enum - mirrors backend
 enum TransactionStatus {

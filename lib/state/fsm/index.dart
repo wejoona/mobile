@@ -75,10 +75,10 @@
 /// 5. **Stakeholder-friendly**: FSM diagrams are easy to discuss
 library;
 
-export 'fsm_base.dart';
-export 'auth_fsm.dart';
-export 'wallet_fsm.dart';
-export 'kyc_fsm.dart';
-export 'session_fsm.dart';
-export 'app_fsm.dart';
-export 'fsm_provider.dart';
+export 'package:usdc_wallet/state/fsm/fsm_base.dart';
+export 'package:usdc_wallet/state/fsm/auth_fsm.dart';
+export 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
+export 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
+export 'package:usdc_wallet/state/fsm/session_fsm.dart';
+export 'package:usdc_wallet/state/fsm/app_fsm.dart';
+export 'package:usdc_wallet/state/fsm/fsm_provider.dart';

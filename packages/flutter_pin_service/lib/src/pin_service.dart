@@ -1,7 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'pin_config.dart';
-import 'pin_hasher.dart';
-import 'pin_validator.dart';
+import 'package:flutter_pin_service/src/pin_config.dart';
+import 'package:flutter_pin_service/src/pin_hasher.dart';
+import 'package:flutter_pin_service/src/pin_validator.dart';
 
 /// Secure PIN Service
 ///

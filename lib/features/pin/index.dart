@@ -1,14 +1,14 @@
 /// Barrel exports for pin feature.
 library;
 
-export 'ROUTES.dart';
-export 'models/pin_state.dart';
-export 'providers/pin_provider.dart';
-export 'views/change_pin_view.dart';
-export 'views/confirm_pin_view.dart';
-export 'views/enter_pin_view.dart';
-export 'views/pin_locked_view.dart';
-export 'views/reset_pin_view.dart';
-export 'views/set_pin_view.dart';
-export 'widgets/pin_dots.dart';
-export 'widgets/pin_pad.dart';
+export 'package:usdc_wallet/features/pin/ROUTES.dart';
+export 'package:usdc_wallet/features/pin/models/pin_state.dart';
+export 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
+export 'package:usdc_wallet/features/pin/views/change_pin_view.dart';
+export 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
+export 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
+export 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
+export 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
+export 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
+export 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
+export 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';

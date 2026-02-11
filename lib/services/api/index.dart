@@ -1,5 +1,5 @@
-export 'api_client.dart';
-export 'cache_interceptor.dart';
-export 'deduplication_interceptor.dart';
-export 'performance_utils.dart';
-export 'retry_interceptor.dart';
+export 'package:usdc_wallet/services/api/api_client.dart';
+export 'package:usdc_wallet/services/api/cache_interceptor.dart';
+export 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
+export 'package:usdc_wallet/services/api/performance_utils.dart';
+export 'package:usdc_wallet/services/api/retry_interceptor.dart';

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'accessibility_utils.dart';
+import 'package:usdc_wallet/utils/accessibility_utils.dart';
 
 /// Accessibility enhancements for the wallet home screen and critical flows
 ///

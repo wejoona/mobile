@@ -2,7 +2,7 @@
 /// Supports Korido QR codes, wallet addresses, and payment links.
 library;
 
-import 'deep_link_service.dart';
+import 'package:usdc_wallet/services/deep_link/deep_link_service.dart';
 
 /// Parses scanned QR code data into actionable deep link results.
 class QrDeepLinkParser {

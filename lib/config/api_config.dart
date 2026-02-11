@@ -1,4 +1,4 @@
-import 'environment_config.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 
 /// API-specific configuration for Korido.
 class ApiConfiguration {

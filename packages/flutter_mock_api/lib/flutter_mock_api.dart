@@ -36,9 +36,9 @@
 /// ```
 library flutter_mock_api;
 
-export 'src/mock_config.dart';
-export 'src/mock_interceptor.dart';
-export 'src/api_contract.dart';
-export 'src/mock_response.dart';
-export 'src/mock_data_generator.dart';
-export 'src/mock_registry.dart';
+export 'package:flutter_mock_api/src/mock_config.dart';
+export 'package:flutter_mock_api/src/mock_interceptor.dart';
+export 'package:flutter_mock_api/src/api_contract.dart';
+export 'package:flutter_mock_api/src/mock_response.dart';
+export 'package:flutter_mock_api/src/mock_data_generator.dart';
+export 'package:flutter_mock_api/src/mock_registry.dart';

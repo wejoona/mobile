@@ -7,7 +7,7 @@
 ///
 /// All components automatically adapt to light and dark themes.
 
-export 'app_dialog.dart';
-export 'alert_dialog.dart';
-export 'confirmation_dialog.dart';
-export 'app_bottom_sheet.dart';
+export 'package:usdc_wallet/design/components/dialogs/app_dialog.dart';
+export 'package:usdc_wallet/design/components/dialogs/alert_dialog.dart';
+export 'package:usdc_wallet/design/components/dialogs/confirmation_dialog.dart';
+export 'package:usdc_wallet/design/components/dialogs/app_bottom_sheet.dart';

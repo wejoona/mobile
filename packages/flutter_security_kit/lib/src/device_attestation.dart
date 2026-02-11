@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
-import 'security_config.dart';
+import 'package:flutter_security_kit/src/security_config.dart';
 
 /// Device Attestation Service
 ///

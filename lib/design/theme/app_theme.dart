@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'theme_extensions.dart';
+import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 
 /// App Theme Configuration
 /// Luxury themes with gold accents - supports both dark and light modes

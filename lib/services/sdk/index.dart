@@ -1,1 +1,1 @@
-export 'usdc_wallet_sdk.dart';
+export 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';

@@ -6,7 +6,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
-import 'top_recipients_chart.dart';
+import 'package:usdc_wallet/features/insights/widgets/top_recipients_chart.dart';
 
 class TopRecipientsSection extends ConsumerWidget {
   const TopRecipientsSection({super.key});

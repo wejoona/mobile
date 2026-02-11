@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'ssl_pinning_manager.dart';
-import 'api_request_signer.dart';
-import 'request_encryptor.dart';
-import 'mitm_detector.dart';
-import 'vpn_proxy_detector.dart';
-import 'network_trust_evaluator.dart';
-import 'connection_monitor.dart';
+import 'package:usdc_wallet/services/security/network/ssl_pinning_manager.dart';
+import 'package:usdc_wallet/services/security/network/api_request_signer.dart';
+import 'package:usdc_wallet/services/security/network/request_encryptor.dart';
+import 'package:usdc_wallet/services/security/network/mitm_detector.dart';
+import 'package:usdc_wallet/services/security/network/vpn_proxy_detector.dart';
+import 'package:usdc_wallet/services/security/network/network_trust_evaluator.dart';
+import 'package:usdc_wallet/services/security/network/connection_monitor.dart';
 
 /// Aggregate provider exposing all network security services.
 ///

@@ -1,1 +1,1 @@
-export 'risk_score.dart';
+export 'package:usdc_wallet/domain/value_objects/risk_score.dart';

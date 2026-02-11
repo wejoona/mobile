@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'device_security.dart';
+import 'package:usdc_wallet/services/security/device_security.dart';
 
 /// État de la détection root/jailbreak
 class RootJailbreakState {

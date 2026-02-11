@@ -1,4 +1,4 @@
 /// Barrel exports for core mixins.
 library;
 
-export 'pull_to_refresh_mixin.dart';
+export 'package:usdc_wallet/core/mixins/pull_to_refresh_mixin.dart';

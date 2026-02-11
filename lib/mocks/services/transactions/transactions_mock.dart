@@ -9,7 +9,7 @@ import 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 import 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';
 import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
-import 'transactions_contract.dart';
+import 'package:usdc_wallet/mocks/services/transactions/transactions_contract.dart';
 
 /// Transactions mock state
 class TransactionsMockState {

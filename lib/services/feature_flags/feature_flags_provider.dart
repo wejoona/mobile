@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'feature_flags_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_service.dart';
 
 // Re-export for convenience
-export 'feature_flags_service.dart' show FeatureFlagKeys;
+export 'package:usdc_wallet/services/feature_flags/feature_flags_service.dart' show FeatureFlagKeys;
 
 /// Shared Preferences Provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

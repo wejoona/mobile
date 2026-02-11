@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'e2e_encryption_service.dart';
+import 'package:usdc_wallet/services/security/communication/e2e_encryption_service.dart';
 
 /// Sensitivity classification for data payloads.
 enum DataSensitivity { public, internal, confidential, restricted }

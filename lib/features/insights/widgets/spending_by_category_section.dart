@@ -5,7 +5,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
-import 'spending_pie_chart.dart';
+import 'package:usdc_wallet/features/insights/widgets/spending_pie_chart.dart';
 
 class SpendingByCategorySection extends ConsumerWidget {
   const SpendingByCategorySection({super.key});

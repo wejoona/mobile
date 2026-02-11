@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'mfa_provider.dart';
+import 'package:usdc_wallet/services/security/auth/mfa_provider.dart';
 
 /// Gère l'inscription aux méthodes MFA disponibles.
 class MfaEnrollmentManager {

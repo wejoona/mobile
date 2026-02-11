@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'performance_service.dart';
+import 'package:usdc_wallet/services/performance/performance_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Performance observer provider

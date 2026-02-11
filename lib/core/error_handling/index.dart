@@ -68,8 +68,8 @@
 /// - [SnackbarError] - Transient error notification
 
 // Core error handling
-export 'error_boundary.dart';
-export 'error_reporter.dart';
-export 'error_types.dart';
-export 'error_fallback_ui.dart';
-export 'error_handler_mixin.dart';
+export 'package:usdc_wallet/core/error_handling/error_boundary.dart';
+export 'package:usdc_wallet/core/error_handling/error_reporter.dart';
+export 'package:usdc_wallet/core/error_handling/error_types.dart';
+export 'package:usdc_wallet/core/error_handling/error_fallback_ui.dart';
+export 'package:usdc_wallet/core/error_handling/error_handler_mixin.dart';

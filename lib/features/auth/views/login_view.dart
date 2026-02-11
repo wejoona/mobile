@@ -10,7 +10,7 @@ import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
-import 'legal_document_view.dart';
+import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 
 /// Login screen with two modes:
 /// 1. Returning user with biometric → full-screen biometric prompt

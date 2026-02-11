@@ -5,7 +5,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
-import 'spending_line_chart.dart';
+import 'package:usdc_wallet/features/insights/widgets/spending_line_chart.dart';
 
 class SpendingTrendSection extends ConsumerWidget {
   const SpendingTrendSection({super.key});

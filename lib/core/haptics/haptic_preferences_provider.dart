@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'haptic_service.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
 /// State for haptic preferences
 class HapticPreferencesState {

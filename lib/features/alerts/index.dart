@@ -2,7 +2,7 @@
 /// Real-time transaction monitoring and alerts
 library;
 
-export 'models/index.dart';
-export 'providers/index.dart';
-export 'views/index.dart';
-export 'widgets/index.dart';
+export 'package:usdc_wallet/features/alerts/models/index.dart';
+export 'package:usdc_wallet/features/alerts/providers/index.dart';
+export 'package:usdc_wallet/features/alerts/views/index.dart';
+export 'package:usdc_wallet/features/alerts/widgets/index.dart';

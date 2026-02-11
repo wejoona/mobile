@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'language_service.dart';
+import 'package:usdc_wallet/services/localization/language_service.dart';
 
 /// State for managing app locale
 class LocaleState {

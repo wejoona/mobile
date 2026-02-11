@@ -1,5 +1,5 @@
 /// Alerts Providers Export
 library;
 
-export 'alerts_provider.dart';
-export 'alert_preferences_provider.dart';
+export 'package:usdc_wallet/features/alerts/providers/alerts_provider.dart';
+export 'package:usdc_wallet/features/alerts/providers/alert_preferences_provider.dart';

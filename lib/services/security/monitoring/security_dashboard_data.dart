@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'security_metrics_collector.dart';
-import 'app_security_score.dart';
+import 'package:usdc_wallet/services/security/monitoring/security_metrics_collector.dart';
+import 'package:usdc_wallet/services/security/monitoring/app_security_score.dart';
 
 /// Aggregates data for the security dashboard UI.
 class SecurityDashboardData {

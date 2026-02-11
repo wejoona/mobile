@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import 'client_risk_score_service.dart';
-import 'device_fingerprint_service.dart';
+import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
+import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Dio interceptor that attaches security headers to sensitive API calls.

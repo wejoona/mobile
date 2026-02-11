@@ -3,8 +3,8 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
-import 'app_state.dart';
-import 'wallet_state_machine.dart';
+import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 /// Transaction State Machine - manages transaction list globally
 /// Now supports server-side filtering via TransactionFilter

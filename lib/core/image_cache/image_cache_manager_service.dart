@@ -1,7 +1,7 @@
 import 'dart:io' as io;
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'image_cache_config.dart';
+import 'package:usdc_wallet/core/image_cache/image_cache_config.dart';
 
 /// Service for managing image caches
 /// Provides statistics, cleanup, and management features

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'biometric_service.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 
 /// Run 373: Biometric authentication Riverpod providers
 final biometricServiceProvider = Provider<BiometricService>((ref) {

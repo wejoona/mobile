@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'reporting_aggregator.dart';
+import 'package:usdc_wallet/services/compliance/reporting_aggregator.dart';
 
 /// Compliance dashboard state.
 class ComplianceDashboardState {

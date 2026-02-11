@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';
-import 'bank_accounts_provider.dart';
+import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provider.dart';
 
 /// Link bank account flow state.
 class LinkBankState {

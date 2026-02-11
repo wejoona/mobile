@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'mock_config.dart';
-import 'mock_response.dart';
+import 'package:flutter_mock_api/src/mock_config.dart';
+import 'package:flutter_mock_api/src/mock_response.dart';
 
 /// Type definition for mock request handlers.
 ///

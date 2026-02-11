@@ -1,2 +1,2 @@
-export 'referrals_service.dart';
+export 'package:usdc_wallet/services/referrals/referrals_service.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'analytics_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// Run 371: Riverpod provider for analytics service
 final analyticsServiceProvider = Provider<AnalyticsService>((ref) {

@@ -1,4 +1,4 @@
 /// Barrel exports for splash feature.
 library;
 
-export 'views/splash_view.dart';
+export 'package:usdc_wallet/features/splash/views/splash_view.dart';
