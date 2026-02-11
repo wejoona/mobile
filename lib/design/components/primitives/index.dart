@@ -1,3 +1,4 @@
+export 'package:usdc_wallet/design/components/primitives/alert_banner.dart';
 export 'package:usdc_wallet/design/components/primitives/app_button.dart';
 export 'package:usdc_wallet/design/components/primitives/app_card.dart';
 export 'package:usdc_wallet/design/components/primitives/app_text.dart';

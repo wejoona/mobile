@@ -322,7 +322,7 @@ class _BiometricEnrollmentViewState
         localizedReason: l10n.biometric_enrollment_authenticate_reason,
       );
 
-      if (authenticated) {
+      if (authenticatedBio.success) {
         // Enable biometric
         await biometricService.enableBiometric();
 

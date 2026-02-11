@@ -75,6 +75,8 @@ class AlertsListState {
   final bool isLoading;
   final String? error;
   final bool hasMore;
+  final int unreadCount;
+  final bool isLoadingMore;
 
   const AlertsListState({
     this.alerts = const [],
@@ -82,6 +84,8 @@ class AlertsListState {
     this.isLoading = false,
     this.error,
     this.hasMore = false,
+    this.unreadCount = 0,
+    this.isLoadingMore = false,
   });
 
   AlertsListState copyWith({
@@ -90,12 +94,16 @@ class AlertsListState {
     bool? isLoading,
     String? error,
     bool? hasMore,
+    int? unreadCount,
+    bool? isLoadingMore,
   }) => AlertsListState(
     alerts: alerts ?? this.alerts,
     statistics: statistics ?? this.statistics,
     isLoading: isLoading ?? this.isLoading,
     error: error,
     hasMore: hasMore ?? this.hasMore,
+    unreadCount: unreadCount ?? this.unreadCount,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
   );
 }
 
@@ -175,6 +183,13 @@ class AlertsNotifier extends Notifier<AlertsListState> {
 
 /// Main alerts provider with full notifier.
 final alertsProvider = NotifierProvider<AlertsNotifier, AlertsListState>(AlertsNotifier.new);
+
+/// Alert detail provider — fetches a single alert by ID.
+final alertDetailProvider = FutureProvider.family<TransactionAlert, String>((ref, alertId) async {
+  final dio = ref.read(dioProvider);
+  final response = await dio.get('/alerts/$alertId');
+  return TransactionAlert.fromJson(response.data as Map<String, dynamic>);
+});
 
 /// Unread alerts count provider.
 final alertsUnreadCountProvider = Provider<int>((ref) {

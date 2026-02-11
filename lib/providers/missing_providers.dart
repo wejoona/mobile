@@ -5,6 +5,7 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
+import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 
 /// Filtered+paginated transactions (used by transactions_view.dart)
 final filteredPaginatedTransactionsProvider =
@@ -13,8 +14,13 @@ final filteredPaginatedTransactionsProvider =
 });
 
 /// Exchange rate provider
-final exchangeRateProvider = FutureProvider.autoDispose<double>((ref) async {
-  return 655.957; // USDC → XOF default rate
+final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((ref) async {
+  return ExchangeRate(
+    fromCurrency: 'USDC',
+    toCurrency: 'XOF',
+    rate: 655.957,
+    timestamp: DateTime.now(),
+  );
 });
 
 /// Spending trend provider (insights)

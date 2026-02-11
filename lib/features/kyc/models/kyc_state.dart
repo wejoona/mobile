@@ -10,6 +10,11 @@ class KycState {
   final String? selfiePath;
   final String? documentType;
   final int currentStep;
+  final String? selectedDocumentType;
+  final Map<String, String> capturedDocuments;
+  final String? rejectionReason;
+  final String? verificationStatus;
+  final bool canStartVerification;
 
   const KycState({
     this.isLoading = false,
@@ -20,6 +25,11 @@ class KycState {
     this.selfiePath,
     this.documentType,
     this.currentStep = 0,
+    this.selectedDocumentType,
+    this.capturedDocuments = const {},
+    this.rejectionReason,
+    this.verificationStatus,
+    this.canStartVerification = true,
   });
 
   KycState copyWith({
@@ -32,6 +42,11 @@ class KycState {
     String? documentType,
     int? currentStep,
     bool clearError = false,
+    String? selectedDocumentType,
+    Map<String, String>? capturedDocuments,
+    String? rejectionReason,
+    String? verificationStatus,
+    bool? canStartVerification,
   }) => KycState(
     isLoading: isLoading ?? this.isLoading,
     error: clearError ? null : (error ?? this.error),
@@ -41,5 +56,10 @@ class KycState {
     selfiePath: selfiePath ?? this.selfiePath,
     documentType: documentType ?? this.documentType,
     currentStep: currentStep ?? this.currentStep,
+    selectedDocumentType: selectedDocumentType ?? this.selectedDocumentType,
+    capturedDocuments: capturedDocuments ?? this.capturedDocuments,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+    verificationStatus: verificationStatus ?? this.verificationStatus,
+    canStartVerification: canStartVerification ?? this.canStartVerification,
   );
 }

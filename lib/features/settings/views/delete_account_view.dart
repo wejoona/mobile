@@ -39,7 +39,7 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
           const AlertBanner(
             message: 'Attention: cette action est irreversible. '
                 'Toutes vos donnees seront definitivement supprimees.',
-            variant: AlertVariant.error,
+            type: AlertVariant.error,
           ),
           const SizedBox(height: AppSpacing.xxl),
           const AppText(

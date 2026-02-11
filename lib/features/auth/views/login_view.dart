@@ -87,7 +87,7 @@ class _LoginViewState extends ConsumerState<LoginView>
         localizedReason: 'Unlock Korido',
       );
 
-      if (authenticated && mounted) {
+      if (authenticatedBio.success && mounted) {
         final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
         if (success && mounted) {
           context.go('/home');

@@ -1,3 +1,5 @@
+import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
+
 /// KYC profile entity - user verification state.
 class KycProfile {
   final String userId;
@@ -102,4 +104,5 @@ class KycProfile {
 
 enum KycLevel { none, basic, standard, enhanced, premium }
 
-enum KycStatus { none, pending, verified, rejected, expired }
+// Re-export KycStatus from the canonical location
+export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';

@@ -17,23 +17,8 @@ enum TransactionType {
   transferExternal,
 }
 
-/// KYC status enum - mirrors backend
-enum KycStatus {
-  /// No KYC started
-  none,
-  /// KYC pending (documents not yet submitted)
-  pending,
-  /// Documents submitted, awaiting upload
-  documentsPending,
-  /// All documents submitted, under review
-  submitted,
-  /// KYC approved / verified
-  verified,
-  /// KYC rejected
-  rejected,
-  /// Additional info needed
-  additionalInfoNeeded,
-}
+// KycStatus is defined in features/kyc/models/kyc_status.dart — re-export for compatibility.
+export 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
 
 /// User role enum - mirrors backend
 enum UserRole {

@@ -66,6 +66,9 @@ class HapticService {
     await HapticFeedback.selectionClick();
   }
 
+  /// Alias for lightTap.
+  Future<void> lightImpact() => lightTap();
+
   /// Light tap feedback
   /// Use: Secondary buttons, navigation items, tabs
   Future<void> lightTap() async {

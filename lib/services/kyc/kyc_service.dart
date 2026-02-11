@@ -316,6 +316,54 @@ class KycService {
 
     await _dio.post('/kyc/additional-documents', data: formData);
   }
+
+  /// Submit KYC from collected form data map.
+  Future<void> submitKycFromData({required Map<String, dynamic> data}) async {
+    await submitKyc(
+      firstName: data['firstName'] as String? ?? '',
+      lastName: data['lastName'] as String? ?? '',
+      country: data['country'] as String? ?? 'CI',
+      dateOfBirth: data['dateOfBirth'] as String? ?? '',
+      documentType: data['documentType'] as String? ?? 'passport',
+      documentPaths: (data['documentPaths'] as List<String>?) ?? [],
+      selfiePath: data['selfiePath'] as String? ?? '',
+    );
+  }
+
+  /// Upload a single document for KYC verification.
+  Future<Map<String, dynamic>> uploadDocument({
+    required String type,
+    required String filePath,
+  }) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath),
+      'type': type,
+    });
+    final response = await _dio.post('/kyc/documents', data: formData);
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// Submit collected documents (used by repository).
+  Future<KycStatusResponse> submitDocuments({
+    required String firstName,
+    required String lastName,
+    required String country,
+    required String dateOfBirth,
+    required String documentType,
+    required List<String> documentPaths,
+    required String selfiePath,
+  }) async {
+    await submitKyc(
+      firstName: firstName,
+      lastName: lastName,
+      country: country,
+      dateOfBirth: dateOfBirth,
+      documentType: documentType,
+      documentPaths: documentPaths,
+      selfiePath: selfiePath,
+    );
+    return getKycStatus();
+  }
 }
 
 class KycStatusResponse {
@@ -445,30 +493,4 @@ class VerifyHqStatus {
     );
   }
 
-  /// Convenience method: submit KYC from a data map.
-  /// Used by providers that collect form data as Map.
-  Future<void> submitKycFromData({required Map<String, dynamic> data}) async {
-    await submitKyc(
-      firstName: data['firstName'] as String? ?? '',
-      lastName: data['lastName'] as String? ?? '',
-      country: data['country'] as String? ?? 'CI',
-      dateOfBirth: data['dateOfBirth'] as String? ?? '',
-      documentType: data['documentType'] as String? ?? 'passport',
-      documentPaths: (data['documentPaths'] as List<String>?) ?? [],
-      selfiePath: data['selfiePath'] as String? ?? '',
-    );
-  }
-
-  /// Upload document for KYC verification.
-  Future<Map<String, dynamic>> uploadDocument({
-    required String path,
-    required String type,
-  }) async {
-    final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(path),
-      'type': type,
-    });
-    final response = await _dio.post('/kyc/documents', data: formData);
-    return response.data as Map<String, dynamic>;
-  }
 }

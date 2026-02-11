@@ -345,7 +345,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
       localizedReason: 'Authenticate to access JoonaPay',
     );
 
-    if (authenticated) {
+    if (authenticatedBio.success) {
       // Use AuthNotifier to handle biometric login (syncs with FSM)
       final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
       if (!success) {

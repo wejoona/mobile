@@ -20,7 +20,7 @@ class MockDataView extends StatelessWidget {
         children: [
           const AlertBanner(
             message: 'Mode developpement: les donnees mock sont actives.',
-            variant: AlertVariant.warning,
+            type: AlertVariant.warning,
           ),
           const SizedBox(height: AppSpacing.xxl),
           _MockScenarioTile(

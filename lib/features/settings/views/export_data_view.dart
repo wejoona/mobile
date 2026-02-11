@@ -35,7 +35,7 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
         children: [
           const AlertBanner(
             message: 'Vos donnees seront exportees dans un fichier securise.',
-            variant: AlertVariant.info,
+            type: AlertVariant.info,
           ),
           const SizedBox(height: AppSpacing.xxl),
           const SectionHeader(title: 'Donnees a inclure'),

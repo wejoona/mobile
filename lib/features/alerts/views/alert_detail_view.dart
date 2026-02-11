@@ -444,7 +444,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
 
     final success = await ref.read(alertsProvider.notifier).takeAction(
       alert.alertId,
-      action,
+      action.name,
     );
 
     setState(() => _isProcessingAction = false);

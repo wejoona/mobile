@@ -202,7 +202,7 @@ class _PinVerificationScreenState
         localizedReason: l10n.send_biometricReason,
       );
 
-      if (!authenticated) {
+      if (!authenticatedBio.success) {
         setState(() {
           _error = l10n.error_biometricFailed;
           _isLoading = false;

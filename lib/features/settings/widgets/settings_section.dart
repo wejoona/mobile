@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// A settings section with header and grouped items.
 class SettingsSection extends StatelessWidget {
   final String? title;
-  final List<SettingsItem> items;
+  final List<Widget> items;
   final EdgeInsetsGeometry margin;
 
   const SettingsSection({super.key, this.title, required this.items, this.margin = const EdgeInsets.only(bottom: 24)});

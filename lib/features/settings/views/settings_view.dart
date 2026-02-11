@@ -808,7 +808,7 @@ class _BiometricTile extends ConsumerWidget {
                   final authenticatedBio = await service.authenticate(
                     localizedReason: 'Authenticate to enable biometric login',
                   );
-                  if (authenticated) {
+                  if (authenticatedBio.success) {
                     await service.enableBiometric();
                     ref.invalidate(biometricEnabledProvider);
                   }

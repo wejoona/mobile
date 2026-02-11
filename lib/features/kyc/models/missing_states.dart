@@ -6,11 +6,13 @@ class CardsState {
   final String? error;
   final List<dynamic> cards;
   final dynamic selectedCard;
+  final List<dynamic> transactions;
+  final String? requestError;
 
-  const CardsState({this.isLoading = false, this.error, this.cards = const [], this.selectedCard});
+  const CardsState({this.isLoading = false, this.error, this.cards = const [], this.selectedCard, this.transactions = const [], this.requestError});
 
-  CardsState copyWith({bool? isLoading, String? error, List<dynamic>? cards, dynamic selectedCard}) =>
-    CardsState(isLoading: isLoading ?? this.isLoading, error: error ?? this.error, cards: cards ?? this.cards, selectedCard: selectedCard ?? this.selectedCard);
+  CardsState copyWith({bool? isLoading, String? error, List<dynamic>? cards, dynamic selectedCard, List<dynamic>? transactions, String? requestError}) =>
+    CardsState(isLoading: isLoading ?? this.isLoading, error: error ?? this.error, cards: cards ?? this.cards, selectedCard: selectedCard ?? this.selectedCard, transactions: transactions ?? this.transactions, requestError: requestError ?? this.requestError);
 }
 
 class DevicesState {
@@ -26,8 +28,10 @@ class ExpensesState {
   final String? error;
   final List<dynamic> expenses;
   final double total;
+  final double totalAmount;
+  final Map<String, double> categoryTotals;
 
-  const ExpensesState({this.isLoading = false, this.error, this.expenses = const [], this.total = 0});
+  const ExpensesState({this.isLoading = false, this.error, this.expenses = const [], this.total = 0, this.totalAmount = 0, this.categoryTotals = const {}});
 }
 
 class FilteredPaginatedTransactionsState {
@@ -44,8 +48,10 @@ class RecurringTransferDetailState {
   final bool isLoading;
   final String? error;
   final dynamic transfer;
+  final List<DateTime> nextDates;
+  final List<dynamic> history;
 
-  const RecurringTransferDetailState({this.isLoading = false, this.error, this.transfer});
+  const RecurringTransferDetailState({this.isLoading = false, this.error, this.transfer, this.nextDates = const [], this.history = const []});
 }
 
 class SavingsPotsState {
@@ -53,16 +59,19 @@ class SavingsPotsState {
   final String? error;
   final List<dynamic> pots;
   final dynamic selectedPot;
+  final List<dynamic> selectedPotTransactions;
+  final double totalSaved;
 
-  const SavingsPotsState({this.isLoading = false, this.error, this.pots = const [], this.selectedPot});
+  const SavingsPotsState({this.isLoading = false, this.error, this.pots = const [], this.selectedPot, this.selectedPotTransactions = const [], this.totalSaved = 0});
 }
 
 class WestAfricanBank {
   final String code;
   final String name;
   final String country;
+  final String? swiftCode;
 
-  const WestAfricanBank({required this.code, required this.name, this.country = 'CI'});
+  const WestAfricanBank({required this.code, required this.name, this.country = 'CI', this.swiftCode});
 }
 
 class ProviderData {
@@ -71,10 +80,11 @@ class ProviderData {
   final String? logo;
   final double? minAmount;
   final double? maxAmount;
+  final String? paymentMethodType;
+  final String? enumProvider;
 
-  const ProviderData({required this.id, required this.name, this.logo, this.minAmount, this.maxAmount});
+  const ProviderData({required this.id, required this.name, this.logo, this.minAmount, this.maxAmount, this.paymentMethodType, this.enumProvider});
 }
 
 /// Alias for card display purposes.
-typedef WalletCard = dynamic;
-
+typedef WalletCard = Map<String, dynamic>;

@@ -116,5 +116,6 @@ class BankLinkingService {
   // === Stub aliases ===
   Future<List<dynamic>> getBankAccounts() async => (await getLinkedAccounts())['accounts'] as List<dynamic>? ?? [];
   Future<void> remove(String accountId) async => unlinkAccount(accountId);
+  Future<void> unlinkBankAccount(String accountId) async => unlinkAccount(accountId);
 
 }

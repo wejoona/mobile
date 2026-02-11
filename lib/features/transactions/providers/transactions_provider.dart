@@ -2,33 +2,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
-/// Transaction list filter.
-class TransactionFilter {
-  final String? type; // all, sent, received, deposit, withdrawal
-  final DateTime? from;
-  final DateTime? to;
-  final int page;
-  final int limit;
-
-  const TransactionFilter({this.type, this.from, this.to, this.page = 1, this.limit = 20});
-
-  TransactionFilter copyWith({String? type, DateTime? from, DateTime? to, int? page, int? limit}) => TransactionFilter(
-    type: type ?? this.type,
-    from: from ?? this.from,
-    to: to ?? this.to,
-    page: page ?? this.page,
-    limit: limit ?? this.limit,
-  );
-
-  Map<String, dynamic> toQuery() => {
-    if (type != null && type != 'all') 'type': type,
-    if (from != null) 'from': from!.toIso8601String(),
-    if (to != null) 'to': to!.toIso8601String(),
-    'page': page,
-    'limit': limit,
-  };
-}
+export 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
 /// Transaction filter state.
 final transactionFilterProvider = StateProvider<TransactionFilter>((ref) => const TransactionFilter());
@@ -40,7 +16,7 @@ final transactionsProvider = FutureProvider<TransactionPage>((ref) async {
   final link = ref.keepAlive();
   Timer(const Duration(minutes: 1), () => link.close());
 
-  final response = await dio.get('/wallet/transactions', queryParameters: filter.toQuery());
+  final response = await dio.get('/wallet/transactions', queryParameters: filter.toQueryParams());
   return TransactionPage.fromJson(response.data as Map<String, dynamic>);
 });
 
