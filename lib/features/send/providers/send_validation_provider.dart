@@ -1,76 +1,56 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'send_limits_provider.dart';
-import 'send_fee_provider.dart';
+import '../../wallet/providers/balance_provider.dart';
 
-/// Run 353: Comprehensive send validation provider
-class SendValidationResult {
-  final bool isValid;
-  final List<String> errors;
-  final List<String> warnings;
-
-  const SendValidationResult({
-    this.isValid = true,
-    this.errors = const [],
-    this.warnings = const [],
-  });
-
-  factory SendValidationResult.error(String message) =>
-      SendValidationResult(isValid: false, errors: [message]);
-
-  factory SendValidationResult.valid({List<String> warnings = const []}) =>
-      SendValidationResult(isValid: true, warnings: warnings);
-}
-
-class SendValidationParams {
-  final double amount;
-  final String? recipientId;
-  final String? recipientAddress;
-  final double availableBalance;
-
-  const SendValidationParams({
-    required this.amount,
-    this.recipientId,
-    this.recipientAddress,
-    required this.availableBalance,
-  });
-}
-
-final sendValidationProvider =
-    Provider.family<SendValidationResult, SendValidationParams>((ref, params) {
-  final errors = <String>[];
-  final warnings = <String>[];
-
-  // Amount validation
-  if (params.amount <= 0) {
-    errors.add('Le montant doit etre superieur a zero');
-  }
-
-  if (params.amount > params.availableBalance) {
-    errors.add('Solde insuffisant');
-  }
+/// Validates send form before submission.
+final sendValidationProvider = Provider.family<SendValidation, SendFormData>((ref, data) {
+  final balance = ref.watch(availableBalanceProvider);
+  final errors = <String, String>{};
 
   // Recipient validation
-  if (params.recipientId == null && params.recipientAddress == null) {
-    errors.add('Veuillez selectionner un destinataire');
+  if (data.recipientPhone == null || data.recipientPhone!.isEmpty) {
+    errors['recipient'] = 'Veuillez saisir un destinataire';
+  } else if (!_isValidPhone(data.recipientPhone!)) {
+    errors['recipient'] = 'Numero de telephone invalide';
   }
 
-  // Minimum amount
-  if (params.amount > 0 && params.amount < 0.01) {
-    errors.add('Le montant minimum est de 0.01 USDC');
+  // Amount validation
+  if (data.amount == null || data.amount! <= 0) {
+    errors['amount'] = 'Montant invalide';
+  } else if (data.amount! < 0.01) {
+    errors['amount'] = 'Montant minimum: 0.01 USDC';
+  } else if (data.amount! > balance) {
+    errors['amount'] = 'Solde insuffisant';
+  } else if (data.amount! > 10000) {
+    errors['amount'] = 'Montant maximum: 10,000 USDC par transaction';
   }
 
-  // Warnings for large amounts
-  if (params.amount > 200) {
-    warnings.add('Montant eleve - verification PIN requise');
-  }
-
-  if (params.amount > params.availableBalance * 0.9) {
-    warnings.add('Ce transfert utilisera plus de 90% de votre solde');
-  }
-
-  return SendValidationResult(
+  return SendValidation(
     isValid: errors.isEmpty,
     errors: errors,
-    warnings: warnings,
   );
 });
+
+/// Send form data for validation.
+class SendFormData {
+  final String? recipientPhone;
+  final double? amount;
+  final String? note;
+
+  const SendFormData({this.recipientPhone, this.amount, this.note});
+}
+
+/// Validation result.
+class SendValidation {
+  final bool isValid;
+  final Map<String, String> errors;
+
+  const SendValidation({this.isValid = false, this.errors = const {}});
+
+  String? errorFor(String field) => errors[field];
+}
+
+bool _isValidPhone(String phone) {
+  // CI phone: +225 followed by 10 digits
+  final cleaned = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+  return RegExp(r'^\+?225\d{10}$').hasMatch(cleaned) || RegExp(r'^\d{10}$').hasMatch(cleaned);
+}

@@ -1,79 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../wallet/providers/wallet_actions_provider.dart';
 
-/// Run 352: Fee calculation provider for send flow
-class SendFee {
-  final double networkFee;
-  final double serviceFee;
-  final double totalFee;
-  final String feeCurrency;
-  final bool isFeeWaived;
-  final String? waiverReason;
+/// Fee estimate for a transfer.
+class FeeEstimate {
+  final double fee;
+  final double total;
+  final String feeType; // flat, percentage
+  final double? feePercentage;
 
-  const SendFee({
-    required this.networkFee,
-    required this.serviceFee,
-    required this.totalFee,
-    this.feeCurrency = 'USDC',
-    this.isFeeWaived = false,
-    this.waiverReason,
-  });
+  const FeeEstimate({this.fee = 0, this.total = 0, this.feeType = 'flat', this.feePercentage});
 
-  static const zero = SendFee(
-    networkFee: 0,
-    serviceFee: 0,
-    totalFee: 0,
+  factory FeeEstimate.fromAmount(double amount, double fee) => FeeEstimate(
+    fee: fee,
+    total: amount + fee,
+    feeType: 'calculated',
   );
 }
 
-class SendFeeParams {
-  final double amount;
-  final String recipientType; // internal, external, bank
-  final String? destinationCountry;
-
-  const SendFeeParams({
-    required this.amount,
-    this.recipientType = 'internal',
-    this.destinationCountry,
-  });
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SendFeeParams &&
-          amount == other.amount &&
-          recipientType == other.recipientType &&
-          destinationCountry == other.destinationCountry;
-
-  @override
-  int get hashCode =>
-      amount.hashCode ^ recipientType.hashCode ^ destinationCountry.hashCode;
-}
-
-final sendFeeProvider =
-    FutureProvider.family<SendFee, SendFeeParams>((ref, params) async {
-  if (params.amount <= 0) return SendFee.zero;
-
-  await Future.delayed(const Duration(milliseconds: 300));
-
-  // Internal transfers are free
-  if (params.recipientType == 'internal') {
-    return const SendFee(
-      networkFee: 0,
-      serviceFee: 0,
-      totalFee: 0,
-      isFeeWaived: true,
-      waiverReason: 'Transfert interne gratuit',
-    );
+/// Fee estimate provider — uses WalletActions.estimateFee.
+final sendFeeProvider = FutureProvider.family<FeeEstimate, double>((ref, amount) async {
+  if (amount <= 0) return const FeeEstimate();
+  try {
+    final actions = ref.watch(walletActionsProvider);
+    final fee = await actions.estimateFee(amount: amount, type: 'internal');
+    return FeeEstimate.fromAmount(amount, fee);
+  } catch (_) {
+    // Fallback to local fee calculation
+    return FeeEstimate.fromAmount(amount, amount * 0.001); // 0.1% default
   }
-
-  // External transfers have network fees
-  final networkFee = params.recipientType == 'external' ? 0.50 : 0.0;
-  final serviceFee = params.amount * 0.005; // 0.5%
-  final total = networkFee + serviceFee;
-
-  return SendFee(
-    networkFee: networkFee,
-    serviceFee: serviceFee,
-    totalFee: total,
-  );
 });
