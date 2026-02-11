@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -203,7 +204,10 @@ class ConfirmScreen extends ConsumerWidget {
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppButton(
                 label: l10n.send_confirmAndSend,
-                onPressed: () => context.push('/send/pin'),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  context.push('/send/pin');
+                },
                 isFullWidth: true,
               ),
             ),
