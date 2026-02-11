@@ -9,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../services/bill_payments/bill_payments_service.dart';
 import '../../../features/wallet/providers/wallet_provider.dart';
 import '../providers/bill_payments_provider.dart';
+import '../../pin/providers/pin_provider.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input
@@ -499,9 +500,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
       title: l10n.billPayments_confirmPayment,
       subtitle: l10n.billPayments_enterPinToPay(provider.name, provider.name),
       onConfirm: (pin) async {
-        // Verify PIN with server
-        // TODO: Implement actual PIN verification
-        return pin.length == 4;
+        return await ref.read(pinStateProvider.notifier).verifyPin(pin);
       },
     );
 

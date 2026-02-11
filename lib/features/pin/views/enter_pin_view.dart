@@ -7,6 +7,7 @@ import '../../../design/components/primitives/index.dart';
 import '../widgets/pin_dots.dart';
 import '../widgets/pin_pad.dart';
 import '../providers/pin_provider.dart';
+import '../../../services/biometric/biometric_service.dart';
 
 /// Enter PIN View
 /// Reusable PIN verification screen
@@ -124,11 +125,17 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
   }
 
   Future<void> _handleBiometric() async {
-    // TODO: Implement biometric authentication
-    // For now, just show a message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Biometric authentication coming soon')),
+    final biometricService = ref.read(biometricServiceProvider);
+    final success = await biometricService.authenticate(
+      reason: 'Authenticate to continue',
     );
+    if (success && mounted) {
+      if (widget.onSuccess != null) {
+        widget.onSuccess!('');
+      } else {
+        context.pop(true);
+      }
+    }
   }
 
   Future<void> _verifyPin() async {
