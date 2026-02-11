@@ -1,4 +1,4 @@
-export 'form_mixin.dart
-loading_mixin.dart
-scroll_mixin.dart';
+/// Barrel exports for core mixins.
+library;
 
+export 'pull_to_refresh_mixin.dart';
