@@ -41,6 +41,7 @@ import 'services/bank_linking/bank_linking_mock.dart';
 import 'services/referrals/referrals_mock.dart';
 import 'services/contacts/contacts_mock.dart';
 import 'services/user/user_mock.dart';
+import 'services/wallet/wallet_stats_mock.dart';
 
 /// Mock Registry
 ///
@@ -90,6 +91,7 @@ class MockRegistry {
     ReferralsMock.register(_interceptor);
     ContactsMock.register(_interceptor);
     UserMock.register(_interceptor);
+    WalletStatsMock.register(_interceptor);
 
     // Add more mock services here as they are created:
     // MerchantMock.register(_interceptor);

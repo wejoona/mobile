@@ -1,79 +1,67 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../services/api/api_client.dart';
 
-/// In-app alert/banner state.
+/// Alert types in the app.
+enum AlertType { info, warning, error, promotion }
+
+/// In-app alert model.
 class AppAlert {
   final String id;
+  final String title;
   final String message;
   final AlertType type;
-  final String? actionLabel;
-  final String? actionRoute;
   final bool isDismissible;
+  final String? actionUrl;
+  final DateTime createdAt;
 
   const AppAlert({
     required this.id,
+    required this.title,
     required this.message,
-    required this.type,
-    this.actionLabel,
-    this.actionRoute,
+    this.type = AlertType.info,
     this.isDismissible = true,
+    this.actionUrl,
+    required this.createdAt,
   });
+
+  factory AppAlert.fromJson(Map<String, dynamic> json) => AppAlert(
+    id: json['id'] as String,
+    title: json['title'] as String? ?? '',
+    message: json['message'] as String? ?? '',
+    type: AlertType.values.firstWhere(
+      (t) => t.name == json['type'],
+      orElse: () => AlertType.info,
+    ),
+    isDismissible: json['isDismissible'] as bool? ?? true,
+    actionUrl: json['actionUrl'] as String?,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+  );
 }
 
-enum AlertType { info, warning, error, success, promotion }
+/// Active alerts provider — fetches from /alerts endpoint.
+final activeAlertsProvider = FutureProvider<List<AppAlert>>((ref) async {
+  final dio = ref.watch(dioProvider);
+  final link = ref.keepAlive();
+  Timer(const Duration(minutes: 10), () => link.close());
 
-/// Active alerts notifier.
-class AlertsNotifier extends Notifier<List<AppAlert>> {
-  @override
-  List<AppAlert> build() => [];
-
-  void add(AppAlert alert) {
-    if (!state.any((a) => a.id == alert.id)) {
-      state = [...state, alert];
-    }
+  try {
+    final response = await dio.get('/alerts');
+    final data = response.data;
+    final items = (data is Map ? data['data'] : data) as List? ?? [];
+    return items.map((e) => AppAlert.fromJson(e as Map<String, dynamic>)).toList();
+  } catch (_) {
+    // Alerts are non-critical — return empty on failure
+    return [];
   }
+});
 
-  void dismiss(String alertId) {
-    state = state.where((a) => a.id != alertId).toList();
-  }
+/// Dismissed alert IDs (stored locally).
+final dismissedAlertsProvider = StateProvider<Set<String>>((ref) => {});
 
-  void clear() {
-    state = [];
-  }
-
-  /// Add KYC reminder if not verified.
-  void checkKycReminder(bool isKycVerified) {
-    if (!isKycVerified) {
-      add(const AppAlert(
-        id: 'kyc_reminder',
-        message: 'Complete verification to unlock higher limits',
-        type: AlertType.warning,
-        actionLabel: 'Verify Now',
-        actionRoute: '/kyc',
-      ));
-    }
-  }
-
-  /// Add low balance alert.
-  void checkLowBalance(double balance, {double threshold = 10.0}) {
-    if (balance < threshold && balance > 0) {
-      add(AppAlert(
-        id: 'low_balance',
-        message: 'Your balance is low (\$${balance.toStringAsFixed(2)})',
-        type: AlertType.warning,
-        actionLabel: 'Deposit',
-        actionRoute: '/deposit',
-      ));
-    } else {
-      dismiss('low_balance');
-    }
-  }
-}
-
-final alertsProvider =
-    NotifierProvider<AlertsNotifier, List<AppAlert>>(AlertsNotifier.new);
-
-/// First visible alert (for banner display).
-final topAlertProvider = Provider<AppAlert?>((ref) {
-  final alerts = ref.watch(alertsProvider);
-  return alerts.isNotEmpty ? alerts.first : null;
+/// Visible alerts (active minus dismissed).
+final visibleAlertsProvider = Provider<List<AppAlert>>((ref) {
+  final alerts = ref.watch(activeAlertsProvider).valueOrNull ?? [];
+  final dismissed = ref.watch(dismissedAlertsProvider);
+  return alerts.where((a) => !dismissed.contains(a.id)).toList();
 });
