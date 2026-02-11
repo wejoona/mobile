@@ -32,7 +32,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(cardsProvider);
-    final card = state.selectedCard;
+    final card = ref.watch(selectedCardProvider(widget.cardId));
 
     if (card == null) {
       return Scaffold(
@@ -74,7 +74,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
             // Virtual card display
             VirtualCardWidget(
               card: card,
-              showFullNumber: _showFullNumber,
+              showDetails: _showFullNumber,
             ),
 
             const SizedBox(height: AppSpacing.xxl),
@@ -405,7 +405,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
     AppLocalizations l10n,
     String cardId,
   ) async {
-    final card = ref.read(cardsProvider).selectedCard;
+    final card = ref.read(selectedCardProvider(cardId));
     if (card == null) return;
 
     final confirmed = await showDialog<bool>(

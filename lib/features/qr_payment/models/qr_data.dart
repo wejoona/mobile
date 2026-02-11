@@ -6,6 +6,11 @@ class QrPaymentData {
   final double? amount;
   final String? note;
   final String? walletAddress;
+  final String? type;
+  final String? recipient;
+  final String? merchantId;
+  final String? reference;
+  final String? paymentLinkId;
 
   const QrPaymentData({
     required this.userId,
@@ -14,7 +19,33 @@ class QrPaymentData {
     this.amount,
     this.note,
     this.walletAddress,
+    this.type,
+    this.recipient,
+    this.merchantId,
+    this.reference,
+    this.paymentLinkId,
   });
+
+  factory QrPaymentData.fromJson(Map<String, dynamic> json) => QrPaymentData(
+    userId: json['userId'] as String? ?? '',
+    phone: json['phone'] as String?,
+    displayName: json['name'] as String? ?? json['displayName'] as String?,
+    amount: (json['amount'] as num?)?.toDouble(),
+    note: json['note'] as String?,
+    walletAddress: json['address'] as String?,
+    type: json['type'] as String?,
+    recipient: json['recipient'] as String?,
+    merchantId: json['merchantId'] as String?,
+    reference: json['reference'] as String?,
+    paymentLinkId: json['paymentLinkId'] as String?,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'userId': userId, 'phone': phone, 'displayName': displayName,
+    'amount': amount, 'note': note, 'address': walletAddress,
+    'type': type, 'recipient': recipient, 'merchantId': merchantId,
+    'reference': reference, 'paymentLinkId': paymentLinkId,
+  };
 
   /// Encode as JSON string for QR code.
   String encode() {

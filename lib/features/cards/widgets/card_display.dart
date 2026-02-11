@@ -76,7 +76,7 @@ class CardDisplay extends StatelessWidget {
                 AppText(
                   showDetails
                       ? _formatCardNumber(card.maskedNumber)
-                      : '**** **** **** ${card.lastFourDigits}',
+                      : '**** **** **** ${card.last4}',
                   style: AppTextStyle.headingSmall,
                   color: AppColors.textPrimary,
                 ),
@@ -94,7 +94,7 @@ class CardDisplay extends StatelessWidget {
                           color: AppColors.textTertiary,
                         ),
                         AppText(
-                          card.cardholderName.toUpperCase(),
+                          (card.nickname ?? 'HOLDER').toUpperCase(),
                           style: AppTextStyle.labelMedium,
                           color: AppColors.textPrimary,
                         ),
