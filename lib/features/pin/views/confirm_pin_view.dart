@@ -136,14 +136,15 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
       setState(() => _isLoading = false);
 
       if (success) {
-        // Show success and navigate
+        // Show success and navigate to biometric enrollment
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.pin_success_set),
             backgroundColor: AppColors.successBase,
           ),
         );
-        context.go('/home');
+        // Prompt biometric enrollment before going home
+        context.go('/settings/biometric/enrollment');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -25,22 +25,35 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   bool _hasFailed = false;
   String? _errorMessage;
 
-  void _onLivenessComplete(LivenessResult result) {
-    debugPrint('[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}');
+  LivenessDecision? _decision;
 
-    if (result.isLive) {
-      setState(() => _isComplete = true);
-      // Navigate to review after a brief success display
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          context.go('/kyc/review');
-        }
-      });
-    } else {
-      setState(() {
-        _hasFailed = true;
-        _errorMessage = result.failureReason ?? 'Liveness verification failed';
-      });
+  void _onLivenessComplete(LivenessResult result) {
+    debugPrint('[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}, decision=${result.decision}');
+
+    final decision = result.decision;
+    _decision = decision;
+
+    switch (decision) {
+      case LivenessDecision.autoApprove:
+        // High score — auto-approve, proceed to review
+        setState(() => _isComplete = true);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) context.go('/kyc/review');
+        });
+
+      case LivenessDecision.manualReview:
+        // Medium score — submit for manual review, show pending screen
+        setState(() => _isComplete = true);
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) context.go('/kyc/submitted');
+        });
+
+      case LivenessDecision.decline:
+        // Low score — decline, allow retry
+        setState(() {
+          _hasFailed = true;
+          _errorMessage = result.failureReason ?? 'La vérification a échoué. Veuillez réessayer.';
+        });
     }
   }
 
@@ -150,7 +163,8 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
       );
     }
 
-    // Success - auto-navigating to review
+    // Success - auto-navigating based on decision
+    final isManualReview = _decision == LivenessDecision.manualReview;
     return Scaffold(
       backgroundColor: colors.canvas,
       body: SafeArea(
@@ -159,19 +173,23 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.check_circle,
+                isManualReview ? Icons.hourglass_top : Icons.check_circle,
                 size: 80,
-                color: colors.success,
+                color: isManualReview ? colors.warning : colors.success,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
-                'Liveness Verified',
+                isManualReview
+                    ? 'Vérification en cours'
+                    : 'Identité vérifiée',
                 variant: AppTextVariant.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                'Proceeding to review...',
+                isManualReview
+                    ? 'Votre vérification sera examinée manuellement...'
+                    : 'Passage à la vérification...',
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),

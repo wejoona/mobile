@@ -62,7 +62,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               icon: Icons.lock_outline,
               title: l10n.security_changePin,
               subtitle: l10n.security_changePinSubtitle,
-              onTap: () => context.push('/settings/change-pin'),
+              onTap: () => context.push('/settings/pin'),
             ),
             const SizedBox(height: AppSpacing.sm),
             _buildBiometricOption(l10n, colors),

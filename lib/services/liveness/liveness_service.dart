@@ -157,6 +157,23 @@ class ChallengeVerificationResult {
   }
 }
 
+/// Liveness decision based on confidence score
+enum LivenessDecision {
+  /// High confidence (≥85%) — auto-approve
+  autoApprove,
+  /// Medium confidence (50-84%) — manual review required
+  manualReview,
+  /// Low confidence (<50%) — decline
+  decline,
+}
+
+/// Evaluate liveness score and return decision
+LivenessDecision evaluateLivenessScore(double confidence) {
+  if (confidence >= 0.85) return LivenessDecision.autoApprove;
+  if (confidence >= 0.50) return LivenessDecision.manualReview;
+  return LivenessDecision.decline;
+}
+
 /// Liveness result (for widget callback)
 class LivenessResult {
   final String sessionId;
@@ -172,6 +189,9 @@ class LivenessResult {
     required this.completedAt,
     this.failureReason,
   });
+
+  /// Get the decision based on confidence score
+  LivenessDecision get decision => evaluateLivenessScore(confidence);
 }
 
 /// Liveness detection service — challenge-based photo flow

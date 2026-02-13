@@ -8,7 +8,11 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
 
+enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
 enum PinStep { current, newPin, confirm }
 
 class ChangePinView extends ConsumerStatefulWidget {
@@ -19,6 +23,7 @@ class ChangePinView extends ConsumerStatefulWidget {
 }
 
 class _ChangePinViewState extends ConsumerState<ChangePinView> {
+  ChangePinPhase _phase = ChangePinPhase.livenessExplanation;
   PinStep _currentStep = PinStep.current;
   String _currentPin = '';
   String _newPin = '';
@@ -26,9 +31,67 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   String? _error;
   bool _isLoading = false;
 
+  static const int _pinLength = 6;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    switch (_phase) {
+      case ChangePinPhase.livenessExplanation:
+        return KycInstructionScreen(
+          title: 'Vérification d\'identité',
+          description: 'Pour changer votre PIN, nous devons d\'abord vérifier votre identité par reconnaissance faciale.',
+          icon: Icons.face,
+          instructions: const [
+            KycInstruction(
+              icon: Icons.videocam_outlined,
+              title: 'Vérification vidéo',
+              subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
+            ),
+            KycInstruction(
+              icon: Icons.security,
+              title: 'Sécurité renforcée',
+              subtitle: 'Cela protège votre compte contre les changements non autorisés',
+            ),
+            KycInstruction(
+              icon: Icons.timer_outlined,
+              title: 'Environ 30 secondes',
+              subtitle: 'Restez dans le cadre pendant toute la durée',
+            ),
+          ],
+          buttonLabel: l10n.common_continue,
+          onContinue: () => setState(() => _phase = ChangePinPhase.livenessCheck),
+          onBack: () => context.safePop(fallbackRoute: '/settings/security'),
+        );
+
+      case ChangePinPhase.livenessCheck:
+        return LivenessCheckWidget(
+          onComplete: _onLivenessComplete,
+          onCancel: () => setState(() => _phase = ChangePinPhase.livenessExplanation),
+        );
+
+      case ChangePinPhase.pinEntry:
+        return _buildPinEntryScreen(l10n);
+    }
+  }
+
+  void _onLivenessComplete(LivenessResult result) {
+    if (result.isLive && result.decision != LivenessDecision.decline) {
+      setState(() => _phase = ChangePinPhase.pinEntry);
+    } else {
+      // Liveness failed — go back to explanation
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La vérification a échoué. Veuillez réessayer.'),
+          backgroundColor: AppColors.errorBase,
+        ),
+      );
+      setState(() => _phase = ChangePinPhase.livenessExplanation);
+    }
+  }
+
+  Widget _buildPinEntryScreen(AppLocalizations l10n) {
     return Scaffold(
       backgroundColor: AppColors.obsidian,
       appBar: AppBar(
@@ -174,7 +237,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(4, (index) {
+      children: List.generate(_pinLength, (index) {
         final isFilled = index < pin.length;
         final hasError = _error != null;
 
@@ -208,25 +271,25 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
       switch (_currentStep) {
         case PinStep.current:
-          if (_currentPin.length < 4) {
+          if (_currentPin.length < _pinLength) {
             _currentPin += number;
-            if (_currentPin.length == 4) {
+            if (_currentPin.length == _pinLength) {
               _validateCurrentPin();
             }
           }
           break;
         case PinStep.newPin:
-          if (_newPin.length < 4) {
+          if (_newPin.length < _pinLength) {
             _newPin += number;
-            if (_newPin.length == 4) {
+            if (_newPin.length == _pinLength) {
               _validateNewPin();
             }
           }
           break;
         case PinStep.confirm:
-          if (_confirmPin.length < 4) {
+          if (_confirmPin.length < _pinLength) {
             _confirmPin += number;
-            if (_confirmPin.length == 4) {
+            if (_confirmPin.length == _pinLength) {
               _validateConfirmPin();
             }
           }
@@ -266,20 +329,6 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     setState(() => _isLoading = true);
 
     try {
-      // First require biometric confirmation if enabled
-      final biometricGuard = ref.read(biometricGuardProvider);
-      final biometricConfirmed = await biometricGuard.guardPinChange();
-
-      if (biometricConfirmed != BiometricResult.success) {
-        setState(() {
-          _error = l10n.changePin_errorBiometricRequired;
-          _currentPin = '';
-          _isLoading = false;
-        });
-        return;
-      }
-
-      // Then verify current PIN
       final pinService = ref.read(pinServiceProvider);
       final result = await pinService.verifyPinLocally(_currentPin);
 
@@ -295,12 +344,6 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           _isLoading = false;
         });
       }
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _currentPin = '';
-        _isLoading = false;
-      });
     } catch (e) {
       setState(() {
         _error = l10n.changePin_errorUnableToVerify;
@@ -348,18 +391,19 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
   }
 
   bool _isWeakPin(String pin) {
-    // Check for sequential digits
-    const sequential = ['0123', '1234', '2345', '3456', '4567', '5678', '6789'];
-    const reverseSequential = ['9876', '8765', '7654', '6543', '5432', '4321', '3210'];
-
-    if (sequential.contains(pin) || reverseSequential.contains(pin)) {
-      return true;
+    // Check for sequential digits (ascending)
+    bool ascending = true;
+    bool descending = true;
+    for (int i = 1; i < pin.length; i++) {
+      final curr = int.parse(pin[i]);
+      final prev = int.parse(pin[i - 1]);
+      if (curr != prev + 1) ascending = false;
+      if (curr != prev - 1) descending = false;
     }
+    if (ascending || descending) return true;
 
     // Check for repeated digits
-    if (pin.split('').toSet().length == 1) {
-      return true;
-    }
+    if (pin.split('').toSet().length == 1) return true;
 
     return false;
   }

@@ -546,6 +546,27 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/force-update',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ForceUpdateView(),
+        ),
+      ),
+      GoRoute(
+        path: '/maintenance',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const MaintenanceView(),
+        ),
+      ),
+      GoRoute(
+        path: '/server-error',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ServerErrorView(),
+        ),
+      ),
+      GoRoute(
         path: '/create-wallet',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
