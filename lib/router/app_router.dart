@@ -339,8 +339,16 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       debugPrint('[Router] Flow check: locationBase=$locationBase, fsmBase=$fsmBase, isWithinSameFlow=$isWithinSameFlow');
 
+      // Lock screen guard — user has token but needs PIN/biometric
+      // Must be checked BEFORE FSM redirect to avoid redirect loops
+      final isLockedState = authState.isLocked;
+      if (isLockedState && location != '/session-locked') {
+        return '/session-locked';
+      }
+
       // FSM wants to redirect to a specific state screen - but allow sub-navigation
-      if (!isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow) {
+      // Skip FSM redirect when locked (AuthProvider.locked is separate from FSM AuthLocked)
+      if (!isLockedState && !isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow) {
         debugPrint('[Router] Redirecting to FSM target: $fsmTargetRoute');
         return fsmTargetRoute;
       }
@@ -348,12 +356,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Onboarding-related routes
       final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
       final isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
-
-      // Lock screen guard — user has token but needs PIN/biometric
-      final isLockedState = authState.isLocked;
-      if (isLockedState && location != '/session-locked') {
-        return '/session-locked';
-      }
 
       // Auth guards
       if (!isAuthenticated && !isLockedState && !isPublicRoute) {
