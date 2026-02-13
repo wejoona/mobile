@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
@@ -17,6 +19,19 @@ class ProfileHeader extends StatelessWidget {
     final initials = _getInitials(user.displayName ?? user.phone ?? '');
     final avatarColor = ColorUtils.pastelFromString(user.displayName ?? user.id);
 
+    // Avatar affiché depuis base64 (DB) en priorité, sinon URL, sinon initiales
+    ImageProvider? avatarImage;
+    if (user.avatarBase64 != null && user.avatarBase64!.isNotEmpty) {
+      try {
+        final Uint8List bytes = base64Decode(user.avatarBase64!);
+        avatarImage = MemoryImage(bytes);
+      } catch (_) {
+        // base64 invalide — fallback aux initiales
+      }
+    } else if (user.avatarUrl != null && user.avatarUrl!.isNotEmpty) {
+      avatarImage = NetworkImage(user.avatarUrl!);
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -29,8 +44,8 @@ class ProfileHeader extends StatelessWidget {
                 CircleAvatar(
                   radius: 48,
                   backgroundColor: avatarColor,
-                  backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                  child: user.avatarUrl == null
+                  backgroundImage: avatarImage,
+                  child: avatarImage == null
                       ? Text(initials, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, color: ColorUtils.contrastingText(avatarColor)))
                       : null,
                 ),

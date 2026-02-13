@@ -9,6 +9,8 @@ class User {
   final String? lastName;
   final String? email;
   final String? avatarUrl;
+  /// Avatar stocké en base64 depuis la base de données (pas depuis le bucket S3)
+  final String? avatarBase64;
   final String preferredLocale;
   final String countryCode;
   final bool isPhoneVerified;
@@ -26,6 +28,7 @@ class User {
     this.lastName,
     this.email,
     this.avatarUrl,
+    this.avatarBase64,
     this.preferredLocale = 'fr',
     required this.countryCode,
     required this.isPhoneVerified,
@@ -52,10 +55,15 @@ class User {
     if (lastName != null && lastName!.isNotEmpty) completed++;
     if (email != null && email!.isNotEmpty) completed++;
     if (username != null && username!.isNotEmpty) completed++;
-    if (avatarUrl != null && avatarUrl!.isNotEmpty) completed++;
+    if (_hasAvatar) completed++;
     if (hasPin) completed++;
     return completed / total;
   }
+
+  /// Vérifie si l'utilisateur a un avatar (base64 ou URL)
+  bool get _hasAvatar =>
+      (avatarBase64 != null && avatarBase64!.isNotEmpty) ||
+      (avatarUrl != null && avatarUrl!.isNotEmpty);
 
   /// List of missing profile fields
   List<String> get missingProfileFields {
@@ -64,7 +72,7 @@ class User {
     if (lastName == null || lastName!.isEmpty) missing.add('Last name');
     if (email == null || email!.isEmpty) missing.add('Email');
     if (username == null || username!.isEmpty) missing.add('Username');
-    if (avatarUrl == null || avatarUrl!.isEmpty) missing.add('Profile photo');
+    if (!_hasAvatar) missing.add('Profile photo');
     if (!hasPin) missing.add('PIN');
     return missing;
   }
@@ -84,6 +92,7 @@ class User {
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
+      avatarBase64: json['avatarBase64'] as String?,
       preferredLocale: json['preferredLocale'] as String? ?? 'fr',
       countryCode: json['countryCode'] as String? ?? 'CI',
       // Backend returns 'phoneVerified', handle both keys
@@ -115,6 +124,7 @@ class User {
       'lastName': lastName,
       'email': email,
       'avatarUrl': avatarUrl,
+      'avatarBase64': avatarBase64,
       'preferredLocale': preferredLocale,
       'countryCode': countryCode,
       'isPhoneVerified': isPhoneVerified,
@@ -135,6 +145,7 @@ class User {
     String? lastName,
     String? email,
     String? avatarUrl,
+    String? avatarBase64,
     String? preferredLocale,
     String? countryCode,
     bool? isPhoneVerified,
@@ -152,6 +163,7 @@ class User {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarBase64: avatarBase64 ?? this.avatarBase64,
       preferredLocale: preferredLocale ?? this.preferredLocale,
       countryCode: countryCode ?? this.countryCode,
       isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,

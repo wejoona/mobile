@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -58,7 +59,7 @@ class ProfilePictureService {
   }
 
   /// Upload avatar to backend
-  /// Returns the avatar URL
+  /// Returns the avatar as base64 string (stocké en DB, pas dans le bucket S3)
   Future<String> uploadAvatar(File imageFile, {
     required void Function(double) onProgress,
   }) async {
@@ -83,9 +84,23 @@ class ProfilePictureService {
         },
       );
 
-      final avatarUrl = response.data['avatarUrl'] as String;
-      _logger.info('Avatar uploaded successfully: $avatarUrl');
-      return avatarUrl;
+      // Le backend retourne avatarBase64 (stocké en DB) ou avatarUrl (legacy)
+      final data = response.data as Map<String, dynamic>;
+      if (data.containsKey('avatarBase64')) {
+        final avatarBase64 = data['avatarBase64'] as String;
+        _logger.info('Avatar uploaded successfully (base64 from DB)');
+        return avatarBase64;
+      }
+
+      // Fallback: si le backend retourne encore une URL, convertir localement en base64
+      if (data.containsKey('avatarUrl')) {
+        _logger.warn('Backend returned avatarUrl instead of avatarBase64, converting locally');
+        final bytes = await imageFile.readAsBytes();
+        final base64String = base64Encode(bytes);
+        return base64String;
+      }
+
+      throw Exception('No avatar data in response');
     } catch (e) {
       _logger.error('Error uploading avatar: $e');
       rethrow;

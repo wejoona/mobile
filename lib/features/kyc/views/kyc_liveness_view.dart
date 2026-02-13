@@ -8,10 +8,9 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
-import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
-
-/// KYC Liveness verification step
-/// Uses the reusable LivenessCheckWidget for face verification
+/// Écran de vérification de présence (liveness) — défi caméra uniquement.
+/// Les instructions sont affichées sur un écran séparé (KycLivenessInstructionsView)
+/// avant la navigation vers cet écran.
 class KycLivenessView extends ConsumerStatefulWidget {
   const KycLivenessView({super.key});
 
@@ -20,7 +19,6 @@ class KycLivenessView extends ConsumerStatefulWidget {
 }
 
 class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
-  bool _showInstructions = true;
   bool _isComplete = false;
   bool _hasFailed = false;
   String? _errorMessage;
@@ -72,7 +70,6 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
 
   void _retry() {
     setState(() {
-      _showInstructions = true;
       _hasFailed = false;
       _errorMessage = null;
     });
@@ -83,20 +80,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
-    // Show instruction screen first
-    if (_showInstructions) {
-      return KycInstructionScreen(
-        title: 'Liveness Check',
-        description: 'We need to verify you\'re a real person by checking your live presence.',
-        icon: Icons.videocam_outlined,
-        instructions: KycInstructions.liveness,
-        buttonLabel: l10n.common_continue,
-        onContinue: () => setState(() => _showInstructions = false),
-        onBack: _onCancel,
-      );
-    }
-
-    // Show liveness check widget
+    // Afficher le widget de vérification de présence (les instructions sont sur un écran séparé)
     if (!_isComplete && !_hasFailed) {
       return LivenessCheckWidget(
         onComplete: _onLivenessComplete,

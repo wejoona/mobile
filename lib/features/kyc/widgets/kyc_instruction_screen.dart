@@ -227,23 +227,23 @@ class KycInstructions {
   static List<KycInstruction> get liveness => const [
         KycInstruction(
           icon: Icons.videocam_outlined,
-          title: 'Video verification',
-          subtitle: 'We\'ll ask you to perform simple actions',
+          title: 'Vérification vidéo',
+          subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
         ),
         KycInstruction(
           icon: Icons.rotate_left,
-          title: 'Follow the prompts',
-          subtitle: 'Turn your head or blink when asked',
+          title: 'Suivez les instructions',
+          subtitle: 'Tournez la tête ou clignez des yeux quand demandé',
         ),
         KycInstruction(
           icon: Icons.timer_outlined,
-          title: 'Takes about 30 seconds',
-          subtitle: 'Stay in frame throughout',
+          title: 'Environ 30 secondes',
+          subtitle: 'Restez dans le cadre pendant toute la durée',
         ),
         KycInstruction(
           icon: Icons.block,
-          title: 'No photos of photos',
-          subtitle: 'This verifies you\'re a real person',
+          title: 'Pas de photos de photos',
+          subtitle: 'Cela vérifie que vous êtes une vraie personne',
           isWarning: true,
         ),
       ];

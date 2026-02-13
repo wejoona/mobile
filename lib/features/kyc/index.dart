@@ -13,6 +13,7 @@ export 'package:usdc_wallet/features/kyc/views/document_capture_view.dart';
 export 'package:usdc_wallet/features/kyc/views/document_type_view.dart';
 export 'package:usdc_wallet/features/kyc/views/kyc_additional_docs_view.dart';
 export 'package:usdc_wallet/features/kyc/views/kyc_address_view.dart';
+export 'package:usdc_wallet/features/kyc/views/kyc_liveness_instructions_view.dart';
 export 'package:usdc_wallet/features/kyc/views/kyc_liveness_view.dart';
 export 'package:usdc_wallet/features/kyc/views/kyc_personal_info_view.dart';
 export 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';

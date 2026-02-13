@@ -41,6 +41,7 @@ import 'package:usdc_wallet/features/kyc/views/document_type_view.dart';
 import 'package:usdc_wallet/features/kyc/views/document_capture_view.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_personal_info_view.dart';
 import 'package:usdc_wallet/features/kyc/views/selfie_view.dart';
+import 'package:usdc_wallet/features/kyc/views/kyc_liveness_instructions_view.dart';
 import 'package:usdc_wallet/features/kyc/views/kyc_liveness_view.dart';
 import 'package:usdc_wallet/features/kyc/views/review_view.dart';
 import 'package:usdc_wallet/features/kyc/views/submitted_view.dart';
@@ -916,6 +917,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
           state: state,
           child: const SelfieView(),
+        ),
+      ),
+      GoRoute(
+        path: '/kyc/liveness-instructions',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const KycLivenessInstructionsView(),
         ),
       ),
       GoRoute(

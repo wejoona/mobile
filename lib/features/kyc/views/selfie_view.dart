@@ -637,7 +637,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
 
   void _acceptPhoto(BuildContext context) {
     ref.read(kycProvider.notifier).setSelfie(_capturedImagePath!);
-    context.go('/kyc/liveness');
+    context.go('/kyc/liveness-instructions');
   }
 }
 
