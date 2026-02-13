@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Biometric Prompt View
 /// Shown when biometric authentication is required
@@ -57,6 +58,7 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
 
       if (mounted) {
         if (didAuthenticate) {
+          ref.read(authProvider.notifier).unlock();
           ref.read(appFsmProvider.notifier).dispatch(
                 const AppSessionEvent(SessionBiometricSuccess()),
               );

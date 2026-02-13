@@ -347,8 +347,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
       final isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
 
+      // Lock screen guard — user has token but needs PIN/biometric
+      final isLockedState = authState.isLocked;
+      if (isLockedState && location != '/session-locked') {
+        return '/session-locked';
+      }
+
       // Auth guards
-      if (!isAuthenticated && !isPublicRoute) {
+      if (!isAuthenticated && !isLockedState && !isPublicRoute) {
         return '/login';
       }
 

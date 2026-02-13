@@ -7,6 +7,7 @@ import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Session Locked View
 /// Shown when session is locked and requires PIN/biometric to unlock
@@ -62,6 +63,7 @@ class SessionLockedView extends ConsumerWidget {
                       builder: (_) => EnterPinView(
                         title: l10n.session_enterPinToUnlock,
                         onSuccess: (pin) {
+                          ref.read(authProvider.notifier).unlock();
                           ref.read(appFsmProvider.notifier).dispatch(
                                 const AppSessionEvent(SessionUnlock()),
                               );

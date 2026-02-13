@@ -11,6 +11,7 @@ enum AuthStatus {
   initial,
   loading,
   authenticated,
+  locked, // Has token but needs PIN/biometric to unlock
   unauthenticated,
   otpSent,
   error,
@@ -48,6 +49,7 @@ class AuthState {
   }
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
+  bool get isLocked => status == AuthStatus.locked;
   bool get isLoading => status == AuthStatus.loading;
 }
 
@@ -71,7 +73,8 @@ class AuthNotifier extends Notifier<AuthState> {
       final token = await _storage.read(key: StorageKeys.accessToken);
 
       if (token != null) {
-        state = state.copyWith(status: AuthStatus.authenticated);
+        // Token exists — require PIN/biometric before granting full access
+        state = state.copyWith(status: AuthStatus.locked);
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
@@ -80,6 +83,13 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.unauthenticated,
         error: e.toString(),
       );
+    }
+  }
+
+  /// Unlock the session after PIN/biometric verification
+  void unlock() {
+    if (state.status == AuthStatus.locked) {
+      state = state.copyWith(status: AuthStatus.authenticated);
     }
   }
 
