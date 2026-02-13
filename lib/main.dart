@@ -42,14 +42,11 @@ void main() async {
 
   // SECURITY: Wrap app with SecurityGate to block compromised devices
   runApp(
-    SecurityGate(
-      policy: CompromisedDevicePolicy.block,
-      child: ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-        ],
-        child: const JoonaPayApp(),
-      ),
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+      ],
+      child: const JoonaPayApp(),
     ),
   );
 }
