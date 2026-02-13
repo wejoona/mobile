@@ -73,8 +73,8 @@ class AuthNotifier extends Notifier<AuthState> {
       final token = await _storage.read(key: StorageKeys.accessToken);
 
       if (token != null) {
-        // Token exists — require PIN/biometric before granting full access
-        state = state.copyWith(status: AuthStatus.locked);
+        // Token exists — go straight to authenticated (lock screen disabled for now)
+        state = state.copyWith(status: AuthStatus.authenticated);
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
