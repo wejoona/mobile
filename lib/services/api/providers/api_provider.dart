@@ -11,26 +11,26 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
-import 'auth_api.dart';
-import 'user_api.dart';
-import 'wallet_api.dart';
-import 'transfers_api.dart';
-import 'contacts_api.dart';
-import 'cards_api.dart';
-import 'payment_links_api.dart';
-import 'savings_pots_api.dart';
-import 'recurring_transfers_api.dart';
-import 'bank_linking_api.dart';
-import 'bill_payments_api.dart';
-import 'beneficiaries_api.dart';
-import 'devices_api.dart';
-import 'notifications_api.dart';
-import 'kyc_api.dart';
-import 'referrals_api.dart';
-import 'insights_api.dart';
-import 'merchant_api.dart';
-import 'bulk_payments_api.dart';
-import 'expenses_api.dart';
+import 'package:usdc_wallet/services/api/providers/auth_api.dart';
+import 'package:usdc_wallet/services/api/providers/user_api.dart';
+import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
+import 'package:usdc_wallet/services/api/providers/transfers_api.dart';
+import 'package:usdc_wallet/services/api/providers/contacts_api.dart';
+import 'package:usdc_wallet/services/api/providers/cards_api.dart';
+import 'package:usdc_wallet/services/api/providers/payment_links_api.dart';
+import 'package:usdc_wallet/services/api/providers/savings_pots_api.dart';
+import 'package:usdc_wallet/services/api/providers/recurring_transfers_api.dart';
+import 'package:usdc_wallet/services/api/providers/bank_linking_api.dart';
+import 'package:usdc_wallet/services/api/providers/bill_payments_api.dart';
+import 'package:usdc_wallet/services/api/providers/beneficiaries_api.dart';
+import 'package:usdc_wallet/services/api/providers/devices_api.dart';
+import 'package:usdc_wallet/services/api/providers/notifications_api.dart';
+import 'package:usdc_wallet/services/api/providers/kyc_api.dart';
+import 'package:usdc_wallet/services/api/providers/referrals_api.dart';
+import 'package:usdc_wallet/services/api/providers/insights_api.dart';
+import 'package:usdc_wallet/services/api/providers/merchant_api.dart';
+import 'package:usdc_wallet/services/api/providers/bulk_payments_api.dart';
+import 'package:usdc_wallet/services/api/providers/expenses_api.dart';
 
 /// Unified API interface — one import, all endpoints.
 class ApiProvider {
