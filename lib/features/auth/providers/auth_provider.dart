@@ -55,6 +55,8 @@ class AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
+    // Restore session from secure storage on startup
+    Future.microtask(() => checkAuth());
     return const AuthState();
   }
 
