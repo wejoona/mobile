@@ -132,7 +132,7 @@ class _SecurityGateState extends State<SecurityGate> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'JoonaPay cannot run on this device because security issues have been detected.',
+                  'Korido cannot run on this device because security issues have been detected.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 16,
