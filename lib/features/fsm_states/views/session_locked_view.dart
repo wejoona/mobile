@@ -1,105 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
-import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
-/// Session Locked View
-/// Shown when session is locked and requires PIN/biometric to unlock
-class SessionLockedView extends ConsumerWidget {
+/// Lock screen — reuses the existing EnterPinView component
+/// for consistent design with the rest of the app.
+class SessionLockedView extends ConsumerStatefulWidget {
   const SessionLockedView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final sessionState = ref.watch(appFsmProvider).session;
+  ConsumerState<SessionLockedView> createState() => _SessionLockedViewState();
+}
 
-    String? reason;
-    if (sessionState is SessionLocked) {
-      reason = sessionState.reason;
+class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
+  String? _userName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserInfo();
+  }
+
+  Future<void> _loadUserInfo() async {
+    final storage = ref.read(secureStorageProvider);
+    final phone = await storage.read(key: StorageKeys.phone);
+    if (mounted && phone != null) {
+      setState(() => _userName = phone);
     }
+  }
 
-    return Scaffold(
-      backgroundColor: AppColors.obsidian,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: AppSpacing.xxxl),
-              Icon(
-                Icons.lock_outline,
-                size: 80,
-                color: AppColors.gold500,
-              ),
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.session_locked,
-                variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppText(
-                reason ?? l10n.session_lockedMessage,
-                variant: AppTextVariant.bodyLarge,
+  void _unlock() {
+    ref.read(authProvider.notifier).unlock();
+    ref.read(appFsmProvider.notifier).dispatch(
+          const AppSessionEvent(SessionUnlock()),
+        );
+  }
+
+  void _logout() {
+    ref.read(authProvider.notifier).logout();
+    ref.read(appFsmProvider.notifier).logout();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Reuse the existing EnterPinView with all its components
+        EnterPinView(
+          title: 'Bon retour',
+          subtitle: _userName != null
+              ? 'Entrez votre code PIN pour continuer'
+              : null,
+          showBiometric: true,
+          onSuccess: (_) => _unlock(),
+        ),
+        // Logout button in top-right
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 12,
+          right: 16,
+          child: GestureDetector(
+            onTap: _logout,
+            child: Text(
+              'Déconnexion',
+              style: TextStyle(
+                fontSize: 14,
                 color: AppColors.textSecondary,
-                textAlign: TextAlign.center,
+                fontWeight: FontWeight.w500,
               ),
-              SizedBox(height: AppSpacing.xxxl),
-              // PIN entry is handled by navigation to EnterPinView, not embedded
-              AppButton(
-                label: l10n.session_enterPinToUnlock,
-                onPressed: () {
-                  // Navigate to PIN entry
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => EnterPinView(
-                        title: l10n.session_enterPinToUnlock,
-                        onSuccess: (pin) {
-                          ref.read(authProvider.notifier).unlock();
-                          ref.read(appFsmProvider.notifier).dispatch(
-                                const AppSessionEvent(SessionUnlock()),
-                              );
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ),
-                  );
-                },
-                isFullWidth: true,
-              ),
-              SizedBox(height: AppSpacing.lg),
-              AppButton(
-                label: l10n.session_useBiometric,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).dispatch(
-                        AppSessionEvent(SessionRequestBiometric(reason: l10n.session_unlockReason)),
-                      );
-                },
-                variant: AppButtonVariant.secondary,
-                isFullWidth: true,
-              ),
-              SizedBox(height: AppSpacing.md),
-              AppButton(
-                label: l10n.common_logout,
-                onPressed: () {
-                  ref.read(appFsmProvider.notifier).logout();
-                },
-                variant: AppButtonVariant.ghost,
-                isFullWidth: true,
-              ),
-              SizedBox(height: AppSpacing.xxxl),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

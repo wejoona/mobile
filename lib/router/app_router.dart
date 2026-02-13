@@ -148,6 +148,7 @@ import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/features/fsm_states/views/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
+import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
@@ -304,7 +305,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                             walletState.status == WalletStatus.initial;
 
       // Allow splash, onboarding, and auth routes without auth
-      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp', '/pin/setup', '/pin/confirm'];
+      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp', '/pin/setup', '/pin/confirm', '/pin/reset', '/session-locked'];
       final isPublicRoute = publicRoutes.any((route) => location.startsWith(route));
 
       // FSM-specific routes that should bypass normal redirect logic
@@ -864,6 +865,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
           state: state,
           child: const SetPinView(),
+        ),
+      ),
+      GoRoute(
+        path: '/pin/reset',
+        pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+          state: state,
+          child: const ResetPinView(),
         ),
       ),
       GoRoute(
