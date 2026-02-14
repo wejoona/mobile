@@ -3,6 +3,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:intl/intl.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Card widget displaying a sub-business
 class SubBusinessCard extends StatelessWidget {
@@ -25,7 +26,7 @@ class SubBusinessCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: context.colors.gold.withOpacity(0.2),
@@ -107,7 +108,7 @@ class SubBusinessCard extends StatelessWidget {
                     vertical: AppSpacing.xxs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.charcoal,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: AppText(

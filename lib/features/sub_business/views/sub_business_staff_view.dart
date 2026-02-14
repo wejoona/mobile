@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/sub_business/providers/sub_business_provide
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/staff_member_card.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for managing staff members of a sub-business
 class SubBusinessStaffView extends ConsumerStatefulWidget {
@@ -55,7 +56,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
         onRefresh: () =>
             ref.read(subBusinessProvider.notifier).loadStaff(widget.subBusinessId),
         color: context.colors.gold,
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         child: staff.isEmpty
             ? _buildEmptyState(l10n)
             : _buildStaffList(staff, l10n),
@@ -111,7 +112,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
         // Info card
         Container(
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
               color: context.colors.gold.withOpacity(0.2),
@@ -180,7 +181,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: context.colors.container,
           title: AppText(
             l10n.subBusiness_addStaffTitle,
             variant: AppTextVariant.headlineSmall,
@@ -262,7 +263,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   Future<void> _showStaffOptions(StaffMember member, AppLocalizations l10n) async {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -275,7 +276,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -294,10 +295,10 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.person_remove, color: AppColors.error),
+              leading: Icon(Icons.person_remove, color: context.colors.error),
               title: AppText(
                 l10n.subBusiness_removeStaff,
-                color: AppColors.error,
+                color: context.colors.error,
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -320,7 +321,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: context.colors.container,
           title: AppText(
             l10n.subBusiness_changeRoleTitle,
             variant: AppTextVariant.headlineSmall,
@@ -392,7 +393,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: context.colors.elevated,
         title: AppText(
           l10n.subBusiness_removeStaffTitle,
           variant: AppTextVariant.headlineSmall,
@@ -427,7 +428,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             content: Text(
               success ? l10n.subBusiness_removeSuccess : l10n.error_generic,
             ),
-            backgroundColor: success ? AppColors.success : AppColors.error,
+            backgroundColor: success ? context.colors.success : context.colors.error,
           ),
         );
       }

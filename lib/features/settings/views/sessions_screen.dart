@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SessionsScreen extends ConsumerStatefulWidget {
   const SessionsScreen({super.key});
@@ -61,7 +62,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     return RefreshIndicator(
       onRefresh: () => ref.read(sessionsProvider.notifier).loadSessions(),
       color: context.colors.gold,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       child: Column(
         children: [
           Expanded(
@@ -198,7 +199,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         border: Border(
           top: BorderSide(color: context.colors.borderSubtle, width: 1),
         ),
@@ -288,7 +289,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
@@ -337,7 +338,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),

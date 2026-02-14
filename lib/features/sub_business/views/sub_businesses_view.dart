@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/sub_business_card.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Main screen showing list of sub-businesses
 class SubBusinessesView extends ConsumerStatefulWidget {
@@ -44,7 +45,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
       body: RefreshIndicator(
         onRefresh: () => ref.read(subBusinessProvider.notifier).loadSubBusinesses(),
         color: context.colors.gold,
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         child: state.isLoading && state.subBusinesses.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.subBusinesses.isEmpty

@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Prompt encouraging first deposit
 class FirstDepositPrompt extends ConsumerWidget {
@@ -25,8 +26,8 @@ class FirstDepositPrompt extends ConsumerWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppColors.goldGradient,
+        gradient: LinearGradient(
+          colors: context.colors.goldGradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

@@ -261,9 +261,9 @@ class _CreateRecurringTransferViewState
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              surface: AppColors.slate,
+            colorScheme: ColorScheme.dark(
+              primary: context.colors.gold,
+              surface: context.colors.container,
             ),
           ),
           child: child!,
@@ -295,7 +295,7 @@ class _CreateRecurringTransferViewState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: AppText(l10n.recurringTransfers_createSuccess),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
         ref.read(createRecurringTransferProvider.notifier).reset();
@@ -305,7 +305,7 @@ class _CreateRecurringTransferViewState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: AppText(l10n.recurringTransfers_createError),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

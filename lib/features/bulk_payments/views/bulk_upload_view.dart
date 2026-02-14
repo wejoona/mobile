@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BulkUploadView extends ConsumerStatefulWidget {
   const BulkUploadView({super.key});
@@ -98,7 +99,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
           child: Container(
             padding: EdgeInsets.all(AppSpacing.xl),
             decoration: BoxDecoration(
-              color: AppColors.charcoal,
+              color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
                 color: context.colors.gold.withOpacity(0.3),
@@ -254,7 +255,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load file: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }

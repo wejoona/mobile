@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Contacts Permission Screen
 ///
@@ -207,7 +208,7 @@ class _ContactsPermissionScreenState
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: AppColors.slate,
+              backgroundColor: context.colors.container,
               title: AppText(
                 AppLocalizations.of(context)!.contacts_permission_denied_title,
                 variant: AppTextVariant.headlineSmall,

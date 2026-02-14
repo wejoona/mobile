@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for creating a new sub-business
 class CreateSubBusinessView extends ConsumerStatefulWidget {
@@ -78,7 +79,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
               // Info card
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
                     color: context.colors.gold.withOpacity(0.2),
@@ -134,7 +135,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
             decoration: BoxDecoration(
               color: isSelected
                   ? context.colors.gold.withOpacity(0.2)
-                  : AppColors.slate,
+                  : context.colors.container,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
                 color: isSelected

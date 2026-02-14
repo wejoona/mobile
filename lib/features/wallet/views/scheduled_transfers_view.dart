@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Frequency of scheduled transfer
 enum TransferFrequency {
@@ -319,9 +320,9 @@ class _ScheduledTransfersViewState
             });
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
+              SnackBar(
                 content: Text('Schedule created successfully!'),
-                backgroundColor: AppColors.successBase,
+                backgroundColor: context.colors.success,
               ),
             );
           },
@@ -346,9 +347,9 @@ class _ScheduledTransfersViewState
           });
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Schedule deleted'),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
         },
@@ -808,7 +809,7 @@ class _TransferDetailsSheet extends StatelessWidget {
           _DetailRow(
             label: 'Status',
             value: transfer.isActive ? 'Active' : 'Paused',
-            valueColor: transfer.isActive ? AppColors.successBase : colors.textTertiary,
+            valueColor: transfer.isActive ? context.colors.success : colors.textTertiary,
           ),
 
           const SizedBox(height: AppSpacing.xxl),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 342: Account verification status view
 class AccountVerificationView extends ConsumerWidget {
@@ -15,13 +16,13 @@ class AccountVerificationView extends ConsumerWidget {
     final user = profileState.value;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Verification du compte',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
         elevation: 0,
       ),
       body: ListView(
@@ -103,13 +104,13 @@ class _VerificationStep extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: isComplete
-                        ? AppColors.success.withOpacity(0.15)
+                        ? context.colors.success.withOpacity(0.15)
                         : context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     isComplete ? Icons.check : icon,
-                    color: isComplete ? AppColors.success : AppColors.gold,
+                    color: isComplete ? context.colors.success : context.colors.gold,
                     size: 22,
                   ),
                 ),
@@ -124,7 +125,7 @@ class _VerificationStep extends StatelessWidget {
                         subtitle,
                         style: AppTextStyle.bodySmall,
                         color: isComplete
-                            ? AppColors.success
+                            ? context.colors.success
                             : context.colors.textSecondary,
                       ),
                     ],

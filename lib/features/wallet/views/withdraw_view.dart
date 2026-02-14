@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Withdrawal method type
 enum WithdrawMethod {
@@ -186,9 +187,9 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('Withdrawal request submitted successfully!'),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
           context.pop();
@@ -200,7 +201,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(error ?? 'Withdrawal failed. Please try again.'),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }
@@ -208,9 +209,9 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     } else if (result == PinConfirmationResult.failed) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Too many incorrect attempts. Please try again later.'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -228,7 +229,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     _availableBalance = walletState.availableBalance;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -264,13 +265,13 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                           ),
                         )
                       : AppText(
                           '\$${walletState.availableBalance.toStringAsFixed(2)}',
                           variant: AppTextVariant.titleMedium,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                 ],
               ),
@@ -325,7 +326,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               variant: AppCardVariant.subtle,
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: AppColors.gold500, size: 20),
+                  Icon(Icons.info_outline, color: context.colors.gold, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
@@ -390,7 +391,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                         child: AppText(
                           _amountError!,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                         ),
                       ),
                   ],
@@ -601,11 +602,11 @@ class _MethodCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.gold500.withValues(alpha: 0.1)
-              : AppColors.slate,
+              ? context.colors.gold.withValues(alpha: 0.1)
+              : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : Colors.transparent,
+            color: isSelected ? context.colors.gold : Colors.transparent,
             width: 2,
           ),
         ),
@@ -616,13 +617,13 @@ class _MethodCard extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.gold500.withValues(alpha: 0.2)
-                    : AppColors.elevated,
+                    ? context.colors.gold.withValues(alpha: 0.2)
+                    : context.colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 method.icon,
-                color: isSelected ? AppColors.gold500 : colors.textSecondary,
+                color: isSelected ? context.colors.gold : colors.textSecondary,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -633,7 +634,7 @@ class _MethodCard extends StatelessWidget {
                   AppText(
                     method.label(l10n),
                     variant: AppTextVariant.titleSmall,
-                    color: isSelected ? AppColors.gold500 : colors.textPrimary,
+                    color: isSelected ? context.colors.gold : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
@@ -645,9 +646,9 @@ class _MethodCard extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
           ],
         ),

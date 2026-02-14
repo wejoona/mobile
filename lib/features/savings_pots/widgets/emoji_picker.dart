@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Predefined emoji categories for pots
 class PotEmojis {
@@ -69,7 +70,7 @@ class EmojiPicker extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? context.colors.gold.withOpacity(0.2)
-                      : AppColors.slate,
+                      : context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
                     color: isSelected ? context.colors.gold : Colors.transparent,

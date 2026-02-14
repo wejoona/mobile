@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Welcome screen shown after successful registration
 class WelcomePostLoginView extends ConsumerStatefulWidget {
@@ -106,8 +107,8 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: AppColors.goldGradient,
+                          gradient: LinearGradient(
+                            colors: context.colors.goldGradient,
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -219,7 +220,7 @@ class _WelcomePostLoginViewState extends ConsumerState<WelcomePostLoginView>
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: AppColors.goldGradient),
+            gradient: LinearGradient(colors: context.colors.goldGradient),
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Icon(icon, color: colors.textInverse, size: 20),

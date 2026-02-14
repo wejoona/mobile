@@ -9,6 +9,7 @@ import 'package:usdc_wallet/features/receipts/widgets/receipt_widget.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Payment Receipt View
 /// Shows animated success and receipt after payment
@@ -87,7 +88,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
     );
 
     return Scaffold(
-      backgroundColor: AppColors.success,
+      backgroundColor: context.colors.success,
       body: SafeArea(
         child: Column(
           children: [
@@ -108,7 +109,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: AppColors.white,
+                              color: context.colors.textPrimary,
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
@@ -120,7 +121,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                             ),
                             child: Icon(
                               Icons.check,
-                              color: AppColors.success,
+                              color: context.colors.success,
                               size: 56,
                             ),
                           ),
@@ -128,13 +129,13 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                           AppText(
                             'Payment Successful!',
                             variant: AppTextVariant.headlineMedium,
-                            color: AppColors.white,
+                            color: context.colors.textPrimary,
                           ),
                           SizedBox(height: AppSpacing.xs),
                           AppText(
                             '\$${receipt.amount.toStringAsFixed(2)} USDC',
                             variant: AppTextVariant.displaySmall,
-                            color: AppColors.white,
+                            color: context.colors.textPrimary,
                           ),
                         ],
                       ),
@@ -153,7 +154,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                   width: double.infinity,
                   padding: EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: context.colors.textPrimary,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(AppRadius.xxl),
                     ),
@@ -175,7 +176,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                               AppText(
                                 _formatCategory(receipt.merchantCategory),
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.silver,
+                                color: context.colors.textSecondary,
                               ),
                             ],
                           ),
@@ -183,7 +184,7 @@ class _PaymentReceiptViewState extends ConsumerState<PaymentReceiptView>
                         SizedBox(height: AppSpacing.lg),
 
                         // Divider
-                        Divider(color: AppColors.charcoal.withValues(alpha: 0.2)),
+                        Divider(color: context.colors.elevated.withValues(alpha: 0.2)),
                         SizedBox(height: AppSpacing.lg),
 
                         // Use ReceiptWidget for consistent receipt display

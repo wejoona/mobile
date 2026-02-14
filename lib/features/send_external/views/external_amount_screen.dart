@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExternalAmountScreen extends ConsumerStatefulWidget {
   const ExternalAmountScreen({super.key});
@@ -295,7 +296,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? context.colors.gold.withOpacity(0.1) : AppColors.slate,
+          color: isSelected ? context.colors.gold.withOpacity(0.1) : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isSelected ? context.colors.gold.withOpacity(0.3) : context.colors.border,

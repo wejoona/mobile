@@ -4,6 +4,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class EmptyInsightsState extends StatelessWidget {
   const EmptyInsightsState({super.key});
@@ -23,7 +24,7 @@ class EmptyInsightsState extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: context.colors.container,
                 shape: BoxShape.circle,
               ),
               child: Icon(

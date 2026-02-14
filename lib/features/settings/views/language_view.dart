@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Language selection view for changing app language
 class LanguageView extends ConsumerWidget {
@@ -146,9 +147,9 @@ class _LanguageTile extends StatelessWidget {
                 color: colors.gold,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check,
-                color: AppColors.textInverse,
+                color: context.colors.textInverse,
                 size: 16,
               ),
             )

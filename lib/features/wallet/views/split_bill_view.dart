@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SplitBillView extends ConsumerStatefulWidget {
   const SplitBillView({super.key});
@@ -113,7 +114,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(color: context.colors.borderSubtle),
       ),
@@ -456,12 +457,12 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 AppText(
                   remaining > 0 ? 'Unassigned' : 'Over-assigned',
                   variant: AppTextVariant.bodyMedium,
-                  color: remaining > 0 ? AppColors.warningBase : context.colors.error,
+                  color: remaining > 0 ? context.colors.warning : context.colors.error,
                 ),
                 AppText(
                   '\$${remaining.abs().toStringAsFixed(2)}',
                   variant: AppTextVariant.labelLarge,
-                  color: remaining > 0 ? AppColors.warningBase : context.colors.error,
+                  color: remaining > 0 ? context.colors.warning : context.colors.error,
                 ),
               ],
             ),
@@ -526,12 +527,12 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               decoration: BoxDecoration(
                 color: isPaid
                     ? context.colors.success.withValues(alpha: 0.1)
-                    : AppColors.warningBase.withValues(alpha: 0.1),
+                    : context.colors.warning.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Icon(
                 isPaid ? Icons.check_circle : Icons.pending,
-                color: isPaid ? context.colors.success : AppColors.warningBase,
+                color: isPaid ? context.colors.success : context.colors.warning,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -590,7 +591,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.lg)),

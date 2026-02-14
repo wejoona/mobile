@@ -9,6 +9,7 @@ import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_tra
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/execution_history_list.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class RecurringTransferDetailView extends ConsumerWidget {
   const RecurringTransferDetailView({
@@ -24,7 +25,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     final asyncState = ref.watch(recurringTransferDetailProvider(transferId));
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.recurringTransfers_details,
@@ -36,7 +37,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
           asyncState.whenOrNull(
             data: (state) => state.transfer != null && !state.transfer!.isCancelled
                 ? IconButton(
-                    icon: Icon(Icons.edit, color: AppColors.gold500),
+                    icon: Icon(Icons.edit, color: context.colors.gold),
                     onPressed: () => context.push(
                       '/recurring-transfers/edit/$transferId',
                     ),
@@ -46,9 +47,9 @@ class RecurringTransferDetailView extends ConsumerWidget {
         ],
       ),
       body: asyncState.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
           ),
         ),
         error: (error, stack) => _buildError(l10n, error.toString()),
@@ -120,7 +121,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                             AppText(
                               transfer.recipientPhone,
                               variant: AppTextVariant.bodyMedium,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ],
                         ),
@@ -153,7 +154,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                   Container(
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: AppColors.obsidian.withOpacity(0.3),
+                      color: context.colors.canvas.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
@@ -162,7 +163,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                         AppText(
                           l10n.recurringTransfers_schedule,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                         SizedBox(height: AppSpacing.xs),
                         AppText(
@@ -180,7 +181,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                     AppText(
                       l10n.recurringTransfers_note,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.xs),
                     AppText(
@@ -213,7 +214,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.schedule,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                             size: 20,
                           ),
                           SizedBox(width: AppSpacing.md),
@@ -244,7 +245,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                   l10n.recurringTransfers_executed,
                   transfer.executedCount.toString(),
                   Icons.check_circle,
-                  AppColors.successBase,
+                  context.colors.success,
                 ),
               ),
               SizedBox(width: AppSpacing.md),
@@ -254,7 +255,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                     l10n.recurringTransfers_remaining,
                     transfer.occurrencesRemaining.toString(),
                     Icons.pending,
-                    AppColors.gold500,
+                    context.colors.gold,
                   ),
                 ),
             ],
@@ -309,16 +310,16 @@ class RecurringTransferDetailView extends ConsumerWidget {
     Color color;
     switch (status) {
       case RecurringTransferStatus.active:
-        color = AppColors.successBase;
+        color = context.colors.success;
         break;
       case RecurringTransferStatus.paused:
-        color = AppColors.warningBase;
+        color = context.colors.warning;
         break;
       case RecurringTransferStatus.completed:
-        color = AppColors.textSecondary;
+        color = context.colors.textSecondary;
         break;
       case RecurringTransferStatus.cancelled:
-        color = AppColors.errorBase;
+        color = context.colors.error;
         break;
     }
 
@@ -415,7 +416,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_pauseSuccess
               : l10n.recurringTransfers_pauseError,
         ),
-        backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+        backgroundColor: success ? context.colors.success : context.colors.error,
       ),
     );
 
@@ -444,7 +445,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_resumeSuccess
               : l10n.recurringTransfers_resumeError,
         ),
-        backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+        backgroundColor: success ? context.colors.success : context.colors.error,
       ),
     );
 
@@ -463,7 +464,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.recurringTransfers_cancelConfirmTitle,
           variant: AppTextVariant.headlineSmall,
@@ -500,7 +501,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_cancelSuccess
               : l10n.recurringTransfers_cancelError,
         ),
-        backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+        backgroundColor: success ? context.colors.success : context.colors.error,
       ),
     );
 

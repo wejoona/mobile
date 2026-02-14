@@ -3,6 +3,7 @@ import 'package:usdc_wallet/design/components/primitives/app_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 356: Summary card shown on send confirmation screen
 class SendSummaryCard extends StatelessWidget {
@@ -49,7 +50,7 @@ class SendSummaryCard extends StatelessWidget {
                           AppText(
                             recipientPhone!,
                             style: AppTextStyle.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ],
                       ],
@@ -83,16 +84,16 @@ class SendSummaryCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppText(
+                      AppText(
                         'Note',
                         style: AppTextStyle.labelSmall,
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       AppText(
                         note!,
                         style: AppTextStyle.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ],
                   ),

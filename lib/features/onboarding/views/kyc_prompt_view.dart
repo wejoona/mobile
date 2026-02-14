@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// KYC prompt screen
 class KycPromptView extends ConsumerWidget {
@@ -15,7 +16,7 @@ class KycPromptView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -27,13 +28,13 @@ class KycPromptView extends ConsumerWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.charcoal,
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.verified_user_outlined,
                   size: 64,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
               SizedBox(height: AppSpacing.xxl),
@@ -48,7 +49,7 @@ class KycPromptView extends ConsumerWidget {
               AppText(
                 l10n.onboarding_kyc_subtitle,
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -82,7 +83,7 @@ class KycPromptView extends ConsumerWidget {
                 child: AppText(
                   l10n.onboarding_kyc_later,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.silver,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -99,7 +100,7 @@ class KycPromptView extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.silver.withOpacity(0.2)),
+        border: Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -124,7 +125,7 @@ class KycPromptView extends ConsumerWidget {
           ),
           Icon(
             Icons.check_circle,
-            color: AppColors.success,
+            color: AppColors.successBase,
             size: 20,
           ),
         ],

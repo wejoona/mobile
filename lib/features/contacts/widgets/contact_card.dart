@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Contact Card Widget
 ///
@@ -25,11 +26,11 @@ class ContactCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: contact.isJoonaPayUser
-              ? AppColors.gold500.withOpacity(0.3)
+              ? context.colors.gold.withOpacity(0.3)
               : Colors.transparent,
         ),
       ),
@@ -58,7 +59,7 @@ class ContactCard extends StatelessWidget {
                             child: AppText(
                               contact.name,
                               variant: AppTextVariant.bodyLarge,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                               fontWeight: FontWeight.w600,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -68,7 +69,7 @@ class ContactCard extends StatelessWidget {
                             Icon(
                               Icons.verified,
                               size: 16,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                             ),
                           ],
                         ],
@@ -77,7 +78,7 @@ class ContactCard extends StatelessWidget {
                       AppText(
                         contact.phone,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ],
                   ),
@@ -103,7 +104,7 @@ class ContactCard extends StatelessWidget {
       return CircleAvatar(
         radius: 24,
         backgroundImage: NetworkImage(contact.avatarUrl!),
-        backgroundColor: AppColors.elevated,
+        backgroundColor: AppColors.charcoal,
       );
     }
 

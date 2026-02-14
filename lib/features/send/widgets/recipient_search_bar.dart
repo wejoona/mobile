@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 355: Search bar widget for finding send recipients
 class RecipientSearchBar extends StatefulWidget {
@@ -36,14 +37,14 @@ class _RecipientSearchBarState extends State<RecipientSearchBar> {
       textField: true,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.elevated,
+          color: context.colors.elevated,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: AppSpacing.lg),
-              child: Icon(Icons.search, color: AppColors.textTertiary, size: 20),
+              child: Icon(Icons.search, color: context.colors.textTertiary, size: 20),
             ),
             Expanded(
               child: TextField(
@@ -52,13 +53,13 @@ class _RecipientSearchBarState extends State<RecipientSearchBar> {
                   setState(() => _hasText = value.isNotEmpty);
                   widget.onChanged(value);
                 },
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: context.colors.textPrimary,
                   fontSize: 15,
                 ),
                 decoration: InputDecoration(
                   hintText: widget.hintText,
-                  hintStyle: const TextStyle(color: AppColors.textTertiary),
+                  hintStyle: TextStyle(color: context.colors.textTertiary),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
@@ -74,9 +75,9 @@ class _RecipientSearchBarState extends State<RecipientSearchBar> {
                   setState(() => _hasText = false);
                   widget.onChanged('');
                 },
-                child: const Padding(
+                child: Padding(
                   padding: EdgeInsets.all(AppSpacing.md),
-                  child: Icon(Icons.close, color: AppColors.textTertiary, size: 18),
+                  child: Icon(Icons.close, color: context.colors.textTertiary, size: 18),
                 ),
               ),
             if (widget.onScanQR != null && !_hasText)
@@ -85,9 +86,9 @@ class _RecipientSearchBarState extends State<RecipientSearchBar> {
                 child: Semantics(
                   button: true,
                   label: 'Scanner un code QR',
-                  child: const Padding(
+                  child: Padding(
                     padding: EdgeInsets.all(AppSpacing.md),
-                    child: Icon(Icons.qr_code_scanner, color: AppColors.gold, size: 20),
+                    child: Icon(Icons.qr_code_scanner, color: context.colors.gold, size: 20),
                   ),
                 ),
               ),

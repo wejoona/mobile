@@ -12,6 +12,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ReceiveView extends ConsumerStatefulWidget {
   const ReceiveView({super.key});
@@ -73,7 +74,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     final phone = authState.phone ?? authState.user?.phone;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -105,11 +106,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                 width: 268,
                 height: 268,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                 ),
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.gold500),
+                  child: CircularProgressIndicator(color: context.colors.gold),
                 ),
               )
             else
@@ -117,16 +118,16 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                 width: 268,
                 height: 268,
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.xxl),
                 ),
                 child: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.error_outline,
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                         size: 48,
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -201,9 +202,9 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.warning_amber_rounded,
-                    color: AppColors.warningBase,
+                    color: context.colors.warning,
                     size: 24,
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -214,7 +215,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                         AppText(
                           l10n.receive_important,
                           variant: AppTextVariant.labelMedium,
-                          color: AppColors.warningBase,
+                          color: context.colors.warning,
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
@@ -247,7 +248,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.receive_addressCopied),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: const Duration(seconds: 3),
       ),
     );

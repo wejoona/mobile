@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CurrencyView extends ConsumerWidget {
   const CurrencyView({super.key});
@@ -51,18 +52,18 @@ class CurrencyView extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: AppColors.goldGradient,
+                      gradient: LinearGradient(
+                        colors: context.colors.goldGradient,
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: AppText(
                         '\$',
                         variant: AppTextVariant.titleLarge,
-                        color: AppColors.textInverse,
+                        color: context.colors.textInverse,
                       ),
                     ),
                   ),

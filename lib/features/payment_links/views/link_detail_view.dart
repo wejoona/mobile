@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkDetailView extends ConsumerStatefulWidget {
   const LinkDetailView({
@@ -63,7 +64,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(link.id),
         color: context.colors.gold,
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         child: ListView(
           padding: EdgeInsets.all(AppSpacing.md),
           children: [
@@ -108,7 +109,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 l10n.paymentLinks_description,
                 link.description!,
                 Icons.description,
-                AppColors.infoBase,
+                context.colors.info,
               ),
             if (link.description != null) SizedBox(height: AppSpacing.md),
 
@@ -126,7 +127,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_linkUrl,
               link.url,
               Icons.language,
-              AppColors.infoBase,
+              context.colors.info,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -153,7 +154,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_expires,
               _formatDateTime(link.expiresAt),
               Icons.schedule,
-              _isExpiringSoon(link) ? AppColors.warningBase : context.colors.textSecondary,
+              _isExpiringSoon(link) ? context.colors.warning : context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -254,7 +255,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -295,7 +296,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
       case PaymentLinkStatus.pending:
         return context.colors.gold;
       case PaymentLinkStatus.viewed:
-        return AppColors.infoBase;
+        return context.colors.info;
       case PaymentLinkStatus.paid:
         return context.colors.success;
       case PaymentLinkStatus.expired:
@@ -344,7 +345,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.paymentLinks_cancelConfirmTitle,
           variant: AppTextVariant.headlineSmall,

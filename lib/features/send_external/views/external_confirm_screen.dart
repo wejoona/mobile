@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExternalConfirmScreen extends ConsumerStatefulWidget {
   const ExternalConfirmScreen({super.key});
@@ -50,10 +51,10 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                   Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.warningBase.withOpacity(0.1),
+                      color: context.colors.warning.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(
-                        color: AppColors.warningBase.withOpacity(0.3),
+                        color: context.colors.warning.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
@@ -62,7 +63,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                       children: [
                         Icon(
                           Icons.warning_amber_rounded,
-                          color: AppColors.warningBase,
+                          color: context.colors.warning,
                           size: 24,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -74,7 +75,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                                 l10n.sendExternal_warningTitle,
                                 variant: AppTextVariant.bodyMedium,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.warningBase,
+                                color: context.colors.warning,
                               ),
                               SizedBox(height: AppSpacing.xs),
                               AppText(

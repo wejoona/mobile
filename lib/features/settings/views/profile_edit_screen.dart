@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Profile Edit Screen
 /// Allows users to update their personal information
@@ -49,16 +50,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const AppText(
+        title: AppText(
           'Edit Profile',
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
           onPressed: () => context.safePop(fallbackRoute: '/settings'),
         ),
       ),
@@ -74,10 +75,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.xxxl),
 
               // First Name
-              const AppText(
+              AppText(
                 'First Name',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppInput(
@@ -98,10 +99,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Last Name
-              const AppText(
+              AppText(
                 'Last Name',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppInput(
@@ -122,10 +123,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Email (Optional)
-              const AppText(
+              AppText(
                 'Email (Optional)',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppInput(
@@ -148,27 +149,27 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Phone Number (Read-only)
-              const AppText(
+              AppText(
                 'Phone Number',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               const SizedBox(height: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.textSecondary.withValues(alpha: 0.2),
+                    color: context.colors.textSecondary.withValues(alpha: 0.2),
                     width: 1,
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.phone_outlined,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 20,
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -176,22 +177,22 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       child: AppText(
                         _formatPhone(userState.phone),
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.lock_outline,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       size: 18,
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              const AppText(
+              AppText(
                 'Phone number cannot be changed',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
 
               const SizedBox(height: AppSpacing.xxxl),
@@ -219,8 +220,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             width: 96,
             height: 96,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: AppColors.goldGradient,
+              gradient: LinearGradient(
+                colors: context.colors.goldGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -231,7 +232,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               child: AppText(
                 _getInitials(userState),
                 variant: AppTextVariant.displaySmall,
-                color: AppColors.textInverse,
+                color: context.colors.textInverse,
               ),
             ),
           ),
@@ -243,17 +244,17 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 borderRadius: BorderRadius.circular(AppRadius.full),
                 border: Border.all(
-                  color: AppColors.obsidian,
+                  color: context.colors.canvas,
                   width: 2,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.edit,
                 size: 16,
-                color: AppColors.textInverse,
+                color: context.colors.textInverse,
               ),
             ),
           ),
@@ -307,9 +308,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Profile updated successfully'),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
         context.safePop(fallbackRoute: '/settings');
@@ -319,7 +320,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update profile: ${e.toString()}'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

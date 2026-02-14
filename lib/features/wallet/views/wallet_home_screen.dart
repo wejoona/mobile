@@ -15,6 +15,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -462,7 +463,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
                           // Same widget for both modes, just different gradient colors
                           final gradientColors = isDark
-                              ? [AppColors.gold300, context.colors.gold, AppColors.gold400]
+                              ? [context.colors.goldLight, context.colors.gold, context.colors.goldLight]
                               : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
 
                           return FadeTransition(
@@ -478,7 +479,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                                 child: AppText(
                                   balanceText,
                                   variant: AppTextVariant.displayLarge,
-                                  color: AppColors.white, // Required for ShaderMask
+                                  color: context.colors.textPrimary, // Required for ShaderMask
                                 ),
                               ),
                             ),
@@ -1164,7 +1165,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           SnackBar(
             content: AppText(
               l10n.wallet_activateFailed,
-              color: AppColors.textInverse,
+              color: context.colors.textInverse,
             ),
             backgroundColor: colors.error,
           ),
@@ -1235,7 +1236,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     // Use same gradient as the balance for consistency
     final gradientColors = isDark
-        ? [AppColors.gold300, context.colors.gold, AppColors.gold400]
+        ? [context.colors.goldLight, context.colors.gold, context.colors.goldLight]
         : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
 
     // Compact hidden indicator
@@ -1253,13 +1254,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           Icon(
             Icons.visibility_off_rounded,
             size: 40,
-            color: AppColors.white,
+            color: context.colors.textPrimary,
           ),
           const SizedBox(width: AppSpacing.md),
           AppText(
             '******',
             variant: AppTextVariant.displayLarge,
-            color: AppColors.white,
+            color: context.colors.textPrimary,
           ),
         ],
       ),

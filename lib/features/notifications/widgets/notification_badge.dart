@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 358: Notification badge widget with animated count
 class NotificationBadge extends StatefulWidget {
@@ -77,7 +78,7 @@ class _NotificationBadgeState extends State<NotificationBadge>
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: widget.badgeColor ?? AppColors.error,
+                    color: widget.badgeColor ?? context.colors.error,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   constraints: const BoxConstraints(minWidth: 18, minHeight: 18),

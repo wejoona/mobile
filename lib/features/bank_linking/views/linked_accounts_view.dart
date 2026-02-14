@@ -12,6 +12,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/widgets/linked_account_card.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkedAccountsView extends ConsumerStatefulWidget {
   const LinkedAccountsView({super.key});
@@ -37,7 +38,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
     final state = ref.watch(bankLinkingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bankLinking_linkedAccounts,
@@ -67,9 +68,9 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+        valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
       ),
     );
   }
@@ -84,7 +85,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
             Icon(
               Icons.account_balance,
               size: 80,
-              color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -96,7 +97,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
             AppText(
               l10n.bankLinking_linkAccountDesc,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -110,8 +111,8 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
     return RefreshIndicator(
       onRefresh: () =>
           ref.read(bankLinkingProvider.notifier).loadLinkedAccounts(),
-      color: AppColors.gold500,
-      backgroundColor: AppColors.slate,
+      color: context.colors.gold,
+      backgroundColor: context.colors.container,
       child: ListView.separated(
         padding: EdgeInsets.all(AppSpacing.md),
         itemCount: state.linkedAccounts.length,
@@ -134,10 +135,10 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.graphite,
+        color: context.colors.surface,
         border: Border(
           top: BorderSide(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             width: 1,
           ),
         ),
@@ -182,7 +183,7 @@ class _LinkedAccountsViewState extends ConsumerState<LinkedAccountsView> {
             AppLocalizations.of(context)!.bankLinking_primaryAccountSet,
             style: AppTypography.bodyMedium,
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.colors.success,
         ),
       );
     }

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -53,8 +54,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: AppColors.goldGradient,
+                  gradient: LinearGradient(
+                    colors: context.colors.goldGradient,
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -65,7 +66,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                   child: AppText(
                     _getInitials(userState),
                     variant: AppTextVariant.headlineLarge,
-                    color: AppColors.textInverse,
+                    color: context.colors.textInverse,
                   ),
                 ),
               ),
@@ -122,7 +123,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       child: AppText(
                         l10n.profile_verify,
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     )
                   : null,
@@ -188,9 +189,9 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                       ),
                     ),
                     if (isVerified)
-                      const Icon(
+                      Icon(
                         Icons.verified,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                         size: 18,
                       ),
                   ],
@@ -239,16 +240,16 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   Color _getKycStatusColor(KycStatus status) {
     switch (status) {
       case KycStatus.none:
-        return AppColors.textSecondary;
+        return context.colors.textSecondary;
       case KycStatus.pending:
       case KycStatus.documentsPending:
       case KycStatus.submitted:
       case KycStatus.additionalInfoNeeded:
-        return AppColors.warningBase;
+        return context.colors.warning;
       case KycStatus.verified:
-        return AppColors.successBase;
+        return context.colors.success;
       case KycStatus.rejected:
-        return AppColors.errorBase;
+        return context.colors.error;
     }
   }
 

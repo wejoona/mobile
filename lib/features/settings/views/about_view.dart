@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/app_info.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 377: About screen with app version, legal links, and credits
 class AboutView extends StatelessWidget {
@@ -12,10 +13,10 @@ class AboutView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText('A propos', style: AppTextStyle.headingSmall),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -29,12 +30,12 @@ class AboutView extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.15),
+                    color: context.colors.gold.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.account_balance_wallet,
-                    color: AppColors.gold,
+                    color: context.colors.gold,
                     size: 40,
                   ),
                 ),
@@ -44,7 +45,7 @@ class AboutView extends StatelessWidget {
                 AppText(
                   'Votre portefeuille USDC',
                   style: AppTextStyle.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 FutureBuilder<String>(
@@ -53,7 +54,7 @@ class AboutView extends StatelessWidget {
                     return AppText(
                       'Version ${snapshot.data ?? "..."}',
                       style: AppTextStyle.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: context.colors.textTertiary,
                     );
                   },
                 ),
@@ -91,7 +92,7 @@ class AboutView extends StatelessWidget {
             child: AppText(
               '2024 Korido. Tous droits reserves.',
               style: AppTextStyle.bodySmall,
-              color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
             ),
           ),
         ],
@@ -117,11 +118,11 @@ class _AboutLink extends StatelessWidget {
       button: true,
       label: title,
       child: ListTileCard(
-        leading: Icon(icon, color: AppColors.textSecondary, size: 20),
+        leading: Icon(icon, color: context.colors.textSecondary, size: 20),
         title: title,
-        trailing: const Icon(
+        trailing: Icon(
           Icons.chevron_right,
-          color: AppColors.textTertiary,
+          color: context.colors.textTertiary,
         ),
         onTap: onTap,
       ),

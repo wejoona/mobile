@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Guide explaining how deposits work
 class DepositsGuideView extends ConsumerWidget {
@@ -108,7 +109,7 @@ class DepositsGuideView extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: AppColors.goldGradient),
+                      gradient: LinearGradient(colors: context.colors.goldGradient),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
@@ -185,7 +186,7 @@ class DepositsGuideView extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: AppColors.goldGradient),
+              gradient: LinearGradient(colors: AppColors.goldGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(

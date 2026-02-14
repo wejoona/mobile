@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 344: Feature flags debug view for toggling flags in dev builds
 class FeatureFlagsDebugView extends ConsumerWidget {
@@ -14,13 +15,13 @@ class FeatureFlagsDebugView extends ConsumerWidget {
     final flags = ref.watch(featureFlagsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Feature Flags',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
       ),
       body: ListView.builder(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -50,7 +51,7 @@ class FeatureFlagsDebugView extends ConsumerWidget {
                               entry.value ? 'Active' : 'Desactive',
                               style: AppTextStyle.bodySmall,
                               color: entry.value
-                                  ? AppColors.success
+                                  ? context.colors.success
                                   : context.colors.textTertiary,
                             ),
                           ],

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SpendingLineChart extends StatefulWidget {
   final List<SpendingTrend> trends;
@@ -153,7 +154,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
             ],
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (touchedSpot) => AppColors.slate,
+                getTooltipColor: (touchedSpot) => context.colors.container,
                 tooltipRoundedRadius: 8,
                 tooltipPadding: const EdgeInsets.all(8),
                 tooltipBorder: BorderSide(

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Wallet Under Review View
 /// Shown when wallet is under compliance review
@@ -26,7 +27,7 @@ class WalletUnderReviewView extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -51,20 +52,20 @@ class WalletUnderReviewView extends ConsumerWidget {
                         Icon(
                           Icons.hourglass_empty,
                           size: 64,
-                          color: AppColors.warning,
+                          color: context.colors.warning,
                         ),
                         SizedBox(height: AppSpacing.lg),
                         AppText(
                           l10n.wallet_underReviewTitle,
                           variant: AppTextVariant.headlineMedium,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: AppSpacing.sm),
                         AppText(
                           reason,
                           variant: AppTextVariant.bodyMedium,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: AppSpacing.xl),
@@ -74,13 +75,13 @@ class WalletUnderReviewView extends ConsumerWidget {
                             children: [
                               Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: AppColors.gold500, size: 20),
+                                  Icon(Icons.info_outline, color: context.colors.gold, size: 20),
                                   SizedBox(width: AppSpacing.sm),
                                   Expanded(
                                     child: AppText(
                                       l10n.wallet_reviewStatus,
                                       variant: AppTextVariant.bodySmall,
-                                      color: AppColors.textPrimary,
+                                      color: context.colors.textPrimary,
                                     ),
                                   ),
                                 ],
@@ -107,7 +108,7 @@ class WalletUnderReviewView extends ConsumerWidget {
                               AppText(
                                 l10n.wallet_whileUnderReview,
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                               ),
                               SizedBox(height: AppSpacing.xs),
                               _buildBulletPoint(l10n.wallet_reviewRestriction1),

@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExternalResultScreen extends ConsumerWidget {
   const ExternalResultScreen({super.key});
@@ -26,7 +27,7 @@ class ExternalResultScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Column(
           children: [
@@ -42,12 +43,12 @@ class ExternalResultScreen extends ConsumerWidget {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: AppColors.successBase.withOpacity(0.2),
+                        color: context.colors.success.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.check_circle,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                         size: 60,
                       ),
                     ),
@@ -68,7 +69,7 @@ class ExternalResultScreen extends ConsumerWidget {
                     child: AppText(
                       l10n.sendExternal_processingMessage,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -81,14 +82,14 @@ class ExternalResultScreen extends ConsumerWidget {
                         AppText(
                           l10n.sendExternal_amountSent,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                         SizedBox(height: AppSpacing.xs),
                         AppText(
                           '\$${Formatters.formatCurrency(state.amount!)}',
                           variant: AppTextVariant.headlineLarge,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ],
                     ),
@@ -99,7 +100,7 @@ class ExternalResultScreen extends ConsumerWidget {
                   AppText(
                     l10n.sendExternal_transactionDetails,
                     variant: AppTextVariant.labelLarge,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   SizedBox(height: AppSpacing.lg),
 
@@ -193,7 +194,7 @@ class ExternalResultScreen extends ConsumerWidget {
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, color: AppColors.gold500, size: 20),
+            Icon(icon, color: context.colors.gold, size: 20),
             SizedBox(width: AppSpacing.sm),
           ],
           Expanded(
@@ -203,7 +204,7 @@ class ExternalResultScreen extends ConsumerWidget {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 Row(
@@ -223,7 +224,7 @@ class ExternalResultScreen extends ConsumerWidget {
                         child: Icon(
                           Icons.copy,
                           size: 16,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ),
                     ],
@@ -274,7 +275,7 @@ class ExternalResultScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.sendExternal_hashCopied),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -291,7 +292,7 @@ class ExternalResultScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Would open: $explorerUrl'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
         duration: const Duration(seconds: 3),
       ),
     );

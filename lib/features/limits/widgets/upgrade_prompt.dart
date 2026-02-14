@@ -3,6 +3,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class UpgradePrompt extends StatelessWidget {
   final String? nextTierName;
@@ -29,7 +30,7 @@ class UpgradePrompt extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               colors.gold.withValues(alpha: 0.15),
-              AppColors.gold600.withValues(alpha: 0.05),
+              context.colors.gold.withValues(alpha: 0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

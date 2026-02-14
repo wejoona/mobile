@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Invite Sheet Bottom Sheet
 ///
@@ -24,7 +25,7 @@ class InviteSheet extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.lg),
         ),

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CreateLinkView extends ConsumerStatefulWidget {
   const CreateLinkView({super.key});
@@ -100,7 +101,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
               Container(
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.slate,
+                  color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
                     color: context.colors.gold.withOpacity(0.2),
@@ -164,7 +165,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? context.colors.gold : AppColors.slate,
+              color: isSelected ? context.colors.gold : context.colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
               border: Border.all(
                 color: isSelected

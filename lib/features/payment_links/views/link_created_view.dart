@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkCreatedView extends ConsumerWidget {
   const LinkCreatedView({
@@ -95,7 +96,7 @@ class LinkCreatedView extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: context.colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Column(
@@ -129,7 +130,7 @@ class LinkCreatedView extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.slate,
+                color: context.colors.container,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Column(

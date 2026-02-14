@@ -11,6 +11,7 @@ import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum ChangePinPhase { livenessExplanation, livenessCheck, pinEntry }
 enum PinStep { current, newPin, confirm }
@@ -82,9 +83,9 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     } else {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('La vérification a échoué. Veuillez réessayer.'),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
       setState(() => _phase = ChangePinPhase.livenessExplanation);
@@ -93,16 +94,16 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
 
   Widget _buildPinEntryScreen(AppLocalizations l10n) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           _getTitle(l10n),
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
           onPressed: () {
             if (_currentStep == PinStep.current) {
               context.safePop(fallbackRoute: '/settings/security');
@@ -123,13 +124,13 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               Container(
                 width: 80,
                 height: 80,
-                decoration: const BoxDecoration(
-                  color: AppColors.slate,
+                decoration: BoxDecoration(
+                  color: context.colors.container,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   _currentStep == PinStep.current ? Icons.lock : Icons.lock_open,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                   size: 40,
                 ),
               ),
@@ -140,7 +141,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               AppText(
                 _getStepTitle(l10n),
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -150,7 +151,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               AppText(
                 _getStepSubtitle(l10n),
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
@@ -166,7 +167,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
                   child: AppText(
                     _error!,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.errorBase,
+                    color: context.colors.error,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -247,13 +248,13 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
           decoration: BoxDecoration(
             color: isFilled
-                ? (hasError ? AppColors.errorBase : AppColors.gold500)
+                ? (hasError ? context.colors.error : context.colors.gold)
                 : Colors.transparent,
             shape: BoxShape.circle,
             border: Border.all(
               color: hasError
-                  ? AppColors.errorBase
-                  : (isFilled ? AppColors.gold500 : AppColors.textSecondary),
+                  ? context.colors.error
+                  : (isFilled ? context.colors.gold : context.colors.textSecondary),
               width: 2,
             ),
           ),
@@ -423,7 +424,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.changePin_successMessage),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
           context.safePop(fallbackRoute: '/settings/security');

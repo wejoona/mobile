@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum SourceOfFundsType {
   salary,
@@ -189,9 +190,9 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
               child: Container(
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.charcoal : Colors.transparent,
+                  color: isSelected ? context.colors.elevated : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? context.colors.gold : AppColors.border,
+                    color: isSelected ? context.colors.gold : context.colors.border,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -200,7 +201,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                   children: [
                     Icon(
                       isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? context.colors.gold : AppColors.silver,
+                      color: isSelected ? context.colors.gold : context.colors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.md),
                     AppText(
@@ -318,7 +319,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
       padding: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.charcoal,
+          color: context.colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Stack(
@@ -388,9 +389,9 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         border: Border(
-          top: BorderSide(color: AppColors.border),
+          top: BorderSide(color: context.colors.border),
         ),
       ),
       child: SafeArea(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/performance/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Performance Monitor View - Debug tool for viewing app performance metrics
 class PerformanceMonitorView extends ConsumerStatefulWidget {
@@ -20,7 +21,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
     final performanceService = ref.watch(performanceServiceProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText('Performance Monitor', style: AppTypography.headlineSmall),
         backgroundColor: Colors.transparent,
@@ -45,7 +46,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
 
   Widget _buildTabBar() {
     return Container(
-      color: AppColors.backgroundSecondary,
+      color: context.colors.surface,
       child: Row(
         children: [
           _buildTab('Overview', 0),
@@ -187,7 +188,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           title: screen,
           subtitle: '${screenMetrics.length} renders',
           trailing: '${avgDuration}ms',
-          color: avgDuration > 1000 ? AppColors.warning : AppColors.success,
+          color: avgDuration > 1000 ? context.colors.warning : context.colors.success,
         );
       },
     );
@@ -234,7 +235,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           title: endpoint,
           subtitle: '${apiMetrics.length} calls',
           trailing: '${avgDuration}ms',
-          color: avgDuration > 3000 ? AppColors.error : AppColors.success,
+          color: avgDuration > 3000 ? context.colors.error : context.colors.success,
           badge: errorCount > 0 ? '$errorCount errors' : null,
         );
       },
@@ -252,14 +253,14 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           icon: Icons.movie_filter,
           title: 'Current FPS',
           value: fps != null ? fps.toStringAsFixed(1) : 'N/A',
-          color: fps != null && fps >= 55 ? AppColors.success : AppColors.warning,
+          color: fps != null && fps >= 55 ? context.colors.success : context.colors.warning,
         ),
         SizedBox(height: AppSpacing.md),
         _buildMetricCard(
           icon: Icons.warning_amber,
           title: 'Frame Drops',
           value: '${dropPercentage.toStringAsFixed(1)}%',
-          color: dropPercentage < 5 ? AppColors.success : AppColors.warning,
+          color: dropPercentage < 5 ? context.colors.success : context.colors.warning,
         ),
         SizedBox(height: AppSpacing.md),
         AppCard(
@@ -275,23 +276,23 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
                 SizedBox(height: AppSpacing.sm),
                 AppText(
                   'Target: 60 FPS (16.67ms per frame)',
-                  style: AppTypography.bodySmall.copyWith(color: AppColors.silver),
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                 ),
                 SizedBox(height: AppSpacing.sm),
                 _buildPerformanceIndicator(
                   'Excellent',
                   fps != null && fps >= 55,
-                  AppColors.success,
+                  context.colors.success,
                 ),
                 _buildPerformanceIndicator(
                   'Good',
                   fps != null && fps >= 45 && fps < 55,
-                  AppColors.warning,
+                  context.colors.warning,
                 ),
                 _buildPerformanceIndicator(
                   'Poor',
                   fps != null && fps < 45,
-                  AppColors.error,
+                  context.colors.error,
                 ),
               ],
             ),
@@ -391,13 +392,13 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
                             vertical: AppSpacing.xs,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
+                            color: context.colors.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
                           child: AppText(
                             badge,
                             style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.error,
+                              color: context.colors.error,
                               fontSize: 10,
                             ),
                           ),

@@ -3,6 +3,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BatchStatusCard extends StatelessWidget {
   final BulkBatch batch;
@@ -39,25 +40,25 @@ class BatchStatusCard extends StatelessWidget {
               Icon(
                 Icons.payments,
                 size: 16,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xs),
               AppText(
                 '${batch.totalCount} payments',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               SizedBox(width: AppSpacing.md),
               Icon(
                 Icons.attach_money,
                 size: 16,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xs),
               AppText(
                 Formatting.formatCurrency(batch.totalAmount),
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ],
           ),
@@ -71,7 +72,7 @@ class BatchStatusCard extends StatelessWidget {
           AppText(
             Formatting.formatDateTime(batch.createdAt),
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ],
       ),
@@ -123,13 +124,13 @@ class BatchStatusCard extends StatelessWidget {
             AppText(
               '${batch.successCount} successful',
               variant: AppTextVariant.bodySmall,
-              color: AppColors.success,
+              color: AppColors.successBase,
             ),
             if (batch.failedCount > 0)
               AppText(
                 '${batch.failedCount} failed',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.error,
+                color: AppColors.errorBase,
               ),
           ],
         ),
@@ -142,15 +143,15 @@ class BatchStatusCard extends StatelessWidget {
       case BatchStatus.draft:
         return AppColors.textSecondary;
       case BatchStatus.pending:
-        return AppColors.warning;
+        return AppColors.warningBase;
       case BatchStatus.processing:
         return AppColors.gold500;
       case BatchStatus.completed:
-        return AppColors.success;
+        return AppColors.successBase;
       case BatchStatus.partiallyCompleted:
-        return AppColors.warning;
+        return AppColors.warningBase;
       case BatchStatus.failed:
-        return AppColors.error;
+        return AppColors.errorBase;
     }
   }
 

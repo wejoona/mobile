@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 341: Profile security overview - shows security status and actions
 class ProfileSecurityView extends ConsumerWidget {
@@ -13,13 +14,13 @@ class ProfileSecurityView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Securite du compte',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
         elevation: 0,
       ),
       body: ListView(
@@ -79,18 +80,18 @@ class _SecurityScoreCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             children: [
-              const Icon(Icons.shield, color: AppColors.gold, size: 48),
+              Icon(Icons.shield, color: context.colors.gold, size: 48),
               const SizedBox(height: AppSpacing.md),
-              const AppText(
+              AppText(
                 'Securite Elevee',
                 style: AppTextStyle.headingSmall,
-                color: AppColors.gold,
+                color: context.colors.gold,
               ),
               const SizedBox(height: AppSpacing.xs),
               AppText(
                 'Votre compte est bien protege',
                 style: AppTextStyle.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ],
           ),
@@ -118,9 +119,9 @@ class _SecurityOption extends StatelessWidget {
   Color get _statusColor {
     switch (status) {
       case _SecurityStatus.active:
-        return AppColors.success;
+        return AppColors.successBase;
       case _SecurityStatus.inactive:
-        return AppColors.error;
+        return AppColors.errorBase;
       case _SecurityStatus.info:
         return AppColors.textTertiary;
     }
@@ -132,7 +133,7 @@ class _SecurityOption extends StatelessWidget {
       button: true,
       label: '$title: $subtitle',
       child: ListTileCard(
-        leading: Icon(icon, color: AppColors.gold),
+        leading: Icon(icon, color: context.colors.gold),
         title: title,
         subtitle: subtitle,
         trailing: Row(
@@ -141,7 +142,7 @@ class _SecurityOption extends StatelessWidget {
             if (status == _SecurityStatus.active)
               Icon(Icons.check_circle, color: _statusColor, size: 18),
             const SizedBox(width: AppSpacing.xs),
-            Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            Icon(Icons.chevron_right, color: context.colors.textTertiary),
           ],
         ),
         onTap: onTap,

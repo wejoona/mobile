@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Daily spending bar chart for week view
 class DailySpendingChart extends StatefulWidget {
@@ -55,7 +56,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
                 });
               },
               touchTooltipData: BarTouchTooltipData(
-                getTooltipColor: (group) => AppColors.slate,
+                getTooltipColor: (group) => context.colors.container,
                 tooltipRoundedRadius: 8,
                 tooltipPadding: const EdgeInsets.all(8),
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -132,7 +133,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
         barRods: [
           BarChartRodData(
             toY: trend.amount,
-            color: isTouched ? AppColors.gold400 : context.colors.gold,
+            color: isTouched ? context.colors.goldLight : context.colors.gold,
             width: isTouched ? 24 : 20,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -140,13 +141,13 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
               toY: (widget.dailyTrends.map((t) => t.amount).reduce((a, b) => a > b ? a : b)) * 1.2,
-              color: AppColors.slate,
+              color: context.colors.container,
             ),
             gradient: isTouched
                 ? LinearGradient(
                     colors: [
-                      AppColors.gold400,
-                      AppColors.gold600,
+                      context.colors.goldLight,
+                      context.colors.gold,
                     ],
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,

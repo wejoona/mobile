@@ -18,6 +18,7 @@ import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/models/expense.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CaptureReceiptView extends ConsumerStatefulWidget {
   const CaptureReceiptView({super.key});
@@ -245,7 +246,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
-      color: AppColors.charcoal,
+      color: context.colors.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -281,11 +282,11 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       padding: EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: AppColors.success, size: 16),
+          Icon(Icons.check_circle, color: context.colors.success, size: 16),
           SizedBox(width: AppSpacing.xs),
           AppText(
             '$label: ',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.silver),
+            style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
           ),
           AppText(
             value,
@@ -468,7 +469,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
             colorScheme: ColorScheme.dark(
               primary: context.colors.gold,
               onPrimary: context.colors.canvas,
-              surface: AppColors.charcoal,
+              surface: context.colors.elevated,
               onSurface: Colors.white,
             ),
           ),
@@ -511,7 +512,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
             content: Text(
               AppLocalizations.of(context)!.expenses_addedSuccessfully,
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -520,7 +521,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }

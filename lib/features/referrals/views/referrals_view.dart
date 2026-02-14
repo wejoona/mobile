@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ReferralsView extends ConsumerWidget {
   const ReferralsView({super.key});
@@ -58,17 +59,17 @@ class ReferralsView extends ConsumerWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: AppColors.goldGradient,
+                        gradient: LinearGradient(
+                          colors: context.colors.goldGradient,
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(AppRadius.full),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.card_giftcard,
                         size: 40,
-                        color: AppColors.textInverse,
+                        color: context.colors.textInverse,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),
@@ -484,8 +485,8 @@ class _HowItWorksStep extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: AppColors.goldGradient,
+                gradient: LinearGradient(
+                  colors: context.colors.goldGradient,
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -495,7 +496,7 @@ class _HowItWorksStep extends StatelessWidget {
                 child: AppText(
                   number,
                   variant: AppTextVariant.labelLarge,
-                  color: AppColors.textInverse,
+                  color: context.colors.textInverse,
                 ),
               ),
             ),

@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/bank_linking/models/linked_bank_account.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkedAccountCard extends StatelessWidget {
   const LinkedAccountCard({
@@ -37,7 +38,7 @@ class LinkedAccountCard extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: account.isPrimary
               ? Border.all(color: context.colors.gold, width: 1.5)
@@ -190,17 +191,17 @@ class LinkedAccountCard extends StatelessWidget {
 
     switch (status) {
       case BankAccountStatus.verified:
-        color = AppColors.success;
+        color = context.colors.success;
         icon = Icons.check_circle;
         label = AppLocalizations.of(context)!.bankLinking_verified;
         break;
       case BankAccountStatus.pending:
-        color = AppColors.warning;
+        color = context.colors.warning;
         icon = Icons.pending;
         label = AppLocalizations.of(context)!.bankLinking_pending;
         break;
       case BankAccountStatus.failed:
-        color = AppColors.error;
+        color = context.colors.error;
         icon = Icons.error;
         label = AppLocalizations.of(context)!.bankLinking_failed;
         break;

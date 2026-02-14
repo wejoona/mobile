@@ -11,6 +11,7 @@ import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
 import 'package:usdc_wallet/features/bank_linking/models/bank.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BankSelectionView extends ConsumerStatefulWidget {
   const BankSelectionView({super.key});
@@ -35,7 +36,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
     final state = ref.watch(bankLinkingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bankLinking_selectBank,
@@ -56,9 +57,9 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+        valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
       ),
     );
   }
@@ -80,7 +81,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
               AppText(
                 l10n.bankLinking_selectBankDesc,
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -108,10 +109,10 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             width: 1,
           ),
         ),
@@ -122,14 +123,14 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: context.colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Center(
                 child: AppText(
                   bank.name.substring(0, 1),
                   style: AppTypography.headlineMedium.copyWith(
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ),
@@ -170,7 +171,7 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),
@@ -185,18 +186,18 @@ class _BankSelectionViewState extends ConsumerState<BankSelectionView> {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.gold500.withOpacity(0.15),
+        color: context.colors.gold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 10, color: AppColors.gold500),
+          Icon(icon, size: 10, color: context.colors.gold),
           SizedBox(width: 4),
           AppText(
             label,
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.gold500,
+              color: context.colors.gold,
               fontSize: 9,
               fontWeight: FontWeight.w600,
             ),

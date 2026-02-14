@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 378: Data export view for GDPR compliance and user data portability
 class ExportDataView extends ConsumerStatefulWidget {
@@ -22,13 +23,13 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Exporter mes donnees',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -168,16 +169,16 @@ class _FormatChip extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: selected ? AppColors.gold.withOpacity(0.12) : context.colors.elevated,
+          color: selected ? context.colors.gold.withOpacity(0.12) : context.colors.elevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? AppColors.gold : Colors.transparent,
+            color: selected ? context.colors.gold : Colors.transparent,
           ),
         ),
         child: AppText(
           label,
           style: AppTextStyle.labelMedium,
-          color: selected ? AppColors.gold : context.colors.textSecondary,
+          color: selected ? context.colors.gold : context.colors.textSecondary,
         ),
       ),
     );

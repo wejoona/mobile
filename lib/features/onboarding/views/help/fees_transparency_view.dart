@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Transparent fee breakdown view
 class FeesTransparencyView extends ConsumerWidget {
@@ -33,8 +34,8 @@ class FeesTransparencyView extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: AppColors.goldGradient,
+                gradient: LinearGradient(
+                  colors: context.colors.goldGradient,
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
@@ -106,7 +107,7 @@ class FeesTransparencyView extends ConsumerWidget {
               l10n.help_fees_external_amount,
               l10n.help_fees_external_description,
               Icons.send_rounded,
-              AppColors.infoBase,
+              context.colors.info,
               colors,
             ),
             const SizedBox(height: AppSpacing.xxl),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 365: Mobile money deposit form widget
 class MobileMoneyForm extends ConsumerStatefulWidget {
@@ -62,17 +63,17 @@ class _MobileMoneyFormState extends ConsumerState<MobileMoneyForm> {
                     ),
                     decoration: BoxDecoration(
                       color: selected
-                          ? AppColors.gold.withOpacity(0.12)
+                          ? context.colors.gold.withOpacity(0.12)
                           : context.colors.elevated,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: selected ? AppColors.gold : Colors.transparent,
+                        color: selected ? context.colors.gold : Colors.transparent,
                       ),
                     ),
                     child: AppText(
                       p.name,
                       style: AppTextStyle.labelMedium,
-                      color: selected ? AppColors.gold : context.colors.textSecondary,
+                      color: selected ? context.colors.gold : context.colors.textSecondary,
                     ),
                   ),
                 ),

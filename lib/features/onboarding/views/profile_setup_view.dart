@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Profile setup screen
 class ProfileSetupView extends ConsumerStatefulWidget {
@@ -61,7 +62,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
               AppText(
                 l10n.onboarding_profile_subtitle,
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
               ),
               SizedBox(height: AppSpacing.xxl),
@@ -115,19 +116,19 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: context.colors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: AppColors.error),
+                    border: Border.all(color: context.colors.error),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: AppColors.error),
+                      Icon(Icons.error_outline, color: context.colors.error),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
                           state.error!,
                           style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.error,
+                            color: context.colors.error,
                           ),
                         ),
                       ),

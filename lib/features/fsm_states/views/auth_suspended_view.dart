@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Auth Suspended View
 /// Shown when account has been suspended by admin
@@ -38,7 +39,7 @@ class AuthSuspendedView extends ConsumerWidget {
               Icon(
                 Icons.block,
                 size: 80,
-                color: AppColors.error,
+                color: context.colors.error,
               ),
               SizedBox(height: AppSpacing.xxl),
               AppText(

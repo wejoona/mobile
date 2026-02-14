@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/alerts/providers/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class AlertBadge extends ConsumerWidget {
   const AlertBadge({
@@ -211,11 +212,11 @@ class _PulsingDotState extends State<_PulsingDot>
           width: widget.size,
           height: widget.size,
           decoration: BoxDecoration(
-            color: AppColors.errorBase.withValues(alpha: _animation.value),
+            color: context.colors.error.withValues(alpha: _animation.value),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: AppColors.errorBase.withValues(alpha: _animation.value * 0.5),
+                color: context.colors.error.withValues(alpha: _animation.value * 0.5),
                 blurRadius: widget.size * _animation.value,
                 spreadRadius: widget.size * 0.2 * _animation.value,
               ),

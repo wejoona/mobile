@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 357: Step progress indicator for the multi-step send flow
 class SendProgressIndicator extends StatelessWidget {
@@ -38,7 +39,7 @@ class SendProgressIndicator extends StatelessWidget {
                       height: isCurrent ? 4 : 2,
                       decoration: BoxDecoration(
                         color: isActive
-                            ? AppColors.gold
+                            ? context.colors.gold
                             : context.colors.elevated,
                         borderRadius: BorderRadius.circular(2),
                       ),

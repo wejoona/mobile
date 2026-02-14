@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum ExportFormat { csv, pdf }
 enum ExportPeriod { week, month, quarter, year, custom }
@@ -166,22 +167,22 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+                      Icon(Icons.info_outline, color: context.colors.info, size: 20),
                       SizedBox(width: AppSpacing.sm),
                       AppText(
                         'About Export',
                         variant: AppTextVariant.labelMedium,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  const AppText(
+                  AppText(
                     'Exports include all transactions within the selected period. CSV files can be opened in Excel or Google Sheets. PDF files are formatted for printing or archiving.',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
@@ -482,7 +483,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Transactions exported as $format'),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
           action: SnackBarAction(
             label: 'Share',
             textColor: Colors.white,

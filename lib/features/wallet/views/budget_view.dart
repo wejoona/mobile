@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BudgetView extends ConsumerStatefulWidget {
   const BudgetView({super.key});
@@ -68,7 +69,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -82,7 +83,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add, color: AppColors.gold500),
+            icon: Icon(Icons.add, color: context.colors.gold),
             onPressed: () => _showAddCategory(l10n, colors),
           ),
         ],
@@ -148,10 +149,10 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                     CircularProgressIndicator(
                       value: percentUsed.clamp(0.0, 1.0),
                       strokeWidth: 8,
-                      backgroundColor: AppColors.borderSubtle,
+                      backgroundColor: context.colors.borderSubtle,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        percentUsed > 0.9 ? AppColors.errorBase :
-                        percentUsed > 0.75 ? AppColors.warningBase : AppColors.gold500,
+                        percentUsed > 0.9 ? context.colors.error :
+                        percentUsed > 0.75 ? context.colors.warning : context.colors.gold,
                       ),
                     ),
                     Column(
@@ -175,7 +176,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          Divider(color: AppColors.borderSubtle),
+          Divider(color: context.colors.borderSubtle),
           const SizedBox(height: AppSpacing.lg),
           Row(
             children: [
@@ -190,26 +191,26 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.borderSubtle,
+                color: context.colors.borderSubtle,
               ),
               Expanded(
                 child: _buildOverviewItem(
                   'Remaining',
                   '\$${remaining.toStringAsFixed(0)}',
-                  remaining < 0 ? AppColors.errorBase : AppColors.successBase,
+                  remaining < 0 ? context.colors.error : context.colors.success,
                   colors,
                 ),
               ),
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.borderSubtle,
+                color: context.colors.borderSubtle,
               ),
               Expanded(
                 child: _buildOverviewItem(
                   'Daily Budget',
                   '\$${dailyBudget.toStringAsFixed(0)}',
-                  AppColors.gold500,
+                  context.colors.gold,
                   colors,
                 ),
               ),
@@ -275,7 +276,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
           child: AppText(
             'Edit',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.gold500,
+            color: context.colors.gold,
           ),
         ),
       ],
@@ -330,7 +331,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                     AppText(
                       isOverBudget ? '-\$${(-remaining).toStringAsFixed(0)}' : '\$${remaining.toStringAsFixed(0)}',
                       variant: AppTextVariant.labelMedium,
-                      color: isOverBudget ? AppColors.errorBase : (isNearLimit ? AppColors.warningBase : AppColors.successBase),
+                      color: isOverBudget ? context.colors.error : (isNearLimit ? context.colors.warning : context.colors.success),
                     ),
                     AppText(
                       isOverBudget ? 'over budget' : 'left',
@@ -346,10 +347,10 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               borderRadius: BorderRadius.circular(AppSpacing.xs),
               child: LinearProgressIndicator(
                 value: percentUsed.clamp(0.0, 1.0),
-                backgroundColor: AppColors.borderSubtle,
+                backgroundColor: context.colors.borderSubtle,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  isOverBudget ? AppColors.errorBase :
-                  isNearLimit ? AppColors.warningBase : category.color,
+                  isOverBudget ? context.colors.error :
+                  isNearLimit ? context.colors.warning : category.color,
                 ),
                 minHeight: 6,
               ),
@@ -371,7 +372,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         children: [
           Row(
             children: [
-              Icon(Icons.insights, color: AppColors.gold500, size: 20),
+              Icon(Icons.insights, color: context.colors.gold, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
                 'Budget Insights',
@@ -384,26 +385,26 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
           if (overBudgetCategories.isNotEmpty)
             _buildInsightItem(
               Icons.warning,
-              AppColors.errorBase,
+              context.colors.error,
               '${overBudgetCategories.length} ${overBudgetCategories.length == 1 ? 'category is' : 'categories are'} over budget',
               colors,
             ),
           if (nearLimitCategories.isNotEmpty)
             _buildInsightItem(
               Icons.trending_up,
-              AppColors.warningBase,
+              context.colors.warning,
               '${nearLimitCategories.length} ${nearLimitCategories.length == 1 ? 'category is' : 'categories are'} near the limit',
               colors,
             ),
           _buildInsightItem(
             Icons.check_circle,
-            AppColors.successBase,
+            context.colors.success,
             'You\'ve saved \$${(_totalBudget - _totalSpent).toStringAsFixed(0)} so far this month',
             colors,
           ),
           _buildInsightItem(
             Icons.lightbulb,
-            AppColors.gold500,
+            context.colors.gold,
             'Consider reducing spending on ${_categories.reduce((a, b) => a.spent > b.spent ? a : b).nameKey}',
             colors,
           ),
@@ -440,7 +441,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         children: [
           Row(
             children: [
-              Icon(Icons.tips_and_updates, color: AppColors.gold500, size: 20),
+              Icon(Icons.tips_and_updates, color: context.colors.gold, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
                 'Budgeting Tips',
@@ -464,7 +465,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check, color: AppColors.successBase, size: 16),
+          Icon(Icons.check, color: context.colors.success, size: 16),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
@@ -482,11 +483,11 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
     final nameController = TextEditingController();
     final budgetController = TextEditingController();
     IconData selectedIcon = Icons.category;
-    Color selectedColor = AppColors.gold500;
+    Color selectedColor = context.colors.gold;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.lg)),
@@ -548,10 +549,10 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: isSelected ? selectedColor.withValues(alpha: 0.1) : AppColors.elevated,
+                          color: isSelected ? selectedColor.withValues(alpha: 0.1) : context.colors.elevated,
                           borderRadius: BorderRadius.circular(AppSpacing.sm),
                           border: Border.all(
-                            color: isSelected ? selectedColor : AppColors.borderSubtle,
+                            color: isSelected ? selectedColor : context.colors.borderSubtle,
                           ),
                         ),
                         child: Icon(
@@ -615,9 +616,9 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                       });
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Category added'),
-                          backgroundColor: AppColors.successBase,
+                          backgroundColor: context.colors.success,
                         ),
                       );
                     }
@@ -636,7 +637,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
   void _showCategoryDetails(_BudgetCategory category, ThemeColors colors) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.lg)),
       ),
@@ -706,7 +707,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         AppText(
           value,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.gold500,
+          color: context.colors.gold,
         ),
         AppText(
           label,
@@ -722,7 +723,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.lg)),
@@ -771,7 +772,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: context.colors.elevated,
         title: const AppText('Delete Category?', variant: AppTextVariant.titleMedium),
         content: AppText(
           'Are you sure you want to delete "${category.nameKey}"?',
@@ -788,7 +789,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               setState(() => _categories.removeWhere((c) => c.nameKey == category.nameKey));
               Navigator.pop(context);
             },
-            child: const AppText('Delete', color: AppColors.errorBase),
+            child: AppText('Delete', color: context.colors.error),
           ),
         ],
       ),
@@ -797,9 +798,9 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
 
   void _showEditMode() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Tap any category to edit its budget'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }

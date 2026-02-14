@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Card widget displaying a staff member
 class StaffMemberCard extends StatelessWidget {
@@ -22,7 +23,7 @@ class StaffMemberCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.slate,
+          color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         padding: EdgeInsets.all(AppSpacing.md),
@@ -61,13 +62,13 @@ class StaffMemberCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.gold500.withOpacity(0.2),
+                            color: context.colors.gold.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
                           child: AppText(
                             'You',
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                           ),
                         ),
                       ],
@@ -77,7 +78,7 @@ class StaffMemberCard extends StatelessWidget {
                   AppText(
                     staff.phoneNumber,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
@@ -125,7 +126,7 @@ class StaffMemberCard extends StatelessWidget {
       case StaffRole.owner:
         return AppColors.gold500;
       case StaffRole.admin:
-        return AppColors.success;
+        return AppColors.successBase;
       case StaffRole.viewer:
         return AppColors.textSecondary;
     }

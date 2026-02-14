@@ -7,6 +7,7 @@ import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Device Verification View
 /// Shown when a new or changed device is detected
@@ -41,7 +42,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
               Icon(
                 Icons.phone_android,
                 size: 80,
-                color: AppColors.warning,
+                color: context.colors.warning,
               ),
               SizedBox(height: AppSpacing.xxl),
               AppText(

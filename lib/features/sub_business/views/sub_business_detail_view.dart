@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen showing details of a single sub-business
 class SubBusinessDetailView extends ConsumerStatefulWidget {
@@ -147,7 +148,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.slate,
+                    color: context.colors.container,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   padding: EdgeInsets.all(AppSpacing.md),
@@ -222,7 +223,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
   Widget _buildInfoSection(l10n, subBusiness) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       padding: EdgeInsets.all(AppSpacing.md),
@@ -274,7 +275,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
   Widget _buildEmptyStaff(AppLocalizations l10n) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       padding: EdgeInsets.all(AppSpacing.xl),

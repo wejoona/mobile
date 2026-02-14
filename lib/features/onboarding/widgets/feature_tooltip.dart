@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Tooltip overlay for guiding users through features
 class FeatureTooltip extends StatelessWidget {
@@ -71,8 +72,8 @@ class FeatureTooltip extends StatelessWidget {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: AppColors.goldGradient,
+                                gradient: LinearGradient(
+                                  colors: context.colors.goldGradient,
                                 ),
                                 shape: BoxShape.circle,
                               ),

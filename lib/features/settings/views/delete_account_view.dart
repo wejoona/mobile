@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 379: Account deletion view with confirmation steps
 class DeleteAccountView extends ConsumerStatefulWidget {
@@ -25,13 +26,13 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Supprimer mon compte',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -78,7 +79,7 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
                 child: Checkbox(
                   value: _confirmed,
                   onChanged: (v) => setState(() => _confirmed = v ?? false),
-                  activeColor: AppColors.error,
+                  activeColor: context.colors.error,
                 ),
               ),
               Expanded(
@@ -130,7 +131,7 @@ class _ConsequenceItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.error, size: 20),
+          Icon(icon, color: context.colors.error, size: 20),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(

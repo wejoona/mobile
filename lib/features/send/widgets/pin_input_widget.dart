@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class PinInputWidget extends StatefulWidget {
   final int length;
@@ -108,7 +109,7 @@ class _PinInputWidgetState extends State<PinInputWidget> {
       height: 56,
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: widget.error != null

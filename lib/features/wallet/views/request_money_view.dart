@@ -8,6 +8,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class RequestMoneyView extends ConsumerStatefulWidget {
   const RequestMoneyView({super.key});
@@ -204,7 +205,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
           color: _amountError != null ? context.colors.error : context.colors.borderSubtle,
@@ -247,7 +248,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+              Icon(Icons.info_outline, color: context.colors.info, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
                 'How it works',

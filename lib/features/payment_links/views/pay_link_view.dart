@@ -11,6 +11,7 @@ import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for paying via a received payment link
 /// Shows link details and allows user to complete payment
@@ -127,7 +128,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.action_confirm,
           variant: AppTextVariant.headlineSmall,
@@ -143,7 +144,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             onPressed: () => Navigator.pop(context, false),
             child: AppText(
               l10n.action_cancel,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
           AppButton(
@@ -160,7 +161,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           title,
           variant: AppTextVariant.headlineSmall,
@@ -185,7 +186,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.paymentLinks_payTitle,
@@ -224,9 +225,9 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
   }
 
   Widget _buildLoading() {
-    return const Center(
+    return Center(
       child: CircularProgressIndicator(
-        color: AppColors.gold500,
+        color: context.colors.gold,
       ),
     );
   }
@@ -241,7 +242,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             Icon(
               Icons.error_outline,
               size: 80,
-              color: AppColors.errorBase,
+              color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -253,7 +254,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             AppText(
               l10n.paymentLinks_linkNotFoundMessage,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -278,7 +279,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             Icon(
               Icons.schedule,
               size: 80,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -290,7 +291,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             AppText(
               l10n.paymentLinks_linkExpiredMessage,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -315,7 +316,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             Icon(
               Icons.check_circle_outline,
               size: 80,
-              color: AppColors.successBase,
+              color: context.colors.success,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -327,7 +328,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             AppText(
               l10n.paymentLinks_linkPaidMessage,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             if (_link!.paidAt != null) ...[
@@ -370,7 +371,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             Icon(
               Icons.block,
               size: 80,
-              color: AppColors.errorBase,
+              color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -382,7 +383,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             AppText(
               l10n.paymentLinks_linkNotFoundMessage,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -410,15 +411,15 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        AppColors.gold500.withValues(alpha: 0.1),
-                        AppColors.gold700.withValues(alpha: 0.05),
+                        context.colors.gold.withValues(alpha: 0.1),
+                        context.colors.gold.withValues(alpha: 0.05),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(AppRadius.xl),
                     border: Border.all(
-                      color: AppColors.gold500.withValues(alpha: 0.2),
+                      color: context.colors.gold.withValues(alpha: 0.2),
                     ),
                   ),
                   padding: EdgeInsets.all(AppSpacing.lg),
@@ -427,13 +428,13 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       AppText(
                         l10n.wallet_balance,
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
                         '\$${Formatters.formatCurrency(_link!.amount)}',
                         variant: AppTextVariant.displaySmall,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         fontWeight: FontWeight.bold,
                       ),
                       SizedBox(height: AppSpacing.xs),
@@ -442,7 +443,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                             ? '${Formatters.formatCurrency(_link!.amount * _xofRate!)} XOF'
                             : '${_link!.currency}',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ],
                   ),
@@ -457,10 +458,10 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: AppColors.gold500.withValues(alpha:0.2),
+                            backgroundColor: context.colors.gold.withValues(alpha:0.2),
                             child: Icon(
                               Icons.person_outline,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                             ),
                           ),
                           SizedBox(width: AppSpacing.md),
@@ -471,7 +472,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                                 AppText(
                                   l10n.paymentLinks_payingTo,
                                   variant: AppTextVariant.bodySmall,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                                 SizedBox(height: AppSpacing.xxs),
                                 AppText(
@@ -486,12 +487,12 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       ),
                       if (_link!.description != null) ...[
                         SizedBox(height: AppSpacing.md),
-                        Divider(color: AppColors.textSecondary.withValues(alpha:0.1)),
+                        Divider(color: context.colors.textSecondary.withValues(alpha:0.1)),
                         SizedBox(height: AppSpacing.md),
                         AppText(
                           l10n.paymentLinks_paymentFor,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                         SizedBox(height: AppSpacing.xs),
                         AppText(
@@ -526,10 +527,10 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.slate.withValues(alpha:0.5),
+                    color: context.colors.container.withValues(alpha:0.5),
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
-                      color: AppColors.textSecondary.withValues(alpha:0.1),
+                      color: context.colors.textSecondary.withValues(alpha:0.1),
                     ),
                   ),
                   child: Row(
@@ -538,7 +539,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       AppText(
                         l10n.wallet_balance,
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       Consumer(
                         builder: (context, ref, child) {
@@ -548,8 +549,8 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                             variant: AppTextVariant.bodyLarge,
                             fontWeight: FontWeight.w600,
                             color: usdcBalance >= _link!.amount
-                                ? AppColors.successBase
-                                : AppColors.errorBase,
+                                ? context.colors.success
+                                : context.colors.error,
                           );
                         },
                       ),
@@ -585,7 +586,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         AppText(
           label,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         AppText(
           value,

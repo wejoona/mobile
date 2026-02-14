@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {
@@ -136,7 +137,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             width: 280,
             height: 280,
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.gold500, width: 3),
+              border: Border.all(color: context.colors.gold, width: 3),
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
           ),
@@ -184,13 +185,13 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
               AppText(
                 'Scan a JoonaPay QR code',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
                 'Point your camera at a QR code to send money',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -236,7 +237,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                       ),
                       child: Icon(
                         Icons.photo_library,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ),
@@ -264,14 +265,14 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             height: 100,
             decoration: BoxDecoration(
               color: isValid
-                  ? AppColors.successBase.withValues(alpha: 0.1)
-                  : AppColors.errorBase.withValues(alpha: 0.1),
+                  ? context.colors.success.withValues(alpha: 0.1)
+                  : context.colors.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isValid ? Icons.check_circle : Icons.error,
               size: 60,
-              color: isValid ? AppColors.successBase : AppColors.errorBase,
+              color: isValid ? context.colors.success : context.colors.error,
             ),
           ),
 

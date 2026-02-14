@@ -17,6 +17,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExpenseReportsView extends ConsumerStatefulWidget {
   const ExpenseReportsView({super.key});
@@ -79,7 +80,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
                           ),
                         ),
                         SizedBox(width: AppSpacing.sm),
-                        const Icon(Icons.arrow_forward, color: AppColors.silver),
+                        Icon(Icons.arrow_forward, color: context.colors.textSecondary),
                         SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: _buildDateButton(
@@ -191,7 +192,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: AppColors.charcoal,
+          color: context.colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         child: Column(
@@ -200,7 +201,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
             AppText(
               label,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
             ),
             SizedBox(height: AppSpacing.xs),
@@ -225,7 +226,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.charcoal,
+              color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(icon, color: context.colors.gold, size: 20),
@@ -235,7 +236,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
             child: AppText(
               label,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -276,7 +277,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
                     Icon(
                       _getCategoryIcon(entry.key),
                       size: 16,
-                      color: AppColors.silver,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(width: AppSpacing.xs),
                     AppText(
@@ -299,7 +300,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
               borderRadius: BorderRadius.circular(AppRadius.xs),
               child: LinearProgressIndicator(
                 value: percentage / 100,
-                backgroundColor: AppColors.charcoal,
+                backgroundColor: context.colors.elevated,
                 valueColor: AlwaysStoppedAnimation(context.colors.gold),
                 minHeight: 6,
               ),
@@ -326,7 +327,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
             colorScheme: ColorScheme.dark(
               primary: context.colors.gold,
               onPrimary: context.colors.canvas,
-              surface: AppColors.charcoal,
+              surface: context.colors.elevated,
               onSurface: Colors.white,
             ),
           ),
@@ -410,7 +411,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.expenses_reportGenerated),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -419,7 +420,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -469,7 +470,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.expenses_reportGenerated),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -478,7 +479,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Horizontal bar chart for top recipients
 class TopRecipientsChart extends StatefulWidget {
@@ -60,7 +61,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                             decoration: BoxDecoration(
                               color: index < 3
                                   ? context.colors.gold.withValues(alpha: 0.2)
-                                  : AppColors.slate,
+                                  : context.colors.container,
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -99,7 +100,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                 Container(
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.slate,
+                    color: context.colors.container,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Stack(
@@ -112,8 +113,8 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: isTouched
-                                ? [AppColors.gold400, AppColors.gold600]
-                                : [context.colors.gold, AppColors.gold700],
+                                ? [context.colors.goldLight, context.colors.gold]
+                                : [context.colors.gold, context.colors.gold],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),

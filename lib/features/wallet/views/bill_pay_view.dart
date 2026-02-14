@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum BillCategory { electricity, water, internet, tv, phone, insurance, tax, other }
 
@@ -404,7 +405,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Selected ${bill.provider}'),
-              backgroundColor: AppColors.infoBase,
+              backgroundColor: context.colors.info,
             ),
           );
         },

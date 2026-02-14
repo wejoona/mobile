@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/contact_card.dart';
 import 'package:usdc_wallet/features/contacts/widgets/invite_sheet.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Contacts List Screen
 ///
@@ -82,7 +83,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         onRefresh: () async {
           await ref.read(contactsProvider.notifier).syncContacts();
         },
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         color: context.colors.gold,
         child: state.isLoading
             ? Center(

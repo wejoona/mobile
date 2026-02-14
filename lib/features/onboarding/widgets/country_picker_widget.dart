@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Country picker bottom sheet widget
 class CountryPickerWidget extends StatelessWidget {
@@ -26,7 +27,7 @@ class CountryPickerWidget extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.silver,
+              color: context.colors.textSecondary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -56,7 +57,7 @@ class CountryPickerWidget extends StatelessWidget {
           color: isSelected ? AppColors.gold500.withOpacity(0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.silver.withOpacity(0.2),
+            color: isSelected ? AppColors.gold500 : AppColors.textSecondary.withOpacity(0.2),
           ),
         ),
         child: Row(
@@ -79,7 +80,7 @@ class CountryPickerWidget extends StatelessWidget {
                   AppText(
                     country.dialCode,
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.silver,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],

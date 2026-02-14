@@ -18,6 +18,7 @@ import 'package:usdc_wallet/features/business/providers/business_provider.dart';
 import 'package:usdc_wallet/domain/enums/account_type.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -744,28 +745,28 @@ class _KycTile extends ConsumerWidget {
     switch (kycStatus) {
       case KycStatus.verified:
         subtitle = l10n.kyc_verified;
-        subtitleColor = AppColors.successText;
+        subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
         subtitle = l10n.kyc_pending;
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;
       case KycStatus.pending:
       case KycStatus.documentsPending:
         subtitle = l10n.kyc_pending;
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.upload_file;
       case KycStatus.rejected:
         subtitle = l10n.kyc_rejected;
-        subtitleColor = AppColors.errorText;
+        subtitleColor = context.colors.errorText;
         icon = Icons.error_outline;
       case KycStatus.additionalInfoNeeded:
         subtitle = l10n.kyc_pending;
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.info_outline;
       case KycStatus.none:
         subtitle = l10n.kyc_notStarted;
-        subtitleColor = AppColors.textTertiary;
+        subtitleColor = context.colors.textTertiary;
         icon = Icons.verified_user_outlined;
     }
 
@@ -817,7 +818,7 @@ class _BiometricTile extends ConsumerWidget {
                   ref.invalidate(biometricEnabledProvider);
                 }
               },
-              activeColor: AppColors.gold500,
+              activeColor: context.colors.gold,
             ),
             onTap: () {},
           ),
@@ -933,9 +934,9 @@ class _ProfileCard extends ConsumerWidget {
                     ),
                     if (kycStatus == KycStatus.verified) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
+                      Icon(
                         Icons.verified,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                         size: 18,
                       ),
                     ],
@@ -1088,7 +1089,7 @@ class _AccountTypeTile extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.settings_switchedToPersonal),
-                      backgroundColor: AppColors.successBase,
+                      backgroundColor: context.colors.success,
                     ),
                   );
                 }
@@ -1119,7 +1120,7 @@ class _AccountTypeTile extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(l10n.settings_switchedToBusiness),
-                        backgroundColor: AppColors.successBase,
+                        backgroundColor: context.colors.success,
                       ),
                     );
                   }

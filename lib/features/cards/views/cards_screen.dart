@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Cards Screen - Coming Soon
 ///
@@ -135,7 +136,7 @@ class CardsScreen extends ConsumerWidget {
               width: 48,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.gold700,
+                color: AppColors.gold500,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
             ),

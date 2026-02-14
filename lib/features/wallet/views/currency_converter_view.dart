@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CurrencyConverterView extends ConsumerStatefulWidget {
   const CurrencyConverterView({super.key});
@@ -269,7 +270,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+                      Icon(Icons.info_outline, color: context.colors.info, size: 20),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
                         l10n.converter_rateInfo,

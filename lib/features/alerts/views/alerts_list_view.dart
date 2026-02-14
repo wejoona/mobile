@@ -11,6 +11,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/alerts/models/index.dart';
 import 'package:usdc_wallet/features/alerts/providers/index.dart' hide AlertType;
 import 'package:usdc_wallet/features/alerts/widgets/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class AlertsListView extends ConsumerStatefulWidget {
   const AlertsListView({super.key});
@@ -177,7 +178,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           _buildStatItem('Total', stats.total, colors.textSecondary, colors),
           _buildStatItem('Unread', stats.unread, colors.gold, colors),
           _buildStatItem('Critical', stats.critical, context.colors.error, colors),
-          _buildStatItem('Action', stats.actionRequired, AppColors.warningBase, colors),
+          _buildStatItem('Action', stats.actionRequired, context.colors.warning, colors),
         ],
       ),
     );

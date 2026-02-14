@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Bottom sheet for withdrawing money from a pot
 class WithdrawFromPotSheet extends ConsumerStatefulWidget {
@@ -111,8 +112,8 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
               _amountController.text = pot.currentAmount.toStringAsFixed(2);
             },
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.warningBase,
-              side: BorderSide(color: AppColors.warningBase),
+              foregroundColor: context.colors.warning,
+              side: BorderSide(color: context.colors.warning),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
@@ -120,7 +121,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
             child: AppText(
               l10n.savingsPots_withdrawAll,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.warningBase,
+              color: context.colors.warning,
             ),
           ),
           SizedBox(height: AppSpacing.xl),

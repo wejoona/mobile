@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Wallet Frozen View
 /// Shown when wallet has been frozen by compliance
@@ -54,7 +55,7 @@ class WalletFrozenView extends ConsumerWidget {
                         Icon(
                           Icons.ac_unit,
                           size: 80,
-                          color: AppColors.error,
+                          color: context.colors.error,
                         ),
                         SizedBox(height: AppSpacing.xl),
                         AppText(

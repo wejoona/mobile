@@ -16,6 +16,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 enum VideoStep {
   instructions,
@@ -340,7 +341,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                   SizedBox(height: AppSpacing.xs),
                   LinearProgressIndicator(
                     value: (_currentActionIndex + 1) / _actions.length,
-                    backgroundColor: AppColors.border,
+                    backgroundColor: context.colors.border,
                     valueColor: AlwaysStoppedAnimation(context.colors.gold),
                   ),
                 ],

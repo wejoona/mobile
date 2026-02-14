@@ -366,7 +366,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Stack(
           children: [
@@ -409,7 +409,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                     IconButton(
                       icon: Icon(
                         _flashEnabled ? Icons.flash_on : Icons.flash_off,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         size: 28,
                       ),
                       onPressed: _toggleFlash,
@@ -433,7 +433,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   color: Colors.black.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.gold500.withOpacity(0.3), // Keep gold for visibility
+                    color: context.colors.gold.withOpacity(0.3), // Keep gold for visibility
                     width: 1,
                   ),
                 ),

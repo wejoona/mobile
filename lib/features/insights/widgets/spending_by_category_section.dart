@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/spending_category.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_pie_chart.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SpendingByCategorySection extends ConsumerWidget {
   const SpendingByCategorySection({super.key});
@@ -30,7 +31,7 @@ class SpendingByCategorySection extends ConsumerWidget {
           context.colors.gold,
           context.colors.success,
           context.colors.error,
-          AppColors.warningBase,
+          context.colors.warning,
           Colors.blue,
           Colors.purple,
         ];
@@ -49,7 +50,7 @@ class SpendingByCategorySection extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
               color: context.colors.border,

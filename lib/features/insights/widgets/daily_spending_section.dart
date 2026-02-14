@@ -11,6 +11,7 @@ import 'package:usdc_wallet/features/insights/models/insights_period.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart' hide InsightsPeriod;
 import 'package:usdc_wallet/features/insights/widgets/daily_spending_chart.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Daily spending section with bar chart for week view
 class DailySpendingSection extends ConsumerWidget {
@@ -40,10 +41,10 @@ class DailySpendingSection extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
-              color: AppColors.borderDefault,
+              color: context.colors.border,
               width: 1,
             ),
           ),
@@ -53,7 +54,7 @@ class DailySpendingSection extends ConsumerWidget {
               AppText(
                 l10n.insights_daily_spending,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               Row(
@@ -63,7 +64,7 @@ class DailySpendingSection extends ConsumerWidget {
                       label: l10n.insights_daily_average,
                       value: '\$${avgSpending.toStringAsFixed(2)}',
                       icon: Icons.trending_flat,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -72,7 +73,7 @@ class DailySpendingSection extends ConsumerWidget {
                       label: l10n.insights_highest_day,
                       value: '\$${maxDay.amount.toStringAsFixed(2)}',
                       icon: Icons.trending_up,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                   ),
                 ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Onboarding success screen
 class OnboardingSuccessView extends ConsumerWidget {
@@ -16,7 +17,7 @@ class OnboardingSuccessView extends ConsumerWidget {
     final state = ref.watch(onboardingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -35,17 +36,17 @@ class OnboardingSuccessView extends ConsumerWidget {
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: AppColors.goldGradient,
+                        gradient: LinearGradient(
+                          colors: context.colors.goldGradient,
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         borderRadius: BorderRadius.circular(60),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.check_rounded,
                         size: 64,
-                        color: AppColors.textInverse,
+                        color: context.colors.textInverse,
                       ),
                     ),
                   );
@@ -65,7 +66,7 @@ class OnboardingSuccessView extends ConsumerWidget {
                   state.firstName ?? 'User',
                 ),
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -74,16 +75,16 @@ class OnboardingSuccessView extends ConsumerWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.charcoal,
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
-                  border: Border.all(color: AppColors.gold500),
+                  border: Border.all(color: context.colors.gold),
                 ),
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.account_balance_wallet_outlined,
                       size: 48,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                     SizedBox(height: AppSpacing.md),
                     AppText(
@@ -95,7 +96,7 @@ class OnboardingSuccessView extends ConsumerWidget {
                     AppText(
                       l10n.onboarding_success_walletMessage,
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.silver,
+                        color: context.colors.textSecondary,
                       ),
                       textAlign: TextAlign.center,
                     ),

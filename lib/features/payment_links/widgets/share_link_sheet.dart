@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ShareLinkSheet extends StatelessWidget {
   const ShareLinkSheet({
@@ -17,7 +18,7 @@ class ShareLinkSheet extends StatelessWidget {
   static Future<void> show(BuildContext context, PaymentLink link) {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -69,7 +70,7 @@ class ShareLinkSheet extends StatelessWidget {
           _ShareOption(
             icon: Icons.message,
             label: l10n.paymentLinks_shareSMS,
-            iconColor: AppColors.infoBase,
+            iconColor: context.colors.info,
             onTap: () => _shareSMS(context),
           ),
           SizedBox(height: AppSpacing.sm),

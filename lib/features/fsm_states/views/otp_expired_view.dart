@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// OTP Expired View
 /// Shown when OTP code has expired
@@ -33,7 +34,7 @@ class OtpExpiredView extends ConsumerWidget {
               Icon(
                 Icons.timer_off_outlined,
                 size: 80,
-                color: AppColors.warning,
+                color: context.colors.warning,
               ),
               SizedBox(height: AppSpacing.xxl),
               AppText(

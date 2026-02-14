@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/utils/date_utils.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 359: Individual notification list tile widget
 class NotificationTile extends StatelessWidget {
@@ -42,13 +43,13 @@ class NotificationTile extends StatelessWidget {
   Color get _iconColor {
     switch (notification.type) {
       case NotificationType.transfer:
-        return AppColors.gold;
+        return AppColors.gold500;
       case NotificationType.deposit:
-        return AppColors.success;
+        return AppColors.successBase;
       case NotificationType.withdrawal:
-        return AppColors.warning;
+        return AppColors.warningBase;
       case NotificationType.security:
-        return AppColors.error;
+        return AppColors.errorBase;
       default:
         return AppColors.textSecondary;
     }
@@ -61,12 +62,12 @@ class NotificationTile extends StatelessWidget {
       button: onTap != null,
       child: SwipeActionCell(
         actions: [
-          if (onDismiss != null) SwipeAction(label: 'Supprimer', icon: Icons.delete, color: AppColors.errorBase, onTap: onDismiss!),
+          if (onDismiss != null) SwipeAction(label: 'Supprimer', icon: Icons.delete, color: context.colors.error, onTap: onDismiss!),
         ],
         child: Material(
           color: notification.isRead
               ? Colors.transparent
-              : AppColors.gold.withOpacity(0.03),
+              : context.colors.gold.withOpacity(0.03),
           child: InkWell(
             onTap: onTap,
             child: Padding(
@@ -98,16 +99,16 @@ class NotificationTile extends StatelessWidget {
                                 notification.title,
                                 style: AppTextStyle.labelMedium,
                                 color: notification.isRead
-                                    ? AppColors.textSecondary
-                                    : AppColors.textPrimary,
+                                    ? context.colors.textSecondary
+                                    : context.colors.textPrimary,
                               ),
                             ),
                             if (!notification.isRead)
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.gold,
+                                decoration: BoxDecoration(
+                                  color: context.colors.gold,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -117,14 +118,14 @@ class NotificationTile extends StatelessWidget {
                         AppText(
                           notification.body,
                           style: AppTextStyle.bodySmall,
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                           maxLines: 2,
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
                           AppDateUtils.relativeTimeFromNow(notification.createdAt),
                           style: AppTextStyle.bodySmall,
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                         ),
                       ],
                     ),

@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Create Payment Request View
 /// Allows merchants to create dynamic QR codes with specific amounts
@@ -185,7 +186,7 @@ Powered by JoonaPay
                       AppText(
                         'Creating payment request',
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.silver,
+                        color: context.colors.textSecondary,
                       ),
                     ],
                   ),
@@ -206,7 +207,7 @@ Powered by JoonaPay
               SizedBox(height: AppSpacing.xs),
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.charcoal,
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 padding: EdgeInsets.symmetric(
@@ -233,11 +234,11 @@ Powered by JoonaPay
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.white,
+                          color: context.colors.textPrimary,
                         ),
                         decoration: InputDecoration(
                           hintText: '0.00',
-                          hintStyle: TextStyle(color: AppColors.silver),
+                          hintStyle: TextStyle(color: context.colors.textSecondary),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -285,18 +286,18 @@ Powered by JoonaPay
             Container(
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.1),
+                color: context.colors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                border: Border.all(color: context.colors.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                  Icon(Icons.error_outline, color: context.colors.error, size: 20),
                   SizedBox(width: AppSpacing.xs),
                   Expanded(
                     child: AppText(
                       state.error!,
-                      color: AppColors.error,
+                      color: context.colors.error,
                     ),
                   ),
                 ],
@@ -341,14 +342,14 @@ Powered by JoonaPay
                 AppText(
                   'USDC',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
                 if (pr.description != null) ...[
                   SizedBox(height: AppSpacing.xs),
                   AppText(
                     pr.description!,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.silver,
+                    color: context.colors.textSecondary,
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -365,7 +366,7 @@ Powered by JoonaPay
                     width: 200,
                     height: 200,
                     decoration: BoxDecoration(
-                      color: AppColors.charcoal,
+                      color: context.colors.elevated,
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
@@ -374,12 +375,12 @@ Powered by JoonaPay
                         Icon(
                           Icons.timer_off,
                           size: 48,
-                          color: AppColors.silver,
+                          color: context.colors.textSecondary,
                         ),
                         SizedBox(height: AppSpacing.sm),
                         AppText(
                           'Request Expired',
-                          color: AppColors.silver,
+                          color: context.colors.textSecondary,
                         ),
                       ],
                     ),
@@ -395,13 +396,13 @@ Powered by JoonaPay
                     ),
                     decoration: BoxDecoration(
                       color: _remainingSeconds < 60
-                          ? AppColors.error.withValues(alpha: 0.1)
-                          : AppColors.success.withValues(alpha: 0.1),
+                          ? context.colors.error.withValues(alpha: 0.1)
+                          : context.colors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                       border: Border.all(
                         color: _remainingSeconds < 60
-                            ? AppColors.error.withValues(alpha: 0.3)
-                            : AppColors.success.withValues(alpha: 0.3),
+                            ? context.colors.error.withValues(alpha: 0.3)
+                            : context.colors.success.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -411,15 +412,15 @@ Powered by JoonaPay
                           Icons.timer,
                           size: 18,
                           color: _remainingSeconds < 60
-                              ? AppColors.error
-                              : AppColors.success,
+                              ? context.colors.error
+                              : context.colors.success,
                         ),
                         SizedBox(width: AppSpacing.xs),
                         AppText(
                           'Expires in ${_formatTimeRemaining()}',
                           color: _remainingSeconds < 60
-                              ? AppColors.error
-                              : AppColors.success,
+                              ? context.colors.error
+                              : context.colors.success,
                         ),
                       ],
                     ),
@@ -474,7 +475,7 @@ Powered by JoonaPay
                   child: AppText(
                     'Show this QR code to your customer. The payment will be credited automatically.',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.silver,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],

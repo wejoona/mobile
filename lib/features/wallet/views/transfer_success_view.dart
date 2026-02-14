@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class TransferSuccessView extends StatefulWidget {
   const TransferSuccessView({
@@ -72,7 +73,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -90,13 +91,13 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: AppColors.successBase.withValues(alpha: 0.1),
+                        color: context.colors.success.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.check_circle,
                         size: 80,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                       ),
                     ),
                   );
@@ -128,7 +129,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                     AppText(
                       widget.recipient,
                       variant: AppTextVariant.titleMedium,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -152,23 +153,23 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                         colors: colors,
                         l10n: l10n,
                       ),
-                      const Divider(color: AppColors.borderSubtle),
+                      Divider(color: context.colors.borderSubtle),
                       _DetailRow(
                         label: l10n.common_amount ?? 'Amount',
                         value: '\$${widget.amount.toStringAsFixed(2)}',
                         colors: colors,
                         l10n: l10n,
                       ),
-                      const Divider(color: AppColors.borderSubtle),
+                      Divider(color: context.colors.borderSubtle),
                       _DetailRow(
                         label: l10n.transactions_status ?? 'Status',
                         value: l10n.transactions_completed ?? 'Completed',
-                        valueColor: AppColors.successBase,
+                        valueColor: context.colors.success,
                         colors: colors,
                         l10n: l10n,
                       ),
                       if (widget.note != null) ...[
-                        const Divider(color: AppColors.borderSubtle),
+                        Divider(color: context.colors.borderSubtle),
                         _DetailRow(
                           label: l10n.common_note ?? 'Note',
                           value: widget.note!,
@@ -280,15 +281,15 @@ class _DetailRow extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(l10n.action_copiedToClipboard),
-                        backgroundColor: AppColors.successBase,
+                        backgroundColor: context.colors.success,
                         duration: const Duration(seconds: 2),
                       ),
                     );
                   },
-                  child: const Icon(
+                  child: Icon(
                     Icons.copy,
                     size: 16,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ],

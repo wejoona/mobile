@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Receipt widget for rendering as image or PDF
 /// This widget can be captured using RepaintBoundary or screenshot package
@@ -26,7 +27,7 @@ class ReceiptWidget extends StatelessWidget {
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),
-      color: AppColors.gold50, // Light cream - paper-like for receipts
+      color: context.colors.goldSubtle, // Light cream - paper-like for receipts
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -39,7 +40,7 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: AppColors.gold200),
+          Container(height: 1, color: context.colors.goldLight),
           const SizedBox(height: 24),
 
           // Amount Section
@@ -47,14 +48,14 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: AppColors.gold200),
+          Container(height: 1, color: context.colors.goldLight),
           const SizedBox(height: 24),
 
           // Recipient Section (if applicable)
           if (receiptData.recipientPhone != null || receiptData.recipientAddress != null) ...[
             _buildRecipientSection(),
             const SizedBox(height: 24),
-            Container(height: 1, color: AppColors.gold200),
+            Container(height: 1, color: context.colors.goldLight),
             const SizedBox(height: 24),
           ],
 
@@ -63,7 +64,7 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Divider
-          Container(height: 1, color: AppColors.gold200),
+          Container(height: 1, color: context.colors.goldLight),
           const SizedBox(height: 24),
 
           // QR Code
@@ -227,7 +228,7 @@ class ReceiptWidget extends StatelessWidget {
         AppText(
           receiptData.truncatedId,
           variant: AppTextVariant.monoSmall,
-          color: AppColors.gold700,
+          color: AppColors.gold500,
         ),
       ],
     );
@@ -239,7 +240,7 @@ class ReceiptWidget extends StatelessWidget {
         const AppText(
           'Thank you for using',
           variant: AppTextVariant.bodySmall,
-          color: AppColors.gold700,
+          color: AppColors.gold500,
         ),
         const SizedBox(height: 4),
         const AppText(

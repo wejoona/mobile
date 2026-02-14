@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LimitProgressBar extends StatelessWidget {
   final double percentage;
@@ -21,7 +22,7 @@ class LimitProgressBar extends StatelessWidget {
 
     Color getProgressColor() {
       if (isAtLimit) return context.colors.error;
-      if (isNearLimit) return AppColors.warningBase;
+      if (isNearLimit) return context.colors.warning;
       return colors.gold;
     }
 

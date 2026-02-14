@@ -3,6 +3,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class FrequencyPicker extends StatelessWidget {
   const FrequencyPicker({
@@ -43,7 +44,7 @@ class FrequencyPicker extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? context.colors.gold
-                      : AppColors.slate,
+                      : context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
                     color: isSelected

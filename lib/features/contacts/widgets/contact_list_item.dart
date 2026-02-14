@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 361: Contact list item widget with Korido user indicator
 class ContactListItem extends StatelessWidget {
@@ -50,17 +51,17 @@ class ContactListItem extends StatelessWidget {
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: AppColors.gold,
+                            color: context.colors.gold,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.backgroundPrimary,
+                              color: context.colors.canvas,
                               width: 2,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check,
                             size: 10,
-                            color: AppColors.obsidian,
+                            color: context.colors.canvas,
                           ),
                         ),
                       ),
@@ -79,7 +80,7 @@ class ContactListItem extends StatelessWidget {
                       AppText(
                         contact.phoneNumber ?? '',
                         style: AppTextStyle.bodySmall,
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                       ),
                     ],
                   ),
@@ -88,7 +89,7 @@ class ContactListItem extends StatelessWidget {
                 if (contact.isKoridoUser && trailing == null)
                   PillBadge(
                     label: 'Korido',
-                    backgroundColor: AppColors.gold,
+                    backgroundColor: context.colors.gold,
                   ),
               ],
             ),

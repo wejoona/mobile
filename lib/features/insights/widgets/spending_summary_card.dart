@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SpendingSummaryCard extends ConsumerWidget {
   const SpendingSummaryCard({super.key});
@@ -37,13 +38,13 @@ class SpendingSummaryCard extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.slate,
-            AppColors.graphite,
+            context.colors.container,
+            context.colors.surface,
           ],
         ),
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: AppColors.borderGold,
+          color: context.colors.borderGold,
           width: 1,
         ),
       ),
@@ -57,7 +58,7 @@ class SpendingSummaryCard extends ConsumerWidget {
               AppText(
                 l10n.insights_summary,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               if (percentageChange > 0)
                 Container(
@@ -67,8 +68,8 @@ class SpendingSummaryCard extends ConsumerWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isIncrease
-                        ? AppColors.errorBase.withValues(alpha: 0.2)
-                        : AppColors.successBase.withValues(alpha: 0.2),
+                        ? context.colors.error.withValues(alpha: 0.2)
+                        : context.colors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Row(
@@ -80,16 +81,16 @@ class SpendingSummaryCard extends ConsumerWidget {
                             : Icons.arrow_downward,
                         size: 12,
                         color: isIncrease
-                            ? AppColors.errorText
-                            : AppColors.successText,
+                            ? context.colors.errorText
+                            : context.colors.successText,
                       ),
                       const SizedBox(width: 4),
                       AppText(
                         '${percentageChange.toStringAsFixed(1)}%',
                         variant: AppTextVariant.bodySmall,
                         color: isIncrease
-                            ? AppColors.errorText
-                            : AppColors.successText,
+                            ? context.colors.errorText
+                            : context.colors.successText,
                         fontWeight: FontWeight.bold,
                       ),
                     ],
@@ -104,7 +105,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_total_spent,
             '\$${totalSpent.toStringAsFixed(2)}',
-            AppColors.errorText,
+            context.colors.errorText,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -113,7 +114,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_total_received,
             '\$${totalReceived.toStringAsFixed(2)}',
-            AppColors.successText,
+            context.colors.successText,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -121,7 +122,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Divider
           Container(
             height: 1,
-            color: AppColors.borderSubtle,
+            color: context.colors.borderSubtle,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -130,7 +131,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_net_flow,
             '${netFlow >= 0 ? '+' : ''}\$${netFlow.toStringAsFixed(2)}',
-            netFlow >= 0 ? AppColors.successText : AppColors.errorText,
+            netFlow >= 0 ? context.colors.successText : context.colors.errorText,
             isLarge: true,
           ),
         ],

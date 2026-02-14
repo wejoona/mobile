@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LimitWarningBanner extends StatelessWidget {
   final TransactionLimits limits;
@@ -42,19 +43,19 @@ class LimitWarningBanner extends StatelessWidget {
         decoration: BoxDecoration(
           color: isAtLimit
               ? context.colors.error.withValues(alpha: 0.1)
-              : AppColors.warningBase.withValues(alpha: 0.1),
+              : context.colors.warning.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isAtLimit
                 ? context.colors.error.withValues(alpha: 0.3)
-                : AppColors.warningBase.withValues(alpha: 0.3),
+                : context.colors.warning.withValues(alpha: 0.3),
           ),
         ),
         child: Row(
           children: [
             Icon(
               isAtLimit ? Icons.block : Icons.warning_amber_rounded,
-              color: isAtLimit ? context.colors.error : AppColors.warningBase,
+              color: isAtLimit ? context.colors.error : context.colors.warning,
               size: 20,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -65,7 +66,7 @@ class LimitWarningBanner extends StatelessWidget {
                   AppText(
                     isAtLimit ? l10n.limits_limitReached : l10n.limits_approachingLimit,
                     variant: AppTextVariant.labelMedium,
-                    color: isAtLimit ? context.colors.error : AppColors.warningBase,
+                    color: isAtLimit ? context.colors.error : context.colors.warning,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(

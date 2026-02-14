@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExpensesView extends ConsumerStatefulWidget {
   const ExpensesView({super.key});
@@ -73,7 +74,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
           FloatingActionButton(
             heroTag: 'add',
             onPressed: () => context.push('/expenses/add'),
-            backgroundColor: AppColors.charcoal,
+            backgroundColor: context.colors.elevated,
             child: const Icon(Icons.add),
           ),
         ],
@@ -91,7 +92,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             Icon(
               Icons.receipt_long_outlined,
               size: 80,
-              color: AppColors.silver.withOpacity(0.5),
+              color: context.colors.textSecondary.withOpacity(0.5),
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -102,7 +103,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             SizedBox(height: AppSpacing.sm),
             AppText(
               l10n.expenses_emptyMessage,
-              style: AppTypography.bodyMedium.copyWith(color: AppColors.silver),
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -146,13 +147,13 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                   AppText(
                     l10n.expenses_totalExpenses,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.silver,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                   AppText(
                     '${state.expenses.length} ${l10n.expenses_items}',
                     style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.silver,
+                      color: context.colors.textSecondary,
                     ),
                   ),
                 ],
@@ -188,21 +189,21 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
               Icon(
                 _getCategoryIcon(entry.key),
                 size: 16,
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
               SizedBox(width: AppSpacing.xs),
               Expanded(
                 child: AppText(
                   _getCategoryLabel(l10n, entry.key),
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.silver,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
               AppText(
                 '$percentage%',
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -239,7 +240,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.charcoal,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Icon(
@@ -264,7 +265,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                           AppText(
                             dateFormat.format(expense.date),
                             style: AppTypography.bodySmall.copyWith(
-                              color: AppColors.silver,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                           if (expense.receiptImagePath != null) ...[

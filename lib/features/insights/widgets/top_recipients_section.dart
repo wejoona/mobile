@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/top_recipients_chart.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class TopRecipientsSection extends ConsumerWidget {
   const TopRecipientsSection({super.key});
@@ -27,7 +28,7 @@ class TopRecipientsSection extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
               color: context.colors.border,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 381: Referral share card widget with copy-to-clipboard
 class ReferralCard extends StatelessWidget {
@@ -25,7 +26,7 @@ class ReferralCard extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           children: [
-            const Icon(Icons.card_giftcard, color: AppColors.gold, size: 40),
+            Icon(Icons.card_giftcard, color: context.colors.gold, size: 40),
             const SizedBox(height: AppSpacing.lg),
             const AppText(
               'Invitez vos amis',
@@ -52,7 +53,7 @@ class ReferralCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                    border: Border.all(color: context.colors.gold.withOpacity(0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -60,10 +61,10 @@ class ReferralCard extends StatelessWidget {
                       AppText(
                         referralCode,
                         style: AppTextStyle.headingSmall,
-                        color: AppColors.gold,
+                        color: context.colors.gold,
                       ),
                       const SizedBox(width: AppSpacing.md),
-                      const Icon(Icons.copy, color: AppColors.gold, size: 18),
+                      Icon(Icons.copy, color: context.colors.gold, size: 18),
                     ],
                   ),
                 ),

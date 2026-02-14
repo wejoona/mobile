@@ -13,6 +13,7 @@ import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Comprehensive Settings Screen
 /// Integrates profile, security, preferences, devices, sessions, and support
@@ -296,7 +297,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText('Opening: $url'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }
@@ -456,24 +457,24 @@ class _KycTile extends ConsumerWidget {
     switch (kycStatus) {
       case KycStatus.verified:
         subtitle = 'Verified';
-        subtitleColor = AppColors.successText;
+        subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
         subtitle = 'Under Review';
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;
       case KycStatus.pending:
       case KycStatus.documentsPending:
         subtitle = 'Documents Pending';
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.upload_file;
       case KycStatus.rejected:
         subtitle = 'Rejected - Retry';
-        subtitleColor = AppColors.errorText;
+        subtitleColor = context.colors.errorText;
         icon = Icons.error_outline;
       case KycStatus.additionalInfoNeeded:
         subtitle = 'More Info Required';
-        subtitleColor = AppColors.warningBase;
+        subtitleColor = context.colors.warning;
         icon = Icons.info_outline;
       case KycStatus.none:
         subtitle = 'Not Started';
@@ -531,7 +532,7 @@ class _BiometricTile extends ConsumerWidget {
                   ref.invalidate(biometricEnabledProvider);
                 }
               },
-              activeThumbColor: AppColors.gold500,
+              activeThumbColor: context.colors.gold,
             ),
             onTap: () {},
           ),
@@ -788,9 +789,9 @@ class _ProfileCard extends ConsumerWidget {
                     ),
                     if (kycStatus == KycStatus.verified) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      const Icon(
+                      Icon(
                         Icons.verified,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                         size: 18,
                       ),
                     ],

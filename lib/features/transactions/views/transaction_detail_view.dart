@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class TransactionDetailView extends ConsumerWidget {
   const TransactionDetailView({super.key, required this.transaction});

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/features/biometric/providers/biometric_settings_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Biometric Settings View
 /// Manage biometric authentication preferences
@@ -24,16 +25,16 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     final settings = ref.watch(biometricSettingsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
           l10n.biometric_settings_title,
           variant: AppTextVariant.titleLarge,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
           onPressed: () => context.pop(),
         ),
       ),
@@ -50,7 +51,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             AppText(
               l10n.biometric_settings_authentication,
               variant: AppTextVariant.titleMedium,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildBiometricToggle(l10n),
@@ -61,7 +62,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               AppText(
                 l10n.biometric_settings_use_cases,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               _buildUseCaseToggle(
@@ -113,7 +114,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               AppText(
                 l10n.biometric_settings_advanced,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               _buildTimeoutSelector(l10n, settings),
@@ -125,7 +126,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               AppText(
                 l10n.biometric_settings_actions,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.md),
               _buildReEnrollButton(l10n),
@@ -146,7 +147,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
       data: (type) => biometricEnabled.when(
         data: (enabled) {
           final typeName = _getBiometricTypeName(type ?? BiometricType.none, l10n);
-          final statusColor = enabled ? AppColors.successBase : AppColors.textSecondary;
+          final statusColor = enabled ? context.colors.success : context.colors.textSecondary;
 
           return AppCard(
             variant: AppCardVariant.elevated,
@@ -173,7 +174,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                       AppText(
                         typeName,
                         variant: AppTextVariant.titleMedium,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
@@ -234,7 +235,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   width: 100,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withValues(alpha: 0.2),
+                    color: context.colors.textSecondary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 ),
@@ -243,7 +244,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   width: 60,
                   height: 12,
                   decoration: BoxDecoration(
-                    color: AppColors.textSecondary.withValues(alpha: 0.2),
+                    color: context.colors.textSecondary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                 ),
@@ -264,12 +265,12 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.errorBase.withValues(alpha: 0.1),
+              color: context.colors.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.error_outline,
-              color: AppColors.errorBase,
+              color: context.colors.error,
               size: 32,
             ),
           ),
@@ -278,7 +279,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             child: AppText(
               l10n.biometric_settings_error_loading,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.errorBase,
+              color: context.colors.error,
             ),
           ),
         ],
@@ -301,7 +302,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             trailing: AppText(
               l10n.biometric_settings_unavailable,
               variant: AppTextVariant.labelSmall,
-              color: AppColors.warningBase,
+              color: context.colors.warning,
             ),
           );
         }
@@ -360,10 +361,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.1),
+              color: context.colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.gold500, size: 22),
+            child: Icon(icon, color: context.colors.gold, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -373,12 +374,12 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 AppText(
                   title,
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -386,7 +387,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: AppColors.gold500,
+            activeThumbColor: context.colors.gold,
           ),
         ],
       ),
@@ -408,10 +409,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary.withValues(alpha: 0.1),
+              color: context.colors.textSecondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 22),
+            child: Icon(icon, color: context.colors.textSecondary, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -421,12 +422,12 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                 AppText(
                   title,
                   variant: AppTextVariant.labelMedium,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 AppText(
                   subtitle,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -446,7 +447,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary.withValues(alpha: 0.1),
+              color: context.colors.textSecondary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: const SizedBox(
@@ -460,7 +461,7 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             child: AppText(
               l10n.security_loading,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],
@@ -477,17 +478,17 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppColors.errorBase.withValues(alpha: 0.1),
+              color: context.colors.error.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: const Icon(Icons.error, color: AppColors.errorBase, size: 22),
+            child: Icon(Icons.error, color: context.colors.error, size: 22),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(
               l10n.security_errorLoadingState,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.errorBase,
+              color: context.colors.error,
             ),
           ),
         ],
@@ -507,10 +508,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.timer, color: AppColors.gold500, size: 22),
+              child: Icon(Icons.timer, color: context.colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -520,17 +521,17 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   AppText(
                     l10n.biometric_settings_timeout_title,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   AppText(
                     _getTimeoutDescription(settings.biometricTimeoutMinutes, l10n),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -549,10 +550,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.attach_money, color: AppColors.gold500, size: 22),
+              child: Icon(Icons.attach_money, color: context.colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -562,19 +563,19 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   AppText(
                     l10n.biometric_settings_high_value_title,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   AppText(
                     l10n.biometric_settings_high_value_subtitle(
                       settings.highValueThreshold.toStringAsFixed(0),
                     ),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -593,10 +594,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.refresh, color: AppColors.gold500, size: 22),
+              child: Icon(Icons.refresh, color: context.colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -606,17 +607,17 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   AppText(
                     l10n.biometric_settings_reenroll_title,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   AppText(
                     l10n.biometric_settings_reenroll_subtitle,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -635,10 +636,10 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: const Icon(Icons.pin, color: AppColors.gold500, size: 22),
+              child: Icon(Icons.pin, color: context.colors.gold, size: 22),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -648,17 +649,17 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                   AppText(
                     l10n.biometric_settings_fallback_title,
                     variant: AppTextVariant.labelMedium,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   AppText(
                     l10n.biometric_settings_fallback_subtitle,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
           ],
         ),
       ),
@@ -721,16 +722,16 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.slate,
+          backgroundColor: context.colors.container,
           title: AppText(
             l10n.biometric_settings_disable_title,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
           content: AppText(
             l10n.biometric_settings_disable_message,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           actions: [
             AppButton(
@@ -765,11 +766,11 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     final selected = await showDialog<int>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.biometric_settings_timeout_select_title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -784,14 +785,14 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                       value: timeout,
                       groupValue: settings.biometricTimeoutMinutes,
                       onChanged: (value) => Navigator.pop(context, value),
-                      activeColor: AppColors.gold500,
+                      activeColor: context.colors.gold,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
                         _getTimeoutDescription(timeout, l10n),
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ],
@@ -818,11 +819,11 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     final selected = await showDialog<double>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.biometric_settings_threshold_select_title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -837,14 +838,14 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
                       value: threshold,
                       groupValue: settings.highValueThreshold,
                       onChanged: (value) => Navigator.pop(context, value),
-                      activeColor: AppColors.gold500,
+                      activeColor: context.colors.gold,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
                         '\$${threshold.toStringAsFixed(0)}',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                   ],
@@ -867,16 +868,16 @@ class _BiometricSettingsViewState extends ConsumerState<BiometricSettingsView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.biometric_settings_reenroll_confirm_title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         content: AppText(
           l10n.biometric_settings_reenroll_confirm_message,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         actions: [
           AppButton(

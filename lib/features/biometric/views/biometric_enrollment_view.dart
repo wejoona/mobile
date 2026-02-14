@@ -5,6 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Biometric Enrollment View
 /// Shows benefits and guides user through biometric setup
@@ -37,12 +38,12 @@ class _BiometricEnrollmentViewState
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         leading: widget.isOptional
             ? IconButton(
-                icon: const Icon(Icons.close, color: AppColors.gold500),
+                icon: Icon(Icons.close, color: context.colors.gold),
                 onPressed: () => context.pop(),
               )
             : null,
@@ -65,7 +66,7 @@ class _BiometricEnrollmentViewState
                       AppText(
                         l10n.biometric_enrollment_title,
                         variant: AppTextVariant.headlineMedium,
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.md),
@@ -74,7 +75,7 @@ class _BiometricEnrollmentViewState
                       AppText(
                         l10n.biometric_enrollment_subtitle,
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: AppSpacing.xxl),
@@ -121,20 +122,20 @@ class _BiometricEnrollmentViewState
         switch (type) {
           case BiometricType.faceId:
             icon = Icons.face;
-            color = AppColors.gold500;
+            color = context.colors.gold;
             break;
           case BiometricType.fingerprint:
             icon = Icons.fingerprint;
-            color = AppColors.gold500;
+            color = context.colors.gold;
             break;
           case BiometricType.iris:
             icon = Icons.visibility;
-            color = AppColors.gold500;
+            color = context.colors.gold;
             break;
           case BiometricType.none:
           case null:
             icon = Icons.security;
-            color = AppColors.textSecondary;
+            color = context.colors.textSecondary;
             break;
         }
 
@@ -152,7 +153,7 @@ class _BiometricEnrollmentViewState
         width: 120,
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.gold500.withValues(alpha: 0.1),
+          color: context.colors.gold.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
         child: const CircularProgressIndicator(),
@@ -161,10 +162,10 @@ class _BiometricEnrollmentViewState
         width: 120,
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.textSecondary.withValues(alpha: 0.1),
+          color: context.colors.textSecondary.withValues(alpha: 0.1),
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.security, size: 64, color: AppColors.textSecondary),
+        child: Icon(Icons.security, size: 64, color: context.colors.textSecondary),
       ),
     );
   }
@@ -215,10 +216,10 @@ class _BiometricEnrollmentViewState
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 24),
+              child: Icon(icon, color: context.colors.gold, size: 24),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -228,13 +229,13 @@ class _BiometricEnrollmentViewState
                   AppText(
                     title,
                     variant: AppTextVariant.titleSmall,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
                     description,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),
@@ -247,7 +248,7 @@ class _BiometricEnrollmentViewState
 
   Widget _buildSuccessView(AppLocalizations l10n) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -259,13 +260,13 @@ class _BiometricEnrollmentViewState
                 width: 160,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.successBase.withValues(alpha: 0.1),
+                  color: context.colors.success.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.check_circle,
                   size: 80,
-                  color: AppColors.successBase,
+                  color: context.colors.success,
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -274,7 +275,7 @@ class _BiometricEnrollmentViewState
               AppText(
                 l10n.biometric_enrollment_success_title,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
@@ -283,7 +284,7 @@ class _BiometricEnrollmentViewState
               AppText(
                 l10n.biometric_enrollment_success_message,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -354,16 +355,16 @@ class _BiometricEnrollmentViewState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           l10n.biometric_enrollment_skip_confirm_title,
           variant: AppTextVariant.titleMedium,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         content: AppText(
           l10n.biometric_enrollment_skip_confirm_message,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         actions: [
           AppButton(
@@ -392,7 +393,7 @@ class _BiometricEnrollmentViewState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.errorBase,
+        backgroundColor: context.colors.error,
       ),
     );
   }

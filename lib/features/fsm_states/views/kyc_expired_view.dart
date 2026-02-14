@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// KYC Expired View
 /// Shown when KYC documents have expired and need renewal
@@ -27,7 +28,7 @@ class KycExpiredView extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -47,20 +48,20 @@ class KycExpiredView extends ConsumerWidget {
                     Icon(
                       Icons.assignment_late,
                       size: 80,
-                      color: AppColors.warning,
+                      color: context.colors.warning,
                     ),
                     SizedBox(height: AppSpacing.xxl),
                     AppText(
                       l10n.kyc_expiredTitle,
                       variant: AppTextVariant.headlineMedium,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: AppSpacing.md),
                     AppText(
                       l10n.kyc_expiredMessage,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                     if (expiredAt != null) ...[
@@ -68,22 +69,22 @@ class KycExpiredView extends ConsumerWidget {
                       Container(
                         padding: EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: AppColors.elevated,
+                          color: context.colors.elevated,
                           borderRadius: BorderRadius.circular(AppRadius.md),
-                          border: Border.all(color: AppColors.borderDefault),
+                          border: Border.all(color: context.colors.border),
                         ),
                         child: Column(
                           children: [
                             AppText(
                               l10n.kyc_expiredOn,
                               variant: AppTextVariant.labelSmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                             SizedBox(height: AppSpacing.xs),
                             AppText(
                               _formatDate(expiredAt),
                               variant: AppTextVariant.bodyLarge,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                             ),
                           ],
                         ),
@@ -98,13 +99,13 @@ class KycExpiredView extends ConsumerWidget {
                           AppText(
                             l10n.kyc_renewalRequired,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                           SizedBox(height: AppSpacing.sm),
                           AppText(
                             l10n.kyc_renewalMessage,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ],
                       ),
@@ -118,7 +119,7 @@ class KycExpiredView extends ConsumerWidget {
                           AppText(
                             l10n.kyc_currentRestrictions,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                           ),
                           SizedBox(height: AppSpacing.sm),
                           _buildBulletPoint(l10n.kyc_restriction1),

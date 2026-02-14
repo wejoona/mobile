@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/alerts/models/index.dart';
 import 'package:usdc_wallet/features/alerts/providers/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class AlertDetailView extends ConsumerStatefulWidget {
   const AlertDetailView({
@@ -221,7 +222,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.colors.borderSubtle),
       ),
@@ -248,7 +249,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.colors.borderSubtle),
       ),
@@ -276,7 +277,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.colors.borderSubtle),
       ),
@@ -471,7 +472,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(
           'Confirm ${action.displayName}',
           variant: AppTextVariant.titleMedium,

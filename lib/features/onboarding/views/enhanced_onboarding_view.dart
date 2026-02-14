@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_progress_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Enhanced onboarding view with beautiful animations and illustrations
 class EnhancedOnboardingView extends ConsumerStatefulWidget {
@@ -45,7 +46,7 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
     final pages = [
       _OnboardingPageData(
         icon: Icons.account_balance_wallet_rounded,
-        gradient: AppColors.goldGradient,
+        gradient: context.colors.goldGradient,
         title: l10n.onboarding_page1_title,
         description: l10n.onboarding_page1_description,
         features: [
@@ -131,8 +132,8 @@ class _EnhancedOnboardingViewState extends ConsumerState<EnhancedOnboardingView>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: AppColors.goldGradient,
+              gradient: LinearGradient(
+                colors: context.colors.goldGradient,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -370,7 +371,7 @@ class _PageDot extends StatelessWidget {
       height: 8,
       decoration: BoxDecoration(
         gradient: isActive
-            ? const LinearGradient(colors: AppColors.goldGradient)
+            ? LinearGradient(colors: context.colors.goldGradient)
             : null,
         color: isActive ? null : colors.textTertiary.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),

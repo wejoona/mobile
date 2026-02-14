@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Session Conflict View
 /// Shown when user is logged in on another device
@@ -40,7 +41,7 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
               Icon(
                 Icons.devices,
                 size: 80,
-                color: AppColors.warning,
+                color: context.colors.warning,
               ),
               SizedBox(height: AppSpacing.xxl),
               AppText(
@@ -99,7 +100,7 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
                     Icon(
                       Icons.warning_amber,
                       size: 40,
-                      color: AppColors.warning,
+                      color: context.colors.warning,
                     ),
                     SizedBox(height: AppSpacing.md),
                     AppText(

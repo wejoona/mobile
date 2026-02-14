@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 386: Animated progress ring for savings pot goals
 class PotProgressRing extends StatefulWidget {
@@ -77,7 +78,7 @@ class _PotProgressRingState extends State<PotProgressRing>
               painter: _RingPainter(
                 progress: _animation.value,
                 strokeWidth: widget.strokeWidth,
-                color: widget.color ?? AppColors.gold,
+                color: widget.color ?? context.colors.gold,
                 backgroundColor: context.colors.elevated,
               ),
               child: Center(child: widget.child),

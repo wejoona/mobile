@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provide
 import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/withdraw_from_pot_sheet.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Detail view for a single savings pot
 class PotDetailView extends ConsumerStatefulWidget {
@@ -294,7 +295,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -303,13 +304,13 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isDeposit ? context.colors.success : AppColors.warningBase)
+              color: (isDeposit ? context.colors.success : context.colors.warning)
                   .withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isDeposit ? Icons.add : Icons.remove,
-              color: isDeposit ? context.colors.success : AppColors.warningBase,
+              color: isDeposit ? context.colors.success : context.colors.warning,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -333,7 +334,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
           AppText(
             '${isDeposit ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
             variant: AppTextVariant.bodyLarge,
-            color: isDeposit ? context.colors.success : AppColors.warningBase,
+            color: isDeposit ? context.colors.success : context.colors.warning,
             fontWeight: FontWeight.bold,
           ),
         ],
@@ -344,7 +345,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   Future<void> _showAddMoneySheet(BuildContext context, AppLocalizations l10n, String potId) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
@@ -365,7 +366,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   Future<void> _showWithdrawSheet(BuildContext context, AppLocalizations l10n, String potId) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: AppColors.slate,
+      backgroundColor: context.colors.container,
       isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
@@ -387,7 +388,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.slate,
+        backgroundColor: context.colors.container,
         title: AppText(l10n.savingsPots_deleteTitle),
         content: AppText(l10n.savingsPots_deleteMessage),
         actions: [

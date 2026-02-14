@@ -4,6 +4,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_transfer_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class EndConditionPicker extends StatelessWidget {
   const EndConditionPicker({
@@ -33,7 +34,7 @@ class EndConditionPicker extends StatelessWidget {
         AppText(
           l10n.recurringTransfers_endCondition,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.sm),
         _buildOption(
@@ -61,7 +62,7 @@ class EndConditionPicker extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: l10n.recurringTransfers_occurrencesCount,
                   filled: true,
-                  fillColor: AppColors.elevated,
+                  fillColor: context.colors.elevated,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     borderSide: BorderSide.none,
@@ -100,7 +101,7 @@ class EndConditionPicker extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_today, color: AppColors.gold500, size: 20),
+                    Icon(Icons.calendar_today, color: context.colors.gold, size: 20),
                     SizedBox(width: AppSpacing.sm),
                     AppText(
                       endDate != null
@@ -133,13 +134,13 @@ class EndConditionPicker extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.gold500.withOpacity(0.1)
-              : AppColors.slate,
+              ? context.colors.gold.withOpacity(0.1)
+              : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected
-                ? AppColors.gold500
-                : AppColors.textSecondary.withOpacity(0.3),
+                ? context.colors.gold
+                : context.colors.textSecondary.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -147,7 +148,7 @@ class EndConditionPicker extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+              color: isSelected ? context.colors.gold : context.colors.textSecondary,
               size: 20,
             ),
             SizedBox(width: AppSpacing.md),
@@ -155,14 +156,14 @@ class EndConditionPicker extends StatelessWidget {
               child: AppText(
                 label,
                 variant: AppTextVariant.bodyMedium,
-                color: isSelected ? AppColors.gold500 : AppColors.textPrimary,
+                color: isSelected ? context.colors.gold : context.colors.textPrimary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             if (isSelected)
               Icon(
                 Icons.check_circle,
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 size: 20,
               ),
           ],
@@ -181,9 +182,9 @@ class EndConditionPicker extends StatelessWidget {
       builder: (context, child) {
         return Theme(
           data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.gold500,
-              surface: AppColors.slate,
+            colorScheme: ColorScheme.dark(
+              primary: context.colors.gold,
+              surface: context.colors.container,
             ),
           ),
           child: child!,

@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class AddExpenseView extends ConsumerStatefulWidget {
   const AddExpenseView({super.key});
@@ -136,7 +137,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
             colorScheme: ColorScheme.dark(
               primary: context.colors.gold,
               onPrimary: context.colors.canvas,
-              surface: AppColors.charcoal,
+              surface: context.colors.elevated,
               onSurface: Colors.white,
             ),
           ),
@@ -178,7 +179,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
             content: Text(
               AppLocalizations.of(context)!.expenses_addedSuccessfully,
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -187,7 +188,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString()),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }

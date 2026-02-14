@@ -15,6 +15,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// KYC Document Type
 enum KycDocumentType {
@@ -333,7 +334,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppCardVariant.subtle,
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+              Icon(Icons.info_outline, color: context.colors.info, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
@@ -380,7 +381,7 @@ class _KycViewState extends ConsumerState<KycView> {
           variant: AppCardVariant.subtle,
           child: Row(
             children: [
-              Icon(Icons.info_outline, color: AppColors.infoBase, size: 20),
+              Icon(Icons.info_outline, color: context.colors.info, size: 20),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
@@ -475,12 +476,12 @@ class _KycViewState extends ConsumerState<KycView> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.infoBase.withOpacity(0.2),
+                        color: context.colors.info.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.face_retouching_natural,
-                        color: AppColors.infoBase,
+                        color: context.colors.info,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -524,12 +525,12 @@ class _KycViewState extends ConsumerState<KycView> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.successBase.withOpacity(0.2),
+                    color: context.colors.success.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.check_circle,
-                    color: AppColors.successBase,
+                    color: context.colors.success,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -568,7 +569,7 @@ class _KycViewState extends ConsumerState<KycView> {
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: _selfieUploaded
-                        ? AppColors.successBase
+                        ? context.colors.success
                         : colors.borderSubtle,
                     width: 3,
                   ),
@@ -654,7 +655,7 @@ class _KycViewState extends ConsumerState<KycView> {
           value: _dateOfBirth != null
               ? DateFormat('MMM dd, yyyy').format(_dateOfBirth!)
               : 'Not set',
-          valueColor: _dateOfBirth != null ? colors.textPrimary : AppColors.errorBase,
+          valueColor: _dateOfBirth != null ? colors.textPrimary : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
@@ -677,7 +678,7 @@ class _KycViewState extends ConsumerState<KycView> {
               : 'Not provided',
           valueColor: _idNumberController.text.isNotEmpty
               ? colors.textPrimary
-              : AppColors.errorBase,
+              : context.colors.error,
           colors: colors,
         ),
 
@@ -700,21 +701,21 @@ class _KycViewState extends ConsumerState<KycView> {
           icon: Icons.photo,
           label: 'Front Photo',
           value: _frontUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _frontUploaded ? AppColors.successBase : AppColors.errorBase,
+          valueColor: _frontUploaded ? context.colors.success : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
           icon: Icons.photo,
           label: 'Back Photo',
           value: _backUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _backUploaded ? AppColors.successBase : AppColors.errorBase,
+          valueColor: _backUploaded ? context.colors.success : context.colors.error,
           colors: colors,
         ),
         _ReviewItem(
           icon: Icons.face,
           label: 'Selfie',
           value: _selfieUploaded ? 'Uploaded' : 'Missing',
-          valueColor: _selfieUploaded ? AppColors.successBase : AppColors.errorBase,
+          valueColor: _selfieUploaded ? context.colors.success : context.colors.error,
           colors: colors,
         ),
 
@@ -1060,7 +1061,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to pick image: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1091,9 +1092,9 @@ class _KycViewState extends ConsumerState<KycView> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Liveness check passed! You can now take your selfie.'),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
       }
@@ -1102,7 +1103,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Liveness check failed: ${result.failureReason ?? "Please try again"}'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1113,9 +1114,9 @@ class _KycViewState extends ConsumerState<KycView> {
   Future<void> _takeSelfie() async {
     if (!_livenessCheckPassed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Please complete liveness check first'),
-          backgroundColor: AppColors.warningBase,
+          backgroundColor: context.colors.warning,
         ),
       );
       return;
@@ -1140,7 +1141,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to take selfie: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -1207,9 +1208,9 @@ class _KycViewState extends ConsumerState<KycView> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text('KYC submitted successfully!'),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
           context.safePop(fallbackRoute: '/settings');
@@ -1219,7 +1220,7 @@ class _KycViewState extends ConsumerState<KycView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Failed to submit KYC: ${e.toString()}'),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }
@@ -1282,12 +1283,12 @@ class _KycViewState extends ConsumerState<KycView> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.successBase.withValues(alpha: 0.2),
+                color: context.colors.success.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.verified,
-                color: AppColors.successBase,
+                color: context.colors.success,
                 size: 60,
               ),
             ),
@@ -1335,12 +1336,12 @@ class _KycViewState extends ConsumerState<KycView> {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.warningBase.withValues(alpha: 0.2),
+                color: context.colors.warning.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.hourglass_top,
-                color: AppColors.warningBase,
+                color: context.colors.warning,
                 size: 60,
               ),
             ),
@@ -1456,7 +1457,7 @@ class _UploadCard extends StatelessWidget {
           color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isUploaded ? AppColors.successBase : colors.borderSubtle,
+            color: isUploaded ? context.colors.success : colors.borderSubtle,
             width: isUploaded ? 2 : 1,
           ),
         ),
@@ -1467,7 +1468,7 @@ class _UploadCard extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 color: isUploaded
-                    ? AppColors.successBase.withValues(alpha: 0.2)
+                    ? context.colors.success.withValues(alpha: 0.2)
                     : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
@@ -1483,7 +1484,7 @@ class _UploadCard extends StatelessWidget {
                     )
                   : Icon(
                       isUploaded ? Icons.check : Icons.add_a_photo,
-                      color: isUploaded ? AppColors.successBase : colors.textTertiary,
+                      color: isUploaded ? context.colors.success : colors.textTertiary,
                       size: 28,
                     ),
             ),
@@ -1501,14 +1502,14 @@ class _UploadCard extends StatelessWidget {
                   AppText(
                     isUploaded ? 'Tap to change' : description,
                     variant: AppTextVariant.bodySmall,
-                    color: isUploaded ? AppColors.successBase : colors.textSecondary,
+                    color: isUploaded ? context.colors.success : colors.textSecondary,
                   ),
                 ],
               ),
             ),
             Icon(
               isUploaded ? Icons.edit : Icons.chevron_right,
-              color: isUploaded ? AppColors.successBase : colors.textTertiary,
+              color: isUploaded ? context.colors.success : colors.textTertiary,
             ),
           ],
         ),

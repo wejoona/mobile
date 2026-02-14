@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 343: Network inspector debug view for dev builds
 class NetworkInspectorView extends ConsumerStatefulWidget {
@@ -25,18 +26,18 @@ class _NetworkInspectorViewState extends ConsumerState<NetworkInspectorView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText(
           'Network Inspector',
           style: AppTextStyle.headingSmall,
         ),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
         actions: [
           IconButton(
             icon: Icon(
               _showOnlyErrors ? Icons.error : Icons.error_outline,
-              color: _showOnlyErrors ? AppColors.error : context.colors.textSecondary,
+              color: _showOnlyErrors ? context.colors.error : context.colors.textSecondary,
             ),
             onPressed: () => setState(() => _showOnlyErrors = !_showOnlyErrors),
             tooltip: 'Filtrer les erreurs',
@@ -90,9 +91,9 @@ class _NetworkLogTile extends StatelessWidget {
   const _NetworkLogTile({required this.log});
 
   Color get _statusColor {
-    if (log.statusCode < 300) return AppColors.success;
-    if (log.statusCode < 400) return AppColors.warning;
-    return AppColors.error;
+    if (log.statusCode < 300) return AppColors.successBase;
+    if (log.statusCode < 400) return AppColors.warningBase;
+    return AppColors.errorBase;
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.da
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
 import 'package:usdc_wallet/features/merchant_pay/views/payment_confirm_view.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Scan QR View
 /// Customer interface for scanning merchant QR codes
@@ -112,7 +113,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
                     AppText(
                       'Processing...',
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.white,
+                      color: context.colors.textPrimary,
                     ),
                   ],
                 ),
@@ -128,17 +129,17 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
               child: Container(
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.error,
+                  color: context.colors.error,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline, color: AppColors.white),
+                    Icon(Icons.error_outline, color: context.colors.textPrimary),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
                         state.error!,
-                        color: AppColors.white,
+                        color: context.colors.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -146,7 +147,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
                         ref.read(scanToPayProvider.notifier).goBackToScanning();
                         _scannedQrData = null;
                       },
-                      icon: Icon(Icons.close, color: AppColors.white),
+                      icon: Icon(Icons.close, color: context.colors.textPrimary),
                     ),
                   ],
                 ),

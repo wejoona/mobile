@@ -14,6 +14,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BankVerificationView extends ConsumerStatefulWidget {
   const BankVerificationView({super.key, this.accountId});
@@ -172,7 +173,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -201,7 +202,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.graphite,
+        color: context.colors.surface,
         border: Border(
           top: BorderSide(
             color: context.colors.elevated,
@@ -229,7 +230,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
             AppLocalizations.of(context)!.bankLinking_invalidOtp,
             style: AppTypography.bodyMedium,
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: context.colors.error,
         ),
       );
       return;
@@ -250,7 +251,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
               AppLocalizations.of(context)!.bankLinking_verificationSuccess,
               style: AppTypography.bodyMedium,
             ),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
         // Navigate back to linked accounts
@@ -262,7 +263,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
               AppLocalizations.of(context)!.bankLinking_verificationFailed,
               style: AppTypography.bodyMedium,
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -281,7 +282,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
           AppLocalizations.of(context)!.bankLinking_otpResent,
           style: AppTypography.bodyMedium,
         ),
-        backgroundColor: AppColors.success,
+        backgroundColor: context.colors.success,
       ),
     );
     _startResendCountdown();

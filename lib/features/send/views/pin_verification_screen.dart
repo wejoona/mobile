@@ -8,6 +8,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/pin_input_widget.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class PinVerificationScreen extends ConsumerStatefulWidget {
   const PinVerificationScreen({super.key});
@@ -42,7 +43,7 @@ class _PinVerificationScreenState
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.send_verifyPin,
@@ -62,13 +63,13 @@ class _PinVerificationScreenState
               Container(
                 padding: EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withOpacity(0.1),
+                  color: context.colors.gold.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.lock_outline,
                   size: 48,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
               SizedBox(height: AppSpacing.lg),
@@ -85,7 +86,7 @@ class _PinVerificationScreenState
               AppText(
                 l10n.send_pinVerificationDescription,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xl),
@@ -108,7 +109,7 @@ class _PinVerificationScreenState
                 AppText(
                   _error!,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.errorBase,
+                  color: context.colors.error,
                   textAlign: TextAlign.center,
                 ),
 
@@ -120,12 +121,12 @@ class _PinVerificationScreenState
                   onPressed: _handleBiometric,
                   icon: Icon(
                     Icons.fingerprint,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                   label: AppText(
                     l10n.send_useBiometric,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
 
@@ -133,8 +134,8 @@ class _PinVerificationScreenState
 
               // Loading indicator
               if (_isLoading)
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
                 ),
             ],
           ),

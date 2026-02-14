@@ -257,7 +257,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                   color: Colors.black.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.gold500.withOpacity(0.3),
+                    color: context.colors.gold.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -274,7 +274,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                       l10n.kyc_selfie_livenessHint,
                       textAlign: TextAlign.center,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                   ],
                 ),
@@ -537,7 +537,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     ? _getErrorMessage(l10n, qualityResult.errorKey!)
                     : l10n.kyc_error_imageQuality,
               ),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }
@@ -587,7 +587,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     ? _getErrorMessage(l10n, qualityResult.errorKey!)
                     : l10n.kyc_error_imageQuality,
               ),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }

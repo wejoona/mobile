@@ -6,6 +6,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -200,7 +201,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     final score = _calculateSecurityScore();
     final scoreColor = score >= 80
         ? context.colors.success
-        : (score >= 60 ? AppColors.warningBase : context.colors.error);
+        : (score >= 60 ? context.colors.warning : context.colors.error);
 
     return AppCard(
       variant: AppCardVariant.elevated,

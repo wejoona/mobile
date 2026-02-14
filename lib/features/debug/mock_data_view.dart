@@ -2,6 +2,7 @@ import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 345: Mock data management view for dev/QA testing
 class MockDataView extends StatelessWidget {
@@ -10,10 +11,10 @@ class MockDataView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundPrimary,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: const AppText('Donnees Mock', style: AppTextStyle.headingSmall),
-        backgroundColor: AppColors.backgroundSecondary,
+        backgroundColor: context.colors.surface,
       ),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -83,7 +84,7 @@ class _MockScenarioTileState extends State<_MockScenarioTile> {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: ListTileCard(
-        leading: Icon(widget.icon, color: AppColors.gold),
+        leading: Icon(widget.icon, color: context.colors.gold),
         title: widget.title,
         subtitle: widget.description,
         trailing: AppToggle(

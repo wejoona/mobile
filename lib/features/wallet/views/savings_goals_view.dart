@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SavingsGoalsView extends ConsumerStatefulWidget {
   const SavingsGoalsView({super.key});
@@ -130,7 +131,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [colors.gold, AppColors.gold600],
+                    colors: [colors.gold, context.colors.gold],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -262,18 +263,18 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.successBase.withValues(alpha: 0.1),
+                                color: context.colors.success.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(AppRadius.xs),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.autorenew, size: 12, color: AppColors.successBase),
+                                  Icon(Icons.autorenew, size: 12, color: context.colors.success),
                                   SizedBox(width: 2),
                                   AppText(
                                     'Auto',
                                     variant: AppTextVariant.labelSmall,
-                                    color: AppColors.successBase,
+                                    color: context.colors.success,
                                   ),
                                 ],
                               ),
@@ -284,7 +285,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       AppText(
                         '$daysLeft days left',
                         variant: AppTextVariant.bodySmall,
-                        color: daysLeft < 30 ? AppColors.warningBase : colors.textSecondary,
+                        color: daysLeft < 30 ? context.colors.warning : colors.textSecondary,
                       ),
                     ],
                   ),
@@ -404,7 +405,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle, color: AppColors.successBase, size: 16),
+          Icon(Icons.check_circle, color: context.colors.success, size: 16),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
@@ -591,9 +592,9 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       });
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Goal created successfully!'),
-                          backgroundColor: AppColors.successBase,
+                          backgroundColor: context.colors.success,
                         ),
                       );
                     }
@@ -677,10 +678,10 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 Navigator.pop(context);
                 _deleteGoal(goal);
               },
-              child: const AppText(
+              child: AppText(
                 'Delete Goal',
                 variant: AppTextVariant.labelMedium,
-                color: AppColors.errorBase,
+                color: context.colors.error,
               ),
             ),
           ],
@@ -776,7 +777,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('\$$amount added to ${goal.name}'),
-                      backgroundColor: AppColors.successBase,
+                      backgroundColor: context.colors.success,
                     ),
                   );
                 }
@@ -792,9 +793,9 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
 
   void _withdrawFromGoal(_SavingsGoal goal) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Withdraw feature coming soon'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }
@@ -821,13 +822,13 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               setState(() => _goals.removeWhere((g) => g.id == goal.id));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Goal deleted'),
-                  backgroundColor: AppColors.infoBase,
+                  backgroundColor: context.colors.info,
                 ),
               );
             },
-            child: const AppText('Delete', color: AppColors.errorBase),
+            child: AppText('Delete', color: context.colors.error),
           ),
         ],
       ),

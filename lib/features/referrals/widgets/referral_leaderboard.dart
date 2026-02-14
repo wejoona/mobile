@@ -3,6 +3,7 @@ import 'package:usdc_wallet/design/components/primitives/error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 382: Referral leaderboard showing top referrers
 class ReferralLeaderboard extends StatelessWidget {
@@ -57,7 +58,7 @@ class _LeaderboardTile extends StatelessWidget {
 
   Color get _rankColor {
     switch (rank) {
-      case 1: return AppColors.gold;
+      case 1: return AppColors.gold500;
       case 2: return const Color(0xFFC0C0C0);
       case 3: return const Color(0xFFCD7F32);
       default: return AppColors.textTertiary;

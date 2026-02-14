@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Time period for analytics
 enum AnalyticsPeriod {
@@ -471,7 +472,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
         const SizedBox(height: AppSpacing.md),
         _InsightCard(
           icon: Icons.schedule,
-          iconColor: AppColors.infoBase,
+          iconColor: context.colors.info,
           title: l10n.analytics_insightPeakActivity,
           description: l10n.analytics_insightPeakActivityDesc,
           colors: colors,
@@ -531,7 +532,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.analytics_exportingReport),
-          backgroundColor: AppColors.infoBase,
+          backgroundColor: context.colors.info,
         ),
       );
 

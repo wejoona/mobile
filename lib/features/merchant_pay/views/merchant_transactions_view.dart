@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Merchant Transactions View
 /// Shows full transaction history for a merchant
@@ -139,19 +140,19 @@ class _MerchantTransactionsViewState
           Icon(
             Icons.receipt_long,
             size: 80,
-            color: AppColors.silver.withValues(alpha: 0.5),
+            color: context.colors.textSecondary.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppSpacing.md),
           AppText(
             'No transactions yet',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.white,
+            color: context.colors.textPrimary,
           ),
           SizedBox(height: AppSpacing.xs),
           AppText(
             'Transactions will appear here when\ncustomers pay you',
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.silver,
+            color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
         ],
@@ -167,15 +168,15 @@ class _MerchantTransactionsViewState
     IconData statusIcon;
     switch (tx.status) {
       case 'completed':
-        statusColor = AppColors.success;
+        statusColor = context.colors.success;
         statusIcon = Icons.check_circle;
         break;
       case 'refunded':
-        statusColor = AppColors.warning;
+        statusColor = context.colors.warning;
         statusIcon = Icons.undo;
         break;
       default:
-        statusColor = AppColors.error;
+        statusColor = context.colors.error;
         statusIcon = Icons.error;
     }
 
@@ -216,7 +217,7 @@ class _MerchantTransactionsViewState
                     AppText(
                       dateFormat.format(tx.createdAt),
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.silver,
+                      color: context.colors.textSecondary,
                     ),
                   ],
                 ),
@@ -230,14 +231,14 @@ class _MerchantTransactionsViewState
                         : '+${currencyFormat.format(tx.netAmount)}',
                     variant: AppTextVariant.bodyLarge,
                     color: tx.status == 'refunded'
-                        ? AppColors.warning
-                        : AppColors.success,
+                        ? context.colors.warning
+                        : context.colors.success,
                   ),
                   if (tx.fee > 0)
                     AppText(
                       'Fee: ${currencyFormat.format(tx.fee)}',
                       variant: AppTextVariant.labelSmall,
-                      color: AppColors.silver,
+                      color: context.colors.textSecondary,
                     ),
                 ],
               ),
@@ -251,13 +252,13 @@ class _MerchantTransactionsViewState
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: AppColors.charcoal.withValues(alpha: 0.5),
+                color: context.colors.elevated.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: AppText(
                 tx.description!,
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -272,7 +273,7 @@ class _MerchantTransactionsViewState
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.charcoal,
+      backgroundColor: context.colors.elevated,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -288,7 +289,7 @@ class _MerchantTransactionsViewState
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.silver,
+                    color: context.colors.textSecondary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -332,7 +333,7 @@ class _MerchantTransactionsViewState
             child: AppText(
               label,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.silver,
+              color: context.colors.textSecondary,
             ),
           ),
           Expanded(

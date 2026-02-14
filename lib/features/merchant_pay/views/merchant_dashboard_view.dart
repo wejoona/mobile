@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Merchant Dashboard View
 /// Main dashboard for business users to manage their merchant account
@@ -47,11 +48,11 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: AppColors.silver),
+              Icon(Icons.error_outline, size: 64, color: context.colors.textSecondary),
               SizedBox(height: AppSpacing.md),
               AppText(
                 'Error loading merchant profile',
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.md),
               AppButton(
@@ -88,13 +89,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             AppText(
               'Become a Merchant',
               variant: AppTextVariant.headlineMedium,
-              color: AppColors.white,
+              color: context.colors.textPrimary,
             ),
             SizedBox(height: AppSpacing.sm),
             AppText(
               'Accept USDC payments from customers with QR codes',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.silver,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -156,18 +157,18 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     String message;
 
     if (merchant.isPending) {
-      bgColor = AppColors.warning.withValues(alpha: 0.1);
-      textColor = AppColors.warning;
+      bgColor = context.colors.warning.withValues(alpha: 0.1);
+      textColor = context.colors.warning;
       icon = Icons.pending;
       message = 'Your merchant account is pending verification';
     } else if (!merchant.isActive) {
-      bgColor = AppColors.error.withValues(alpha: 0.1);
-      textColor = AppColors.error;
+      bgColor = context.colors.error.withValues(alpha: 0.1);
+      textColor = context.colors.error;
       icon = Icons.warning;
       message = 'Your merchant account is ${merchant.status}';
     } else {
-      bgColor = AppColors.warning.withValues(alpha: 0.1);
-      textColor = AppColors.warning;
+      bgColor = context.colors.warning.withValues(alpha: 0.1);
+      textColor = context.colors.warning;
       icon = Icons.info;
       message = 'Complete verification to start accepting payments';
     }
@@ -211,18 +212,18 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                     AppText(
                       merchant.displayName,
                       variant: AppTextVariant.titleLarge,
-                      color: AppColors.white,
+                      color: context.colors.textPrimary,
                     ),
                     SizedBox(height: AppSpacing.xs),
                     if (merchant.isVerified)
                       Row(
                         children: [
-                          Icon(Icons.verified, color: AppColors.white, size: 16),
+                          Icon(Icons.verified, color: context.colors.textPrimary, size: 16),
                           SizedBox(width: AppSpacing.xs),
                           AppText(
                             'Verified',
                             variant: AppTextVariant.labelSmall,
-                            color: AppColors.white.withValues(alpha: 0.9),
+                            color: context.colors.textPrimary.withValues(alpha: 0.9),
                           ),
                         ],
                       ),
@@ -232,13 +233,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: AppColors.white.withValues(alpha: 0.2),
+                  color: context.colors.textPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: AppText(
                   merchant.status.toUpperCase(),
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.white,
+                  color: context.colors.textPrimary,
                 ),
               ),
             ],
@@ -258,7 +259,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.white.withValues(alpha: 0.3),
+                color: context.colors.textPrimary.withValues(alpha: 0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -282,7 +283,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Container(
                 width: 1,
                 height: 40,
-                color: AppColors.white.withValues(alpha: 0.3),
+                color: context.colors.textPrimary.withValues(alpha: 0.3),
               ),
               Expanded(
                 child: _buildStatItem(
@@ -303,7 +304,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.white.withValues(alpha: 0.7), size: 20),
+          Icon(icon, color: context.colors.textPrimary.withValues(alpha: 0.7), size: 20),
           SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Column(
@@ -312,12 +313,12 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 AppText(
                   label,
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.white.withValues(alpha: 0.7),
+                  color: context.colors.textPrimary.withValues(alpha: 0.7),
                 ),
                 AppText(
                   value,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.white,
+                  color: context.colors.textPrimary,
                 ),
               ],
             ),
@@ -439,7 +440,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText('Failed to load analytics', color: AppColors.error),
+            child: AppText('Failed to load analytics', color: context.colors.error),
           ),
           data: (analytics) => _buildAnalyticsCards(analytics),
         ),
@@ -462,13 +463,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           'Total Volume',
           currencyFormat.format(analytics.totalVolume),
           Icons.attach_money,
-          AppColors.success,
+          context.colors.success,
         ),
         _buildAnalyticsCard(
           'Total Fees',
           currencyFormat.format(analytics.totalFees),
           Icons.receipt,
-          AppColors.warning,
+          context.colors.warning,
         ),
         _buildAnalyticsCard(
           'Transactions',
@@ -509,7 +510,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           AppText(
             label,
             variant: AppTextVariant.labelSmall,
-            color: AppColors.silver,
+            color: context.colors.textSecondary,
           ),
         ],
       ),
@@ -551,7 +552,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText('Failed to load transactions', color: AppColors.error),
+            child: AppText('Failed to load transactions', color: context.colors.error),
           ),
           data: (response) {
             if (response.transactions.isEmpty) {
@@ -561,9 +562,9 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.receipt_long, size: 48, color: AppColors.silver),
+                      Icon(Icons.receipt_long, size: 48, color: context.colors.textSecondary),
                       SizedBox(height: AppSpacing.sm),
-                      AppText('No transactions yet', color: AppColors.silver),
+                      AppText('No transactions yet', color: context.colors.textSecondary),
                     ],
                   ),
                 ),
@@ -590,12 +591,12 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           Container(
             padding: EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.1),
+              color: context.colors.success.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.arrow_downward,
-              color: AppColors.success,
+              color: context.colors.success,
               size: 20,
             ),
           ),
@@ -611,7 +612,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 AppText(
                   DateFormat('MMM dd, HH:mm').format(tx.createdAt),
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.silver,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -622,12 +623,12 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               AppText(
                 '+\$${tx.netAmount.toStringAsFixed(2)}',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.success,
+                color: context.colors.success,
               ),
               AppText(
                 'Fee: \$${tx.fee.toStringAsFixed(2)}',
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.silver,
+                color: context.colors.textSecondary,
               ),
             ],
           ),

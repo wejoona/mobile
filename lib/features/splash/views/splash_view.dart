@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SplashView extends ConsumerStatefulWidget {
   const SplashView({super.key});
@@ -115,8 +116,8 @@ class _SplashViewState extends ConsumerState<SplashView>
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: AppColors.goldGradient,
+                        gradient: LinearGradient(
+                          colors: context.colors.goldGradient,
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),

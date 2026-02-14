@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
 import 'package:usdc_wallet/features/receipts/services/receipt_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Bottom sheet for sharing transaction receipt
 /// TODO: Replace hardcoded strings with AppLocalizations after running flutter gen-l10n
@@ -80,8 +81,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                 padding: const EdgeInsets.all(AppSpacing.xl),
                 child: Column(
                   children: [
-                    const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                    CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation(context.colors.gold),
                     ),
                     if (_loadingMessage != null) ...[
                       const SizedBox(height: AppSpacing.md),
@@ -113,7 +114,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     // Share as Image
                     _ShareOption(
                       icon: Icons.image,
-                      iconColor: AppColors.infoBase,
+                      iconColor: context.colors.info,
                       label: 'Share as Image',
                       subtitle: 'Share via any app',
                       onTap: () => _shareReceipt(ReceiptFormat.image),
@@ -123,7 +124,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     // Share as PDF
                     _ShareOption(
                       icon: Icons.picture_as_pdf,
-                      iconColor: AppColors.errorBase,
+                      iconColor: context.colors.error,
                       label: 'Share as PDF',
                       subtitle: 'Professional PDF document',
                       onTap: () => _shareReceipt(ReceiptFormat.pdf),
@@ -133,7 +134,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     // Save to Gallery
                     _ShareOption(
                       icon: Icons.download,
-                      iconColor: AppColors.successBase,
+                      iconColor: context.colors.success,
                       label: 'Save to Gallery',
                       subtitle: 'Save receipt image to photos',
                       onTap: _saveToGallery,
@@ -303,9 +304,9 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Reference number copied'),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: Duration(seconds: 2),
       ),
     );
@@ -345,7 +346,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.errorBase,
+        backgroundColor: context.colors.error,
         duration: const Duration(seconds: 3),
       ),
     );
@@ -355,7 +356,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: const Duration(seconds: 2),
       ),
     );

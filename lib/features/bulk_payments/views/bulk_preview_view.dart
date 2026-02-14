@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provi
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/features/bulk_payments/widgets/payment_row.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BulkPreviewView extends ConsumerStatefulWidget {
   const BulkPreviewView({super.key});
@@ -60,7 +61,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       margin: EdgeInsets.all(AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
@@ -110,15 +111,15 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.1),
+        color: context.colors.error.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.error, width: 1),
+        border: Border.all(color: context.colors.error, width: 1),
       ),
       child: Row(
         children: [
           Icon(
             Icons.error_outline,
-            color: AppColors.error,
+            color: context.colors.error,
             size: 24,
           ),
           SizedBox(width: AppSpacing.sm),
@@ -129,12 +130,12 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
                 AppText(
                   l10n.bulkPayments_errorsFound(batch.errorCount),
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.error,
+                  color: context.colors.error,
                 ),
                 AppText(
                   l10n.bulkPayments_fixErrors,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.error,
+                  color: context.colors.error,
                 ),
               ],
             ),
@@ -200,7 +201,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.2),
@@ -238,7 +239,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: context.colors.elevated,
         title: AppText(
           l10n.bulkPayments_confirmSubmit,
           variant: AppTextVariant.headlineSmall,
@@ -275,7 +276,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.bulkPayments_submitSuccess),
-            backgroundColor: AppColors.success,
+            backgroundColor: context.colors.success,
           ),
         );
       }

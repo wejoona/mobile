@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Theme Settings View - Beautiful theme selection with animated preview cards
 class ThemeSettingsView extends ConsumerWidget {
@@ -204,9 +205,9 @@ class _ThemePreviewCard extends StatelessWidget {
                             color: colors.gold,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check,
-                            color: AppColors.textInverse,
+                            color: context.colors.textInverse,
                             size: 18,
                           ),
                         ),

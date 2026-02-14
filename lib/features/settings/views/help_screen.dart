@@ -6,6 +6,7 @@ import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Help & Support Screen
 /// FAQ, contact options, and problem reporting
@@ -317,7 +318,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText('Opening WhatsApp...'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }
@@ -327,7 +328,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText('Opening live chat...'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }

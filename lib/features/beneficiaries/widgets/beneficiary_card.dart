@@ -4,6 +4,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Beneficiary Card Widget
 class BeneficiaryCard extends StatelessWidget {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 346: Transaction filter bottom sheet view
 class TransactionFilterView extends ConsumerStatefulWidget {
@@ -33,8 +34,8 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundSecondary,
+      decoration: BoxDecoration(
+        color: context.colors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -165,16 +166,16 @@ class _FilterChip extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: selected ? AppColors.gold.withOpacity(0.15) : context.colors.elevated,
+            color: selected ? context.colors.gold.withOpacity(0.15) : context.colors.elevated,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: selected ? AppColors.gold : Colors.transparent,
+              color: selected ? context.colors.gold : Colors.transparent,
             ),
           ),
           child: AppText(
             label,
             style: AppTextStyle.labelMedium,
-            color: selected ? AppColors.gold : context.colors.textSecondary,
+            color: selected ? context.colors.gold : context.colors.textSecondary,
           ),
         ),
       ),

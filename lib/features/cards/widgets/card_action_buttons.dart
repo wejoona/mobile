@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 384: Card action buttons row (freeze, settings, details, etc.)
 class CardActionButtons extends StatelessWidget {
@@ -28,7 +29,7 @@ class CardActionButtons extends StatelessWidget {
           icon: isFrozen ? Icons.lock_open : Icons.lock,
           label: isFrozen ? 'Debloquer' : 'Bloquer',
           onTap: onFreeze,
-          color: isFrozen ? AppColors.warning : context.colors.textSecondary,
+          color: isFrozen ? context.colors.warning : context.colors.textSecondary,
         ),
         _ActionButton(
           icon: Icons.visibility_outlined,

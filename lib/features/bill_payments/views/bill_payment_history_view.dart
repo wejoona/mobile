@@ -8,6 +8,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/widgets/provider_card.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Bill Payment History View
 class BillPaymentHistoryView extends ConsumerStatefulWidget {
@@ -539,7 +540,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? context.colors.gold : AppColors.slate,
+          color: isSelected ? context.colors.gold : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
             color: isSelected ? context.colors.gold : context.colors.borderSubtle,

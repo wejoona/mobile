@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BulkStatusView extends ConsumerStatefulWidget {
   final String batchId;
@@ -41,7 +42,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
     final batchAsync = ref.watch(batchDetailProvider(widget.batchId));
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bulkPayments_batchStatus,
@@ -58,9 +59,9 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
             }
             return _buildContent(l10n, batch);
           },
-          loading: () => const Center(
+          loading: () => Center(
             child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
             ),
           ),
           error: (error, _) => _buildError(l10n, error.toString()),
@@ -71,8 +72,8 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
 
   Widget _buildContent(AppLocalizations l10n, BulkBatch batch) {
     return RefreshIndicator(
-      color: AppColors.gold500,
-      backgroundColor: AppColors.slate,
+      color: context.colors.gold,
+      backgroundColor: context.colors.container,
       onRefresh: _loadBatchStatus,
       child: ListView(
         padding: EdgeInsets.all(AppSpacing.md),
@@ -156,8 +157,8 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 8,
-              backgroundColor: AppColors.slate,
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+              backgroundColor: context.colors.container,
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
             ),
           ),
           SizedBox(height: AppSpacing.md),
@@ -167,17 +168,17 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
               _buildProgressStat(
                 l10n.bulkPayments_successful,
                 batch.successCount,
-                AppColors.success,
+                context.colors.success,
               ),
               _buildProgressStat(
                 l10n.bulkPayments_failed,
                 batch.failedCount,
-                AppColors.error,
+                context.colors.error,
               ),
               _buildProgressStat(
                 l10n.bulkPayments_pending,
                 batch.totalCount - batch.successCount - batch.failedCount,
-                AppColors.warning,
+                context.colors.warning,
               ),
             ],
           ),
@@ -197,7 +198,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
       ],
     );
@@ -246,7 +247,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
         AppText(
           label,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         AppText(
           value,
@@ -264,13 +265,13 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
           AppText(
             l10n.bulkPayments_failedPayments,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.error,
+            color: context.colors.error,
           ),
           SizedBox(height: AppSpacing.sm),
           AppText(
             l10n.bulkPayments_failedDescription,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           SizedBox(height: AppSpacing.md),
           AppButton(
@@ -294,14 +295,14 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: AppColors.error,
+              color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.md),
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
               textAlign: TextAlign.center,
-              color: AppColors.error,
+              color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.lg),
             AppButton(
@@ -339,7 +340,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.bulkPayments_downloadFailed),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -349,17 +350,17 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
   Color _getStatusColor(BatchStatus status) {
     switch (status) {
       case BatchStatus.draft:
-        return AppColors.textSecondary;
+        return context.colors.textSecondary;
       case BatchStatus.pending:
-        return AppColors.warning;
+        return context.colors.warning;
       case BatchStatus.processing:
-        return AppColors.gold500;
+        return context.colors.gold;
       case BatchStatus.completed:
-        return AppColors.success;
+        return context.colors.success;
       case BatchStatus.partiallyCompleted:
-        return AppColors.warning;
+        return context.colors.warning;
       case BatchStatus.failed:
-        return AppColors.error;
+        return context.colors.error;
     }
   }
 

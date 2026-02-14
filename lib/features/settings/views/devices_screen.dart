@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/dialogs/index.dart';
 import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/features/settings/models/device.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class DevicesScreen extends ConsumerWidget {
   const DevicesScreen({super.key});
@@ -20,7 +21,7 @@ class DevicesScreen extends ConsumerWidget {
     final state = ref.watch(devicesStateProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -28,14 +29,14 @@ class DevicesScreen extends ConsumerWidget {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: context.colors.gold),
           onPressed: () => context.safePop(fallbackRoute: '/settings/security'),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(deviceActionsProvider).refresh(),
-        color: AppColors.gold500,
-        backgroundColor: AppColors.slate,
+        color: context.colors.gold,
+        backgroundColor: context.colors.container,
         child: _buildBody(context, ref, state, l10n),
       ),
     );
@@ -48,9 +49,9 @@ class DevicesScreen extends ConsumerWidget {
     AppLocalizations l10n,
   ) {
     if (state.isLoading && state.devices.isEmpty) {
-      return const Center(
+      return Center(
         child: CircularProgressIndicator(
-          color: AppColors.gold500,
+          color: context.colors.gold,
         ),
       );
     }
@@ -138,12 +139,12 @@ class DevicesScreen extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
                   _getPlatformIcon(device.platform),
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                   size: 24,
                 ),
               ),
@@ -170,13 +171,13 @@ class DevicesScreen extends ConsumerWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.successBase.withOpacity(0.1),
+                              color: context.colors.success.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(AppRadius.xs),
                             ),
                             child: AppText(
                               l10n.settings_thisDevice,
                               variant: AppTextVariant.labelSmall,
-                              color: AppColors.successBase,
+                              color: context.colors.success,
                             ),
                           ),
                         ],
@@ -186,22 +187,22 @@ class DevicesScreen extends ConsumerWidget {
                     AppText(
                       device.osDisplay,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ],
                 ),
               ),
               if (device.isTrusted)
-                const Icon(
+                Icon(
                   Icons.verified,
-                  color: AppColors.successBase,
+                  color: context.colors.success,
                   size: 20,
                 ),
             ],
           ),
 
           SizedBox(height: AppSpacing.md),
-          Divider(color: AppColors.borderSubtle, height: 1),
+          Divider(color: context.colors.borderSubtle, height: 1),
           SizedBox(height: AppSpacing.md),
 
           // Details
@@ -291,7 +292,7 @@ class DevicesScreen extends ConsumerWidget {
               width: 120,
               height: 120,
               decoration: const BoxDecoration(
-                color: AppColors.elevated,
+                color: AppColors.charcoal,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -331,10 +332,10 @@ class DevicesScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 80,
-              color: AppColors.errorBase,
+              color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.xl),
             AppText(
@@ -346,7 +347,7 @@ class DevicesScreen extends ConsumerWidget {
             AppText(
               error,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),

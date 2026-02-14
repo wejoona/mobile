@@ -8,6 +8,7 @@ import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
   const NotificationSettingsView({super.key});
@@ -229,8 +230,8 @@ class _NotificationSettingsViewState
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline,
-                        color: AppColors.infoBase, size: 20),
+                    Icon(Icons.info_outline,
+                        color: context.colors.info, size: 20),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
@@ -392,13 +393,13 @@ class _NotificationSettingsViewState
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.warningBase.withOpacity(0.2),
+                          color: context.colors.warning.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                         child: AppText(
                           l10n.notifications_required,
                           variant: AppTextVariant.labelSmall,
-                          color: AppColors.warningBase,
+                          color: context.colors.warning,
                         ),
                       ),
                     ],

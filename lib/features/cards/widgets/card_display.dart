@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 383: Virtual/physical card display widget
 class CardDisplay extends StatelessWidget {
@@ -60,14 +61,14 @@ class CardDisplay extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const AppText(
+                    AppText(
                       'Korido',
                       style: AppTextStyle.labelLarge,
-                      color: AppColors.gold,
+                      color: context.colors.gold,
                     ),
                     PillBadge(
                       label: card.type == CardType.virtual ? 'Virtuelle' : 'Physique',
-                      backgroundColor: AppColors.gold,
+                      backgroundColor: context.colors.gold,
                     ),
                   ],
                 ),

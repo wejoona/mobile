@@ -14,6 +14,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
 import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExpenseDetailView extends ConsumerWidget {
   const ExpenseDetailView({
@@ -73,7 +74,7 @@ class ExpenseDetailView extends ConsumerWidget {
                       width: 64,
                       height: 64,
                       decoration: BoxDecoration(
-                        color: AppColors.charcoal,
+                        color: context.colors.elevated,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -86,7 +87,7 @@ class ExpenseDetailView extends ConsumerWidget {
                     AppText(
                       _getCategoryLabel(l10n, expense.category),
                       style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.silver,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                     SizedBox(height: AppSpacing.xs),
@@ -175,7 +176,7 @@ class ExpenseDetailView extends ConsumerWidget {
           Icon(
             icon,
             size: 20,
-            color: AppColors.silver,
+            color: AppColors.textSecondary,
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -185,7 +186,7 @@ class ExpenseDetailView extends ConsumerWidget {
                 AppText(
                   label,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.silver,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xs),
@@ -209,7 +210,7 @@ class ExpenseDetailView extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: context.colors.elevated,
         title: AppText(
           l10n.expenses_deleteExpense,
           style: AppTypography.headlineSmall,
@@ -238,7 +239,7 @@ class ExpenseDetailView extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.expenses_deletedSuccessfully),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.colors.success,
             ),
           );
         }
@@ -247,7 +248,7 @@ class ExpenseDetailView extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.error_generic),
-              backgroundColor: AppColors.error,
+              backgroundColor: context.colors.error,
             ),
           );
         }

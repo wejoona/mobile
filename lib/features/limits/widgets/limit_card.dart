@@ -3,6 +3,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_progress_bar.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LimitCard extends StatelessWidget {
   final String title;
@@ -61,7 +62,7 @@ class LimitCard extends StatelessWidget {
                       variant: AppTextVariant.bodySmall,
                       color: isAtLimit
                           ? context.colors.error
-                          : (isNearLimit ? AppColors.warningBase : colors.textSecondary),
+                          : (isNearLimit ? context.colors.warning : colors.textSecondary),
                     ),
                   ],
                 ),

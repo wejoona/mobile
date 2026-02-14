@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_method_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 364: Deposit method selection card widget
 class DepositMethodCard extends StatelessWidget {
@@ -29,11 +30,11 @@ class DepositMethodCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.gold.withOpacity(0.08)
+                ? context.colors.gold.withOpacity(0.08)
                 : AppColors.backgroundTertiary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? AppColors.gold : Colors.transparent,
+              color: isSelected ? context.colors.gold : Colors.transparent,
               width: 1.5,
             ),
           ),
@@ -50,7 +51,7 @@ class DepositMethodCard extends StatelessWidget {
                   ),
                   child: Icon(
                     _methodIcon,
-                    color: isSelected ? AppColors.gold : context.colors.textSecondary,
+                    color: isSelected ? context.colors.gold : context.colors.textSecondary,
                     size: 24,
                   ),
                 ),
@@ -78,7 +79,7 @@ class DepositMethodCard extends StatelessWidget {
                           : 'Gratuit',
                       style: AppTextStyle.labelSmall,
                       color: method.feePercent == 0
-                          ? AppColors.success
+                          ? context.colors.success
                           : context.colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),

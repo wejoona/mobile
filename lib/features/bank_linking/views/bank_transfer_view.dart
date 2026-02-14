@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class BankTransferView extends ConsumerStatefulWidget {
   const BankTransferView({
@@ -128,7 +129,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -224,7 +225,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Row(
@@ -269,7 +270,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.graphite,
+        color: context.colors.surface,
         border: Border(
           top: BorderSide(
             color: context.colors.elevated,
@@ -299,7 +300,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.charcoal,
+        backgroundColor: context.colors.elevated,
         title: AppText(
           isDeposit
               ? AppLocalizations.of(context)!.bankLinking_confirmDeposit
@@ -351,7 +352,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                 : AppLocalizations.of(context)!.bankLinking_withdrawSuccess,
             style: AppTypography.bodyMedium,
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.colors.success,
         ),
       );
 
@@ -365,7 +366,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
             e.toString(),
             style: AppTypography.bodyMedium,
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: context.colors.error,
         ),
       );
     } finally {

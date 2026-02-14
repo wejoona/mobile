@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class HelpView extends ConsumerStatefulWidget {
   const HelpView({super.key});
@@ -568,9 +569,9 @@ class _HelpViewState extends ConsumerState<HelpView> {
               onPressed: () {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text('Connecting to support agent...'),
-                    backgroundColor: AppColors.infoBase,
+                    backgroundColor: context.colors.info,
                   ),
                 );
               },
@@ -615,7 +616,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(helpful ? 'Thanks for your feedback!' : 'We\'ll improve this answer'),
-        backgroundColor: AppColors.infoBase,
+        backgroundColor: context.colors.info,
       ),
     );
   }

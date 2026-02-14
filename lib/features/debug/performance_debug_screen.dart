@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Debug screen for monitoring cache and performance
 /// Only available in debug builds
@@ -88,7 +89,7 @@ class _PerformanceDebugScreenState
             _StatItem(
               label: 'Total Entries',
               value: '${cacheStats['total']}',
-              color: AppColors.infoBase,
+              color: context.colors.info,
             ),
             _StatItem(
               label: 'Active',
@@ -98,7 +99,7 @@ class _PerformanceDebugScreenState
             _StatItem(
               label: 'Expired',
               value: '${cacheStats['expired']}',
-              color: AppColors.warningBase,
+              color: context.colors.warning,
             ),
           ],
         ),
@@ -146,7 +147,7 @@ class _PerformanceDebugScreenState
             _StatItem(
               label: 'Count',
               value: '${inFlightStats['count']}',
-              color: AppColors.infoBase,
+              color: context.colors.info,
             ),
           ],
         ),
@@ -200,7 +201,7 @@ class _PerformanceDebugScreenState
         _buildActionButton(
           label: 'Clear Wallet Cache',
           icon: Icons.account_balance_wallet,
-          color: AppColors.warningBase,
+          color: context.colors.warning,
           onPressed: () {
             perfUtils.clearWalletCache();
             _refreshStats();
@@ -211,7 +212,7 @@ class _PerformanceDebugScreenState
         _buildActionButton(
           label: 'Clear Transaction Cache',
           icon: Icons.receipt,
-          color: AppColors.warningBase,
+          color: context.colors.warning,
           onPressed: () {
             perfUtils.clearTransactionCache();
             _refreshStats();
@@ -222,7 +223,7 @@ class _PerformanceDebugScreenState
         _buildActionButton(
           label: 'Clear Referral Cache',
           icon: Icons.people,
-          color: AppColors.warningBase,
+          color: context.colors.warning,
           onPressed: () {
             perfUtils.clearReferralCache();
             _refreshStats();

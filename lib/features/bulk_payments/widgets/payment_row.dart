@@ -3,6 +3,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_payment.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class PaymentRow extends StatelessWidget {
   final BulkPayment payment;
@@ -20,12 +21,12 @@ class PaymentRow extends StatelessWidget {
       margin: EdgeInsets.only(bottom: AppSpacing.sm),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: payment.isValid
             ? null
             : Border.all(
-                color: AppColors.error,
+                color: context.colors.error,
                 width: 1,
               ),
       ),
@@ -41,14 +42,14 @@ class PaymentRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: payment.isValid
                       ? context.colors.gold.withOpacity(0.1)
-                      : AppColors.error.withOpacity(0.1),
+                      : context.colors.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Center(
                   child: AppText(
                     '$index',
                     variant: AppTextVariant.bodySmall,
-                    color: payment.isValid ? context.colors.gold : AppColors.error,
+                    color: payment.isValid ? context.colors.gold : context.colors.error,
                   ),
                 ),
               ),
@@ -88,7 +89,7 @@ class PaymentRow extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.1),
+                          color: context.colors.error.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: Row(
@@ -96,14 +97,14 @@ class PaymentRow extends StatelessWidget {
                             Icon(
                               Icons.error_outline,
                               size: 16,
-                              color: AppColors.error,
+                              color: context.colors.error,
                             ),
                             SizedBox(width: AppSpacing.xs),
                             Expanded(
                               child: AppText(
                                 payment.error!,
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.error,
+                                color: context.colors.error,
                               ),
                             ),
                           ],

@@ -15,6 +15,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/merchant_pay/widgets/qr_scanner_widget.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ScanView extends ConsumerStatefulWidget {
   const ScanView({super.key});
@@ -48,7 +49,7 @@ class _ScanViewState extends ConsumerState<ScanView>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -62,9 +63,9 @@ class _ScanViewState extends ConsumerState<ScanView>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.gold500,
-          labelColor: AppColors.gold500,
-          unselectedLabelColor: AppColors.textTertiary,
+          indicatorColor: context.colors.gold,
+          labelColor: context.colors.gold,
+          unselectedLabelColor: context.colors.textTertiary,
           tabs: [
             Tab(text: l10n.action_scan),
             const Tab(text: 'My QR'),
@@ -110,9 +111,9 @@ class _ScanViewState extends ConsumerState<ScanView>
     } else {
       // Invalid QR
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Invalid QR code. Please scan a JoonaPay payment code.'),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
     }
@@ -190,22 +191,22 @@ class _ScanViewState extends ConsumerState<ScanView>
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.info_outline, color: AppColors.gold500, size: 20),
+                    Icon(Icons.info_outline, color: context.colors.gold, size: 20),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
                         'Share this QR code to receive payments',
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                const AppText(
+                AppText(
                   'Anyone with JoonaPay can scan this code to send you money instantly.',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
               ],
             ),
@@ -222,20 +223,20 @@ class _ScanViewState extends ConsumerState<ScanView>
 
     return Column(
       children: [
-        const Divider(color: AppColors.borderSubtle),
+        Divider(color: context.colors.borderSubtle),
         const SizedBox(height: AppSpacing.sm),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const AppText(
+            AppText(
               'Wallet: ',
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
             ),
             AppText(
               truncated,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),
@@ -248,7 +249,7 @@ class _ScanViewState extends ConsumerState<ScanView>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.action_copiedToClipboard),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -282,7 +283,7 @@ class _ScanViewState extends ConsumerState<ScanView>
             content: Text(
               success ? 'QR code saved to gallery' : 'Failed to save QR code',
             ),
-            backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+            backgroundColor: success ? context.colors.success : context.colors.error,
           ),
         );
       }
@@ -291,7 +292,7 @@ class _ScanViewState extends ConsumerState<ScanView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -331,7 +332,7 @@ class _ScanViewState extends ConsumerState<ScanView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to share: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

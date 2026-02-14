@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Merchant QR View
 /// Displays the merchant's static QR code for customers to scan
@@ -142,7 +143,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                       AppText(
                         _formatCategory(widget.merchant.category),
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.silver,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.lg),
 
@@ -157,14 +158,14 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                       Container(
                         padding: EdgeInsets.all(AppSpacing.md),
                         decoration: BoxDecoration(
-                          color: AppColors.charcoal.withValues(alpha: 0.3),
+                          color: context.colors.elevated.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Row(
                           children: [
                             Icon(
                               Icons.info_outline,
-                              color: AppColors.silver,
+                              color: context.colors.textSecondary,
                               size: 20,
                             ),
                             SizedBox(width: AppSpacing.sm),
@@ -172,7 +173,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                               child: AppText(
                                 'Customers can scan this QR code to pay you',
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.silver,
+                                color: context.colors.textSecondary,
                               ),
                             ),
                           ],
@@ -234,7 +235,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                           AppText(
                             '\$${widget.merchant.remainingDailyLimit.toStringAsFixed(2)} of \$${widget.merchant.dailyLimit.toStringAsFixed(2)}',
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.silver,
+                            color: context.colors.textSecondary,
                           ),
                         ],
                       ),

@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkBankView extends ConsumerStatefulWidget {
   const LinkBankView({super.key});
@@ -120,7 +121,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.slate,
+        color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
@@ -217,7 +218,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.graphite,
+        color: context.colors.surface,
         border: Border(
           top: BorderSide(
             color: context.colors.elevated,
@@ -260,7 +261,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
               AppLocalizations.of(context)!.bankLinking_linkFailed,
               style: AppTypography.bodyMedium,
             ),
-            backgroundColor: AppColors.error,
+            backgroundColor: context.colors.error,
           ),
         );
       }

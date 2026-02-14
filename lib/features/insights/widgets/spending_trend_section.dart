@@ -10,6 +10,7 @@ import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
 // Using InsightsPeriod from insights_provider.dart
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_line_chart.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SpendingTrendSection extends ConsumerWidget {
   const SpendingTrendSection({super.key});
@@ -34,7 +35,7 @@ class SpendingTrendSection extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
           decoration: BoxDecoration(
-            color: AppColors.slate,
+            color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
               color: context.colors.border,

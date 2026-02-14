@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class DepositInstructionsView extends ConsumerWidget {
   const DepositInstructionsView({super.key, required this.response});
@@ -36,13 +37,13 @@ class DepositInstructionsView extends ConsumerWidget {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: AppColors.warningBase.withValues(alpha:0.1),
+                color: context.colors.warning.withValues(alpha:0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.schedule,
                 size: 40,
-                color: AppColors.warningBase,
+                color: context.colors.warning,
               ),
             ),
 
@@ -94,7 +95,7 @@ class DepositInstructionsView extends ConsumerWidget {
                   AppText(
                     'You will receive ~\$${_formatAmount(response.estimatedAmount)}',
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.successText,
+                    color: context.colors.successText,
                   ),
                 ],
               ),
@@ -207,9 +208,9 @@ class DepositInstructionsView extends ConsumerWidget {
               variant: AppCardVariant.subtle,
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.timer_outlined,
-                    color: AppColors.warningBase,
+                    color: context.colors.warning,
                     size: 24,
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -225,7 +226,7 @@ class DepositInstructionsView extends ConsumerWidget {
                         AppText(
                           _formatExpiry(response.expiresAt),
                           variant: AppTextVariant.titleSmall,
-                          color: AppColors.warningBase,
+                          color: context.colors.warning,
                         ),
                       ],
                     ),
@@ -279,9 +280,9 @@ class DepositInstructionsView extends ConsumerWidget {
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Copied to clipboard'),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
       ),
     );
   }
