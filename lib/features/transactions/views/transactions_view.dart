@@ -1,4 +1,4 @@
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/features/transactions/models/filtered_transactions_state.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';

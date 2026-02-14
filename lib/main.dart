@@ -81,13 +81,13 @@ void main() async {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
       ],
-      child: const JoonaPayApp(),
+      child: const KoridoApp(),
     ),
   );
 }
 
-class JoonaPayApp extends ConsumerWidget {
-  const JoonaPayApp({super.key});
+class KoridoApp extends ConsumerWidget {
+  const KoridoApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

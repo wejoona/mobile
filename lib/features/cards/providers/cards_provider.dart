@@ -33,4 +33,4 @@ final selectedCardProvider = Provider.family<KoridoCard?, String>((ref, cardId) 
   }
 });
 
-// CardsState is defined in missing_states.dart
+// CardsState is defined in cards/models/cards_state.dart

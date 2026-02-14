@@ -1,4 +1,4 @@
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_detail_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';

@@ -1,4 +1,4 @@
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/features/expenses/models/expenses_state.dart';
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';

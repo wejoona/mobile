@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appName => 'JoonaPay';
+  String get appName => 'Korido';
 
   @override
   String get navigation_home => 'Início';

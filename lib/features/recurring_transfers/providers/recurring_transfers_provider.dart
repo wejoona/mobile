@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_detail_state.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Recurring transfers list provider — wired to RecurringTransfersService.

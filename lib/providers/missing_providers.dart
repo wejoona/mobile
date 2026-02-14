@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/features/transactions/models/filtered_transactions_state.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 /// Stub providers for views that reference providers not yet created.
 /// These are temporary — wire to real implementations as features complete.
@@ -5,7 +6,10 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
+import 'package:usdc_wallet/features/cards/models/cards_state.dart';
+import 'package:usdc_wallet/features/settings/models/devices_state.dart';
+import 'package:usdc_wallet/features/expenses/models/expenses_state.dart';
+import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart';
 
 /// Filtered+paginated transactions (used by transactions_view.dart)
 final filteredPaginatedTransactionsProvider =
