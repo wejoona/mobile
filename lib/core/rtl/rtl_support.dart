@@ -376,7 +376,7 @@ class RTLMigrationGuide {
   /// Print migration suggestions for a given pattern
   static void printMigrationHelp(String pattern) {
     if (migrationMap.containsKey(pattern)) {
-      print('RTL Migration: $pattern -> ${migrationMap[pattern]}');
+      debugPrint('RTL Migration: $pattern -> ${migrationMap[pattern]}');
     }
   }
 }

@@ -13,10 +13,6 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
-import 'package:usdc_wallet/features/cards/models/cards_state.dart';
-import 'package:usdc_wallet/features/settings/models/devices_state.dart';
-import 'package:usdc_wallet/features/expenses/models/expenses_state.dart';
-import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart';
 
 /// Filtered+paginated transactions (used by transactions_view.dart)
 final filteredPaginatedTransactionsProvider =

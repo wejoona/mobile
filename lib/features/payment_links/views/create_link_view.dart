@@ -202,7 +202,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
 
       final link = await ref.read(paymentLinkActionsProvider).createLink(request);
 
-      if (mounted && link != null) {
+      if (mounted && link != null) { // ignore: unnecessary_null_comparison
         context.go('/payment-links/created/${link.id}');
       }
     } catch (e) {

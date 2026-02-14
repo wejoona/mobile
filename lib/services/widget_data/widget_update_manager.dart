@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/widget_data/widget_data_service.dart';
@@ -30,7 +31,7 @@ class WidgetUpdateManager {
       await _requestWidgetUpdate();
     } catch (e) {
       // Silently fail - widget updates are non-critical
-      print('Widget update failed: $e');
+      debugPrint('Widget update failed: $e');
     }
   }
 
@@ -53,7 +54,7 @@ class WidgetUpdateManager {
 
       await _requestWidgetUpdate();
     } catch (e) {
-      print('Widget transaction update failed: $e');
+      debugPrint('Widget transaction update failed: $e');
     }
   }
 
@@ -63,7 +64,7 @@ class WidgetUpdateManager {
       await _dataService.clearWidgetData();
       await _requestWidgetUpdate();
     } catch (e) {
-      print('Widget clear failed: $e');
+      debugPrint('Widget clear failed: $e');
     }
   }
 
@@ -72,7 +73,7 @@ class WidgetUpdateManager {
     try {
       await _channel.invokeMethod('updateWidget');
     } on PlatformException catch (e) {
-      print('Failed to update widget: ${e.message}');
+      debugPrint('Failed to update widget: ${e.message}');
     }
   }
 }

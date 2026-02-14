@@ -290,7 +290,7 @@ class _CreateRecurringTransferViewState
 
       if (!mounted) return;
 
-      if (transfer != null) {
+      if (transfer != null) { // ignore: unnecessary_null_comparison
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

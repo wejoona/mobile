@@ -36,7 +36,7 @@ class PotCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Emoji with progress ring if goal is set
-            if (pot.targetAmount != null)
+            if (pot.targetAmount != null) // ignore: unnecessary_null_comparison
               _buildProgressRing(context)
             else
               Text(
@@ -62,12 +62,12 @@ class PotCard extends StatelessWidget {
             ),
 
             // Progress bar if goal is set
-            if (pot.targetAmount != null) ...[
+            if (pot.targetAmount != null) ...[ // ignore: unnecessary_null_comparison
               SizedBox(height: AppSpacing.sm),
               _buildProgressBar(context),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                'of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress! * 100).toStringAsFixed(0)}%)',
+                'of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
                 variant: AppTextVariant.bodySmall,
                 color: colors.textSecondary,
               ),

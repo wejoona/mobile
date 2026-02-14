@@ -254,7 +254,7 @@ class SettingsView extends ConsumerWidget {
           width: 400,
           child: AppButton(
             label: l10n.auth_logout,
-            onPressed: () => _showLogoutDialog(context, ref!),
+            onPressed: () => _showLogoutDialog(context, ref),
             variant: AppButtonVariant.secondary,
             isFullWidth: true,
           ),
@@ -443,7 +443,7 @@ class SettingsView extends ConsumerWidget {
             width: 300,
             child: AppButton(
               label: l10n.auth_logout,
-              onPressed: () => _showLogoutDialog(context, ref!),
+              onPressed: () => _showLogoutDialog(context, ref),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
             ),

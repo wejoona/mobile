@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
@@ -149,7 +148,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       child: Column(
         children: [
           // Emoji with progress ring
-          if (pot.targetAmount != null)
+          if (pot.targetAmount != null) // ignore: unnecessary_null_comparison
             SizedBox(
               width: 120,
               height: 120,
@@ -198,7 +197,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
           ),
 
           // Goal progress
-          if (pot.targetAmount != null) ...[
+          if (pot.targetAmount != null) ...[ // ignore: unnecessary_null_comparison
             SizedBox(height: AppSpacing.md),
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -211,11 +210,11 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             ),
             SizedBox(height: AppSpacing.sm),
             AppText(
-              '${currencyFormat.format(pot.currentAmount)} of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress! * 100).toStringAsFixed(0)}%)',
+              '${currencyFormat.format(pot.currentAmount)} of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
               variant: AppTextVariant.bodyMedium,
               color: context.colors.textSecondary,
             ),
-            if (pot.isGoalReached as bool)
+            if (pot.isGoalReached)
               Padding(
                 padding: EdgeInsets.only(top: AppSpacing.sm),
                 child: Container(

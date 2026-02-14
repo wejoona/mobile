@@ -798,8 +798,8 @@ class _TransactionGroup extends StatelessWidget {
                 variant: AppTextVariant.titleMedium,
                 color: _getAmountColor(_mapTransactionType(tx.type), colors),
               ),
-              if (tx.status != null)
-                _buildStatusBadge(tx.status!.name, colors),
+              if (tx.status != null) // ignore: unnecessary_null_comparison
+                _buildStatusBadge(tx.status.name, colors),
             ],
           ),
         ],

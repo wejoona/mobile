@@ -38,8 +38,8 @@ class PaymentLinkListItem extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        link.amount != null
-            ? formatCurrency(link.amount!, link.currency)
+        link.amount != null // ignore: unnecessary_null_comparison
+            ? formatCurrency(link.amount, link.currency)
             : 'Any amount',
         style: TextStyle(
           color: colors.textSecondary,

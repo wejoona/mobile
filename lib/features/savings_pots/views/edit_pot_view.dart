@@ -37,8 +37,8 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
       _nameController.text = pot.name;
       _selectedEmoji = pot.emoji;
       _selectedColor = pot.color;
-      if (pot.targetAmount != null) {
-        _targetController.text = pot.targetAmount!.toStringAsFixed(2);
+      if (pot.targetAmount != null) { // ignore: unnecessary_null_comparison
+        _targetController.text = pot.targetAmount.toStringAsFixed(2);
       }
     });
   }

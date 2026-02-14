@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Run 360: Unread notification count provider with auto-refresh
 final unreadNotificationCountProvider = Provider<int>((ref) {
   final notificationsState = ref.watch(notificationsNotifierProvider);
-  return ((notificationsState.value ?? []) as List)
+  return (notificationsState.value ?? [])
       
       .length;
 });

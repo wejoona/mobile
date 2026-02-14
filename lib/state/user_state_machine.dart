@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
@@ -110,7 +111,7 @@ class UserStateMachine extends Notifier<UserState> {
       case 'additional_info_needed':
         return KycStatus.additionalInfoNeeded;
       default:
-        print('[KYC] Unknown KYC status: $status, defaulting to none');
+        debugPrint('[KYC] Unknown KYC status: $status, defaulting to none');
         return KycStatus.none;
     }
   }

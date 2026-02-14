@@ -245,7 +245,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
               .read(bulkPaymentActionsProvider)
               .parseCsvFile(csvContent);
 
-          if (batch != null && mounted) {
+          if (batch != null && mounted) { // ignore: unnecessary_null_comparison
             context.push('/bulk-payments/preview');
           }
         }

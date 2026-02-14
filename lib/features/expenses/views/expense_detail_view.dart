@@ -141,10 +141,10 @@ class ExpenseDetailView extends ConsumerWidget {
                         expense.description!,
                         Icons.description,
                       ),
-                    if (expense.transactionId != null)
+                    if (expense.transactionId != null) // ignore: unnecessary_null_comparison
                       _buildDetailRow(
                         l10n.expenses_linkedTransaction,
-                        expense.transactionId!,
+                        expense.transactionId,
                         Icons.link,
                       ),
                   ],

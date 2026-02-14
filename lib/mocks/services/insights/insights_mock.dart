@@ -65,7 +65,7 @@ class InsightsMock {
         recipientAddress: type == TransactionType.transferExternal
             ? '0x${_random.nextInt(999999999).toRadixString(16).padLeft(40, '0')}'
             : null,
-        metadata: category != null
+        metadata: category != null // ignore: unnecessary_null_comparison
             ? {
                 'category': category,
                 'recipientName': _getRecipientName(),
