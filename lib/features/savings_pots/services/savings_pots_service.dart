@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 
 /// Service for managing savings pots

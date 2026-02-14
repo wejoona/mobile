@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 import 'package:intl/intl.dart';
 
 /// Card widget displaying a savings pot

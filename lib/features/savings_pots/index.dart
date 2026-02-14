@@ -2,7 +2,7 @@
 library;
 
 export 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
-export 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
+export 'package:usdc_wallet/domain/entities/savings_pot.dart';
 export 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 export 'package:usdc_wallet/features/savings_pots/repositories/savings_pots_repository.dart';
 export 'package:usdc_wallet/features/savings_pots/services/savings_pots_service.dart';

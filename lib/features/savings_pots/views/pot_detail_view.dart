@@ -8,7 +8,7 @@ import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
-import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
+import 'package:usdc_wallet/domain/entities/savings_pot.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart';

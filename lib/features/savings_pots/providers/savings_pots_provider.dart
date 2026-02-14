@@ -35,7 +35,7 @@ final savingsPotsStateProvider = Provider<SavingsPotsState>((ref) {
   return SavingsPotsState(
     isLoading: async.isLoading,
     error: async.error?.toString(),
-    pots: async.value ?? [],
+    pots: async.value ?? <SavingsPot>[],
     totalSaved: (async.value ?? []).fold(0.0, (sum, p) => sum + p.currentAmount),
   );
 });
