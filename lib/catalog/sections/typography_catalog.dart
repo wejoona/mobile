@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/catalog/widget_catalog_view.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
