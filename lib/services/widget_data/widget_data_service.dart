@@ -24,7 +24,6 @@ class WidgetDataService {
             groupId: iosAppGroup,
           ),
           aOptions: AndroidOptions(
-            encryptedSharedPreferences: true,
           ),
         ),
         _prefs = SharedPreferences.getInstance();

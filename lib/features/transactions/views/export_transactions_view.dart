@@ -496,17 +496,15 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
 
   void _shareExport() {
     final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
-    Share.share(
-      'JoonaPay Transaction Export ($format)\n\nPeriod: ${_getDateRangeText()}\n\n[Export file would be attached]',
-      subject: 'JoonaPay Transaction Export',
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      'Korido Transaction Export ($format)\n\nPeriod: ${_getDateRangeText()}\n\n[Export file would be attached]', title: 'Korido Transaction Export',
+    ));
   }
 
   void _shareViaEmail() {
     final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
-    Share.share(
-      'Please find attached my JoonaPay transaction export in $format format.\n\nPeriod: ${_getDateRangeText()}',
-      subject: 'JoonaPay Transaction Export',
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      'Please find attached my Korido transaction export in $format format.\n\nPeriod: ${_getDateRangeText()}', title: 'Korido Transaction Export',
+    ));
   }
 }

@@ -56,7 +56,7 @@ class SendMoneyAccessibility {
     required bool hasApp,
   }) {
     final selection = isSelected ? 'Selected' : 'Not selected';
-    final appStatus = hasApp ? 'JoonaPay user' : '';
+    final appStatus = hasApp ? 'Korido user' : '';
     return '$name, $selection, $appStatus'.trim();
   }
 

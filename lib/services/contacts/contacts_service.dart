@@ -247,10 +247,10 @@ class ContactsService {
     return synced;
   }
 
-  /// Get JoonaPay users from synced contacts
+  /// Get Korido users from synced contacts
   ///
   /// Sends hashed phone numbers, receives matches with user info
-  Future<List<SyncedContact>> getJoonaPayContacts(
+  Future<List<SyncedContact>> getKoridoContacts(
     Dio dio,
     List<SyncedContact> allContacts,
   ) async {
@@ -281,7 +281,7 @@ class ContactsService {
 
         if (match != null) {
           return contact.copyWith(
-            isJoonaPayUser: true,
+            isKoridoUser: true,
             joonaPayUserId: match['userId'] as String,
             avatarUrl: match['avatarUrl'],
           );
@@ -294,8 +294,8 @@ class ContactsService {
     }
   }
 
-  /// Sync contacts with JoonaPay server
-  Future<ContactSyncResult> syncContactsWithJoonaPay(
+  /// Sync contacts with Korido server
+  Future<ContactSyncResult> syncContactsWithKorido(
     Dio dio,
     List<SyncedContact> contacts,
   ) async {
@@ -354,11 +354,11 @@ final recentContactsProvider = FutureProvider<List<AppContact>>((ref) async {
 // API-BACKED CONTACTS SERVICE
 // ============================================
 
-/// JoonaPay Contacts Service - syncs with backend
-class JoonaPayContactsService {
+/// Korido Contacts Service - syncs with backend
+class KoridoContactsService {
   final Dio _dio;
 
-  JoonaPayContactsService(this._dio);
+  KoridoContactsService(this._dio);
 
   /// Get all saved contacts from backend
   Future<List<domain.Contact>> getContacts() async {
@@ -443,12 +443,12 @@ class JoonaPayContactsService {
   }
 }
 
-/// JoonaPay Contacts Service Provider
-final joonaPayContactsServiceProvider = Provider<JoonaPayContactsService>((ref) {
-  return JoonaPayContactsService(ref.watch(dioProvider));
+/// Korido Contacts Service Provider
+final joonaPayContactsServiceProvider = Provider<KoridoContactsService>((ref) {
+  return KoridoContactsService(ref.watch(dioProvider));
 });
 
-/// All JoonaPay Contacts Provider
+/// All Korido Contacts Provider
 final joonaPayContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
@@ -462,8 +462,8 @@ final favoriteContactsProvider =
   return service.getFavorites();
 });
 
-/// Recent JoonaPay Contacts Provider
-final recentJoonaPayContactsProvider =
+/// Recent Korido Contacts Provider
+final recentKoridoContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
   return service.getRecents();

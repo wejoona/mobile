@@ -96,7 +96,7 @@ class ContactNotifier extends Notifier<ContactState> {
     return const ContactState();
   }
 
-  JoonaPayContactsService get _service => ref.read(joonaPayContactsServiceProvider);
+  KoridoContactsService get _service => ref.read(joonaPayContactsServiceProvider);
 
   /// Create a new contact
   Future<bool> createContact({

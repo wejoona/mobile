@@ -237,7 +237,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
     try {
       final imageBytes = await _receiptService.generateReceiptImage(widget.transaction);
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'JoonaPay_Receipt_$timestamp';
+      final fileName = 'Korido_Receipt_$timestamp';
 
       final success = await _receiptService.saveToGallery(imageBytes, fileName);
 

@@ -81,7 +81,7 @@ class ThemeNotifier extends Notifier<ThemeState> {
   static const _storageKey = 'app_theme_mode';
 
   FlutterSecureStorage get _storage => const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(),
     iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
   );
 

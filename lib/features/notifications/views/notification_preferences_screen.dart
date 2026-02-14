@@ -296,7 +296,7 @@ class _PreferenceSwitch extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: colors.gold,
+            activeThumbColor: colors.gold,
             activeTrackColor: colors.gold.withValues(alpha: 0.5),
             inactiveThumbColor: colors.textTertiary,
             inactiveTrackColor: colors.elevated,

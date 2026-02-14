@@ -351,10 +351,9 @@ class ReferralsView extends ConsumerWidget {
   }
 
   void _shareLink(BuildContext context, String code, AppLocalizations l10n) {
-    Share.share(
-      l10n.referrals_shareMessage(code),
-      subject: l10n.referrals_shareSubject,
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      l10n.referrals_shareMessage(code), title: l10n.referrals_shareSubject,
+    ));
   }
 
   void _inviteContacts(BuildContext context, AppLocalizations l10n) {
@@ -407,10 +406,9 @@ class ReferralsView extends ConsumerWidget {
               title: AppText(l10n.referrals_shareLink),
               onTap: () {
                 Navigator.pop(ctx);
-                Share.share(
-                  l10n.referrals_shareMessage('KORIDO'),
-                  subject: l10n.referrals_shareSubject,
-                );
+                SharePlus.instance.share(ShareParams(text: 
+                  l10n.referrals_shareMessage('KORIDO'), title: l10n.referrals_shareSubject,
+                ));
               },
             ),
             const SizedBox(height: AppSpacing.lg),

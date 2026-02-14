@@ -1,9 +1,9 @@
-/// Contact model with JoonaPay sync status
+/// Contact model with Korido sync status
 class SyncedContact {
   final String id;
   final String name;
   final String phone;
-  final bool isJoonaPayUser;
+  final bool isKoridoUser;
   final String? joonaPayUserId;
   final String? avatarUrl;
 
@@ -11,7 +11,7 @@ class SyncedContact {
     required this.id,
     required this.name,
     required this.phone,
-    this.isJoonaPayUser = false,
+    this.isKoridoUser = false,
     this.joonaPayUserId,
     this.avatarUrl,
   });
@@ -21,7 +21,7 @@ class SyncedContact {
       id: json['id'] as String,
       name: json['name'] as String,
       phone: json['phone'] as String,
-      isJoonaPayUser: json['isJoonaPayUser'] as bool? ?? false,
+      isKoridoUser: json['isKoridoUser'] as bool? ?? false,
       joonaPayUserId: json['joonaPayUserId'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
     );
@@ -31,7 +31,7 @@ class SyncedContact {
         'id': id,
         'name': name,
         'phone': phone,
-        'isJoonaPayUser': isJoonaPayUser,
+        'isKoridoUser': isKoridoUser,
         'joonaPayUserId': joonaPayUserId,
         'avatarUrl': avatarUrl,
       };
@@ -40,7 +40,7 @@ class SyncedContact {
     String? id,
     String? name,
     String? phone,
-    bool? isJoonaPayUser,
+    bool? isKoridoUser,
     String? joonaPayUserId,
     String? avatarUrl,
   }) {
@@ -48,7 +48,7 @@ class SyncedContact {
       id: id ?? this.id,
       name: name ?? this.name,
       phone: phone ?? this.phone,
-      isJoonaPayUser: isJoonaPayUser ?? this.isJoonaPayUser,
+      isKoridoUser: isKoridoUser ?? this.isKoridoUser,
       joonaPayUserId: joonaPayUserId ?? this.joonaPayUserId,
       avatarUrl: avatarUrl ?? this.avatarUrl,
     );

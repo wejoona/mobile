@@ -14,7 +14,7 @@ class TransfersService {
   TransfersService(this._dio, [this._riskSecurity]);
 
   /// POST /transfers/internal
-  /// Internal transfers between JoonaPay users - typically low risk
+  /// Internal transfers between Korido users - typically low risk
   Future<TransferResult> createInternalTransfer({
     required String recipientPhone,
     required double amount,

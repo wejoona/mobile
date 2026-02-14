@@ -137,7 +137,7 @@ class LocalNotificationService {
       importance: _getImportanceForChannel(channelId),
       priority: _getPriorityForChannel(channelId),
       icon: '@mipmap/ic_launcher',
-      color: const Color(0xFFFFBB00), // JoonaPay gold
+      color: const Color(0xFFFFBB00), // Korido gold
     );
 
     const iosDetails = DarwinNotificationDetails(

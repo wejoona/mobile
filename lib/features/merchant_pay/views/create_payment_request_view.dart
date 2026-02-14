@@ -110,9 +110,9 @@ Amount: \$${pr.amount.toStringAsFixed(2)} USDC
 ${pr.description != null ? 'Description: ${pr.description}\n' : ''}
 Scan the QR code or use this link to pay.
 
-Powered by JoonaPay
+Powered by Korido
 ''';
-    Share.share(text);
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   void _newRequest() {

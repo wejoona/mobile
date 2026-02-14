@@ -380,11 +380,11 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         shareText += '\nAmount: \$${_amountController.text} USD';
       }
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         text: shareText,
-        subject: 'Korido Payment QR Code',
-      );
+        title: 'Korido Payment QR Code',
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

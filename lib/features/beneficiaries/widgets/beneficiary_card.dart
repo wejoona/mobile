@@ -102,7 +102,7 @@ class BeneficiaryCard extends StatelessWidget {
     switch (beneficiary.accountType) {
       case AccountType.joonapayUser:
         iconData = Icons.person;
-        iconColor = AppColors.gold500; // Gold for JoonaPay users
+        iconColor = AppColors.gold500; // Gold for Korido users
         initial = beneficiary.name.isNotEmpty ? beneficiary.name[0].toUpperCase() : 'J';
         break;
       case AccountType.externalWallet:

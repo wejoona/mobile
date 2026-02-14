@@ -46,7 +46,7 @@ class ThemeSettingsView extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               AppText(
-                'Choose how JoonaPay looks to you',
+                'Choose how Korido looks to you',
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),

@@ -415,7 +415,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
 
   void _shareReceipt(BuildContext context, BillPaymentReceipt receipt) {
     final text = '''
-JoonaPay Bill Payment Receipt
+Korido Bill Payment Receipt
 -----------------------------
 Receipt: ${receipt.receiptNumber}
 Provider: ${receipt.providerName}
@@ -423,10 +423,10 @@ Account: ${receipt.accountNumber}
 ${receipt.customerName != null ? 'Customer: ${receipt.customerName}\n' : ''}Amount: ${receipt.totalAmount.toStringAsFixed(0)} ${receipt.currency}
 ${receipt.tokenNumber != null ? 'Token: ${receipt.tokenNumber}\n' : ''}Date: ${_formatDate(receipt.paidAt)}
 -----------------------------
-Powered by JoonaPay
+Powered by Korido
 ''';
 
-    Share.share(text);
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   String _formatDate(DateTime date) {

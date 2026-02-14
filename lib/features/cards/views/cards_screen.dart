@@ -167,7 +167,7 @@ class CardsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
-                  'JoonaPay Card',
+                  'Korido Card',
                   variant: AppTextVariant.bodyMedium,
                   color: AppColors.textInverse,
                 ),

@@ -460,10 +460,10 @@ JOONAPAY TERMS OF SERVICE
 Last Updated: January 2024
 
 1. ACCEPTANCE OF TERMS
-By accessing or using JoonaPay, you agree to be bound by these Terms of Service.
+By accessing or using Korido, you agree to be bound by these Terms of Service.
 
 2. DESCRIPTION OF SERVICE
-JoonaPay provides a mobile wallet for sending, receiving, and storing USDC stablecoin.
+Korido provides a mobile wallet for sending, receiving, and storing USDC stablecoin.
 
 3. ELIGIBILITY
 You must be at least 18 years old and capable of forming a binding contract.
@@ -472,13 +472,13 @@ You must be at least 18 years old and capable of forming a binding contract.
 You must provide accurate information and keep your account secure.
 
 5. PROHIBITED ACTIVITIES
-You may not use JoonaPay for illegal activities, money laundering, or fraud.
+You may not use Korido for illegal activities, money laundering, or fraud.
 
 6. FEES
 Transaction fees may apply. Current fees are displayed before each transaction.
 
 7. LIMITATION OF LIABILITY
-JoonaPay is not liable for losses due to market fluctuations or unauthorized access.
+Korido is not liable for losses due to market fluctuations or unauthorized access.
 
 8. GOVERNING LAW
 These terms are governed by applicable laws.
@@ -591,10 +591,10 @@ CONDITIONS D'UTILISATION JOONAPAY
 Derniere mise a jour: Janvier 2024
 
 1. ACCEPTATION DES CONDITIONS
-En accedant ou en utilisant JoonaPay, vous acceptez d'etre lie par ces Conditions d'utilisation.
+En accedant ou en utilisant Korido, vous acceptez d'etre lie par ces Conditions d'utilisation.
 
 2. DESCRIPTION DU SERVICE
-JoonaPay fournit un portefeuille mobile pour envoyer, recevoir et stocker des USDC stablecoin.
+Korido fournit un portefeuille mobile pour envoyer, recevoir et stocker des USDC stablecoin.
 
 3. ELIGIBILITE
 Vous devez avoir au moins 18 ans et etre capable de conclure un contrat.
@@ -603,13 +603,13 @@ Vous devez avoir au moins 18 ans et etre capable de conclure un contrat.
 Vous devez fournir des informations exactes et garder votre compte securise.
 
 5. ACTIVITES INTERDITES
-Vous ne pouvez pas utiliser JoonaPay pour des activites illegales, le blanchiment d'argent ou la fraude.
+Vous ne pouvez pas utiliser Korido pour des activites illegales, le blanchiment d'argent ou la fraude.
 
 6. FRAIS
 Des frais de transaction peuvent s'appliquer. Les frais actuels sont affiches avant chaque transaction.
 
 7. LIMITATION DE RESPONSABILITE
-JoonaPay n'est pas responsable des pertes dues aux fluctuations du marche ou aux acces non autorises.
+Korido n'est pas responsable des pertes dues aux fluctuations du marche ou aux acces non autorises.
 
 8. LOI APPLICABLE
 Ces conditions sont regies par les lois applicables.

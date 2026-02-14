@@ -8,9 +8,8 @@ class Contact {
   final bool isFavorite;
   final int transactionCount;
   final DateTime? lastTransactionAt;
-  final bool isJoonaPayUser;
-  final String? avatarUrl;
   final bool isKoridoUser;
+  final String? avatarUrl;
 
   const Contact({
     required this.id,
@@ -21,9 +20,8 @@ class Contact {
     this.isFavorite = false,
     this.transactionCount = 0,
     this.lastTransactionAt,
-    this.isJoonaPayUser = false,
-    this.avatarUrl,
     this.isKoridoUser = false,
+    this.avatarUrl,
   });
 
   /// Display name (alias for name)
@@ -61,9 +59,8 @@ class Contact {
       lastTransactionAt: json['lastTransactionAt'] != null
           ? DateTime.parse(json['lastTransactionAt'] as String)
           : null,
-      isJoonaPayUser: json['isJoonaPayUser'] as bool? ?? false,
+      isKoridoUser: json['isKoridoUser'] as bool? ?? json['isJoonaPayUser'] as bool? ?? false,
       avatarUrl: json['avatarUrl'] as String?,
-      isKoridoUser: json['isKoridoUser'] as bool? ?? false,
     );
   }
 
@@ -77,9 +74,8 @@ class Contact {
       'isFavorite': isFavorite,
       'transactionCount': transactionCount,
       'lastTransactionAt': lastTransactionAt?.toIso8601String(),
-      'isJoonaPayUser': isJoonaPayUser,
-      'avatarUrl': avatarUrl,
       'isKoridoUser': isKoridoUser,
+      'avatarUrl': avatarUrl,
     };
   }
 
@@ -92,9 +88,8 @@ class Contact {
     bool? isFavorite,
     int? transactionCount,
     DateTime? lastTransactionAt,
-    bool? isJoonaPayUser,
-    String? avatarUrl,
     bool? isKoridoUser,
+    String? avatarUrl,
   }) {
     return Contact(
       id: id ?? this.id,
@@ -105,9 +100,8 @@ class Contact {
       isFavorite: isFavorite ?? this.isFavorite,
       transactionCount: transactionCount ?? this.transactionCount,
       lastTransactionAt: lastTransactionAt ?? this.lastTransactionAt,
-      isJoonaPayUser: isJoonaPayUser ?? this.isJoonaPayUser,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
       isKoridoUser: isKoridoUser ?? this.isKoridoUser,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
 }

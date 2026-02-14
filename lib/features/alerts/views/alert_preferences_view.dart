@@ -253,7 +253,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: colors.gold,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
@@ -299,7 +299,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: colors.gold,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
@@ -441,7 +441,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           Switch(
             value: isEnabled,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleAlertType(type, value),
-            activeColor: colors.gold,
+            activeThumbColor: colors.gold,
           ),
         ],
       ),
@@ -483,7 +483,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
                   startTime: prefs.quietHoursStart,
                   endTime: prefs.quietHoursEnd,
                 ),
-                activeColor: colors.gold,
+                activeThumbColor: colors.gold,
               ),
             ],
           ),

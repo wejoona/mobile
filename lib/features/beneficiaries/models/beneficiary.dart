@@ -1,6 +1,6 @@
 /// Account Types for Beneficiaries
 enum AccountType {
-  joonapayUser('joonapay_user'),
+  joonapayUser('korido_user'),
   externalWallet('external_wallet'),
   bankAccount('bank_account'),
   mobileMoney('mobile_money');

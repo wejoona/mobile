@@ -371,7 +371,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
                   style: const pw.TextStyle(fontSize: 14),
                 ),
                 pw.SizedBox(height: 20),
-                pw.Table.fromTextArray(
+                pw.TableHelper.fromTextArray(
                   headers: ['Date', 'Category', 'Vendor', 'Amount'],
                   data: expenses.map((expense) {
                     return [
@@ -400,10 +400,8 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       final file = File('${output.path}/expense_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
       await file.writeAsBytes(await pdf.save());
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Expense Report',
-      );
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], title: 'Expense Report',
+      ));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -459,10 +457,8 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       final file = File('${output.path}/expense_report_${DateTime.now().millisecondsSinceEpoch}.csv');
       await file.writeAsString(buffer.toString());
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Expense Report CSV',
-      );
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], title: 'Expense Report CSV',
+      ));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

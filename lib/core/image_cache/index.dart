@@ -1,6 +1,6 @@
 /// Image cache module exports
 ///
-/// Optimized image caching for JoonaPay mobile app
+/// Optimized image caching for Korido mobile app
 /// Configured for West African network conditions
 ///
 /// Usage:

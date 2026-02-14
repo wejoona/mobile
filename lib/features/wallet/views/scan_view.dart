@@ -112,7 +112,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       // Invalid QR
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invalid QR code. Please scan a JoonaPay payment code.'),
+          content: Text('Invalid QR code. Please scan a Korido payment code.'),
           backgroundColor: context.colors.error,
         ),
       );
@@ -204,7 +204,7 @@ class _ScanViewState extends ConsumerState<ScanView>
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  'Anyone with JoonaPay can scan this code to send you money instantly.',
+                  'Anyone with Korido can scan this code to send you money instantly.',
                   variant: AppTextVariant.bodySmall,
                   color: context.colors.textTertiary,
                 ),
@@ -273,7 +273,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       final result = await ImageGallerySaverPlus.saveImage(
         imageBytes,
         quality: 100,
-        name: 'joonapay_qr_${DateTime.now().millisecondsSinceEpoch}',
+        name: 'korido_qr_${DateTime.now().millisecondsSinceEpoch}',
       );
 
       if (mounted) {
@@ -319,14 +319,14 @@ class _ScanViewState extends ConsumerState<ScanView>
       }
 
       final tempDir = await getTemporaryDirectory();
-      final file = File('${tempDir.path}/joonapay_qr_$phone.png');
+      final file = File('${tempDir.path}/korido_qr_$phone.png');
       await file.writeAsBytes(imageBytes);
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Scan this QR code to send me money on JoonaPay!\n\nPhone: $phone',
-        subject: 'JoonaPay Payment QR Code',
-      );
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
+        text: 'Scan this QR code to send me money on Korido!\n\nPhone: $phone',
+        title: 'Korido Payment QR Code',
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

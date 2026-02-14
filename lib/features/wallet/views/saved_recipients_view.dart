@@ -476,7 +476,7 @@ class _RecipientCard extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: contact.isJoonaPayUser
+                  color: contact.isKoridoUser
                       ? context.colors.gold.withValues(alpha: 0.2)
                       : context.colors.elevated,
                   shape: BoxShape.circle,
@@ -490,7 +490,7 @@ class _RecipientCard extends StatelessWidget {
                         child: AppText(
                           _getInitials(contact.name),
                           variant: AppTextVariant.titleMedium,
-                          color: contact.isJoonaPayUser
+                          color: contact.isKoridoUser
                               ? context.colors.gold
                               : colors.textSecondary,
                         ),
@@ -512,7 +512,7 @@ class _RecipientCard extends StatelessWidget {
                             color: colors.textPrimary,
                           ),
                         ),
-                        if (contact.isJoonaPayUser) ...[
+                        if (contact.isKoridoUser) ...[
                           const SizedBox(width: AppSpacing.xs),
                           Icon(
                             Icons.verified,
@@ -701,7 +701,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
             ),
           ] else if (_recipientType == 'username') ...[
             AppText(
-              'JoonaPay Username',
+              'Korido Username',
               variant: AppTextVariant.labelMedium,
               color: colors.textSecondary,
             ),

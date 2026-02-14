@@ -112,7 +112,7 @@ class SecurityGuardService {
     String? recipientAddress,
   }) async {
     if (!isExternal) {
-      // Internal JoonaPay recipient, no additional security
+      // Internal Korido recipient, no additional security
       return true;
     }
 

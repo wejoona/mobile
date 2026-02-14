@@ -27,7 +27,7 @@ class ShareUtils {
     }
     buffer.writeln('─' * 28);
 
-    await Share.share(buffer.toString(), subject: 'Korido Transfer Receipt');
+    await SharePlus.instance.share(ShareParams(text: buffer.toString(), title: 'Korido Transfer Receipt'));
   }
 
   /// Share a payment link.
@@ -40,30 +40,29 @@ class ShareUtils {
     final text = description != null
         ? 'Pay $amount $currency for $description: $url'
         : 'Pay $amount $currency via Korido: $url';
-    await Share.share(text, subject: 'Korido Payment Link');
+    await SharePlus.instance.share(ShareParams(text: text, title: 'Korido Payment Link'));
   }
 
   /// Share the app download link.
   static Future<void> shareApp({String? referralCode}) async {
     const baseUrl = 'https://korido.app/download';
-    final url =
-        referralCode != null ? '$baseUrl?ref=$referralCode' : baseUrl;
-    await Share.share(
-      'Send money instantly with Korido! Download now: $url',
-      subject: 'Try Korido',
-    );
+    final url = referralCode != null ? '$baseUrl?ref=$referralCode' : baseUrl;
+    await SharePlus.instance.share(ShareParams(
+      text: 'Send money instantly with Korido! Download now: $url',
+      title: 'Try Korido',
+    ));
   }
 
   /// Share plain text with optional subject.
   static Future<void> shareText(String text, {String? subject}) async {
-    await Share.share(text, subject: subject);
+    await SharePlus.instance.share(ShareParams(text: text, title: subject));
   }
 
   /// Share a QR code image file.
   static Future<void> shareQrCode(String filePath) async {
-    await Share.shareXFiles(
-      [XFile(filePath)],
-      subject: 'Korido QR Code',
-    );
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(filePath)],
+      title: 'Korido QR Code',
+    ));
   }
 }

@@ -350,10 +350,9 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     final amount = _amountController.text;
     final note = _noteController.text.isNotEmpty ? ' for "${_noteController.text}"' : '';
 
-    Share.share(
-      'Hey! Please send me \$$amount$note on JoonaPay.\n\n${_generatePaymentLink()}',
-      subject: 'Payment Request - \$$amount',
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      'Hey! Please send me \$$amount$note on Korido.\n\n${_generatePaymentLink()}', title: 'Payment Request - \$$amount',
+    ));
   }
 
   void _sendSms() {

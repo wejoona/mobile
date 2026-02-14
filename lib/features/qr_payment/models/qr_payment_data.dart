@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 /// QR Payment Data Model
-/// Represents payment information encoded in a JoonaPay QR code
+/// Represents payment information encoded in a Korido QR code
 class QrPaymentData {
   final String type;
   final int version;

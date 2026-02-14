@@ -1301,7 +1301,7 @@ class _KycViewState extends ConsumerState<KycView> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
               child: AppText(
-                'Your identity has been successfully verified. You can now use all features of JoonaPay.',
+                'Your identity has been successfully verified. You can now use all features of Korido.',
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
                 textAlign: TextAlign.center,

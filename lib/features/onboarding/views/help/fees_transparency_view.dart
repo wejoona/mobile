@@ -281,7 +281,7 @@ class FeesTransparencyView extends ConsumerWidget {
   Widget _buildComparisonRow(
     String label,
     String fee,
-    bool isJoonaPay,
+    bool isKorido,
     ThemeColors colors,
   ) {
     return Padding(
@@ -289,12 +289,12 @@ class FeesTransparencyView extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isJoonaPay
+          color: isKorido
               ? colors.gold.withValues(alpha: 0.1)
               : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isJoonaPay
+            color: isKorido
                 ? colors.gold.withValues(alpha: 0.3)
                 : colors.borderSubtle,
           ),
@@ -304,7 +304,7 @@ class FeesTransparencyView extends ConsumerWidget {
           children: [
             Row(
               children: [
-                if (isJoonaPay)
+                if (isKorido)
                   Padding(
                     padding: const EdgeInsets.only(right: AppSpacing.sm),
                     child: Icon(
@@ -323,7 +323,7 @@ class FeesTransparencyView extends ConsumerWidget {
             AppText(
               fee,
               variant: AppTextVariant.labelLarge,
-              color: isJoonaPay ? colors.gold : colors.textSecondary,
+              color: isKorido ? colors.gold : colors.textSecondary,
             ),
           ],
         ),

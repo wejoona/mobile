@@ -142,7 +142,7 @@ class _LinkCreatedScreen extends StatelessWidget {
                     icon: const Icon(Icons.share),
                     label: const Text('Partager'),
                     onPressed: () {
-                      // Share.share(link.url)
+                      // SharePlus.instance.share(ShareParams(text: link.url))
                     },
                   ),
                   const SizedBox(width: AppSpacing.md),

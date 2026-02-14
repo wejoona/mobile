@@ -112,7 +112,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
       final items = (data['data'] as List? ?? [])
           .map((e) => SyncedContact.fromJson(e as Map<String, dynamic>))
           .toList();
-      final joonaPayCount = items.where((c) => c.isJoonaPayUser).length;
+      final joonaPayCount = items.where((c) => c.isKoridoUser).length;
       state = state.copyWith(
         contacts: items,
         isLoading: false,

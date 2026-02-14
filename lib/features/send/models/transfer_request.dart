@@ -36,7 +36,7 @@ class RecipientInfo {
   final String phoneNumber;
   final String? name;
   final String? userId;
-  final bool isJoonaPayUser;
+  final bool isKoridoUser;
   final bool isBeneficiary;
   final String? beneficiaryId;
 
@@ -44,7 +44,7 @@ class RecipientInfo {
     required this.phoneNumber,
     this.name,
     this.userId,
-    this.isJoonaPayUser = false,
+    this.isKoridoUser = false,
     this.isBeneficiary = false,
     this.beneficiaryId,
   });
@@ -53,7 +53,7 @@ class RecipientInfo {
     String? phoneNumber,
     String? name,
     String? userId,
-    bool? isJoonaPayUser,
+    bool? isKoridoUser,
     bool? isBeneficiary,
     String? beneficiaryId,
   }) {
@@ -61,7 +61,7 @@ class RecipientInfo {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       name: name ?? this.name,
       userId: userId ?? this.userId,
-      isJoonaPayUser: isJoonaPayUser ?? this.isJoonaPayUser,
+      isKoridoUser: isKoridoUser ?? this.isKoridoUser,
       isBeneficiary: isBeneficiary ?? this.isBeneficiary,
       beneficiaryId: beneficiaryId ?? this.beneficiaryId,
     );

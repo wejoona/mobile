@@ -73,7 +73,7 @@ class DeepLinkQrGenerator {
   }
 }
 
-/// Styled QR Code widget for JoonaPay deep links
+/// Styled QR Code widget for Korido deep links
 class DeepLinkQrCode extends StatelessWidget {
   const DeepLinkQrCode({
     super.key,
@@ -279,7 +279,7 @@ class BrandedDeepLinkQrCode extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Scan with JoonaPay',
+                'Scan with Korido',
                 style: TextStyle(
                   fontSize: 12,
                   color: AppColors.silver,
@@ -358,7 +358,7 @@ class DeepLinkQrCodeExamples extends StatelessWidget {
             data: DeepLinkQrGenerator.generateReferralLink(
               referralCode: 'JOHN2024',
             ),
-            title: 'Join JoonaPay',
+            title: 'Join Korido',
             subtitle: 'Use my referral code: JOHN2024',
             size: 240,
           ),

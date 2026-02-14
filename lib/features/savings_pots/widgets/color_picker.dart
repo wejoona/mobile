@@ -65,7 +65,7 @@ class ColorPicker extends StatelessWidget {
           spacing: 12,
           runSpacing: 12,
           children: PotColors.all.map((color) {
-            final isSelected = color.value == selectedColor?.value;
+            final isSelected = color.toARGB32() == selectedColor?.toARGB32();
 
             return GestureDetector(
               onTap: () => onColorSelected(color),

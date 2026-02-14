@@ -331,10 +331,8 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
       await file.writeAsString(csvContent);
 
       // Share the file
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: l10n.bulkPayments_failedReportTitle,
-      );
+      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], title: l10n.bulkPayments_failedReportTitle,
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

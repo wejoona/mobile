@@ -44,10 +44,10 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
       final file = File(imagePath);
       await file.writeAsBytes(image);
 
-      await Share.shareXFiles(
-        [XFile(imagePath)],
-        text: 'Pay ${widget.merchant.displayName} with JoonaPay',
-      );
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(imagePath)],
+        text: 'Pay ${widget.merchant.displayName} with Korido',
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

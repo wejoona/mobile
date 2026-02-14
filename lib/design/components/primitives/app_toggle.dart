@@ -40,7 +40,7 @@ class AppToggle extends StatelessWidget {
     return Switch(
       value: value,
       onChanged: onChanged == null ? null : _handleToggle,
-      activeColor: colors.gold,
+      activeThumbColor: colors.gold,
       activeTrackColor: colors.gold.withValues(alpha: 0.5),
       inactiveThumbColor: colors.textTertiary,
       inactiveTrackColor: colors.borderSubtle,

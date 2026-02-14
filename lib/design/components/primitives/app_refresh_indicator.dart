@@ -3,7 +3,7 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 
-/// Custom pull-to-refresh indicator with JoonaPay styling.
+/// Custom pull-to-refresh indicator with Korido styling.
 /// Provides haptic feedback and uses brand colors.
 class AppRefreshIndicator extends StatelessWidget {
   const AppRefreshIndicator({

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Dark Theme Color Palette for JoonaPay
+/// Dark Theme Color Palette for Korido
 /// Brand: Luxury gold accents on premium dark backgrounds
 /// Optimized for WCAG AA contrast (4.5:1 for text, 3:1 for UI components)
 class DarkColors {

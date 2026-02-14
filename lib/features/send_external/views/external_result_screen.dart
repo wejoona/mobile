@@ -312,7 +312,7 @@ ${l10n.sendExternal_transactionHash}: ${result.txHash}
 ${l10n.sendExternal_status}: ${_getStatusDisplay(result.status, l10n)}
 ''';
 
-    Share.share(message);
+    SharePlus.instance.share(ShareParams(text: message));
   }
 
   void _handleDone(BuildContext context, WidgetRef ref) {

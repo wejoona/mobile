@@ -371,14 +371,13 @@ ${transaction.description != null ? 'Note: ${transaction.description}' : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━
     Thank you for using
-         JoonaPay
+         Korido
 ━━━━━━━━━━━━━━━━━━━━━━
 ''';
 
-    Share.share(
-      receiptText.trim(),
-      subject: 'JoonaPay Transaction Receipt',
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      receiptText.trim(), title: 'Korido Transaction Receipt',
+    ));
   }
 
   String _getTransactionTypeLabel(TransactionType type) {

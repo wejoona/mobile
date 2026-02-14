@@ -113,36 +113,23 @@ class ShareLinkSheet extends StatelessWidget {
 
   Future<void> _shareWhatsApp(BuildContext context) async {
     final message = _buildShareMessage();
-    // WhatsApp deep link - will open WhatsApp if installed
-    await Share.share(
-      message,
-      subject: AppLocalizations.of(context)!.paymentLinks_paymentRequest,
-    );
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
+    final l10n = AppLocalizations.of(context)!;
+    await SharePlus.instance.share(ShareParams(text: message, title: l10n.paymentLinks_paymentRequest));
+    if (context.mounted) Navigator.pop(context);
   }
 
   Future<void> _shareSMS(BuildContext context) async {
     final message = _buildShareMessage();
-    await Share.share(
-      message,
-      subject: AppLocalizations.of(context)!.paymentLinks_paymentRequest,
-    );
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
+    final l10n = AppLocalizations.of(context)!;
+    await SharePlus.instance.share(ShareParams(text: message, title: l10n.paymentLinks_paymentRequest));
+    if (context.mounted) Navigator.pop(context);
   }
 
   Future<void> _shareGeneric(BuildContext context) async {
     final message = _buildShareMessage();
-    await Share.share(
-      message,
-      subject: AppLocalizations.of(context)!.paymentLinks_paymentRequest,
-    );
-    if (context.mounted) {
-      Navigator.pop(context);
-    }
+    final l10n = AppLocalizations.of(context)!;
+    await SharePlus.instance.share(ShareParams(text: message, title: l10n.paymentLinks_paymentRequest));
+    if (context.mounted) Navigator.pop(context);
   }
 
   String _buildShareMessage() {
@@ -157,7 +144,7 @@ Amount: ${_formatAmount(link.amount, link.currency)}$description
 
 Pay now: ${link.url}
 
-Powered by JoonaPay
+Powered by Korido
 ''';
   }
 

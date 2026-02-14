@@ -1,4 +1,4 @@
-/// Animation Utilities for JoonaPay
+/// Animation Utilities for Korido
 ///
 /// Reusable animation widgets for consistent motion design
 ///

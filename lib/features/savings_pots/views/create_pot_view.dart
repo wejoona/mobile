@@ -143,7 +143,7 @@ class _CreatePotViewState extends ConsumerState<CreatePotView> {
     final success = await ref.read(savingsPotsActionsProvider).createPot(
           name: _nameController.text,
           emoji: _selectedEmoji!,
-          color: '#${_selectedColor!.value.toRadixString(16).padLeft(8, '0')}',
+          color: '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}',
           targetAmount: targetAmount,
         );
 

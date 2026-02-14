@@ -6,7 +6,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Contact Card Widget
 ///
-/// Displays a contact with JoonaPay status and action buttons
+/// Displays a contact with Korido status and action buttons
 class ContactCard extends StatelessWidget {
   final SyncedContact contact;
   final VoidCallback? onTap;
@@ -29,7 +29,7 @@ class ContactCard extends StatelessWidget {
         color: context.colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: contact.isJoonaPayUser
+          color: contact.isKoridoUser
               ? context.colors.gold.withValues(alpha: 0.3)
               : Colors.transparent,
         ),
@@ -64,7 +64,7 @@ class ContactCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (contact.isJoonaPayUser) ...[
+                          if (contact.isKoridoUser) ...[
                             SizedBox(width: AppSpacing.xs),
                             Icon(
                               Icons.verified,
@@ -87,9 +87,9 @@ class ContactCard extends StatelessWidget {
                 SizedBox(width: AppSpacing.sm),
 
                 // Action button
-                if (contact.isJoonaPayUser && onSend != null)
+                if (contact.isKoridoUser && onSend != null)
                   _buildSendButton()
-                else if (!contact.isJoonaPayUser && onInvite != null)
+                else if (!contact.isKoridoUser && onInvite != null)
                   _buildInviteButton(),
               ],
             ),

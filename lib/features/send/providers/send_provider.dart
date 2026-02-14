@@ -116,7 +116,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   }
 
   /// Validate and set recipient
-  /// Uses POST /contacts/sync with hashed phone to check if JoonaPay user
+  /// Uses POST /contacts/sync with hashed phone to check if Korido user
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -132,11 +132,11 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       final syncData = response.data as Map<String, dynamic>;
       final matches = (syncData['matches'] as List?) ?? [];
-      final isJoonaPayUser = matches.isNotEmpty;
+      final isKoridoUser = matches.isNotEmpty;
 
       String? userId;
       String? displayName = name;
-      if (isJoonaPayUser) {
+      if (isKoridoUser) {
         final match = matches.first as Map<String, dynamic>;
         userId = match['userId'] as String?;
         displayName = displayName ?? match['name'] as String?;
@@ -146,7 +146,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         phoneNumber: phoneNumber,
         name: displayName,
         userId: userId,
-        isJoonaPayUser: isJoonaPayUser,
+        isKoridoUser: isKoridoUser,
       );
 
       state = state.copyWith(isLoading: false, recipient: recipient);
@@ -155,7 +155,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,
         name: name,
-        isJoonaPayUser: false,
+        isKoridoUser: false,
       );
       state = state.copyWith(isLoading: false, recipient: recipient);
     } catch (e) {

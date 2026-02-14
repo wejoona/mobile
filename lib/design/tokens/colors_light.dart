@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Comprehensive Light Theme Color Palette for JoonaPay
+/// Comprehensive Light Theme Color Palette for Korido
 /// Brand: Gold primary (#B8943D), Obsidian accents
 /// WCAG AA compliant (4.5:1 for normal text, 3:1 for large text)
 class LightColors {
@@ -455,9 +455,9 @@ class LightColorsAccessibility {
   }
 
   static double _relativeLuminance(Color color) {
-    final double r = _linearize(color.red / 255.0);
-    final double g = _linearize(color.green / 255.0);
-    final double b = _linearize(color.blue / 255.0);
+    final double r = _linearize(color.r);
+    final double g = _linearize(color.g);
+    final double b = _linearize(color.b);
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   }
 

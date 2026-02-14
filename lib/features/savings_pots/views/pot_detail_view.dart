@@ -138,8 +138,8 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            pot.color.withOpacity(0.2),
-            pot.color.withOpacity(0.05),
+            pot.color.withValues(alpha: 0.2),
+            pot.color.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -162,7 +162,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                     child: CircularProgressIndicator(
                       value: pot.progress,
                       strokeWidth: 6,
-                      backgroundColor: pot.color.withOpacity(0.2),
+                      backgroundColor: pot.color.withValues(alpha: 0.2),
                       valueColor: AlwaysStoppedAnimation<Color>(pot.color),
                     ),
                   ),
@@ -205,7 +205,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
               child: LinearProgressIndicator(
                 value: pot.progress,
                 minHeight: 8,
-                backgroundColor: pot.color.withOpacity(0.2),
+                backgroundColor: pot.color.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(pot.color),
               ),
             ),
@@ -224,7 +224,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: context.colors.success.withOpacity(0.2),
+                    color: context.colors.success.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Row(
@@ -306,7 +306,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             height: 40,
             decoration: BoxDecoration(
               color: (isDeposit ? context.colors.success : context.colors.warning)
-                  .withOpacity(0.2),
+                  .withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -183,7 +183,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
           child: Column(
             children: [
               AppText(
-                'Scan a JoonaPay QR code',
+                'Scan a Korido QR code',
                 variant: AppTextVariant.bodyLarge,
                 color: context.colors.textPrimary,
               ),
@@ -336,7 +336,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             ),
           ] else ...[
             AppText(
-              'This QR code is not a valid JoonaPay payment code.',
+              'This QR code is not a valid Korido payment code.',
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,

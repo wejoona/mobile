@@ -287,7 +287,7 @@ class ReceiptService {
   }) async {
     final receiptData = ReceiptData.fromTransaction(transaction);
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final fileName = 'JoonaPay_Receipt_$timestamp';
+    final fileName = 'Korido_Receipt_$timestamp';
 
     final pdfBytes = await generateReceiptPdf(transaction);
     final tempDir = await getTemporaryDirectory();
@@ -295,10 +295,10 @@ class ReceiptService {
     final file = File('${tempDir.path}/$fileName.$extension');
     await file.writeAsBytes(pdfBytes);
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      text: customMessage ?? 'Payment receipt from JoonaPay\n\nRef: ${receiptData.referenceNumber}',
-    );
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text: customMessage ?? 'Payment receipt from Korido\n\nRef: ${receiptData.referenceNumber}',
+    ));
   }
 
   /// Share receipt via WhatsApp
@@ -312,14 +312,14 @@ class ReceiptService {
       final amountStr = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(receiptData.total);
 
       final message = '''
-Payment receipt from JoonaPay
+Payment receipt from Korido
 
 Amount: $amountStr ${receiptData.currency}
 Date: $dateStr
 Reference: ${receiptData.referenceNumber}
 Status: ${receiptData.getStatusLabel()}
 
-Thank you for using JoonaPay!
+Thank you for using Korido!
 ''';
 
       final encodedMessage = Uri.encodeComponent(message);
@@ -348,11 +348,11 @@ Thank you for using JoonaPay!
       final dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(receiptData.date);
       final amountStr = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(receiptData.total);
 
-      final subject = Uri.encodeComponent('JoonaPay Transaction Receipt - ${receiptData.referenceNumber}');
+      final subject = Uri.encodeComponent('Korido Transaction Receipt - ${receiptData.referenceNumber}');
       final body = Uri.encodeComponent('''
 Dear Customer,
 
-Here is your transaction receipt from JoonaPay:
+Here is your transaction receipt from Korido:
 
 Transaction ID: ${receiptData.transactionId}
 Reference: ${receiptData.referenceNumber}
@@ -362,10 +362,10 @@ Amount: $amountStr ${receiptData.currency}
 Status: ${receiptData.getStatusLabel()}
 
 ${receiptData.description != null ? 'Note: ${receiptData.description}\n\n' : ''}
-Thank you for using JoonaPay!
+Thank you for using Korido!
 
 Best regards,
-The JoonaPay Team
+The Korido Team
 ''');
 
       final uri = Uri.parse('mailto:$recipientEmail?subject=$subject&body=$body');

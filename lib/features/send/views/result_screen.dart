@@ -352,7 +352,7 @@ ${l10n.send_date}: ${Formatters.formatDateTime(state.result!.createdAt)}
 ${l10n.appName}
 ''';
 
-    await Share.share(text);
+    await SharePlus.instance.share(ShareParams(text: text));
   }
 
   void _handleDone() {

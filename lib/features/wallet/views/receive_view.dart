@@ -255,9 +255,8 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
   }
 
   void _shareAddress(AppLocalizations l10n, String address) {
-    Share.share(
-      l10n.receive_shareMessage(address),
-      subject: l10n.receive_shareSubject,
-    );
+    SharePlus.instance.share(ShareParams(text: 
+      l10n.receive_shareMessage(address), title: l10n.receive_shareSubject,
+    ));
   }
 }

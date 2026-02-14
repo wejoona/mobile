@@ -48,7 +48,7 @@ class _BeneficiaryPickerBottomSheetState
                 (b.phoneE164?.contains(_searchQuery) ?? false))
             .toList();
 
-    // Filter only JoonaPay users for internal transfers
+    // Filter only Korido users for internal transfers
     final joonaPayBeneficiaries = filteredBeneficiaries
         .where((b) => b.accountType == AccountType.joonapayUser)
         .toList();

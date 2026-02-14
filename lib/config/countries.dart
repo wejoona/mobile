@@ -51,7 +51,7 @@ class CountryConfig {
   }
 }
 
-/// Supported countries for JoonaPay
+/// Supported countries for Korido
 /// Focus on West/Central Africa with mobile money infrastructure
 class SupportedCountries {
   /// All countries (including disabled ones for future expansion)

@@ -220,7 +220,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
 
   void _shareReceipt(AppLocalizations l10n) {
     final receipt = '''
-JoonaPay Transfer Receipt
+Korido Transfer Receipt
 
 Amount: \$${widget.amount.toStringAsFixed(2)}
 To: ${widget.recipient}
@@ -228,10 +228,10 @@ Transaction ID: ${widget.transactionId}
 Status: ${l10n.transactions_completed}
 ${widget.note != null ? 'Note: ${widget.note}' : ''}
 
-Thank you for using JoonaPay!
+Thank you for using Korido!
 ''';
 
-    Share.share(receipt, subject: 'JoonaPay Transfer Receipt');
+    SharePlus.instance.share(ShareParams(text: receipt, title: 'Korido Transfer Receipt'));
   }
 }
 

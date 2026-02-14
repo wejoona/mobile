@@ -272,7 +272,7 @@ class ExpenseDetailView extends ConsumerWidget {
       text.writeln('${l10n.expenses_description}: ${expense.description}');
     }
     text.writeln('\n— Korido');
-    Share.share(text.toString());
+    SharePlus.instance.share(ShareParams(text: text.toString()));
   }
 
   IconData _getCategoryIcon(String category) {

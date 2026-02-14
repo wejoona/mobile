@@ -141,7 +141,7 @@ class _EditPotViewState extends ConsumerState<EditPotView> {
           id: widget.potId,
           name: _nameController.text,
           emoji: _selectedEmoji,
-          color: _selectedColor != null ? '#${_selectedColor!.value.toRadixString(16).padLeft(8, '0')}' : null,
+          color: _selectedColor != null ? '#${_selectedColor!.toARGB32().toRadixString(16).padLeft(8, '0')}' : null,
           targetAmount: targetAmount,
         );
 

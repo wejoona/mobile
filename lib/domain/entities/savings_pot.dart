@@ -76,7 +76,7 @@ class SavingsPot {
         'userId': userId,
         'name': name,
         'emoji': emoji,
-        'color': color.value,
+        'color': color.toARGB32(),
         'targetAmount': targetAmount,
         'currentAmount': currentAmount,
         'currency': currency,

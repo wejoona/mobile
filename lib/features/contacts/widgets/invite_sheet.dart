@@ -10,7 +10,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Invite Sheet Bottom Sheet
 ///
-/// Shows invite options for a non-JoonaPay contact
+/// Shows invite options for a non-Korido contact
 class InviteSheet extends ConsumerWidget {
   final SyncedContact contact;
 
@@ -213,7 +213,7 @@ class InviteSheet extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final message = _getInviteMessage(l10n);
 
-    await Share.share(message);
+    await SharePlus.instance.share(ShareParams(text: message));
 
     if (context.mounted) Navigator.pop(context);
   }

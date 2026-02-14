@@ -12,7 +12,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Contacts List Screen
 ///
-/// Shows JoonaPay users and contacts to invite
+/// Shows Korido users and contacts to invite
 class ContactsListScreen extends ConsumerStatefulWidget {
   const ContactsListScreen({super.key});
 
@@ -53,8 +53,8 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     }
 
     final joonaPayUsers =
-        filteredContacts.where((c) => c.isJoonaPayUser).toList();
-    final nonUsers = filteredContacts.where((c) => !c.isJoonaPayUser).toList();
+        filteredContacts.where((c) => c.isKoridoUser).toList();
+    final nonUsers = filteredContacts.where((c) => !c.isKoridoUser).toList();
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -144,7 +144,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                     child: ListView(
                       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       children: [
-                        // JoonaPay users section
+                        // Korido users section
                         if (joonaPayUsers.isNotEmpty) ...[
                           _buildSectionHeader(
                             l10n.contacts_on_joonapay,
@@ -238,7 +238,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   }
 
   void _handleContactTap(SyncedContact contact) {
-    if (contact.isJoonaPayUser) {
+    if (contact.isKoridoUser) {
       // Navigate to send screen with pre-filled recipient
       context.push('/send', extra: {'recipientId': contact.joonaPayUserId});
     } else {

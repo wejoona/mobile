@@ -262,12 +262,12 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
       _FaqItem(
         question: 'How do I deposit money into my wallet?',
         answer:
-            'You can deposit funds using mobile money (Orange Money, MTN MoMo, Wave) or by receiving from another JoonaPay user. Go to Home > Deposit and select your preferred method.',
+            'You can deposit funds using mobile money (Orange Money, MTN MoMo, Wave) or by receiving from another Korido user. Go to Home > Deposit and select your preferred method.',
       ),
       _FaqItem(
         question: 'How long do transactions take?',
         answer:
-            'P2P transfers between JoonaPay users are instant. Mobile money deposits typically take 1-5 minutes. Withdrawals to mobile money take 5-15 minutes during business hours.',
+            'P2P transfers between Korido users are instant. Mobile money deposits typically take 1-5 minutes. Withdrawals to mobile money take 5-15 minutes during business hours.',
       ),
       _FaqItem(
         question: 'What are the transaction limits?',
@@ -280,7 +280,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
             'Go to Settings > KYC Verification. You\'ll need to provide a government-issued ID and take a selfie. Verification typically takes 24-48 hours.',
       ),
       _FaqItem(
-        question: 'What fees does JoonaPay charge?',
+        question: 'What fees does Korido charge?',
         answer:
             'P2P transfers are free. Mobile money deposits incur operator fees (1-2%). Withdrawals have a small fixed fee. Check the confirmation screen before completing any transaction.',
       ),
@@ -292,12 +292,12 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
       _FaqItem(
         question: 'Is my money safe?',
         answer:
-            'Yes. JoonaPay uses USDC stablecoin, which is backed 1:1 by US dollars. Your wallet is secured with PIN, biometrics, and device verification. We never store your PIN in plain text.',
+            'Yes. Korido uses USDC stablecoin, which is backed 1:1 by US dollars. Your wallet is secured with PIN, biometrics, and device verification. We never store your PIN in plain text.',
       ),
       _FaqItem(
-        question: 'Can I use JoonaPay outside West Africa?',
+        question: 'Can I use Korido outside West Africa?',
         answer:
-            'JoonaPay is currently optimized for Côte d\'Ivoire, Senegal, and Mali. USDC transfers work globally, but mobile money integrations are region-specific.',
+            'Korido is currently optimized for Côte d\'Ivoire, Senegal, and Mali. USDC transfers work globally, but mobile money integrations are region-specific.',
       ),
     ];
   }

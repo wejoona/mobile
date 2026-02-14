@@ -32,7 +32,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     ),
     _FaqItem(
       question: 'What are the fees for sending money?',
-      answer: 'JoonaPay charges no fees for internal transfers between JoonaPay users. External transfers to other wallets or banks may incur small network fees, which are shown before you confirm.',
+      answer: 'Korido charges no fees for internal transfers between Korido users. External transfers to other wallets or banks may incur small network fees, which are shown before you confirm.',
       category: 'Transfers',
     ),
     _FaqItem(
@@ -52,7 +52,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
     ),
     _FaqItem(
       question: 'Is my money safe?',
-      answer: 'Yes! JoonaPay uses bank-level encryption and your USDC is backed 1:1 by USD reserves. We also offer biometric login and 2FA for additional security.',
+      answer: 'Yes! Korido uses bank-level encryption and your USDC is backed 1:1 by USD reserves. We also offer biometric login and 2FA for additional security.',
       category: 'Security',
     ),
     _FaqItem(
@@ -223,7 +223,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
               colors: colors,
               icon: Icons.article_outlined,
               title: 'User Guide',
-              subtitle: 'Complete guide to using JoonaPay',
+              subtitle: 'Complete guide to using Korido',
               onTap: () => _openUrl('https://joonapay.com/guide'),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -264,7 +264,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                       Icon(Icons.info_outline, color: colors.textTertiary, size: 16),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
-                        'JoonaPay v1.0.0',
+                        'Korido v1.0.0',
                         variant: AppTextVariant.bodySmall,
                         color: colors.textTertiary,
                       ),
@@ -591,7 +591,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
   }
 
   void _sendEmail() async {
-    final uri = Uri.parse('mailto:support@joonapay.com?subject=JoonaPay Support Request');
+    final uri = Uri.parse('mailto:support@joonapay.com?subject=Korido Support Request');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }

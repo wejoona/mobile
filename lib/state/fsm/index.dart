@@ -1,7 +1,7 @@
 /// FSM (Finite State Machine) State Management
 ///
 /// This module provides a type-safe, predictable state management system
-/// for the JoonaPay wallet app.
+/// for the Korido wallet app.
 ///
 /// ## Architecture Overview
 ///
