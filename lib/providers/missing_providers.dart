@@ -1,7 +1,13 @@
 import 'package:usdc_wallet/features/transactions/models/filtered_transactions_state.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
-/// Stub providers for views that reference providers not yet created.
-/// These are temporary — wire to real implementations as features complete.
+/// TECH DEBT: Stub providers — wire to real implementations as features complete.
+///
+/// Each provider here is a placeholder. When implementing the real feature:
+/// 1. Create the real provider in the feature's providers/ directory
+/// 2. Update imports in consuming views
+/// 3. Remove the stub from this file
+///
+/// Remaining stubs: 10 (as of 2026-02-14)
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
