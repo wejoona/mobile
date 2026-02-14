@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e:*)",
+      "Bash(timeout 5 node:*)",
+      "Bash(ls:*)",
+      "Bash(OUTLINE_API_URL=\"https://wiki.digitechafricaltd.com/api\" OUTLINE_API_KEY=\"ol_api_lADqxb5JhJbpxqP5ALtEBmpxjrFQKtBzCT3nen\" node -e \"\nconst { spawn } = require\\(''child_process''\\);\nconst p = spawn\\(''node'', [''index.js''], { env: { ...process.env, OUTLINE_API_URL: ''https://wiki.digitechafricaltd.com/api'', OUTLINE_API_KEY: ''ol_api_lADqxb5JhJbpxqP5ALtEBmpxjrFQKtBzCT3nen'' }, stdio: [''pipe'',''pipe'',''pipe''] }\\);\np.stdout.on\\(''data'', d => process.stdout.write\\(''STDOUT: '' + d\\)\\);\np.stderr.on\\(''data'', d => process.stderr.write\\(''STDERR: '' + d\\)\\);\np.on\\(''error'', e => console.log\\(''ERROR:'', e.message\\)\\);\nsetTimeout\\(\\(\\) => { p.kill\\(\\); console.log\\(''OK - server ran for 3s''\\); }, 3000\\);\n\")",
+      "Bash(claude:*)",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)"
+    ]
+  }
+}

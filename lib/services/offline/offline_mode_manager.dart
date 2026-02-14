@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/services/offline/offline_cache_service.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
+import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+import 'package:usdc_wallet/services/beneficiaries/beneficiaries_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// Offline Mode Manager
@@ -24,21 +28,19 @@ class OfflineModeManager {
     final isOnline = _ref.read(isOnlineProvider);
 
     if (isOnline) {
-      // Fetch fresh data
-      // TODO: Integrate with actual wallet service
-      // final sdk = _ref.read(sdkProvider);
-      // final balance = await sdk.wallet.getBalance();
-      // await _cache.cacheBalance(balance);
-      // return CachedData(data: balance, isCached: false);
-
-      // For now, return cached
-      final cached = _cache.getCachedBalance();
-      if (cached != null) {
+      try {
+        final walletService = _ref.read(walletServiceProvider);
+        final wallet = await walletService.getBalance();
+        final balance = wallet.availableBalance;
+        await _cache.cacheBalance(balance);
         return CachedData(
-          data: cached,
+          data: balance,
           isCached: false,
-          lastSync: _cache.getLastSync(),
+          lastSync: DateTime.now(),
         );
+      } catch (e) {
+        debugPrint('Failed to fetch fresh balance: $e');
+        // Fall through to cached
       }
     }
 
@@ -70,21 +72,18 @@ class OfflineModeManager {
     final isOnline = _ref.read(isOnlineProvider);
 
     if (isOnline) {
-      // Fetch fresh data
-      // TODO: Integrate with actual transactions service
-      // final sdk = _ref.read(sdkProvider);
-      // final transactions = await sdk.transactions.getList();
-      // await _cache.cacheTransactions(transactions);
-      // return CachedData(data: transactions, isCached: false);
-
-      // For now, return cached
-      final cached = _cache.getCachedTransactions();
-      if (cached != null) {
+      try {
+        final txService = _ref.read(transactionsServiceProvider);
+        final page = await txService.getTransactions(pageSize: 50);
+        final transactions = page.transactions;
+        await _cache.cacheTransactions(transactions);
         return CachedData(
-          data: cached,
+          data: transactions,
           isCached: false,
-          lastSync: _cache.getLastSync(),
+          lastSync: DateTime.now(),
         );
+      } catch (e) {
+        debugPrint('Failed to fetch fresh transactions: $e');
       }
     }
 
@@ -116,21 +115,17 @@ class OfflineModeManager {
     final isOnline = _ref.read(isOnlineProvider);
 
     if (isOnline) {
-      // Fetch fresh data
-      // TODO: Integrate with actual beneficiaries service
-      // final sdk = _ref.read(sdkProvider);
-      // final beneficiaries = await sdk.beneficiaries.getList();
-      // await _cache.cacheBeneficiaries(beneficiaries);
-      // return CachedData(data: beneficiaries, isCached: false);
-
-      // For now, return cached
-      final cached = _cache.getCachedBeneficiaries();
-      if (cached != null) {
+      try {
+        final benService = _ref.read(beneficiariesServiceProvider);
+        final beneficiaries = await benService.getBeneficiaries();
+        await _cache.cacheBeneficiaries(beneficiaries);
         return CachedData(
-          data: cached,
+          data: beneficiaries,
           isCached: false,
-          lastSync: _cache.getLastSync(),
+          lastSync: DateTime.now(),
         );
+      } catch (e) {
+        debugPrint('Failed to fetch fresh beneficiaries: $e');
       }
     }
 

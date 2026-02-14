@@ -393,15 +393,30 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     );
 
     if (confirmed == true && context.mounted) {
-      // TODO: Implement block card API call
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.cards_cardBlocked),
-          backgroundColor: context.colors.error,
-        ),
-      );
-      context.pop();
-      context.pop();
+      try {
+        await ref.read(cardActionsProvider).cancelCard(cardId);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(l10n.cards_cardBlocked),
+              backgroundColor: context.colors.error,
+            ),
+          );
+          // Refresh cards list
+          ref.invalidate(cardsProvider);
+          context.pop();
+          context.pop();
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to block card: $e'),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+      }
     }
   }
 }

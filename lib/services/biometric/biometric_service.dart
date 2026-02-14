@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
+
+const _kBiometricEnabledKey = 'biometric_enabled';
 
 /// Run 372: Biometric authentication service
 enum BiometricType { fingerprint, faceId, iris, none }
@@ -30,6 +33,8 @@ enum BiometricFailureReason {
 }
 
 class BiometricService {
+  static const _storage = FlutterSecureStorage();
+
   Future<bool> isAvailable() async {
     // Check if device supports biometric authentication
     return true;
@@ -41,8 +46,8 @@ class BiometricService {
   }
 
   Future<bool> isEnrolled() async {
-    // Check if user has enrolled biometric authentication
-    return false;
+    final value = await _storage.read(key: _kBiometricEnabledKey);
+    return value == 'true';
   }
 
   Future<BiometricResult> authenticate({
@@ -62,11 +67,11 @@ class BiometricService {
   }
 
   Future<void> enroll() async {
-    // Enable biometric for this account
+    await _storage.write(key: _kBiometricEnabledKey, value: 'true');
   }
 
   Future<void> unenroll() async {
-    // Disable biometric for this account
+    await _storage.write(key: _kBiometricEnabledKey, value: 'false');
   }
 
   /// Check if biometric authentication is enabled for this user
@@ -98,14 +103,12 @@ class BiometricService {
 
   /// Enable biometric authentication for this user.
   Future<void> enableBiometric() async {
-    // TODO: persist preference
-    await Future.delayed(const Duration(milliseconds: 200));
+    await _storage.write(key: _kBiometricEnabledKey, value: 'true');
   }
 
   /// Disable biometric authentication for this user.
   Future<void> disableBiometric() async {
-    // TODO: persist preference
-    await Future.delayed(const Duration(milliseconds: 200));
+    await _storage.write(key: _kBiometricEnabledKey, value: 'false');
   }
 
   /// Authenticate for sensitive operations (higher security level).

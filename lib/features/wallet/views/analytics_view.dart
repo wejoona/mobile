@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -477,13 +481,127 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
   }
 
   void _exportReport(BuildContext context, AppLocalizations l10n) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.analytics_exportingReport),
-        backgroundColor: AppColors.infoBase,
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.colors.container,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: ctx.colors.borderSubtle,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: const Text('Export as CSV'),
+              subtitle: const Text('Spreadsheet-compatible format'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _doExportCsv(context, l10n);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf_outlined),
+              title: const Text('Share Report'),
+              subtitle: const Text('Share summary as text'),
+              onTap: () {
+                Navigator.pop(ctx);
+                _doShareTextReport(context, l10n);
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
       ),
     );
-    // TODO: Implement actual export
+  }
+
+  Future<void> _doExportCsv(BuildContext context, AppLocalizations l10n) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.analytics_exportingReport),
+          backgroundColor: AppColors.infoBase,
+        ),
+      );
+
+      final categories = _getCategories(l10n);
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+      final period = _selectedPeriod.getLabel(l10n);
+
+      // Build CSV content
+      final buffer = StringBuffer();
+      buffer.writeln('Korido Analytics Report');
+      buffer.writeln('Period,$period');
+      buffer.writeln('Generated,${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}');
+      buffer.writeln('');
+      buffer.writeln('Summary');
+      buffer.writeln('Total Income,\$${_totalIncome.toStringAsFixed(2)}');
+      buffer.writeln('Total Expenses,\$${_totalExpenses.toStringAsFixed(2)}');
+      buffer.writeln('Net Change,\$${_netChange.toStringAsFixed(2)}');
+      buffer.writeln('');
+      buffer.writeln('Category,Amount,Percentage,Transactions');
+      for (final cat in categories) {
+        buffer.writeln(
+          '${cat.name},\$${cat.amount.toStringAsFixed(2)},${cat.percentage.toStringAsFixed(1)}%,${cat.count}',
+        );
+      }
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/korido_analytics_$timestamp.csv');
+      await file.writeAsString(buffer.toString());
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Korido Analytics Report - $period',
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Export failed: $e'),
+            backgroundColor: AppColors.errorBase,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _doShareTextReport(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
+    final categories = _getCategories(l10n);
+    final period = _selectedPeriod.getLabel(l10n);
+    final buffer = StringBuffer();
+    buffer.writeln('📊 Korido Analytics — $period');
+    buffer.writeln('');
+    buffer.writeln('💰 Income: \$${_totalIncome.toStringAsFixed(2)}');
+    buffer.writeln('💸 Expenses: \$${_totalExpenses.toStringAsFixed(2)}');
+    buffer.writeln(
+      '📈 Net: ${_netChange >= 0 ? '+' : ''}\$${_netChange.toStringAsFixed(2)}',
+    );
+    buffer.writeln('');
+    buffer.writeln('📋 Breakdown:');
+    for (final cat in categories) {
+      buffer.writeln(
+        '  • ${cat.name}: \$${cat.amount.toStringAsFixed(2)} (${cat.percentage.toStringAsFixed(1)}%)',
+      );
+    }
+    buffer.writeln('');
+    buffer.writeln('— Generated by Korido');
+
+    await Share.share(buffer.toString());
   }
 }
 

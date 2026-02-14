@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -224,16 +225,9 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                   ),
                   const SizedBox(width: AppSpacing.lg),
 
-                  // Gallery import (future feature)
+                  // Gallery import
                   IconButton(
-                    onPressed: () {
-                      // TODO: Implement gallery import
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Gallery import coming soon'),
-                        ),
-                      );
-                    },
+                    onPressed: _importFromGallery,
                     icon: Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
@@ -405,6 +399,49 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _importFromGallery() async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+
+      // Use MobileScannerController to analyze the image
+      final result = await _scannerController?.analyzeImage(image.path);
+      if (result == null || !result.barcodes.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No QR code found in image'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final barcode = result.barcodes.first;
+      if (barcode.rawValue == null) return;
+
+      final parsedData = _qrService.parseQrData(barcode.rawValue!);
+
+      setState(() {
+        _scannedData = parsedData;
+        _isScanning = false;
+      });
+
+      _scannerController?.stop();
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      AppLogger('Gallery QR import error').error('Gallery QR import error', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to scan QR from image'),
+          ),
+        );
+      }
+    }
   }
 
   void _onDetect(BarcodeCapture capture) {

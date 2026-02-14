@@ -1,12 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
-// import 'package:usdc_wallet/design/components/primitives/app_toast.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Deep link handler for custom scheme (joonapay://) and universal links
+/// Storage keys for pending deep links
+const _kPendingDeepLinkPath = 'pending_deep_link_path';
+const _kPendingDeepLinkParams = 'pending_deep_link_params';
+
 class DeepLinkHandler {
+  static const _storage = FlutterSecureStorage();
+
+  /// Resume a pending deep link after authentication
+  static Future<bool> resumePendingDeepLink(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    try {
+      final path = await _storage.read(key: _kPendingDeepLinkPath);
+      if (path == null) return false;
+
+      final paramsStr = await _storage.read(key: _kPendingDeepLinkParams);
+      final params = <String, String>{};
+      if (paramsStr != null && paramsStr.isNotEmpty) {
+        for (final pair in paramsStr.split('&')) {
+          final parts = pair.split('=');
+          if (parts.length == 2) {
+            params[Uri.decodeComponent(parts[0])] =
+                Uri.decodeComponent(parts[1]);
+          }
+        }
+      }
+
+      // Clear pending deep link
+      await _storage.delete(key: _kPendingDeepLinkPath);
+      await _storage.delete(key: _kPendingDeepLinkParams);
+
+      // Route to destination
+      await _routeToDestination(path, params, context, ref, true);
+      return true;
+    } catch (e) {
+      debugPrint('Error resuming deep link: $e');
+      return false;
+    }
+  }
+
   /// Handle incoming deep link URI
   static Future<void> handleDeepLink(
     Uri uri,
@@ -152,7 +193,18 @@ class DeepLinkHandler {
         return;
       }
 
-      // TODO: Fetch transaction and validate ownership
+      // Validate transaction exists before navigating
+      try {
+        final dio = ref.read(dioProvider);
+        await dio.get('/wallet/transactions/$transactionId');
+      } catch (e) {
+        if (context.mounted) {
+          _showError(context, 'Transaction not found');
+          context.go('/home');
+        }
+        return;
+      }
+
       context.push('/transactions/$transactionId');
       return;
     }
@@ -237,7 +289,27 @@ class DeepLinkHandler {
         return;
       }
 
-      // TODO: Validate payment link exists and is active
+      // Validate payment link exists and is active
+      try {
+        final dio = ref.read(dioProvider);
+        final response = await dio.get('/payment-links/$linkCode');
+        final data = response.data as Map<String, dynamic>?;
+        final status = data?['status'] as String?;
+        if (status == 'deactivated' || status == 'expired') {
+          if (context.mounted) {
+            _showError(context, 'This payment link is no longer active');
+            context.go('/home');
+          }
+          return;
+        }
+      } catch (e) {
+        if (context.mounted) {
+          _showError(context, 'Invalid payment link');
+          context.go('/home');
+        }
+        return;
+      }
+
       context.push('/pay/$linkCode');
       return;
     }
@@ -380,14 +452,25 @@ class DeepLinkHandler {
     ).hasMatch(id);
   }
 
-  /// Save deep link for after authentication
-  static void _saveForLater(
+  /// Save deep link for after authentication using secure storage
+  static Future<void> _saveForLater(
     BuildContext context,
     String path,
     Map<String, String> params,
-  ) {
-    // TODO: Implement persistent storage
-    debugPrint('Saving deep link for after login: $path');
+  ) async {
+    try {
+      await _storage.write(key: _kPendingDeepLinkPath, value: path);
+      if (params.isNotEmpty) {
+        final encoded = params.entries
+            .map((e) =>
+                '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+            .join('&');
+        await _storage.write(key: _kPendingDeepLinkParams, value: encoded);
+      }
+      debugPrint('Saved deep link for after login: $path');
+    } catch (e) {
+      debugPrint('Error saving deep link: $e');
+    }
   }
 
   /// Show error toast
@@ -405,13 +488,16 @@ class DeepLinkHandler {
   /// Log deep link analytics event
   static void _logDeepLinkEvent(Uri uri, WidgetRef ref) {
     try {
-      // TODO: Implement analytics logging
+      final analytics = AnalyticsService();
+      analytics.trackAction('deep_link_opened', properties: {
+        'uri': uri.toString(),
+        'path': uri.path,
+        'params': uri.queryParameters,
+        'utm_source': uri.queryParameters['utm_source'] ?? 'unknown',
+        'utm_campaign': uri.queryParameters['utm_campaign'] ?? 'unknown',
+        'utm_medium': uri.queryParameters['utm_medium'] ?? 'unknown',
+      });
       debugPrint('Deep link opened: ${uri.toString()}');
-      debugPrint('Path: ${uri.path}');
-      debugPrint('Params: ${uri.queryParameters}');
-      debugPrint('Source: ${uri.queryParameters['utm_source'] ?? 'unknown'}');
-      debugPrint(
-          'Campaign: ${uri.queryParameters['utm_campaign'] ?? 'unknown'}');
     } catch (e) {
       debugPrint('Analytics error: $e');
     }

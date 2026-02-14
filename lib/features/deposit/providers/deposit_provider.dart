@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -74,8 +76,16 @@ class DepositResult {
 
 /// Deposit notifier — wired to Dio (mock interceptor handles fallback).
 class DepositNotifier extends Notifier<DepositState> {
+  Timer? _pollingTimer;
+  int _pollAttempts = 0;
+  static const int _maxPollAttempts = 60; // ~5 minutes at 5s intervals
+  static const Duration _pollInterval = Duration(seconds: 5);
+
   @override
-  DepositState build() => const DepositState();
+  DepositState build() {
+    ref.onDispose(() => _pollingTimer?.cancel());
+    return const DepositState();
+  }
 
   void selectMethod(DepositMethod method) {
     state = state.copyWith(selectedMethod: method, step: DepositFlowStep.enterAmount);
@@ -108,7 +118,9 @@ class DepositNotifier extends Notifier<DepositState> {
         'currency': 'USDC',
       });
       final result = DepositResult.fromJson(response.data as Map<String, dynamic>);
-      state = state.copyWith(isLoading: false, result: result, step: DepositFlowStep.completed);
+      state = state.copyWith(isLoading: false, result: result, step: DepositFlowStep.processing);
+      // Start polling for status updates
+      _startPolling(result.id);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString(), step: DepositFlowStep.failed);
     }
@@ -116,8 +128,59 @@ class DepositNotifier extends Notifier<DepositState> {
 
   void setAmountXOF(double amount, [dynamic rate]) => state = state.copyWith(amountXOF: amount);
   void setAmountUSD(double amount, [dynamic rate]) => state = state.copyWith(amountUSD: amount);
+  /// Start polling for deposit status after initiation
+  void _startPolling(String depositId) {
+    _pollAttempts = 0;
+    _pollingTimer?.cancel();
+    _pollingTimer = Timer.periodic(_pollInterval, (_) => _pollStatus(depositId));
+  }
+
+  /// Poll the backend for deposit status
+  Future<void> _pollStatus(String depositId) async {
+    _pollAttempts++;
+    if (_pollAttempts > _maxPollAttempts) {
+      _pollingTimer?.cancel();
+      state = state.copyWith(
+        error: 'Deposit status check timed out. Please check your transaction history.',
+        step: DepositFlowStep.failed,
+      );
+      return;
+    }
+
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.get('/wallet/transactions/deposit/$depositId/status');
+      final data = response.data as Map<String, dynamic>;
+      final status = data['status'] as String?;
+
+      if (status == 'completed' || status == 'settled') {
+        _pollingTimer?.cancel();
+        state = state.copyWith(
+          result: DepositResult(
+            id: depositId,
+            status: status!,
+            reference: data['reference'] as String?,
+          ),
+          step: DepositFlowStep.completed,
+        );
+      } else if (status == 'failed' || status == 'cancelled') {
+        _pollingTimer?.cancel();
+        state = state.copyWith(
+          error: data['message'] as String? ?? 'Deposit failed',
+          step: DepositFlowStep.failed,
+        );
+      }
+      // else: still pending, continue polling
+    } catch (e) {
+      debugPrint('Deposit status poll error: $e');
+      // Don't stop polling on transient errors
+    }
+  }
+
   Future<void> checkStatus() async {
-    // TODO: poll backend for deposit status
+    final depositId = state.result?.id;
+    if (depositId == null) return;
+    await _pollStatus(depositId);
   }
   void reset() => state = const DepositState();
 
