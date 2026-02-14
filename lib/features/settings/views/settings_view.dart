@@ -780,6 +780,7 @@ class _KycTile extends ConsumerWidget {
   }
 }
 
+// ignore: unused_element
 class _BiometricTile extends ConsumerWidget {
   const _BiometricTile();
 
@@ -960,6 +961,7 @@ class _ProfileCard extends ConsumerWidget {
       ),
     );
   }
+ // ignore: unused_element
 
   String _getInitials(UserState userState) {
     final firstName = userState.firstName;

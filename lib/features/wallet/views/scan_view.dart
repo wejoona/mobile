@@ -216,6 +216,7 @@ class _ScanViewState extends ConsumerState<ScanView>
     );
   }
 
+  // ignore: unused_element
   Widget _buildWalletAddressFooter(String address) {
     final truncated = address.length > 16
         ? '${address.substring(0, 8)}...${address.substring(address.length - 6)}'

@@ -55,6 +55,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     }
   }
 
+  // ignore: unused_element
   void _onLivenessError(String error) {
     debugPrint('[KYC Liveness] Error: $error');
     setState(() {

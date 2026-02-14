@@ -1093,6 +1093,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _buildCreateWalletCard(
     BuildContext context,
     WidgetRef ref,

@@ -5,7 +5,6 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/utils/date_utils.dart';
-import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 359: Individual notification list tile widget

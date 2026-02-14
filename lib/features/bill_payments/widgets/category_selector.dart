@@ -103,6 +103,7 @@ class CategorySelector extends StatelessWidget {
     }
   }
 
+  // ignore: unused_element
   Color _getCategoryColor(BuildContext context, String iconName) {
     final colors = context.colors;
     switch (iconName) {

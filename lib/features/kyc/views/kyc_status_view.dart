@@ -207,6 +207,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
     }
   }
 
+  // ignore: unused_element
   Widget _buildVerificationDetails(VerifyHqStatus verification, ThemeColors colors) {
     return AppCard(
       variant: AppCardVariant.elevated,

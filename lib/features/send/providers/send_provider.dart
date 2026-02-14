@@ -150,7 +150,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       );
 
       state = state.copyWith(isLoading: false, recipient: recipient);
-    } on DioException catch (e) {
+    } on DioException {
       // If sync fails, still allow setting recipient but mark as unknown
       final recipient = RecipientInfo(
         phoneNumber: phoneNumber,

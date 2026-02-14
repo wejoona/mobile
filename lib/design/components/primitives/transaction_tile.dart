@@ -120,8 +120,6 @@ class TransactionTile extends StatelessWidget {
         return 'Transfer';
       case TransactionType.transferExternal:
         return 'External Transfer';
-      default:
-        return type.name;
     }
   }
 }

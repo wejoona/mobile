@@ -62,7 +62,7 @@ class SavedRecipientsNotifier extends StateNotifier<SavedRecipientsState> {
     if (query.isEmpty) return state.recipients;
     final lower = query.toLowerCase();
     return state.recipients.where((c) {
-      return (c.displayName?.toLowerCase().contains(lower) ?? false) ||
+      return (c.displayName.toLowerCase().contains(lower) ?? false) ||
           (c.phoneNumber?.toLowerCase().contains(lower) ?? false);
     }).toList();
   }

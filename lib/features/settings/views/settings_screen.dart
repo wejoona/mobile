@@ -816,6 +816,7 @@ class _ProfileCard extends ConsumerWidget {
     );
   }
 
+  // ignore: unused_element
   String _getInitials(UserState userState) {
     final firstName = userState.firstName;
     final lastName = userState.lastName;

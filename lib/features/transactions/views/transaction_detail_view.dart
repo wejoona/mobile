@@ -350,6 +350,7 @@ class TransactionDetailView extends ConsumerWidget {
     );
   }
 
+  // ignore: unused_element
   void _shareTransaction(BuildContext context) {
     final dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(transaction.createdAt);
     final amountStr = '\$${transaction.amount.abs().toStringAsFixed(2)}';
