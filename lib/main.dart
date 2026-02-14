@@ -38,6 +38,43 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // Global error handling
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    crashReporting.recordError(details.exception, details.stack);
+  };
+
+  // Custom error widget for release mode
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                const SizedBox(height: 16),
+                const Text(
+                  'Oops! Something went wrong.',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please restart the app.',
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  };
+
   // SECURITY: Wrap app with SecurityGate to block compromised devices
   runApp(
     ProviderScope(
