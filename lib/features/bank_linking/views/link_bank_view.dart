@@ -1,5 +1,6 @@
 /// Link Bank View
 library;
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,7 +47,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bankLinking_linkAccount,
@@ -128,14 +129,14 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Center(
               child: AppText(
                 bank.name.substring(0, 1),
                 style: AppTypography.headlineSmall.copyWith(
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
             ),
@@ -155,7 +156,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
                 AppText(
                   bank.country,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -170,10 +171,10 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.gold500.withOpacity(0.1),
+        color: context.colors.gold.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: AppColors.gold500.withOpacity(0.3),
+          color: context.colors.gold.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -182,7 +183,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
         children: [
           Icon(
             Icons.info_outline,
-            color: AppColors.gold500,
+            color: context.colors.gold,
             size: 20,
           ),
           SizedBox(width: AppSpacing.sm),
@@ -193,7 +194,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
                 AppText(
                   l10n.bankLinking_verificationRequired,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -201,7 +202,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
                 AppText(
                   l10n.bankLinking_verificationDesc,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -219,7 +220,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
         color: AppColors.graphite,
         border: Border(
           top: BorderSide(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             width: 1,
           ),
         ),

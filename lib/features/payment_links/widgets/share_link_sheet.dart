@@ -39,7 +39,7 @@ class ShareLinkSheet extends StatelessWidget {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -103,7 +103,7 @@ class ShareLinkSheet extends StatelessWidget {
           content: AppText(
             AppLocalizations.of(context)!.paymentLinks_linkCopied,
           ),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
           duration: const Duration(seconds: 2),
         ),
       );
@@ -189,7 +189,7 @@ class _ShareOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.obsidian,
+          color: context.colors.canvas,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Row(
@@ -197,12 +197,12 @@ class _ShareOption extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: (iconColor ?? AppColors.gold500).withOpacity(0.1),
+                color: (iconColor ?? context.colors.gold).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(
                 icon,
-                color: iconColor ?? AppColors.gold500,
+                color: iconColor ?? context.colors.gold,
                 size: 24,
               ),
             ),
@@ -216,7 +216,7 @@ class _ShareOption extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ],
         ),

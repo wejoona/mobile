@@ -60,7 +60,7 @@ class LimitCard extends StatelessWidget {
                       '\$${remaining.toStringAsFixed(2)} ${l10n.limits_remaining}',
                       variant: AppTextVariant.bodySmall,
                       color: isAtLimit
-                          ? AppColors.errorBase
+                          ? context.colors.error
                           : (isNearLimit ? AppColors.warningBase : colors.textSecondary),
                     ),
                   ],

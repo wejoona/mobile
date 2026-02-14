@@ -104,7 +104,7 @@ class _VerificationStep extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isComplete
                         ? AppColors.success.withOpacity(0.15)
-                        : AppColors.elevated,
+                        : context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
@@ -125,7 +125,7 @@ class _VerificationStep extends StatelessWidget {
                         style: AppTextStyle.bodySmall,
                         color: isComplete
                             ? AppColors.success
-                            : AppColors.textSecondary,
+                            : context.colors.textSecondary,
                       ),
                     ],
                   ),

@@ -35,7 +35,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
     final state = ref.watch(onboardingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

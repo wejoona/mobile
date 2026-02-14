@@ -307,7 +307,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText('Copied to clipboard'),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
       ),
     );
   }
@@ -378,7 +378,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: AppText('Problem reported. We\'ll get back to you soon.'),
-                  backgroundColor: AppColors.successBase,
+                  backgroundColor: context.colors.success,
                 ),
               );
             },

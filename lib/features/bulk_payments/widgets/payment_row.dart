@@ -40,7 +40,7 @@ class PaymentRow extends StatelessWidget {
                 height: 32,
                 decoration: BoxDecoration(
                   color: payment.isValid
-                      ? AppColors.gold500.withOpacity(0.1)
+                      ? context.colors.gold.withOpacity(0.1)
                       : AppColors.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
@@ -48,7 +48,7 @@ class PaymentRow extends StatelessWidget {
                   child: AppText(
                     '$index',
                     variant: AppTextVariant.bodySmall,
-                    color: payment.isValid ? AppColors.gold500 : AppColors.error,
+                    color: payment.isValid ? context.colors.gold : AppColors.error,
                   ),
                 ),
               ),
@@ -70,8 +70,8 @@ class PaymentRow extends StatelessWidget {
                           Formatting.formatCurrency(payment.amount),
                           variant: AppTextVariant.titleMedium,
                           color: payment.isValid
-                              ? AppColors.gold500
-                              : AppColors.textSecondary,
+                              ? context.colors.gold
+                              : context.colors.textSecondary,
                         ),
                       ],
                     ),
@@ -79,7 +79,7 @@ class PaymentRow extends StatelessWidget {
                     AppText(
                       payment.description,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

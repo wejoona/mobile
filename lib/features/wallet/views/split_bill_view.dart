@@ -45,7 +45,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -115,7 +115,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(AppSpacing.md),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -155,20 +155,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: _splitEqually ? AppColors.gold500 : Colors.transparent,
+                      color: _splitEqually ? context.colors.gold : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppSpacing.sm),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.view_module,
-                          color: _splitEqually ? AppColors.obsidian : colors.textSecondary,
+                          color: _splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
                           'Split Equally',
                           variant: AppTextVariant.labelSmall,
-                          color: _splitEqually ? AppColors.obsidian : colors.textSecondary,
+                          color: _splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
                       ],
                     ),
@@ -181,20 +181,20 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: !_splitEqually ? AppColors.gold500 : Colors.transparent,
+                      color: !_splitEqually ? context.colors.gold : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppSpacing.sm),
                     ),
                     child: Column(
                       children: [
                         Icon(
                           Icons.tune,
-                          color: !_splitEqually ? AppColors.obsidian : colors.textSecondary,
+                          color: !_splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
                           'Custom Amounts',
                           variant: AppTextVariant.labelSmall,
-                          color: !_splitEqually ? AppColors.obsidian : colors.textSecondary,
+                          color: !_splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
                       ],
                     ),
@@ -204,7 +204,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Divider(color: AppColors.borderSubtle),
+          Divider(color: context.colors.borderSubtle),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,7 +217,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               Switch(
                 value: _includeMe,
                 onChanged: (value) => setState(() => _includeMe = value),
-                activeColor: AppColors.gold500,
+                activeColor: context.colors.gold,
               ),
             ],
           ),
@@ -237,11 +237,11 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
         ),
         TextButton.icon(
           onPressed: () => _addParticipant(l10n, colors),
-          icon: Icon(Icons.add, color: AppColors.gold500, size: 20),
+          icon: Icon(Icons.add, color: context.colors.gold, size: 20),
           label: AppText(
             'Add Person',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.gold500,
+            color: context.colors.gold,
           ),
         ),
       ],
@@ -260,11 +260,11 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               height: 48,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.gold500, AppColors.gold500.withValues(alpha: 0.8)],
+                  colors: [context.colors.gold, context.colors.gold.withValues(alpha: 0.8)],
                 ),
                 borderRadius: BorderRadius.circular(AppSpacing.xxl),
               ),
-              child: Icon(Icons.person, color: AppColors.obsidian),
+              child: Icon(Icons.person, color: context.colors.canvas),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -287,7 +287,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             AppText(
               '\$${_myShare.toStringAsFixed(2)}',
               variant: AppTextVariant.titleMedium,
-              color: AppColors.gold500,
+              color: context.colors.gold,
             ),
           ],
         ),
@@ -309,7 +309,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.errorBase,
+            color: context.colors.error,
             borderRadius: BorderRadius.circular(AppSpacing.md),
           ),
           child: const Icon(Icons.delete, color: Colors.white),
@@ -325,14 +325,14 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: context.colors.elevated,
                   borderRadius: BorderRadius.circular(AppSpacing.xxl),
                 ),
                 child: Center(
                   child: AppText(
                     participant.name[0].toUpperCase(),
                     variant: AppTextVariant.titleMedium,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ),
@@ -456,18 +456,18 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 AppText(
                   remaining > 0 ? 'Unassigned' : 'Over-assigned',
                   variant: AppTextVariant.bodyMedium,
-                  color: remaining > 0 ? AppColors.warningBase : AppColors.errorBase,
+                  color: remaining > 0 ? AppColors.warningBase : context.colors.error,
                 ),
                 AppText(
                   '\$${remaining.abs().toStringAsFixed(2)}',
                   variant: AppTextVariant.labelLarge,
-                  color: remaining > 0 ? AppColors.warningBase : AppColors.errorBase,
+                  color: remaining > 0 ? AppColors.warningBase : context.colors.error,
                 ),
               ],
             ),
           ],
           const SizedBox(height: AppSpacing.md),
-          Divider(color: AppColors.borderSubtle),
+          Divider(color: context.colors.borderSubtle),
           const SizedBox(height: AppSpacing.md),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -480,7 +480,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               AppText(
                 '\$${(_totalAmount - _myShare).toStringAsFixed(2)}',
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
             ],
           ),
@@ -525,13 +525,13 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
               height: 48,
               decoration: BoxDecoration(
                 color: isPaid
-                    ? AppColors.successBase.withValues(alpha: 0.1)
+                    ? context.colors.success.withValues(alpha: 0.1)
                     : AppColors.warningBase.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Icon(
                 isPaid ? Icons.check_circle : Icons.pending,
-                color: isPaid ? AppColors.successBase : AppColors.warningBase,
+                color: isPaid ? context.colors.success : AppColors.warningBase,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -547,7 +547,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                   AppText(
                     '${split.paidCount}/${split.totalCount} paid',
                     variant: AppTextVariant.bodySmall,
-                    color: isPaid ? AppColors.successBase : colors.textSecondary,
+                    color: isPaid ? context.colors.success : colors.textSecondary,
                   ),
                 ],
               ),
@@ -664,7 +664,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Payment requests sent to ${_participants.length} people'),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
 

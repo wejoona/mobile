@@ -7,8 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
-/// Auth Locked View
-/// Shown when account is temporarily locked due to too many failed attempts
+/// Auth Locked View — consistent with lock/OTP screen design.
 class AuthLockedView extends ConsumerStatefulWidget {
   const AuthLockedView({super.key});
 
@@ -55,6 +54,7 @@ class _AuthLockedViewState extends ConsumerState<AuthLockedView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(appFsmProvider).auth;
+    final colors = context.colors;
 
     String reason = l10n.auth_lockedReason;
     if (authState is AuthLocked) {
@@ -62,57 +62,67 @@ class _AuthLockedViewState extends ConsumerState<AuthLockedView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.lock_clock,
-                size: 80,
-                color: AppColors.error,
+              // Icon
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: colors.container,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.border),
+                ),
+                child: Icon(
+                  Icons.lock_clock,
+                  color: colors.error,
+                  size: 40,
+                ),
               ),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.auth_accountLocked,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
               AppText(
                 reason,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              const SizedBox(height: AppSpacing.xxxl),
               Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.borderDefault),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Column(
                   children: [
                     AppText(
                       l10n.auth_tryAgainIn,
                       variant: AppTextVariant.labelMedium,
-                      color: AppColors.textSecondary,
+                      color: colors.textSecondary,
                     ),
-                    SizedBox(height: AppSpacing.sm),
+                    const SizedBox(height: AppSpacing.sm),
                     AppText(
                       _formatDuration(_remainingSeconds),
                       variant: AppTextVariant.displaySmall,
-                      color: AppColors.gold500,
+                      color: colors.gold,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.common_backToLogin,
                 onPressed: () {

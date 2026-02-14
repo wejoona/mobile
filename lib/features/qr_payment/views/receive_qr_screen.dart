@@ -330,7 +330,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
             content: Text(
               success ? 'QR code saved to gallery' : 'Failed to save QR code',
             ),
-            backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+            backgroundColor: success ? context.colors.success : context.colors.error,
           ),
         );
       }
@@ -339,7 +339,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to save: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -390,7 +390,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to share: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

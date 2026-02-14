@@ -36,7 +36,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     final userState = ref.watch(userStateMachineProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -118,7 +118,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                     AppText(
                       'Request for \$${_amountController.text}',
                       variant: AppTextVariant.headlineSmall,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                     if (_noteController.text.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.sm),
@@ -207,7 +207,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: _amountError != null ? AppColors.errorBase : AppColors.borderSubtle,
+          color: _amountError != null ? context.colors.error : context.colors.borderSubtle,
         ),
       ),
       child: Row(
@@ -275,14 +275,14 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.2),
+              color: context.colors.gold.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: AppText(
                 number,
                 variant: AppTextVariant.labelSmall,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
             ),
           ),
@@ -340,7 +340,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Payment link copied!'),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
       ),
     );
   }
@@ -393,7 +393,7 @@ class _ShareButton extends StatelessWidget {
                 color: colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(icon, color: AppColors.gold500, size: 22),
+              child: Icon(icon, color: context.colors.gold, size: 22),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(

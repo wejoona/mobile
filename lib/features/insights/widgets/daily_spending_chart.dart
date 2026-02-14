@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -62,7 +63,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
                   return BarTooltipItem(
                     '\$${trend.amount.toStringAsFixed(2)}\n${DateFormat('MMM d').format(trend.date)}',
                     AppTypography.bodySmall.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   );
@@ -99,7 +100,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
               horizontalInterval: maxY / 4,
               getDrawingHorizontalLine: (value) {
                 return FlLine(
-                  color: AppColors.borderSubtle,
+                  color: context.colors.borderSubtle,
                   strokeWidth: 1,
                 );
               },
@@ -107,8 +108,8 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
             borderData: FlBorderData(
               show: true,
               border: Border(
-                bottom: BorderSide(color: AppColors.borderDefault),
-                left: BorderSide(color: AppColors.borderDefault),
+                bottom: BorderSide(color: context.colors.border),
+                left: BorderSide(color: context.colors.border),
               ),
             ),
             barGroups: _buildBarGroups(),
@@ -131,7 +132,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
         barRods: [
           BarChartRodData(
             toY: trend.amount,
-            color: isTouched ? AppColors.gold400 : AppColors.gold500,
+            color: isTouched ? AppColors.gold400 : context.colors.gold,
             width: isTouched ? 24 : 20,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(4),
@@ -171,7 +172,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
       child: Text(
         label.substring(0, 1), // First letter only
         style: AppTypography.bodySmall.copyWith(
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -182,7 +183,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
     return Text(
       '\$${_formatAmount(value)}',
       style: AppTypography.bodySmall.copyWith(
-        color: AppColors.textSecondary,
+        color: context.colors.textSecondary,
       ),
       textAlign: TextAlign.left,
     );

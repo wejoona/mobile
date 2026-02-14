@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_state.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';

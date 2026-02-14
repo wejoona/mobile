@@ -1,5 +1,6 @@
 /// Bank Verification View
 library;
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -74,7 +75,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
     final state = ref.watch(bankLinkingProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bankLinking_verifyAccount,
@@ -99,13 +100,13 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.gold500.withOpacity(0.15),
+                        color: context.colors.gold.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.security,
                         size: 40,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ),
                   ),
@@ -119,7 +120,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
                   AppText(
                     l10n.bankLinking_verificationDesc,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -148,8 +149,8 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
                             : l10n.bankLinking_resendOtpIn(_resendCountdown),
                         style: AppTypography.bodyMedium.copyWith(
                           color: _canResend
-                              ? AppColors.gold500
-                              : AppColors.textTertiary,
+                              ? context.colors.gold
+                              : context.colors.textTertiary,
                         ),
                       ),
                     ),
@@ -179,7 +180,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
         children: [
           Icon(
             Icons.info_outline,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             size: 20,
           ),
           SizedBox(width: AppSpacing.sm),
@@ -187,7 +188,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
             child: AppText(
               l10n.bankLinking_devOtpHint,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -203,7 +204,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
         color: AppColors.graphite,
         border: Border(
           top: BorderSide(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             width: 1,
           ),
         ),

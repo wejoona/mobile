@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -232,7 +233,7 @@ class NotificationPermissionScreen extends ConsumerWidget {
             label: l10n.action_open_settings,
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Open app settings using app_settings package
+              openAppSettings();
             },
             size: AppButtonSize.small,
           ),

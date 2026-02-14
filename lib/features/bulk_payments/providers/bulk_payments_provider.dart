@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/bulk_payment.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 
 /// Bulk payments list provider — wired to BulkPaymentsService.
@@ -21,3 +23,7 @@ final batchDetailProvider = FutureProvider.family<dynamic, String>((ref, batchId
   final service = ref.watch(bulkPaymentsServiceProvider);
   return service.getBatchStatus(batchId);
 });
+
+/// Draft batch state for the preview flow.
+/// Set after CSV parsing, consumed by BulkPreviewView.
+final draftBatchProvider = StateProvider<BulkBatch?>((ref) => null);

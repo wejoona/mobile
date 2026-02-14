@@ -10,8 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Reset PIN View
@@ -43,7 +42,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: Text(
           l10n.pin_resetTitle,
@@ -83,7 +82,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         Icon(
           Icons.lock_reset,
           size: 80,
-          color: AppColors.gold500,
+          color: context.colors.gold,
         ),
         SizedBox(height: AppSpacing.xxl),
         Text(
@@ -95,7 +94,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         Text(
           l10n.pin_reset_requestMessage,
           style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -117,7 +116,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         Text(
           l10n.pin_reset_enterOtp,
           style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -133,7 +132,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           Text(
             _errorMessage!,
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.errorText,
+              color: context.colors.errorText,
             ),
           ),
         ],
@@ -150,7 +149,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           child: Text(
             l10n.auth_resendOtp,
             style: AppTypography.labelLarge.copyWith(
-              color: AppColors.gold500,
+              color: context.colors.gold,
             ),
           ),
         ),
@@ -165,29 +164,29 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         Text(
           l10n.pin_enterNewPin,
           style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: AppSpacing.xxxl),
-        PinDots(
-          filledCount: _newPin.length,
-          showError: _showError,
+        PinDots(length: 6,
+          filled: _newPin.length,
+          error: _showError,
         ),
         if (_errorMessage != null) ...[
           SizedBox(height: AppSpacing.md),
           Text(
             _errorMessage!,
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.errorText,
+              color: context.colors.errorText,
             ),
             textAlign: TextAlign.center,
           ),
         ],
         const Spacer(),
         PinPad(
-          onNumberPressed: _handleNewPinNumber,
-          onBackspace: _handleNewPinBackspace,
+          onDigitPressed: _handleNewPinNumber,
+          onDeletePressed: _handleNewPinBackspace,
         ),
         SizedBox(height: AppSpacing.xl),
       ],
@@ -201,34 +200,34 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         Text(
           l10n.pin_confirmNewPin,
           style: AppTypography.bodyLarge.copyWith(
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
         SizedBox(height: AppSpacing.xxxl),
-        PinDots(
-          filledCount: _confirmPin.length,
-          showError: _showError,
+        PinDots(length: 6,
+          filled: _confirmPin.length,
+          error: _showError,
         ),
         if (_errorMessage != null) ...[
           SizedBox(height: AppSpacing.md),
           Text(
             _errorMessage!,
             style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.errorText,
+              color: context.colors.errorText,
             ),
             textAlign: TextAlign.center,
           ),
         ],
         const Spacer(),
         if (_isLoading)
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
           )
         else
           PinPad(
-            onNumberPressed: _handleConfirmPinNumber,
-            onBackspace: _handleConfirmPinBackspace,
+            onDigitPressed: _handleConfirmPinNumber,
+            onDeletePressed: _handleConfirmPinBackspace,
           ),
         SizedBox(height: AppSpacing.xl),
       ],
@@ -306,10 +305,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     });
   }
 
-  void _handleNewPinNumber(String number) {
+  void _handleNewPinNumber(int digit) {
     if (_newPin.length < 6) {
       setState(() {
-        _newPin += number;
+        _newPin += digit.toString();
         _showError = false;
         _errorMessage = null;
       });
@@ -354,10 +353,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     setState(() => _step = 4);
   }
 
-  void _handleConfirmPinNumber(String number) {
+  void _handleConfirmPinNumber(int digit) {
     if (_confirmPin.length < 6) {
       setState(() {
-        _confirmPin += number;
+        _confirmPin += digit.toString();
         _showError = false;
         _errorMessage = null;
       });
@@ -414,7 +413,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.pin_success_reset),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
         context.go('/home');

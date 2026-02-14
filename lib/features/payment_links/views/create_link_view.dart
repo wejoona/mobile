@@ -33,7 +33,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.paymentLinks_createLink,
@@ -52,7 +52,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
               AppText(
                 l10n.paymentLinks_createDescription,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
               SizedBox(height: AppSpacing.xl),
 
@@ -103,14 +103,14 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                   color: AppColors.slate,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.gold500.withOpacity(0.2),
+                    color: context.colors.gold.withOpacity(0.2),
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       size: 24,
                     ),
                     SizedBox(width: AppSpacing.md),
@@ -118,7 +118,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                       child: AppText(
                         l10n.paymentLinks_info,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -164,18 +164,18 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.gold500 : AppColors.slate,
+              color: isSelected ? context.colors.gold : AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.full),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.gold500
-                    : AppColors.textSecondary.withOpacity(0.2),
+                    ? context.colors.gold
+                    : context.colors.textSecondary.withOpacity(0.2),
               ),
             ),
             child: AppText(
               label,
               variant: AppTextVariant.bodyMedium,
-              color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
+              color: isSelected ? context.colors.canvas : context.colors.textPrimary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -211,7 +211,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
             content: AppText(
               AppLocalizations.of(context)!.common_error,
             ),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

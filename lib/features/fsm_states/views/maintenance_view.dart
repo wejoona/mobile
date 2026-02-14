@@ -9,7 +9,7 @@ class MaintenanceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -20,27 +20,27 @@ class MaintenanceView extends StatelessWidget {
               Icon(
                 Icons.construction,
                 size: 80,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
                 'Maintenance en cours',
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 'Korido est en cours de maintenance. Nous serons de retour très bientôt. Merci de votre patience.',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const Spacer(),
               AppText(
                 'Veuillez réessayer dans quelques minutes',
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textTertiary,
+                color: context.colors.textTertiary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.lg),

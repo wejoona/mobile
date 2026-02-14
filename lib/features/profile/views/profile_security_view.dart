@@ -141,7 +141,7 @@ class _SecurityOption extends StatelessWidget {
             if (status == _SecurityStatus.active)
               Icon(Icons.check_circle, color: _statusColor, size: 18),
             const SizedBox(width: AppSpacing.xs),
-            const Icon(Icons.chevron_right, color: AppColors.textTertiary),
+            Icon(Icons.chevron_right, color: AppColors.textTertiary),
           ],
         ),
         onTap: onTap,

@@ -28,7 +28,7 @@ class CardActionButtons extends StatelessWidget {
           icon: isFrozen ? Icons.lock_open : Icons.lock,
           label: isFrozen ? 'Debloquer' : 'Bloquer',
           onTap: onFreeze,
-          color: isFrozen ? AppColors.warning : AppColors.textSecondary,
+          color: isFrozen ? AppColors.warning : context.colors.textSecondary,
         ),
         _ActionButton(
           icon: Icons.visibility_outlined,
@@ -77,12 +77,12 @@ class _ActionButton extends StatelessWidget {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: AppColors.elevated,
+                color: context.colors.elevated,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
-                color: color ?? AppColors.textSecondary,
+                color: color ?? context.colors.textSecondary,
                 size: 22,
               ),
             ),
@@ -90,7 +90,7 @@ class _ActionButton extends StatelessWidget {
             AppText(
               label,
               style: AppTextStyle.bodySmall,
-              color: AppColors.textTertiary,
+              color: context.colors.textTertiary,
             ),
           ],
         ),

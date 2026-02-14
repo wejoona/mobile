@@ -20,7 +20,7 @@ class LimitProgressBar extends StatelessWidget {
     final colors = context.colors;
 
     Color getProgressColor() {
-      if (isAtLimit) return AppColors.errorBase;
+      if (isAtLimit) return context.colors.error;
       if (isNearLimit) return AppColors.warningBase;
       return colors.gold;
     }

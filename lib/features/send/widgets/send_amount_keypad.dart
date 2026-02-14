@@ -129,11 +129,11 @@ class _KeypadButton extends StatelessWidget {
             height: 64,
             alignment: Alignment.center,
             child: icon != null
-                ? Icon(icon, color: AppColors.textPrimary, size: 24)
+                ? Icon(icon, color: context.colors.textPrimary, size: 24)
                 : AppText(
                     label ?? '',
                     style: AppTextStyle.headingSmall,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
           ),
         ),

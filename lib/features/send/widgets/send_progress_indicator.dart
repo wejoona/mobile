@@ -39,7 +39,7 @@ class SendProgressIndicator extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isActive
                             ? AppColors.gold
-                            : AppColors.elevated,
+                            : context.colors.elevated,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -52,7 +52,7 @@ class SendProgressIndicator extends StatelessWidget {
               AppText(
                 stepLabels[currentStep],
                 style: AppTextStyle.labelSmall,
-                color: AppColors.textTertiary,
+                color: context.colors.textTertiary,
               ),
           ],
         ),

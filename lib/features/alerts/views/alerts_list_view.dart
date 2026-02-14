@@ -56,7 +56,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
     final filteredAlerts = _filterAlerts(state.alerts);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Row(
@@ -176,7 +176,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
         children: [
           _buildStatItem('Total', stats.total, colors.textSecondary, colors),
           _buildStatItem('Unread', stats.unread, colors.gold, colors),
-          _buildStatItem('Critical', stats.critical, AppColors.errorBase, colors),
+          _buildStatItem('Critical', stats.critical, context.colors.error, colors),
           _buildStatItem('Action', stats.actionRequired, AppColors.warningBase, colors),
         ],
       ),

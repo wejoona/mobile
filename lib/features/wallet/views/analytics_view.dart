@@ -145,7 +145,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                     label: l10n.analytics_income,
                     amount: _totalIncome,
                     icon: Icons.arrow_downward,
-                    iconColor: AppColors.successBase,
+                    iconColor: context.colors.success,
                     trend: '+12.5%',
                     trendPositive: true,
                     colors: colors,
@@ -157,7 +157,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
                     label: l10n.analytics_expenses,
                     amount: _totalExpenses,
                     icon: Icons.arrow_upward,
-                    iconColor: AppColors.errorBase,
+                    iconColor: context.colors.error,
                     trend: '-5.2%',
                     trendPositive: true,
                     colors: colors,
@@ -455,7 +455,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
       children: [
         _InsightCard(
           icon: Icons.trending_up,
-          iconColor: AppColors.successBase,
+          iconColor: context.colors.success,
           title: l10n.analytics_insightSpendingDown,
           description: l10n.analytics_insightSpendingDownDesc,
           colors: colors,
@@ -570,7 +570,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Export failed: $e'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -654,14 +654,14 @@ class _StatCard extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: trendPositive
-                      ? AppColors.successBase.withValues(alpha: 0.2)
-                      : AppColors.errorBase.withValues(alpha: 0.2),
+                      ? context.colors.success.withValues(alpha: 0.2)
+                      : context.colors.error.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
                   trend,
                   variant: AppTextVariant.labelSmall,
-                  color: trendPositive ? AppColors.successBase : AppColors.errorBase,
+                  color: trendPositive ? context.colors.success : context.colors.error,
                 ),
               ),
             ],

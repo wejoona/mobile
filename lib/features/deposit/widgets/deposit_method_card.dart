@@ -45,12 +45,12 @@ class DepositMethodCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _methodIcon,
-                    color: isSelected ? AppColors.gold : AppColors.textSecondary,
+                    color: isSelected ? AppColors.gold : context.colors.textSecondary,
                     size: 24,
                   ),
                 ),
@@ -64,7 +64,7 @@ class DepositMethodCard extends StatelessWidget {
                       AppText(
                         method.description,
                         style: AppTextStyle.bodySmall,
-                        color: AppColors.textTertiary,
+                        color: context.colors.textTertiary,
                       ),
                     ],
                   ),
@@ -79,13 +79,13 @@ class DepositMethodCard extends StatelessWidget {
                       style: AppTextStyle.labelSmall,
                       color: method.feePercent == 0
                           ? AppColors.success
-                          : AppColors.textSecondary,
+                          : context.colors.textSecondary,
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
                       _estimatedTimeLabel,
                       style: AppTextStyle.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: context.colors.textTertiary,
                     ),
                   ],
                 ),

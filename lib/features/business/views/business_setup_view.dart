@@ -184,7 +184,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.business_setupSuccess),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
         // Navigate to business profile
@@ -195,7 +195,7 @@ class _BusinessSetupViewState extends ConsumerState<BusinessSetupView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(error ?? l10n.error_generic),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

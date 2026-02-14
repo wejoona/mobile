@@ -34,7 +34,7 @@ class AlertCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: AppColors.errorBase,
+          color: context.colors.error,
           borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: const Icon(Icons.delete, color: Colors.white),
@@ -83,7 +83,7 @@ class AlertCard extends StatelessWidget {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.errorBase,
+                                    color: context.colors.error,
                                     borderRadius: BorderRadius.circular(AppRadius.sm),
                                   ),
                                   child: const AppText(
@@ -155,13 +155,13 @@ class AlertCard extends StatelessWidget {
                               vertical: AppSpacing.xxs,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.successBase.withValues(alpha: 0.15),
+                              color: context.colors.success.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(AppRadius.sm),
                             ),
                             child: AppText(
                               alert.actionTaken!.displayName,
                               variant: AppTextVariant.labelSmall,
-                              color: AppColors.successBase,
+                              color: context.colors.success,
                             ),
                           ),
                       ],

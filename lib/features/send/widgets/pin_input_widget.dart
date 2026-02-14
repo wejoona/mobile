@@ -94,7 +94,7 @@ class _PinInputWidgetState extends State<PinInputWidget> {
             child: AppText(
               AppLocalizations.of(context)!.action_clear,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.gold500,
+              color: context.colors.gold,
             ),
           ),
         ],
@@ -112,10 +112,10 @@ class _PinInputWidgetState extends State<PinInputWidget> {
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: widget.error != null
-              ? AppColors.errorBase
+              ? context.colors.error
               : _focusNodes[index].hasFocus
-                  ? AppColors.gold500
-                  : AppColors.textSecondary.withOpacity(0.3),
+                  ? context.colors.gold
+                  : context.colors.textSecondary.withOpacity(0.3),
           width: 2,
         ),
       ),
@@ -127,7 +127,7 @@ class _PinInputWidgetState extends State<PinInputWidget> {
         maxLength: 1,
         obscureText: widget.obscureText,
         style: AppTypography.headlineMedium.copyWith(
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         decoration: const InputDecoration(
           counterText: '',

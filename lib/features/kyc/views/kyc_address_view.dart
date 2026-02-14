@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -69,7 +70,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.kyc_address_title,
@@ -89,7 +90,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                     AppText(
                       l10n.kyc_address_description,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.xxl),
                     _buildAddressForm(l10n),
@@ -194,7 +195,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
         AppText(
           l10n.kyc_address_proofDocument_description,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.md),
         ...AddressDocumentType.values.map((type) {
@@ -208,7 +209,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.charcoal : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? AppColors.gold500 : AppColors.border,
+                    color: isSelected ? context.colors.gold : AppColors.border,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -217,7 +218,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                   children: [
                     Icon(
                       isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? AppColors.gold500 : AppColors.silver,
+                      color: isSelected ? context.colors.gold : AppColors.silver,
                     ),
                     SizedBox(width: AppSpacing.md),
                     Expanded(
@@ -232,7 +233,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                           AppText(
                             _getDocumentTypeDescription(l10n, type),
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ],
                       ),
@@ -311,7 +312,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
             onPressed: () => setState(() => _uploadedDocumentPath = null),
             icon: const Icon(Icons.close),
             style: IconButton.styleFrom(
-              backgroundColor: AppColors.obsidian.withOpacity(0.8),
+              backgroundColor: context.colors.canvas.withOpacity(0.8),
               foregroundColor: Colors.white,
             ),
           ),
@@ -326,7 +327,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, color: AppColors.gold500),
+          Icon(Icons.info_outline, color: context.colors.gold),
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -340,7 +341,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                 AppText(
                   l10n.kyc_address_info_description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -435,7 +436,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.kyc_address_error),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
     } finally {

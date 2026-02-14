@@ -31,7 +31,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -47,14 +47,14 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
               AppText(
                 l10n.device_newDeviceDetected,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 l10n.device_verificationRequired,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               if (deviceId != null) ...[
@@ -62,13 +62,13 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.borderDefault),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.gold500),
+                      Icon(Icons.info_outline, color: context.colors.gold),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(
@@ -77,12 +77,12 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
                             AppText(
                               l10n.device_deviceId,
                               variant: AppTextVariant.labelSmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                             AppText(
                               deviceId.substring(0, deviceId.length > 20 ? 20 : deviceId.length),
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ],
                         ),
@@ -99,13 +99,13 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
                     AppText(
                       l10n.device_verificationOptions,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     AppText(
                       l10n.device_verificationOptionsDesc,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -181,7 +181,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification failed: ${e.toString()}'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -198,11 +198,11 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.elevated,
+        backgroundColor: context.colors.elevated,
         title: AppText(
           l10n.device_verifyWithOtp,
           variant: AppTextVariant.headlineSmall,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
         ),
         content: TextField(
           controller: controller,
@@ -216,11 +216,11 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText(l10n.common_cancel, color: AppColors.textSecondary),
+            child: AppText(l10n.common_cancel, color: context.colors.textSecondary),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: AppText(l10n.action_confirm, color: AppColors.gold500),
+            child: AppText(l10n.action_confirm, color: context.colors.gold),
           ),
         ],
       ),
@@ -262,7 +262,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification failed: ${e.toString()}'),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }

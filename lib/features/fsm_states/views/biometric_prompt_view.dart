@@ -92,7 +92,7 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -102,26 +102,26 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
               Icon(
                 Icons.fingerprint,
                 size: 100,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
               SizedBox(height: AppSpacing.xxl),
               AppText(
                 l10n.biometric_promptTitle,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 reason,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xxxl),
               if (_isAuthenticating)
                 CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
                 ),
               if (!_isAuthenticating) ...[
                 AppButton(

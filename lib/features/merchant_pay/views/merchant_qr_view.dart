@@ -76,14 +76,14 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText('My QR Code', variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: _copyQrData,
-            icon: Icon(Icons.copy, color: AppColors.gold500),
+            icon: Icon(Icons.copy, color: context.colors.gold),
             tooltip: l10n.action_copy,
           ),
         ],
@@ -106,12 +106,12 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          color: AppColors.gold500.withValues(alpha: 0.1),
+                          color: context.colors.gold.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           _getCategoryIcon(widget.merchant.category),
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                           size: 30,
                         ),
                       ),
@@ -132,7 +132,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                             SizedBox(width: AppSpacing.xs),
                             Icon(
                               Icons.verified,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                               size: 20,
                             ),
                           ],
@@ -220,7 +220,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                 padding: EdgeInsets.all(AppSpacing.md),
                 child: Row(
                   children: [
-                    Icon(Icons.account_balance_wallet, color: AppColors.gold500),
+                    Icon(Icons.account_balance_wallet, color: context.colors.gold),
                     SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Column(
@@ -229,7 +229,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
                           AppText(
                             'Daily Limit Remaining',
                             variant: AppTextVariant.labelMedium,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                           ),
                           AppText(
                             '\$${widget.merchant.remainingDailyLimit.toStringAsFixed(2)} of \$${widget.merchant.dailyLimit.toStringAsFixed(2)}',

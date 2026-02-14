@@ -30,7 +30,7 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -46,14 +46,14 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
               AppText(
                 l10n.session_conflict,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 l10n.session_conflictMessage,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               if (conflictingDeviceId != null) ...[
@@ -61,13 +61,13 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.borderDefault),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.smartphone, color: AppColors.gold500),
+                      Icon(Icons.smartphone, color: context.colors.gold),
                       SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Column(
@@ -76,13 +76,13 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
                             AppText(
                               l10n.session_otherDevice,
                               variant: AppTextVariant.labelSmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                             AppText(
                               conflictingDeviceId.substring(0,
                                 conflictingDeviceId.length > 20 ? 20 : conflictingDeviceId.length),
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ],
                         ),
@@ -105,7 +105,7 @@ class _SessionConflictViewState extends ConsumerState<SessionConflictView> {
                     AppText(
                       l10n.session_forceLogoutWarning,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ],

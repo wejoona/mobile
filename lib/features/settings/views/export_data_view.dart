@@ -132,7 +132,7 @@ class _ExportOption extends StatelessWidget {
                     AppText(
                       subtitle,
                       style: AppTextStyle.bodySmall,
-                      color: AppColors.textTertiary,
+                      color: context.colors.textTertiary,
                     ),
                   ],
                 ),
@@ -168,7 +168,7 @@ class _FormatChip extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: selected ? AppColors.gold.withOpacity(0.12) : AppColors.elevated,
+          color: selected ? AppColors.gold.withOpacity(0.12) : context.colors.elevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? AppColors.gold : Colors.transparent,
@@ -177,7 +177,7 @@ class _FormatChip extends StatelessWidget {
         child: AppText(
           label,
           style: AppTextStyle.labelMedium,
-          color: selected ? AppColors.gold : AppColors.textSecondary,
+          color: selected ? AppColors.gold : context.colors.textSecondary,
         ),
       ),
     );

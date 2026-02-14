@@ -133,7 +133,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                         ),
                       )
                     else if (_verifiedName != null)
-                      const Icon(Icons.check_circle, color: AppColors.successBase, size: 24),
+                      Icon(Icons.check_circle, color: context.colors.success, size: 24),
                   ],
                 ),
                 if (_verifiedName != null) ...[
@@ -141,7 +141,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
                   AppText(
                     'Account: $_verifiedName',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.successBase,
+                    color: context.colors.success,
                   ),
                 ],
 
@@ -522,7 +522,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Bill payment of \$${_amountController.text} successful!'),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
       ref.read(walletStateMachineProvider.notifier).refresh();

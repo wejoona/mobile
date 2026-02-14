@@ -14,7 +14,7 @@ class ForceUpdateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -25,20 +25,20 @@ class ForceUpdateView extends StatelessWidget {
               Icon(
                 Icons.system_update,
                 size: 80,
-                color: AppColors.gold500,
+                color: context.colors.gold,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
                 'Mise à jour requise',
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 'Une nouvelle version de Korido est disponible. Veuillez mettre à jour l\'application pour continuer.',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const Spacer(),

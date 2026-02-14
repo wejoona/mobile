@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -74,7 +75,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.kyc_additionalDocs_title,
@@ -94,7 +95,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                     AppText(
                       l10n.kyc_additionalDocs_description,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.xxl),
                     _buildEmploymentSection(l10n),
@@ -176,7 +177,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
         AppText(
           l10n.kyc_additionalDocs_sourceOfFunds_description,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.md),
         ...SourceOfFundsType.values.map((type) {
@@ -190,7 +191,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                 decoration: BoxDecoration(
                   color: isSelected ? AppColors.charcoal : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? AppColors.gold500 : AppColors.border,
+                    color: isSelected ? context.colors.gold : AppColors.border,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -199,7 +200,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                   children: [
                     Icon(
                       isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? AppColors.gold500 : AppColors.silver,
+                      color: isSelected ? context.colors.gold : AppColors.silver,
                     ),
                     SizedBox(width: AppSpacing.md),
                     AppText(
@@ -242,7 +243,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
           AppText(
             l10n.kyc_additionalDocs_supportingDocs_description,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           SizedBox(height: AppSpacing.md),
           _buildDocumentSuggestions(l10n),
@@ -297,13 +298,13 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.gold500.withOpacity(0.1),
+            color: context.colors.gold.withOpacity(0.1),
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: AppText(
             suggestion,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.gold500,
+            color: context.colors.gold,
           ),
         );
       }).toList(),
@@ -338,7 +339,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                 onPressed: () => setState(() => _uploadedDocuments.removeAt(index)),
                 icon: const Icon(Icons.close),
                 style: IconButton.styleFrom(
-                  backgroundColor: AppColors.obsidian.withOpacity(0.8),
+                  backgroundColor: context.colors.canvas.withOpacity(0.8),
                   foregroundColor: Colors.white,
                 ),
               ),
@@ -355,7 +356,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline, color: AppColors.gold500),
+          Icon(Icons.info_outline, color: context.colors.gold),
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -369,7 +370,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                 AppText(
                   l10n.kyc_additionalDocs_info_description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -450,7 +451,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.kyc_additionalDocs_error),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
     } finally {

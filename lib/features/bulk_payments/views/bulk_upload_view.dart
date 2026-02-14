@@ -24,7 +24,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bulkPayments_uploadTitle,
@@ -62,7 +62,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
             children: [
               Icon(
                 Icons.info_outline,
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 size: 24,
               ),
               SizedBox(width: AppSpacing.sm),
@@ -76,7 +76,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
           AppText(
             l10n.bulkPayments_instructionsDescription,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ],
       ),
@@ -101,7 +101,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
               color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: AppColors.gold500.withOpacity(0.3),
+                color: context.colors.gold.withOpacity(0.3),
                 width: 2,
                 style: BorderStyle.solid,
               ),
@@ -111,7 +111,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
                 Icon(
                   Icons.cloud_upload,
                   size: 48,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
                 SizedBox(height: AppSpacing.md),
                 AppText(
@@ -123,7 +123,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
                 AppText(
                   l10n.bulkPayments_csvOnly,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -147,7 +147,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: context.colors.canvas,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: AppText(
@@ -181,14 +181,14 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
         Icon(
           icon,
           size: 16,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(width: AppSpacing.sm),
         Expanded(
           child: AppText(
             text,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -208,7 +208,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: context.colors.canvas,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: AppText(

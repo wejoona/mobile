@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Session configuration
 class SessionConfig {
@@ -165,6 +166,10 @@ class SessionService extends Notifier<SessionState> {
   void lockSession() {
     _cancelAllTimers();
     state = state.copyWith(status: SessionStatus.locked);
+    // Sync with AuthProvider so router shows lock screen
+    try {
+      ref.read(authProvider.notifier).setLocked();
+    } catch (_) {}
   }
 
   /// Unlock the session after successful PIN/biometric
@@ -199,8 +204,10 @@ class SessionService extends Notifier<SessionState> {
     _backgroundEnteredAt = DateTime.now();
     state = state.copyWith(isInBackground: true);
 
-    // Optionally lock session when going to background
-    // lockSession();
+    // Lock session immediately when going to background
+    if (state.status == SessionStatus.active) {
+      lockSession();
+    }
   }
 
   /// App returned to foreground

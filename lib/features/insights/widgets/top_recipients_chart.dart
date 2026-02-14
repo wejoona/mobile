@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
@@ -58,7 +59,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                             height: 24,
                             decoration: BoxDecoration(
                               color: index < 3
-                                  ? AppColors.gold500.withValues(alpha: 0.2)
+                                  ? context.colors.gold.withValues(alpha: 0.2)
                                   : AppColors.slate,
                               shape: BoxShape.circle,
                             ),
@@ -66,7 +67,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                               child: AppText(
                                 '${index + 1}',
                                 variant: AppTextVariant.bodySmall,
-                                color: index < 3 ? AppColors.gold500 : AppColors.textSecondary,
+                                color: index < 3 ? context.colors.gold : context.colors.textSecondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -76,7 +77,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                             child: AppText(
                               recipient.name,
                               variant: AppTextVariant.bodyMedium,
-                              color: isTouched ? AppColors.gold500 : AppColors.textPrimary,
+                              color: isTouched ? context.colors.gold : context.colors.textPrimary,
                               fontWeight: FontWeight.w600,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -87,7 +88,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                     AppText(
                       '\$${recipient.totalSent.toStringAsFixed(2)}',
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
                     ),
                   ],
@@ -112,7 +113,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                           gradient: LinearGradient(
                             colors: isTouched
                                 ? [AppColors.gold400, AppColors.gold600]
-                                : [AppColors.gold500, AppColors.gold700],
+                                : [context.colors.gold, AppColors.gold700],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
@@ -120,7 +121,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                           boxShadow: isTouched
                               ? [
                                   BoxShadow(
-                                    color: AppColors.gold500.withValues(alpha: 0.3),
+                                    color: context.colors.gold.withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -137,7 +138,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                 AppText(
                   '${recipient.transactionCount} transactions • ${recipient.percentage.toStringAsFixed(1)}%',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),

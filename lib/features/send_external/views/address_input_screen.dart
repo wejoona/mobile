@@ -40,7 +40,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
     final state = ref.watch(externalTransferProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.sendExternal_title,
@@ -63,7 +63,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                         children: [
                           Icon(
                             Icons.info_outline,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                             size: 20,
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -71,7 +71,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                             child: AppText(
                               l10n.sendExternal_info,
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ),
                         ],
@@ -124,7 +124,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                     AppText(
                       l10n.sendExternal_supportedNetworks,
                       variant: AppTextVariant.labelLarge,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     _buildNetworkInfoCard(
@@ -152,14 +152,14 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.errorBase.withOpacity(0.1),
+                      color: context.colors.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.error_outline,
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                           size: 20,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -167,7 +167,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                           child: AppText(
                             state.error!,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.errorBase,
+                            color: context.colors.error,
                           ),
                         ),
                       ],
@@ -196,7 +196,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
     return AppCard(
       child: Row(
         children: [
-          Icon(icon, color: AppColors.gold500, size: 20),
+          Icon(icon, color: context.colors.gold, size: 20),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -210,7 +210,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                 AppText(
                   info,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),

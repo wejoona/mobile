@@ -56,7 +56,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     final nonUsers = filteredContacts.where((c) => !c.isJoonaPayUser).toList();
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -72,7 +72,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                 child: AppText(
                   _formatSyncTime(context, state.lastSyncTime!),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
               ),
             ),
@@ -83,10 +83,10 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
           await ref.read(contactsProvider.notifier).syncContacts();
         },
         backgroundColor: AppColors.slate,
-        color: AppColors.gold500,
+        color: context.colors.gold,
         child: state.isLoading
             ? Center(
-                child: CircularProgressIndicator(color: AppColors.gold500),
+                child: CircularProgressIndicator(color: context.colors.gold),
               )
             : Column(
                 children: [
@@ -109,17 +109,17 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       padding: EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: AppColors.gold500.withOpacity(0.1),
+                        color: context.colors.gold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(AppRadius.md),
                         border: Border.all(
-                          color: AppColors.gold500.withOpacity(0.3),
+                          color: context.colors.gold.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.check_circle,
-                            color: AppColors.gold500,
+                            color: context.colors.gold,
                             size: 20,
                           ),
                           SizedBox(width: AppSpacing.sm),
@@ -129,7 +129,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                 state.lastSyncResult!.joonaPayUsersFound,
                               ),
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                             ),
                           ),
                         ],
@@ -182,7 +182,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                   Icon(
                                     Icons.contacts_outlined,
                                     size: 64,
-                                    color: AppColors.textTertiary,
+                                    color: context.colors.textTertiary,
                                   ),
                                   SizedBox(height: AppSpacing.md),
                                   AppText(
@@ -190,7 +190,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                                         ? l10n.contacts_no_results
                                         : l10n.contacts_empty,
                                     variant: AppTextVariant.bodyLarge,
-                                    color: AppColors.textSecondary,
+                                    color: context.colors.textSecondary,
                                     textAlign: TextAlign.center,
                                   ),
                                 ],
@@ -212,7 +212,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
         AppText(
           title,
           variant: AppTextVariant.bodyLarge,
-          color: AppColors.textPrimary,
+          color: context.colors.textPrimary,
           fontWeight: FontWeight.w600,
         ),
         SizedBox(width: AppSpacing.xs),
@@ -222,13 +222,13 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: AppColors.gold500.withOpacity(0.2),
+            color: context.colors.gold.withOpacity(0.2),
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: AppText(
             '$count',
             variant: AppTextVariant.bodySmall,
-            color: AppColors.gold500,
+            color: context.colors.gold,
             fontWeight: FontWeight.w600,
           ),
         ),

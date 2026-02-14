@@ -199,8 +199,8 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     final l10n = AppLocalizations.of(context)!;
     final score = _calculateSecurityScore();
     final scoreColor = score >= 80
-        ? AppColors.successBase
-        : (score >= 60 ? AppColors.warningBase : AppColors.errorBase);
+        ? context.colors.success
+        : (score >= 60 ? AppColors.warningBase : context.colors.error);
 
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -297,13 +297,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               height: 44,
               decoration: BoxDecoration(
                 color: isDanger
-                    ? AppColors.errorBase.withValues(alpha: 0.1)
+                    ? context.colors.error.withValues(alpha: 0.1)
                     : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 icon,
-                color: isDanger ? AppColors.errorBase : colors.gold,
+                color: isDanger ? context.colors.error : colors.gold,
                 size: 22,
               ),
             ),
@@ -315,7 +315,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   AppText(
                     title,
                     variant: AppTextVariant.labelMedium,
-                    color: isDanger ? AppColors.errorBase : colors.textPrimary,
+                    color: isDanger ? context.colors.error : colors.textPrimary,
                   ),
                   AppText(
                     subtitle,
@@ -327,7 +327,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             Icon(
               Icons.chevron_right,
-              color: isDanger ? AppColors.errorBase : colors.textTertiary,
+              color: isDanger ? context.colors.error : colors.textTertiary,
             ),
           ],
         ),
@@ -481,7 +481,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.security_2FAEnabledSuccess),
-                      backgroundColor: AppColors.successBase,
+                      backgroundColor: context.colors.success,
                     ),
                   );
                 },
@@ -579,7 +579,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(l10n.security_logoutAllSuccess),
-                    backgroundColor: AppColors.successBase,
+                    backgroundColor: context.colors.success,
                   ),
                 );
               },
@@ -686,13 +686,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               height: 40,
               decoration: BoxDecoration(
                 color: success
-                    ? AppColors.successBase.withValues(alpha: 0.1)
-                    : AppColors.errorBase.withValues(alpha: 0.1),
+                    ? context.colors.success.withValues(alpha: 0.1)
+                    : context.colors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 success ? Icons.check : Icons.close,
-                color: success ? AppColors.successBase : AppColors.errorBase,
+                color: success ? context.colors.success : context.colors.error,
                 size: 20,
               ),
             ),
@@ -716,7 +716,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             AppText(
               success ? l10n.security_loginSuccess : l10n.security_loginFailed,
               variant: AppTextVariant.labelSmall,
-              color: success ? AppColors.successBase : AppColors.errorBase,
+              color: success ? context.colors.success : context.colors.error,
             ),
           ],
         ),
@@ -737,7 +737,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
           title: AppText(
             l10n.security_deleteAccountTitle,
             variant: AppTextVariant.titleMedium,
-            color: AppColors.errorBase,
+            color: context.colors.error,
           ),
           content: AppText(
             l10n.security_deleteAccountMessage,

@@ -28,7 +28,7 @@ class SubBusinessCard extends StatelessWidget {
           color: AppColors.slate,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: AppColors.gold500.withOpacity(0.2),
+            color: context.colors.gold.withOpacity(0.2),
             width: 1,
           ),
         ),
@@ -43,12 +43,12 @@ class SubBusinessCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500.withOpacity(0.1),
+                    color: context.colors.gold.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Icon(
                     _getIconForType(subBusiness.type),
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                     size: 20,
                   ),
                 ),
@@ -67,7 +67,7 @@ class SubBusinessCard extends StatelessWidget {
                         AppText(
                           subBusiness.description!,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ],
                     ],
@@ -81,7 +81,7 @@ class SubBusinessCard extends StatelessWidget {
             AppText(
               currencyFormat.format(subBusiness.balance),
               variant: AppTextVariant.headlineMedium,
-              color: AppColors.gold500,
+              color: context.colors.gold,
               fontWeight: FontWeight.bold,
             ),
             SizedBox(height: AppSpacing.xs),
@@ -92,13 +92,13 @@ class SubBusinessCard extends StatelessWidget {
                 Icon(
                   Icons.people_outline,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 SizedBox(width: AppSpacing.xxs),
                 AppText(
                   '${subBusiness.staffCount} staff',
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 SizedBox(width: AppSpacing.md),
                 Container(
@@ -113,7 +113,7 @@ class SubBusinessCard extends StatelessWidget {
                   child: AppText(
                     _getTypeLabel(subBusiness.type),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -130,8 +130,8 @@ class SubBusinessCard extends StatelessWidget {
                       icon: const Icon(Icons.swap_horiz, size: 16),
                       label: const Text('Transfer'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.gold500,
-                        side: BorderSide(color: AppColors.gold500.withOpacity(0.3)),
+                        foregroundColor: context.colors.gold,
+                        side: BorderSide(color: context.colors.gold.withOpacity(0.3)),
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
                           vertical: AppSpacing.xs,
@@ -146,9 +146,9 @@ class SubBusinessCard extends StatelessWidget {
                       icon: const Icon(Icons.visibility_outlined, size: 16),
                       label: const Text('View'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
+                        foregroundColor: context.colors.textSecondary,
                         side: BorderSide(
-                          color: AppColors.textSecondary.withOpacity(0.3),
+                          color: context.colors.textSecondary.withOpacity(0.3),
                         ),
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,

@@ -337,7 +337,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
         child: AppText(
           l10n.common_error,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.errorText,
+          color: context.colors.errorText,
         ),
       ),
     );

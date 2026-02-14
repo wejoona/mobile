@@ -25,7 +25,7 @@ class FrequencyPicker extends StatelessWidget {
         AppText(
           l10n.recurringTransfers_frequency,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.sm),
         Wrap(
@@ -42,20 +42,20 @@ class FrequencyPicker extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.gold500
+                      ? context.colors.gold
                       : AppColors.slate,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.gold500
-                        : AppColors.textSecondary.withOpacity(0.3),
+                        ? context.colors.gold
+                        : context.colors.textSecondary.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
                 child: AppText(
                   frequency.getDisplayName(locale),
                   variant: AppTextVariant.bodyMedium,
-                  color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
+                  color: isSelected ? context.colors.canvas : context.colors.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),

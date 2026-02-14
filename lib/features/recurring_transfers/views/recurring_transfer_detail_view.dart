@@ -36,7 +36,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
           asyncState.whenOrNull(
             data: (state) => state.transfer != null && !state.transfer!.isCancelled
                 ? IconButton(
-                    icon: const Icon(Icons.edit, color: AppColors.gold500),
+                    icon: Icon(Icons.edit, color: AppColors.gold500),
                     onPressed: () => context.push(
                       '/recurring-transfers/edit/$transferId',
                     ),

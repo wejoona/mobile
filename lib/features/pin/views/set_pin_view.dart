@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 
 /// Set PIN View
 /// Used during onboarding to create initial PIN
@@ -26,7 +25,7 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.pin_createTitle,
@@ -52,20 +51,20 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
                         AppText(
                           l10n.pin_enterNewPin,
                           variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: AppSpacing.xxl),
-                        PinDots(
-                          filledCount: _pin.length,
-                          showError: _showError,
+                        PinDots(length: 6,
+                          filled: _pin.length,
+                          error: _showError,
                         ),
                         if (_errorMessage != null) ...[
                           SizedBox(height: AppSpacing.md),
                           AppText(
                             _errorMessage!,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.errorText,
+                            color: context.colors.errorText,
                             textAlign: TextAlign.center,
                           ),
                         ],
@@ -73,8 +72,8 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
                         _buildValidationRules(l10n),
                         const Spacer(),
                         PinPad(
-                          onNumberPressed: _handleNumberPressed,
-                          onBackspace: _handleBackspace,
+                          onDigitPressed: _handleNumberPressed,
+                          onDeletePressed: _handleBackspace,
                         ),
                         SizedBox(height: AppSpacing.md),
                       ],
@@ -93,9 +92,9 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.elevated,
+        color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +102,7 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
           AppText(
             l10n.pin_requirements,
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           SizedBox(height: AppSpacing.sm),
           _buildRule(l10n.pin_rule_6digits, _pin.length == 6),
@@ -122,14 +121,14 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
           Icon(
             satisfied ? Icons.check_circle : Icons.circle_outlined,
             size: 16,
-            color: satisfied ? AppColors.successText : AppColors.textTertiary,
+            color: satisfied ? context.colors.successText : context.colors.textTertiary,
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
               text,
               variant: AppTextVariant.bodySmall,
-              color: satisfied ? AppColors.textPrimary : AppColors.textTertiary,
+              color: satisfied ? context.colors.textPrimary : context.colors.textTertiary,
             ),
           ),
         ],
@@ -137,10 +136,10 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
     );
   }
 
-  void _handleNumberPressed(String number) {
+  void _handleNumberPressed(int digit) {
     if (_pin.length < 6) {
       setState(() {
-        _pin += number;
+        _pin += digit.toString();
         _showError = false;
         _errorMessage = null;
       });

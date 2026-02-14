@@ -78,7 +78,7 @@ class CardDisplay extends StatelessWidget {
                       ? _formatCardNumber(card.maskedNumber)
                       : '**** **** **** ${card.last4}',
                   style: AppTextStyle.headingSmall,
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 // Bottom row: name + expiry
@@ -91,12 +91,12 @@ class CardDisplay extends StatelessWidget {
                         AppText(
                           'TITULAIRE',
                           style: AppTextStyle.bodySmall,
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                         ),
                         AppText(
                           (card.nickname ?? 'HOLDER').toUpperCase(),
                           style: AppTextStyle.labelMedium,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ],
                     ),
@@ -106,12 +106,12 @@ class CardDisplay extends StatelessWidget {
                         AppText(
                           'EXPIRE',
                           style: AppTextStyle.bodySmall,
-                          color: AppColors.textTertiary,
+                          color: context.colors.textTertiary,
                         ),
                         AppText(
                           card.expiryDate,
                           style: AppTextStyle.labelMedium,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ],
                     ),

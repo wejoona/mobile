@@ -95,14 +95,14 @@ class _MerchantTransactionsViewState
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(l10n.navigation_transactions, variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: _loadTransactions,
-            icon: Icon(Icons.refresh, color: AppColors.gold500),
+            icon: Icon(Icons.refresh, color: context.colors.gold),
           ),
         ],
       ),
@@ -110,7 +110,7 @@ class _MerchantTransactionsViewState
           ? _buildEmptyState(l10n)
           : RefreshIndicator(
               onRefresh: _loadTransactions,
-              color: AppColors.gold500,
+              color: context.colors.gold,
               child: ListView.builder(
                 controller: _scrollController,
                 padding: EdgeInsets.all(AppSpacing.md),
@@ -120,7 +120,7 @@ class _MerchantTransactionsViewState
                     return Center(
                       child: Padding(
                         padding: EdgeInsets.all(AppSpacing.md),
-                        child: CircularProgressIndicator(color: AppColors.gold500),
+                        child: CircularProgressIndicator(color: context.colors.gold),
                       ),
                     );
                   }

@@ -17,14 +17,22 @@ class WalletStateMachine extends Notifier<WalletState> {
   WalletService get _service => ref.read(walletServiceProvider);
 
   /// Fetch wallet balance
-  Future<void> fetch() async {
+  Future<void> fetch({bool force = false}) async {
     // Guard against redundant fetches
     if (state.status == WalletStatus.loading) return;
 
     // If already loaded with valid wallet data, don't refetch automatically
-    // Use refresh() for manual refresh instead
-    if (state.status == WalletStatus.loaded && state.walletId.isNotEmpty) {
+    // Use refresh() for manual refresh instead, or pass force: true
+    if (!force && state.status == WalletStatus.loaded && state.walletId.isNotEmpty) {
       debugPrint('[WalletState] Skipping fetch - already loaded with walletId: ${state.walletId}');
+      // Still sync FSM in case it's out of sync (e.g., session restore)
+      ref.read(appFsmProvider.notifier).onWalletLoaded(
+        walletId: state.walletId,
+        walletAddress: state.walletAddress,
+        blockchain: state.blockchain,
+        usdcBalance: state.usdcBalance,
+        pendingBalance: state.pendingBalance,
+      );
       return;
     }
 

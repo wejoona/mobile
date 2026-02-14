@@ -4,12 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/login_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 
-/// Login PIN verification screen
+/// Login PIN verification screen — same design as OTP/lock screens.
 class LoginPinView extends ConsumerStatefulWidget {
   const LoginPinView({super.key});
 
@@ -19,7 +18,7 @@ class LoginPinView extends ConsumerStatefulWidget {
 
 class _LoginPinViewState extends ConsumerState<LoginPinView> {
   String _pin = '';
-  bool _showError = false;
+  bool _hasError = false;
   bool _biometricSupported = false;
   bool _biometricEnabled = false;
 
@@ -40,7 +39,6 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
         _biometricEnabled = isEnabled;
       });
 
-      // Auto-show biometric if enabled
       if (_biometricSupported && _biometricEnabled) {
         _handleBiometric();
       }
@@ -53,7 +51,6 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
     final state = ref.watch(loginProvider);
     final colors = context.colors;
 
-    // Check if locked
     if (state.isLocked) {
       return _buildLockedView(l10n, colors);
     }
@@ -71,54 +68,100 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            children: [
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.login_pinSubtitle,
-                variant: AppTextVariant.bodyLarge,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xxxl),
-              PinDots(
-                filledCount: _pin.length,
-                showError: _showError,
-              ),
-              SizedBox(height: AppSpacing.md),
-              if (state.pinAttempts > 0 && state.remainingAttempts > 0) ...[
-                AppText(
-                  l10n.login_attemptsRemaining(state.remainingAttempts),
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.warningText,
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Column(
+                      children: [
+                        const Spacer(flex: 1),
+
+                        // Icon
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: colors.container,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: Icon(
+                            Icons.lock_outline,
+                            color: colors.gold,
+                            size: 40,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        AppText(
+                          l10n.login_pinSubtitle,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          textAlign: TextAlign.center,
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxxl),
+
+                        // PIN Dots
+                        PinDots(
+                          length: 6,
+                          filled: _pin.length,
+                          error: _hasError,
+                        ),
+
+                        const SizedBox(height: AppSpacing.md),
+
+                        if (state.pinAttempts > 0 && state.remainingAttempts > 0)
+                          AppText(
+                            l10n.login_attemptsRemaining(state.remainingAttempts),
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.warningText,
+                          ),
+
+                        if (state.error != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          AppText(
+                            state.error!,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.errorText,
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+
+                        const Spacer(flex: 1),
+
+                        // PIN Pad
+                        PinPad(
+                          onDigitPressed: _handleDigitPressed,
+                          onDeletePressed: _handleDeletePressed,
+                          showBiometric: _biometricSupported && _biometricEnabled,
+                          onBiometricPressed: (_biometricSupported && _biometricEnabled)
+                              ? _handleBiometric
+                              : null,
+                        ),
+
+                        const SizedBox(height: AppSpacing.xxl),
+
+                        TextButton(
+                          onPressed: () => context.push('/pin/reset'),
+                          child: AppText(
+                            l10n.login_forgotPin,
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.gold,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
-              if (state.error != null) ...[
-                SizedBox(height: AppSpacing.md),
-                AppText(
-                  state.error!,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.errorText,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              const Spacer(),
-              AppButton(
-                label: l10n.login_forgotPin,
-                onPressed: () => context.push('/pin/reset'),
-                variant: AppButtonVariant.ghost,
-              ),
-              SizedBox(height: AppSpacing.md),
-              PinPad(
-                onNumberPressed: _handleNumberPressed,
-                onBackspace: _handleBackspace,
-                onBiometric: (_biometricSupported && _biometricEnabled)
-                    ? _handleBiometric
-                    : null,
-              ),
-              SizedBox(height: AppSpacing.xl),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -130,35 +173,45 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
       backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.lock_outline,
-                  size: 80,
-                  color: colors.errorText,
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: colors.container,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.border),
+                  ),
+                  child: Icon(
+                    Icons.lock_clock,
+                    color: colors.error,
+                    size: 40,
+                  ),
                 ),
-                SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.xl),
                 AppText(
                   l10n.login_accountLocked,
                   variant: AppTextVariant.headlineMedium,
                   color: colors.textPrimary,
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
                 AppText(
                   l10n.login_lockedMessage,
                   variant: AppTextVariant.bodyLarge,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.xxl),
+                const SizedBox(height: AppSpacing.xxl),
                 AppButton(
                   label: l10n.common_ok,
                   onPressed: () => context.go('/login'),
                   variant: AppButtonVariant.primary,
+                  isFullWidth: true,
                 ),
               ],
             ),
@@ -168,24 +221,24 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
     );
   }
 
-  void _handleNumberPressed(String number) {
-    if (_pin.length < 6) {
-      setState(() {
-        _pin += number;
-        _showError = false;
-      });
+  void _handleDigitPressed(int digit) {
+    if (_pin.length >= 6) return;
 
-      if (_pin.length == 6) {
-        _verifyPin();
-      }
+    setState(() {
+      _pin += digit.toString();
+      _hasError = false;
+    });
+
+    if (_pin.length == 6) {
+      _verifyPin();
     }
   }
 
-  void _handleBackspace() {
+  void _handleDeletePressed() {
     if (_pin.isNotEmpty) {
       setState(() {
         _pin = _pin.substring(0, _pin.length - 1);
-        _showError = false;
+        _hasError = false;
       });
     }
   }
@@ -205,14 +258,12 @@ class _LoginPinViewState extends ConsumerState<LoginPinView> {
       if (success) {
         context.go('/home');
       } else {
-        setState(() {
-          _showError = true;
-        });
+        setState(() => _hasError = true);
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) {
             setState(() {
               _pin = '';
-              _showError = false;
+              _hasError = false;
             });
           }
         });

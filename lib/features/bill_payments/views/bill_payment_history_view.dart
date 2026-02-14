@@ -448,7 +448,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.borderDefault,
+                color: context.colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -458,7 +458,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Filter Payments',
             variant: AppTextVariant.titleMedium,
-            color: AppColors.textPrimary,
+            color: context.colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.xl),
 
@@ -466,7 +466,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Category',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -490,7 +490,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           AppText(
             'Status',
             variant: AppTextVariant.labelMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
@@ -539,17 +539,17 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           vertical: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500 : AppColors.slate,
+          color: isSelected ? context.colors.gold : AppColors.slate,
           borderRadius: BorderRadius.circular(AppRadius.full),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.borderSubtle,
+            color: isSelected ? context.colors.gold : context.colors.borderSubtle,
             width: 1,
           ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? AppColors.obsidian : AppColors.textPrimary,
+          color: isSelected ? context.colors.canvas : context.colors.textPrimary,
         ),
       ),
     );

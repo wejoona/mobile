@@ -249,7 +249,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
                     colors,
                     icon: Icons.receipt_long_outlined,
                     label: l10n.cards_transactions,
-                    value: '0', // TODO: Get transaction count
+                    value: '—', // Loaded in card transactions view
                   ),
                 ),
               ],

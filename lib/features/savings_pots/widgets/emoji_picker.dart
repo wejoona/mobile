@@ -47,7 +47,7 @@ class EmojiPicker extends StatelessWidget {
         AppText(
           l10n.savingsPots_chooseEmoji,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.sm),
         GridView.builder(
@@ -68,11 +68,11 @@ class EmojiPicker extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.gold500.withOpacity(0.2)
+                      ? context.colors.gold.withOpacity(0.2)
                       : AppColors.slate,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(
-                    color: isSelected ? AppColors.gold500 : Colors.transparent,
+                    color: isSelected ? context.colors.gold : Colors.transparent,
                     width: 2,
                   ),
                 ),

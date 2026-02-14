@@ -363,7 +363,7 @@ class _BeneficiarySelectSheetState
   Color _getAccountTypeColor(AccountType type) {
     // Fixed brand colors for account types
     return switch (type) {
-      AccountType.joonapayUser => AppColors.gold500,        // Gold/primary accent
+      AccountType.joonapayUser => context.colors.gold,        // Gold/primary accent
       AccountType.externalWallet => const Color(0xFF6B8DD6), // Purple accent
       AccountType.bankAccount => const Color(0xFF5B9BD5),    // Blue accent
       AccountType.mobileMoney => const Color(0xFFFF9955),    // Orange accent

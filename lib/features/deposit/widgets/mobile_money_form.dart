@@ -63,7 +63,7 @@ class _MobileMoneyFormState extends ConsumerState<MobileMoneyForm> {
                     decoration: BoxDecoration(
                       color: selected
                           ? AppColors.gold.withOpacity(0.12)
-                          : AppColors.elevated,
+                          : context.colors.elevated,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: selected ? AppColors.gold : Colors.transparent,
@@ -72,7 +72,7 @@ class _MobileMoneyFormState extends ConsumerState<MobileMoneyForm> {
                     child: AppText(
                       p.name,
                       style: AppTextStyle.labelMedium,
-                      color: selected ? AppColors.gold : AppColors.textSecondary,
+                      color: selected ? AppColors.gold : context.colors.textSecondary,
                     ),
                   ),
                 ),

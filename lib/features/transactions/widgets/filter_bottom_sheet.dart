@@ -289,12 +289,12 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   Color _getStatusColor(String? status, ThemeColors colors) {
     switch (status) {
       case 'completed':
-        return AppColors.successText;
+        return context.colors.successText;
       case 'pending':
       case 'processing':
-        return AppColors.warningText;
+        return context.colors.warningText;
       case 'failed':
-        return AppColors.errorText;
+        return context.colors.errorText;
       default:
         return colors.gold;
     }

@@ -87,13 +87,36 @@ class CardsService {
   }
 
 
-  // === Stub methods ===
-  Future<void> freeze(String cardId) async {}
-  Future<void> block(String cardId) async {}
-  Future<void> toggleCardFreeze(String cardId) async {}
-  Future<void> requestCard(Map<String, dynamic> data) async {}
-  Future<void> requestVirtual(Map<String, dynamic> data) async {}
-  Future<void> setSpendLimit(String cardId, double limit) async {}
-  Future<List<dynamic>> loadCardTransactions(String cardId) async => [];
+  // === Convenience aliases ===
+  Future<void> freeze(String cardId) => freezeCard(cardId);
+  Future<void> block(String cardId) => cancelCard(cardId);
+  Future<void> toggleCardFreeze(String cardId) async {
+    // Determine current state and toggle
+    final card = await getCard(cardId);
+    final isFrozen = card['isFrozen'] as bool? ?? false;
+    if (isFrozen) {
+      await unfreezeCard(cardId);
+    } else {
+      await freezeCard(cardId);
+    }
+  }
+  Future<Map<String, dynamic>> requestCard(Map<String, dynamic> data) =>
+      createCard(
+        cardType: data['cardType'] as String? ?? 'virtual',
+        currency: data['currency'] as String? ?? 'USDC',
+        nickname: data['nickname'] as String?,
+      );
+  Future<Map<String, dynamic>> requestVirtual(Map<String, dynamic> data) =>
+      createCard(
+        cardType: 'virtual',
+        currency: data['currency'] as String? ?? 'USDC',
+        nickname: data['nickname'] as String?,
+      );
+  Future<void> setSpendLimit(String cardId, double limit) =>
+      updateSpendingLimit(cardId, dailyLimit: limit, transactionLimit: limit);
+  Future<List<dynamic>> loadCardTransactions(String cardId) async {
+    final result = await getCardTransactions(cardId);
+    return (result['data'] as List?) ?? [];
+  }
 
 }

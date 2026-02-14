@@ -33,7 +33,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     final alertAsync = ref.watch(alertDetailProvider(widget.alertId));
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -55,7 +55,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
             children: [
               Icon(
                 Icons.error_outline,
-                color: AppColors.errorBase,
+                color: context.colors.error,
                 size: 48,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -185,7 +185,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                           vertical: AppSpacing.xxs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
@@ -223,7 +223,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +250,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,7 +278,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,17 +312,17 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.successBase.withValues(alpha: 0.1),
+        color: context.colors.success.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: AppColors.successBase.withValues(alpha: 0.3),
+          color: context.colors.success.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.check_circle,
-            color: AppColors.successBase,
+            color: context.colors.success,
             size: 24,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -394,16 +394,16 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                 label: Text(action.displayName),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: isDanger
-                      ? AppColors.errorBase
+                      ? context.colors.error
                       : isPrimary
                           ? colors.gold
                           : colors.textSecondary,
                   side: BorderSide(
                     color: isDanger
-                        ? AppColors.errorBase
+                        ? context.colors.error
                         : isPrimary
                             ? colors.gold
-                            : AppColors.borderSubtle,
+                            : context.colors.borderSubtle,
                   ),
                   padding: const EdgeInsets.all(AppSpacing.md),
                 ),
@@ -455,7 +455,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Action "${action.displayName}" completed'),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
 

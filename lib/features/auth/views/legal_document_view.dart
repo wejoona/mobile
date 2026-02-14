@@ -412,7 +412,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isRead
-                ? AppColors.successBase.withValues(alpha: 0.5)
+                ? context.colors.success.withValues(alpha: 0.5)
                 : colors.borderSubtle,
           ),
         ),
@@ -424,13 +424,13 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
               height: 40,
               decoration: BoxDecoration(
                 color: isRead
-                    ? AppColors.successBase.withValues(alpha: 0.15)
+                    ? context.colors.success.withValues(alpha: 0.15)
                     : colors.elevated,
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 isRead ? Icons.check_rounded : Icons.article_outlined,
-                color: isRead ? AppColors.successText : colors.textSecondary,
+                color: isRead ? context.colors.successText : colors.textSecondary,
                 size: 20,
               ),
             ),
@@ -461,7 +461,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
             // Status/Arrow
             Icon(
               isRead ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
-              color: isRead ? AppColors.successText : colors.textTertiary,
+              color: isRead ? context.colors.successText : colors.textTertiary,
               size: 24,
             ),
           ],

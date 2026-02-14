@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -41,7 +42,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_reports,
@@ -227,7 +228,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
               color: AppColors.charcoal,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
-            child: Icon(icon, color: AppColors.gold500, size: 20),
+            child: Icon(icon, color: context.colors.gold, size: 20),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -299,7 +300,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
               child: LinearProgressIndicator(
                 value: percentage / 100,
                 backgroundColor: AppColors.charcoal,
-                valueColor: const AlwaysStoppedAnimation(AppColors.gold500),
+                valueColor: AlwaysStoppedAnimation(context.colors.gold),
                 minHeight: 6,
               ),
             ),
@@ -323,8 +324,8 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.gold500,
-              onPrimary: AppColors.obsidian,
+              primary: context.colors.gold,
+              onPrimary: context.colors.canvas,
               surface: AppColors.charcoal,
               onSurface: Colors.white,
             ),

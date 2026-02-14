@@ -44,7 +44,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
         );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.paymentLinks_linkDetails,
@@ -62,7 +62,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
       ),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(link.id),
-        color: AppColors.gold500,
+        color: context.colors.gold,
         backgroundColor: AppColors.slate,
         child: ListView(
           padding: EdgeInsets.all(AppSpacing.md),
@@ -79,14 +79,14 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: QrImageView(
                     data: link.url,
                     version: QrVersions.auto,
                     size: 200.0,
-                    backgroundColor: AppColors.textPrimary,
+                    backgroundColor: context.colors.textPrimary,
                   ),
                 ),
               ),
@@ -98,7 +98,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_amount,
               'CFA ${link.amount.toStringAsFixed(0)}',
               Icons.payments,
-              AppColors.gold500,
+              context.colors.gold,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -117,7 +117,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_linkCode,
               link.shortCode,
               Icons.link,
-              AppColors.gold500,
+              context.colors.gold,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -135,7 +135,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_viewCount,
               link.viewCount.toString(),
               Icons.visibility,
-              AppColors.textSecondary,
+              context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -144,7 +144,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_created,
               _formatDateTime(link.createdAt),
               Icons.calendar_today,
-              AppColors.textSecondary,
+              context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -153,7 +153,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
               l10n.paymentLinks_expires,
               _formatDateTime(link.expiresAt),
               Icons.schedule,
-              _isExpiringSoon(link) ? AppColors.warningBase : AppColors.textSecondary,
+              _isExpiringSoon(link) ? AppColors.warningBase : context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
 
@@ -163,14 +163,14 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 l10n.paymentLinks_paidBy,
                 link.paidByName ?? link.paidByPhone ?? 'Unknown',
                 Icons.person,
-                AppColors.successBase,
+                context.colors.success,
               ),
               SizedBox(height: AppSpacing.md),
               _buildInfoCard(
                 l10n.paymentLinks_paidAt,
                 _formatDateTime(link.paidAt!),
                 Icons.check_circle,
-                AppColors.successBase,
+                context.colors.success,
               ),
               SizedBox(height: AppSpacing.md),
             ],
@@ -275,7 +275,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 AppText(
                   label,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
@@ -293,15 +293,15 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
   Color _getStatusColor(PaymentLinkStatus status) {
     switch (status) {
       case PaymentLinkStatus.pending:
-        return AppColors.gold500;
+        return context.colors.gold;
       case PaymentLinkStatus.viewed:
         return AppColors.infoBase;
       case PaymentLinkStatus.paid:
-        return AppColors.successBase;
+        return context.colors.success;
       case PaymentLinkStatus.expired:
-        return AppColors.textSecondary;
+        return context.colors.textSecondary;
       case PaymentLinkStatus.cancelled:
-        return AppColors.errorBase;
+        return context.colors.error;
     }
   }
 
@@ -352,7 +352,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
         content: AppText(
           l10n.paymentLinks_cancelConfirmMessage,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         actions: [
           TextButton(
@@ -376,7 +376,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.paymentLinks_linkCancelled),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
           context.pop();
@@ -384,7 +384,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.common_error),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }

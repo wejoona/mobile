@@ -31,7 +31,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.sendExternal_confirmTransfer,
@@ -80,7 +80,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                               AppText(
                                 l10n.sendExternal_warningMessage,
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ],
                           ),
@@ -94,7 +94,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                   AppText(
                     l10n.sendExternal_transferSummary,
                     variant: AppTextVariant.labelLarge,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   SizedBox(height: AppSpacing.lg),
 
@@ -111,7 +111,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withOpacity(0.2),
                         ),
 
                         // Network
@@ -121,7 +121,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withOpacity(0.2),
                         ),
 
                         // Amount
@@ -132,7 +132,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withOpacity(0.2),
                         ),
 
                         // Network fee
@@ -142,7 +142,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: AppColors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withOpacity(0.2),
                         ),
 
                         // Total
@@ -163,7 +163,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                       children: [
                         Icon(
                           Icons.schedule,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                           size: 20,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -174,7 +174,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                               AppText(
                                 l10n.sendExternal_estimatedTime,
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                               AppText(
                                 state.selectedNetwork.estimatedTime,
@@ -201,14 +201,14 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.errorBase.withOpacity(0.1),
+                    color: context.colors.error.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.error_outline,
-                        color: AppColors.errorBase,
+                        color: context.colors.error,
                         size: 20,
                       ),
                       SizedBox(width: AppSpacing.sm),
@@ -216,7 +216,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         child: AppText(
                           state.error!,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                         ),
                       ),
                     ],
@@ -255,7 +255,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
         AppText(
           label,
           variant: isLarge ? AppTextVariant.bodyLarge : AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(width: AppSpacing.lg),
         Expanded(
@@ -270,7 +270,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                       ? (isLarge ? AppTextVariant.monoLarge : AppTextVariant.monoMedium)
                       : (isLarge ? AppTextVariant.bodyLarge : AppTextVariant.bodyMedium),
                   fontWeight: isHighlighted || isLarge ? FontWeight.w600 : FontWeight.normal,
-                  color: isHighlighted ? AppColors.gold500 : AppColors.textPrimary,
+                  color: isHighlighted ? context.colors.gold : context.colors.textPrimary,
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -281,7 +281,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                   child: Icon(
                     Icons.copy,
                     size: 16,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ],
@@ -297,7 +297,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.sendExternal_addressCopied),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         duration: const Duration(seconds: 2),
       ),
     );

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
+import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 
 /// Connectivity State
 class ConnectivityState {
@@ -121,9 +122,13 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
         try {
           await _queue!.markProcessing(transfer.id);
 
-          // TODO: Process transfer via SDK
-          // final sdk = ref.read(sdkProvider);
-          // await sdk.transfers.send(...);
+          // Process transfer via TransfersService
+          final transfersService = ref.read(transfersServiceProvider);
+          await transfersService.createInternalTransfer(
+            recipientPhone: transfer.recipientPhone,
+            amount: transfer.amount,
+            note: transfer.description,
+          );
 
           await _queue!.markCompleted(transfer.id);
         } catch (e) {

@@ -98,7 +98,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.error!),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -147,7 +147,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
                 child: AppText(
                   err.toString(),
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.errorText,
+                  color: context.colors.errorText,
                 ),
               ),
             ),
@@ -241,7 +241,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
                         child: AppText(
                           _amountError!,
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                         ),
                       ),
                   ],

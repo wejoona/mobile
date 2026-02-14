@@ -1,5 +1,6 @@
 /// Bank Transfer View (Deposit/Withdraw)
 library;
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,7 +51,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           isDeposit
@@ -102,7 +103,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                       suffix: AppText(
                         account.currency,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ),
@@ -136,14 +137,14 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Center(
               child: AppText(
                 account.bankName.substring(0, 1),
                 style: AppTypography.headlineSmall.copyWith(
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
             ),
@@ -163,7 +164,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                 AppText(
                   account.accountNumberMasked,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 if (account.availableBalance != null) ...[
@@ -171,7 +172,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                   AppText(
                     '${l10n.bankLinking_balance}: ${_formatAmount(account.availableBalance!)} ${account.currency}',
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -199,17 +200,17 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.elevated,
+              color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: AppColors.gold500.withOpacity(0.3),
+                color: context.colors.gold.withOpacity(0.3),
                 width: 1,
               ),
             ),
             child: AppText(
               _formatAmount(amount.toDouble()),
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -231,7 +232,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
         children: [
           Icon(
             Icons.info_outline,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             size: 20,
           ),
           SizedBox(width: AppSpacing.sm),
@@ -244,7 +245,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                       ? l10n.bankLinking_depositInfo
                       : l10n.bankLinking_withdrawInfo,
                   style: AppTypography.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
                 if (!isDeposit) ...[
@@ -252,7 +253,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                   AppText(
                     l10n.bankLinking_withdrawTime,
                     style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textTertiary,
+                      color: context.colors.textTertiary,
                     ),
                   ),
                 ],
@@ -271,7 +272,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
         color: AppColors.graphite,
         border: Border(
           top: BorderSide(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             width: 1,
           ),
         ),
@@ -319,7 +320,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
             child: AppText(
               AppLocalizations.of(context)!.common_cancel,
               style: AppTypography.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),

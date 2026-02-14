@@ -23,7 +23,7 @@ class OtpExpiredView extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -39,14 +39,14 @@ class OtpExpiredView extends ConsumerWidget {
               AppText(
                 l10n.auth_otpExpired,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 l10n.auth_otpExpiredMessage,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               if (phone != null) ...[
@@ -54,7 +54,7 @@ class OtpExpiredView extends ConsumerWidget {
                 AppText(
                   phone,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                   textAlign: TextAlign.center,
                 ),
               ],

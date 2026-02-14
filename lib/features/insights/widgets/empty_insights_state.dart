@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
@@ -28,7 +29,7 @@ class EmptyInsightsState extends StatelessWidget {
               child: Icon(
                 Icons.insights_outlined,
                 size: 60,
-                color: AppColors.gold500.withValues(alpha: 0.5),
+                color: context.colors.gold.withValues(alpha: 0.5),
               ),
             ),
 
@@ -38,7 +39,7 @@ class EmptyInsightsState extends StatelessWidget {
             AppText(
               l10n.insights_empty_title,
               variant: AppTextVariant.headlineSmall,
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               textAlign: TextAlign.center,
             ),
 
@@ -48,7 +49,7 @@ class EmptyInsightsState extends StatelessWidget {
             AppText(
               l10n.insights_empty_description,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],

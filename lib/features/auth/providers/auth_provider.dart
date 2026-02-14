@@ -73,8 +73,17 @@ class AuthNotifier extends Notifier<AuthState> {
       final token = await _storage.read(key: StorageKeys.accessToken);
 
       if (token != null) {
-        // Token exists — go straight to authenticated (lock screen disabled for now)
+        // Token exists — restore session
         state = state.copyWith(status: AuthStatus.authenticated);
+
+        // Sync FSM: restore auth state and trigger data fetches
+        final userId = await _storage.read(key: 'user_id');
+        final refreshToken = await _storage.read(key: 'refresh_token');
+        ref.read(appFsmProvider.notifier).restoreSession(
+          userId: userId ?? '',
+          accessToken: token,
+          refreshToken: refreshToken,
+        );
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
@@ -83,6 +92,13 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.unauthenticated,
         error: e.toString(),
       );
+    }
+  }
+
+  /// Lock the session (requires PIN/biometric to unlock)
+  void setLocked() {
+    if (state.status == AuthStatus.authenticated) {
+      state = state.copyWith(status: AuthStatus.locked);
     }
   }
 

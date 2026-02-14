@@ -42,7 +42,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           subBusiness.name,
@@ -64,8 +64,8 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.gold500,
-                  AppColors.gold500.withOpacity(0.8),
+                  context.colors.gold,
+                  context.colors.gold.withOpacity(0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -79,13 +79,13 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 AppText(
                   l10n.subBusiness_balance,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.obsidian,
+                  color: context.colors.canvas,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
                   currencyFormat.format(subBusiness.balance),
                   variant: AppTextVariant.displaySmall,
-                  color: AppColors.obsidian,
+                  color: context.colors.canvas,
                   fontWeight: FontWeight.bold,
                 ),
               ],
@@ -132,7 +132,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 icon: const Icon(Icons.people, size: 16),
                 label: Text(l10n.subBusiness_manageStaff),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.gold500,
+                  foregroundColor: context.colors.gold,
                 ),
               ),
             ],
@@ -155,11 +155,11 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.gold500.withOpacity(0.2),
+                        backgroundColor: context.colors.gold.withOpacity(0.2),
                         child: AppText(
                           member.name.substring(0, 1).toUpperCase(),
                           variant: AppTextVariant.bodyLarge,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ),
                       SizedBox(width: AppSpacing.md),
@@ -175,7 +175,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                             AppText(
                               _getRoleLabel(member.role, l10n),
                               variant: AppTextVariant.bodySmall,
-                              color: AppColors.textSecondary,
+                              color: context.colors.textSecondary,
                             ),
                           ],
                         ),
@@ -209,8 +209,8 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
       icon: Icon(icon, size: 20),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.gold500,
-        side: BorderSide(color: AppColors.gold500.withOpacity(0.3)),
+        foregroundColor: context.colors.gold,
+        side: BorderSide(color: context.colors.gold.withOpacity(0.3)),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,
@@ -258,7 +258,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           child: AppText(
             label,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
         Expanded(
@@ -283,13 +283,13 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           Icon(
             Icons.people_outline,
             size: 48,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
           SizedBox(height: AppSpacing.sm),
           AppText(
             l10n.subBusiness_noStaff,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: AppSpacing.md),
@@ -333,10 +333,35 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
   }
 
   void _showOptionsMenu(BuildContext context, AppLocalizations l10n) {
-    // TODO: Show options menu
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: Text(l10n.action_edit),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/sub-businesses/${widget.subBusinessId}/edit');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: Text(l10n.subBusiness_manageStaff),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/sub-businesses/${widget.subBusinessId}/staff');
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showTransactions(BuildContext context) {
-    // TODO: Show transactions for this sub-business
+    context.push('/sub-businesses/${widget.subBusinessId}/transactions');
   }
 }

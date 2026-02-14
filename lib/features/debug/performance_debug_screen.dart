@@ -93,7 +93,7 @@ class _PerformanceDebugScreenState
             _StatItem(
               label: 'Active',
               value: '${cacheStats['active']}',
-              color: AppColors.successBase,
+              color: context.colors.success,
             ),
             _StatItem(
               label: 'Expired',
@@ -189,7 +189,7 @@ class _PerformanceDebugScreenState
         _buildActionButton(
           label: 'Clear All Caches',
           icon: Icons.delete_sweep,
-          color: AppColors.errorBase,
+          color: context.colors.error,
           onPressed: () {
             perfUtils.clearAllCaches();
             _refreshStats();
@@ -233,7 +233,7 @@ class _PerformanceDebugScreenState
         _buildActionButton(
           label: 'Clear In-Flight Requests',
           icon: Icons.cancel,
-          color: AppColors.errorBase,
+          color: context.colors.error,
           onPressed: () {
             perfUtils.clearInFlightRequests();
             _refreshStats();
@@ -303,7 +303,7 @@ class _PerformanceDebugScreenState
         color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: isExpired ? AppColors.errorBase : AppColors.successBase,
+          color: isExpired ? context.colors.error : context.colors.success,
         ),
       ),
       child: Column(
@@ -313,7 +313,7 @@ class _PerformanceDebugScreenState
             children: [
               Icon(
                 isExpired ? Icons.warning : Icons.check_circle,
-                color: isExpired ? AppColors.errorBase : AppColors.successBase,
+                color: isExpired ? context.colors.error : context.colors.success,
                 size: 16,
               ),
               const SizedBox(width: AppSpacing.xs),
@@ -363,7 +363,7 @@ class _PerformanceDebugScreenState
                 width: 16,
                 height: 16,
                 child: isCompleted
-                    ? Icon(Icons.check, color: AppColors.successBase, size: 16)
+                    ? Icon(Icons.check, color: context.colors.success, size: 16)
                     : CircularProgressIndicator(
                         strokeWidth: 2,
                         color: colors.gold,
@@ -433,7 +433,7 @@ class _PerformanceDebugScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
         behavior: SnackBarBehavior.floating,
       ),
     );

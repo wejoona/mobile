@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -69,7 +70,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
               horizontalInterval: maxY / 4,
               getDrawingHorizontalLine: (value) {
                 return FlLine(
-                  color: AppColors.borderSubtle,
+                  color: context.colors.borderSubtle,
                   strokeWidth: 1,
                 );
               },
@@ -102,8 +103,8 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
             borderData: FlBorderData(
               show: true,
               border: Border(
-                bottom: BorderSide(color: AppColors.borderDefault),
-                left: BorderSide(color: AppColors.borderDefault),
+                bottom: BorderSide(color: context.colors.border),
+                left: BorderSide(color: context.colors.border),
               ),
             ),
             minX: 0,
@@ -119,7 +120,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                     .toList(),
                 isCurved: true,
                 curveSmoothness: 0.35,
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 barWidth: 4,
                 isStrokeCapRound: true,
                 dotData: FlDotData(
@@ -127,9 +128,9 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                   getDotPainter: (spot, percent, barData, index) {
                     return FlDotCirclePainter(
                       radius: 5,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       strokeWidth: 3,
-                      strokeColor: AppColors.obsidian,
+                      strokeColor: context.colors.canvas,
                     );
                   },
                 ),
@@ -137,15 +138,15 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                   show: true,
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.gold500.withValues(alpha: 0.2),
-                      AppColors.gold500.withValues(alpha: 0.05),
+                      context.colors.gold.withValues(alpha: 0.2),
+                      context.colors.gold.withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
                 ),
                 shadow: Shadow(
-                  color: AppColors.gold500.withValues(alpha: 0.3),
+                  color: context.colors.gold.withValues(alpha: 0.3),
                   blurRadius: 8,
                 ),
               ),
@@ -156,7 +157,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                 tooltipRoundedRadius: 8,
                 tooltipPadding: const EdgeInsets.all(8),
                 tooltipBorder: BorderSide(
-                  color: AppColors.gold500.withValues(alpha: 0.3),
+                  color: context.colors.gold.withValues(alpha: 0.3),
                   width: 1,
                 ),
                 getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -165,7 +166,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                     return LineTooltipItem(
                       '\$${trend.amount.toStringAsFixed(2)}\n${_formatDate(trend.date)}',
                       AppTypography.bodySmall.copyWith(
-                        color: AppColors.textPrimary,
+                        color: context.colors.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     );
@@ -209,7 +210,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
       child: AppText(
         label,
         variant: AppTextVariant.bodySmall,
-        color: AppColors.textSecondary,
+        color: context.colors.textSecondary,
       ),
     );
   }
@@ -218,7 +219,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
     return AppText(
       '\$${_formatAmount(value)}',
       variant: AppTextVariant.bodySmall,
-      color: AppColors.textSecondary,
+      color: context.colors.textSecondary,
       textAlign: TextAlign.left,
     );
   }

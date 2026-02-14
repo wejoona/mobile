@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,9 +27,9 @@ class SpendingByCategorySection extends ConsumerWidget {
         // Convert Map<String, double> to List<SpendingCategory>
         final total = categoriesMap.values.fold(0.0, (a, b) => a + b);
         final categoryColors = [
-          AppColors.gold500,
-          AppColors.successBase,
-          AppColors.errorBase,
+          context.colors.gold,
+          context.colors.success,
+          context.colors.error,
           AppColors.warningBase,
           Colors.blue,
           Colors.purple,
@@ -51,7 +52,7 @@ class SpendingByCategorySection extends ConsumerWidget {
             color: AppColors.slate,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
-              color: AppColors.borderDefault,
+              color: context.colors.border,
               width: 1,
             ),
           ),
@@ -61,7 +62,7 @@ class SpendingByCategorySection extends ConsumerWidget {
               AppText(
                 l10n.insights_categories,
                 variant: AppTextVariant.titleMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.xxl),
               SpendingPieChart(categories: categories),
@@ -84,7 +85,7 @@ class SpendingByCategorySection extends ConsumerWidget {
                         child: AppText(
                           category.name,
                           variant: AppTextVariant.bodyMedium,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                       Column(
@@ -93,13 +94,13 @@ class SpendingByCategorySection extends ConsumerWidget {
                           AppText(
                             '\$${category.amount.toStringAsFixed(2)}',
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textPrimary,
+                            color: context.colors.textPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                           AppText(
                             '${category.percentage.toStringAsFixed(1)}%',
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                           ),
                         ],
                       ),

@@ -1,13 +1,15 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 class LoadingView extends ConsumerStatefulWidget {
   const LoadingView({super.key});
@@ -24,11 +26,8 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
   @override
   void initState() {
     super.initState();
-    // Show retry button after 10 seconds
     _timeoutTimer = Timer(const Duration(seconds: 10), () {
-      if (mounted) {
-        setState(() => _showRetry = true);
-      }
+      if (mounted) setState(() => _showRetry = true);
     });
   }
 
@@ -44,16 +43,14 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
       _showRetry = false;
     });
 
-    // Re-trigger wallet and KYC fetch
     try {
-      await ref.read(walletStateMachineProvider.notifier).refresh();
+      await ref.read(walletStateMachineProvider.notifier).fetch(force: true);
       await ref.read(kycStateMachineProvider.notifier).fetch();
-    } on Exception catch (e) {
+    } catch (e) {
       debugPrint('[LoadingView] Retry error: $e');
     }
 
-    // Wait a bit then show retry again if still loading
-    await Future<void>.delayed(const Duration(seconds: 5));
+    await Future<void>.delayed(const Duration(seconds: 3));
     if (mounted) {
       setState(() {
         _isRetrying = false;
@@ -62,15 +59,41 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
     }
   }
 
+  void _handleLogout() {
+    ref.read(authProvider.notifier).logout();
+    ref.read(appFsmProvider.notifier).logout();
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final appState = ref.watch(appFsmProvider);
     final walletState = ref.watch(walletStateMachineProvider);
-    final kycState = ref.watch(kycStateMachineProvider);
+
+    final hasError = walletState.status == WalletStatus.error ||
+        walletState.error != null;
+
+    // Show retry immediately on error
+    final showRetryNow = _showRetry || hasError;
 
     return Scaffold(
       backgroundColor: colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        actions: [
+          TextButton(
+            onPressed: _handleLogout,
+            child: AppText(
+              l10n.common_logout,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -78,96 +101,91 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Loading spinner
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: CircularProgressIndicator(
-                    color: colors.gold,
-                    strokeWidth: 3,
+                // Icon — same style as lock/OTP screens
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: colors.container,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.border),
                   ),
+                  child: hasError
+                      ? Icon(Icons.error_outline, color: colors.error, size: 40)
+                      : SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: CircularProgressIndicator(
+                            color: colors.gold,
+                            strokeWidth: 2.5,
+                          ),
+                        ),
                 ),
+
                 const SizedBox(height: AppSpacing.xxl),
-                const AppText(
-                  'Loading your account...',
-                  variant: AppTextVariant.headlineSmall,
+
+                AppText(
+                  hasError
+                      ? l10n.common_error
+                      : 'Chargement de votre compte...',
+                  variant: AppTextVariant.headlineMedium,
+                  color: colors.textPrimary,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppSpacing.lg),
+
+                const SizedBox(height: AppSpacing.sm),
+
                 AppText(
-                  'Please wait while we fetch your wallet and verification status.',
+                  hasError
+                      ? (walletState.error ?? l10n.common_errorTryAgain)
+                      : 'Veuillez patienter pendant que nous récupérons vos données.',
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
 
-                // Debug info (only in debug mode)
-                const SizedBox(height: AppSpacing.xxl),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        'Debug Info',
-                        variant: AppTextVariant.labelSmall,
-                        color: colors.textSecondary,
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      AppText(
-                        'FSM: ${appState.name}',
-                        variant: AppTextVariant.bodySmall,
-                      ),
-                      AppText(
-                        'Wallet: ${walletState.status.name}',
-                        variant: AppTextVariant.bodySmall,
-                      ),
-                      AppText(
-                        'KYC Machine: ${kycState.status.name}',
-                        variant: AppTextVariant.bodySmall,
-                      ),
-                      if (walletState.error != null)
-                        AppText(
-                          'Wallet Error: ${walletState.error}',
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.error,
-                        ),
-                      if (kycState.error != null)
-                        AppText(
-                          'KYC Error: ${kycState.error}',
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.error,
-                        ),
-                    ],
-                  ),
-                ),
-
-                // Retry button
-                if (_showRetry && !_isRetrying) ...[
+                // Debug info (debug mode only)
+                if (kDebugMode) ...[
                   const SizedBox(height: AppSpacing.xxl),
-                  AppText(
-                    'Taking longer than expected?',
-                    variant: AppTextVariant.bodySmall,
-                    color: colors.textSecondary,
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText('FSM: ${appState.name}', variant: AppTextVariant.bodySmall),
+                        AppText('Wallet: ${walletState.status.name}', variant: AppTextVariant.bodySmall),
+                        AppText('KYC: ${appState.kyc.name}', variant: AppTextVariant.bodySmall),
+                        if (walletState.error != null)
+                          AppText('Error: ${walletState.error}', variant: AppTextVariant.bodySmall, color: colors.error),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                ],
+
+                // Retry
+                if (showRetryNow && !_isRetrying) ...[
+                  const SizedBox(height: AppSpacing.xxxl),
                   AppButton(
-                    label: 'Retry',
-                    variant: AppButtonVariant.secondary,
+                    label: l10n.common_retry,
+                    variant: AppButtonVariant.primary,
                     onPressed: _handleRetry,
+                    isFullWidth: true,
                   ),
                 ],
 
                 if (_isRetrying) ...[
-                  const SizedBox(height: AppSpacing.xxl),
-                  AppText(
-                    'Retrying...',
-                    variant: AppTextVariant.bodySmall,
-                    color: colors.textSecondary,
+                  const SizedBox(height: AppSpacing.xxxl),
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: colors.gold,
+                      strokeWidth: 2,
+                    ),
                   ),
                 ],
               ],

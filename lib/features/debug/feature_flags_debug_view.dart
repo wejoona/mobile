@@ -51,7 +51,7 @@ class FeatureFlagsDebugView extends ConsumerWidget {
                               style: AppTextStyle.bodySmall,
                               color: entry.value
                                   ? AppColors.success
-                                  : AppColors.textTertiary,
+                                  : context.colors.textTertiary,
                             ),
                           ],
                         ),

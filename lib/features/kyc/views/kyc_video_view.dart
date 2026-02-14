@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -99,7 +100,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: _currentStep != VideoStep.recording
           ? AppBar(
               title: AppText(
@@ -139,12 +140,12 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                   height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.gold500.withOpacity(0.1),
+                    color: context.colors.gold.withOpacity(0.1),
                   ),
                   child: Icon(
                     Icons.videocam,
                     size: 64,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
                 SizedBox(height: AppSpacing.xxl),
@@ -157,7 +158,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                 AppText(
                   l10n.kyc_video_instructions_description,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: AppSpacing.xxl),
@@ -198,7 +199,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                       AppText(
                         l10n.kyc_video_actions_description,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.md),
                       ..._actions.asMap().entries.map((entry) {
@@ -213,13 +214,13 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                                 height: 24,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: AppColors.gold500.withOpacity(0.1),
+                                  color: context.colors.gold.withOpacity(0.1),
                                 ),
                                 child: Center(
                                   child: AppText(
                                     '${index + 1}',
                                     variant: AppTextVariant.labelSmall,
-                                    color: AppColors.gold500,
+                                    color: context.colors.gold,
                                   ),
                                 ),
                               ),
@@ -259,10 +260,10 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.1),
+              color: context.colors.gold.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: AppColors.gold500),
+            child: Icon(icon, color: context.colors.gold),
           ),
           SizedBox(width: AppSpacing.md),
           Expanded(
@@ -277,7 +278,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                 AppText(
                   description,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -310,7 +311,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 width: 3,
               ),
             ),
@@ -326,7 +327,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
               margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.obsidian.withOpacity(0.9),
+                color: context.colors.canvas.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Column(
@@ -340,7 +341,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                   LinearProgressIndicator(
                     value: (_currentActionIndex + 1) / _actions.length,
                     backgroundColor: AppColors.border,
-                    valueColor: AlwaysStoppedAnimation(AppColors.gold500),
+                    valueColor: AlwaysStoppedAnimation(context.colors.gold),
                   ),
                 ],
               ),
@@ -356,7 +357,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: AppColors.errorBase,
+              color: context.colors.error,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Row(
@@ -393,7 +394,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                 height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.errorBase,
+                  color: context.colors.error,
                   border: Border.all(color: Colors.white, width: 4),
                 ),
                 child: const Icon(
@@ -421,7 +422,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                 Icon(
                   Icons.check_circle,
                   size: 80,
-                  color: AppColors.successBase,
+                  color: context.colors.success,
                 ),
                 SizedBox(height: AppSpacing.lg),
                 AppText(
@@ -433,7 +434,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                 AppText(
                   l10n.kyc_video_preview_description,
                   variant: AppTextVariant.bodyLarge,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: AppSpacing.xxl),
@@ -442,7 +443,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                     variant: AppCardVariant.elevated,
                     child: Row(
                       children: [
-                        Icon(Icons.videocam, color: AppColors.gold500),
+                        Icon(Icons.videocam, color: context.colors.gold),
                         SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
@@ -455,7 +456,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                               AppText(
                                 '${_recordingDuration}s',
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                               ),
                             ],
                           ),
@@ -477,7 +478,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
             child: AppText(
               l10n.kyc_video_retake,
               variant: AppTextVariant.labelMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],

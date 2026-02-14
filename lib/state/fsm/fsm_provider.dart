@@ -9,6 +9,7 @@ import 'package:usdc_wallet/state/fsm/auth_fsm.dart';
 import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
 import 'package:usdc_wallet/state/fsm/kyc_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 
 /// ┌─────────────────────────────────────────────────────────────────┐
 /// │               FSM + RIVERPOD INTEGRATION                         │
@@ -173,6 +174,34 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
   // ─────────────────────────────────────────────────────────────────
   // Convenience methods for dispatching sub-FSM events
   // ─────────────────────────────────────────────────────────────────
+
+  /// Restore session from stored tokens (app restart)
+  /// Directly sets authenticated state and triggers data fetches
+  void restoreSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+  }) {
+    // Force FSM to authenticated state with active session
+    state = state.copyWith(
+      auth: AuthAuthenticated(
+        userId: userId,
+        phone: '', // not available from storage
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      ),
+      session: SessionActive(
+        startedAt: DateTime.now(),
+        lastActivity: DateTime.now(),
+        timeout: const Duration(minutes: 30),
+      ),
+    );
+    // Trigger wallet and KYC fetches
+    Future.microtask(() {
+      ref.read(walletStateMachineProvider.notifier).fetch();
+      ref.read(kycStateMachineProvider.notifier).fetch();
+    });
+  }
 
   /// Auth events
   void login(String phone, String countryCode) {

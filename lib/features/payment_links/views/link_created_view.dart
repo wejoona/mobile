@@ -23,7 +23,7 @@ class LinkCreatedView extends ConsumerWidget {
     final link = state.currentLink ?? state.links.firstWhere((l) => l.id == linkId);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.paymentLinks_linkCreated,
@@ -46,12 +46,12 @@ class LinkCreatedView extends ConsumerWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.successBase.withOpacity(0.15),
+                  color: context.colors.success.withOpacity(0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.check_circle,
-                  color: AppColors.successBase,
+                  color: context.colors.success,
                   size: 48,
                 ),
               ),
@@ -68,7 +68,7 @@ class LinkCreatedView extends ConsumerWidget {
             AppText(
               l10n.paymentLinks_linkReadyDescription,
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -78,14 +78,14 @@ class LinkCreatedView extends ConsumerWidget {
               child: Container(
                 padding: EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: QrImageView(
                   data: link.url,
                   version: QrVersions.auto,
                   size: 200.0,
-                  backgroundColor: AppColors.textPrimary,
+                  backgroundColor: context.colors.textPrimary,
                 ),
               ),
             ),
@@ -103,20 +103,20 @@ class LinkCreatedView extends ConsumerWidget {
                   AppText(
                     l10n.paymentLinks_requestedAmount,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
                     'CFA ${link.amount.toStringAsFixed(0)}',
                     variant: AppTextVariant.headlineLarge,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                   if (link.description != null) ...[
                     SizedBox(height: AppSpacing.sm),
                     AppText(
                       link.description!,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -139,14 +139,14 @@ class LinkCreatedView extends ConsumerWidget {
                     children: [
                       Icon(
                         Icons.link,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         size: 20,
                       ),
                       SizedBox(width: AppSpacing.xs),
                       AppText(
                         link.shortCode,
                         variant: AppTextVariant.headlineSmall,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ],
                   ),
@@ -154,7 +154,7 @@ class LinkCreatedView extends ConsumerWidget {
                   AppText(
                     link.url,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                     textAlign: TextAlign.center,
                   ),
                 ],

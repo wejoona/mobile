@@ -35,7 +35,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
     final state = ref.watch(alertPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -218,7 +218,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -272,7 +272,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -320,7 +320,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,7 +404,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Row(
         children: [
@@ -453,7 +453,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         children: [
@@ -589,7 +589,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: context.colors.borderSubtle),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -620,7 +620,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? colors.gold : AppColors.borderSubtle,
+            color: isSelected ? colors.gold : context.colors.borderSubtle,
           ),
         ),
         child: Row(

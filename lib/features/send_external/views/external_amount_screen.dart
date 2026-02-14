@@ -40,7 +40,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.sendExternal_enterAmount,
@@ -62,10 +62,10 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: AppColors.gold500.withOpacity(0.2),
+                            backgroundColor: context.colors.gold.withOpacity(0.2),
                             child: Icon(
                               Icons.account_balance_wallet_outlined,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                               size: 20,
                             ),
                           ),
@@ -77,7 +77,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                 AppText(
                                   l10n.sendExternal_recipientAddress,
                                   variant: AppTextVariant.bodySmall,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                                 AppText(
                                   _truncateAddress(state.address!),
@@ -100,7 +100,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                           child: AppText(
                             l10n.wallet_availableBalance,
                             variant: AppTextVariant.bodyMedium,
-                            color: AppColors.textSecondary,
+                            color: context.colors.textSecondary,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -110,7 +110,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                           '\$${Formatters.formatCurrency(state.availableBalance)}',
                           variant: AppTextVariant.bodyLarge,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ],
                     ),
@@ -139,7 +139,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                         child: AppText(
                           l10n.send_max,
                           variant: AppTextVariant.labelMedium,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ),
                     ),
@@ -149,7 +149,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                     AppText(
                       l10n.sendExternal_selectNetwork,
                       variant: AppTextVariant.labelLarge,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     _buildNetworkOption(NetworkOption.polygon, l10n),
@@ -168,7 +168,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                 AppText(
                                   l10n.sendExternal_amount,
                                   variant: AppTextVariant.bodyMedium,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                                 AppText(
                                   '\$${Formatters.formatCurrency(state.amount!)}',
@@ -185,7 +185,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                     AppText(
                                       l10n.sendExternal_networkFee,
                                       variant: AppTextVariant.bodyMedium,
-                                      color: AppColors.textSecondary,
+                                      color: context.colors.textSecondary,
                                     ),
                                     if (state.isEstimatingFee) ...[
                                       SizedBox(width: AppSpacing.xs),
@@ -194,7 +194,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                         height: 12,
                                         child: CircularProgressIndicator(
                                           strokeWidth: 2,
-                                          color: AppColors.gold500,
+                                          color: context.colors.gold,
                                         ),
                                       ),
                                     ],
@@ -208,7 +208,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                             ),
                             Divider(
                               height: AppSpacing.lg * 2,
-                              color: AppColors.textSecondary.withOpacity(0.2),
+                              color: context.colors.textSecondary.withOpacity(0.2),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -222,7 +222,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                   '\$${Formatters.formatCurrency(state.total)}',
                                   variant: AppTextVariant.bodyLarge,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.gold500,
+                                  color: context.colors.gold,
                                 ),
                               ],
                             ),
@@ -244,14 +244,14 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.errorBase.withOpacity(0.1),
+                      color: context.colors.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.error_outline,
-                          color: AppColors.errorBase,
+                          color: context.colors.error,
                           size: 20,
                         ),
                         SizedBox(width: AppSpacing.sm),
@@ -259,7 +259,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                           child: AppText(
                             state.error!,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.errorBase,
+                            color: context.colors.error,
                           ),
                         ),
                       ],
@@ -295,10 +295,10 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withOpacity(0.1) : AppColors.slate,
+          color: isSelected ? context.colors.gold.withOpacity(0.1) : AppColors.slate,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? AppColors.gold500.withOpacity(0.3) : AppColors.borderDefault,
+            color: isSelected ? context.colors.gold.withOpacity(0.3) : context.colors.border,
             width: 1,
           ),
         ),
@@ -306,7 +306,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
           children: [
             Icon(
               isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+              color: isSelected ? context.colors.gold : context.colors.textSecondary,
             ),
             SizedBox(width: AppSpacing.lg),
             Expanded(
@@ -328,13 +328,13 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.successBase.withOpacity(0.2),
+                            color: context.colors.success.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: AppText(
                             l10n.sendExternal_recommended,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.successBase,
+                            color: context.colors.success,
                           ),
                         ),
                       ],
@@ -343,7 +343,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                   AppText(
                     '${l10n.sendExternal_fee}: ~\$${Formatters.formatCurrency(network.estimatedFee)} • ${network.estimatedTime}',
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),

@@ -35,7 +35,7 @@ class ReferralCard extends StatelessWidget {
             AppText(
               'Gagnez 5 USDC pour chaque ami qui rejoint Korido',
               style: AppTextStyle.bodySmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -50,7 +50,7 @@ class ReferralCard extends StatelessWidget {
                     vertical: AppSpacing.md,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.gold.withOpacity(0.3)),
                   ),
@@ -81,7 +81,7 @@ class ReferralCard extends StatelessWidget {
                 Container(
                   height: 30,
                   width: 1,
-                  color: AppColors.elevated,
+                  color: context.colors.elevated,
                 ),
                 _StatItem(
                   label: 'Gains',
@@ -117,9 +117,9 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppText(value, style: AppTextStyle.labelLarge, color: AppColors.textPrimary),
+        AppText(value, style: AppTextStyle.labelLarge, color: context.colors.textPrimary),
         const SizedBox(height: AppSpacing.xxs),
-        AppText(label, style: AppTextStyle.bodySmall, color: AppColors.textTertiary),
+        AppText(label, style: AppTextStyle.bodySmall, color: context.colors.textTertiary),
       ],
     );
   }

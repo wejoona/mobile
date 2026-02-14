@@ -88,7 +88,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
     final state = ref.watch(scanToPayProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: Stack(
         children: [
           // QR Scanner
@@ -102,12 +102,12 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
           // Loading overlay
           if (state.isLoading)
             Container(
-              color: AppColors.obsidian.withValues(alpha: 0.9),
+              color: context.colors.canvas.withValues(alpha: 0.9),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const CircularProgressIndicator(color: AppColors.gold500),
+                    CircularProgressIndicator(color: context.colors.gold),
                     SizedBox(height: AppSpacing.md),
                     AppText(
                       'Processing...',

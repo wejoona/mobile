@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
@@ -92,7 +93,7 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
               Text(
                 widget.categories[_touchedIndex].name,
                 style: AppTypography.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -100,7 +101,7 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
               Text(
                 '\$${widget.categories[_touchedIndex].amount.toStringAsFixed(2)}',
                 style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -146,7 +147,7 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
             : null,
         borderSide: isTouched
             ? BorderSide(
-                color: AppColors.gold500.withValues(alpha: 0.5),
+                color: context.colors.gold.withValues(alpha: 0.5),
                 width: 2,
               )
             : BorderSide.none,

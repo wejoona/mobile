@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
 
 class ReferralsView extends ConsumerWidget {
   const ReferralsView({super.key});
@@ -15,9 +17,13 @@ class ReferralsView extends ConsumerWidget {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
+    final referralAsync = ref.watch(referralProvider);
     final phone = authState.user?.phone ?? '';
-    // Generate a simple referral code from phone
-    final referralCode = _generateReferralCode(phone);
+    // Use referral code from API if available, else generate locally
+    final referralCode = referralAsync.whenOrNull(data: (info) => info.referralCode) ?? _generateReferralCode(phone);
+    final totalReferrals = referralAsync.whenOrNull(data: (info) => info.totalReferrals) ?? 0;
+    final totalEarned = referralAsync.whenOrNull(data: (info) => info.totalEarned) ?? 0.0;
+    final referralHistory = referralAsync.whenOrNull(data: (info) => info.referrals) ?? [];
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -180,7 +186,7 @@ class ReferralsView extends ConsumerWidget {
                     child: _StatCard(
                       colors: colors,
                       icon: Icons.people_outline,
-                      value: '0',
+                      value: '$totalReferrals',
                       label: l10n.referrals_friendsInvited,
                     ),
                   ),
@@ -189,7 +195,7 @@ class ReferralsView extends ConsumerWidget {
                     child: _StatCard(
                       colors: colors,
                       icon: Icons.attach_money,
-                      value: '\$0.00',
+                      value: '\$${totalEarned.toStringAsFixed(2)}',
                       label: l10n.referrals_totalEarned,
                     ),
                   ),
@@ -242,33 +248,78 @@ class ReferralsView extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              AppCard(
-                variant: AppCardVariant.subtle,
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.history,
-                        size: 48,
-                        color: colors.textTertiary,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      AppText(
-                        l10n.referrals_noReferrals,
-                        variant: AppTextVariant.bodyMedium,
-                        color: colors.textSecondary,
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        l10n.referrals_startInviting,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.textTertiary,
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+              if (referralHistory.isEmpty)
+                AppCard(
+                  variant: AppCardVariant.subtle,
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 48,
+                          color: colors.textTertiary,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        AppText(
+                          l10n.referrals_noReferrals,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        AppText(
+                          l10n.referrals_startInviting,
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.textTertiary,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                )
+              else
+                ...referralHistory.map((entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: AppCard(
+                    variant: AppCardVariant.subtle,
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: colors.gold.withOpacity(0.2),
+                          child: AppText(
+                            entry.referredName.isNotEmpty ? entry.referredName[0].toUpperCase() : '?',
+                            variant: AppTextVariant.bodyLarge,
+                            color: colors.gold,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText(
+                                entry.referredName,
+                                variant: AppTextVariant.bodyMedium,
+                                color: colors.textPrimary,
+                              ),
+                              AppText(
+                                entry.status,
+                                variant: AppTextVariant.bodySmall,
+                                color: colors.textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (entry.reward != null)
+                          AppText(
+                            '+\$${entry.reward!.toStringAsFixed(2)}',
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.success,
+                          ),
+                      ],
+                    ),
+                  ),
+                )),
 
               const SizedBox(height: AppSpacing.xxl),
             ],
@@ -307,11 +358,63 @@ class ReferralsView extends ConsumerWidget {
 
   void _inviteContacts(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
-    // TODO: Open contacts picker (WhatsApp/SMS)
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.referrals_inviteComingSoon),
-        backgroundColor: colors.gold,
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.container,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.md),
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: colors.borderSubtle,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              l10n.referrals_invite,
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ListTile(
+              leading: const Icon(Icons.message, color: Color(0xFF25D366)),
+              title: const AppText('WhatsApp'),
+              onTap: () {
+                Navigator.pop(ctx);
+                final msg = Uri.encodeComponent(l10n.referrals_shareMessage('KORIDO'));
+                launchUrl(Uri.parse('https://wa.me/?text=$msg'), mode: LaunchMode.externalApplication);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.sms, color: colors.gold),
+              title: const AppText('SMS'),
+              onTap: () {
+                Navigator.pop(ctx);
+                final msg = Uri.encodeComponent(l10n.referrals_shareMessage('KORIDO'));
+                launchUrl(Uri.parse('sms:?body=$msg'), mode: LaunchMode.externalApplication);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.share, color: colors.textSecondary),
+              title: AppText(l10n.referrals_shareLink),
+              onTap: () {
+                Navigator.pop(ctx);
+                Share.share(
+                  l10n.referrals_shareMessage('KORIDO'),
+                  subject: l10n.referrals_shareSubject,
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+        ),
       ),
     );
   }

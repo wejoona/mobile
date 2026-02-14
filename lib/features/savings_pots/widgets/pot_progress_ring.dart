@@ -78,7 +78,7 @@ class _PotProgressRingState extends State<PotProgressRing>
                 progress: _animation.value,
                 strokeWidth: widget.strokeWidth,
                 color: widget.color ?? AppColors.gold,
-                backgroundColor: AppColors.elevated,
+                backgroundColor: context.colors.elevated,
               ),
               child: Center(child: widget.child),
             ),

@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -43,7 +44,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_addManually,
@@ -133,8 +134,8 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.gold500,
-              onPrimary: AppColors.obsidian,
+              primary: context.colors.gold,
+              onPrimary: context.colors.canvas,
               surface: AppColors.charcoal,
               onSurface: Colors.white,
             ),

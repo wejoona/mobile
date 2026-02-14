@@ -159,7 +159,4 @@ class UserProfile {
 /// User Service Provider
 final userServiceProvider = Provider<UserService>((ref) {
   return UserService(ref.watch(dioProvider));
-
-  Future<void> updateLocale(String locale) async {}
-
 });

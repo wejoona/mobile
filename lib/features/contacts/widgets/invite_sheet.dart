@@ -40,7 +40,7 @@ class InviteSheet extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -51,7 +51,7 @@ class InviteSheet extends ConsumerWidget {
               AppText(
                 l10n.contacts_invite_title(contact.name),
                 variant: AppTextVariant.headlineSmall,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -61,7 +61,7 @@ class InviteSheet extends ConsumerWidget {
               AppText(
                 l10n.contacts_invite_subtitle,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
@@ -125,7 +125,7 @@ class InviteSheet extends ConsumerWidget {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: AppColors.elevated,
+      color: context.colors.elevated,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: InkWell(
         onTap: onTap,
@@ -138,12 +138,12 @@ class InviteSheet extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.gold500.withOpacity(0.1),
+                  color: context.colors.gold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(
                   icon,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
               SizedBox(width: AppSpacing.md),
@@ -154,21 +154,21 @@ class InviteSheet extends ConsumerWidget {
                     AppText(
                       title,
                       variant: AppTextVariant.bodyLarge,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w600,
                     ),
                     SizedBox(height: AppSpacing.xs),
                     AppText(
                       subtitle,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                     ),
                   ],
                 ),
               ),
               Icon(
                 Icons.chevron_right,
-                color: AppColors.textTertiary,
+                color: context.colors.textTertiary,
               ),
             ],
           ),

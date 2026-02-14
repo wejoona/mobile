@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Confirm PIN View
@@ -32,7 +31,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: Text(
           l10n.pin_confirmTitle,
@@ -50,34 +49,34 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
               Text(
                 l10n.pin_reenterPin,
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xxxl),
-              PinDots(
-                filledCount: _pin.length,
-                showError: _showError,
+              PinDots(length: 6,
+                filled: _pin.length,
+                error: _showError,
               ),
               if (_showError) ...[
                 SizedBox(height: AppSpacing.md),
                 Text(
                   l10n.pin_error_noMatch,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.errorText,
+                    color: context.colors.errorText,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ],
               const Spacer(),
               if (_isLoading)
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                 )
               else
                 PinPad(
-                  onNumberPressed: _handleNumberPressed,
-                  onBackspace: _handleBackspace,
+                  onDigitPressed: _handleNumberPressed,
+                  onDeletePressed: _handleBackspace,
                 ),
               SizedBox(height: AppSpacing.xl),
             ],
@@ -87,10 +86,10 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
     );
   }
 
-  void _handleNumberPressed(String number) {
+  void _handleNumberPressed(int digit) {
     if (_pin.length < 6) {
       setState(() {
-        _pin += number;
+        _pin += digit.toString();
         _showError = false;
       });
 
@@ -140,7 +139,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.pin_success_set),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
         // Prompt biometric enrollment before going home
@@ -149,7 +148,7 @@ class _ConfirmPinViewState extends ConsumerState<ConfirmPinView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.pin_error_saveFailed),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
         context.pop();

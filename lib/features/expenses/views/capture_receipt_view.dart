@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,7 +158,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         width: isPrimary ? 72 : 56,
         height: isPrimary ? 72 : 56,
         decoration: BoxDecoration(
-          color: isPrimary ? AppColors.gold500 : Colors.white.withOpacity(0.3),
+          color: isPrimary ? context.colors.gold : Colors.white.withOpacity(0.3),
           shape: BoxShape.circle,
           border: isPrimary
               ? Border.all(color: Colors.white, width: 4)
@@ -174,7 +175,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
 
   Widget _buildPreview(BuildContext context, AppLocalizations l10n) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_receiptPreview,
@@ -299,7 +300,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
 
   Widget _buildEditForm(BuildContext context, AppLocalizations l10n) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_confirmDetails,
@@ -465,8 +466,8 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.dark(
-              primary: AppColors.gold500,
-              onPrimary: AppColors.obsidian,
+              primary: context.colors.gold,
+              onPrimary: context.colors.canvas,
               surface: AppColors.charcoal,
               onSurface: Colors.white,
             ),

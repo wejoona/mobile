@@ -33,7 +33,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.subBusiness_title,
@@ -43,7 +43,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(subBusinessProvider.notifier).loadSubBusinesses(),
-        color: AppColors.gold500,
+        color: context.colors.gold,
         backgroundColor: AppColors.slate,
         child: state.isLoading && state.subBusinesses.isEmpty
             ? const Center(child: CircularProgressIndicator())
@@ -53,8 +53,8 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/sub-businesses/create'),
-        backgroundColor: AppColors.gold500,
-        child: const Icon(Icons.add, color: AppColors.obsidian),
+        backgroundColor: context.colors.gold,
+        child: Icon(Icons.add, color: context.colors.canvas),
       ),
     );
   }
@@ -69,7 +69,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             Icon(
               Icons.business_center_outlined,
               size: 64,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
             AppText(
@@ -81,7 +81,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             AppText(
               l10n.subBusiness_emptyMessage,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -114,8 +114,8 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                AppColors.gold500,
-                AppColors.gold500.withOpacity(0.8),
+                context.colors.gold,
+                context.colors.gold.withOpacity(0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -129,20 +129,20 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
               AppText(
                 l10n.subBusiness_totalBalance,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.obsidian,
+                color: context.colors.canvas,
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 currencyFormat.format(totalBalance),
                 variant: AppTextVariant.displaySmall,
-                color: AppColors.obsidian,
+                color: context.colors.canvas,
                 fontWeight: FontWeight.bold,
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 '${state.subBusinesses.length} ${state.subBusinesses.length == 1 ? l10n.subBusiness_unit : l10n.subBusiness_units}',
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.obsidian.withOpacity(0.8),
+                color: context.colors.canvas.withOpacity(0.8),
               ),
             ],
           ),
@@ -170,9 +170,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     );
   }
 
-  Future<void> _showTransferDialog(subBusiness) async {
-    // TODO: Show transfer dialog
-    // For now, navigate to transfer screen
+  Future<void> _showTransferDialog(dynamic subBusiness) async {
     context.push('/sub-businesses/transfer/${subBusiness.id}');
   }
 }

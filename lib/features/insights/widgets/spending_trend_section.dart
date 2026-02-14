@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,7 +37,7 @@ class SpendingTrendSection extends ConsumerWidget {
             color: AppColors.slate,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
-              color: AppColors.borderDefault,
+              color: context.colors.border,
               width: 1,
             ),
           ),
@@ -46,7 +47,7 @@ class SpendingTrendSection extends ConsumerWidget {
               Text(
                 l10n.insights_spending_trend,
                 style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),

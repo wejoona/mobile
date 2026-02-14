@@ -1,5 +1,6 @@
 /// Linked Account Card Widget
 library;
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -39,7 +40,7 @@ class LinkedAccountCard extends StatelessWidget {
           color: AppColors.slate,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: account.isPrimary
-              ? Border.all(color: AppColors.gold500, width: 1.5)
+              ? Border.all(color: context.colors.gold, width: 1.5)
               : null,
         ),
         child: Column(
@@ -52,14 +53,14 @@ class LinkedAccountCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Center(
                     child: AppText(
                       account.bankName.substring(0, 1),
                       style: AppTypography.headlineSmall.copyWith(
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ),
                   ),
@@ -86,14 +87,14 @@ class LinkedAccountCard extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.gold500.withOpacity(0.2),
+                                color: context.colors.gold.withOpacity(0.2),
                                 borderRadius:
                                     BorderRadius.circular(AppRadius.xs),
                               ),
                               child: AppText(
                                 l10n.bankLinking_primary,
                                 style: AppTypography.bodySmall.copyWith(
-                                  color: AppColors.gold500,
+                                  color: context.colors.gold,
                                   fontSize: 10,
                                 ),
                               ),
@@ -104,7 +105,7 @@ class LinkedAccountCard extends StatelessWidget {
                       AppText(
                         account.accountNumberMasked,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     ],
@@ -118,7 +119,7 @@ class LinkedAccountCard extends StatelessWidget {
             AppText(
               account.accountHolderName,
               style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
             if (account.availableBalance != null &&
@@ -127,7 +128,7 @@ class LinkedAccountCard extends StatelessWidget {
               AppText(
                 '${l10n.bankLinking_balance}: ${_formatAmount(account.availableBalance!)} ${account.currency}',
                 style: AppTypography.bodyMedium.copyWith(
-                  color: AppColors.textPrimary,
+                  color: context.colors.textPrimary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -163,13 +164,13 @@ class LinkedAccountCard extends StatelessWidget {
                 child: TextButton(
                   onPressed: onTap,
                   style: TextButton.styleFrom(
-                    backgroundColor: AppColors.gold500.withOpacity(0.1),
+                    backgroundColor: context.colors.gold.withOpacity(0.1),
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   ),
                   child: AppText(
                     l10n.bankLinking_verifyAccount,
                     style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -204,7 +205,7 @@ class LinkedAccountCard extends StatelessWidget {
         label = AppLocalizations.of(context)!.bankLinking_failed;
         break;
       case BankAccountStatus.suspended:
-        color = AppColors.textTertiary;
+        color = context.colors.textTertiary;
         icon = Icons.block;
         label = AppLocalizations.of(context)!.bankLinking_suspended;
         break;
@@ -246,18 +247,18 @@ class LinkedAccountCard extends StatelessWidget {
     return TextButton(
       onPressed: onTap,
       style: TextButton.styleFrom(
-        backgroundColor: AppColors.elevated,
+        backgroundColor: context.colors.elevated,
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 16, color: AppColors.gold500),
+          Icon(icon, size: 16, color: context.colors.gold),
           SizedBox(width: AppSpacing.xs),
           AppText(
             label,
             style: AppTypography.bodySmall.copyWith(
-              color: AppColors.textPrimary,
+              color: context.colors.textPrimary,
               fontWeight: FontWeight.w500,
             ),
           ),

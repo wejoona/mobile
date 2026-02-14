@@ -46,7 +46,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
 
     if (pot == null) {
       return Scaffold(
-        backgroundColor: AppColors.obsidian,
+        backgroundColor: context.colors.canvas,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -59,7 +59,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         actions: [
@@ -211,7 +211,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             AppText(
               '${currencyFormat.format(pot.currentAmount)} of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress! * 100).toStringAsFixed(0)}%)',
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             if (pot.isGoalReached as bool)
               Padding(
@@ -222,18 +222,18 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                     vertical: AppSpacing.sm,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.successBase.withOpacity(0.2),
+                    color: context.colors.success.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.celebration, color: AppColors.successBase, size: 20),
+                      Icon(Icons.celebration, color: context.colors.success, size: 20),
                       SizedBox(width: AppSpacing.xs),
                       AppText(
                         l10n.savingsPots_goalReached,
                         variant: AppTextVariant.bodyMedium,
-                        color: AppColors.successBase,
+                        color: context.colors.success,
                         fontWeight: FontWeight.w600,
                       ),
                     ],
@@ -268,7 +268,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
               child: AppText(
                 l10n.savingsPots_noTransactions,
                 variant: AppTextVariant.bodyMedium,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           )
@@ -303,13 +303,13 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (isDeposit ? AppColors.successBase : AppColors.warningBase)
+              color: (isDeposit ? context.colors.success : AppColors.warningBase)
                   .withOpacity(0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               isDeposit ? Icons.add : Icons.remove,
-              color: isDeposit ? AppColors.successBase : AppColors.warningBase,
+              color: isDeposit ? context.colors.success : AppColors.warningBase,
             ),
           ),
           SizedBox(width: AppSpacing.md),
@@ -325,7 +325,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
                 AppText(
                   dateFormat.format(transaction.timestamp),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ],
             ),
@@ -333,7 +333,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
           AppText(
             '${isDeposit ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
             variant: AppTextVariant.bodyLarge,
-            color: isDeposit ? AppColors.successBase : AppColors.warningBase,
+            color: isDeposit ? context.colors.success : AppColors.warningBase,
             fontWeight: FontWeight.bold,
           ),
         ],
@@ -356,7 +356,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_addSuccess),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
     }
@@ -377,7 +377,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_withdrawSuccess),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
     }
@@ -413,7 +413,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.savingsPots_deleteSuccess),
-            backgroundColor: AppColors.successBase,
+            backgroundColor: context.colors.success,
           ),
         );
       }

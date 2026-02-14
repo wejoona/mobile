@@ -128,7 +128,7 @@ Powered by JoonaPay
     final state = ref.watch(paymentRequestProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText('Request Payment', variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
@@ -136,7 +136,7 @@ Powered by JoonaPay
           if (state.paymentRequest != null)
             IconButton(
               onPressed: _newRequest,
-              icon: Icon(Icons.refresh, color: AppColors.gold500),
+              icon: Icon(Icons.refresh, color: context.colors.gold),
               tooltip: 'New Request',
             ),
         ],
@@ -165,12 +165,12 @@ Powered by JoonaPay
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500.withValues(alpha: 0.1),
+                    color: context.colors.gold.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.store,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
                 SizedBox(width: AppSpacing.sm),
@@ -220,7 +220,7 @@ Powered by JoonaPay
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ),
                     Expanded(
@@ -336,7 +336,7 @@ Powered by JoonaPay
                 AppText(
                   '\$${pr.amount.toStringAsFixed(2)}',
                   variant: AppTextVariant.displayMedium,
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
                 AppText(
                   'USDC',
@@ -468,7 +468,7 @@ Powered by JoonaPay
             padding: EdgeInsets.all(AppSpacing.md),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.gold500),
+                Icon(Icons.info_outline, color: context.colors.gold),
                 SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: AppText(

@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -536,7 +537,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     ? _getErrorMessage(l10n, qualityResult.errorKey!)
                     : l10n.kyc_error_imageQuality,
               ),
-              backgroundColor: context.colors.error,
+              backgroundColor: AppColors.errorBase,
             ),
           );
         }
@@ -586,7 +587,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     ? _getErrorMessage(l10n, qualityResult.errorKey!)
                     : l10n.kyc_error_imageQuality,
               ),
-              backgroundColor: context.colors.error,
+              backgroundColor: AppColors.errorBase,
             ),
           );
         }

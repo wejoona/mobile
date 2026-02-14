@@ -462,7 +462,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
                           // Same widget for both modes, just different gradient colors
                           final gradientColors = isDark
-                              ? [AppColors.gold300, AppColors.gold500, AppColors.gold400]
+                              ? [AppColors.gold300, context.colors.gold, AppColors.gold400]
                               : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
 
                           return FadeTransition(
@@ -1235,7 +1235,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     // Use same gradient as the balance for consistency
     final gradientColors = isDark
-        ? [AppColors.gold300, AppColors.gold500, AppColors.gold400]
+        ? [AppColors.gold300, context.colors.gold, AppColors.gold400]
         : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
 
     // Compact hidden indicator

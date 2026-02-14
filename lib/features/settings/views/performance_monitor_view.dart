@@ -67,7 +67,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isSelected ? AppColors.gold500 : Colors.transparent,
+                color: isSelected ? context.colors.gold : Colors.transparent,
                 width: 2,
               ),
             ),
@@ -75,7 +75,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           child: AppText(
             label,
             style: AppTypography.bodyMedium.copyWith(
-              color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+              color: isSelected ? context.colors.gold : context.colors.textSecondary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
             textAlign: TextAlign.center,
@@ -110,7 +110,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           icon: Icons.speed,
           title: 'Total Metrics',
           value: '${summary['total_metrics']}',
-          color: AppColors.gold500,
+          color: context.colors.gold,
         ),
         SizedBox(height: AppSpacing.md),
         _buildMetricCard(
@@ -329,13 +329,13 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
                 children: [
                   AppText(
                     title,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+                    style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
                     value,
                     style: AppTypography.headlineMedium.copyWith(
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -343,7 +343,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
                     SizedBox(height: AppSpacing.xs),
                     AppText(
                       subtitle,
-                      style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                      style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                     ),
                   ],
                 ],
@@ -374,14 +374,14 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
                 children: [
                   AppText(
                     title,
-                    style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+                    style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
                   ),
                   SizedBox(height: AppSpacing.xs),
                   Row(
                     children: [
                       AppText(
                         subtitle,
-                        style: AppTypography.bodySmall.copyWith(color: AppColors.textSecondary),
+                        style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                       ),
                       if (badge != null) ...[
                         SizedBox(width: AppSpacing.sm),
@@ -440,7 +440,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
             width: 12,
             height: 12,
             decoration: BoxDecoration(
-              color: isActive ? color : AppColors.textSecondary.withValues(alpha: 0.3),
+              color: isActive ? color : context.colors.textSecondary.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
           ),
@@ -448,7 +448,7 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           AppText(
             label,
             style: AppTypography.bodyMedium.copyWith(
-              color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+              color: isActive ? context.colors.textPrimary : context.colors.textSecondary,
             ),
           ),
         ],
@@ -464,12 +464,12 @@ class _PerformanceMonitorViewState extends ConsumerState<PerformanceMonitorView>
           Icon(
             Icons.analytics_outlined,
             size: 64,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: context.colors.textSecondary.withValues(alpha: 0.5),
           ),
           SizedBox(height: AppSpacing.md),
           AppText(
             message,
-            style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary),
+            style: AppTypography.bodyLarge.copyWith(color: context.colors.textSecondary),
           ),
         ],
       ),

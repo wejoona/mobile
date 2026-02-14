@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/certificate_pinning.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
@@ -119,11 +120,13 @@ final dioProvider = Provider<Dio>((ref) {
     },
   ));
 
-  // SECURITY: Enable certificate pinning in production (skip if using mocks)
-  if (!MockConfig.useMocks && ApiConfig.isProduction) {
-    dio.enableCertificatePinning();
-    logger.info('Certificate pinning enabled');
-  }
+  // SECURITY: Certificate pinning disabled until real fingerprints are configured
+  // TODO: Generate real SPKI fingerprints and re-enable before production launch
+  // if (!MockConfig.useMocks && ApiConfig.isProduction) {
+  //   dio.enableCertificatePinning();
+  //   logger.info('Certificate pinning enabled');
+  // }
+  logger.info('Certificate pinning: disabled (placeholder fingerprints)');
 
   // MOCKING: Add mock interceptor first if mocks are enabled
   if (MockConfig.useMocks) {
@@ -271,10 +274,16 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
       } else {
-        // Refresh failed, clear tokens
+        // Refresh failed, clear tokens and force logout
         final storage = _ref.read(secureStorageProvider);
         await storage.delete(key: StorageKeys.accessToken);
         await storage.delete(key: StorageKeys.refreshToken);
+        // Force FSM back to unauthenticated so user sees login screen
+        try {
+          _ref.read(appFsmProvider.notifier).logout();
+        } catch (_) {
+          // FSM might not be available in all contexts
+        }
       }
     }
 

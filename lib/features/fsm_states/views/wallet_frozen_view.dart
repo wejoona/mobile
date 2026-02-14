@@ -29,7 +29,7 @@ class WalletFrozenView extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
@@ -60,14 +60,14 @@ class WalletFrozenView extends ConsumerWidget {
                         AppText(
                           l10n.wallet_frozenTitle,
                           variant: AppTextVariant.headlineMedium,
-                          color: AppColors.textPrimary,
+                          color: context.colors.textPrimary,
                           textAlign: TextAlign.center,
                         ),
                         SizedBox(height: AppSpacing.md),
                         AppText(
                           reason,
                           variant: AppTextVariant.bodyLarge,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                           textAlign: TextAlign.center,
                         ),
                         if (!isPermanent && frozenUntil != null) ...[
@@ -75,22 +75,22 @@ class WalletFrozenView extends ConsumerWidget {
                           Container(
                             padding: EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: AppColors.elevated,
+                              color: context.colors.elevated,
                               borderRadius: BorderRadius.circular(AppRadius.md),
-                              border: Border.all(color: AppColors.borderDefault),
+                              border: Border.all(color: context.colors.border),
                             ),
                             child: Column(
                               children: [
                                 AppText(
                                   l10n.wallet_frozenUntil,
                                   variant: AppTextVariant.labelSmall,
-                                  color: AppColors.textSecondary,
+                                  color: context.colors.textSecondary,
                                 ),
                                 SizedBox(height: AppSpacing.xs),
                                 AppText(
                                   _formatDate(frozenUntil),
                                   variant: AppTextVariant.bodyLarge,
-                                  color: AppColors.gold500,
+                                  color: context.colors.gold,
                                 ),
                               ],
                             ),
@@ -104,20 +104,20 @@ class WalletFrozenView extends ConsumerWidget {
                               Icon(
                                 Icons.support_agent,
                                 size: 40,
-                                color: AppColors.gold500,
+                                color: context.colors.gold,
                               ),
                               SizedBox(height: AppSpacing.md),
                               AppText(
                                 l10n.wallet_frozenContactSupport,
                                 variant: AppTextVariant.bodyMedium,
-                                color: AppColors.textPrimary,
+                                color: context.colors.textPrimary,
                                 textAlign: TextAlign.center,
                               ),
                               SizedBox(height: AppSpacing.sm),
                               AppText(
                                 l10n.wallet_frozenContactMessage,
                                 variant: AppTextVariant.bodySmall,
-                                color: AppColors.textSecondary,
+                                color: context.colors.textSecondary,
                                 textAlign: TextAlign.center,
                               ),
                             ],

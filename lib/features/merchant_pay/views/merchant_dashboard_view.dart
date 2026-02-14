@@ -28,20 +28,20 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     final merchantAsync = ref.watch(merchantProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText('Merchant Dashboard', variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             onPressed: () => context.push('/merchant-settings'),
-            icon: Icon(Icons.settings, color: AppColors.gold500),
+            icon: Icon(Icons.settings, color: context.colors.gold),
           ),
         ],
       ),
       body: merchantAsync.when(
         loading: () => Center(
-          child: CircularProgressIndicator(color: AppColors.gold500),
+          child: CircularProgressIndicator(color: context.colors.gold),
         ),
         error: (error, _) => Center(
           child: Column(
@@ -82,7 +82,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             Icon(
               Icons.store_outlined,
               size: 80,
-              color: AppColors.gold500.withValues(alpha: 0.5),
+              color: context.colors.gold.withValues(alpha: 0.5),
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(
@@ -118,7 +118,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           period: _selectedPeriod,
         )));
       },
-      color: AppColors.gold500,
+      color: context.colors.gold,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(AppSpacing.md),
@@ -373,10 +373,10 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             Container(
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: AppColors.gold500.withValues(alpha: 0.1),
+                color: context.colors.gold.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: AppColors.gold500),
+              child: Icon(icon, color: context.colors.gold),
             ),
             SizedBox(height: AppSpacing.xs),
             AppText(
@@ -433,7 +433,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           loading: () => Center(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
-              child: CircularProgressIndicator(color: AppColors.gold500),
+              child: CircularProgressIndicator(color: context.colors.gold),
             ),
           ),
           error: (_, __) => AppCard(
@@ -474,13 +474,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           'Transactions',
           analytics.totalTransactions.toString(),
           Icons.swap_horiz,
-          AppColors.gold500,
+          context.colors.gold,
         ),
         _buildAnalyticsCard(
           'Unique Customers',
           analytics.uniqueCustomers.toString(),
           Icons.people,
-          AppColors.gold500,
+          context.colors.gold,
         ),
       ],
     );
@@ -536,7 +536,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             ),
             TextButton(
               onPressed: () => context.push('/merchant-transactions', extra: merchant.merchantId),
-              child: AppText('See All', color: AppColors.gold500),
+              child: AppText('See All', color: context.colors.gold),
             ),
           ],
         ),
@@ -545,7 +545,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           loading: () => Center(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
-              child: CircularProgressIndicator(color: AppColors.gold500),
+              child: CircularProgressIndicator(color: context.colors.gold),
             ),
           ),
           error: (_, __) => AppCard(

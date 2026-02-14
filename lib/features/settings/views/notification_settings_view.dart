@@ -236,7 +236,7 @@ class _NotificationSettingsViewState
                       child: AppText(
                         l10n.notifications_securityNote,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -276,7 +276,7 @@ class _NotificationSettingsViewState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: AppColors.errorBase, size: 64),
+            Icon(Icons.error_outline, color: context.colors.error, size: 64),
             SizedBox(height: AppSpacing.lg),
             AppText(
               l10n.notifications_errorTitle,
@@ -449,7 +449,7 @@ class _NotificationSettingsViewState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.notifications_saveSuccess),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
           context.safePop(fallbackRoute: '/settings');
@@ -460,7 +460,7 @@ class _NotificationSettingsViewState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(state.error ?? l10n.notifications_saveError),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }
@@ -472,7 +472,7 @@ class _NotificationSettingsViewState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: AppText(l10n.notifications_saveError),
-            backgroundColor: AppColors.errorBase,
+            backgroundColor: context.colors.error,
           ),
         );
       }
@@ -516,7 +516,7 @@ class _NotificationSettingsViewState
                 },
                 child: AppText(
                   l10n.action_discard,
-                  color: AppColors.errorBase,
+                  color: context.colors.error,
                 ),
               ),
             ],

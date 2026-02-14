@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Change PIN View
@@ -44,7 +43,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: Text(
           l10n.pin_changeTitle,
@@ -63,34 +62,34 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
               Text(
                 _getStepTitle(l10n),
                 style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xxxl),
-              PinDots(
-                filledCount: _activePin.length,
-                showError: _showError,
+              PinDots(length: 6,
+                filled: _activePin.length,
+                error: _showError,
               ),
               if (_errorMessage != null) ...[
                 SizedBox(height: AppSpacing.md),
                 Text(
                   _errorMessage!,
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.errorText,
+                    color: context.colors.errorText,
                   ),
                   textAlign: TextAlign.center,
                 ),
               ],
               const Spacer(),
               if (_isLoading)
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                 )
               else
                 PinPad(
-                  onNumberPressed: _handleNumberPressed,
-                  onBackspace: _handleBackspace,
+                  onDigitPressed: _handleNumberPressed,
+                  onDeletePressed: _handleBackspace,
                 ),
               SizedBox(height: AppSpacing.xl),
             ],
@@ -114,8 +113,8 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
             height: 8,
             decoration: BoxDecoration(
               color: isCompleted || isActive
-                  ? AppColors.gold500
-                  : AppColors.borderDefault,
+                  ? context.colors.gold
+                  : context.colors.border,
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
           ),
@@ -137,18 +136,18 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
     }
   }
 
-  void _handleNumberPressed(String number) {
+  void _handleNumberPressed(int digit) {
     if (_activePin.length < 6) {
       setState(() {
         switch (_step) {
           case 1:
-            _currentPin += number;
+            _currentPin += digit.toString();
             break;
           case 2:
-            _newPin += number;
+            _newPin += digit.toString();
             break;
           case 3:
-            _confirmPin += number;
+            _confirmPin += digit.toString();
             break;
         }
         _showError = false;
@@ -241,7 +240,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(l10n.pin_success_changed),
-                backgroundColor: AppColors.successBase,
+                backgroundColor: context.colors.success,
               ),
             );
             context.pop();

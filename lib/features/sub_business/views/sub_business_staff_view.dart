@@ -7,6 +7,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/staff_member_card.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Screen for managing staff members of a sub-business
 class SubBusinessStaffView extends ConsumerStatefulWidget {
@@ -42,7 +43,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.subBusiness_staffTitle,
@@ -53,7 +54,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(subBusinessProvider.notifier).loadStaff(widget.subBusinessId),
-        color: AppColors.gold500,
+        color: context.colors.gold,
         backgroundColor: AppColors.slate,
         child: staff.isEmpty
             ? _buildEmptyState(l10n)
@@ -61,8 +62,8 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddStaffDialog(l10n),
-        backgroundColor: AppColors.gold500,
-        child: const Icon(Icons.person_add, color: AppColors.obsidian),
+        backgroundColor: context.colors.gold,
+        child: Icon(Icons.person_add, color: context.colors.canvas),
       ),
     );
   }
@@ -77,7 +78,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             Icon(
               Icons.people_outline,
               size: 64,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
             AppText(
@@ -89,7 +90,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             AppText(
               l10n.subBusiness_noStaffMessage,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.xl),
@@ -113,7 +114,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             color: AppColors.slate,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: AppColors.gold500.withOpacity(0.2),
+              color: context.colors.gold.withOpacity(0.2),
             ),
           ),
           padding: EdgeInsets.all(AppSpacing.md),
@@ -121,7 +122,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             children: [
               Icon(
                 Icons.info_outline,
-                color: AppColors.gold500,
+                color: context.colors.gold,
                 size: 20,
               ),
               SizedBox(width: AppSpacing.sm),
@@ -129,7 +130,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                 child: AppText(
                   l10n.subBusiness_staffInfo,
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
               ),
             ],
@@ -159,12 +160,14 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   }
 
   Widget _buildStaffCard(StaffMember member, AppLocalizations l10n) {
+    final currentUserId = ref.read(authProvider).user?.id;
+    final isCurrentUser = member.userId == currentUserId;
     return Padding(
       padding: EdgeInsets.only(bottom: AppSpacing.md),
       child: StaffMemberCard(
         staff: member,
-        isCurrentUser: false, // TODO: Check if current user
-        onTap: () => _showStaffOptions(member, l10n),
+        isCurrentUser: isCurrentUser,
+        onTap: isCurrentUser ? () {} : () => _showStaffOptions(member, l10n),
       ),
     );
   }
@@ -208,14 +211,14 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                   subtitle: AppText(
                     _getRoleDescription(role, l10n),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   value: role,
                   groupValue: selectedRole,
                   onChanged: (value) {
                     setState(() => selectedRole = value!);
                   },
-                  activeColor: AppColors.gold500,
+                  activeColor: context.colors.gold,
                 );
               }),
             ],
@@ -243,7 +246,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                             ? l10n.subBusiness_inviteSuccess
                             : l10n.error_generic,
                       ),
-                      backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+                      backgroundColor: success ? context.colors.success : context.colors.error,
                     ),
                   );
                 }
@@ -283,7 +286,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             ),
             SizedBox(height: AppSpacing.md),
             ListTile(
-              leading: const Icon(Icons.swap_horiz, color: AppColors.gold500),
+              leading: Icon(Icons.swap_horiz, color: context.colors.gold),
               title: AppText(l10n.subBusiness_changeRole),
               onTap: () {
                 Navigator.pop(context);
@@ -334,14 +337,14 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                 subtitle: AppText(
                   _getRoleDescription(role, l10n),
                   variant: AppTextVariant.bodySmall,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 value: role,
                 groupValue: selectedRole,
                 onChanged: (value) {
                   setState(() => selectedRole = value!);
                 },
-                activeColor: AppColors.gold500,
+                activeColor: context.colors.gold,
               );
             }).toList(),
           ),
@@ -369,7 +372,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                             ? l10n.subBusiness_roleUpdateSuccess
                             : l10n.error_generic,
                       ),
-                      backgroundColor: success ? AppColors.successBase : AppColors.errorBase,
+                      backgroundColor: success ? context.colors.success : context.colors.error,
                     ),
                   );
                 }

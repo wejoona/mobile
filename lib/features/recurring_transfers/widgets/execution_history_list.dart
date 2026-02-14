@@ -31,15 +31,15 @@ class ExecutionHistoryList extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: execution.success
-                          ? AppColors.successBase.withOpacity(0.2)
-                          : AppColors.errorBase.withOpacity(0.2),
+                          ? context.colors.success.withOpacity(0.2)
+                          : context.colors.error.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
                       execution.success ? Icons.check : Icons.close,
                       color: execution.success
-                          ? AppColors.successBase
-                          : AppColors.errorBase,
+                          ? context.colors.success
+                          : context.colors.error,
                       size: 20,
                     ),
                   ),
@@ -59,13 +59,13 @@ class ExecutionHistoryList extends StatelessWidget {
                         AppText(
                           '${execution.amount.toStringAsFixed(0)} ${execution.currency}',
                           variant: AppTextVariant.bodySmall,
-                          color: AppColors.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                         if (!execution.success && execution.errorMessage != null)
                           AppText(
                             execution.errorMessage!,
                             variant: AppTextVariant.bodySmall,
-                            color: AppColors.errorBase,
+                            color: context.colors.error,
                           ),
                       ],
                     ),
@@ -73,7 +73,7 @@ class ExecutionHistoryList extends StatelessWidget {
                   AppText(
                     _formatDate(execution.executedAt),
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ],
               ),

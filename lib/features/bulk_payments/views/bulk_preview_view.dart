@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/features/bulk_payments/widgets/payment_row.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
 
@@ -21,8 +22,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(bulkPaymentsProvider);
-    final batch = state.value?.isNotEmpty == true ? state.value!.first : null;
+    final batch = ref.watch(draftBatchProvider);
 
     if (batch == null) {
       Future.microtask(() => context.go('/bulk-payments'));
@@ -30,7 +30,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.bulkPayments_preview,
@@ -43,19 +43,19 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
         child: Column(
           children: [
             _buildSummaryCard(l10n, batch),
-            if (batch.failureCount > 0) _buildErrorBanner(l10n, batch),
+            if (batch.hasErrors) _buildErrorBanner(l10n, batch),
             _buildFilterToggle(l10n, batch),
             Expanded(
               child: _buildPaymentsList(l10n, batch),
             ),
-            _buildBottomBar(l10n, batch, state),
+            _buildBottomBar(l10n, batch),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSummaryCard(AppLocalizations l10n, batch) {
+  Widget _buildSummaryCard(AppLocalizations l10n, BulkBatch batch) {
     return Container(
       margin: EdgeInsets.all(AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.md),
@@ -74,12 +74,12 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
                   AppText(
                     l10n.bulkPayments_totalPayments,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   AppText(
                     '${batch.totalCount}',
                     variant: AppTextVariant.headlineMedium,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ],
               ),
@@ -89,12 +89,12 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
                   AppText(
                     l10n.bulkPayments_totalAmount,
                     variant: AppTextVariant.bodySmall,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                   AppText(
                     Formatting.formatCurrency(batch.totalAmount),
                     variant: AppTextVariant.headlineMedium,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ],
               ),
@@ -105,7 +105,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
   }
 
-  Widget _buildErrorBanner(AppLocalizations l10n, batch) {
+  Widget _buildErrorBanner(AppLocalizations l10n, BulkBatch batch) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.md),
@@ -144,8 +144,8 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
   }
 
-  Widget _buildFilterToggle(AppLocalizations l10n, dynamic batch) {
-    if (!(batch.failureCount > 0 as bool)) return const SizedBox.shrink();
+  Widget _buildFilterToggle(AppLocalizations l10n, BulkBatch batch) {
+    if (!batch.hasErrors) return const SizedBox.shrink();
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -162,14 +162,14 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
           Switch(
             value: _showInvalidOnly,
             onChanged: (value) => setState(() => _showInvalidOnly = value),
-            activeColor: AppColors.gold500,
+            activeColor: context.colors.gold,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPaymentsList(AppLocalizations l10n, batch) {
+  Widget _buildPaymentsList(AppLocalizations l10n, BulkBatch batch) {
     final payments = _showInvalidOnly ? batch.invalidPayments : batch.payments;
 
     if ((payments as List).isEmpty) {
@@ -177,7 +177,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
         child: AppText(
           l10n.bulkPayments_noPayments,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
       );
     }
@@ -194,8 +194,8 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
   }
 
-  Widget _buildBottomBar(AppLocalizations l10n, batch, state) {
-    final canSubmit = !(batch.failureCount > 0 as bool) && (batch.totalCount as int) > 0;
+  Widget _buildBottomBar(AppLocalizations l10n, BulkBatch batch) {
+    final canSubmit = !batch.hasErrors && batch.totalCount > 0;
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
@@ -224,7 +224,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
             child: AppButton(
               label: l10n.bulkPayments_submitBatch,
               onPressed: canSubmit ? () => _submitBatch(batch) : null,
-              isLoading: state.isProcessing,
+              isLoading: false,
             ),
           ),
         ],
@@ -232,7 +232,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
   }
 
-  Future<void> _submitBatch(batch) async {
+  Future<void> _submitBatch(BulkBatch batch) async {
     final l10n = AppLocalizations.of(context)!;
 
     final confirmed = await showDialog<bool>(
@@ -258,7 +258,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
             onPressed: () => Navigator.pop(context, true),
             child: AppText(
               l10n.action_confirm,
-              color: AppColors.gold500,
+              color: context.colors.gold,
             ),
           ),
         ],
@@ -266,8 +266,9 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
     );
 
     if (confirmed == true && mounted) {
-      // TODO: submitBatch expects BulkBatch, not BulkPayment
-      await ref.read(bulkPaymentActionsProvider).submitBatch(batch as dynamic);
+      await ref.read(bulkPaymentActionsProvider).submitBatch(batch);
+      // Clear draft after successful submission
+      ref.read(draftBatchProvider.notifier).state = null;
 
       if (mounted) {
         context.go('/bulk-payments');

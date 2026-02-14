@@ -52,7 +52,7 @@ class UsdcExplainerView extends ConsumerWidget {
                     child: Icon(
                       Icons.account_balance_rounded,
                       size: 40,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.lg),

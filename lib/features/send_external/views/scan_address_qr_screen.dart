@@ -15,7 +15,7 @@ class ScanAddressQrScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: QrScannerWidget(
         title: l10n.sendExternal_scanQr,
         subtitle: 'Position the wallet address QR code within the frame',
@@ -52,7 +52,7 @@ class ScanAddressQrScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.errorBase,
+        backgroundColor: context.colors.error,
         duration: const Duration(seconds: 2),
       ),
     );

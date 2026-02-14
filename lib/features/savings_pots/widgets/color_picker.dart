@@ -58,7 +58,7 @@ class ColorPicker extends StatelessWidget {
         AppText(
           l10n.savingsPots_chooseColor,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.sm),
         Wrap(

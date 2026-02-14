@@ -473,9 +473,8 @@ class DeepLinkHandler {
     }
   }
 
-  /// Show error toast
+  /// Show error via snackbar
   static void _showError(BuildContext context, String message) {
-    // TODO: Use AppToast when available
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),

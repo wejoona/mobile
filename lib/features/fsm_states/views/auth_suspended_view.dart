@@ -28,7 +28,7 @@ class AuthSuspendedView extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(AppSpacing.xl),
@@ -44,14 +44,14 @@ class AuthSuspendedView extends ConsumerWidget {
               AppText(
                 l10n.auth_accountSuspended,
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 reason,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               if (!isPermanent && suspendedUntil != null) ...[
@@ -59,22 +59,22 @@ class AuthSuspendedView extends ConsumerWidget {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.elevated,
+                    color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
-                    border: Border.all(color: AppColors.borderDefault),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Column(
                     children: [
                       AppText(
                         l10n.auth_suspendedUntil,
                         variant: AppTextVariant.labelSmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
                         _formatDate(suspendedUntil),
                         variant: AppTextVariant.bodyLarge,
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                       ),
                     ],
                   ),
@@ -88,20 +88,20 @@ class AuthSuspendedView extends ConsumerWidget {
                     Icon(
                       Icons.support_agent,
                       size: 40,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                     SizedBox(height: AppSpacing.md),
                     AppText(
                       l10n.auth_contactSupport,
                       variant: AppTextVariant.bodyMedium,
-                      color: AppColors.textPrimary,
+                      color: context.colors.textPrimary,
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     AppText(
                       l10n.auth_suspendedContactMessage,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.textSecondary,
+                      color: context.colors.textSecondary,
                       textAlign: TextAlign.center,
                     ),
                   ],

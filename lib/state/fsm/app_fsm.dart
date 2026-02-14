@@ -197,8 +197,9 @@ class AppState extends FsmState {
       return AppScreen.login;
     }
 
-    // Authenticated but wallet or KYC loading - show loading
-    if (wallet is WalletLoading || wallet is WalletNone || kyc is KycInitial || kyc is KycLoading) {
+    // Authenticated but wallet or KYC loading/error - show loading
+    if (wallet is WalletLoading || wallet is WalletNone || wallet is WalletError ||
+        kyc is KycInitial || kyc is KycLoading) {
       return AppScreen.loading;
     }
 

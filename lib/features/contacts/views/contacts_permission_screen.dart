@@ -26,7 +26,7 @@ class _ContactsPermissionScreenState
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -51,13 +51,13 @@ class _ContactsPermissionScreenState
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.gold500.withOpacity(0.1),
+                    color: context.colors.gold.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.contacts,
                     size: 60,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ),
@@ -68,7 +68,7 @@ class _ContactsPermissionScreenState
               AppText(
                 l10n.contacts_permission_title,
                 variant: AppTextVariant.headlineLarge,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
 
@@ -78,7 +78,7 @@ class _ContactsPermissionScreenState
               AppText(
                 l10n.contacts_permission_subtitle,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
 
@@ -135,7 +135,7 @@ class _ContactsPermissionScreenState
                   child: AppText(
                     l10n.contacts_permission_later,
                     variant: AppTextVariant.bodyMedium,
-                    color: AppColors.textSecondary,
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ),
@@ -160,12 +160,12 @@ class _ContactsPermissionScreenState
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.elevated,
+            color: context.colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Icon(
             icon,
-            color: AppColors.gold500,
+            color: context.colors.gold,
             size: 20,
           ),
         ),
@@ -177,14 +177,14 @@ class _ContactsPermissionScreenState
               AppText(
                 title,
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 fontWeight: FontWeight.w600,
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
                 description,
                 variant: AppTextVariant.bodySmall,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ],
           ),

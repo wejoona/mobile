@@ -51,7 +51,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -70,7 +70,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
           Container(
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: context.colors.canvas,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Row(
@@ -79,7 +79,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
                 AppText(
                   l10n.savingsPots_availableBalance,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 AppText(
                   currencyFormat.format(availableBalance),
@@ -132,8 +132,8 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
           _amountController.text = amount.toStringAsFixed(2);
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.gold500,
-          side: BorderSide(color: AppColors.gold500),
+          foregroundColor: context.colors.gold,
+          side: BorderSide(color: context.colors.gold),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
@@ -141,7 +141,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
         child: AppText(
           label,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.gold500,
+          color: context.colors.gold,
         ),
       ),
     );
@@ -155,7 +155,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_invalidAmount),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
       return;
@@ -168,7 +168,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_insufficientBalance),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
       return;

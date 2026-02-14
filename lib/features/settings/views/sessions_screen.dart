@@ -30,7 +30,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final state = ref.watch(sessionsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.settings_activeSessions,
@@ -60,7 +60,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
 
     return RefreshIndicator(
       onRefresh: () => ref.read(sessionsProvider.notifier).loadSessions(),
-      color: AppColors.gold500,
+      color: context.colors.gold,
       backgroundColor: AppColors.slate,
       child: Column(
         children: [
@@ -100,7 +100,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             children: [
               Icon(
                 _getDeviceIcon(session.deviceDescription),
-                color: isCurrentSession ? AppColors.gold500 : AppColors.textSecondary,
+                color: isCurrentSession ? context.colors.gold : context.colors.textSecondary,
                 size: 24,
               ),
               SizedBox(width: AppSpacing.sm),
@@ -121,14 +121,14 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.gold500.withValues(alpha: 0.1),
-                          border: Border.all(color: AppColors.gold500, width: 1),
+                          color: context.colors.gold.withValues(alpha: 0.1),
+                          border: Border.all(color: context.colors.gold, width: 1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
                           l10n.sessions_currentSession,
                           variant: AppTextVariant.labelSmall,
-                          color: AppColors.gold500,
+                          color: context.colors.gold,
                         ),
                       ),
                     ],
@@ -137,7 +137,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
               ),
               if (!isCurrentSession)
                 IconButton(
-                  icon: Icon(Icons.close, color: AppColors.errorBase, size: 20),
+                  icon: Icon(Icons.close, color: context.colors.error, size: 20),
                   onPressed: () => _showRevokeDialog(context, l10n, session),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(),
@@ -170,13 +170,13 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: AppColors.textSecondary),
+        Icon(icon, size: 16, color: context.colors.textSecondary),
         SizedBox(width: AppSpacing.sm),
         Expanded(
           child: AppText(
             text,
             variant: AppTextVariant.bodySmall,
-            color: AppColors.textSecondary,
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -200,7 +200,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
       decoration: BoxDecoration(
         color: AppColors.slate,
         border: Border(
-          top: BorderSide(color: AppColors.borderSubtle, width: 1),
+          top: BorderSide(color: context.colors.borderSubtle, width: 1),
         ),
       ),
       child: AppButton(
@@ -215,7 +215,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
   Widget _buildLoading() {
     return Center(
       child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.gold500),
+        valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
       ),
     );
   }
@@ -227,7 +227,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline, size: 64, color: AppColors.errorBase),
+            Icon(Icons.error_outline, size: 64, color: context.colors.error),
             SizedBox(height: AppSpacing.md),
             AppText(
               l10n.sessions_errorLoading,
@@ -238,7 +238,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             AppText(
               error,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             SizedBox(height: AppSpacing.lg),
@@ -260,7 +260,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.devices_other, size: 64, color: AppColors.textSecondary),
+            Icon(Icons.devices_other, size: 64, color: context.colors.textSecondary),
             SizedBox(height: AppSpacing.md),
             AppText(
               l10n.sessions_noActiveSessions,
@@ -271,7 +271,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             AppText(
               l10n.sessions_noActiveSessionsDesc,
               variant: AppTextVariant.bodySmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               textAlign: TextAlign.center,
             ),
           ],
@@ -299,7 +299,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         content: AppText(
           l10n.sessions_revokeMessage,
           variant: AppTextVariant.bodyMedium,
-          color: AppColors.textSecondary,
+          color: context.colors.textSecondary,
         ),
         actions: [
           AppButton(
@@ -328,7 +328,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText(l10n.sessions_revokeSuccess),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
       ),
     );
   }
@@ -352,25 +352,25 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             AppText(
               l10n.sessions_logoutAllMessage,
               variant: AppTextVariant.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
             Container(
               padding: EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.errorBase.withValues(alpha: 0.1),
-                border: Border.all(color: AppColors.errorBase, width: 1),
+                color: context.colors.error.withValues(alpha: 0.1),
+                border: Border.all(color: context.colors.error, width: 1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: AppColors.errorBase, size: 20),
+                  Icon(Icons.warning_amber_rounded, color: context.colors.error, size: 20),
                   SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
                       l10n.sessions_logoutAllWarning,
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.errorBase,
+                      color: context.colors.error,
                     ),
                   ),
                 ],
@@ -405,7 +405,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText(l10n.sessions_logoutAllSuccess),
-        backgroundColor: AppColors.successBase,
+        backgroundColor: context.colors.success,
       ),
     );
     // Navigate back or to login

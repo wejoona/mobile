@@ -1,6 +1,8 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -29,7 +31,7 @@ class ExpenseDetailView extends ConsumerWidget {
     final timeFormat = DateFormat('hh:mm a');
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_expenseDetails,
@@ -76,7 +78,7 @@ class ExpenseDetailView extends ConsumerWidget {
                       ),
                       child: Icon(
                         _getCategoryIcon(expense.category),
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         size: 32,
                       ),
                     ),
@@ -91,7 +93,7 @@ class ExpenseDetailView extends ConsumerWidget {
                     AppText(
                       currencyFormat.format(expense.amount),
                       style: AppTypography.displaySmall.copyWith(
-                        color: AppColors.gold500,
+                        color: context.colors.gold,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -244,7 +246,7 @@ class ExpenseDetailView extends ConsumerWidget {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(l10n.error_generic),
               backgroundColor: AppColors.error,
             ),
           );
@@ -254,12 +256,22 @@ class ExpenseDetailView extends ConsumerWidget {
   }
 
   void _shareExpense(BuildContext context, AppLocalizations l10n) {
-    // TODO: Implement share functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.common_comingSoon),
-      ),
-    );
+    final currencyFormat =
+        NumberFormat.currency(symbol: 'XOF', decimalDigits: 0);
+    final dateFormat = DateFormat('MMMM dd, yyyy');
+    final text = StringBuffer();
+    text.writeln('${l10n.expenses_expenseDetails}: ${expense.description ?? ''}');
+    text.writeln('${l10n.expenses_amount}: ${currencyFormat.format(expense.amount)}');
+    text.writeln('${l10n.expenses_category}: ${_getCategoryLabel(l10n, expense.category)}');
+    text.writeln('${l10n.expenses_date}: ${dateFormat.format(expense.date)}');
+    if (expense.vendor != null) {
+      text.writeln('${l10n.expenses_vendor}: ${expense.vendor}');
+    }
+    if (expense.description != null && expense.description!.isNotEmpty) {
+      text.writeln('${l10n.expenses_description}: ${expense.description}');
+    }
+    text.writeln('\n— Korido');
+    Share.share(text.toString());
   }
 
   IconData _getCategoryIcon(String category) {

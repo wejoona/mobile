@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +28,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
     final state = ref.watch(expensesStateProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.expenses_title,
@@ -65,7 +66,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
           FloatingActionButton(
             heroTag: 'capture',
             onPressed: () => context.push('/expenses/capture'),
-            backgroundColor: AppColors.gold500,
+            backgroundColor: context.colors.gold,
             child: const Icon(Icons.camera_alt),
           ),
           SizedBox(height: AppSpacing.sm),
@@ -160,7 +161,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
               AppText(
                 currencyFormat.format(state.totalAmount),
                 style: AppTypography.headlineLarge.copyWith(
-                  color: AppColors.gold500,
+                  color: context.colors.gold,
                 ),
               ),
               SizedBox(height: AppSpacing.md),
@@ -243,7 +244,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                   ),
                   child: Icon(
                     _getCategoryIcon(expense.category),
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
                 SizedBox(width: AppSpacing.md),
@@ -271,7 +272,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                             Icon(
                               Icons.receipt,
                               size: 14,
-                              color: AppColors.gold500,
+                              color: context.colors.gold,
                             ),
                           ],
                         ],
@@ -283,7 +284,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
                   currencyFormat.format(expense.amount),
                   style: AppTypography.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppColors.gold500,
+                    color: context.colors.gold,
                   ),
                 ),
               ],

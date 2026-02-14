@@ -136,7 +136,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             width: 280,
             height: 280,
             decoration: BoxDecoration(
-              border: Border.all(color: context.colors.gold, width: 3),
+              border: Border.all(color: AppColors.gold500, width: 3),
               borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
           ),
@@ -184,13 +184,13 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
               AppText(
                 'Scan a JoonaPay QR code',
                 variant: AppTextVariant.bodyLarge,
-                color: context.colors.textPrimary,
+                color: AppColors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
                 'Point your camera at a QR code to send money',
                 variant: AppTextVariant.bodySmall,
-                color: context.colors.textSecondary,
+                color: AppColors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -236,7 +236,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
                       ),
                       child: Icon(
                         Icons.photo_library,
-                        color: context.colors.textSecondary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),

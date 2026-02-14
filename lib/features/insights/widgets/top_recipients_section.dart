@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +30,7 @@ class TopRecipientsSection extends ConsumerWidget {
             color: AppColors.slate,
             borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(
-              color: AppColors.borderDefault,
+              color: context.colors.border,
               width: 1,
             ),
           ),
@@ -42,14 +43,14 @@ class TopRecipientsSection extends ConsumerWidget {
                   AppText(
                     l10n.insights_top_recipients,
                     variant: AppTextVariant.titleMedium,
-                    color: AppColors.textPrimary,
+                    color: context.colors.textPrimary,
                   ),
                   TextButton(
                     onPressed: () => context.push('/insights/recipients'),
                     child: AppText(
                       'View All',
                       variant: AppTextVariant.bodySmall,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                     ),
                   ),
                 ],

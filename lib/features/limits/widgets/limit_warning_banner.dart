@@ -41,12 +41,12 @@ class LimitWarningBanner extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: isAtLimit
-              ? AppColors.errorBase.withValues(alpha: 0.1)
+              ? context.colors.error.withValues(alpha: 0.1)
               : AppColors.warningBase.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isAtLimit
-                ? AppColors.errorBase.withValues(alpha: 0.3)
+                ? context.colors.error.withValues(alpha: 0.3)
                 : AppColors.warningBase.withValues(alpha: 0.3),
           ),
         ),
@@ -54,7 +54,7 @@ class LimitWarningBanner extends StatelessWidget {
           children: [
             Icon(
               isAtLimit ? Icons.block : Icons.warning_amber_rounded,
-              color: isAtLimit ? AppColors.errorBase : AppColors.warningBase,
+              color: isAtLimit ? context.colors.error : AppColors.warningBase,
               size: 20,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -65,7 +65,7 @@ class LimitWarningBanner extends StatelessWidget {
                   AppText(
                     isAtLimit ? l10n.limits_limitReached : l10n.limits_approachingLimit,
                     variant: AppTextVariant.labelMedium,
-                    color: isAtLimit ? AppColors.errorBase : AppColors.warningBase,
+                    color: isAtLimit ? context.colors.error : AppColors.warningBase,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(

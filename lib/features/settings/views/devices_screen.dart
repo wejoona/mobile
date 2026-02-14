@@ -28,7 +28,7 @@ class DevicesScreen extends ConsumerWidget {
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.gold500),
+          icon: Icon(Icons.arrow_back, color: AppColors.gold500),
           onPressed: () => context.safePop(fallbackRoute: '/settings/security'),
         ),
       ),
@@ -201,7 +201,7 @@ class DevicesScreen extends ConsumerWidget {
           ),
 
           SizedBox(height: AppSpacing.md),
-          const Divider(color: AppColors.borderSubtle, height: 1),
+          Divider(color: AppColors.borderSubtle, height: 1),
           SizedBox(height: AppSpacing.md),
 
           // Details

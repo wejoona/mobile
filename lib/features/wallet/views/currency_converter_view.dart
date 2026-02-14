@@ -630,14 +630,14 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.converter_ratesUpdated),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
     } else if (mounted && _rateError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_rateError!),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
     }

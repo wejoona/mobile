@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
-/// PIN Locked View
-/// Shown when user is locked out due to too many failed attempts
+/// PIN Locked View — consistent with lock/OTP screen design.
 class PinLockedView extends ConsumerStatefulWidget {
   const PinLockedView({super.key});
 
@@ -21,8 +19,8 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final pinState = ref.watch(pinStateProvider);
+    final colors = context.colors;
 
-    // If no longer locked, go back
     if (!pinState.isLocked) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.pop();
@@ -30,57 +28,67 @@ class _PinLockedViewState extends ConsumerState<PinLockedView> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.lock_clock,
-                size: 80,
-                color: AppColors.errorBase,
-              ),
-              SizedBox(height: AppSpacing.xxl),
-              Text(
-                l10n.pin_locked_title,
-                style: AppTypography.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.md),
-              Text(
-                l10n.pin_locked_message,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xxxl),
+              // Icon
               Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.elevated,
+                  color: colors.container,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.border),
+                ),
+                child: Icon(
+                  Icons.lock_clock,
+                  color: colors.error,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xxl),
+              AppText(
+                l10n.pin_locked_title,
+                variant: AppTextVariant.headlineMedium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppText(
+                l10n.pin_locked_message,
+                variant: AppTextVariant.bodyLarge,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xxxl),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  color: colors.elevated,
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(color: AppColors.borderDefault),
+                  border: Border.all(color: colors.border),
                 ),
                 child: Column(
                   children: [
-                    Text(
+                    AppText(
                       l10n.pin_locked_tryAgainIn,
-                      style: AppTypography.labelMedium,
+                      variant: AppTextVariant.labelMedium,
+                      color: colors.textSecondary,
                     ),
-                    SizedBox(height: AppSpacing.sm),
-                    Text(
+                    const SizedBox(height: AppSpacing.sm),
+                    AppText(
                       _formatDuration(pinState.lockoutSeconds),
-                      style: AppTypography.displaySmall.copyWith(
-                        color: AppColors.gold500,
-                      ),
+                      variant: AppTextVariant.displaySmall,
+                      color: colors.gold,
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: AppSpacing.xxxl),
+              const SizedBox(height: AppSpacing.xxxl),
               AppButton(
                 label: l10n.pin_resetViaOtp,
                 onPressed: () => context.push('/pin/reset'),

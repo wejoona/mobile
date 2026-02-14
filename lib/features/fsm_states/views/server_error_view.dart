@@ -11,7 +11,7 @@ class ServerErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -22,20 +22,20 @@ class ServerErrorView extends StatelessWidget {
               Icon(
                 Icons.cloud_off,
                 size: 80,
-                color: AppColors.errorBase,
+                color: context.colors.error,
               ),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
                 'Erreur du serveur',
                 variant: AppTextVariant.headlineMedium,
-                color: AppColors.textPrimary,
+                color: context.colors.textPrimary,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 'Nous rencontrons des difficultés techniques. Veuillez réessayer dans quelques instants.',
                 variant: AppTextVariant.bodyLarge,
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
               ),
               const Spacer(),

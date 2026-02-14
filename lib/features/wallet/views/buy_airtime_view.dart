@@ -632,7 +632,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Airtime of \$${_amountController.text} purchased successfully!'),
-          backgroundColor: AppColors.successBase,
+          backgroundColor: context.colors.success,
         ),
       );
       ref.read(walletStateMachineProvider.notifier).refresh();
@@ -690,7 +690,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('${bundle.name} data bundle purchased successfully!'),
-                    backgroundColor: AppColors.successBase,
+                    backgroundColor: context.colors.success,
                   ),
                 );
                 ref.read(walletStateMachineProvider.notifier).refresh();

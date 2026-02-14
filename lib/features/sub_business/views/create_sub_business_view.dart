@@ -35,7 +35,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: AppColors.obsidian,
+      backgroundColor: context.colors.canvas,
       appBar: AppBar(
         title: AppText(
           l10n.subBusiness_createTitle,
@@ -81,7 +81,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
                   color: AppColors.slate,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: AppColors.gold500.withOpacity(0.2),
+                    color: context.colors.gold.withOpacity(0.2),
                   ),
                 ),
                 padding: EdgeInsets.all(AppSpacing.md),
@@ -89,7 +89,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
                   children: [
                     Icon(
                       Icons.info_outline,
-                      color: AppColors.gold500,
+                      color: context.colors.gold,
                       size: 20,
                     ),
                     SizedBox(width: AppSpacing.sm),
@@ -97,7 +97,7 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
                       child: AppText(
                         l10n.subBusiness_createInfo,
                         variant: AppTextVariant.bodySmall,
-                        color: AppColors.textSecondary,
+                        color: context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -133,13 +133,13 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
             ),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.gold500.withOpacity(0.2)
+                  ? context.colors.gold.withOpacity(0.2)
                   : AppColors.slate,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.gold500
-                    : AppColors.textSecondary.withOpacity(0.3),
+                    ? context.colors.gold
+                    : context.colors.textSecondary.withOpacity(0.3),
               ),
             ),
             child: Row(
@@ -148,13 +148,13 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
                 Icon(
                   _getIconForType(type),
                   size: 16,
-                  color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                  color: isSelected ? context.colors.gold : context.colors.textSecondary,
                 ),
                 SizedBox(width: AppSpacing.xs),
                 AppText(
                   _getTypeLabel(type, l10n),
                   variant: AppTextVariant.bodyMedium,
-                  color: isSelected ? AppColors.gold500 : AppColors.textSecondary,
+                  color: isSelected ? context.colors.gold : context.colors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ],
@@ -210,14 +210,14 @@ class _CreateSubBusinessViewState extends ConsumerState<CreateSubBusinessView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.subBusiness_createSuccess),
-              backgroundColor: AppColors.successBase,
+              backgroundColor: context.colors.success,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(AppLocalizations.of(context)!.error_generic),
-              backgroundColor: AppColors.errorBase,
+              backgroundColor: context.colors.error,
             ),
           );
         }

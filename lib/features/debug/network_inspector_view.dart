@@ -36,13 +36,13 @@ class _NetworkInspectorViewState extends ConsumerState<NetworkInspectorView> {
           IconButton(
             icon: Icon(
               _showOnlyErrors ? Icons.error : Icons.error_outline,
-              color: _showOnlyErrors ? AppColors.error : AppColors.textSecondary,
+              color: _showOnlyErrors ? AppColors.error : context.colors.textSecondary,
             ),
             onPressed: () => setState(() => _showOnlyErrors = !_showOnlyErrors),
             tooltip: 'Filtrer les erreurs',
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: AppColors.textSecondary),
+            icon: Icon(Icons.delete_outline, color: context.colors.textSecondary),
             onPressed: () => setState(() => _logs.clear()),
             tooltip: 'Effacer les logs',
           ),
@@ -112,7 +112,7 @@ class _NetworkLogTile extends StatelessWidget {
                 AppText(
                   '${log.durationMs}ms',
                   style: AppTextStyle.bodySmall,
-                  color: AppColors.textTertiary,
+                  color: context.colors.textTertiary,
                 ),
               ],
             ),
@@ -120,7 +120,7 @@ class _NetworkLogTile extends StatelessWidget {
             AppText(
               log.url,
               style: AppTextStyle.bodySmall,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
               maxLines: 2,
             ),
           ],

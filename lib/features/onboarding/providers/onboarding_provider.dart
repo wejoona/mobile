@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Onboarding state.
 class OnboardingState {
@@ -110,15 +111,31 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   // === Stub methods for view compatibility ===
   Future<void> submitPhoneNumber([String? phone]) async {
     if (phone != null) state = state.copyWith(phoneNumber: phone);
-    state = state.copyWith(isLoading: true);
-    // TODO: call API
-    state = state.copyWith(isLoading: false);
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/auth/register', data: {
+        'phone': state.phoneNumber,
+        if (state.countryCode != null) 'countryCode': state.countryCode,
+      });
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
   Future<void> verifyOtp([String? otp]) async {
     if (otp != null) state = state.copyWith(otp: otp);
-    state = state.copyWith(isLoading: true);
-    // TODO: verify OTP
-    state = state.copyWith(isLoading: false);
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/auth/verify-otp', data: {
+        'phone': state.phoneNumber,
+        'otp': state.otp,
+      });
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
   void updateOtp(String otp) => state = state.copyWith(otp: otp);
   void updatePhoneNumber(String phone, [String? countryCode]) => state = state.copyWith(phoneNumber: phone, countryCode: countryCode);

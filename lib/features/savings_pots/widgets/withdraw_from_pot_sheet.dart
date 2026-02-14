@@ -54,7 +54,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.textSecondary,
+                color: context.colors.textSecondary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -73,7 +73,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
           Container(
             padding: EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.obsidian,
+              color: context.colors.canvas,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Row(
@@ -82,7 +82,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
                 AppText(
                   l10n.savingsPots_potBalance,
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textSecondary,
+                  color: context.colors.textSecondary,
                 ),
                 AppText(
                   currencyFormat.format(pot.currentAmount),
@@ -146,7 +146,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_invalidAmount),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
       return;
@@ -161,7 +161,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(l10n.savingsPots_insufficientPotBalance),
-          backgroundColor: AppColors.errorBase,
+          backgroundColor: context.colors.error,
         ),
       );
       return;

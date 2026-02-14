@@ -136,7 +136,7 @@ class _ConsequenceItem extends StatelessWidget {
             child: AppText(
               text,
               style: AppTextStyle.bodyMedium,
-              color: AppColors.textSecondary,
+              color: context.colors.textSecondary,
             ),
           ),
         ],

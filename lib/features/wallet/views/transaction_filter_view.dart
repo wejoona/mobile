@@ -165,7 +165,7 @@ class _FilterChip extends StatelessWidget {
             vertical: AppSpacing.sm,
           ),
           decoration: BoxDecoration(
-            color: selected ? AppColors.gold.withOpacity(0.15) : AppColors.elevated,
+            color: selected ? AppColors.gold.withOpacity(0.15) : context.colors.elevated,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: selected ? AppColors.gold : Colors.transparent,
@@ -174,7 +174,7 @@ class _FilterChip extends StatelessWidget {
           child: AppText(
             label,
             style: AppTextStyle.labelMedium,
-            color: selected ? AppColors.gold : AppColors.textSecondary,
+            color: selected ? AppColors.gold : context.colors.textSecondary,
           ),
         ),
       ),
