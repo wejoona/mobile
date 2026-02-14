@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/execution_history.dart';
 
 class ExecutionHistoryList extends StatelessWidget {
   const ExecutionHistoryList({
@@ -9,7 +10,7 @@ class ExecutionHistoryList extends StatelessWidget {
     required this.history,
   });
 
-  final List<dynamic> history;
+  final List<ExecutionHistory> history;
 
   @override
   Widget build(BuildContext context) {

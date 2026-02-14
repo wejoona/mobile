@@ -251,7 +251,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
 
   List<Widget> _buildCategoryBreakdown(
     AppLocalizations l10n,
-    List<dynamic> expenses,
+    List<Expense> expenses,
     double totalAmount,
   ) {
     final categoryTotals = <String, double>{};
@@ -342,7 +342,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   Future<void> _generatePdfReport(
     BuildContext context,
     AppLocalizations l10n,
-    List<dynamic> expenses,
+    List<Expense> expenses,
   ) async {
     setState(() => _isGenerating = true);
 
@@ -430,7 +430,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
   Future<void> _generateCsvReport(
     BuildContext context,
     AppLocalizations l10n,
-    List<dynamic> expenses,
+    List<Expense> expenses,
   ) async {
     setState(() => _isGenerating = true);
 
