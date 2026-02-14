@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,7 +40,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
-  Widget _buildSuccessContent(BuildContext context, WidgetRef ref, AppLocalizations l10n, dynamic receipt) {
+  Widget _buildSuccessContent(BuildContext context, WidgetRef ref, AppLocalizations l10n, BillPaymentReceipt receipt) {
     final colors = context.colors;
     return Column(
       children: [
@@ -152,7 +153,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
-  Widget _buildReceiptCard(BuildContext context, AppLocalizations l10n, dynamic receipt) {
+  Widget _buildReceiptCard(BuildContext context, AppLocalizations l10n, BillPaymentReceipt receipt) {
     final colors = context.colors;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -412,7 +413,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
     );
   }
 
-  void _shareReceipt(BuildContext context, dynamic receipt) {
+  void _shareReceipt(BuildContext context, BillPaymentReceipt receipt) {
     final text = '''
 JoonaPay Bill Payment Receipt
 -----------------------------

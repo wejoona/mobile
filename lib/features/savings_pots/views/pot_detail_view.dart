@@ -8,6 +8,7 @@ import 'package:confetti/confetti.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
+import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart';
@@ -131,7 +132,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     );
   }
 
-  Widget _buildHeader(dynamic pot, NumberFormat currencyFormat, AppLocalizations l10n) {
+  Widget _buildHeader(SavingsPot pot, NumberFormat currencyFormat, AppLocalizations l10n) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
