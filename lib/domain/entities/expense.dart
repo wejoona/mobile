@@ -7,20 +7,28 @@ class Expense {
   final double amount;
   final String currency;
   final String? merchantName;
+  final String? vendor;
   final String? note;
+  final String? description;
+  final String? receiptImagePath;
   final DateTime date;
+  final DateTime? createdAt;
   final List<String>? tags;
 
   const Expense({
     required this.id,
-    required this.transactionId,
+    this.transactionId = '',
     required this.category,
     this.subcategory,
     required this.amount,
     this.currency = 'USDC',
     this.merchantName,
+    this.vendor,
     this.note,
+    this.description,
+    this.receiptImagePath,
     required this.date,
+    this.createdAt,
     this.tags,
   });
 
@@ -33,8 +41,12 @@ class Expense {
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String? ?? 'USDC',
       merchantName: json['merchantName'] as String?,
+      vendor: json['vendor'] as String?,
       note: json['note'] as String?,
+      description: json['description'] as String?,
+      receiptImagePath: json['receiptImagePath'] as String?,
       date: DateTime.parse(json['date'] as String),
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
       tags: (json['tags'] as List?)?.cast<String>(),
     );
   }
@@ -47,8 +59,12 @@ class Expense {
         'amount': amount,
         'currency': currency,
         'merchantName': merchantName,
+        'vendor': vendor,
         'note': note,
+        'description': description,
+        'receiptImagePath': receiptImagePath,
         'date': date.toIso8601String(),
+        'createdAt': createdAt?.toIso8601String(),
         'tags': tags,
       };
 }
@@ -77,12 +93,28 @@ class SpendingSummary {
   }
 }
 
+/// Alias for backward compatibility.
+typedef ExpenseCategory = ExpenseCategories;
+
+/// OCR receipt processing result (placeholder).
+class OcrResult {
+  final double? amount;
+  final String? vendor;
+  final String? category;
+  final DateTime? date;
+  final String? currency;
+
+  const OcrResult({this.amount, this.vendor, this.category, this.date, this.currency});
+}
+
 /// Predefined expense categories for West Africa.
 class ExpenseCategories {
   ExpenseCategories._();
 
   static const transport = 'transport';
+  static const travel = 'travel';
   static const food = 'food';
+  static const meals = 'meals';
   static const utilities = 'utilities';
   static const telecom = 'telecom';
   static const health = 'health';
@@ -92,11 +124,12 @@ class ExpenseCategories {
   static const transfers = 'transfers';
   static const bills = 'bills';
   static const savings = 'savings';
+  static const office = 'office';
   static const other = 'other';
 
   static const all = [
-    transport, food, utilities, telecom, health, education,
-    shopping, entertainment, transfers, bills, savings, other,
+    transport, travel, food, meals, utilities, telecom, health, education,
+    shopping, entertainment, transfers, bills, savings, office, other,
   ];
 
   static String label(String category) {
@@ -112,6 +145,9 @@ class ExpenseCategories {
       case transfers: return 'Transfers';
       case bills: return 'Bills';
       case savings: return 'Savings';
+      case office: return 'Office';
+      case travel: return 'Travel';
+      case meals: return 'Meals';
       default: return 'Other';
     }
   }

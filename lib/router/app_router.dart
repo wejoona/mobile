@@ -111,7 +111,7 @@ import 'package:usdc_wallet/features/expenses/views/add_expense_view.dart';
 import 'package:usdc_wallet/features/expenses/views/capture_receipt_view.dart';
 import 'package:usdc_wallet/features/expenses/views/expense_detail_view.dart';
 import 'package:usdc_wallet/features/expenses/views/expense_reports_view.dart';
-import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/features/payment_links/views/payment_links_list_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/create_link_view.dart';
 import 'package:usdc_wallet/features/payment_links/views/link_detail_view.dart';

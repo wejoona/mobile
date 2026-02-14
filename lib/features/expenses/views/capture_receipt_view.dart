@@ -15,7 +15,7 @@ import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
-import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 

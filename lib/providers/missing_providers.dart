@@ -1,4 +1,5 @@
 import 'package:usdc_wallet/features/transactions/models/filtered_transactions_state.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 /// TECH DEBT: Stub providers — wire to real implementations as features complete.
 ///
@@ -28,7 +29,7 @@ class FilteredPaginatedTransactionsNotifier extends StateNotifier<FilteredPagina
 
   Future<void> refresh() async {
     state = state.copyWith(isLoading: true);
-    state = state.copyWith(isLoading: false, transactions: [], hasMore: false);
+    state = state.copyWith(isLoading: false, transactions: <Transaction>[], hasMore: false);
   }
 
   Future<void> loadMore() async {

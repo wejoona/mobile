@@ -14,7 +14,7 @@ import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
-import 'package:usdc_wallet/features/expenses/models/expense.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExpenseReportsView extends ConsumerStatefulWidget {

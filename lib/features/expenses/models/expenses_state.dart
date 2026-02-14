@@ -1,7 +1,9 @@
+import 'package:usdc_wallet/domain/entities/expense.dart';
+
 class ExpensesState {
   final bool isLoading;
   final String? error;
-  final List<dynamic> expenses;
+  final List<Expense> expenses;
   final double total;
   final double totalAmount;
   final Map<String, double> categoryTotals;

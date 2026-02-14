@@ -34,6 +34,20 @@ class RecurringTransfer {
 
   bool get isActive => status == RecurringStatus.active;
   bool get isPaused => status == RecurringStatus.paused;
+  bool get isCancelled => status == RecurringStatus.cancelled;
+
+  /// Alias for executionCount (backward compatibility).
+  int get executedCount => executionCount;
+
+  /// Remaining executions before max is reached.
+  int? get occurrencesRemaining =>
+      maxExecutions != null ? (maxExecutions! - executionCount).clamp(0, maxExecutions!) : null;
+
+  /// Display-friendly name for the transfer.
+  String getDisplayName() => recipientName ?? recipientPhone;
+
+  /// Localized frequency description.
+  String getFrequencyDescription() => frequencyLabel;
 
   /// Whether max executions limit has been reached.
   bool get isCompleted =>

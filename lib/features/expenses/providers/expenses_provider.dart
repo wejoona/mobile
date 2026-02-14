@@ -38,6 +38,6 @@ final expensesStateProvider = Provider<ExpensesState>((ref) {
   return ExpensesState(
     isLoading: async.isLoading,
     error: async.error?.toString(),
-    expenses: async.value ?? [],
+    expenses: async.value ?? <Expense>[],
   );
 });
