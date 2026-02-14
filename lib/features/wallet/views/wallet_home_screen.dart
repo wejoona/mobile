@@ -16,6 +16,7 @@ import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -578,15 +579,15 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, l10n, userName, colors),
+        StaggeredEntrance(index: 0, child: _buildHeader(context, l10n, userName, colors)),
         const SizedBox(height: AppSpacing.xxl),
-        _buildBalanceCard(context, ref, walletState, l10n, colors),
+        StaggeredEntrance(index: 1, child: _buildBalanceCard(context, ref, walletState, l10n, colors)),
         const SizedBox(height: AppSpacing.xxl),
-        _buildQuickActions(context, l10n, colors),
+        StaggeredEntrance(index: 2, child: _buildQuickActions(context, l10n, colors)),
         const SizedBox(height: AppSpacing.xxl),
-        _buildKycBanner(context, ref, l10n, colors),
+        StaggeredEntrance(index: 3, child: _buildKycBanner(context, ref, l10n, colors)),
         _buildLimitsWarningBanner(context, ref, l10n),
-        _buildTransactionList(context, txState, l10n, colors),
+        StaggeredEntrance(index: 4, child: _buildTransactionList(context, txState, l10n, colors)),
         const SizedBox(height: AppSpacing.xxl),
       ],
     );
