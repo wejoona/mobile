@@ -331,12 +331,16 @@ class _ProviderTile extends StatelessWidget {
     final enumProvider = provider.enumProvider;
     if (enumProvider != null) {
       switch (enumProvider) {
+        // ignore: constant_pattern_never_matches_value_type
         case MobileMoneyProvider.orangeMoney:
           return const Color(0xFFFF6B35);
+        // ignore: constant_pattern_never_matches_value_type
         case MobileMoneyProvider.mtnMomo:
           return const Color(0xFFFFCB05);
+        // ignore: constant_pattern_never_matches_value_type
         case MobileMoneyProvider.moovMoney:
           return const Color(0xFF0066CC);
+        // ignore: constant_pattern_never_matches_value_type
         case MobileMoneyProvider.wave:
           return const Color(0xFF4A148C);
       }
@@ -368,12 +372,16 @@ class _ProviderTile extends StatelessWidget {
 
   IconData _getPaymentMethodIcon() {
     switch (provider.paymentMethodType) {
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.otp:
         return Icons.dialpad;
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.push:
         return Icons.notifications_active;
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.qrLink:
         return Icons.qr_code;
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.card:
         return Icons.credit_card;
       default:
@@ -383,12 +391,16 @@ class _ProviderTile extends StatelessWidget {
 
   String _getPaymentMethodDescription() {
     switch (provider.paymentMethodType) {
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.otp:
         return 'Enter OTP code';
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.push:
         return 'Approve on your phone';
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.qrLink:
         return 'Scan QR or open app';
+      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.card:
         return 'Card payment';
       default:

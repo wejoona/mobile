@@ -16,7 +16,9 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // ignore: dead_null_aware_expression
     final initials = _getInitials(user.displayName ?? user.phone );
+    // ignore: dead_null_aware_expression
     final avatarColor = ColorUtils.pastelFromString(user.displayName ?? user.id);
 
     // Avatar affiché depuis base64 (DB) en priorité, sinon URL, sinon initiales
@@ -63,6 +65,7 @@ class ProfileHeader extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Name
+          // ignore: dead_null_aware_expression
           Text(user.displayName ?? 'Set your name', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           if (user.phone != null) // ignore: unnecessary_null_comparison
             Text(user.phone, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),

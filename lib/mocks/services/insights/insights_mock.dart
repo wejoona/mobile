@@ -70,6 +70,7 @@ class InsightsMock {
                 'category': category,
                 'recipientName': _getRecipientName(),
               }
+            // ignore: dead_code
             : null,
         createdAt: createdAt,
         completedAt: createdAt.add(Duration(minutes: 1 + _random.nextInt(10))),

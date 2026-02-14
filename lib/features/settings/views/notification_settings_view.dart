@@ -480,6 +480,7 @@ class _NotificationSettingsViewState
 
   void _handleBack(AppLocalizations l10n) {
     if (_hasUnsavedChanges) {
+      // ignore: unused_local_variable
       final __colors = context.colors;
       showDialog(
         context: context,

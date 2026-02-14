@@ -131,6 +131,7 @@ class SkeletonPattern extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: List.generate(lines, (index) {
           final isLast = index == lines - 1;
+          // ignore: unused_local_variable
           final __width = isLast ? 0.6 : 1.0;
 
           return Padding(

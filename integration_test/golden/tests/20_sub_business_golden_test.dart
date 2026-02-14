@@ -60,6 +60,7 @@ void main() {
 
       final subBusinessBtn = find.text('Sub-Businesses');
       final branchesBtn = find.text('Branches');
+      // ignore: unused_local_variable
       final __locationsBtn = find.text('Locations');
 
       if (subBusinessBtn.evaluate().isNotEmpty) {
@@ -124,6 +125,7 @@ void main() {
       await navigateToSubBusiness(tester);
 
       final addBtn = find.text('Add Sub-Business');
+      // ignore: unused_local_variable
       final __createBtn = find.text('Create');
       final addIcon = find.byIcon(Icons.add);
 
@@ -199,6 +201,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final staffBtn = find.text('Staff');
+        // ignore: unused_local_variable
         final __teamBtn = find.text('Team');
 
         if (staffBtn.evaluate().isNotEmpty) {

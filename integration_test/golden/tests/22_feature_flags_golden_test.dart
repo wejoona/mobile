@@ -75,6 +75,7 @@ void main() {
       await loginToHome(tester);
 
       final billPayBtn = find.text('Bill Pay');
+      // ignore: unused_local_variable
       final __payBillsBtn = find.text('Pay Bills');
 
       if (billPayBtn.evaluate().isNotEmpty) {
@@ -104,6 +105,7 @@ void main() {
       await loginToHome(tester);
 
       final airtimeBtn = find.text('Airtime');
+      // ignore: unused_local_variable
       final __buyAirtimeBtn = find.text('Buy Airtime');
 
       if (airtimeBtn.evaluate().isNotEmpty) {
@@ -132,6 +134,7 @@ void main() {
       await loginToHome(tester);
 
       final savingsBtn = find.text('Savings');
+      // ignore: unused_local_variable
       final __goalsBtn = find.text('Goals');
 
       if (savingsBtn.evaluate().isNotEmpty) {
@@ -159,6 +162,7 @@ void main() {
       await loginToHome(tester);
 
       final cardBtn = find.text('Card');
+      // ignore: unused_local_variable
       final __virtualCardBtn = find.text('Virtual Card');
 
       if (cardBtn.evaluate().isNotEmpty) {
@@ -188,6 +192,7 @@ void main() {
       await loginToHome(tester);
 
       final splitBtn = find.text('Split');
+      // ignore: unused_local_variable
       final __splitBillBtn = find.text('Split Bill');
 
       if (splitBtn.evaluate().isNotEmpty) {
@@ -273,6 +278,7 @@ void main() {
       await loginToHome(tester);
 
       final converterBtn = find.text('Converter');
+      // ignore: unused_local_variable
       final __exchangeBtn = find.text('Exchange');
 
       if (converterBtn.evaluate().isNotEmpty) {
@@ -302,6 +308,7 @@ void main() {
       await loginToHome(tester);
 
       final requestBtn = find.text('Request');
+      // ignore: unused_local_variable
       final __requestMoneyBtn = find.text('Request Money');
 
       if (requestBtn.evaluate().isNotEmpty) {
@@ -330,6 +337,7 @@ void main() {
       await loginToHome(tester);
 
       final recipientsBtn = find.text('Recipients');
+      // ignore: unused_local_variable
       final __savedBtn = find.text('Saved');
 
       if (recipientsBtn.evaluate().isNotEmpty) {

@@ -59,6 +59,7 @@ void main() {
 
       final beneficiariesBtn = find.text('Beneficiaries');
       final recipientsBtn = find.text('Recipients');
+      // ignore: unused_local_variable
       final __contactsBtn = find.text('Contacts');
 
       if (beneficiariesBtn.evaluate().isNotEmpty) {

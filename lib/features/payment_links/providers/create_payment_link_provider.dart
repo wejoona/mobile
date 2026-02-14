@@ -56,6 +56,7 @@ class CreatePaymentLinkNotifier extends Notifier<CreatePaymentLinkState> {
         currency: 'USDC',
         description: state.description,
       );
+      // ignore: dead_null_aware_expression
       final result = CreatedPaymentLink(id: response.id, url: response.url ?? '', shortCode: response.shortCode );
       state = state.copyWith(isLoading: false, result: result);
     } catch (e) {

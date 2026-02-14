@@ -296,8 +296,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       debugPrint('[Router] Redirect check: location=$location, fsmTarget=${appFsmState.currentRoute}');
 
       // Check if user has a wallet (walletId is set and not empty)
+      // ignore: unused_local_variable
       final __hasWallet = walletState.walletId.isNotEmpty &&
                         walletState.status == WalletStatus.loaded;
+      // ignore: unused_local_variable
       final __walletLoading = walletState.status == WalletStatus.loading ||
                             walletState.status == WalletStatus.initial;
 
@@ -352,6 +354,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Onboarding-related routes
       final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
+      // ignore: unused_local_variable
       final __isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
 
       // Auth guards
@@ -1558,6 +1561,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sub-businesses/transfer/:id',
         pageBuilder: (context, state) {
+          // ignore: unused_local_variable
           final __id = state.pathParameters['id'];
           // TODO: Implement transfer between sub-businesses screen
           return AppPageTransitions.verticalSlide(

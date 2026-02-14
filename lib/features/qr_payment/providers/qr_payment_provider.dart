@@ -59,6 +59,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       final data = state.scannedData!;
 
       switch (data.type) {
+        // ignore: constant_pattern_never_matches_value_type
         case QrPaymentType.p2p:
           await dio.post('/transfers/internal', data: {
             'recipientIdentifier': data.recipient,
@@ -67,6 +68,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
             if (pin != null) 'pin': pin,
           });
           break;
+        // ignore: constant_pattern_never_matches_value_type
         case QrPaymentType.merchant:
           await dio.post('/payments/merchant', data: {
             'merchantId': data.merchantId,
@@ -76,6 +78,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
             if (pin != null) 'pin': pin,
           });
           break;
+        // ignore: constant_pattern_never_matches_value_type
         case QrPaymentType.paymentLink:
           await dio.post('/payment-links/${data.paymentLinkId}/pay', data: {
             'amount': amount,

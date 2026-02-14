@@ -297,7 +297,9 @@ void main() {
         await tester.pumpAndSettle();
 
         final biometricItem = find.text('Biometric');
+        // ignore: unused_local_variable
         final __fingerprintItem = find.text('Fingerprint');
+        // ignore: unused_local_variable
         final __faceIdItem = find.text('Face ID');
 
         if (biometricItem.evaluate().isNotEmpty) {

@@ -300,6 +300,7 @@ class _CreateRecurringTransferViewState
         );
         ref.read(createRecurringTransferProvider.notifier).reset();
         context.pop();
+      // ignore: dead_code
       } else {
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(

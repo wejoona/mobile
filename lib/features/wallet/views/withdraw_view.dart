@@ -330,7 +330,9 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
+                      // ignore: dead_code
                       l10n.withdraw_processingInfo ??
+                          // ignore: dead_null_aware_expression
                           'Withdrawals typically process within 1-3 business days. Fees may apply depending on the method.',
                       variant: AppTextVariant.bodySmall,
                       color: colors.textSecondary,

@@ -37,6 +37,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
+    // ignore: unused_local_variable
     final __subBusiness = state.subBusinesses.firstWhere(
       (sb) => sb.id == widget.subBusinessId,
     );
@@ -176,6 +177,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     final phoneController = TextEditingController();
     StaffRole selectedRole = StaffRole.viewer;
 
+    // ignore: unused_local_variable
     final __result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -316,6 +318,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   ) async {
     StaffRole selectedRole = member.role;
 
+    // ignore: unused_local_variable
     final __result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(

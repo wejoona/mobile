@@ -15,6 +15,7 @@ class ProfileView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(profileProvider);
     final kycVerified = ref.watch(isKycVerifiedProvider);
+    // ignore: unused_local_variable
     final __theme = Theme.of(context);
 
     return Scaffold(

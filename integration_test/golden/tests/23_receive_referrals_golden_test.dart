@@ -145,6 +145,7 @@ void main() {
       await loginToHome(tester);
 
       final scanBtn = find.text('Scan');
+      // ignore: unused_local_variable
       final __scanIcon = find.byIcon(Icons.qr_code_scanner);
 
       if (scanBtn.evaluate().isNotEmpty) {
@@ -179,6 +180,7 @@ void main() {
 
       final referralsBtn = find.text('Referrals');
       final inviteBtn = find.text('Invite');
+      // ignore: unused_local_variable
       final __earnBtn = find.text('Earn');
 
       if (referralsBtn.evaluate().isNotEmpty) {
@@ -251,6 +253,7 @@ void main() {
       await loginToHome(tester);
 
       final servicesBtn = find.text('Services');
+      // ignore: unused_local_variable
       final __moreBtn = find.text('More');
 
       if (servicesBtn.evaluate().isNotEmpty) {

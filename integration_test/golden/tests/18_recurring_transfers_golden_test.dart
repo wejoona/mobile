@@ -60,6 +60,7 @@ void main() {
 
       final recurringBtn = find.text('Recurring');
       final scheduledBtn = find.text('Scheduled');
+      // ignore: unused_local_variable
       final __autoPayBtn = find.text('Auto-Pay');
 
       if (recurringBtn.evaluate().isNotEmpty) {
@@ -126,6 +127,7 @@ void main() {
 
       final createBtn = find.text('Create New');
       final newBtn = find.text('New Recurring');
+      // ignore: unused_local_variable
       final __addIcon = find.byIcon(Icons.add);
 
       if (createBtn.evaluate().isNotEmpty) {

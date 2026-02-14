@@ -62,6 +62,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
   }
 
   void _copyQrData() {
+    // ignore: unused_local_variable
     final __l10n = AppLocalizations.of(context)!;
     Clipboard.setData(ClipboardData(text: widget.merchant.qrCode));
     ScaffoldMessenger.of(context).showSnackBar(

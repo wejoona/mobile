@@ -10,6 +10,7 @@ class CardVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final __theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,

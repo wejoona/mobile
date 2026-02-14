@@ -26,6 +26,7 @@ void main() {
   setUpAll(() => TestHelpers.configureMocks());
 
   group('FSM State Screens Golden Tests', () {
+    // ignore: unused_local_variable
     late AuthRobot __authRobot;
 
     setUp(() async {

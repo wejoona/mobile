@@ -40,6 +40,7 @@ class PaymentLinkListItem extends StatelessWidget {
       subtitle: Text(
         link.amount != null // ignore: unnecessary_null_comparison
             ? formatCurrency(link.amount, link.currency)
+            // ignore: dead_code
             : 'Any amount',
         style: TextStyle(
           color: colors.textSecondary,

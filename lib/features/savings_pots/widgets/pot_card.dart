@@ -39,6 +39,7 @@ class PotCard extends StatelessWidget {
             if (pot.targetAmount != null) // ignore: unnecessary_null_comparison
               _buildProgressRing(context)
             else
+              // ignore: dead_code
               Text(
                 pot.emoji,
                 style: const TextStyle(fontSize: 40),

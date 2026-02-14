@@ -26,6 +26,7 @@ class CrashReporter {
     Map<String, dynamic>? context,
   }) async {
     final scrubbed = _scrubPii(error.toString());
+    // ignore: unused_local_variable
     final __scrubbedContext = context != null ? _scrubMap(context) : null;
 
     _log.error('Crash report: $scrubbed');

@@ -40,6 +40,7 @@ class RecurringTransferCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      // ignore: dead_null_aware_expression
                       transfer.recipientName ?? transfer.recipientPhone,
                       style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                     ),

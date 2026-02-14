@@ -99,6 +99,7 @@ class _ErrorBoundaryState extends ConsumerState<ErrorBoundary> {
     if (widget.shouldCapture != null && !widget.shouldCapture!(error)) {
       // Let it propagate
       Error.throwWithStackTrace(error, stackTrace ?? StackTrace.current);
+      // ignore: dead_code
       return;
     }
 

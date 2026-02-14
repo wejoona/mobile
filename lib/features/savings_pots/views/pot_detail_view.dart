@@ -173,6 +173,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
               ),
             )
           else
+            // ignore: dead_code
             Text(
               pot.emoji,
               style: const TextStyle(fontSize: 80),
@@ -252,6 +253,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
+    // ignore: dead_null_aware_expression
     final transactions = state.selectedPotTransactions ?? [];
 
     return Column(

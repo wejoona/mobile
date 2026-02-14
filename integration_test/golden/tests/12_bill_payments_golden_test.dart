@@ -106,7 +106,9 @@ void main() {
       await navigateToBillPayments(tester);
 
       final electricity = find.text('Electricity');
+      // ignore: unused_local_variable
       final __water = find.text('Water');
+      // ignore: unused_local_variable
       final __internet = find.text('Internet');
 
       if (electricity.evaluate().isNotEmpty) {
@@ -136,6 +138,7 @@ void main() {
 
       // Select a provider
       final provider = find.textContaining('CIE');
+      // ignore: unused_local_variable
       final __sodeci = find.textContaining('SODECI');
 
       if (provider.evaluate().isNotEmpty) {
@@ -214,6 +217,7 @@ void main() {
       await navigateToBillPayments(tester);
 
       final historyBtn = find.text('History');
+      // ignore: unused_local_variable
       final __pastPayments = find.text('Past Payments');
 
       if (historyBtn.evaluate().isNotEmpty) {

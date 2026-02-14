@@ -101,6 +101,7 @@ void main() {
       // Look for deposit method options
       final orangeMoney = find.text('Orange Money');
       final mtnMomo = find.text('MTN MoMo');
+      // ignore: unused_local_variable
       final __wave = find.text('Wave');
 
       if (orangeMoney.evaluate().isNotEmpty) {

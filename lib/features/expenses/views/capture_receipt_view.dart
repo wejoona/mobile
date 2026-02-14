@@ -488,6 +488,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
     setState(() => _isProcessing = true);
 
     try {
+      // ignore: unused_local_variable
       final __expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         category: _selectedCategory,

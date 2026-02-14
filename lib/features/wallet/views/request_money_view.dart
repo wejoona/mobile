@@ -336,6 +336,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
   }
 
   void _copyLink() {
+    // ignore: unused_local_variable
     final __colors = context.colors;
     Clipboard.setData(ClipboardData(text: _generatePaymentLink()));
     ScaffoldMessenger.of(context).showSnackBar(

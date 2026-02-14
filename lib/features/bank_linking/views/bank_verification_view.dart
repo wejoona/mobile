@@ -72,6 +72,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // ignore: unused_local_variable
     final __state = ref.watch(bankLinkingProvider);
 
     return Scaffold(

@@ -33,6 +33,7 @@ class LimitWarningBanner extends StatelessWidget {
 
     // Prioritize daily limit warnings
     final bool isAtLimit = limits.isDailyAtLimit || limits.isMonthlyAtLimit;
+    // ignore: unused_local_variable
     final bool __isNearLimit = limits.isDailyNearLimit || limits.isMonthlyNearLimit;
     final String message = _getMessage(l10n, limits, showDaily, showMonthly);
 

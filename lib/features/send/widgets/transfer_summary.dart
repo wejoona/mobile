@@ -24,6 +24,7 @@ class TransferSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final __theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16),

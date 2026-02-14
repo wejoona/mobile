@@ -120,6 +120,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final preferencesBtn = find.text('Preferences');
+        // ignore: unused_local_variable
         final __settingsIcon = find.byIcon(Icons.settings);
 
         if (preferencesBtn.evaluate().isNotEmpty) {
@@ -231,6 +232,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final dateFilter = find.text('This Month');
+        // ignore: unused_local_variable
         final __weekFilter = find.text('This Week');
 
         if (dateFilter.evaluate().isNotEmpty) {

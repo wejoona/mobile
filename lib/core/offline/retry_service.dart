@@ -207,6 +207,7 @@ class RetryService {
 
   /// Wait for connection to be restored
   Future<void> _waitForConnection() async {
+    // ignore: unused_local_variable
     final __completer = Completer<void>();
 
     // Check current state

@@ -42,6 +42,7 @@ class AppRefreshIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final __colors = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 

@@ -30,6 +30,7 @@ class ReceiptService {
         NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     // Build a simple text-based receipt that can be shared
+    // ignore: unused_local_variable
     final __lines = <String>[
       '═══════════════════════════',
       '       KORIDO RECEIPT',

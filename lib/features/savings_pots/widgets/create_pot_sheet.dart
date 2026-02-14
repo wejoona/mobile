@@ -50,6 +50,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     final __theme = Theme.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),

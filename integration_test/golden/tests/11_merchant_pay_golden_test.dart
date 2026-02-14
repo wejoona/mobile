@@ -72,6 +72,7 @@ void main() {
       // Look for Scan option
       final scanBtn = find.text('Scan');
       final scanToPay = find.text('Scan to Pay');
+      // ignore: unused_local_variable
       final __scanIcon = find.byIcon(Icons.qr_code_scanner);
 
       if (scanBtn.evaluate().isNotEmpty) {
@@ -139,6 +140,7 @@ void main() {
 
       // Look for Merchant option in menu
       final merchantBtn = find.text('Merchant');
+      // ignore: unused_local_variable
       final __businessBtn = find.text('Business');
 
       if (merchantBtn.evaluate().isNotEmpty) {
@@ -168,6 +170,7 @@ void main() {
 
       // Navigate to merchant section
       final receiveBtn = find.text('Receive');
+      // ignore: unused_local_variable
       final __merchantQr = find.text('My QR');
 
       if (receiveBtn.evaluate().isNotEmpty) {
@@ -197,6 +200,7 @@ void main() {
 
       // Look for request payment option
       final requestPayment = find.text('Request Payment');
+      // ignore: unused_local_variable
       final __createRequest = find.text('Create Request');
 
       if (requestPayment.evaluate().isNotEmpty) {

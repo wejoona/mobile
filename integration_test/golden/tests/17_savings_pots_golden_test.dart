@@ -61,6 +61,7 @@ void main() {
 
       final savingsBtn = find.text('Savings');
       final potsBtn = find.text('Pots');
+      // ignore: unused_local_variable
       final __goalsBtn = find.text('Goals');
 
       if (savingsBtn.evaluate().isNotEmpty) {
@@ -126,6 +127,7 @@ void main() {
 
       final createBtn = find.text('Create Pot');
       final newBtn = find.text('New Pot');
+      // ignore: unused_local_variable
       final __addIcon = find.byIcon(Icons.add);
 
       if (createBtn.evaluate().isNotEmpty) {
@@ -270,6 +272,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final editBtn = find.text('Edit');
+        // ignore: unused_local_variable
         final __editIcon = find.byIcon(Icons.edit);
         if (editBtn.evaluate().isNotEmpty) {
           await tester.tap(editBtn.first);

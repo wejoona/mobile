@@ -119,7 +119,9 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                     ),
                     const SizedBox(height: AppSpacing.md),
                     AppText(
+                      // ignore: dead_code
                       l10n.transfer_successMessage(widget.amount.toStringAsFixed(2)) ??
+                          // ignore: dead_null_aware_expression
                           'You sent \$${widget.amount.toStringAsFixed(2)} to',
                       variant: AppTextVariant.bodyLarge,
                       color: colors.textSecondary,

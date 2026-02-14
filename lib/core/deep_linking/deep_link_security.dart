@@ -96,6 +96,7 @@ class DeepLinkSecurity {
 
   /// Check for suspicious patterns
   static bool isSuspiciousLink(Uri uri) {
+    // ignore: unused_local_variable
     final __path = uri.path.toLowerCase();
     final params = uri.queryParameters;
 

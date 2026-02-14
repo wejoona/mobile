@@ -160,6 +160,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final addReceipt = find.text('Add Receipt');
+        // ignore: unused_local_variable
         final __cameraIcon = find.byIcon(Icons.camera_alt);
 
         if (addReceipt.evaluate().isNotEmpty) {
