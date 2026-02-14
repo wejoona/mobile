@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 4.4 Payment Instructions Screen
 /// - 4.5 Deposit Status Screen
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

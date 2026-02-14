@@ -21,7 +21,7 @@ import '../../robots/auth_robot.dart';
 /// - 21.10 Wallet Under Review View
 /// - 21.11 KYC Expired View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

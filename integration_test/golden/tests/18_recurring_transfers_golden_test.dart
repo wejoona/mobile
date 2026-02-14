@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 18.2 Create Recurring Transfer View
 /// - 18.3 Recurring Transfer Detail View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

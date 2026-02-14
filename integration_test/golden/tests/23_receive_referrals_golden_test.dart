@@ -23,7 +23,7 @@ import '../../robots/auth_robot.dart';
 /// - 23.4 Services View
 /// - 23.5 Transfer Success View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

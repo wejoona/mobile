@@ -23,7 +23,7 @@ import '../../robots/auth_robot.dart';
 /// - 22.11 Scheduled Transfers View (recurringTransfers)
 /// - 22.12 Withdraw View (withdraw)
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

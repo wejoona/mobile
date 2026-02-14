@@ -17,7 +17,7 @@ import '../../robots/auth_robot.dart';
 /// - 9.4 Card Settings View
 /// - 9.5 Card Transactions View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

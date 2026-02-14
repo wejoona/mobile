@@ -30,7 +30,7 @@ import '../../robots/auth_robot.dart';
 /// - 7.18 Business Profile View
 /// - 7.19 Cookie Policy View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

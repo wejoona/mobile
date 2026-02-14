@@ -18,7 +18,7 @@ import '../../robots/auth_robot.dart';
 /// - 11.6 Create Payment Request View
 /// - 11.7 Merchant Transactions View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

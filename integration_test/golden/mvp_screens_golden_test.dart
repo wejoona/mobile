@@ -15,7 +15,7 @@ import '../robots/auth_robot.dart';
 /// Run with mocks (for CI):
 /// flutter test integration_test/golden/mvp_screens_golden_test.dart --update-goldens
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   // Check if running with real backend
   const useMocks = bool.fromEnvironment('USE_MOCKS', defaultValue: true);

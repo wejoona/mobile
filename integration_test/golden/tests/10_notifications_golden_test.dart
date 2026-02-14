@@ -14,7 +14,7 @@ import '../../robots/auth_robot.dart';
 /// - 10.2 Notification Permission Screen
 /// - 10.3 Notification Preferences Screen
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

@@ -14,7 +14,7 @@ import '../../robots/auth_robot.dart';
 /// - 15.2 Add Beneficiary Screen
 /// - 15.3 Beneficiary Detail View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

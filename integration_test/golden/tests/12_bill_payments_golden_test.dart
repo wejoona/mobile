@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 12.3 Bill Payment Success View
 /// - 12.4 Bill Payment History View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

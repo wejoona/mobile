@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 13.4 Expense Detail View
 /// - 13.5 Expense Reports View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

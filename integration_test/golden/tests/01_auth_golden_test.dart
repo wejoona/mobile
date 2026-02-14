@@ -21,7 +21,7 @@ import '../../robots/auth_robot.dart';
 /// Run with real backend:
 ///   flutter test integration_test/golden/tests/01_auth_golden_test.dart --update-goldens --dart-define=USE_MOCKS=false
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 20.3 Sub Business Detail View
 /// - 20.4 Sub Business Staff View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

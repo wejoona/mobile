@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 14.4 Link Created View
 /// - 14.5 Pay Link View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

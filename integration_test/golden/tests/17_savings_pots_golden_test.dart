@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 17.3 Pot Detail View
 /// - 17.4 Edit Pot View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

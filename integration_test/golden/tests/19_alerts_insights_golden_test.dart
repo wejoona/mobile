@@ -18,7 +18,7 @@ import '../../robots/auth_robot.dart';
 /// INSIGHTS:
 /// - 19.4 Insights View
 void main() {
-  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
