@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'جونا باي';
+  String get appName => 'كوريدو';
 
   @override
   String get navigation_home => 'الرئيسية';
@@ -506,7 +506,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'سحب إلى المحفظة الإلكترونية';
 
   @override
-  String get transactions_fromJoonaPayUser => 'من مستخدم جونا باي';
+  String get transactions_fromKoridoUser => 'من مستخدم جونا باي';
 
   @override
   String get transactions_externalWallet => 'محفظة خارجية';
@@ -2110,7 +2110,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboarding_kyc_later => 'Maybe Later';
 
   @override
-  String get onboarding_success_title => 'Welcome to JoonaPay!';
+  String get onboarding_success_title => 'Welcome to Korido!';
 
   @override
   String onboarding_success_subtitle(String name) {
@@ -2125,7 +2125,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Start sending, receiving, and managing your USDC today';
 
   @override
-  String get onboarding_success_continue => 'Start Using JoonaPay';
+  String get onboarding_success_continue => 'Start Using Korido';
 
   @override
   String get action_delete => 'Delete';
@@ -2892,7 +2892,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get insights_empty_description =>
-      'Start using JoonaPay to see your spending insights and analytics';
+      'Start using Korido to see your spending insights and analytics';
 
   @override
   String get insights_export_report => 'Export Report';
@@ -2922,10 +2922,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get contacts_search => 'Search contacts';
 
   @override
-  String get contacts_on_joonapay => 'On JoonaPay';
+  String get contacts_on_joonapay => 'On Korido';
 
   @override
-  String get contacts_invite_to_joonapay => 'Invite to JoonaPay';
+  String get contacts_invite_to_joonapay => 'Invite to Korido';
 
   @override
   String get contacts_empty => 'No contacts found. Pull down to refresh.';
@@ -2935,7 +2935,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String contacts_sync_success(int count) {
-    return 'Found $count JoonaPay users!';
+    return 'Found $count Korido users!';
   }
 
   @override
@@ -2961,14 +2961,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contacts_permission_subtitle =>
-      'See which of your contacts are already on JoonaPay';
+      'See which of your contacts are already on Korido';
 
   @override
   String get contacts_permission_benefit1_title => 'Find Friends Instantly';
 
   @override
   String get contacts_permission_benefit1_desc =>
-      'See which contacts are on JoonaPay and send money instantly';
+      'See which contacts are on Korido and send money instantly';
 
   @override
   String get contacts_permission_benefit2_title => 'Private & Secure';
@@ -2982,7 +2982,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contacts_permission_benefit3_desc =>
-      'Automatically sync when new contacts join JoonaPay';
+      'Automatically sync when new contacts join Korido';
 
   @override
   String get contacts_permission_allow => 'Allow Access';
@@ -2995,16 +2995,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contacts_permission_denied_message =>
-      'To find your friends on JoonaPay, please allow contact access in Settings.';
+      'To find your friends on Korido, please allow contact access in Settings.';
 
   @override
   String contacts_invite_title(String name) {
-    return 'Invite $name to JoonaPay';
+    return 'Invite $name to Korido';
   }
 
   @override
   String get contacts_invite_subtitle =>
-      'Send money to friends instantly with JoonaPay';
+      'Send money to friends instantly with Korido';
 
   @override
   String get contacts_invite_via_sms => 'Send SMS Invite';
@@ -3028,7 +3028,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contacts_invite_message =>
-      'Hey! I\'m using JoonaPay to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app';
+      'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app';
 
   @override
   String get recurringTransfers_title => 'Recurring Transfers';
@@ -3632,11 +3632,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String referrals_shareMessage(String code) {
-    return 'Join JoonaPay and get \$5 bonus on your first deposit! Use my referral code: $code\n\nDownload now: https://joonapay.com/download';
+    return 'Join Korido and get \$5 bonus on your first deposit! Use my referral code: $code\n\nDownload now: https://joonapay.com/download';
   }
 
   @override
-  String get referrals_shareSubject => 'Join JoonaPay - Get \$5 bonus!';
+  String get referrals_shareSubject => 'Join Korido - Get \$5 bonus!';
 
   @override
   String get referrals_inviteComingSoon => 'Contact invite coming soon';
@@ -5578,11 +5578,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings_help => 'Help & Support';
 
   @override
-  String get settings_rateApp => 'Rate JoonaPay';
+  String get settings_rateApp => 'Rate Korido';
 
   @override
   String get settings_rateAppDescription =>
-      'Enjoying JoonaPay? Rate us on the App Store';
+      'Enjoying Korido? Rate us on the App Store';
 
   @override
   String get action_copiedToClipboard => 'Copied to clipboard';
@@ -5959,7 +5959,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'Transfer funds to friends and family in seconds. No borders, no delays.';
 
   @override
-  String get onboarding_page2_feature1 => 'Instant transfers within JoonaPay';
+  String get onboarding_page2_feature1 => 'Instant transfers within Korido';
 
   @override
   String get onboarding_page2_feature2 => 'Send to any mobile money account';
@@ -6007,7 +6007,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get welcome_subtitle =>
-      'Your JoonaPay wallet is ready. Start sending and receiving money today!';
+      'Your Korido wallet is ready. Start sending and receiving money today!';
 
   @override
   String get welcome_addFunds => 'Add Funds';
@@ -6122,7 +6122,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get help_deposits_intro =>
-      'Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.';
+      'Depositing funds into your Korido wallet is quick and easy using Mobile Money services available across West Africa.';
 
   @override
   String get help_deposits_steps_title => 'How to Deposit';
@@ -6203,14 +6203,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get help_fees_breakdown_title => 'Fee Breakdown';
 
   @override
-  String get help_fees_internal_transfers => 'Transfers to JoonaPay Users';
+  String get help_fees_internal_transfers => 'Transfers to Korido Users';
 
   @override
   String get help_fees_free => 'FREE';
 
   @override
   String get help_fees_internal_description =>
-      'Send money to other JoonaPay users with zero fees';
+      'Send money to other Korido users with zero fees';
 
   @override
   String get help_fees_deposits => 'Mobile Money Deposits';
@@ -6272,7 +6272,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get help_fees_comparison_traditional => 'Traditional Services';
 
   @override
-  String get help_fees_comparison_joonapay => 'JoonaPay';
+  String get help_fees_comparison_joonapay => 'Korido';
 
   @override
   String get offline_banner_title => 'You\'re offline';
@@ -6463,7 +6463,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get device_verificationRequired =>
-      'We detected a new device. Please verify your identity to continue using JoonaPay.';
+      'We detected a new device. Please verify your identity to continue using Korido.';
 
   @override
   String get device_deviceId => 'Device ID';

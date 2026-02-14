@@ -542,9 +542,9 @@
   "@send_failedToLoadRecipients": {
     "description": "Failed to load recipients error"
   },
-  "send_joonaPayUser": "Utilizador JoonaPay",
+  "send_joonaPayUser": "Utilizador Korido",
   "@send_joonaPayUser": {
-    "description": "JoonaPay user badge"
+    "description": "Korido user badge"
   },
   "send_tooManyAttempts": "Demasiadas tentativas incorretas. Por favor, tente novamente mais tarde.",
   "@send_tooManyAttempts": {
@@ -574,7 +574,7 @@
   "@receive_addressCopied": {
     "description": "Address copied success message"
   },
-  "receive_shareMessage": "Envie USDC para a minha carteira JoonaPay:\n\n{address}",
+  "receive_shareMessage": "Envie USDC para a minha carteira Korido:\n\n{address}",
   "@receive_shareMessage": {
     "description": "Share wallet address message",
     "placeholders": {
@@ -656,9 +656,9 @@
   "@transactions_mobileMoneyWithdrawal": {
     "description": "Mobile money withdrawal subtitle"
   },
-  "transactions_fromJoonaPayUser": "De utilizador JoonaPay",
-  "@transactions_fromJoonaPayUser": {
-    "description": "From JoonaPay user subtitle"
+  "transactions_fromKoridoUser": "De utilizador Korido",
+  "@transactions_fromKoridoUser": {
+    "description": "From Korido user subtitle"
   },
   "transactions_externalWallet": "Carteira externa",
   "@transactions_externalWallet": {
@@ -1420,7 +1420,7 @@
   },
   "beneficiaries_typeJoonapay": "Joonapay user",
   "@beneficiaries_typeJoonapay": {
-    "description": "JoonaPay user account type"
+    "description": "Korido user account type"
   },
   "beneficiaries_typeWallet": "External carteira",
   "@beneficiaries_typeWallet": {
@@ -3541,7 +3541,7 @@
   },
   "contacts_on_joonapay": "On joonapay",
   "@contacts_on_joonapay": {
-    "description": "JoonaPay users section title"
+    "description": "Korido users section title"
   },
   "contacts_invite_to_joonapay": "Invite to joonapay",
   "@contacts_invite_to_joonapay": {
@@ -7715,9 +7715,9 @@
   "@help_fees_comparison_traditional": {
     "description": "Traditional services label"
   },
-  "help_fees_comparison_joonapay": "JoonaPay",
+  "help_fees_comparison_joonapay": "Korido",
   "@help_fees_comparison_joonapay": {
-    "description": "JoonaPay label"
+    "description": "Korido label"
   },
   "offline_banner_title": "You're offline",
   "@offline_banner_title": {

@@ -421,7 +421,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get send_failedToLoadRecipients => 'Falha ao carregar destinatários';
 
   @override
-  String get send_joonaPayUser => 'Utilizador JoonaPay';
+  String get send_joonaPayUser => 'Utilizador Korido';
 
   @override
   String get send_tooManyAttempts =>
@@ -450,7 +450,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String receive_shareMessage(String address) {
-    return 'Envie USDC para a minha carteira JoonaPay:\n\n$address';
+    return 'Envie USDC para a minha carteira Korido:\n\n$address';
   }
 
   @override
@@ -512,7 +512,7 @@ class AppLocalizationsPt extends AppLocalizations {
       'Levantamento por Mobile Money';
 
   @override
-  String get transactions_fromJoonaPayUser => 'De utilizador JoonaPay';
+  String get transactions_fromKoridoUser => 'De utilizador Korido';
 
   @override
   String get transactions_externalWallet => 'Carteira externa';
@@ -6291,7 +6291,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get help_fees_comparison_traditional => 'Traditional serviços';
 
   @override
-  String get help_fees_comparison_joonapay => 'JoonaPay';
+  String get help_fees_comparison_joonapay => 'Korido';
 
   @override
   String get offline_banner_title => 'You\'re offline';
@@ -6482,7 +6482,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get device_verificationRequired =>
-      'We detected a new device. Please verify your identity to continue using JoonaPay.';
+      'We detected a new device. Please verify your identity to continue using Korido.';
 
   @override
   String get device_deviceId => 'Device ID';

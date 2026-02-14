@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// Application name
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay'**
+  /// **'Korido'**
   String get appName;
 
   /// Home navigation label
@@ -870,10 +870,10 @@ abstract class AppLocalizations {
   /// **'Failed to load recipients'**
   String get send_failedToLoadRecipients;
 
-  /// JoonaPay user badge
+  /// Korido user badge
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay user'**
+  /// **'Korido user'**
   String get send_joonaPayUser;
 
   /// Too many PIN attempts error
@@ -921,7 +921,7 @@ abstract class AppLocalizations {
   /// Share wallet address message
   ///
   /// In en, this message translates to:
-  /// **'Send USDC to my JoonaPay wallet:\n\n{address}'**
+  /// **'Send USDC to my Korido wallet:\n\n{address}'**
   String receive_shareMessage(String address);
 
   /// Share subject
@@ -1032,11 +1032,11 @@ abstract class AppLocalizations {
   /// **'Mobile Money Withdrawal'**
   String get transactions_mobileMoneyWithdrawal;
 
-  /// From JoonaPay user subtitle
+  /// From Korido user subtitle
   ///
   /// In en, this message translates to:
-  /// **'From JoonaPay User'**
-  String get transactions_fromJoonaPayUser;
+  /// **'From Korido User'**
+  String get transactions_fromKoridoUser;
 
   /// External wallet subtitle
   ///
@@ -2268,10 +2268,10 @@ abstract class AppLocalizations {
   /// **'Mobile Money Provider'**
   String get beneficiaries_fieldMobileMoneyProvider;
 
-  /// JoonaPay user account type
+  /// Korido user account type
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay User'**
+  /// **'Korido User'**
   String get beneficiaries_typeJoonapay;
 
   /// External wallet account type
@@ -2493,7 +2493,7 @@ abstract class AppLocalizations {
   /// Instructions for receiving payment
   ///
   /// In en, this message translates to:
-  /// **'Share this QR code with the sender. They can scan it with their JoonaPay app to send you money instantly.'**
+  /// **'Share this QR code with the sender. They can scan it with their Korido app to send you money instantly.'**
   String get qr_receiveInstructions;
 
   /// Success message for saving QR
@@ -2517,7 +2517,7 @@ abstract class AppLocalizations {
   /// Main scanner instruction
   ///
   /// In en, this message translates to:
-  /// **'Scan a JoonaPay QR code'**
+  /// **'Scan a Korido QR code'**
   String get qr_scanInstruction;
 
   /// Secondary scanner instruction
@@ -2541,7 +2541,7 @@ abstract class AppLocalizations {
   /// Error message for invalid QR
   ///
   /// In en, this message translates to:
-  /// **'This QR code is not a valid JoonaPay payment code.'**
+  /// **'This QR code is not a valid Korido payment code.'**
   String get qr_invalidCodeMessage;
 
   /// Button to retry scanning
@@ -4029,7 +4029,7 @@ abstract class AppLocalizations {
   /// Success screen title
   ///
   /// In en, this message translates to:
-  /// **'Welcome to JoonaPay!'**
+  /// **'Welcome to Korido!'**
   String get onboarding_success_title;
 
   /// Success screen subtitle with user name
@@ -4053,7 +4053,7 @@ abstract class AppLocalizations {
   /// Continue to app button
   ///
   /// In en, this message translates to:
-  /// **'Start Using JoonaPay'**
+  /// **'Start Using Korido'**
   String get onboarding_success_continue;
 
   /// Delete action button
@@ -5475,7 +5475,7 @@ abstract class AppLocalizations {
   /// Empty state description
   ///
   /// In en, this message translates to:
-  /// **'Start using JoonaPay to see your spending insights and analytics'**
+  /// **'Start using Korido to see your spending insights and analytics'**
   String get insights_empty_description;
 
   /// Export report button
@@ -5532,16 +5532,16 @@ abstract class AppLocalizations {
   /// **'Search contacts'**
   String get contacts_search;
 
-  /// JoonaPay users section title
+  /// Korido users section title
   ///
   /// In en, this message translates to:
-  /// **'On JoonaPay'**
+  /// **'On Korido'**
   String get contacts_on_joonapay;
 
   /// Non-users section title
   ///
   /// In en, this message translates to:
-  /// **'Invite to JoonaPay'**
+  /// **'Invite to Korido'**
   String get contacts_invite_to_joonapay;
 
   /// Empty state message
@@ -5559,7 +5559,7 @@ abstract class AppLocalizations {
   /// Sync success message
   ///
   /// In en, this message translates to:
-  /// **'Found {count} JoonaPay users!'**
+  /// **'Found {count} Korido users!'**
   String contacts_sync_success(int count);
 
   /// Last synced just now
@@ -5595,7 +5595,7 @@ abstract class AppLocalizations {
   /// Permission screen subtitle
   ///
   /// In en, this message translates to:
-  /// **'See which of your contacts are already on JoonaPay'**
+  /// **'See which of your contacts are already on Korido'**
   String get contacts_permission_subtitle;
 
   /// Permission benefit 1 title
@@ -5607,7 +5607,7 @@ abstract class AppLocalizations {
   /// Permission benefit 1 description
   ///
   /// In en, this message translates to:
-  /// **'See which contacts are on JoonaPay and send money instantly'**
+  /// **'See which contacts are on Korido and send money instantly'**
   String get contacts_permission_benefit1_desc;
 
   /// Permission benefit 2 title
@@ -5631,7 +5631,7 @@ abstract class AppLocalizations {
   /// Permission benefit 3 description
   ///
   /// In en, this message translates to:
-  /// **'Automatically sync when new contacts join JoonaPay'**
+  /// **'Automatically sync when new contacts join Korido'**
   String get contacts_permission_benefit3_desc;
 
   /// Allow permission button
@@ -5655,19 +5655,19 @@ abstract class AppLocalizations {
   /// Permission denied dialog message
   ///
   /// In en, this message translates to:
-  /// **'To find your friends on JoonaPay, please allow contact access in Settings.'**
+  /// **'To find your friends on Korido, please allow contact access in Settings.'**
   String get contacts_permission_denied_message;
 
   /// Invite sheet title
   ///
   /// In en, this message translates to:
-  /// **'Invite {name} to JoonaPay'**
+  /// **'Invite {name} to Korido'**
   String contacts_invite_title(String name);
 
   /// Invite sheet subtitle
   ///
   /// In en, this message translates to:
-  /// **'Send money to friends instantly with JoonaPay'**
+  /// **'Send money to friends instantly with Korido'**
   String get contacts_invite_subtitle;
 
   /// Invite via SMS option
@@ -5709,7 +5709,7 @@ abstract class AppLocalizations {
   /// Default invite message
   ///
   /// In en, this message translates to:
-  /// **'Hey! I\'m using JoonaPay to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app'**
+  /// **'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app'**
   String get contacts_invite_message;
 
   /// Recurring transfers screen title
@@ -6837,13 +6837,13 @@ abstract class AppLocalizations {
   /// Share message template
   ///
   /// In en, this message translates to:
-  /// **'Join JoonaPay and get \$5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download'**
+  /// **'Join Korido and get \$5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download'**
   String referrals_shareMessage(String code);
 
   /// Share subject
   ///
   /// In en, this message translates to:
-  /// **'Join JoonaPay - Get \$5 bonus!'**
+  /// **'Join Korido - Get \$5 bonus!'**
   String get referrals_shareSubject;
 
   /// Invite coming soon message
@@ -10425,13 +10425,13 @@ abstract class AppLocalizations {
   /// Rate app option in settings
   ///
   /// In en, this message translates to:
-  /// **'Rate JoonaPay'**
+  /// **'Rate Korido'**
   String get settings_rateApp;
 
   /// Description for rate app option
   ///
   /// In en, this message translates to:
-  /// **'Enjoying JoonaPay? Rate us on the App Store'**
+  /// **'Enjoying Korido? Rate us on the App Store'**
   String get settings_rateAppDescription;
 
   /// Message shown when text is copied to clipboard
@@ -11085,7 +11085,7 @@ abstract class AppLocalizations {
   /// Onboarding page 2 feature 1
   ///
   /// In en, this message translates to:
-  /// **'Instant transfers within JoonaPay'**
+  /// **'Instant transfers within Korido'**
   String get onboarding_page2_feature1;
 
   /// Onboarding page 2 feature 2
@@ -11169,7 +11169,7 @@ abstract class AppLocalizations {
   /// Welcome subtitle
   ///
   /// In en, this message translates to:
-  /// **'Your JoonaPay wallet is ready. Start sending and receiving money today!'**
+  /// **'Your Korido wallet is ready. Start sending and receiving money today!'**
   String get welcome_subtitle;
 
   /// Add funds button
@@ -11379,7 +11379,7 @@ abstract class AppLocalizations {
   /// Deposits guide intro
   ///
   /// In en, this message translates to:
-  /// **'Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.'**
+  /// **'Depositing funds into your Korido wallet is quick and easy using Mobile Money services available across West Africa.'**
   String get help_deposits_intro;
 
   /// Deposit steps title
@@ -11523,7 +11523,7 @@ abstract class AppLocalizations {
   /// Internal transfers label
   ///
   /// In en, this message translates to:
-  /// **'Transfers to JoonaPay Users'**
+  /// **'Transfers to Korido Users'**
   String get help_fees_internal_transfers;
 
   /// Free fee label
@@ -11535,7 +11535,7 @@ abstract class AppLocalizations {
   /// Internal transfers description
   ///
   /// In en, this message translates to:
-  /// **'Send money to other JoonaPay users with zero fees'**
+  /// **'Send money to other Korido users with zero fees'**
   String get help_fees_internal_description;
 
   /// Deposits label
@@ -11646,10 +11646,10 @@ abstract class AppLocalizations {
   /// **'Traditional Services'**
   String get help_fees_comparison_traditional;
 
-  /// JoonaPay label
+  /// Korido label
   ///
   /// In en, this message translates to:
-  /// **'JoonaPay'**
+  /// **'Korido'**
   String get help_fees_comparison_joonapay;
 
   /// Offline banner title
@@ -11985,7 +11985,7 @@ abstract class AppLocalizations {
   /// Device verification required message
   ///
   /// In en, this message translates to:
-  /// **'We detected a new device. Please verify your identity to continue using JoonaPay.'**
+  /// **'We detected a new device. Please verify your identity to continue using Korido.'**
   String get device_verificationRequired;
 
   /// Device ID label

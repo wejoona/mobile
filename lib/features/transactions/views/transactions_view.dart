@@ -929,7 +929,7 @@ class _TransactionGroup extends StatelessWidget {
       case TransactionType.withdrawal:
         return l10n.transactions_mobileMoneyWithdrawal;
       case TransactionType.transferInternal:
-        return l10n.transactions_fromJoonaPayUser;
+        return l10n.transactions_fromKoridoUser;
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
     }

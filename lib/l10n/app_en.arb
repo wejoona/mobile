@@ -671,9 +671,9 @@
     "description": "Failed to load recipients error"
   },
 
-  "send_joonaPayUser": "JoonaPay user",
+  "send_joonaPayUser": "Korido user",
   "@send_joonaPayUser": {
-    "description": "JoonaPay user badge"
+    "description": "Korido user badge"
   },
 
   "send_tooManyAttempts": "Too many incorrect attempts. Please try again later.",
@@ -711,7 +711,7 @@
     "description": "Address copied success message"
   },
 
-  "receive_shareMessage": "Send USDC to my JoonaPay wallet:\n\n{address}",
+  "receive_shareMessage": "Send USDC to my Korido wallet:\n\n{address}",
   "@receive_shareMessage": {
     "description": "Share wallet address message",
     "placeholders": {
@@ -812,9 +812,9 @@
     "description": "Mobile money withdrawal subtitle"
   },
 
-  "transactions_fromJoonaPayUser": "From JoonaPay User",
-  "@transactions_fromJoonaPayUser": {
-    "description": "From JoonaPay user subtitle"
+  "transactions_fromKoridoUser": "From Korido User",
+  "@transactions_fromKoridoUser": {
+    "description": "From Korido user subtitle"
   },
 
   "transactions_externalWallet": "External Wallet",
@@ -1853,9 +1853,9 @@
     "description": "Mobile money provider field label"
   },
 
-  "beneficiaries_typeJoonapay": "JoonaPay User",
+  "beneficiaries_typeJoonapay": "Korido User",
   "@beneficiaries_typeJoonapay": {
-    "description": "JoonaPay user account type"
+    "description": "Korido user account type"
   },
 
   "beneficiaries_typeWallet": "External Wallet",
@@ -2043,7 +2043,7 @@
     "description": "Instructions title"
   },
 
-  "qr_receiveInstructions": "Share this QR code with the sender. They can scan it with their JoonaPay app to send you money instantly.",
+  "qr_receiveInstructions": "Share this QR code with the sender. They can scan it with their Korido app to send you money instantly.",
   "@qr_receiveInstructions": {
     "description": "Instructions for receiving payment"
   },
@@ -2063,7 +2063,7 @@
     "description": "Loading message for camera"
   },
 
-  "qr_scanInstruction": "Scan a JoonaPay QR code",
+  "qr_scanInstruction": "Scan a Korido QR code",
   "@qr_scanInstruction": {
     "description": "Main scanner instruction"
   },
@@ -2083,7 +2083,7 @@
     "description": "Error title for invalid QR"
   },
 
-  "qr_invalidCodeMessage": "This QR code is not a valid JoonaPay payment code.",
+  "qr_invalidCodeMessage": "This QR code is not a valid Korido payment code.",
   "@qr_invalidCodeMessage": {
     "description": "Error message for invalid QR"
   },
@@ -3401,7 +3401,7 @@
     "description": "Skip KYC button"
   },
 
-  "onboarding_success_title": "Welcome to JoonaPay!",
+  "onboarding_success_title": "Welcome to Korido!",
   "@onboarding_success_title": {
     "description": "Success screen title"
   },
@@ -3426,7 +3426,7 @@
     "description": "Wallet ready message"
   },
 
-  "onboarding_success_continue": "Start Using JoonaPay",
+  "onboarding_success_continue": "Start Using Korido",
   "@onboarding_success_continue": {
     "description": "Continue to app button"
   },
@@ -4456,7 +4456,7 @@
     "description": "Empty state title"
   },
 
-  "insights_empty_description": "Start using JoonaPay to see your spending insights and analytics",
+  "insights_empty_description": "Start using Korido to see your spending insights and analytics",
   "@insights_empty_description": {
     "description": "Empty state description"
   },
@@ -4506,12 +4506,12 @@
     "description": "Search contacts placeholder"
   },
 
-  "contacts_on_joonapay": "On JoonaPay",
+  "contacts_on_joonapay": "On Korido",
   "@contacts_on_joonapay": {
-    "description": "JoonaPay users section title"
+    "description": "Korido users section title"
   },
 
-  "contacts_invite_to_joonapay": "Invite to JoonaPay",
+  "contacts_invite_to_joonapay": "Invite to Korido",
   "@contacts_invite_to_joonapay": {
     "description": "Non-users section title"
   },
@@ -4526,7 +4526,7 @@
     "description": "No search results message"
   },
 
-  "contacts_sync_success": "Found {count} JoonaPay users!",
+  "contacts_sync_success": "Found {count} Korido users!",
   "@contacts_sync_success": {
     "description": "Sync success message",
     "placeholders": {
@@ -4576,7 +4576,7 @@
     "description": "Permission screen title"
   },
 
-  "contacts_permission_subtitle": "See which of your contacts are already on JoonaPay",
+  "contacts_permission_subtitle": "See which of your contacts are already on Korido",
   "@contacts_permission_subtitle": {
     "description": "Permission screen subtitle"
   },
@@ -4586,7 +4586,7 @@
     "description": "Permission benefit 1 title"
   },
 
-  "contacts_permission_benefit1_desc": "See which contacts are on JoonaPay and send money instantly",
+  "contacts_permission_benefit1_desc": "See which contacts are on Korido and send money instantly",
   "@contacts_permission_benefit1_desc": {
     "description": "Permission benefit 1 description"
   },
@@ -4606,7 +4606,7 @@
     "description": "Permission benefit 3 title"
   },
 
-  "contacts_permission_benefit3_desc": "Automatically sync when new contacts join JoonaPay",
+  "contacts_permission_benefit3_desc": "Automatically sync when new contacts join Korido",
   "@contacts_permission_benefit3_desc": {
     "description": "Permission benefit 3 description"
   },
@@ -4626,12 +4626,12 @@
     "description": "Permission denied dialog title"
   },
 
-  "contacts_permission_denied_message": "To find your friends on JoonaPay, please allow contact access in Settings.",
+  "contacts_permission_denied_message": "To find your friends on Korido, please allow contact access in Settings.",
   "@contacts_permission_denied_message": {
     "description": "Permission denied dialog message"
   },
 
-  "contacts_invite_title": "Invite {name} to JoonaPay",
+  "contacts_invite_title": "Invite {name} to Korido",
   "@contacts_invite_title": {
     "description": "Invite sheet title",
     "placeholders": {
@@ -4641,7 +4641,7 @@
     }
   },
 
-  "contacts_invite_subtitle": "Send money to friends instantly with JoonaPay",
+  "contacts_invite_subtitle": "Send money to friends instantly with Korido",
   "@contacts_invite_subtitle": {
     "description": "Invite sheet subtitle"
   },
@@ -4676,7 +4676,7 @@
     "description": "Copy invite link description"
   },
 
-  "contacts_invite_message": "Hey! I'm using JoonaPay to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app",
+  "contacts_invite_message": "Hey! I'm using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app",
   "@contacts_invite_message": {
     "description": "Default invite message"
   },
@@ -5636,7 +5636,7 @@
     "description": "Code copied message"
   },
 
-  "referrals_shareMessage": "Join JoonaPay and get $5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download",
+  "referrals_shareMessage": "Join Korido and get $5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download",
   "@referrals_shareMessage": {
     "description": "Share message template",
     "placeholders": {
@@ -5646,7 +5646,7 @@
     }
   },
 
-  "referrals_shareSubject": "Join JoonaPay - Get $5 bonus!",
+  "referrals_shareSubject": "Join Korido - Get $5 bonus!",
   "@referrals_shareSubject": {
     "description": "Share subject"
   },
@@ -8740,12 +8740,12 @@
     "description": "Help and support settings option"
   },
 
-  "settings_rateApp": "Rate JoonaPay",
+  "settings_rateApp": "Rate Korido",
   "@settings_rateApp": {
     "description": "Rate app option in settings"
   },
 
-  "settings_rateAppDescription": "Enjoying JoonaPay? Rate us on the App Store",
+  "settings_rateAppDescription": "Enjoying Korido? Rate us on the App Store",
   "@settings_rateAppDescription": {
     "description": "Description for rate app option"
   },
@@ -9296,7 +9296,7 @@
     "description": "Onboarding page 2 description"
   },
 
-  "onboarding_page2_feature1": "Instant transfers within JoonaPay",
+  "onboarding_page2_feature1": "Instant transfers within Korido",
   "@onboarding_page2_feature1": {
     "description": "Onboarding page 2 feature 1"
   },
@@ -9376,7 +9376,7 @@
     }
   },
 
-  "welcome_subtitle": "Your JoonaPay wallet is ready. Start sending and receiving money today!",
+  "welcome_subtitle": "Your Korido wallet is ready. Start sending and receiving money today!",
   "@welcome_subtitle": {
     "description": "Welcome subtitle"
   },
@@ -9551,7 +9551,7 @@
     "description": "Deposits guide header"
   },
 
-  "help_deposits_intro": "Depositing funds into your JoonaPay wallet is quick and easy using Mobile Money services available across West Africa.",
+  "help_deposits_intro": "Depositing funds into your Korido wallet is quick and easy using Mobile Money services available across West Africa.",
   "@help_deposits_intro": {
     "description": "Deposits guide intro"
   },
@@ -9671,7 +9671,7 @@
     "description": "Fee breakdown title"
   },
 
-  "help_fees_internal_transfers": "Transfers to JoonaPay Users",
+  "help_fees_internal_transfers": "Transfers to Korido Users",
   "@help_fees_internal_transfers": {
     "description": "Internal transfers label"
   },
@@ -9681,7 +9681,7 @@
     "description": "Free fee label"
   },
 
-  "help_fees_internal_description": "Send money to other JoonaPay users with zero fees",
+  "help_fees_internal_description": "Send money to other Korido users with zero fees",
   "@help_fees_internal_description": {
     "description": "Internal transfers description"
   },
@@ -9776,9 +9776,9 @@
     "description": "Traditional services label"
   },
 
-  "help_fees_comparison_joonapay": "JoonaPay",
+  "help_fees_comparison_joonapay": "Korido",
   "@help_fees_comparison_joonapay": {
-    "description": "JoonaPay label"
+    "description": "Korido label"
   },
 
   "offline_banner_title": "You're offline",
@@ -10072,7 +10072,7 @@
     "description": "New device detection title"
   },
 
-  "device_verificationRequired": "We detected a new device. Please verify your identity to continue using JoonaPay.",
+  "device_verificationRequired": "We detected a new device. Please verify your identity to continue using Korido.",
   "@device_verificationRequired": {
     "description": "Device verification required message"
   },

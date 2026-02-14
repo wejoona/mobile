@@ -673,7 +673,7 @@
 
   "send_joonaPayUser": "مستخدم جونا باي",
   "@send_joonaPayUser": {
-    "description": "JoonaPay user badge"
+    "description": "Korido user badge"
   },
 
   "send_tooManyAttempts": "عدد كبير جداً من المحاولات غير الصحيحة. الرجاء المحاولة لاحقاً.",
@@ -812,9 +812,9 @@
     "description": "Mobile money withdrawal subtitle"
   },
 
-  "transactions_fromJoonaPayUser": "من مستخدم جونا باي",
-  "@transactions_fromJoonaPayUser": {
-    "description": "From JoonaPay user subtitle"
+  "transactions_fromKoridoUser": "من مستخدم جونا باي",
+  "@transactions_fromKoridoUser": {
+    "description": "From Korido user subtitle"
   },
 
   "transactions_externalWallet": "محفظة خارجية",
@@ -1765,7 +1765,7 @@
 
   "beneficiaries_typeJoonapay": "مستخدم جونا باي",
   "@beneficiaries_typeJoonapay": {
-    "description": "JoonaPay user account type"
+    "description": "Korido user account type"
   },
 
   "beneficiaries_typeWallet": "محفظة خارجية",
