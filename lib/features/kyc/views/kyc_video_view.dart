@@ -47,6 +47,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
   int _currentActionIndex = 0;
 
   static const int maxRecordingSeconds = 15;
+  // ignore: unused_field
   static const int minRecordingSeconds = 5;
 
   @override

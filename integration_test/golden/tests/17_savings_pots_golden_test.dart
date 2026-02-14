@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 17.3 Pot Detail View
 /// - 17.4 Edit Pot View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -61,7 +61,7 @@ void main() {
 
       final savingsBtn = find.text('Savings');
       final potsBtn = find.text('Pots');
-      final _goalsBtn = find.text('Goals');
+      final __goalsBtn = find.text('Goals');
 
       if (savingsBtn.evaluate().isNotEmpty) {
         await tester.tap(savingsBtn.first);
@@ -126,7 +126,7 @@ void main() {
 
       final createBtn = find.text('Create Pot');
       final newBtn = find.text('New Pot');
-      final _addIcon = find.byIcon(Icons.add);
+      final __addIcon = find.byIcon(Icons.add);
 
       if (createBtn.evaluate().isNotEmpty) {
         await tester.tap(createBtn.first);
@@ -270,7 +270,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final editBtn = find.text('Edit');
-        final _editIcon = find.byIcon(Icons.edit);
+        final __editIcon = find.byIcon(Icons.edit);
         if (editBtn.evaluate().isNotEmpty) {
           await tester.tap(editBtn.first);
           await tester.pumpAndSettle();

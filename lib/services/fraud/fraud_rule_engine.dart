@@ -49,6 +49,7 @@ class FraudRuleResult {
 /// validation serveur.
 class FraudRuleEngine {
   static const _tag = 'FraudRuleEngine';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final List<FraudRule> _rules;
 

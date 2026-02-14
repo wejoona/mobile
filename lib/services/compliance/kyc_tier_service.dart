@@ -36,7 +36,9 @@ class KycTierInfo {
 /// Manages KYC tier status and upgrade requirements.
 class KycTierService {
   static const _tag = 'KycTier';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
+  // ignore: unused_field
   final Dio _dio;
 
   static const _tierInfoMap = {

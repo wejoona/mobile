@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Évaluation du risque pour les transactions et les utilisateurs.
 class RiskAssessmentService {
   static const _tag = 'RiskAssess';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Assess risk for a transaction.

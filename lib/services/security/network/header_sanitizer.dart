@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Sanitizes request/response headers to prevent info leakage.
 class HeaderSanitizer {
   static const _tag = 'HeaderSanitizer';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   static const _sensitiveHeaders = [

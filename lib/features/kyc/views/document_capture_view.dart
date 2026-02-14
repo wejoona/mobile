@@ -37,6 +37,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   bool _flashEnabled = false;
   String? _capturedImagePath;
   bool _isCheckingQuality = false;
+  // ignore: unused_field
   DocumentSide _currentSide = DocumentSide.front;
   String? _cameraError;
   bool _showInstructions = true; // Show instructions first

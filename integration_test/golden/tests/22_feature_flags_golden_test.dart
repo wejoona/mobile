@@ -23,7 +23,7 @@ import '../../robots/auth_robot.dart';
 /// - 22.11 Scheduled Transfers View (recurringTransfers)
 /// - 22.12 Withdraw View (withdraw)
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -75,7 +75,7 @@ void main() {
       await loginToHome(tester);
 
       final billPayBtn = find.text('Bill Pay');
-      final _payBillsBtn = find.text('Pay Bills');
+      final __payBillsBtn = find.text('Pay Bills');
 
       if (billPayBtn.evaluate().isNotEmpty) {
         await tester.tap(billPayBtn.first);
@@ -104,7 +104,7 @@ void main() {
       await loginToHome(tester);
 
       final airtimeBtn = find.text('Airtime');
-      final _buyAirtimeBtn = find.text('Buy Airtime');
+      final __buyAirtimeBtn = find.text('Buy Airtime');
 
       if (airtimeBtn.evaluate().isNotEmpty) {
         await tester.tap(airtimeBtn.first);
@@ -132,7 +132,7 @@ void main() {
       await loginToHome(tester);
 
       final savingsBtn = find.text('Savings');
-      final _goalsBtn = find.text('Goals');
+      final __goalsBtn = find.text('Goals');
 
       if (savingsBtn.evaluate().isNotEmpty) {
         await tester.tap(savingsBtn.first);
@@ -159,7 +159,7 @@ void main() {
       await loginToHome(tester);
 
       final cardBtn = find.text('Card');
-      final _virtualCardBtn = find.text('Virtual Card');
+      final __virtualCardBtn = find.text('Virtual Card');
 
       if (cardBtn.evaluate().isNotEmpty) {
         await tester.tap(cardBtn.first);
@@ -188,7 +188,7 @@ void main() {
       await loginToHome(tester);
 
       final splitBtn = find.text('Split');
-      final _splitBillBtn = find.text('Split Bill');
+      final __splitBillBtn = find.text('Split Bill');
 
       if (splitBtn.evaluate().isNotEmpty) {
         await tester.tap(splitBtn.first);
@@ -273,7 +273,7 @@ void main() {
       await loginToHome(tester);
 
       final converterBtn = find.text('Converter');
-      final _exchangeBtn = find.text('Exchange');
+      final __exchangeBtn = find.text('Exchange');
 
       if (converterBtn.evaluate().isNotEmpty) {
         await tester.tap(converterBtn.first);
@@ -302,7 +302,7 @@ void main() {
       await loginToHome(tester);
 
       final requestBtn = find.text('Request');
-      final _requestMoneyBtn = find.text('Request Money');
+      final __requestMoneyBtn = find.text('Request Money');
 
       if (requestBtn.evaluate().isNotEmpty) {
         await tester.tap(requestBtn.first);
@@ -330,7 +330,7 @@ void main() {
       await loginToHome(tester);
 
       final recipientsBtn = find.text('Recipients');
-      final _savedBtn = find.text('Saved');
+      final __savedBtn = find.text('Saved');
 
       if (recipientsBtn.evaluate().isNotEmpty) {
         await tester.tap(recipientsBtn.first);

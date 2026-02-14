@@ -18,7 +18,7 @@ import '../../robots/auth_robot.dart';
 /// - 11.6 Create Payment Request View
 /// - 11.7 Merchant Transactions View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -72,7 +72,7 @@ void main() {
       // Look for Scan option
       final scanBtn = find.text('Scan');
       final scanToPay = find.text('Scan to Pay');
-      final _scanIcon = find.byIcon(Icons.qr_code_scanner);
+      final __scanIcon = find.byIcon(Icons.qr_code_scanner);
 
       if (scanBtn.evaluate().isNotEmpty) {
         await tester.tap(scanBtn.first);
@@ -139,7 +139,7 @@ void main() {
 
       // Look for Merchant option in menu
       final merchantBtn = find.text('Merchant');
-      final _businessBtn = find.text('Business');
+      final __businessBtn = find.text('Business');
 
       if (merchantBtn.evaluate().isNotEmpty) {
         await tester.tap(merchantBtn.first);
@@ -168,7 +168,7 @@ void main() {
 
       // Navigate to merchant section
       final receiveBtn = find.text('Receive');
-      final _merchantQr = find.text('My QR');
+      final __merchantQr = find.text('My QR');
 
       if (receiveBtn.evaluate().isNotEmpty) {
         await tester.tap(receiveBtn.first);
@@ -197,7 +197,7 @@ void main() {
 
       // Look for request payment option
       final requestPayment = find.text('Request Payment');
-      final _createRequest = find.text('Create Request');
+      final __createRequest = find.text('Create Request');
 
       if (requestPayment.evaluate().isNotEmpty) {
         await tester.tap(requestPayment.first);

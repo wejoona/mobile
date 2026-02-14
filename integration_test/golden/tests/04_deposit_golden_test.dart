@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 4.4 Payment Instructions Screen
 /// - 4.5 Deposit Status Screen
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -101,7 +101,7 @@ void main() {
       // Look for deposit method options
       final orangeMoney = find.text('Orange Money');
       final mtnMomo = find.text('MTN MoMo');
-      final _wave = find.text('Wave');
+      final __wave = find.text('Wave');
 
       if (orangeMoney.evaluate().isNotEmpty) {
         await tester.tap(orangeMoney);

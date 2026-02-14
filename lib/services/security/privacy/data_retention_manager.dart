@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Manages data retention policies per BCEAO requirements.
 class DataRetentionManager {
   static const _tag = 'DataRetention';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Check if data should be retained or purged.

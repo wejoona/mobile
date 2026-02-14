@@ -156,7 +156,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
     setState(() => _isLoading = true);
 
     try {
-      final _expense = Expense(
+      final __expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         category: _selectedCategory,
         amount: double.parse(_amountController.text),

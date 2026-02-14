@@ -79,7 +79,7 @@ class SourceOfFundsService {
   /// Get existing declarations for the user.
   Future<List<FundsDeclaration>> getDeclarations() async {
     try {
-      final _response = await _dio.get('/compliance/source-of-funds');
+      final __response = await _dio.get('/compliance/source-of-funds');
       // Would parse response into FundsDeclaration objects
       return [];
     } catch (e) {

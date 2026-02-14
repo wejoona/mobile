@@ -10,6 +10,7 @@ class ApiRequestSigner {
   static const _tag = 'ApiRequestSigner';
   final AppLogger _log = AppLogger(_tag);
 
+  // ignore: unused_field
   final String _secretKey;
 
   ApiRequestSigner({required String secretKey}) : _secretKey = secretKey;

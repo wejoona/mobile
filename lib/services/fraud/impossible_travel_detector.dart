@@ -27,6 +27,7 @@ class ImpossibleTravelResult {
 /// géographiquement impossibles dans un laps de temps donné.
 class ImpossibleTravelDetector {
   static const _tag = 'ImpossibleTravel';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   static const double _maxReasonableSpeedKmh = 900.0; // Vitesse d'avion
 

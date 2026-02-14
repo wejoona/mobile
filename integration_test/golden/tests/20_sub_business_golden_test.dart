@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 20.3 Sub Business Detail View
 /// - 20.4 Sub Business Staff View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -60,7 +60,7 @@ void main() {
 
       final subBusinessBtn = find.text('Sub-Businesses');
       final branchesBtn = find.text('Branches');
-      final _locationsBtn = find.text('Locations');
+      final __locationsBtn = find.text('Locations');
 
       if (subBusinessBtn.evaluate().isNotEmpty) {
         await tester.tap(subBusinessBtn.first);
@@ -124,7 +124,7 @@ void main() {
       await navigateToSubBusiness(tester);
 
       final addBtn = find.text('Add Sub-Business');
-      final _createBtn = find.text('Create');
+      final __createBtn = find.text('Create');
       final addIcon = find.byIcon(Icons.add);
 
       if (addBtn.evaluate().isNotEmpty) {
@@ -199,7 +199,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final staffBtn = find.text('Staff');
-        final _teamBtn = find.text('Team');
+        final __teamBtn = find.text('Team');
 
         if (staffBtn.evaluate().isNotEmpty) {
           await tester.tap(staffBtn.first);

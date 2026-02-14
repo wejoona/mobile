@@ -120,7 +120,7 @@ class UserAvatar extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final borderWidth = _getBorderWidth();
-    final _effectiveSize = size - (borderWidth * 2);
+    final __effectiveSize = size - (borderWidth * 2);
 
     return Container(
       width: size,

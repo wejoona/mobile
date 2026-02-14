@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 18.2 Create Recurring Transfer View
 /// - 18.3 Recurring Transfer Detail View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -60,7 +60,7 @@ void main() {
 
       final recurringBtn = find.text('Recurring');
       final scheduledBtn = find.text('Scheduled');
-      final _autoPayBtn = find.text('Auto-Pay');
+      final __autoPayBtn = find.text('Auto-Pay');
 
       if (recurringBtn.evaluate().isNotEmpty) {
         await tester.tap(recurringBtn.first);
@@ -126,7 +126,7 @@ void main() {
 
       final createBtn = find.text('Create New');
       final newBtn = find.text('New Recurring');
-      final _addIcon = find.byIcon(Icons.add);
+      final __addIcon = find.byIcon(Icons.add);
 
       if (createBtn.evaluate().isNotEmpty) {
         await tester.tap(createBtn.first);

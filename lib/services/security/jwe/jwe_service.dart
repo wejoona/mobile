@@ -29,6 +29,7 @@ class ServerPublicKey {
 
 /// JWE encryption service — encrypts payloads using the server's RSA public key.
 class JweService {
+  // ignore: unused_field
   static const _tag = 'JWE';
 
   ServerPublicKey? _cachedKey;

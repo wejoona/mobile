@@ -53,7 +53,7 @@ class _ScanQrViewState extends ConsumerState<ScanQrView> {
   }
 
   void _showPaymentConfirmation(String qrData, QrDecodeResponse merchant) {
-    final _l10n = AppLocalizations.of(context)!;
+    final __l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,

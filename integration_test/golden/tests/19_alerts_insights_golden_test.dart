@@ -18,7 +18,7 @@ import '../../robots/auth_robot.dart';
 /// INSIGHTS:
 /// - 19.4 Insights View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -120,7 +120,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final preferencesBtn = find.text('Preferences');
-        final _settingsIcon = find.byIcon(Icons.settings);
+        final __settingsIcon = find.byIcon(Icons.settings);
 
         if (preferencesBtn.evaluate().isNotEmpty) {
           await tester.tap(preferencesBtn.first);
@@ -231,7 +231,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final dateFilter = find.text('This Month');
-        final _weekFilter = find.text('This Week');
+        final __weekFilter = find.text('This Week');
 
         if (dateFilter.evaluate().isNotEmpty) {
           await tester.tap(dateFilter.first);

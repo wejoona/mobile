@@ -505,7 +505,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmDisableTwoFactor() {
     final l10n = AppLocalizations.of(context)!;
-    final _colors = context.colors;
+    final __colors = context.colors;
 
     showDialog(
       context: context,
@@ -548,7 +548,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmLogoutAll() {
     final l10n = AppLocalizations.of(context)!;
-    final _colors = context.colors;
+    final __colors = context.colors;
 
     showDialog(
       context: context,
@@ -727,7 +727,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
   void _confirmDeleteAccount() {
     final l10n = AppLocalizations.of(context)!;
-    final _colors = context.colors;
+    final __colors = context.colors;
 
     showDialog(
       context: context,

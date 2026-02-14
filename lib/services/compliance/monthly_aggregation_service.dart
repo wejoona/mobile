@@ -5,6 +5,7 @@ import 'package:usdc_wallet/services/compliance/daily_aggregation_service.dart';
 /// Agrégation mensuelle des transactions.
 class MonthlyAggregationService {
   static const _tag = 'MonthlyAgg';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Aggregate daily summaries into monthly report.

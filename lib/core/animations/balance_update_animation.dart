@@ -36,6 +36,7 @@ class _AnimatedBalanceState extends State<AnimatedBalance>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  // ignore: unused_field
   double _previousBalance = 0;
   bool _isIncreasing = false;
 

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Vérifie les limites de transaction réglementaires.
 class TransactionLimitChecker {
   static const _tag = 'LimitCheck';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   // BCEAO limits in XOF (USDC equivalent applied at conversion)

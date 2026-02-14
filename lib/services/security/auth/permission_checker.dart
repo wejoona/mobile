@@ -10,6 +10,7 @@ enum Permission {
 
 class PermissionChecker {
   static const _tag = 'Permissions';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   Set<Permission> _granted = {};
 

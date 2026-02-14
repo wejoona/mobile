@@ -9,6 +9,7 @@ import 'package:usdc_wallet/services/risk/behavioral_biometrics_model.dart';
 /// pour construire un profil comportemental.
 class BehavioralBiometricsCollector {
   static const _tag = 'BiometricsCollector';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   static const int _maxSamples = 100;
 

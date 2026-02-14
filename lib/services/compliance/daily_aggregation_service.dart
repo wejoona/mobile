@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Agrégation journalière des transactions pour rapports.
 class DailyAggregationService {
   static const _tag = 'DailyAgg';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Aggregate transactions for a given day.

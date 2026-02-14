@@ -8,6 +8,7 @@ class SessionSecurityService {
   final AppLogger _log = AppLogger(_tag);
 
   Timer? _inactivityTimer;
+  // ignore: unused_field
   DateTime? _lastActivity;
   final Duration _sessionTimeout;
   final Duration _inactivityTimeout;

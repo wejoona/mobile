@@ -17,6 +17,7 @@ void main() {
 
   group('Wallet Flow Tests', () {
     late AuthRobot authRobot;
+    // ignore: unused_local_variable
     late WalletRobot walletRobot;
 
     setUp(() async {

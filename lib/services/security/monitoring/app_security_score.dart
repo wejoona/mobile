@@ -36,6 +36,7 @@ class SecurityScoreBreakdown {
 /// and user behavior into a single score 0-100.
 class AppSecurityScoreCalculator {
   static const _tag = 'SecurityScore';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Calculate the security score.

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Throttles bandwidth usage for security-sensitive operations.
 class BandwidthThrottler {
   static const _tag = 'Throttler';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   int _bytesThisWindow = 0;
   DateTime _windowStart = DateTime.now();

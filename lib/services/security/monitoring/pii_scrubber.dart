@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Scrubs PII from crash reports and logs.
 class PiiScrubber {
   static const _tag = 'PiiScrubber';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   static final _patterns = [

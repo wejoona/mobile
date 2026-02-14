@@ -21,6 +21,7 @@ class OfflineBanner extends ConsumerStatefulWidget {
 class _OfflineBannerState extends ConsumerState<OfflineBanner>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  // ignore: unused_field
   late Animation<double> _animation;
   bool _wasOffline = false;
   bool _showReconnectedMessage = false;

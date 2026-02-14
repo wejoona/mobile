@@ -296,9 +296,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       debugPrint('[Router] Redirect check: location=$location, fsmTarget=${appFsmState.currentRoute}');
 
       // Check if user has a wallet (walletId is set and not empty)
-      final _hasWallet = walletState.walletId.isNotEmpty &&
+      final __hasWallet = walletState.walletId.isNotEmpty &&
                         walletState.status == WalletStatus.loaded;
-      final _walletLoading = walletState.status == WalletStatus.loading ||
+      final __walletLoading = walletState.status == WalletStatus.loading ||
                             walletState.status == WalletStatus.initial;
 
       // Allow splash, onboarding, and auth routes without auth
@@ -352,7 +352,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Onboarding-related routes
       final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
-      final _isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
+      final __isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
 
       // Auth guards
       if (!isAuthenticated && !isLockedState && !isPublicRoute) {
@@ -1558,7 +1558,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sub-businesses/transfer/:id',
         pageBuilder: (context, state) {
-          final _id = state.pathParameters['id'];
+          final __id = state.pathParameters['id'];
           // TODO: Implement transfer between sub-businesses screen
           return AppPageTransitions.verticalSlide(
             state: state,

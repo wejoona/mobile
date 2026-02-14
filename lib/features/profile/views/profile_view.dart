@@ -15,7 +15,7 @@ class ProfileView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(profileProvider);
     final kycVerified = ref.watch(isKycVerifiedProvider);
-    final _theme = Theme.of(context);
+    final __theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profile')),

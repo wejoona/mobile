@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Filtre de sécurité pour les notifications push.
 class NotificationSecurityFilter {
   static const _tag = 'NotifFilter';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Validate notification origin.

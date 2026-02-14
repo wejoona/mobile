@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Configurable retry policy for failed requests.
 class RequestRetryPolicy {
   static const _tag = 'RetryPolicy';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final int maxRetries;
   final Duration baseDelay;

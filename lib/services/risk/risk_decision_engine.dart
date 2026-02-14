@@ -50,6 +50,7 @@ class RiskDecisionResult {
 /// vélocité, géographique, AML) pour prendre une décision.
 class RiskDecisionEngine {
   static const _tag = 'RiskDecision';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   // Pondérations des facteurs

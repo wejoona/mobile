@@ -304,6 +304,7 @@ class _LockScreenState extends ConsumerState<_LockScreen> {
   String? _error;
   bool _isVerifying = false;
   bool _isLocked = false;
+  // ignore: unused_field
   int? _lockRemainingSeconds;
 
   @override

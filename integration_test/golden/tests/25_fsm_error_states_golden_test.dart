@@ -32,7 +32,7 @@ import '../../helpers/test_helpers.dart';
 /// Run with real backend:
 ///   flutter test integration_test/golden/tests/25_fsm_error_states_golden_test.dart --update-goldens --dart-define=USE_MOCKS=false
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

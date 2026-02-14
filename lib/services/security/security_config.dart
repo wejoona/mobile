@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Central security configuration.
 class SecurityConfig {
+  // ignore: unused_field
   static const _tag = 'SecurityConfig';
   final bool enforceSSLPinning;
   final bool enableMitMDetection;

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Anonymizes user data for analytics and reporting.
 class AnonymizationService {
   static const _tag = 'Anonymize';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Anonymize a user record for analytics.

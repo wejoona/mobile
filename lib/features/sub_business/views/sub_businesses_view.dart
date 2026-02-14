@@ -31,7 +31,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
-    final _currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final __currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Scaffold(
       backgroundColor: context.colors.canvas,

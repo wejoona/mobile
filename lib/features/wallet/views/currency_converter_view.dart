@@ -19,6 +19,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   final _fromController = TextEditingController(text: '100');
   String _fromCurrency = 'USDC';
   String _toCurrency = 'USD';
+  // ignore: unused_field
   bool _isLoading = false;
   String? _rateError;
 

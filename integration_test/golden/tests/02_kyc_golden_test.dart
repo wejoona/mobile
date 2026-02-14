@@ -27,7 +27,7 @@ import '../../robots/auth_robot.dart';
 /// - 2.15 KYC Video
 /// - 2.16 KYC Additional Docs
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

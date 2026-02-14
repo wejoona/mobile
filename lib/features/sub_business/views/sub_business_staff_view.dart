@@ -37,7 +37,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
-    final _subBusiness = state.subBusinesses.firstWhere(
+    final __subBusiness = state.subBusinesses.firstWhere(
       (sb) => sb.id == widget.subBusinessId,
     );
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
@@ -176,7 +176,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     final phoneController = TextEditingController();
     StaffRole selectedRole = StaffRole.viewer;
 
-    final _result = await showDialog<bool>(
+    final __result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -316,7 +316,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   ) async {
     StaffRole selectedRole = member.role;
 
-    final _result = await showDialog<bool>(
+    final __result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(

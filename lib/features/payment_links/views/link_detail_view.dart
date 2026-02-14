@@ -24,6 +24,7 @@ class LinkDetailView extends ConsumerStatefulWidget {
 }
 
 class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
+  // ignore: unused_field
   bool _isRefreshing = false;
 
   @override

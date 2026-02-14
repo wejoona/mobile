@@ -10,7 +10,7 @@ import '../robots/auth_robot.dart';
 /// Capture golden images of all critical screens
 /// Run with: flutter test integration_test/golden/capture_screens_test.dart --update-goldens
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => MockConfig.enableAllMocks());
 

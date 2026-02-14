@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Validates source of funds declarations.
 class SourceOfFundsValidator {
   static const _tag = 'SofValidator';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   static const validSources = [

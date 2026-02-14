@@ -5,6 +5,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Hashes and verifies PINs using a salted approach.
 class PinHashService {
   static const _tag = 'PinHash';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Hash a PIN with a salt. In production, use Argon2 or bcrypt.

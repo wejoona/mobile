@@ -436,7 +436,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
         break;
 
       case 'delete':
-        final _colors = context.colors;
+        final __colors = context.colors;
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) {

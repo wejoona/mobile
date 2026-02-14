@@ -21,12 +21,12 @@ import '../../robots/auth_robot.dart';
 /// - 21.10 Wallet Under Review View
 /// - 21.11 KYC Expired View
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
   group('FSM State Screens Golden Tests', () {
-    late AuthRobot _authRobot;
+    late AuthRobot __authRobot;
 
     setUp(() async {
       TestHelpers.configureMocks();

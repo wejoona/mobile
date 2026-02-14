@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Tracks app and API uptime for reliability monitoring.
 class UptimeTracker {
   static const _tag = 'Uptime';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final DateTime _startTime = DateTime.now();
   int _healthCheckCount = 0;

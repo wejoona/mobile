@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Collects security-related metrics for dashboard.
 class SecurityMetricsCollector {
   static const _tag = 'SecMetrics';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final Map<String, int> _counters = {};
   final Map<String, double> _gauges = {};

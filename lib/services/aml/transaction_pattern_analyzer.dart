@@ -33,6 +33,7 @@ class PatternAnalysisResult {
 /// structuration, superposition (layering), mouvement rapide.
 class TransactionPatternAnalyzer {
   static const _tag = 'PatternAnalyzer';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Analyser un ensemble de transactions

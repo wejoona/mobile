@@ -14,6 +14,7 @@ enum BceaoCategory {
 
 class BceaoTransactionClassifier {
   static const _tag = 'BceaoClassifier';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Classify a transaction for BCEAO reporting.

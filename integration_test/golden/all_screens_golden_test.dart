@@ -10,7 +10,7 @@ import '../robots/auth_robot.dart';
 /// Captures ALL screens in the app flow
 /// Run with: flutter test integration_test/golden/all_screens_golden_test.dart --update-goldens
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => MockConfig.enableAllMocks());
 

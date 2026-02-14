@@ -4,6 +4,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Masks sensitive data in logs and UI.
 class DataMaskingService {
   static const _tag = 'DataMask';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Mask phone number: +225 07 XX XX 89 → +225 07 ** ** 89

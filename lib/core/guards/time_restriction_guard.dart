@@ -5,6 +5,7 @@ import 'package:usdc_wallet/core/guards/guard_base.dart';
 /// Restricts certain actions to specific time windows.
 class TimeRestrictionGuard extends GuardBase {
   static const _tag = 'TimeGuard';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   @override

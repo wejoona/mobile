@@ -17,7 +17,7 @@ import '../../robots/auth_robot.dart';
 /// - 5.5 Result Screen
 /// - 5.6 Offline Queue Dialog
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

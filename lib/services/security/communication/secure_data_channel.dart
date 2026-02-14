@@ -11,6 +11,7 @@ enum DataSensitivity { public, internal, confidential, restricted }
 /// Routes data through appropriate encryption based on sensitivity level.
 class SecureDataChannel {
   static const _tag = 'SecureDataChannel';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final E2eEncryptionService _e2e;
 

@@ -5,6 +5,7 @@ import 'package:usdc_wallet/core/guards/guard_base.dart';
 /// Blocks actions during maintenance windows.
 class MaintenanceGuard extends GuardBase {
   static const _tag = 'MaintenanceGuard';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   bool _maintenanceMode = false;
   String? _maintenanceMessage;

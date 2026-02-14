@@ -33,6 +33,7 @@ class VelocityRiskAssessment {
 /// pour détecter le structuring et autres comportements suspects.
 class VelocityRiskService {
   static const _tag = 'VelocityRisk';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   final List<_TransactionRecord> _recentTransactions = [];

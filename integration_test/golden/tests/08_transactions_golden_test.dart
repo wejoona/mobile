@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 8.3 Export Transactions View
 /// - 8.4 Transaction Filters
 void main() {
-  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final __binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

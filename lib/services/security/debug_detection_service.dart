@@ -10,6 +10,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// d'instrumentation sont actifs.
 class DebugDetectionService {
   static const _tag = 'DebugDetection';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Vérifier si le mode debug est actif

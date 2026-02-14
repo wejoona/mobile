@@ -13,6 +13,7 @@ class E2eEncryptionService {
   final AppLogger _log = AppLogger(_tag);
 
   Uint8List? _publicKey;
+  // ignore: unused_field
   Uint8List? _privateKey;
   Uint8List? _sharedSecret;
 

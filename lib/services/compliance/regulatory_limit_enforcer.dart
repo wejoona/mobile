@@ -22,6 +22,7 @@ class LimitEnforcementResult {
 /// performs authoritative enforcement.
 class RegulatoryLimitEnforcer {
   static const _tag = 'LimitEnforcer';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
 
   /// Check if a transaction amount is within limits.

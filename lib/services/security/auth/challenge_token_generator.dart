@@ -6,6 +6,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// Generates cryptographic challenge tokens for auth flows.
 class ChallengeTokenGenerator {
   static const _tag = 'ChallengeToken';
+  // ignore: unused_field
   final AppLogger _log = AppLogger(_tag);
   final Random _random = Random.secure();
 

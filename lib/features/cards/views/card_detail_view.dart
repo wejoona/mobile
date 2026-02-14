@@ -31,7 +31,7 @@ class _CardDetailViewState extends ConsumerState<CardDetailView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final _state = ref.watch(cardsProvider);
+    final __state = ref.watch(cardsProvider);
     final card = ref.watch(selectedCardProvider(widget.cardId));
 
     if (card == null) {

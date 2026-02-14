@@ -18,6 +18,7 @@ class KycExpiredView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final kycState = ref.watch(appFsmProvider).kyc;
 
+    // ignore: unused_local_variable
     KycTier expiredTier = KycTier.tier1;
     DateTime? expiredAt;
 
