@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +18,7 @@ import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -76,6 +78,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   }
 
   Future<void> _toggleBalanceVisibility() async {
+    HapticFeedback.lightImpact();
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _isBalanceHidden = !_isBalanceHidden;
@@ -179,6 +182,44 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     );
   }
 
+  Widget _buildNotificationIcon(BuildContext context, WidgetRef ref, ThemeColors colors, AppLocalizations l10n) {
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    return Stack(
+      children: [
+        IconButton(
+          onPressed: () => context.push('/notifications'),
+          icon: Icon(
+            Icons.notifications_outlined,
+            color: colors.textSecondary,
+          ),
+          tooltip: l10n.settings_notifications,
+        ),
+        if (unreadCount > 0)
+          Positioned(
+            right: 6,
+            top: 6,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: colors.error,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Text(
+                unreadCount > 99 ? '99+' : '$unreadCount',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildHeader(
     BuildContext context,
     AppLocalizations l10n,
@@ -238,14 +279,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         // Action icons
         Row(
           children: [
-            IconButton(
-              onPressed: () => context.push('/notifications'),
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: colors.textSecondary,
-              ),
-              tooltip: l10n.settings_notifications,
-            ),
+            _buildNotificationIcon(context, ref, colors, l10n),
             IconButton(
               onPressed: () => context.go('/settings'),
               icon: Icon(
@@ -1340,7 +1374,10 @@ class _QuickActionButton extends StatelessWidget {
     final isDark = context.colors.isDark;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(
           vertical: AppSpacing.lg,
