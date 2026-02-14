@@ -103,7 +103,9 @@ class KoridoApp extends ConsumerWidget {
       );
     });
 
-    return SystemBrightnessObserver(
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: SystemBrightnessObserver(
       child: MaterialApp.router(
         title: 'Korido',
         debugShowCheckedModeBanner: false,
@@ -129,6 +131,7 @@ class KoridoApp extends ConsumerWidget {
           return SessionManager(child: child ?? const SizedBox.shrink());
         },
       ),
+    ),
     );
   }
 
