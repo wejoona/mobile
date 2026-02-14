@@ -2,7 +2,6 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
-import 'package:usdc_wallet/domain/enums/index.dart' hide NotificationType;
 import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Rich Notification Helper - provides formatted display data for notifications
@@ -381,7 +380,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                   color: colors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: colors.border.withOpacity(0.1),
+                    color: colors.border.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Row(
@@ -390,7 +389,7 @@ class _InAppNotificationBannerState extends State<_InAppNotificationBanner>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: colors.gold.withOpacity(0.1),
+                        color: colors.gold.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(

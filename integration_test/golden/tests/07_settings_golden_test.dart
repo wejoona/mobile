@@ -30,7 +30,7 @@ import '../../robots/auth_robot.dart';
 /// - 7.18 Business Profile View
 /// - 7.19 Cookie Policy View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -297,8 +297,8 @@ void main() {
         await tester.pumpAndSettle();
 
         final biometricItem = find.text('Biometric');
-        final fingerprintItem = find.text('Fingerprint');
-        final faceIdItem = find.text('Face ID');
+        final _fingerprintItem = find.text('Fingerprint');
+        final _faceIdItem = find.text('Face ID');
 
         if (biometricItem.evaluate().isNotEmpty) {
           await tester.tap(biometricItem.first);

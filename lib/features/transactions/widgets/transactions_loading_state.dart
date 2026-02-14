@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Loading skeleton for the transactions list.
 class TransactionsLoadingState extends StatelessWidget {

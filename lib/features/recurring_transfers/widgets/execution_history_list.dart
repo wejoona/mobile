@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/recurring_transfers/models/execution_history.dart';
 
 class ExecutionHistoryList extends StatelessWidget {
   const ExecutionHistoryList({
@@ -31,8 +30,8 @@ class ExecutionHistoryList extends StatelessWidget {
                     height: 40,
                     decoration: BoxDecoration(
                       color: execution.success
-                          ? context.colors.success.withOpacity(0.2)
-                          : context.colors.error.withOpacity(0.2),
+                          ? context.colors.success.withValues(alpha: 0.2)
+                          : context.colors.error.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(

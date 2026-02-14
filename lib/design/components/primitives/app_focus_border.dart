@@ -81,7 +81,7 @@ class _AppFocusBorderState extends State<AppFocusBorder> {
           boxShadow: _isFocused
               ? [
                   BoxShadow(
-                    color: effectiveFocusColor.withOpacity(0.3),
+                    color: effectiveFocusColor.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 0),
                   ),

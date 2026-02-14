@@ -13,7 +13,7 @@ import '../robots/auth_robot.dart';
 /// To update goldens when UI changes intentionally:
 /// flutter test integration_test/golden/critical_screens_golden_test.dart --update-goldens
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() {
     MockConfig.enableAllMocks();

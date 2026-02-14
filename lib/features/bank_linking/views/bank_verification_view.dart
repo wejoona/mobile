@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -73,7 +72,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(bankLinkingProvider);
+    final _state = ref.watch(bankLinkingProvider);
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -101,7 +100,7 @@ class _BankVerificationViewState extends ConsumerState<BankVerificationView> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: context.colors.gold.withOpacity(0.15),
+                        color: context.colors.gold.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

@@ -368,13 +368,13 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    colors.gold.withOpacity(colors.isDark ? 0.15 : 0.1),
-                    colors.gold.withOpacity(colors.isDark ? 0.05 : 0.03),
+                    colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1),
+                    colors.gold.withValues(alpha: colors.isDark ? 0.05 : 0.03),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(AppRadius.xxxl),
                 border: Border.all(
-                  color: colors.gold.withOpacity(0.2),
+                  color: colors.gold.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -389,7 +389,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: colors.gold.withOpacity(0.2),
+                        color: colors.gold.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -401,7 +401,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: colors.gold.withOpacity(0.15),
+                        color: colors.gold.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -493,7 +493,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     if (isNoAccountError || isAuthError) {
       icon = Icons.account_balance_wallet_outlined;
       iconColor = colors.gold;
-      bgColor = colors.gold.withOpacity(colors.isDark ? 0.15 : 0.1);
+      bgColor = colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1);
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
       buttonLabel = 'Create Wallet';
@@ -536,7 +536,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                 color: bgColor,
                 borderRadius: BorderRadius.circular(AppRadius.xxxl),
                 border: Border.all(
-                  color: iconColor.withOpacity(0.2),
+                  color: iconColor.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
@@ -833,7 +833,7 @@ class _TransactionGroup extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(colors.isDark ? 0.15 : 0.1),
+        color: iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Icon(icon, color: iconColor, size: 20),

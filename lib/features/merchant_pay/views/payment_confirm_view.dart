@@ -251,7 +251,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
+              color: theme.primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: widget.merchant.logoUrl != null
@@ -322,9 +322,9 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       return Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: theme.primaryColor.withOpacity(0.05),
+          color: theme.primaryColor.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.primaryColor.withOpacity(0.2)),
+          border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [

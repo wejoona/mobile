@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class NotificationSettingsView extends ConsumerStatefulWidget {
@@ -327,7 +325,7 @@ class _NotificationSettingsViewState
             height: 44,
             decoration: BoxDecoration(
               color: enabled
-                  ? colors.gold.withOpacity(0.2)
+                  ? colors.gold.withValues(alpha: 0.2)
                   : colors.container,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
@@ -393,7 +391,7 @@ class _NotificationSettingsViewState
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: context.colors.warning.withOpacity(0.2),
+                          color: context.colors.warning.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                         child: AppText(
@@ -482,7 +480,7 @@ class _NotificationSettingsViewState
 
   void _handleBack(AppLocalizations l10n) {
     if (_hasUnsavedChanges) {
-      final colors = context.colors;
+      final _colors = context.colors;
       showDialog(
         context: context,
         builder: (dialogContext) {

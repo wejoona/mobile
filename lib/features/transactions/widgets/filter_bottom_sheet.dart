@@ -454,7 +454,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             activeTrackColor: colors.gold,
             inactiveTrackColor: colors.elevated,
             thumbColor: colors.gold,
-            overlayColor: colors.gold.withOpacity(0.2),
+            overlayColor: colors.gold.withValues(alpha: 0.2),
             rangeThumbShape: const RoundRangeSliderThumbShape(
               enabledThumbRadius: 10,
             ),

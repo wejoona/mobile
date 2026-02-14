@@ -287,7 +287,7 @@ class ThemeTransition {
     Color? rippleColor,
   }) {
     final theme = Theme.of(context);
-    final color = rippleColor ?? theme.primaryColor.withOpacity(0.3);
+    final color = rippleColor ?? theme.primaryColor.withValues(alpha: 0.3);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -380,7 +380,7 @@ class _RipplePainter extends CustomPainter {
     // Fade out as it expands
     final opacity = (1 - radius).clamp(0.0, 1.0);
     final paint = Paint()
-      ..color = color.withOpacity(opacity)
+      ..color = color.withValues(alpha: opacity)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(center, currentRadius, paint);

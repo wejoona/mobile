@@ -41,8 +41,8 @@ class PaymentRow extends StatelessWidget {
                 height: 32,
                 decoration: BoxDecoration(
                   color: payment.isValid
-                      ? context.colors.gold.withOpacity(0.1)
-                      : context.colors.error.withOpacity(0.1),
+                      ? context.colors.gold.withValues(alpha: 0.1)
+                      : context.colors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Center(
@@ -89,7 +89,7 @@ class PaymentRow extends StatelessWidget {
                       Container(
                         padding: EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
-                          color: context.colors.error.withOpacity(0.1),
+                          color: context.colors.error.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: Row(

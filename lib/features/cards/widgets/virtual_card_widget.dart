@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 
 /// Visual representation of a virtual card.
 class VirtualCardWidget extends StatelessWidget {

@@ -49,7 +49,7 @@ class FrequencyPicker extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? context.colors.gold
-                        : context.colors.textSecondary.withOpacity(0.3),
+                        : context.colors.textSecondary.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),

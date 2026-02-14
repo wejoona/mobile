@@ -41,7 +41,7 @@ class BalanceDisplay extends StatelessWidget {
           Text(
             '\$',
             style: style?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
         ],
@@ -58,7 +58,7 @@ class BalanceDisplay extends StatelessWidget {
           Text(
             currency,
             style: theme.textTheme.titleSmall?.copyWith(
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -71,7 +71,7 @@ class BalanceDisplay extends StatelessWidget {
                   ? Icons.visibility_rounded
                   : Icons.visibility_off_rounded,
               size: 20,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             ),
             visualDensity: VisualDensity.compact,
           ),

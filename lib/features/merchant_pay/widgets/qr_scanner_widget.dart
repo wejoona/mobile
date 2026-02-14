@@ -97,7 +97,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -112,7 +112,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -145,7 +145,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               Text(
                 widget.subtitle,
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
@@ -163,7 +163,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
 
     return ColorFiltered(
       colorFilter: ColorFilter.mode(
-        Colors.black.withOpacity(0.5),
+        Colors.black.withValues(alpha: 0.5),
         BlendMode.srcOut,
       ),
       child: Stack(

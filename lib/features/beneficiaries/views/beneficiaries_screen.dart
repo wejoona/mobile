@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
@@ -205,7 +204,7 @@ class _BeneficiariesScreenState extends ConsumerState<BeneficiariesScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: colors.textSecondary.withOpacity(0.5)),
+            Icon(icon, size: 64, color: colors.textSecondary.withValues(alpha: 0.5)),
             SizedBox(height: AppSpacing.md),
             AppText(
               title,

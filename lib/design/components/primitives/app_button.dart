@@ -160,7 +160,7 @@ class AppButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.md),
             boxShadow: [
               BoxShadow(
-                color: colors.gold.withOpacity(0.3),
+                color: colors.gold.withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -209,8 +209,8 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.primary:
         // Darker gold for ripple effect
         return colors.isDark
-            ? AppColors.gold700.withOpacity(0.3)
-            : AppColorsLight.gold700.withOpacity(0.3);
+            ? AppColors.gold700.withValues(alpha: 0.3)
+            : AppColorsLight.gold700.withValues(alpha: 0.3);
 
       case AppButtonVariant.secondary:
       case AppButtonVariant.tertiary:
@@ -222,18 +222,18 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.ghost:
         // Minimal ripple for ghost buttons
         return colors.isDark
-            ? AppColors.overlayLight.withOpacity(0.5)
-            : AppColorsLight.overlayLight.withOpacity(0.5);
+            ? AppColors.overlayLight.withValues(alpha: 0.5)
+            : AppColorsLight.overlayLight.withValues(alpha: 0.5);
 
       case AppButtonVariant.success:
         return colors.isDark
-            ? AppColors.successDark.withOpacity(0.3)
-            : AppColorsLight.successBase.withOpacity(0.2);
+            ? AppColors.successDark.withValues(alpha: 0.3)
+            : AppColorsLight.successBase.withValues(alpha: 0.2);
 
       case AppButtonVariant.danger:
         return colors.isDark
-            ? AppColors.errorDark.withOpacity(0.3)
-            : AppColorsLight.errorBase.withOpacity(0.2);
+            ? AppColors.errorDark.withValues(alpha: 0.3)
+            : AppColorsLight.errorBase.withValues(alpha: 0.2);
     }
   }
 
@@ -241,25 +241,25 @@ class AppButton extends StatelessWidget {
     switch (variant) {
       case AppButtonVariant.primary:
         return colors.isDark
-            ? AppColors.gold800.withOpacity(0.2)
-            : AppColorsLight.gold600.withOpacity(0.2);
+            ? AppColors.gold800.withValues(alpha: 0.2)
+            : AppColorsLight.gold600.withValues(alpha: 0.2);
 
       case AppButtonVariant.secondary:
       case AppButtonVariant.tertiary:
       case AppButtonVariant.ghost:
         return colors.isDark
-            ? AppColors.overlayLight.withOpacity(0.3)
-            : AppColorsLight.overlayLight.withOpacity(0.3);
+            ? AppColors.overlayLight.withValues(alpha: 0.3)
+            : AppColorsLight.overlayLight.withValues(alpha: 0.3);
 
       case AppButtonVariant.success:
         return colors.isDark
-            ? AppColors.successDark.withOpacity(0.2)
-            : AppColorsLight.successBase.withOpacity(0.15);
+            ? AppColors.successDark.withValues(alpha: 0.2)
+            : AppColorsLight.successBase.withValues(alpha: 0.15);
 
       case AppButtonVariant.danger:
         return colors.isDark
-            ? AppColors.errorDark.withOpacity(0.2)
-            : AppColorsLight.errorBase.withOpacity(0.15);
+            ? AppColors.errorDark.withValues(alpha: 0.2)
+            : AppColorsLight.errorBase.withValues(alpha: 0.15);
     }
   }
 
@@ -267,25 +267,25 @@ class AppButton extends StatelessWidget {
     switch (variant) {
       case AppButtonVariant.primary:
         return colors.isDark
-            ? AppColors.gold700.withOpacity(0.1)
-            : AppColorsLight.gold600.withOpacity(0.1);
+            ? AppColors.gold700.withValues(alpha: 0.1)
+            : AppColorsLight.gold600.withValues(alpha: 0.1);
 
       case AppButtonVariant.secondary:
       case AppButtonVariant.tertiary:
       case AppButtonVariant.ghost:
         return colors.isDark
-            ? AppColors.overlayLight.withOpacity(0.15)
-            : AppColorsLight.overlayLight.withOpacity(0.15);
+            ? AppColors.overlayLight.withValues(alpha: 0.15)
+            : AppColorsLight.overlayLight.withValues(alpha: 0.15);
 
       case AppButtonVariant.success:
         return colors.isDark
-            ? AppColors.successDark.withOpacity(0.1)
-            : AppColorsLight.successBase.withOpacity(0.08);
+            ? AppColors.successDark.withValues(alpha: 0.1)
+            : AppColorsLight.successBase.withValues(alpha: 0.08);
 
       case AppButtonVariant.danger:
         return colors.isDark
-            ? AppColors.errorDark.withOpacity(0.1)
-            : AppColorsLight.errorBase.withOpacity(0.08);
+            ? AppColors.errorDark.withValues(alpha: 0.1)
+            : AppColorsLight.errorBase.withValues(alpha: 0.08);
     }
   }
 

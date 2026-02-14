@@ -1,7 +1,6 @@
 /// Mixin to standardize pull-to-refresh behavior across ConsumerWidgets.
 library;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Provides a standard refresh pattern for views using Riverpod providers.

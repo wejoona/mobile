@@ -126,7 +126,7 @@ class _BeneficiaryPickerBottomSheetState
                             Icon(
                               Icons.bookmark_outline,
                               size: 64,
-                              color: colors.textSecondary.withOpacity(0.5),
+                              color: colors.textSecondary.withValues(alpha: 0.5),
                             ),
                             SizedBox(height: AppSpacing.md),
                             AppText(
@@ -162,7 +162,7 @@ class _BeneficiaryPickerBottomSheetState
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: colors.gold.withOpacity(0.2),
+              backgroundColor: colors.gold.withValues(alpha: 0.2),
               child: AppText(
                 beneficiary.name[0].toUpperCase(),
                 variant: AppTextVariant.bodyLarge,

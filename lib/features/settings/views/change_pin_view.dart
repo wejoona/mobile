@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_instruction_screen.dart';

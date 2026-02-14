@@ -225,10 +225,10 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: _getStatusColor(status).withOpacity(0.15),
+        color: _getStatusColor(status).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.full),
         border: Border.all(
-          color: _getStatusColor(status).withOpacity(0.3),
+          color: _getStatusColor(status).withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -263,7 +263,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(icon, color: color, size: 20),

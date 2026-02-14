@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -46,10 +45,10 @@ class SubmittedView extends ConsumerWidget {
               Container(
                 padding: EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: colors.info.withOpacity(0.1),
+                  color: colors.info.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.xl),
                   border: Border.all(
-                    color: colors.info.withOpacity(0.3),
+                    color: colors.info.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -97,7 +96,7 @@ class SubmittedView extends ConsumerWidget {
             height: 120,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colors.success.withOpacity(0.1),
+              color: colors.success.withValues(alpha: 0.1),
             ),
             child: Icon(
               Icons.check_circle,

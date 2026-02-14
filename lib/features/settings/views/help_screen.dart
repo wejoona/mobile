@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -131,7 +130,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: colors.gold.withOpacity(0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Icon(
@@ -221,7 +220,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: colors.gold.withOpacity(0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(

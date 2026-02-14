@@ -1,7 +1,6 @@
 import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -99,7 +98,7 @@ class DevicesScreen extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.2),
+              color: AppColors.gold500.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: const Icon(
@@ -171,7 +170,7 @@ class DevicesScreen extends ConsumerWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: context.colors.success.withOpacity(0.1),
+                              color: context.colors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(AppRadius.xs),
                             ),
                             child: AppText(

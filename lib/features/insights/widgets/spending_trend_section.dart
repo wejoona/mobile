@@ -3,7 +3,6 @@ import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';

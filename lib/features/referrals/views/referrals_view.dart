@@ -112,7 +112,7 @@ class ReferralsView extends ConsumerWidget {
                               color: colors.elevated,
                               borderRadius: BorderRadius.circular(AppRadius.md),
                               border: Border.all(
-                                color: colors.gold.withOpacity(0.3),
+                                color: colors.gold.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -131,7 +131,7 @@ class ReferralsView extends ConsumerWidget {
                           icon: Container(
                             padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: colors.gold.withOpacity(0.1),
+                              color: colors.gold.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(AppRadius.md),
                             ),
                             child: Icon(
@@ -286,7 +286,7 @@ class ReferralsView extends ConsumerWidget {
                       children: [
                         CircleAvatar(
                           radius: 20,
-                          backgroundColor: colors.gold.withOpacity(0.2),
+                          backgroundColor: colors.gold.withValues(alpha: 0.2),
                           child: AppText(
                             entry.referredName.isNotEmpty ? entry.referredName[0].toUpperCase() : '?',
                             variant: AppTextVariant.bodyLarge,
@@ -504,7 +504,7 @@ class _HowItWorksStep extends StatelessWidget {
               Container(
                 width: 2,
                 height: 40,
-                color: colors.gold.withOpacity(0.3),
+                color: colors.gold.withValues(alpha: 0.3),
               ),
           ],
         ),

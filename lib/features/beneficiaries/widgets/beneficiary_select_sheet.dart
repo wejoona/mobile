@@ -208,7 +208,7 @@ class _BeneficiarySelectSheetState
                 Icon(
                   Icons.bookmark_outline,
                   size: 64,
-                  color: colors.textSecondary.withOpacity(0.5),
+                  color: colors.textSecondary.withValues(alpha: 0.5),
                 ),
                 SizedBox(height: AppSpacing.md),
                 AppText(
@@ -290,7 +290,7 @@ class _BeneficiarySelectSheetState
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: _getAccountTypeColor(beneficiary.accountType).withOpacity(0.15),
+                          color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                         ),
                         child: AppText(
@@ -329,7 +329,7 @@ class _BeneficiarySelectSheetState
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.15),
+        color: iconColor.withValues(alpha: 0.15),
         shape: BoxShape.circle,
       ),
       child: initial != null

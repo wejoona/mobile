@@ -6,11 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
-import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for paying via a received payment link

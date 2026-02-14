@@ -30,7 +30,7 @@ class ContactCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: contact.isJoonaPayUser
-              ? context.colors.gold.withOpacity(0.3)
+              ? context.colors.gold.withValues(alpha: 0.3)
               : Colors.transparent,
         ),
       ),
@@ -113,7 +113,7 @@ class ContactCard extends StatelessWidget {
 
     return CircleAvatar(
       radius: 24,
-      backgroundColor: color.withOpacity(0.2),
+      backgroundColor: color.withValues(alpha: 0.2),
       child: AppText(
         _getInitials(contact.name),
         variant: AppTextVariant.bodyLarge,

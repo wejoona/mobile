@@ -119,7 +119,7 @@ class ListTileGroup extends StatelessWidget {
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
             ),
             child: Column(
@@ -138,7 +138,7 @@ class ListTileGroup extends StatelessWidget {
                     Divider(
                       height: 0.5,
                       indent: tiles[i].leading != null ? 56 : 16,
-                      color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3),
                     ),
                 ],
               ],

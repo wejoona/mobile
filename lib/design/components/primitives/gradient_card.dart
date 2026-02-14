@@ -27,7 +27,7 @@ class GradientCard extends StatelessWidget {
     final gradientColors = colors ??
         [
           theme.colorScheme.primary,
-          theme.colorScheme.primary.withOpacity(0.7),
+          theme.colorScheme.primary.withValues(alpha: 0.7),
         ];
 
     return GestureDetector(
@@ -43,7 +43,7 @@ class GradientCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
-              color: gradientColors.first.withOpacity(0.3),
+              color: gradientColors.first.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

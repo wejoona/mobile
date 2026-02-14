@@ -169,7 +169,7 @@ class _FormatChip extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: selected ? context.colors.gold.withOpacity(0.12) : context.colors.elevated,
+          color: selected ? context.colors.gold.withValues(alpha: 0.12) : context.colors.elevated,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? context.colors.gold : Colors.transparent,

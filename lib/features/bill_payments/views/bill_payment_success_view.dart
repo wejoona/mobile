@@ -281,8 +281,8 @@ class BillPaymentSuccessView extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            colors.gold.withOpacity(0.2),
-            colors.gold.withOpacity(0.3),
+            colors.gold.withValues(alpha: 0.2),
+            colors.gold.withValues(alpha: 0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

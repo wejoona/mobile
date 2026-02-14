@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/services/security/network/request_encryptor.dart';
 import 'package:usdc_wallet/utils/logger.dart';

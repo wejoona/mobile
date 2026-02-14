@@ -246,7 +246,7 @@ class CompactErrorWidget extends StatelessWidget {
         color: AppColors.elevated,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: AppColors.errorBase.withOpacity(0.3),
+          color: AppColors.errorBase.withValues(alpha: 0.3),
           width: 1,
         ),
       ),

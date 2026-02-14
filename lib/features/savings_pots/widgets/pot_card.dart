@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/savings_pots/models/savings_pot.dart';
 import 'package:intl/intl.dart';
 
@@ -28,7 +27,7 @@ class PotCard extends StatelessWidget {
           color: colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: pot.color.withOpacity(colors.isDark ? 0.3 : 0.4),
+            color: pot.color.withValues(alpha: colors.isDark ? 0.3 : 0.4),
             width: 1,
           ),
         ),
@@ -95,7 +94,7 @@ class PotCard extends StatelessWidget {
             child: CircularProgressIndicator(
               value: pot.progress,
               strokeWidth: 3,
-              backgroundColor: pot.color.withOpacity(trackOpacity),
+              backgroundColor: pot.color.withValues(alpha: trackOpacity),
               valueColor: AlwaysStoppedAnimation<Color>(pot.color),
             ),
           ),
@@ -117,7 +116,7 @@ class PotCard extends StatelessWidget {
       child: LinearProgressIndicator(
         value: pot.progress,
         minHeight: 6,
-        backgroundColor: pot.color.withOpacity(trackOpacity),
+        backgroundColor: pot.color.withValues(alpha: trackOpacity),
         valueColor: AlwaysStoppedAnimation<Color>(pot.color),
       ),
     );

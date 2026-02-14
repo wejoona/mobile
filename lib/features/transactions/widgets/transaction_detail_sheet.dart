@@ -49,7 +49,7 @@ class TransactionDetailSheet extends StatelessWidget {
                 const SizedBox(height: 4),
                 PillBadge(
                   label: transaction.status.name.toUpperCase(),
-                  backgroundColor: statusColor.withOpacity(0.1),
+                  backgroundColor: statusColor.withValues(alpha: 0.1),
                   textColor: statusColor,
                 ),
                 const SizedBox(height: 20),

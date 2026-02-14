@@ -47,7 +47,7 @@ class LinkCreatedView extends ConsumerWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: context.colors.success.withOpacity(0.15),
+                  color: context.colors.success.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

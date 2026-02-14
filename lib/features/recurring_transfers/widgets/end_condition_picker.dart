@@ -134,13 +134,13 @@ class EndConditionPicker extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: isSelected
-              ? context.colors.gold.withOpacity(0.1)
+              ? context.colors.gold.withValues(alpha: 0.1)
               : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected
                 ? context.colors.gold
-                : context.colors.textSecondary.withOpacity(0.3),
+                : context.colors.textSecondary.withValues(alpha: 0.3),
             width: 1,
           ),
         ),

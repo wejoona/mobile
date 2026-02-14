@@ -1,4 +1,3 @@
-import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';

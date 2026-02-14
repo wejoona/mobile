@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 342: Account verification status view
@@ -104,7 +103,7 @@ class _VerificationStep extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: isComplete
-                        ? context.colors.success.withOpacity(0.15)
+                        ? context.colors.success.withValues(alpha: 0.15)
                         : context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
                   ),

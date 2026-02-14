@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 6.4 External Result Screen
 /// - 6.5 Scan Address QR Screen
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

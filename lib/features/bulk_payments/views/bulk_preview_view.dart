@@ -111,7 +111,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: context.colors.error.withOpacity(0.1),
+        color: context.colors.error.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: context.colors.error, width: 1),
       ),
@@ -204,7 +204,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
         color: context.colors.elevated,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

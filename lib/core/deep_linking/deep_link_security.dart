@@ -96,7 +96,7 @@ class DeepLinkSecurity {
 
   /// Check for suspicious patterns
   static bool isSuspiciousLink(Uri uri) {
-    final path = uri.path.toLowerCase();
+    final _path = uri.path.toLowerCase();
     final params = uri.queryParameters;
 
     // Check for excessive parameters (> 10)

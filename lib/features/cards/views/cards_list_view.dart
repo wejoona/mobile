@@ -4,7 +4,6 @@ import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
-import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {

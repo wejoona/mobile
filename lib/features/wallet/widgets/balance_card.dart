@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/components/primitives/balance_display.dart';
 import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
 
 /// Main wallet balance card on home screen.
@@ -30,10 +29,10 @@ class BalanceCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total Balance', style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 14)),
+              Text('Total Balance', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 14)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20)),
                 child: Text(currency, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w500)),
               ),
             ],
@@ -50,7 +49,7 @@ class BalanceCard extends StatelessWidget {
                 onTap: onToggleVisibility,
                 child: Icon(
                   isVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                  color: Colors.white.withOpacity(0.5),
+                  color: Colors.white.withValues(alpha: 0.5),
                   size: 22,
                 ),
               ),

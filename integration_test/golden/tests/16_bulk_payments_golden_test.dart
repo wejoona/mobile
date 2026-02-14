@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 16.3 Bulk Preview View
 /// - 16.4 Bulk Status View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

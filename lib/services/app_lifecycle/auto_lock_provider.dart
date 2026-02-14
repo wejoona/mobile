@@ -2,7 +2,6 @@
 /// Tracks whether the app should show the lock screen on resume.
 library;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 /// Whether the app is currently locked and requires authentication.

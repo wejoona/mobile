@@ -12,7 +12,7 @@ class ColorUtils {
       (hash & 0xFF0000) >> 16,
       (hash & 0x00FF00) >> 8,
       hash & 0x0000FF,
-    ).withOpacity(1.0);
+    ).withValues(alpha: 1.0);
   }
 
   /// Generate a pastel color from a string (softer, for backgrounds).

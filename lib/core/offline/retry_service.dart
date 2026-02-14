@@ -207,7 +207,7 @@ class RetryService {
 
   /// Wait for connection to be restored
   Future<void> _waitForConnection() async {
-    final completer = Completer<void>();
+    final _completer = Completer<void>();
 
     // Check current state
     final currentState = _ref.read(connectivityProvider);

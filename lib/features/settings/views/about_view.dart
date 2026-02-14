@@ -30,7 +30,7 @@ class AboutView extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: context.colors.gold.withOpacity(0.15),
+                    color: context.colors.gold.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(

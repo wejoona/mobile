@@ -4,7 +4,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
 
 import '../../helpers/test_helpers.dart';
-import '../../helpers/test_data.dart';
 import '../../robots/auth_robot.dart';
 
 /// Golden Tests: FSM STATE SCREENS
@@ -22,12 +21,12 @@ import '../../robots/auth_robot.dart';
 /// - 21.10 Wallet Under Review View
 /// - 21.11 KYC Expired View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
   group('FSM State Screens Golden Tests', () {
-    late AuthRobot authRobot;
+    late AuthRobot _authRobot;
 
     setUp(() async {
       TestHelpers.configureMocks();

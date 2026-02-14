@@ -1,5 +1,4 @@
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/kyc/models/kyc_state.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -202,16 +201,16 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   width: double.infinity,
                   padding: EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: colors.gold.withOpacity(0.08),
+                    color: colors.gold.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(color: colors.gold.withOpacity(0.2)),
+                    border: Border.all(color: colors.gold.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
                       Container(
                         padding: EdgeInsets.all(AppSpacing.sm),
                         decoration: BoxDecoration(
-                          color: colors.gold.withOpacity(0.15),
+                          color: colors.gold.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         child: Icon(
@@ -394,7 +393,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.9),
+                      Colors.black.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                   ),
@@ -430,10 +429,10 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                 ),
                 margin: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.9),
+                  color: Colors.black.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: context.colors.gold.withOpacity(0.3), // Keep gold for visibility
+                    color: context.colors.gold.withValues(alpha: 0.3), // Keep gold for visibility
                     width: 1,
                   ),
                 ),
@@ -459,7 +458,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.9),
+                      Colors.black.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                   ),
@@ -481,7 +480,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
             if (_isCheckingQuality)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -737,7 +736,7 @@ class DocumentFramePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.7) // Always black for camera overlay
+      ..color = Colors.black.withValues(alpha: 0.7) // Always black for camera overlay
       ..style = PaintingStyle.fill;
 
     final framePaint = Paint()

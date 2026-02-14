@@ -14,7 +14,7 @@ import '../../robots/auth_robot.dart';
 /// - 15.2 Add Beneficiary Screen
 /// - 15.3 Beneficiary Detail View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -59,7 +59,7 @@ void main() {
 
       final beneficiariesBtn = find.text('Beneficiaries');
       final recipientsBtn = find.text('Recipients');
-      final contactsBtn = find.text('Contacts');
+      final _contactsBtn = find.text('Contacts');
 
       if (beneficiariesBtn.evaluate().isNotEmpty) {
         await tester.tap(beneficiariesBtn.first);

@@ -77,7 +77,7 @@ class CachedImageWidget extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: AppColors.charcoal.withOpacity(0.3),
+      color: AppColors.charcoal.withValues(alpha: 0.3),
       child: Center(
         child: SizedBox(
           width: 24,
@@ -85,7 +85,7 @@ class CachedImageWidget extends StatelessWidget {
           child: CircularProgressIndicator(
             strokeWidth: 2,
             valueColor: AlwaysStoppedAnimation<Color>(
-              AppColors.gold500.withOpacity(0.5),
+              AppColors.gold500.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -117,11 +117,11 @@ class CachedImageWidget extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: AppColors.charcoal.withOpacity(0.3),
+      color: AppColors.charcoal.withValues(alpha: 0.3),
       child: Icon(
         iconData,
         size: (width ?? 40) * 0.4,
-        color: AppColors.silver.withOpacity(0.5),
+        color: AppColors.silver.withValues(alpha: 0.5),
       ),
     );
   }
@@ -165,7 +165,7 @@ class ProfilePhotoWidget extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.gold500.withOpacity(0.2),
+        color: backgroundColor ?? AppColors.gold500.withValues(alpha: 0.2),
         shape: BoxShape.circle,
       ),
       child: Center(
@@ -213,7 +213,7 @@ class BankLogoWidget extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           border: Border.all(
-            color: AppColors.silver.withOpacity(0.2),
+            color: AppColors.silver.withValues(alpha: 0.2),
             width: 1,
           ),
           borderRadius: BorderRadius.circular(AppRadius.sm),

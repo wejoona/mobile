@@ -14,7 +14,7 @@ class LimitsMock {
 
   static Future<MockResponse> _handleGetLimits(RequestOptions options) async {
     // Simulate different KYC tiers based on random selection
-    final tierScenarios = [
+    final _tierScenarios = [
       // Tier 0 - Unverified
       {
         'dailyLimit': 100.0,

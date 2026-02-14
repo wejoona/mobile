@@ -5,7 +5,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
-import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 
 /// Deposit Status Screen
 ///

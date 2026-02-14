@@ -104,7 +104,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                   color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: context.colors.gold.withOpacity(0.2),
+                    color: context.colors.gold.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Row(
@@ -170,7 +170,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
               border: Border.all(
                 color: isSelected
                     ? context.colors.gold
-                    : context.colors.textSecondary.withOpacity(0.2),
+                    : context.colors.textSecondary.withValues(alpha: 0.2),
               ),
             ),
             child: AppText(

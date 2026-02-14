@@ -18,7 +18,6 @@ import 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 import 'package:usdc_wallet/features/wallet/views/deposit_instructions_view.dart';
 import 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
 import 'package:usdc_wallet/features/deposit/views/provider_selection_screen.dart';
-import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 import 'package:usdc_wallet/features/deposit/views/deposit_status_screen.dart';
 import 'package:usdc_wallet/features/wallet/views/withdraw_view.dart';
 import 'package:usdc_wallet/features/wallet/views/receive_view.dart';
@@ -29,7 +28,6 @@ import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.
 import 'package:usdc_wallet/features/referrals/views/referrals_view.dart';
 import 'package:usdc_wallet/features/settings/views/settings_screen.dart';
 import 'package:usdc_wallet/features/cards/views/cards_screen.dart';
-import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_detail_view.dart';
 import 'package:usdc_wallet/features/cards/views/request_card_view.dart';
 import 'package:usdc_wallet/features/cards/views/card_settings_view.dart';
@@ -146,7 +144,6 @@ import 'package:usdc_wallet/features/sub_business/views/sub_business_staff_view.
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/features/fsm_states/views/index.dart';
-import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
@@ -299,9 +296,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       debugPrint('[Router] Redirect check: location=$location, fsmTarget=${appFsmState.currentRoute}');
 
       // Check if user has a wallet (walletId is set and not empty)
-      final hasWallet = walletState.walletId.isNotEmpty &&
+      final _hasWallet = walletState.walletId.isNotEmpty &&
                         walletState.status == WalletStatus.loaded;
-      final walletLoading = walletState.status == WalletStatus.loading ||
+      final _walletLoading = walletState.status == WalletStatus.loading ||
                             walletState.status == WalletStatus.initial;
 
       // Allow splash, onboarding, and auth routes without auth
@@ -355,7 +352,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Onboarding-related routes
       final onboardingRoutes = ['/onboarding', '/settings/kyc', '/settings/profile'];
-      final isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
+      final _isOnboardingRoute = onboardingRoutes.any((route) => location.startsWith(route));
 
       // Auth guards
       if (!isAuthenticated && !isLockedState && !isPublicRoute) {
@@ -1561,7 +1558,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sub-businesses/transfer/:id',
         pageBuilder: (context, state) {
-          final id = state.pathParameters['id'];
+          final _id = state.pathParameters['id'];
           // TODO: Implement transfer between sub-businesses screen
           return AppPageTransitions.verticalSlide(
             state: state,

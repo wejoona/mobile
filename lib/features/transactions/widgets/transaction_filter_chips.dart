@@ -19,7 +19,7 @@ class TransactionFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
+    final _colors = context.colors;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16.0),

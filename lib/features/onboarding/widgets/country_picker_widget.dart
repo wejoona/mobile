@@ -54,10 +54,10 @@ class CountryPickerWidget extends StatelessWidget {
         padding: EdgeInsets.all(AppSpacing.md),
         margin: EdgeInsets.only(bottom: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold500.withOpacity(0.1) : Colors.transparent,
+          color: isSelected ? AppColors.gold500.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: isSelected ? AppColors.gold500 : AppColors.textSecondary.withOpacity(0.2),
+            color: isSelected ? AppColors.gold500 : AppColors.textSecondary.withValues(alpha: 0.2),
           ),
         ),
         child: Row(

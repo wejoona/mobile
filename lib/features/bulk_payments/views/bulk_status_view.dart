@@ -104,7 +104,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
               Container(
                 padding: EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(

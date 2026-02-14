@@ -84,7 +84,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
           color: _getBannerColor(state, _showReconnectedMessage),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -183,7 +183,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
               timeago.format(state.lastSync!, locale: 'en_short'),
             ),
             style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               fontSize: 12,
               height: 1.3,
             ),
@@ -212,7 +212,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
         SizedBox(
           height: 2,
           child: LinearProgressIndicator(
-            backgroundColor: Colors.white.withOpacity(0.3),
+            backgroundColor: Colors.white.withValues(alpha: 0.3),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
           ),
         ),
@@ -244,7 +244,7 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+        color: Colors.white.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(AppRadius.full),
       ),
       child: Text(
@@ -277,7 +277,7 @@ class OfflineIndicator extends ConsumerWidget {
         vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningBase.withOpacity(0.2),
+        color: AppColors.warningBase.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(
           color: AppColors.warningBase,
@@ -319,7 +319,7 @@ class OfflineBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warningBase.withOpacity(0.15),
+        color: AppColors.warningBase.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Row(

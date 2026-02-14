@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 

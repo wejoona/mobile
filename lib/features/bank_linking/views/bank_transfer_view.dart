@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -204,7 +203,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
               color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: context.colors.gold.withOpacity(0.3),
+                color: context.colors.gold.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),

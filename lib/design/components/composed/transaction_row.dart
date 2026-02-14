@@ -255,13 +255,13 @@ class TransactionRow extends StatelessWidget {
 
   Color _getIconBackgroundColor(Color iconColor, ThemeColors colors) {
     // Use theme-aware opacity for icon backgrounds
-    return iconColor.withOpacity(colors.isDark ? 0.15 : 0.1);
+    return iconColor.withValues(alpha: colors.isDark ? 0.15 : 0.1);
   }
 
   Color _getAmountColor(ThemeColors colors) {
     // Show muted error color for failed transactions
     if (status == TransactionStatus.failed) {
-      return colors.errorText.withOpacity(0.6);
+      return colors.errorText.withValues(alpha: 0.6);
     }
 
     // Show warning color for pending transactions
@@ -357,7 +357,7 @@ class TransactionList extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.xs),
                       decoration: BoxDecoration(
-                        color: colors.gold.withOpacity(0.1),
+                        color: colors.gold.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
                       child: Icon(

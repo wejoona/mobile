@@ -16,7 +16,7 @@ import '../../robots/auth_robot.dart';
 /// - 13.4 Expense Detail View
 /// - 13.5 Expense Reports View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -160,7 +160,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final addReceipt = find.text('Add Receipt');
-        final cameraIcon = find.byIcon(Icons.camera_alt);
+        final _cameraIcon = find.byIcon(Icons.camera_alt);
 
         if (addReceipt.evaluate().isNotEmpty) {
           await tester.tap(addReceipt.first);

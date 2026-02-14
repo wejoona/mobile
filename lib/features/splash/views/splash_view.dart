@@ -4,9 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SplashView extends ConsumerStatefulWidget {

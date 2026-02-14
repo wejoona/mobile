@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 355: Search bar widget for finding send recipients

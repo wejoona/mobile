@@ -3,11 +3,9 @@ import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/spending_category.dart';
-import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_pie_chart.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 

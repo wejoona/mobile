@@ -43,7 +43,7 @@ class AppShadows {
   /// Glow effect for primary buttons.
   static List<BoxShadow> glow(Color color) => [
         BoxShadow(
-          color: color.withOpacity(0.3),
+          color: color.withValues(alpha: 0.3),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),

@@ -100,14 +100,14 @@ class KycPromptView extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
+        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.gold500.withOpacity(0.1),
+              color: AppColors.gold500.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: Icon(

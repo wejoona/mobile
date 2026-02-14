@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 
 /// Helper function to format currency

@@ -94,8 +94,8 @@ class ThemeToggleButton extends ConsumerWidget {
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
         final rippleColor = isDark
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.05);
+            ? Colors.white.withValues(alpha: 0.1)
+            : Colors.black.withValues(alpha: 0.05);
 
         return ThemeTransition.ripple(
           context: context,
@@ -228,7 +228,7 @@ class _SwitchStyle extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),

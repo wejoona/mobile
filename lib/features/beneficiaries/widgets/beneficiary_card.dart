@@ -123,7 +123,7 @@ class BeneficiaryCard extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: iconColor.withOpacity(0.15),
+        color: iconColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: initial != null
@@ -174,7 +174,7 @@ class BeneficiaryCard extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.15),
+        color: badgeColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: AppText(

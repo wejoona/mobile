@@ -31,7 +31,7 @@ class AmountInput extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('\$', style: theme.textTheme.headlineLarge?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w300)),
+            Text('\$', style: theme.textTheme.headlineLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontWeight: FontWeight.w300)),
             const SizedBox(width: 4),
             IntrinsicWidth(
               child: TextField(

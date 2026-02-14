@@ -212,7 +212,7 @@ class SettingsView extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colors.gold.withOpacity(0.2),
+                  color: colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
@@ -398,7 +398,7 @@ class SettingsView extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: colors.gold.withOpacity(0.2),
+                      color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
@@ -560,7 +560,7 @@ class SettingsView extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colors.gold.withOpacity(0.2),
+                  color: colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
@@ -1166,7 +1166,7 @@ class _AccountTypeOption extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isSelected ? colors.gold : colors.textTertiary.withOpacity(0.2),
+              color: isSelected ? colors.gold : colors.textTertiary.withValues(alpha: 0.2),
               width: isSelected ? 2 : 1,
             ),
             borderRadius: BorderRadius.circular(AppRadius.md),
@@ -1178,8 +1178,8 @@ class _AccountTypeOption extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? colors.gold.withOpacity(0.2)
-                      : colors.textTertiary.withOpacity(0.1),
+                      ? colors.gold.withValues(alpha: 0.2)
+                      : colors.textTertiary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(

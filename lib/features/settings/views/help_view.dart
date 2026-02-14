@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -310,7 +309,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                color: colors.gold.withOpacity(0.1),
+                color: colors.gold.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: colors.gold, size: 24),

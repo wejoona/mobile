@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 

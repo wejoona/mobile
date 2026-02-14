@@ -720,7 +720,7 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
   }
 
   Future<void> _selectDate() async {
-    final colors = context.colors;
+    final _colors = context.colors;
     final date = await showDatePicker(
       context: context,
       initialDate: _startDate,

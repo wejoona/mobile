@@ -34,7 +34,7 @@ class BillerTile extends StatelessWidget {
             children: [
               Container(
                 width: 44, height: 44,
-                decoration: BoxDecoration(color: bgColor.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
+                decoration: BoxDecoration(color: bgColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
                 child: Icon(icon, color: bgColor, size: 22),
               ),
               const SizedBox(width: 12),

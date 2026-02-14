@@ -110,10 +110,10 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       padding: EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: context.colors.gold.withOpacity(0.1),
+                        color: context.colors.gold.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(AppRadius.md),
                         border: Border.all(
-                          color: context.colors.gold.withOpacity(0.3),
+                          color: context.colors.gold.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -223,7 +223,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: context.colors.gold.withOpacity(0.2),
+            color: context.colors.gold.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: AppText(

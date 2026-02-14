@@ -1,9 +1,7 @@
-import 'package:usdc_wallet/features/kyc/models/kyc_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -165,7 +163,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       height: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
       ),
       child: Icon(
         icon,
@@ -287,7 +285,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: colors.gold.withOpacity(0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(icon, color: colors.gold),

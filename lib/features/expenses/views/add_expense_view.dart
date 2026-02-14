@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -157,7 +156,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
     setState(() => _isLoading = true);
 
     try {
-      final expense = Expense(
+      final _expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         category: _selectedCategory,
         amount: double.parse(_amountController.text),

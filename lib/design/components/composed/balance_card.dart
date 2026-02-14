@@ -39,7 +39,7 @@ class BalanceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.xs),
                 decoration: BoxDecoration(
-                  color: colors.gold.withOpacity(0.1),
+                  color: colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(

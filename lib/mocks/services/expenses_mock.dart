@@ -1,7 +1,6 @@
 /// Mock interceptor responses for expenses endpoints.
 library;
 
-import 'dart:convert';
 import 'package:dio/dio.dart';
 
 /// Mock data for expenses API endpoints.

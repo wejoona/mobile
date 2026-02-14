@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 

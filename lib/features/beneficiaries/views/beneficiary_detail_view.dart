@@ -132,7 +132,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: _getAccountTypeColor(beneficiary.accountType).withOpacity(0.2),
+              color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -158,7 +158,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
               vertical: AppSpacing.xs,
             ),
             decoration: BoxDecoration(
-              color: _getAccountTypeColor(beneficiary.accountType).withOpacity(0.1),
+              color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
             child: AppText(
@@ -436,7 +436,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
         break;
 
       case 'delete':
-        final colors = context.colors;
+        final _colors = context.colors;
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) {

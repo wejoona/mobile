@@ -51,7 +51,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final _l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final state = ref.watch(alertsProvider);
     final filteredAlerts = _filterAlerts(state.alerts);

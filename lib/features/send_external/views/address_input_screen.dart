@@ -152,7 +152,7 @@ class _AddressInputScreenState extends ConsumerState<AddressInputScreen> {
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: context.colors.error.withOpacity(0.1),
+                      color: context.colors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: Row(

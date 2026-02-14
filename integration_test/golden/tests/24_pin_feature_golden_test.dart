@@ -17,7 +17,7 @@ import '../../robots/auth_robot.dart';
 /// - 24.5 Reset PIN View
 /// - 24.6 PIN Locked View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

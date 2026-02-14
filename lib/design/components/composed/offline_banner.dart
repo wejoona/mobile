@@ -81,10 +81,10 @@ class _OfflineBannerState extends ConsumerState<OfflineBanner>
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: AppColors.warning.withOpacity(0.15),
+        color: AppColors.warning.withValues(alpha: 0.15),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.warning.withOpacity(0.3),
+            color: AppColors.warning.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -160,7 +160,7 @@ class OfflineIndicator extends ConsumerWidget {
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(
-          color: AppColors.silver.withOpacity(0.2),
+          color: AppColors.silver.withValues(alpha: 0.2),
         ),
       ),
       child: Row(
@@ -204,10 +204,10 @@ class SyncingIndicator extends ConsumerWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.gold500.withOpacity(0.15),
+        color: AppColors.gold500.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.sm),
         border: Border.all(
-          color: AppColors.gold500.withOpacity(0.3),
+          color: AppColors.gold500.withValues(alpha: 0.3),
         ),
       ),
       child: Row(

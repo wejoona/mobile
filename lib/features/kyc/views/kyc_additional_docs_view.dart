@@ -5,9 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
@@ -299,7 +297,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
             vertical: AppSpacing.xs,
           ),
           decoration: BoxDecoration(
-            color: context.colors.gold.withOpacity(0.1),
+            color: context.colors.gold.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: AppText(
@@ -340,7 +338,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
                 onPressed: () => setState(() => _uploadedDocuments.removeAt(index)),
                 icon: const Icon(Icons.close),
                 style: IconButton.styleFrom(
-                  backgroundColor: context.colors.canvas.withOpacity(0.8),
+                  backgroundColor: context.colors.canvas.withValues(alpha: 0.8),
                   foregroundColor: Colors.white,
                 ),
               ),

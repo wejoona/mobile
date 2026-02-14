@@ -12,7 +12,6 @@ import 'package:usdc_wallet/services/payment_links/payment_links_service.dart';
 import 'package:usdc_wallet/services/bank_linking/bank_linking_service.dart';
 import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
 import 'package:usdc_wallet/services/kyc/kyc_service.dart';
-import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 
 // Note: SavingsPotsService, LimitsService, ReferralsService

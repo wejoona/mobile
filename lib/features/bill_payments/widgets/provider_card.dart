@@ -27,7 +27,7 @@ class ProviderCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isSelected ? colors.gold : colors.borderSubtle,
@@ -124,7 +124,7 @@ class ProviderCardCompact extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected ? colors.gold : colors.borderSubtle,
@@ -192,7 +192,7 @@ class _ProviderLogo extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: colors.gold.withOpacity(0.1),
+        color: colors.gold.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Center(
@@ -222,7 +222,7 @@ class _CategoryBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: categoryColor.withOpacity(0.1),
+        color: categoryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
@@ -346,7 +346,7 @@ class _StatusBadge extends StatelessWidget {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.1),
+        color: statusColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(

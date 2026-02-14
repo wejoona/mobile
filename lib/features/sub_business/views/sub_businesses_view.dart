@@ -31,7 +31,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+    final _currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -116,7 +116,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             gradient: LinearGradient(
               colors: [
                 context.colors.gold,
-                context.colors.gold.withOpacity(0.8),
+                context.colors.gold.withValues(alpha: 0.8),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -143,7 +143,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
               AppText(
                 '${state.subBusinesses.length} ${state.subBusinesses.length == 1 ? l10n.subBusiness_unit : l10n.subBusiness_units}',
                 variant: AppTextVariant.bodyMedium,
-                color: context.colors.canvas.withOpacity(0.8),
+                color: context.colors.canvas.withValues(alpha: 0.8),
               ),
             ],
           ),

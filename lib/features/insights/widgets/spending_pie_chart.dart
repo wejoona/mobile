@@ -1,7 +1,6 @@
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/features/insights/models/spending_category.dart';
 

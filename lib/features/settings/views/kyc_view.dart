@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
@@ -476,7 +475,7 @@ class _KycViewState extends ConsumerState<KycView> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: context.colors.info.withOpacity(0.2),
+                        color: context.colors.info.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -525,7 +524,7 @@ class _KycViewState extends ConsumerState<KycView> {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: context.colors.success.withOpacity(0.2),
+                    color: context.colors.success.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

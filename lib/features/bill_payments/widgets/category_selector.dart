@@ -185,8 +185,8 @@ class _CategoryChip extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? colors.canvas.withOpacity(0.2)
-                      : colors.gold.withOpacity(0.2),
+                      ? colors.canvas.withValues(alpha: 0.2)
+                      : colors.gold.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
@@ -222,7 +222,7 @@ class _CategoryGridItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withOpacity(0.1) : colors.container,
+          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: isSelected ? colors.gold : colors.borderSubtle,
@@ -237,7 +237,7 @@ class _CategoryGridItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? _getCategoryColor(context, category.icon)
-                    : _getCategoryColor(context, category.icon).withOpacity(0.1),
+                    : _getCategoryColor(context, category.icon).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(

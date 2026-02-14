@@ -97,7 +97,7 @@ class _SuccessPainter extends CustomPainter {
 
     // Circle
     final circlePaint = Paint()
-      ..color = color.withOpacity(0.15)
+      ..color = color.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, circlePaint);
 

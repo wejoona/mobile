@@ -32,7 +32,7 @@ class StaffMemberCard extends StatelessWidget {
             // Avatar
             CircleAvatar(
               radius: 24,
-              backgroundColor: _getRoleColor(staff.role).withOpacity(0.2),
+              backgroundColor: _getRoleColor(staff.role).withValues(alpha: 0.2),
               child: AppText(
                 staff.name.substring(0, 1).toUpperCase(),
                 variant: AppTextVariant.bodyLarge,
@@ -62,7 +62,7 @@ class StaffMemberCard extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: context.colors.gold.withOpacity(0.2),
+                            color: context.colors.gold.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(AppRadius.sm),
                           ),
                           child: AppText(
@@ -91,10 +91,10 @@ class StaffMemberCard extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: _getRoleColor(staff.role).withOpacity(0.1),
+                color: _getRoleColor(staff.role).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
                 border: Border.all(
-                  color: _getRoleColor(staff.role).withOpacity(0.3),
+                  color: _getRoleColor(staff.role).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(

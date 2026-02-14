@@ -66,7 +66,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
               gradient: LinearGradient(
                 colors: [
                   context.colors.gold,
-                  context.colors.gold.withOpacity(0.8),
+                  context.colors.gold.withValues(alpha: 0.8),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -156,7 +156,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: context.colors.gold.withOpacity(0.2),
+                        backgroundColor: context.colors.gold.withValues(alpha: 0.2),
                         child: AppText(
                           member.name.substring(0, 1).toUpperCase(),
                           variant: AppTextVariant.bodyLarge,
@@ -211,7 +211,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
       label: Text(label),
       style: OutlinedButton.styleFrom(
         foregroundColor: context.colors.gold,
-        side: BorderSide(color: context.colors.gold.withOpacity(0.3)),
+        side: BorderSide(color: context.colors.gold.withValues(alpha: 0.3)),
         padding: EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
           vertical: AppSpacing.md,

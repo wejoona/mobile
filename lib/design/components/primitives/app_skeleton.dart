@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 

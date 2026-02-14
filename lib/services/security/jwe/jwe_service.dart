@@ -12,7 +12,6 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pointycastle/export.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 final _log = AppLogger('JWE');

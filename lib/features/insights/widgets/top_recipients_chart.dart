@@ -1,6 +1,5 @@
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/insights/models/top_recipient.dart';

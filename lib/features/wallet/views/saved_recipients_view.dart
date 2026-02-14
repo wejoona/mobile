@@ -376,7 +376,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
   }
 
   void _showAddRecipient() {
-    final colors = context.colors;
+    final _colors = context.colors;
     showModalBottomSheet(
       context: context,
       backgroundColor: context.colors.elevated,

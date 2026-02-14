@@ -4,7 +4,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
 
 import '../../helpers/test_helpers.dart';
-import '../../helpers/test_data.dart';
 
 /// Golden Tests: FSM ERROR STATE SCREENS
 ///
@@ -33,7 +32,7 @@ import '../../helpers/test_data.dart';
 /// Run with real backend:
 ///   flutter test integration_test/golden/tests/25_fsm_error_states_golden_test.dart --update-goldens --dart-define=USE_MOCKS=false
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

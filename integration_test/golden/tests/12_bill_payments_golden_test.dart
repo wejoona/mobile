@@ -15,7 +15,7 @@ import '../../robots/auth_robot.dart';
 /// - 12.3 Bill Payment Success View
 /// - 12.4 Bill Payment History View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -106,8 +106,8 @@ void main() {
       await navigateToBillPayments(tester);
 
       final electricity = find.text('Electricity');
-      final water = find.text('Water');
-      final internet = find.text('Internet');
+      final _water = find.text('Water');
+      final _internet = find.text('Internet');
 
       if (electricity.evaluate().isNotEmpty) {
         await tester.tap(electricity.first);
@@ -136,7 +136,7 @@ void main() {
 
       // Select a provider
       final provider = find.textContaining('CIE');
-      final sodeci = find.textContaining('SODECI');
+      final _sodeci = find.textContaining('SODECI');
 
       if (provider.evaluate().isNotEmpty) {
         await tester.tap(provider.first);
@@ -214,7 +214,7 @@ void main() {
       await navigateToBillPayments(tester);
 
       final historyBtn = find.text('History');
-      final pastPayments = find.text('Past Payments');
+      final _pastPayments = find.text('Past Payments');
 
       if (historyBtn.evaluate().isNotEmpty) {
         await tester.tap(historyBtn.first);

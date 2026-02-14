@@ -29,7 +29,7 @@ class SubBusinessCard extends StatelessWidget {
           color: context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
-            color: context.colors.gold.withOpacity(0.2),
+            color: context.colors.gold.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -44,7 +44,7 @@ class SubBusinessCard extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: context.colors.gold.withOpacity(0.1),
+                    color: context.colors.gold.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                   ),
                   child: Icon(
@@ -132,7 +132,7 @@ class SubBusinessCard extends StatelessWidget {
                       label: const Text('Transfer'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.colors.gold,
-                        side: BorderSide(color: context.colors.gold.withOpacity(0.3)),
+                        side: BorderSide(color: context.colors.gold.withValues(alpha: 0.3)),
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
                           vertical: AppSpacing.xs,
@@ -149,7 +149,7 @@ class SubBusinessCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.colors.textSecondary,
                         side: BorderSide(
-                          color: context.colors.textSecondary.withOpacity(0.3),
+                          color: context.colors.textSecondary.withValues(alpha: 0.3),
                         ),
                         padding: EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,

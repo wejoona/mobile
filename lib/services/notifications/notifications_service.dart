@@ -5,7 +5,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:convert';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/domain/enums/index.dart' hide NotificationType;
 
 /// Notifications Service - mirrors backend NotificationsController
 class NotificationsService {

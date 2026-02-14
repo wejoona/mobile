@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
@@ -99,7 +98,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                   padding: EdgeInsets.all(AppSpacing.xl),
                   decoration: BoxDecoration(
                     color: (isSuccess ? colors.success : colors.error)
-                        .withOpacity(0.1),
+                        .withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -171,7 +170,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                       SizedBox(height: AppSpacing.md),
 
                       Divider(
-                        color: colors.textSecondary.withOpacity(0.2),
+                        color: colors.textSecondary.withValues(alpha: 0.2),
                       ),
                       SizedBox(height: AppSpacing.md),
 

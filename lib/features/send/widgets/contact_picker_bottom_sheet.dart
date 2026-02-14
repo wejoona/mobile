@@ -166,7 +166,7 @@ class _ContactPickerBottomSheetState
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: colors.gold.withOpacity(0.2),
+              backgroundColor: colors.gold.withValues(alpha: 0.2),
               child: AppText(
                 contact.name[0].toUpperCase(),
                 variant: AppTextVariant.bodyLarge,

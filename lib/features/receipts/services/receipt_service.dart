@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
@@ -31,7 +30,7 @@ class ReceiptService {
         NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
     // Build a simple text-based receipt that can be shared
-    final lines = <String>[
+    final _lines = <String>[
       '═══════════════════════════',
       '       KORIDO RECEIPT',
       '═══════════════════════════',

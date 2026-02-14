@@ -78,7 +78,7 @@ class _RippleEffectState extends State<RippleEffect>
                       position: _tapPosition!,
                       radius: widget.radius * _animation.value,
                       color: (widget.rippleColor ?? AppColors.gold500)
-                          .withOpacity(0.3 * (1 - _animation.value)),
+                          .withValues(alpha: 0.3 * (1 - _animation.value)),
                     ),
                   );
                 },
@@ -257,7 +257,7 @@ class _GlowAnimationState extends State<GlowAnimation>
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: widget.glowColor.withOpacity(_animation.value * 0.5),
+                color: widget.glowColor.withValues(alpha: _animation.value * 0.5),
                 blurRadius: widget.glowRadius * _animation.value,
                 spreadRadius: 2 * _animation.value,
               ),
@@ -373,7 +373,7 @@ class _CheckmarkPainter extends CustomPainter {
 
     // Draw circle
     final circlePaint = Paint()
-      ..color = color.withOpacity(0.2)
+      ..color = color.withValues(alpha: 0.2)
       ..style = PaintingStyle.fill;
 
     canvas.drawCircle(

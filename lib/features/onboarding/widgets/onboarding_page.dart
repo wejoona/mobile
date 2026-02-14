@@ -23,13 +23,13 @@ class OnboardingPage extends StatelessWidget {
             height: 280,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Image.asset(
               data.imagePath,
               fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Icon(Icons.image_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.3)),
+              errorBuilder: (_, __, ___) => Icon(Icons.image_rounded, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
             ),
           ),
           const Spacer(),

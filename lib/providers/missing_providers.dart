@@ -4,8 +4,6 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:usdc_wallet/domain/entities/transaction.dart';
-import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/kyc/models/missing_states.dart';
 

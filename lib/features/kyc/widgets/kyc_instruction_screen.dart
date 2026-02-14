@@ -56,7 +56,7 @@ class KycInstructionScreen extends StatelessWidget {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: colors.gold.withOpacity(0.1),
+                          color: colors.gold.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -122,8 +122,8 @@ class KycInstructionScreen extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: instruction.isWarning
-                  ? colors.warning.withOpacity(0.1)
-                  : colors.success.withOpacity(0.1),
+                  ? colors.warning.withValues(alpha: 0.1)
+                  : colors.success.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(

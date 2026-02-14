@@ -102,7 +102,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
               color: context.colors.elevated,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: context.colors.gold.withOpacity(0.3),
+                color: context.colors.gold.withValues(alpha: 0.3),
                 width: 2,
                 style: BorderStyle.solid,
               ),

@@ -5,7 +5,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/wallet_fsm.dart';
-import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 

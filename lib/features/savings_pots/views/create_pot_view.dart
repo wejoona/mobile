@@ -4,7 +4,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/emoji_picker.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/color_picker.dart';

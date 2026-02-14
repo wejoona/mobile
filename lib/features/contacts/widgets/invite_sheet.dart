@@ -139,7 +139,7 @@ class InviteSheet extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: context.colors.gold.withOpacity(0.1),
+                  color: context.colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: Icon(

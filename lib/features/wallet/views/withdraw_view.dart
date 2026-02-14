@@ -22,11 +22,11 @@ extension WithdrawMethodExt on WithdrawMethod {
   String label(AppLocalizations l10n) {
     switch (this) {
       case WithdrawMethod.mobileMoney:
-        return l10n.withdraw_mobileMoney ?? 'Mobile Money';
+        return l10n.withdraw_mobileMoney;
       case WithdrawMethod.bankTransfer:
-        return l10n.withdraw_bankTransfer ?? 'Bank Transfer';
+        return l10n.withdraw_bankTransfer;
       case WithdrawMethod.crypto:
-        return l10n.withdraw_crypto ?? 'Crypto Wallet';
+        return l10n.withdraw_crypto;
     }
   }
 
@@ -44,11 +44,11 @@ extension WithdrawMethodExt on WithdrawMethod {
   String description(AppLocalizations l10n) {
     switch (this) {
       case WithdrawMethod.mobileMoney:
-        return l10n.withdraw_mobileMoneyDesc ?? 'Withdraw to Orange Money, MTN MoMo, Wave';
+        return l10n.withdraw_mobileMoneyDesc;
       case WithdrawMethod.bankTransfer:
-        return l10n.withdraw_bankDesc ?? 'Transfer to your bank account';
+        return l10n.withdraw_bankDesc;
       case WithdrawMethod.crypto:
-        return l10n.withdraw_cryptoDesc ?? 'Send to external USDC wallet';
+        return l10n.withdraw_cryptoDesc;
     }
   }
 }
@@ -233,7 +233,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          l10n.navigation_withdraw ?? 'Withdraw',
+          l10n.navigation_withdraw,
           variant: AppTextVariant.titleLarge,
           color: colors.textPrimary,
         ),
@@ -255,7 +255,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   AppText(
-                    l10n.wallet_availableBalance ?? 'Available Balance',
+                    l10n.wallet_availableBalance,
                     variant: AppTextVariant.bodyMedium,
                     color: colors.textSecondary,
                   ),
@@ -286,7 +286,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
             // Withdrawal Method
             AppText(
-              l10n.withdraw_method ?? 'Withdrawal Method',
+              l10n.withdraw_method,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -312,7 +312,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
             // Submit Button
             AppButton(
-              label: l10n.navigation_withdraw ?? 'Withdraw',
+              label: l10n.navigation_withdraw,
               onPressed: _canSubmit() && !_isSubmitting ? _submit : null,
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -352,7 +352,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            l10n.withdraw_amountLabel ?? 'Amount to withdraw',
+            l10n.withdraw_amountLabel,
             variant: AppTextVariant.cardLabel,
             color: colors.textSecondary,
           ),
@@ -467,7 +467,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            l10n.withdraw_mobileNumber ?? 'Mobile Money Number',
+            l10n.withdraw_mobileNumber,
             variant: AppTextVariant.cardLabel,
             color: colors.textSecondary,
           ),
@@ -528,7 +528,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            l10n.withdraw_bankDetails ?? 'Bank Details',
+            l10n.withdraw_bankDetails,
             variant: AppTextVariant.cardLabel,
             color: colors.textSecondary,
           ),
@@ -557,7 +557,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            l10n.withdraw_walletAddress ?? 'USDC Wallet Address',
+            l10n.withdraw_walletAddress,
             variant: AppTextVariant.cardLabel,
             color: colors.textSecondary,
           ),
@@ -569,7 +569,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            l10n.withdraw_networkWarning ?? 'Make sure to use a Solana or Base USDC address',
+            l10n.withdraw_networkWarning,
             variant: AppTextVariant.bodySmall,
             color: colors.textTertiary,
           ),

@@ -69,7 +69,7 @@ class EmojiPicker extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? context.colors.gold.withOpacity(0.2)
+                      ? context.colors.gold.withValues(alpha: 0.2)
                       : context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   border: Border.all(

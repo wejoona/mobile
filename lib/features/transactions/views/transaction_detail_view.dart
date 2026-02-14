@@ -58,7 +58,7 @@ class TransactionDetailView extends ConsumerWidget {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: statusColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -84,7 +84,7 @@ class TransactionDetailView extends ConsumerWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(transaction.type, colors).withOpacity(0.1),
+                      color: _getTypeColor(transaction.type, colors).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: AppText(

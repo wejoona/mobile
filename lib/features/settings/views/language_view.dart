@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -105,8 +104,8 @@ class _LanguageTile extends StatelessWidget {
             height: 48,
             decoration: BoxDecoration(
               color: isSelected
-                  ? colors.gold.withOpacity(0.2)
-                  : colors.container.withOpacity(0.5),
+                  ? colors.gold.withValues(alpha: 0.2)
+                  : colors.container.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Center(

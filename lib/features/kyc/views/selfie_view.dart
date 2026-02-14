@@ -214,7 +214,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.9),
+                      Colors.black.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                   ),
@@ -254,10 +254,10 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                 ),
                 margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.9),
+                  color: Colors.black.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: context.colors.gold.withOpacity(0.3),
+                    color: context.colors.gold.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -292,7 +292,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withOpacity(0.9),
+                      Colors.black.withValues(alpha: 0.9),
                       Colors.transparent,
                     ],
                   ),
@@ -315,7 +315,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
             if (_isCheckingQuality)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.8),
+                  color: Colors.black.withValues(alpha: 0.8),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -439,7 +439,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: colors.warning.withOpacity(0.1),
+                      color: colors.warning.withValues(alpha: 0.1),
                     ),
                     child: Icon(
                       Icons.no_photography,
@@ -480,7 +480,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
             if (_isCheckingQuality)
               Positioned.fill(
                 child: Container(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withValues(alpha: 0.7),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -646,7 +646,7 @@ class FaceOvalPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.7)
+      ..color = Colors.black.withValues(alpha: 0.7)
       ..style = PaintingStyle.fill;
 
     final ovalPaint = Paint()

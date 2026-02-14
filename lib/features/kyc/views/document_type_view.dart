@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -114,7 +113,7 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
                 height: 64,
                 decoration: BoxDecoration(
                   color: (isSelected ? colors.gold : colors.textSecondary)
-                      .withOpacity(0.1),
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 // import 'package:usdc_wallet/design/components/primitives/app_toast.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/utils/error_messages.dart';
 
 /// Error Handler Mixin

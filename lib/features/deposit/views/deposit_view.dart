@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/deposit/widgets/deposit_method_tile.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
-import 'package:usdc_wallet/utils/form_validators.dart';
 import 'package:usdc_wallet/design/components/primitives/step_indicator.dart';
 
 /// Deposit flow screen (select method -> enter amount -> confirm).

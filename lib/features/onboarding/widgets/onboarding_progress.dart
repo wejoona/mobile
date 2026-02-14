@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Progress indicator for onboarding steps
 class OnboardingProgress extends StatelessWidget {
@@ -31,7 +30,7 @@ class OnboardingProgress extends StatelessWidget {
       width: isCompleted ? 32 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isCompleted ? AppColors.gold500 : AppColors.textSecondary.withOpacity(0.3),
+        color: isCompleted ? AppColors.gold500 : AppColors.textSecondary.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(4),
       ),
     );

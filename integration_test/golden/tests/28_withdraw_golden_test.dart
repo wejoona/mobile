@@ -26,7 +26,7 @@ import '../../robots/auth_robot.dart';
 /// Run with real backend:
 ///   flutter test integration_test/golden/tests/28_withdraw_golden_test.dart --update-goldens --dart-define=USE_MOCKS=false
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

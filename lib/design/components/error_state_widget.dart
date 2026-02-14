@@ -301,7 +301,7 @@ class OfflineBanner extends StatelessWidget {
         horizontal: AppSpacing.md,
         vertical: AppSpacing.sm,
       ),
-      color: AppColors.warning.withOpacity(0.2),
+      color: AppColors.warning.withValues(alpha: 0.2),
       child: Row(
         children: [
           Icon(

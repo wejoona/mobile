@@ -72,7 +72,7 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColorsLight.container,
-        indicatorColor: AppColorsLight.gold500.withOpacity(0.2),
+        indicatorColor: AppColorsLight.gold500.withValues(alpha: 0.2),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -337,7 +337,7 @@ class AppTheme {
       // ═══════════════════════════════════════════════════════════════════════
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.graphite,
-        indicatorColor: AppColors.gold500.withOpacity(0.2),
+        indicatorColor: AppColors.gold500.withValues(alpha: 0.2),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,

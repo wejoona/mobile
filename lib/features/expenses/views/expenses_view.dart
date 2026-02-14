@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
@@ -92,7 +91,7 @@ class _ExpensesViewState extends ConsumerState<ExpensesView> {
             Icon(
               Icons.receipt_long_outlined,
               size: 80,
-              color: context.colors.textSecondary.withOpacity(0.5),
+              color: context.colors.textSecondary.withValues(alpha: 0.5),
             ),
             SizedBox(height: AppSpacing.lg),
             AppText(

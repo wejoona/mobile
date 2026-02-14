@@ -63,7 +63,7 @@ class _PinVerificationScreenState
               Container(
                 padding: EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: context.colors.gold.withOpacity(0.1),
+                  color: context.colors.gold.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

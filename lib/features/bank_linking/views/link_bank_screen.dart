@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/link_bank_provider.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';
-import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Link bank account screen.

@@ -116,7 +116,7 @@ class _ProfileSetupViewState extends ConsumerState<ProfileSetupView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: context.colors.error.withOpacity(0.1),
+                    color: context.colors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.sm),
                     border: Border.all(color: context.colors.error),
                   ),

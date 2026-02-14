@@ -18,7 +18,7 @@ import '../../robots/auth_robot.dart';
 /// - 3.6 Transactions Tab (History)
 /// - 3.7 Settings Tab
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 

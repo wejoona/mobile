@@ -6,7 +6,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -51,10 +50,10 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                   Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: context.colors.warning.withOpacity(0.1),
+                      color: context.colors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                       border: Border.all(
-                        color: context.colors.warning.withOpacity(0.3),
+                        color: context.colors.warning.withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -112,7 +111,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withValues(alpha: 0.2),
                         ),
 
                         // Network
@@ -122,7 +121,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withValues(alpha: 0.2),
                         ),
 
                         // Amount
@@ -133,7 +132,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withValues(alpha: 0.2),
                         ),
 
                         // Network fee
@@ -143,7 +142,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withOpacity(0.2),
+                          color: context.colors.textSecondary.withValues(alpha: 0.2),
                         ),
 
                         // Total
@@ -202,7 +201,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: context.colors.error.withOpacity(0.1),
+                    color: context.colors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Row(

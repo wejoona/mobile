@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart' hide BillPaymentResult;
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 
 /// Bill payment flow state.

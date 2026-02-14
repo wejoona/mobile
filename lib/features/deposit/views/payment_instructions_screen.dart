@@ -8,7 +8,6 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 

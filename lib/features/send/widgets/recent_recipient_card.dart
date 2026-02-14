@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 
 class RecentRecipientCard extends StatelessWidget {
@@ -26,7 +25,7 @@ class RecentRecipientCard extends StatelessWidget {
         children: [
           // Avatar
           CircleAvatar(
-            backgroundColor: colors.gold.withOpacity(0.2),
+            backgroundColor: colors.gold.withValues(alpha: 0.2),
             child: AppText(
               recipient.name[0].toUpperCase(),
               variant: AppTextVariant.bodyLarge,

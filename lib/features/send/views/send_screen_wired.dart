@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/providers/send_fee_provider.dart';
-import 'package:usdc_wallet/features/send/providers/send_validation_provider.dart';
 import 'package:usdc_wallet/features/send/providers/send_limits_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/core/error/error_handler.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
 
 /// Fully wired send money screen.

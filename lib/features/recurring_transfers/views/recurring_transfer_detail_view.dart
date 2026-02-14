@@ -7,7 +7,6 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
-import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/execution_history_list.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -154,7 +153,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                   Container(
                     padding: EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: context.colors.canvas.withOpacity(0.3),
+                      color: context.colors.canvas.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Column(
@@ -329,7 +328,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
         vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: color, width: 1),
       ),

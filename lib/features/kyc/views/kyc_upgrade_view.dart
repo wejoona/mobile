@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -120,7 +118,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: colors.warning.withOpacity(0.1),
+              color: colors.warning.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(Icons.info_outline, color: colors.warning),
@@ -171,7 +169,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.gold.withOpacity(0.1),
+                  color: colors.gold.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
@@ -241,7 +239,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: colors.success.withOpacity(0.1),
+                          color: colors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
@@ -329,7 +327,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: colors.gold.withOpacity(0.1),
+        color: colors.gold.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(

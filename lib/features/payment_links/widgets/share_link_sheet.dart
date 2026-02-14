@@ -198,7 +198,7 @@ class _ShareOption extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
-                color: (iconColor ?? context.colors.gold).withOpacity(0.1),
+                color: (iconColor ?? context.colors.gold).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(

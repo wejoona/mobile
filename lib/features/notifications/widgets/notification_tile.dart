@@ -67,7 +67,7 @@ class NotificationTile extends StatelessWidget {
         child: Material(
           color: notification.isRead
               ? Colors.transparent
-              : context.colors.gold.withOpacity(0.03),
+              : context.colors.gold.withValues(alpha: 0.03),
           child: InkWell(
             onTap: onTap,
             child: Padding(
@@ -82,7 +82,7 @@ class NotificationTile extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: _iconColor.withOpacity(0.12),
+                      color: _iconColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(_icon, color: _iconColor, size: 20),

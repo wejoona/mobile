@@ -112,7 +112,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                 child: Column(
                   children: [
                     AppText(
-                      l10n.transfer_successTitle ?? 'Transfer Successful!',
+                      l10n.transfer_successTitle,
                       variant: AppTextVariant.headlineMedium,
                       color: colors.textPrimary,
                       textAlign: TextAlign.center,
@@ -146,7 +146,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                   child: Column(
                     children: [
                       _DetailRow(
-                        label: l10n.transactions_transactionId ?? 'Transaction ID',
+                        label: l10n.transactions_transactionId,
                         value: _truncateId(widget.transactionId),
                         canCopy: true,
                         fullValue: widget.transactionId,
@@ -155,15 +155,15 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                       ),
                       Divider(color: context.colors.borderSubtle),
                       _DetailRow(
-                        label: l10n.common_amount ?? 'Amount',
+                        label: l10n.common_amount,
                         value: '\$${widget.amount.toStringAsFixed(2)}',
                         colors: colors,
                         l10n: l10n,
                       ),
                       Divider(color: context.colors.borderSubtle),
                       _DetailRow(
-                        label: l10n.transactions_status ?? 'Status',
-                        value: l10n.transactions_completed ?? 'Completed',
+                        label: l10n.transactions_status,
+                        value: l10n.transactions_completed,
                         valueColor: context.colors.success,
                         colors: colors,
                         l10n: l10n,
@@ -171,7 +171,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                       if (widget.note != null) ...[
                         Divider(color: context.colors.borderSubtle),
                         _DetailRow(
-                          label: l10n.common_note ?? 'Note',
+                          label: l10n.common_note,
                           value: widget.note!,
                           colors: colors,
                           l10n: l10n,
@@ -190,7 +190,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                 child: Column(
                   children: [
                     AppButton(
-                      label: l10n.action_shareReceipt ?? 'Share Receipt',
+                      label: l10n.action_shareReceipt,
                       onPressed: () => _shareReceipt(l10n),
                       variant: AppButtonVariant.secondary,
                       isFullWidth: true,
@@ -198,7 +198,7 @@ class _TransferSuccessViewState extends State<TransferSuccessView>
                     ),
                     const SizedBox(height: AppSpacing.md),
                     AppButton(
-                      label: l10n.common_done ?? 'Done',
+                      label: l10n.common_done,
                       onPressed: () => context.go('/home'),
                       variant: AppButtonVariant.primary,
                       isFullWidth: true,
@@ -225,7 +225,7 @@ JoonaPay Transfer Receipt
 Amount: \$${widget.amount.toStringAsFixed(2)}
 To: ${widget.recipient}
 Transaction ID: ${widget.transactionId}
-Status: ${l10n.transactions_completed ?? 'Completed'}
+Status: ${l10n.transactions_completed}
 ${widget.note != null ? 'Note: ${widget.note}' : ''}
 
 Thank you for using JoonaPay!

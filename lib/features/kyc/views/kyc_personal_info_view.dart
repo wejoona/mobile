@@ -182,9 +182,9 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.gold.withOpacity(0.08),
+        color: colors.gold.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.gold.withOpacity(0.2)),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [

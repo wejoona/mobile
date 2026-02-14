@@ -147,7 +147,7 @@ class ErrorState extends StatelessWidget {
         color: colors.errorBg,
         shape: BoxShape.circle,
         border: Border.all(
-          color: colors.errorBase.withOpacity(0.2),
+          color: colors.errorBase.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -261,7 +261,7 @@ class InlineError extends StatelessWidget {
         color: colors.errorBg,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
-          color: colors.errorBase.withOpacity(0.2),
+          color: colors.errorBase.withValues(alpha: 0.2),
         ),
       ),
       child: Row(

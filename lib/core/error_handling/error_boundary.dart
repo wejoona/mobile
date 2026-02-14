@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/core/error_handling/error_reporter.dart';
 import 'package:usdc_wallet/core/error_handling/error_types.dart';
 import 'package:usdc_wallet/core/error_handling/error_fallback_ui.dart';

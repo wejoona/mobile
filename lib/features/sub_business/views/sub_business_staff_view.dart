@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -38,7 +37,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
-    final subBusiness = state.subBusinesses.firstWhere(
+    final _subBusiness = state.subBusinesses.firstWhere(
       (sb) => sb.id == widget.subBusinessId,
     );
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
@@ -115,7 +114,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
             color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: context.colors.gold.withOpacity(0.2),
+              color: context.colors.gold.withValues(alpha: 0.2),
             ),
           ),
           padding: EdgeInsets.all(AppSpacing.md),
@@ -177,7 +176,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     final phoneController = TextEditingController();
     StaffRole selectedRole = StaffRole.viewer;
 
-    final result = await showDialog<bool>(
+    final _result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -317,7 +316,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   ) async {
     StaffRole selectedRole = member.role;
 
-    final result = await showDialog<bool>(
+    final _result = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(

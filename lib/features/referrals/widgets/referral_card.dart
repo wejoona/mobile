@@ -53,7 +53,7 @@ class ReferralCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: context.colors.elevated,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: context.colors.gold.withOpacity(0.3)),
+                    border: Border.all(color: context.colors.gold.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

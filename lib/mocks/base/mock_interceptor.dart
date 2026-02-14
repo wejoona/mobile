@@ -7,7 +7,6 @@ library;
 import 'dart:async';
 import 'dart:math';
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/mocks/base/api_contract.dart';

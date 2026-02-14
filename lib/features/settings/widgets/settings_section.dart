@@ -26,13 +26,13 @@ class SettingsSection extends StatelessWidget {
             decoration: BoxDecoration(
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
+              border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
             ),
             child: Column(
               children: [
                 for (var i = 0; i < items.length; i++) ...[
                   items[i],
-                  if (i < items.length - 1) Divider(height: 0.5, indent: items[i] is ListTile ? 56 : 16, color: theme.colorScheme.outlineVariant.withOpacity(0.3)),
+                  if (i < items.length - 1) Divider(height: 0.5, indent: items[i] is ListTile ? 56 : 16, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
                 ],
               ],
             ),

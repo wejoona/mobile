@@ -12,14 +12,14 @@ class MerchantScannerOverlay extends StatelessWidget {
     return Stack(
       children: [
         // Darkened background
-        ColoredBox(color: Colors.black.withOpacity(0.5), child: const SizedBox.expand()),
+        ColoredBox(color: Colors.black.withValues(alpha: 0.5), child: const SizedBox.expand()),
         // Scan area cutout
         Center(
           child: Container(
             width: scanAreaSize,
             height: scanAreaSize,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white.withOpacity(0.3), width: 1),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Stack(
@@ -38,7 +38,7 @@ class MerchantScannerOverlay extends StatelessWidget {
           child: Text(
             'Align merchant QR code within the frame',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
           ),
         ),
       ],

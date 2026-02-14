@@ -116,7 +116,7 @@ class _PinInputWidgetState extends State<PinInputWidget> {
               ? context.colors.error
               : _focusNodes[index].hasFocus
                   ? context.colors.gold
-                  : context.colors.textSecondary.withOpacity(0.3),
+                  : context.colors.textSecondary.withValues(alpha: 0.3),
           width: 2,
         ),
       ),

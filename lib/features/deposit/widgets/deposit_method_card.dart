@@ -30,7 +30,7 @@ class DepositMethodCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             color: isSelected
-                ? context.colors.gold.withOpacity(0.08)
+                ? context.colors.gold.withValues(alpha: 0.08)
                 : AppColors.backgroundTertiary,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(

@@ -22,7 +22,7 @@ class ContactListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '${contact.displayName ?? "Contact"}'
+      label: '${contact.displayName}'
           '${contact.isKoridoUser ? ", utilisateur Korido" : ""}',
       button: onTap != null,
       child: Material(
@@ -39,7 +39,7 @@ class ContactListItem extends StatelessWidget {
                 Stack(
                   children: [
                     UserAvatar(
-                      firstName: contact.displayName ?? '?',
+                      firstName: contact.displayName,
                       imageUrl: contact.avatarUrl,
                       size: 44,
                     ),
@@ -73,7 +73,7 @@ class ContactListItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        contact.displayName ?? 'Contact inconnu',
+                        contact.displayName,
                         style: AppTextStyle.labelMedium,
                       ),
                       const SizedBox(height: AppSpacing.xxs),

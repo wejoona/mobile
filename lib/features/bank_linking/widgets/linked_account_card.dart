@@ -4,7 +4,6 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -88,7 +87,7 @@ class LinkedAccountCard extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: context.colors.gold.withOpacity(0.2),
+                                color: context.colors.gold.withValues(alpha: 0.2),
                                 borderRadius:
                                     BorderRadius.circular(AppRadius.xs),
                               ),
@@ -165,7 +164,7 @@ class LinkedAccountCard extends StatelessWidget {
                 child: TextButton(
                   onPressed: onTap,
                   style: TextButton.styleFrom(
-                    backgroundColor: context.colors.gold.withOpacity(0.1),
+                    backgroundColor: context.colors.gold.withValues(alpha: 0.1),
                     padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
                   ),
                   child: AppText(
@@ -218,7 +217,7 @@ class LinkedAccountCard extends StatelessWidget {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
       child: Row(

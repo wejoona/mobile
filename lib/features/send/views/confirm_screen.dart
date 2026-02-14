@@ -6,7 +6,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 
 class ConfirmScreen extends ConsumerWidget {
@@ -51,7 +50,7 @@ class ConfirmScreen extends ConsumerWidget {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: colors.gold.withOpacity(0.2),
+                              backgroundColor: colors.gold.withValues(alpha: 0.2),
                               child: Icon(
                                 Icons.person_outline,
                                 color: colors.gold,
@@ -115,7 +114,7 @@ class ConfirmScreen extends ConsumerWidget {
                         // Fee breakdown
                         if (state.fee > 0) ...[
                           Divider(
-                            color: colors.textSecondary.withOpacity(0.2),
+                            color: colors.textSecondary.withValues(alpha: 0.2),
                           ),
                           SizedBox(height: AppSpacing.sm),
                           Row(
@@ -137,7 +136,7 @@ class ConfirmScreen extends ConsumerWidget {
                         ],
 
                         Divider(
-                          color: colors.textSecondary.withOpacity(0.2),
+                          color: colors.textSecondary.withValues(alpha: 0.2),
                         ),
                         SizedBox(height: AppSpacing.sm),
 

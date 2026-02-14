@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -43,7 +42,7 @@ class ExternalResultScreen extends ConsumerWidget {
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: context.colors.success.withOpacity(0.2),
+                        color: context.colors.success.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

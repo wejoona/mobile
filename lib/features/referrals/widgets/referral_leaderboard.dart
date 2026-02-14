@@ -1,9 +1,7 @@
 import 'package:usdc_wallet/design/components/primitives/section_header.dart';
-import 'package:usdc_wallet/design/components/primitives/error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Run 382: Referral leaderboard showing top referrers
 class ReferralLeaderboard extends StatelessWidget {
@@ -80,7 +78,7 @@ class _LeaderboardTile extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: _rankColor.withOpacity(0.15),
+                    color: _rankColor.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Center(

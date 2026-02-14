@@ -11,7 +11,6 @@ import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
-import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP

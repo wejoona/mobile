@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/pot_card.dart';
 
@@ -112,8 +111,8 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                colors.gold.withOpacity(0.2),
-                colors.gold.withOpacity(0.05),
+                colors.gold.withValues(alpha: 0.2),
+                colors.gold.withValues(alpha: 0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

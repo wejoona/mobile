@@ -23,7 +23,7 @@ import '../../robots/auth_robot.dart';
 /// - 23.4 Services View
 /// - 23.5 Transfer Success View
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final _binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() => TestHelpers.configureMocks());
 
@@ -145,7 +145,7 @@ void main() {
       await loginToHome(tester);
 
       final scanBtn = find.text('Scan');
-      final scanIcon = find.byIcon(Icons.qr_code_scanner);
+      final _scanIcon = find.byIcon(Icons.qr_code_scanner);
 
       if (scanBtn.evaluate().isNotEmpty) {
         await tester.tap(scanBtn.first);
@@ -179,7 +179,7 @@ void main() {
 
       final referralsBtn = find.text('Referrals');
       final inviteBtn = find.text('Invite');
-      final earnBtn = find.text('Earn');
+      final _earnBtn = find.text('Earn');
 
       if (referralsBtn.evaluate().isNotEmpty) {
         await tester.tap(referralsBtn.first);
@@ -251,7 +251,7 @@ void main() {
       await loginToHome(tester);
 
       final servicesBtn = find.text('Services');
-      final moreBtn = find.text('More');
+      final _moreBtn = find.text('More');
 
       if (servicesBtn.evaluate().isNotEmpty) {
         await tester.tap(servicesBtn.first);

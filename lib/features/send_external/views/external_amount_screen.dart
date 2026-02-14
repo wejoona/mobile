@@ -6,7 +6,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/utils/formatters.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -63,7 +62,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: context.colors.gold.withOpacity(0.2),
+                            backgroundColor: context.colors.gold.withValues(alpha: 0.2),
                             child: Icon(
                               Icons.account_balance_wallet_outlined,
                               color: context.colors.gold,
@@ -209,7 +208,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                             ),
                             Divider(
                               height: AppSpacing.lg * 2,
-                              color: context.colors.textSecondary.withOpacity(0.2),
+                              color: context.colors.textSecondary.withValues(alpha: 0.2),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -245,7 +244,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                   child: Container(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: context.colors.error.withOpacity(0.1),
+                      color: context.colors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: Row(
@@ -296,10 +295,10 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? context.colors.gold.withOpacity(0.1) : context.colors.container,
+          color: isSelected ? context.colors.gold.withValues(alpha: 0.1) : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? context.colors.gold.withOpacity(0.3) : context.colors.border,
+            color: isSelected ? context.colors.gold.withValues(alpha: 0.3) : context.colors.border,
             width: 1,
           ),
         ),
@@ -329,7 +328,7 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: context.colors.success.withOpacity(0.2),
+                            color: context.colors.success.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: AppText(
