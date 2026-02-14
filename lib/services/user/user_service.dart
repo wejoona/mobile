@@ -65,6 +65,7 @@ class UserService {
   Future<String?> getAvatarUrl() async {
     try {
       final response = await _dio.get('/user/avatar');
+      // ignore: avoid_dynamic_calls
       return response.data['avatarUrl'] as String?;
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

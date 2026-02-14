@@ -42,6 +42,7 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/sub-businesses');
+      // ignore: avoid_dynamic_calls
       final List<dynamic> data = response.data['subBusinesses'];
       final subBusinesses =
           data.map((json) => SubBusiness.fromJson(json)).toList();
@@ -91,6 +92,7 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/sub-businesses/$subBusinessId/staff');
+      // ignore: avoid_dynamic_calls
       final List<dynamic> data = response.data['staff'];
       final staff = data.map((json) => StaffMember.fromJson(json)).toList();
 

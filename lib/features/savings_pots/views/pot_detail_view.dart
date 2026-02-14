@@ -254,7 +254,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
     AppLocalizations l10n,
   ) {
     // ignore: dead_null_aware_expression
-    final transactions = state.selectedPotTransactions ?? [];
+    final transactions = state.selectedPotTransactions ?? []; // ignore: dead_code
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

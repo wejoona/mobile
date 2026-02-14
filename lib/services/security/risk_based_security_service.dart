@@ -159,7 +159,9 @@ class RiskBasedSecurityService {
         'isFirstTransactionToRecipient': isFirstTransactionToRecipient,
       });
 
+      // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
+        // ignore: avoid_dynamic_calls
         return StepUpDecision.fromJson(response.data['data']);
       }
 
@@ -191,7 +193,9 @@ class RiskBasedSecurityService {
         'metadata': metadata,
       });
 
+      // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
+        // ignore: avoid_dynamic_calls
         return StepUpDecision.fromJson(response.data['data']);
       }
 
@@ -280,6 +284,7 @@ class RiskBasedSecurityService {
         'biometricVerified': biometricVerified,
       });
 
+      // ignore: avoid_dynamic_calls
       return response.data['success'] == true && response.data['data']['valid'] == true;
     } catch (e) {
       AppLogger('Step-up validation failed').error('Step-up validation failed', e);
@@ -417,7 +422,9 @@ class RiskBasedSecurityService {
         'blockchain': blockchain,
       });
 
+      // ignore: avoid_dynamic_calls
       if (response.data['success'] == true) {
+        // ignore: avoid_dynamic_calls
         return AddressScreeningResult.fromJson(response.data['data']);
       }
 

@@ -323,7 +323,9 @@ class AuthInterceptor extends Interceptor {
 
       if (response.statusCode == 200) {
         final data = response.data;
+        // ignore: avoid_dynamic_calls
         await storage.write(key: StorageKeys.accessToken, value: data['accessToken'] as String?);
+        // ignore: avoid_dynamic_calls
         await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken'] as String?);
         _refreshCompleter!.complete(true);
         return true;

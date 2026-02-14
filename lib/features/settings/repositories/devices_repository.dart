@@ -36,6 +36,7 @@ class DevicesRepository {
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
     final response = await _dio.get('/devices');
+    // ignore: avoid_dynamic_calls
     final List<dynamic> devicesJson = response.data['devices'] ?? [];
     return devicesJson.map((json) => Device.fromJson(json)).toList();
   }

@@ -32,14 +32,17 @@ class NotificationActions {
   NotificationActions(this._dio);
 
   Future<void> markAsRead(String id) async {
+    // ignore: avoid_dynamic_calls
     await _dio.patch('/notifications/$id/read');
   }
 
   Future<void> markAllAsRead() async {
+    // ignore: avoid_dynamic_calls
     await _dio.post('/notifications/read-all');
   }
 
   Future<void> delete(String id) async {
+    // ignore: avoid_dynamic_calls
     await _dio.delete('/notifications/$id');
   }
 }

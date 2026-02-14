@@ -50,8 +50,11 @@ class PushNotificationEncryptor {
       final json = jsonDecode(
           utf8.decode(base64Decode(notification.encryptedBody)));
       return NotificationContent(
+        // ignore: avoid_dynamic_calls
         title: json['title'] as String? ?? '',
+        // ignore: avoid_dynamic_calls
         body: json['body'] as String? ?? '',
+        // ignore: avoid_dynamic_calls
         data: json['data'] as Map<String, dynamic>?,
       );
     } catch (e) {

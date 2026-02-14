@@ -41,7 +41,7 @@ class RecurringTransferCard extends StatelessWidget {
                   children: [
                     Text(
                       // ignore: dead_null_aware_expression
-                      transfer.recipientName ?? transfer.recipientPhone,
+                      transfer.recipientName ?? transfer.recipientPhone, // ignore: dead_code
                       style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 2),

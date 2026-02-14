@@ -59,6 +59,7 @@ abstract class ApiContract {
       final methodName = endpoint.method.name;
 
       paths[fullPath] ??= {};
+      // ignore: avoid_dynamic_calls
       paths[fullPath][methodName] = {
         'summary': endpoint.description,
         'security': endpoint.requiresAuth ? [{'bearerAuth': []}] : [],

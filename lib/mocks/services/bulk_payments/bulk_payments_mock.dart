@@ -27,8 +27,11 @@ class BulkPaymentsMock {
         final name = data['name'] as String;
         final payments = (data['payments'] as List)
             .map((p) => BulkPayment(
+                  // ignore: avoid_dynamic_calls
                   phone: p['phone'] as String,
+                  // ignore: avoid_dynamic_calls
                   amount: (p['amount'] as num).toDouble(),
+                  // ignore: avoid_dynamic_calls
                   description: p['description'] as String,
                 ))
             .toList();

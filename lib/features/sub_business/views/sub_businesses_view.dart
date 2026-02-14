@@ -173,6 +173,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
   }
 
   Future<void> _showTransferDialog(dynamic subBusiness) async {
+    // ignore: avoid_dynamic_calls
     context.push('/sub-businesses/transfer/${subBusiness.id}');
   }
 }

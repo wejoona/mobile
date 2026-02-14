@@ -13,6 +13,7 @@ class RecurringTransfersService {
   /// Get all recurring transfers for the current user
   Future<List<RecurringTransfer>> getRecurringTransfers() async {
     final response = await _dio.get('/recurring-transfers');
+    // ignore: avoid_dynamic_calls
     return (response.data['transfers'] as List)
         .map((json) => RecurringTransfer.fromJson(json))
         .toList();
@@ -67,6 +68,7 @@ class RecurringTransfersService {
   /// Get execution history for a recurring transfer
   Future<List<ExecutionHistory>> getExecutionHistory(String id) async {
     final response = await _dio.get('/recurring-transfers/$id/history');
+    // ignore: avoid_dynamic_calls
     return (response.data['history'] as List)
         .map((json) => ExecutionHistory.fromJson(json))
         .toList();
@@ -75,6 +77,7 @@ class RecurringTransfersService {
   /// Get upcoming executions (next 7 days)
   Future<List<UpcomingExecution>> getUpcomingExecutions() async {
     final response = await _dio.get('/recurring-transfers/upcoming');
+    // ignore: avoid_dynamic_calls
     return (response.data['upcoming'] as List)
         .map((json) => UpcomingExecution.fromJson(json))
         .toList();
@@ -86,6 +89,7 @@ class RecurringTransfersService {
       '/recurring-transfers/$id/next-dates',
       queryParameters: {'count': count},
     );
+    // ignore: avoid_dynamic_calls
     return (response.data['dates'] as List)
         .map((date) => DateTime.parse(date as String))
         .toList();

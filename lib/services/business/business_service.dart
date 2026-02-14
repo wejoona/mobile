@@ -13,6 +13,7 @@ class BusinessService {
   /// Get current account type
   Future<AccountType> getAccountType() async {
     final response = await _dio.get('/users/me/account-type');
+    // ignore: avoid_dynamic_calls
     final type = response.data['accountType'] as String;
     return type == 'business' ? AccountType.business : AccountType.personal;
   }

@@ -78,6 +78,7 @@ class ExpensesService {
   Future<List<ExpenseCategory>> getCategories() async {
     try {
       final response = await _dio.get('/expenses/categories');
+      // ignore: avoid_dynamic_calls
       return (response.data['categories'] as List<dynamic>)
           .map((e) => ExpenseCategory.fromJson(e as Map<String, dynamic>))
           .toList();

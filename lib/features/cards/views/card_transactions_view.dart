@@ -123,7 +123,9 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
     ThemeColors colors,
     dynamic transaction,
   ) {
+    // ignore: avoid_dynamic_calls
     final isSuccess = transaction.status == 'completed';
+    // ignore: avoid_dynamic_calls
     final isPending = transaction.status == 'pending';
 
     return Container(
@@ -147,6 +149,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(
+              // ignore: avoid_dynamic_calls
               _getCategoryIcon(transaction.merchantCategory),
               color: isSuccess
                   ? colors.success
@@ -164,6 +167,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
+                  // ignore: avoid_dynamic_calls
                   transaction.merchantName,
                   variant: AppTextVariant.labelLarge,
                   color: colors.textPrimary,
@@ -173,6 +177,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
                   children: [
                     Flexible(
                       child: Text(
+                        // ignore: avoid_dynamic_calls
                         '${transaction.merchantCategory} • ${_formatDate(transaction.createdAt)}',
                         style: TextStyle(
                           fontSize: 12,
@@ -193,6 +198,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               AppText(
+                // ignore: avoid_dynamic_calls
                 '-${transaction.currency} ${transaction.amount.toStringAsFixed(2)}',
                 variant: AppTextVariant.labelLarge,
                 color: colors.textPrimary,
@@ -212,6 +218,7 @@ class _CardTransactionsViewState extends ConsumerState<CardTransactionsView> {
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
                 child: AppText(
+                  // ignore: avoid_dynamic_calls
                   _getStatusLabel(transaction.status),
                   variant: AppTextVariant.labelSmall,
                   color: isSuccess

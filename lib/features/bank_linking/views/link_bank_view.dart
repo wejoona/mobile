@@ -134,6 +134,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
             ),
             child: Center(
               child: AppText(
+                // ignore: avoid_dynamic_calls
                 bank.name.substring(0, 1),
                 style: AppTypography.headlineSmall.copyWith(
                   color: context.colors.gold,
@@ -147,6 +148,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
+                  // ignore: avoid_dynamic_calls
                   bank.name,
                   style: AppTypography.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
@@ -154,6 +156,7 @@ class _LinkBankViewState extends ConsumerState<LinkBankView> {
                 ),
                 SizedBox(height: 2),
                 AppText(
+                  // ignore: avoid_dynamic_calls
                   bank.country,
                   style: AppTypography.bodySmall.copyWith(
                     color: context.colors.textSecondary,

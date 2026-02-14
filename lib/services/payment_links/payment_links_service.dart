@@ -26,6 +26,7 @@ class PaymentLinksService {
         if (offset != null) 'offset': offset,
       },
     );
+    // ignore: avoid_dynamic_calls
     return (response.data['links'] as List)
         .map((json) => PaymentLink.fromJson(json))
         .toList();

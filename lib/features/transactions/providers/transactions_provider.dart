@@ -44,8 +44,11 @@ class TransactionPage {
 
   factory TransactionPage.fromJson(Map<String, dynamic> json) => TransactionPage(
     items: ((json['data'] ?? json['items']) as List?)?.map((e) => TransactionItem.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+    // ignore: avoid_dynamic_calls
     total: json['total'] as int? ?? json['meta']?['total'] as int? ?? 0,
+    // ignore: avoid_dynamic_calls
     page: json['page'] as int? ?? json['meta']?['page'] as int? ?? 1,
+    // ignore: avoid_dynamic_calls
     limit: json['limit'] as int? ?? json['meta']?['limit'] as int? ?? 20,
     hasMore: json['hasMore'] as bool? ?? false,
   );

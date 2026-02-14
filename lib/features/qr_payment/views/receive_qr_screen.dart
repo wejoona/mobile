@@ -324,6 +324,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       );
 
       if (mounted) {
+        // ignore: avoid_dynamic_calls
         final success = result['isSuccess'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

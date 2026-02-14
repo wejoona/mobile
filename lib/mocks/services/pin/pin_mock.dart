@@ -36,6 +36,7 @@ class PinMock {
 
   /// Handle set PIN
   static Future<MockResponse> _handleSetPin(RequestOptions options) async {
+    // ignore: avoid_dynamic_calls
     final pinHash = options.data['pinHash'] as String?;
     if (pinHash == null || pinHash.isEmpty) {
       return MockResponse.badRequest('PIN hash is required');
@@ -49,7 +50,9 @@ class PinMock {
 
   /// Handle change PIN
   static Future<MockResponse> _handleChangePin(RequestOptions options) async {
+    // ignore: avoid_dynamic_calls
     final oldPinHash = options.data['oldPinHash'] as String?;
+    // ignore: avoid_dynamic_calls
     final newPinHash = options.data['newPinHash'] as String?;
 
     if (oldPinHash == null || newPinHash == null) {
@@ -65,6 +68,7 @@ class PinMock {
 
   /// Handle verify PIN
   static Future<MockResponse> _handleVerifyPin(RequestOptions options) async {
+    // ignore: avoid_dynamic_calls
     final pinHash = options.data['pinHash'] as String?;
 
     if (pinHash == null || pinHash.isEmpty) {
@@ -81,7 +85,9 @@ class PinMock {
 
   /// Handle reset PIN
   static Future<MockResponse> _handleResetPin(RequestOptions options) async {
+    // ignore: avoid_dynamic_calls
     final otp = options.data['otp'] as String?;
+    // ignore: avoid_dynamic_calls
     final newPinHash = options.data['newPinHash'] as String?;
 
     if (otp == null || newPinHash == null) {

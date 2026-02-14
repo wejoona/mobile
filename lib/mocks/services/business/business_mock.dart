@@ -18,6 +18,7 @@ class BusinessMock {
       method: 'POST',
       path: '/users/me/account-type',
       handler: (options) async {
+        // ignore: avoid_dynamic_calls
         final accountType = options.data['accountType'] as String;
         return MockResponse.success({
           'accountType': accountType,

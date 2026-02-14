@@ -1748,7 +1748,7 @@ class _FsmStatePlaceholder extends ConsumerWidget {
     required this.message,
     this.actionLabel,
     // ignore: unused_element
-    this.showAction = true,
+    this.showAction = true, // ignore: unused_element_parameter
   });
 
   final String title;

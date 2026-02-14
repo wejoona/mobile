@@ -277,6 +277,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     ThemeColors colors,
     dynamic card,
   ) async {
+    // ignore: avoid_dynamic_calls
     _limitController.text = (card.spendingLimit ?? 0).toStringAsFixed(0);
 
     final result = await showDialog<double>(
@@ -336,6 +337,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
     if (result != null && context.mounted) {
       await ref
           .read(cardActionsProvider)
+          // ignore: avoid_dynamic_calls
           .updateSpendingLimit(card.id, dailyLimit: result, transactionLimit: result);
 
       if (context.mounted) {

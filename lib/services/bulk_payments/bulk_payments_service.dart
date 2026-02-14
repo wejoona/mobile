@@ -8,6 +8,7 @@ class BulkPaymentsService {
 
   Future<List<BulkBatch>> getBatches() async {
     final response = await _dio.get('/bulk-payments/batches');
+    // ignore: avoid_dynamic_calls
     return (response.data['batches'] as List)
         .map((json) => BulkBatch.fromJson(json))
         .toList();
@@ -32,6 +33,7 @@ class BulkPaymentsService {
   Future<String> downloadFailedPayments(String batchId) async {
     final response =
         await _dio.get('/bulk-payments/batches/$batchId/failed-report');
+    // ignore: avoid_dynamic_calls
     return response.data['csv'] as String;
   }
 

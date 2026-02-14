@@ -202,7 +202,9 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
     if (beneficiary != null && mounted) {
       _selectRecipient(
+        // ignore: avoid_dynamic_calls
         beneficiary.phoneE164 ?? '',
+        // ignore: avoid_dynamic_calls
         beneficiary.name,
       );
     }

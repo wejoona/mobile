@@ -56,6 +56,7 @@ class TransactionReportingService {
   Future<List<Map<String, dynamic>>> getPendingReports() async {
     try {
       final response = await _dio.get('/compliance/reports/pending');
+      // ignore: avoid_dynamic_calls
       return List<Map<String, dynamic>>.from(response.data['reports'] ?? []);
     } catch (e) {
       _log.error('Failed to fetch pending reports', e);

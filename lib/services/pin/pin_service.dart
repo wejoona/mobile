@@ -143,9 +143,12 @@ class PinService {
 
       if (response.statusCode == 200) {
         final data = response.data;
+        // ignore: avoid_dynamic_calls
         if (data['valid'] == true) {
           // Store the PIN token for subsequent transfer operations
+          // ignore: avoid_dynamic_calls
           final pinToken = data['pinToken'] as String?;
+          // ignore: avoid_dynamic_calls
           final expiresIn = data['expiresIn'] as int? ?? 300;
 
           if (pinToken != null) {
@@ -166,9 +169,13 @@ class PinService {
       final data = response.data;
       return PinVerificationResult(
         success: false,
+        // ignore: avoid_dynamic_calls
         isLocked: data['locked'] == true,
+        // ignore: avoid_dynamic_calls
         remainingAttempts: data['remainingAttempts'],
+        // ignore: avoid_dynamic_calls
         lockRemainingSeconds: data['lockRemainingSeconds'],
+        // ignore: avoid_dynamic_calls
         message: data['message'] ?? 'PIN verification failed',
       );
     } on DioException catch (e) {

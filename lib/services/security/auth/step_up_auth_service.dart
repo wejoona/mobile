@@ -55,7 +55,7 @@ class StepUpAuthService {
 
   /// Determine which MFA method to use for the action.
   MfaMethod recommendedMethod(StepUpAction action) {
-    final enrolled = _mfaProvider.state.enrolledMethods;
+    final enrolled = _mfaProvider.state.enrolledMethods; // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
     if (enrolled.contains(MfaMethod.biometric)) return MfaMethod.biometric;
     if (enrolled.contains(MfaMethod.totp)) return MfaMethod.totp;
     return MfaMethod.sms;

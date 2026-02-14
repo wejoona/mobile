@@ -212,8 +212,11 @@ class BeneficiariesMock {
 
   /// Handle GET /api/v1/beneficiaries
   static Future<MockResponse> _handleGetBeneficiaries(options) async {
+    // ignore: avoid_dynamic_calls
     final favorites = options.queryParameters['favorites'] == 'true';
+    // ignore: avoid_dynamic_calls
     final recent = options.queryParameters['recent'] == 'true';
+    // ignore: avoid_dynamic_calls
     final type = options.queryParameters['type'] as String?;
 
     final filtered = BeneficiariesMockState.filterBeneficiaries(
@@ -229,7 +232,9 @@ class BeneficiariesMock {
 
   /// Handle GET /api/v1/beneficiaries/:id
   static Future<MockResponse> _handleGetBeneficiary(options) async {
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/beneficiaries/:id');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final beneficiary = BeneficiariesMockState.findById(id);
@@ -246,6 +251,7 @@ class BeneficiariesMock {
 
   /// Handle POST /api/v1/beneficiaries
   static Future<MockResponse> _handleCreateBeneficiary(options) async {
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
 
     final newBeneficiary = Beneficiary(
@@ -273,7 +279,9 @@ class BeneficiariesMock {
 
   /// Handle PUT /api/v1/beneficiaries/:id
   static Future<MockResponse> _handleUpdateBeneficiary(options) async {
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/beneficiaries/:id');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final beneficiary = BeneficiariesMockState.findById(id);
@@ -285,6 +293,7 @@ class BeneficiariesMock {
       );
     }
 
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
     final updated = beneficiary.copyWith(
       name: data['name'] as String? ?? beneficiary.name,
@@ -299,7 +308,9 @@ class BeneficiariesMock {
 
   /// Handle DELETE /api/v1/beneficiaries/:id
   static Future<MockResponse> _handleDeleteBeneficiary(options) async {
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/beneficiaries/:id');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final beneficiary = BeneficiariesMockState.findById(id);
@@ -321,7 +332,9 @@ class BeneficiariesMock {
 
   /// Handle POST /api/v1/beneficiaries/:id/favorite
   static Future<MockResponse> _handleToggleFavorite(options) async {
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/beneficiaries/:id/favorite');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final beneficiary = BeneficiariesMockState.findById(id);

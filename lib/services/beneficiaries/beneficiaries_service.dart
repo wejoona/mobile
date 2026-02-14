@@ -26,6 +26,7 @@ class BeneficiariesService {
         queryParameters: queryParams,
       );
 
+      // ignore: avoid_dynamic_calls
       return (response.data['beneficiaries'] as List)
           .map((json) => Beneficiary.fromJson(json as Map<String, dynamic>))
           .toList();
@@ -96,6 +97,7 @@ class BeneficiariesService {
 
   Exception _handleError(DioException e) {
     if (e.response?.data != null && e.response!.data is Map) {
+      // ignore: avoid_dynamic_calls
       final message = e.response!.data['message'] as String?;
       return Exception(message ?? 'Failed to process beneficiary request');
     }

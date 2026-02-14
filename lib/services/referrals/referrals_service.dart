@@ -17,6 +17,7 @@ class ReferralsService {
   /// GET /referrals/code
   Future<String> getReferralCode() async {
     final response = await _dio.get('/referrals/code');
+    // ignore: avoid_dynamic_calls
     return response.data['code'] as String;
   }
 

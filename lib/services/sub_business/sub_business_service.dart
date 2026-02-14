@@ -14,6 +14,7 @@ class SubBusinessService {
   Future<List<SubBusinessItem>> getSubBusinesses() async {
     try {
       final response = await _dio.get('/sub-businesses');
+      // ignore: avoid_dynamic_calls
       return (response.data['items'] as List<dynamic>)
           .map((e) => SubBusinessItem.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -76,6 +77,7 @@ class SubBusinessService {
   Future<List<StaffMember>> getStaff(String businessId) async {
     try {
       final response = await _dio.get('/sub-businesses/$businessId/staff');
+      // ignore: avoid_dynamic_calls
       return (response.data['staff'] as List<dynamic>)
           .map((e) => StaffMember.fromJson(e as Map<String, dynamic>))
           .toList();

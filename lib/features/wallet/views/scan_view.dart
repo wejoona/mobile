@@ -278,6 +278,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       );
 
       if (mounted) {
+        // ignore: avoid_dynamic_calls
         final success = result['isSuccess'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

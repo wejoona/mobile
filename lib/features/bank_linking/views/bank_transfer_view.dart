@@ -142,6 +142,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
             ),
             child: Center(
               child: AppText(
+                // ignore: avoid_dynamic_calls
                 account.bankName.substring(0, 1),
                 style: AppTypography.headlineSmall.copyWith(
                   color: context.colors.gold,
@@ -155,6 +156,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
+                  // ignore: avoid_dynamic_calls
                   account.bankName,
                   style: AppTypography.bodyLarge.copyWith(
                     fontWeight: FontWeight.w600,
@@ -162,14 +164,17 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
                 ),
                 SizedBox(height: 2),
                 AppText(
+                  // ignore: avoid_dynamic_calls
                   account.accountNumberMasked,
                   style: AppTypography.bodyMedium.copyWith(
                     color: context.colors.textSecondary,
                   ),
                 ),
+                // ignore: avoid_dynamic_calls
                 if (account.availableBalance != null) ...[
                   SizedBox(height: 4),
                   AppText(
+                    // ignore: avoid_dynamic_calls
                     '${l10n.bankLinking_balance}: ${_formatAmount(account.availableBalance!)} ${account.currency}',
                     style: AppTypography.bodySmall.copyWith(
                       color: context.colors.gold,

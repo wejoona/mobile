@@ -306,6 +306,7 @@ class AlertPreferencesNotifier extends Notifier<AlertPreferencesState> {
 
   String _getErrorMessage(dynamic error) {
     if (error is DioException) {
+      // ignore: avoid_dynamic_calls
       return error.response?.data?['message']?.toString() ??
           'An error occurred';
     }

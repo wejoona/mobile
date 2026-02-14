@@ -1178,10 +1178,15 @@ class _KycViewState extends ConsumerState<KycView> {
       ),
     );
 
+    // ignore: avoid_dynamic_calls
     if (response.data != null && response.data['documents'] != null) {
+      // ignore: avoid_dynamic_calls
       final docs = response.data['documents'];
+      // ignore: avoid_dynamic_calls
       _frontDocKey = docs['idFront']?['key'];
+      // ignore: avoid_dynamic_calls
       _backDocKey = docs['idBack']?['key'];
+      // ignore: avoid_dynamic_calls
       _selfieDocKey = docs['selfie']?['key'];
     }
   }

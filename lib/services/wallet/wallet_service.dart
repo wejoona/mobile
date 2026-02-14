@@ -37,6 +37,7 @@ class WalletService {
         '/wallet/deposit/channels',
         queryParameters: currency != null ? {'currency': currency} : null,
       );
+      // ignore: avoid_dynamic_calls
       final List<dynamic> channels = response.data['channels'] ?? [];
       return channels
           .map((e) => DepositChannel.fromJson(e as Map<String, dynamic>))

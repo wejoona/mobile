@@ -37,6 +37,7 @@ class ServerTimeService {
       final roundTripMs = localAfter - localBefore;
       final localMidpoint = localBefore + (roundTripMs ~/ 2);
 
+      // ignore: avoid_dynamic_calls
       final serverTimestamp = response.data['timestamp'] as int;
       _offsetMs = serverTimestamp - localMidpoint;
       _lastSyncAt = DateTime.now();

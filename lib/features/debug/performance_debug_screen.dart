@@ -293,8 +293,11 @@ class _PerformanceDebugScreenState
   }
 
   Widget _buildCacheEntry(dynamic entry, ThemeColors colors) {
+    // ignore: avoid_dynamic_calls
     final isExpired = entry['isExpired'] as bool;
+    // ignore: avoid_dynamic_calls
     final expiresIn = entry['expiresIn'] as int;
+    // ignore: avoid_dynamic_calls
     final key = entry['key'] as String;
 
     return Container(
@@ -343,8 +346,11 @@ class _PerformanceDebugScreenState
   }
 
   Widget _buildInFlightRequest(dynamic request, ThemeColors colors) {
+    // ignore: avoid_dynamic_calls
     final age = request['age'] as int;
+    // ignore: avoid_dynamic_calls
     final key = request['key'] as String;
+    // ignore: avoid_dynamic_calls
     final isCompleted = request['isCompleted'] as bool;
 
     return Container(

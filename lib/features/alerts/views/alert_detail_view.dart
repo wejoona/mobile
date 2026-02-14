@@ -75,7 +75,8 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           ),
         ),
         data: (alert) {
-          if (alert == null) { // ignore: unnecessary_null_comparison
+          // ignore: unnecessary_null_comparison, dead_code
+          if (alert == null) {
             return Center(
               child: AppText(
                 'Alert not found',

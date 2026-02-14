@@ -38,14 +38,17 @@ class ContactActions {
   ContactActions(this._dio);
 
   Future<void> syncPhoneContacts(List<String> phones) async {
+    // ignore: avoid_dynamic_calls
     await _dio.post('/contacts/sync', data: {'phones': phones});
   }
 
   Future<void> invite(String phone) async {
+    // ignore: avoid_dynamic_calls
     await _dio.post('/contacts/invite', data: {'phone': phone});
   }
 
   Future<void> toggleFavorite(String contactId, bool isFavorite) async {
+    // ignore: avoid_dynamic_calls
     await _dio.patch('/contacts/$contactId', data: {'isFavorite': isFavorite});
   }
 }

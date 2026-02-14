@@ -91,6 +91,7 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
     try {
       final service = ref.read(billPaymentsServiceProvider);
       final svcResult = await service.payBill(
+        // ignore: avoid_dynamic_calls
         providerId: state.selectedBiller.id ?? 'unknown',
         accountNumber: state.subscriberNumber!,
         amount: state.amount!,

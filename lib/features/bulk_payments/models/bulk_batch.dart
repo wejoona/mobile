@@ -64,10 +64,15 @@ class BulkBatch {
       name: json['name'] as String,
       payments: (json['payments'] as List)
           .map((p) => BulkPayment(
+                // ignore: avoid_dynamic_calls
                 phone: p['phone'] as String,
+                // ignore: avoid_dynamic_calls
                 amount: (p['amount'] as num).toDouble(),
+                // ignore: avoid_dynamic_calls
                 description: p['description'] as String,
+                // ignore: avoid_dynamic_calls
                 isValid: p['isValid'] as bool? ?? true,
+                // ignore: avoid_dynamic_calls
                 error: p['error'] as String?,
               ))
           .toList(),

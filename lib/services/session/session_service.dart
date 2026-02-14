@@ -386,8 +386,11 @@ class SessionService extends Notifier<SessionState> {
       });
 
       if (response.statusCode == 200) {
+        // ignore: avoid_dynamic_calls
         final newAccessToken = response.data['accessToken'];
+        // ignore: avoid_dynamic_calls
         final newRefreshToken = response.data['refreshToken'];
+        // ignore: avoid_dynamic_calls
         final expiresIn = response.data['expiresIn'] as int?; // seconds
 
         await _storage.write(key: _accessTokenKey, value: newAccessToken);

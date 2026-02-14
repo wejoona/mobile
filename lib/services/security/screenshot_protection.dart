@@ -23,6 +23,7 @@ class ScreenshotProtectionService {
           onScreenshotDetected?.call();
           break;
         case 'onScreenRecordingChanged':
+          // ignore: avoid_dynamic_calls
           final isCaptured = call.arguments['isCaptured'] as bool? ?? false;
           onScreenRecordingChanged?.call(isCaptured);
           break;

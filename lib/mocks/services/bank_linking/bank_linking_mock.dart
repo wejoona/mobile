@@ -211,7 +211,9 @@ class BankLinkingMock {
 
   /// Handle GET /api/v1/bank-accounts/:id
   static Future<MockResponse> _handleGetLinkedAccount(options) async {
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/bank-accounts/:id');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final account = BankLinkingMockState.findAccountById(id);
@@ -230,6 +232,7 @@ class BankLinkingMock {
   static Future<MockResponse> _handleLinkAccount(options) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
 
     final bankCode = data['bank_code'] as String;
@@ -268,8 +271,11 @@ class BankLinkingMock {
   static Future<MockResponse> _handleVerifyAccount(options) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/bank-accounts/:id/verify');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
     final otp = data['otp'] as String;
 
@@ -305,7 +311,9 @@ class BankLinkingMock {
   static Future<MockResponse> _handleUnlinkAccount(options) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/bank-accounts/:id');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final account = BankLinkingMockState.findAccountById(id);
@@ -330,7 +338,9 @@ class BankLinkingMock {
     await Future.delayed(const Duration(milliseconds: 300));
 
     final params =
+        // ignore: avoid_dynamic_calls
         options.extractPathParams('/api/v1/bank-accounts/:id/set-primary');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final account = BankLinkingMockState.findAccountById(id);
@@ -354,7 +364,9 @@ class BankLinkingMock {
   static Future<MockResponse> _handleGetBalance(options) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/bank-accounts/:id/balance');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
 
     final account = BankLinkingMockState.findAccountById(id);
@@ -385,8 +397,11 @@ class BankLinkingMock {
   static Future<MockResponse> _handleDeposit(options) async {
     await Future.delayed(const Duration(seconds: 2));
 
+    // ignore: avoid_dynamic_calls
     final params = options.extractPathParams('/api/v1/bank-accounts/:id/deposit');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
     final amount = data['amount'] as double;
 
@@ -420,8 +435,11 @@ class BankLinkingMock {
     await Future.delayed(const Duration(seconds: 2));
 
     final params =
+        // ignore: avoid_dynamic_calls
         options.extractPathParams('/api/v1/bank-accounts/:id/withdraw');
+    // ignore: avoid_dynamic_calls
     final id = params['id'];
+    // ignore: avoid_dynamic_calls
     final data = options.data as Map<String, dynamic>;
     final amount = data['amount'] as double;
 

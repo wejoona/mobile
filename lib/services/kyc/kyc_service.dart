@@ -110,10 +110,14 @@ class KycService {
     final response = await _dio.post('/kyc/documents', data: formData);
 
     // Extract S3 keys from response
+    // ignore: avoid_dynamic_calls
     final documents = response.data['documents'] as Map<String, dynamic>;
     return {
+      // ignore: avoid_dynamic_calls
       'idFront': documents['idFront']['key'] as String,
+      // ignore: avoid_dynamic_calls
       'idBack': documents['idBack']['key'] as String,
+      // ignore: avoid_dynamic_calls
       'selfie': documents['selfie']['key'] as String,
     };
   }
@@ -149,7 +153,9 @@ class KycService {
 
   Future<KycStatusResponse> getKycStatus() async {
     final response = await _dio.get('/kyc/status');
+    // ignore: avoid_dynamic_calls
     final kycStatus = response.data['status'] as String? ?? 'pending';
+    // ignore: avoid_dynamic_calls
     final rejectionReason = response.data['rejectionReason'] as String?;
 
     return KycStatusResponse(

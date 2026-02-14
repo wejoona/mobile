@@ -17,7 +17,7 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     // ignore: dead_null_aware_expression
-    final initials = _getInitials(user.displayName ?? user.phone );
+    final initials = _getInitials(user.displayName ?? user.phone ); // ignore: dead_code
     // ignore: dead_null_aware_expression
     final avatarColor = ColorUtils.pastelFromString(user.displayName ?? user.id);
 

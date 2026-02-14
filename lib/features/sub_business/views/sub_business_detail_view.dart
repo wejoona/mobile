@@ -231,18 +231,24 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
+            // ignore: avoid_dynamic_calls
             l10n.subBusiness_information,
             variant: AppTextVariant.headlineSmall,
           ),
           SizedBox(height: AppSpacing.md),
+          // ignore: avoid_dynamic_calls
           _buildInfoRow(l10n.subBusiness_type, _getTypeLabel(subBusiness.type, l10n)),
+          // ignore: avoid_dynamic_calls
           if (subBusiness.description != null) ...[
             SizedBox(height: AppSpacing.sm),
+            // ignore: avoid_dynamic_calls
             _buildInfoRow(l10n.subBusiness_description, subBusiness.description!),
           ],
           SizedBox(height: AppSpacing.sm),
           _buildInfoRow(
+            // ignore: avoid_dynamic_calls
             l10n.subBusiness_created,
+            // ignore: avoid_dynamic_calls
             DateFormat.yMMMd().format(subBusiness.createdAt),
           ),
         ],

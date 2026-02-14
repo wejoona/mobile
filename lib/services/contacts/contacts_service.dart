@@ -262,6 +262,7 @@ class ContactsService {
         data: {'phoneHashes': hashes},
       );
 
+      // ignore: avoid_dynamic_calls
       final matches = (response.data['matches'] as List)
           .cast<Map<String, dynamic>>()
           .map((m) => {
@@ -308,6 +309,7 @@ class ContactsService {
       );
 
       final matches =
+          // ignore: avoid_dynamic_calls
           (response.data['matches'] as List).cast<Map<String, dynamic>>();
 
       return ContactSyncResult(

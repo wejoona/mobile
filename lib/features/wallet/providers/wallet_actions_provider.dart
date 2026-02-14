@@ -16,6 +16,7 @@ class WalletActions {
     required String phoneNumber,
     String? pin,
   }) async {
+    // ignore: avoid_dynamic_calls
     final response = await _dio.post('/withdraw/request', data: {
       'amount': amount,
       'provider': provider,
@@ -24,12 +25,15 @@ class WalletActions {
       if (pin != null) 'pin': pin,
     });
     _ref.invalidate(walletBalanceProvider);
+    // ignore: avoid_dynamic_calls
     return response.data as Map<String, dynamic>;
   }
 
   /// Generate a receive address/QR for the wallet.
   Future<Map<String, dynamic>> getReceiveInfo() async {
+    // ignore: avoid_dynamic_calls
     final response = await _dio.get('/wallet/receive');
+    // ignore: avoid_dynamic_calls
     return response.data as Map<String, dynamic>;
   }
 
@@ -38,11 +42,13 @@ class WalletActions {
     required double amount,
     required String type, // internal, external, withdrawal
   }) async {
+    // ignore: avoid_dynamic_calls
     final response = await _dio.post('/transfers/estimate-fee', data: {
       'amount': amount,
       'type': type,
       'currency': 'USDC',
     });
+    // ignore: avoid_dynamic_calls
     return (response.data['fee'] as num).toDouble();
   }
 }

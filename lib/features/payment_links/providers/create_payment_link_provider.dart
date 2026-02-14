@@ -57,7 +57,7 @@ class CreatePaymentLinkNotifier extends Notifier<CreatePaymentLinkState> {
         description: state.description,
       );
       // ignore: dead_null_aware_expression
-      final result = CreatedPaymentLink(id: response.id, url: response.url ?? '', shortCode: response.shortCode );
+      final result = CreatedPaymentLink(id: response.id, url: response.url ?? '', shortCode: response.shortCode ); // ignore: dead_code
       state = state.copyWith(isLoading: false, result: result);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

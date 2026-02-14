@@ -34,9 +34,13 @@ class UserMock {
         return MockResponse(statusCode: 200, data: {
           'id': 'usr_001',
           'phone': '+22507080910',
+          // ignore: avoid_dynamic_calls
           'displayName': data?['firstName'] ?? 'Ben Ouattara',
+          // ignore: avoid_dynamic_calls
           'firstName': data?['firstName'] ?? 'Ben',
+          // ignore: avoid_dynamic_calls
           'lastName': data?['lastName'] ?? 'Ouattara',
+          // ignore: avoid_dynamic_calls
           'email': data?['email'] ?? 'ben@korido.co',
           'avatarUrl': null,
           'preferredLocale': 'fr',
@@ -73,6 +77,7 @@ class UserMock {
       method: 'PUT',
       path: '/user/locale',
       legacyHandler: (uri, headers, data) async {
+        // ignore: avoid_dynamic_calls
         return MockResponse(statusCode: 200, data: {'locale': data?['locale'] ?? 'fr', 'message': 'Locale updated'});
       },
     );

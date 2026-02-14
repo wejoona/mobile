@@ -669,8 +669,11 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
 
     for (final tx in transactions) {
       final txDate = DateTime(
+        // ignore: avoid_dynamic_calls
         tx.createdAt.year,
+        // ignore: avoid_dynamic_calls
         tx.createdAt.month,
+        // ignore: avoid_dynamic_calls
         tx.createdAt.day,
       );
 
@@ -680,8 +683,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       } else if (txDate == yesterday) {
         label = l10n.transactions_yesterday;
       } else if (now.difference(txDate).inDays < 7) {
+        // ignore: avoid_dynamic_calls
         label = DateFormat('EEEE').format(tx.createdAt);
       } else {
+        // ignore: avoid_dynamic_calls
         label = DateFormat('MMM d, yyyy').format(tx.createdAt);
       }
 

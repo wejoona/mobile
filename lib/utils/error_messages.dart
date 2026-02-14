@@ -20,7 +20,9 @@ class ErrorMessages {
   static String fromApiException(ApiException exception) {
     // Check for specific error codes from backend
     if (exception.data != null && exception.data is Map) {
+      // ignore: avoid_dynamic_calls
       final errorCode = exception.data['code'] as String?;
+      // ignore: avoid_dynamic_calls
       final errorType = exception.data['type'] as String?;
 
       if (errorCode != null) {

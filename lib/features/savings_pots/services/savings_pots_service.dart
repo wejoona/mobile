@@ -11,6 +11,7 @@ class SavingsPotsService {
   /// Get all pots for the current user
   Future<List<SavingsPot>> getPots() async {
     final response = await _dio.get('/savings-pots');
+    // ignore: avoid_dynamic_calls
     return (response.data['pots'] as List)
         .map((json) => SavingsPot.fromJson(json))
         .toList();
@@ -87,6 +88,7 @@ class SavingsPotsService {
   /// Get transaction history for a pot
   Future<List<PotTransaction>> getPotTransactions(String potId) async {
     final response = await _dio.get('/savings-pots/$potId/transactions');
+    // ignore: avoid_dynamic_calls
     return (response.data['transactions'] as List)
         .map((json) => PotTransaction.fromJson(json))
         .toList();

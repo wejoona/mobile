@@ -32,10 +32,12 @@ class DeviceActions {
   DeviceActions(this._dio);
 
   Future<void> revokeDevice(String deviceId) async {
+    // ignore: avoid_dynamic_calls
     await _dio.delete('/devices/$deviceId');
   }
 
   Future<void> renameDevice(String deviceId, String name) async {
+    // ignore: avoid_dynamic_calls
     await _dio.patch('/devices/$deviceId', data: {'name': name});
   }
 
@@ -46,6 +48,7 @@ class DeviceActions {
   bool isCurrentDevice(String deviceId) => false;
 
   Future<void> trustDevice(String deviceId) async {
+    // ignore: avoid_dynamic_calls
     await _dio.post('/devices/$deviceId/trust');
   }
 }
