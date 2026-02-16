@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/domain/entities/wallet.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
@@ -182,6 +183,9 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         isLoading: false,
         result: result,
       );
+
+      // Immediately refresh balance + transactions
+      ref.read(realtimeServiceProvider).refreshAfterTransaction();
 
       // Track successful transaction for app review prompt
       final appReviewService = ref.read(appReviewServiceProvider);

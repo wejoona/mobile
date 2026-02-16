@@ -14,12 +14,12 @@ class RecurringTransferEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.repeat_outlined,
-      title: 'No recurring transfers',
+      title: 'Aucun virement récurrent',
       description:
-          'Set up automatic transfers to send money on a regular schedule.',
+          'Configurez des virements automatiques pour envoyer de l\'argent régulièrement.',
       action: onSetup != null
           ? EmptyStateAction(
-              label: 'Set Up Transfer',
+              label: 'Configurer un virement',
               onPressed: onSetup!,
             )
           : null,

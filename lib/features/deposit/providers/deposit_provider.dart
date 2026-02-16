@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 
 /// Steps in the deposit flow.
 enum DepositFlowStep {
@@ -163,6 +164,8 @@ class DepositNotifier extends Notifier<DepositState> {
           ),
           step: DepositFlowStep.completed,
         );
+        // Immediately refresh balance + transactions
+        ref.read(realtimeServiceProvider).refreshAfterTransaction();
       } else if (status == 'failed' || status == 'cancelled') {
         _pollingTimer?.cancel();
         state = state.copyWith(

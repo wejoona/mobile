@@ -11,6 +11,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 class OtpView extends ConsumerStatefulWidget {
   const OtpView({super.key});
@@ -209,38 +210,11 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
                         const Spacer(flex: 1),
 
-                        // PIN Pad with Biometric
-                        biometricAvailable.when(
-                          data: (available) => biometricEnabled.when(
-                            data: (enabled) => PinPad(
-                              onDigitPressed: (digit) => _onDigitPressed(digit),
-                              onDeletePressed: _onDeletePressed,
-                              showBiometric: available && enabled,
-                              onBiometricPressed: available && enabled
-                                  ? () => _authenticateWithBiometric()
-                                  : null,
-                            ),
-                            loading: () => PinPad(
-                              onDigitPressed: (digit) => _onDigitPressed(digit),
-                              onDeletePressed: _onDeletePressed,
-                              showBiometric: false,
-                            ),
-                            error: (_, __) => PinPad(
-                              onDigitPressed: (digit) => _onDigitPressed(digit),
-                              onDeletePressed: _onDeletePressed,
-                              showBiometric: false,
-                            ),
-                          ),
-                          loading: () => PinPad(
-                            onDigitPressed: (digit) => _onDigitPressed(digit),
-                            onDeletePressed: _onDeletePressed,
-                            showBiometric: false,
-                          ),
-                          error: (_, __) => PinPad(
-                            onDigitPressed: (digit) => _onDigitPressed(digit),
-                            onDeletePressed: _onDeletePressed,
-                            showBiometric: false,
-                          ),
+                        // PIN Pad — no biometric on OTP screen
+                        PinPad(
+                          onDigitPressed: (digit) => _onDigitPressed(digit),
+                          onDeletePressed: _onDeletePressed,
+                          showBiometric: false,
                         ),
 
                         const SizedBox(height: AppSpacing.xxl),
@@ -341,7 +315,7 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
     // Authenticate with biometric
     final authenticatedBio = await biometricService.authenticate(
-      localizedReason: 'Authenticate to access Korido',
+      localizedReason: AppStrings.authenticateToAccess,
     );
 
     if (authenticatedBio.success) {

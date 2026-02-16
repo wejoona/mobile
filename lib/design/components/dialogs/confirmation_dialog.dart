@@ -26,8 +26,8 @@ class ConfirmationDialog extends StatelessWidget {
     super.key,
     required this.title,
     required this.message,
-    this.confirmText = 'Confirm',
-    this.cancelText = 'Cancel',
+    this.confirmText = 'Confirmer',
+    this.cancelText = 'Annuler',
     this.isDestructive = false,
     this.icon,
     this.details,
@@ -46,8 +46,8 @@ class ConfirmationDialog extends StatelessWidget {
     BuildContext context, {
     required String title,
     required String message,
-    String confirmText = 'Confirm',
-    String cancelText = 'Cancel',
+    String confirmText = 'Confirmer',
+    String cancelText = 'Annuler',
     bool isDestructive = false,
     IconData? icon,
     Widget? details,
@@ -183,8 +183,8 @@ extension ConfirmationDialogExtension on BuildContext {
   Future<bool> showConfirmation({
     required String title,
     required String message,
-    String confirmText = 'Confirm',
-    String cancelText = 'Cancel',
+    String confirmText = 'Confirmer',
+    String cancelText = 'Annuler',
     bool isDestructive = false,
     IconData? icon,
     Widget? details,
@@ -205,8 +205,8 @@ extension ConfirmationDialogExtension on BuildContext {
   Future<bool> showDeleteConfirmation({
     required String title,
     required String message,
-    String confirmText = 'Delete',
-    String cancelText = 'Cancel',
+    String confirmText = 'Supprimer',
+    String cancelText = 'Annuler',
   }) {
     return ConfirmationDialog.show(
       this,

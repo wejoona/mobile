@@ -254,7 +254,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load file: $e'),
+            content: Text('Impossible de charger le fichier. Veuillez réessayer.'),
             backgroundColor: context.colors.error,
           ),
         );

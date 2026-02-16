@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/widgets/qr_display.dart';
@@ -85,7 +86,7 @@ class _ScanViewState extends ConsumerState<ScanView>
   Widget _buildScannerTab(AppLocalizations l10n) {
     return QrScannerWidget(
       onScan: (qrData) => _handleScannedData(qrData),
-      title: 'Scan QR Code',
+      title: AppStrings.scanQrCode,
       subtitle: 'Point your camera at a wallet address or payment QR code',
     );
   }
@@ -112,7 +113,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       // Invalid QR
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Invalid QR code. Please scan a Korido payment code.'),
+          content: Text(AppStrings.invalidQrCode),
           backgroundColor: context.colors.error,
         ),
       );
@@ -195,7 +196,7 @@ class _ScanViewState extends ConsumerState<ScanView>
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
-                        'Share this QR code to receive payments',
+                        AppStrings.shareQrToReceive,
                         variant: AppTextVariant.bodyMedium,
                         color: context.colors.textSecondary,
                       ),
@@ -204,7 +205,7 @@ class _ScanViewState extends ConsumerState<ScanView>
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  'Anyone with Korido can scan this code to send you money instantly.',
+                  AppStrings.anyoneCanScan,
                   variant: AppTextVariant.bodySmall,
                   color: context.colors.textTertiary,
                 ),

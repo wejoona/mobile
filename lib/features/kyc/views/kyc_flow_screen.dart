@@ -292,13 +292,13 @@ class _ReviewStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Verification', style: Theme.of(context).textTheme.titleMedium),
+          Text('Vérification', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           _ReviewItem(label: 'Prenom', value: state.personalInfo['firstName'] ?? '-'),
           _ReviewItem(label: 'Nom', value: state.personalInfo['lastName'] ?? '-'),
           _ReviewItem(label: 'Date de naissance', value: state.personalInfo['dateOfBirth'] ?? '-'),
-          _ReviewItem(label: 'Document recto', value: state.idFront != null ? 'Capture' : 'Manquant'),
-          _ReviewItem(label: 'Selfie', value: state.selfie != null ? 'Capture' : 'Manquant'),
+          _ReviewItem(label: 'Document recto', value: state.idFront != null ? 'Capturé' : 'Manquant'),
+          _ReviewItem(label: 'Selfie', value: state.selfie != null ? 'Capturé' : 'Manquant'),
           const Spacer(),
           if (error != null)
             Padding(

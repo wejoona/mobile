@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart' hide BillPaymentResult;
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 
 /// Bill payment flow state.
 class BillPaymentState {
@@ -103,6 +104,7 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
       );
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);
+      ref.invalidate(transactionsProvider);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

@@ -94,6 +94,7 @@ class UserState {
   final String? lastName;
   final String? email;
   final String? avatarUrl;
+  final String? avatarThumb;
   final String countryCode;
   final KycStatus kycStatus;
   final bool canTransact;
@@ -109,6 +110,7 @@ class UserState {
     this.lastName,
     this.email,
     this.avatarUrl,
+    this.avatarThumb,
     this.countryCode = 'CI',
     this.kycStatus = KycStatus.none,
     this.canTransact = false,
@@ -122,6 +124,9 @@ class UserState {
   String get displayName =>
       firstName != null ? '$firstName ${lastName ?? ''}' : phone ?? 'User';
 
+  /// Best available avatar: local file > server URL > base64 thumb
+  String? get effectiveAvatarUrl => avatarUrl ?? avatarThumb;
+
   UserState copyWith({
     AuthStatus? status,
     String? userId,
@@ -130,6 +135,7 @@ class UserState {
     String? lastName,
     String? email,
     String? avatarUrl,
+    String? avatarThumb,
     String? countryCode,
     KycStatus? kycStatus,
     bool? canTransact,
@@ -145,6 +151,7 @@ class UserState {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      avatarThumb: avatarThumb ?? this.avatarThumb,
       countryCode: countryCode ?? this.countryCode,
       kycStatus: kycStatus ?? this.kycStatus,
       canTransact: canTransact ?? this.canTransact,

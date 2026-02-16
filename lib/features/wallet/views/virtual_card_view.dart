@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 class VirtualCardView extends ConsumerWidget {
@@ -16,7 +17,7 @@ class VirtualCardView extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Virtual Card',
+          AppStrings.virtualCardTitle,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -115,7 +116,7 @@ class VirtualCardView extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
 
               AppText(
-                'Virtual Debit Card',
+                AppStrings.virtualDebitCard,
                 variant: AppTextVariant.headlineSmall,
                 color: colors.textPrimary,
               ),

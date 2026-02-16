@@ -18,7 +18,7 @@ class ScanAddressQrScreen extends ConsumerWidget {
       backgroundColor: context.colors.canvas,
       body: QrScannerWidget(
         title: l10n.sendExternal_scanQr,
-        subtitle: 'Position the wallet address QR code within the frame',
+        subtitle: 'Positionnez le code QR de l\'adresse du portefeuille dans le cadre',
         onScan: (qrData) => _handleScan(context, ref, qrData),
         onError: () => _handleError(context),
       ),
@@ -34,7 +34,7 @@ class ScanAddressQrScreen extends ConsumerWidget {
       context.pop(address);
     } else {
       // Invalid QR code - show error
-      _showError(context, 'Invalid QR code. Not a valid wallet address.');
+      _showError(context, 'Code QR invalide. Adresse de portefeuille non valide.');
       // Allow rescanning
       Future.delayed(const Duration(seconds: 2), () {
         if (context.mounted) {
@@ -45,7 +45,7 @@ class ScanAddressQrScreen extends ConsumerWidget {
   }
 
   void _handleError(BuildContext context) {
-    _showError(context, 'Camera error. Please try again.');
+    _showError(context, 'Erreur caméra. Veuillez réessayer.');
   }
 
   void _showError(BuildContext context, String message) {

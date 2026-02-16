@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 
 /// Withdrawal methods matching Korido's mobile money providers.
 enum WithdrawMethod {
@@ -86,6 +87,7 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       final result = WithdrawResult.fromJson(response.data as Map<String, dynamic>);
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);
+      ref.invalidate(transactionsProvider);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

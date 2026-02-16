@@ -91,6 +91,7 @@ class UserProfile {
   final String? lastName;
   final String? email;
   final String? avatarUrl;
+  final String? avatarThumb;
   final String countryCode;
   final String kycStatus;
   final String role;
@@ -106,6 +107,7 @@ class UserProfile {
     this.lastName,
     this.email,
     this.avatarUrl,
+    this.avatarThumb,
     required this.countryCode,
     required this.kycStatus,
     required this.role,
@@ -136,6 +138,7 @@ class UserProfile {
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
+      avatarThumb: json['avatarThumb'] as String?,
       countryCode: json['countryCode'] as String? ?? 'CI',
       kycStatus: json['kycStatus'] as String? ?? 'none',
       role: json['role'] as String? ?? 'user',

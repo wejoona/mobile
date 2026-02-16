@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -66,7 +67,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
-              'Total Bill Amount',
+              AppStrings.totalBillAmount,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -168,7 +169,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
-                          'Split Equally',
+                          AppStrings.splitEqually,
                           variant: AppTextVariant.labelSmall,
                           color: _splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
@@ -194,7 +195,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         AppText(
-                          'Custom Amounts',
+                          AppStrings.customAmounts,
                           variant: AppTextVariant.labelSmall,
                           color: !_splitEqually ? context.colors.canvas : colors.textSecondary,
                         ),
@@ -212,7 +213,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               AppText(
-                'Include myself in the split',
+                AppStrings.includeMyselfInSplit,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textPrimary,
               ),
@@ -233,7 +234,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppText(
-          'Split With',
+          AppStrings.splitWith,
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),
@@ -241,7 +242,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           onPressed: () => _addParticipant(l10n, colors),
           icon: Icon(Icons.add, color: context.colors.gold, size: 20),
           label: AppText(
-            'Add Person',
+            AppStrings.addPerson,
             variant: AppTextVariant.labelMedium,
             color: context.colors.gold,
           ),
@@ -274,12 +275,12 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    'You',
+                    AppStrings.you,
                     variant: AppTextVariant.labelLarge,
                     color: colors.textPrimary,
                   ),
                   AppText(
-                    'Your share',
+                    AppStrings.yourShare,
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -609,7 +610,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const AppText(
-              'Add Person',
+              AppStrings.addPerson,
               variant: AppTextVariant.titleMedium,
             ),
             const SizedBox(height: AppSpacing.lg),

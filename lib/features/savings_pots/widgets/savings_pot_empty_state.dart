@@ -14,12 +14,12 @@ class SavingsPotEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.savings_outlined,
-      title: 'Start saving',
+      title: 'Commencez à épargner',
       description:
-          'Create a savings pot to set aside funds for your goals.',
+          'Créez une cagnotte pour mettre de côté des fonds pour vos objectifs.',
       action: onCreatePot != null
           ? EmptyStateAction(
-              label: 'Create Pot',
+              label: 'Créer une cagnotte',
               onPressed: onCreatePot!,
             )
           : null,

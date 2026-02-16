@@ -16,12 +16,12 @@ class TransactionsEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.receipt_long_outlined,
-      title: 'No transactions yet',
+      title: 'Aucune transaction',
       description:
-          'Your transaction history will appear here once you send or receive money.',
+          'Votre historique de transactions apparaîtra ici dès que vous enverrez ou recevrez de l\'argent.',
       action: onSendMoney != null
           ? EmptyStateAction(
-              label: 'Send Money',
+              label: 'Envoyer de l\'argent',
               onPressed: onSendMoney!,
             )
           : null,

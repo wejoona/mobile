@@ -34,24 +34,24 @@ class Device {
 
   factory Device.fromJson(Map<String, dynamic> json) {
     return Device(
-      id: json['id'] as String,
-      deviceIdentifier: json['device_identifier'] as String?,
+      id: (json['id'] ?? json['deviceId'] ?? '') as String,
+      deviceIdentifier: (json['device_identifier'] ?? json['deviceIdentifier']) as String?,
       brand: json['brand'] as String?,
       model: json['model'] as String?,
       os: json['os'] as String?,
-      osVersion: json['os_version'] as String?,
-      appVersion: json['app_version'] as String?,
+      osVersion: (json['os_version'] ?? json['osVersion']) as String?,
+      appVersion: (json['app_version'] ?? json['appVersion']) as String?,
       platform: json['platform'] as String?,
-      isTrusted: json['is_trusted'] as bool? ?? false,
-      trustedAt: json['trusted_at'] != null
-          ? DateTime.parse(json['trusted_at'] as String)
+      isTrusted: (json['is_trusted'] ?? json['isTrusted']) as bool? ?? false,
+      trustedAt: (json['trusted_at'] ?? json['trustedAt']) != null
+          ? DateTime.tryParse((json['trusted_at'] ?? json['trustedAt']).toString())
           : null,
-      isActive: json['is_active'] as bool? ?? true,
-      lastLoginAt: json['last_login_at'] != null
-          ? DateTime.parse(json['last_login_at'] as String)
+      isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
+      lastLoginAt: (json['last_login_at'] ?? json['lastLoginAt']) != null
+          ? DateTime.tryParse((json['last_login_at'] ?? json['lastLoginAt']).toString())
           : null,
-      lastIpAddress: json['last_ip_address'] as String?,
-      loginCount: json['login_count'] as int? ?? 0,
+      lastIpAddress: (json['last_ip_address'] ?? json['lastIpAddress']) as String?,
+      loginCount: (json['login_count'] ?? json['loginCount'] as num?)?.toInt() ?? 0,
     );
   }
 

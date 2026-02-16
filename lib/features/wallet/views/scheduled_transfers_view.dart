@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -127,7 +128,7 @@ class _ScheduledTransfersViewState
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Scheduled Transfers',
+          AppStrings.scheduledTransfers,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -174,7 +175,7 @@ class _ScheduledTransfersViewState
               backgroundColor: colors.gold,
               icon: Icon(Icons.add, color: colors.canvas),
               label: Text(
-                'New Schedule',
+                AppStrings.newSchedule,
                 style: TextStyle(color: colors.canvas),
               ),
             )
@@ -204,13 +205,13 @@ class _ScheduledTransfersViewState
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppText(
-              'No Scheduled Transfers',
+              AppStrings.noScheduledTransfers,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'Set up automatic recurring transfers to save time.',
+              AppStrings.setupRecurring,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,

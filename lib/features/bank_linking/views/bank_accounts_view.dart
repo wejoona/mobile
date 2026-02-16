@@ -16,11 +16,11 @@ class BankAccountsView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bank Accounts'),
-        actions: [IconButton(icon: const Icon(Icons.add_rounded), onPressed: () {})],
+        actions: [IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Ajouter un compte', onPressed: () {})],
       ),
       body: accountsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (accounts) {
           if (accounts.isEmpty) {
             return const EmptyState(

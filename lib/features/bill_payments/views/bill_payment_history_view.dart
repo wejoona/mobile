@@ -54,7 +54,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           IconButton(
             icon: Icon(Icons.filter_list, color: colors.icon),
             onPressed: _showFilterSheet,
-            tooltip: 'Filter',
+            tooltip: 'Filtrer',
           ),
         ],
       ),
@@ -167,7 +167,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
               ref.invalidate(billPaymentHistoryProvider);
             },
             child: Text(
-              'Clear',
+              'Effacer',
               style: TextStyle(color: context.colors.gold),
             ),
           ),
@@ -223,7 +223,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
-            'No Payment History',
+            'Aucun historique de paiement',
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -231,7 +231,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
             child: AppText(
-              'Your bill payments will appear here',
+              'Vos paiements de factures apparaîtront ici',
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
@@ -239,7 +239,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           ),
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            label: 'Pay a Bill',
+            label: 'Payer une facture',
             onPressed: () => context.push('/bill-payments'),
             icon: Icons.add,
           ),
@@ -268,7 +268,7 @@ class _BillPaymentHistoryViewState extends ConsumerState<BillPaymentHistoryView>
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
-            'Failed to Load History',
+            "Impossible de charger l'historique",
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -457,7 +457,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
           const SizedBox(height: AppSpacing.lg),
 
           AppText(
-            'Filter Payments',
+            'Filtrer les paiements',
             variant: AppTextVariant.titleMedium,
             color: context.colors.textPrimary,
           ),
@@ -465,7 +465,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           // Category Filter
           AppText(
-            'Category',
+            'Catégorie',
             variant: AppTextVariant.labelMedium,
             color: context.colors.textSecondary,
           ),
@@ -489,7 +489,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           // Status Filter
           AppText(
-            'Status',
+            'Statut',
             variant: AppTextVariant.labelMedium,
             color: context.colors.textSecondary,
           ),
@@ -516,7 +516,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
 
           // Apply Button
           AppButton(
-            label: 'Apply Filters',
+            label: 'Appliquer les filtres',
             onPressed: () => widget.onApply(_category, _status),
             isFullWidth: true,
           ),

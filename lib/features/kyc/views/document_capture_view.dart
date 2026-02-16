@@ -61,7 +61,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       debugPrint('[DocumentCapture] Simulator detected - showing gallery picker');
       if (mounted) {
         setState(() {
-          _cameraError = 'Camera mocked for simulator testing';
+          _cameraError = 'Caméra simulée pour les tests';
         });
       }
       return;
@@ -80,7 +80,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       if (_cameras == null || _cameras!.isEmpty) {
         if (mounted) {
           setState(() {
-            _cameraError = 'No cameras available on this device';
+            _cameraError = 'Aucune caméra disponible sur cet appareil';
           });
         }
         return;
@@ -156,7 +156,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       debugPrint('[DocumentCapture] Stack: $stack');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
+          SnackBar(content: Text("Impossible de sélectionner l'image : $e")),
         );
       }
     }
@@ -314,7 +314,7 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
               CircularProgressIndicator(color: colors.gold),
               SizedBox(height: AppSpacing.lg),
               AppText(
-                'Initializing camera...',
+                'Initialisation de la caméra...',
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),
@@ -337,10 +337,10 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     final isBackSide = documentType?.requiresBackSide == true && state.capturedDocuments.isNotEmpty;
 
     return KycInstructionScreen(
-      title: isBackSide ? 'Capture Back Side' : 'Capture $documentName',
+      title: isBackSide ? 'Capturer le verso' : 'Capturer $documentName',
       description: isBackSide
-          ? 'Now flip your document over and capture the back side.'
-          : 'Position your document within the frame and take a clear photo.',
+          ? 'Retournez votre document et capturez le verso.'
+          : 'Positionnez votre document dans le cadre et prenez une photo nette.',
       icon: Icons.badge_outlined,
       instructions: KycInstructions.documentCapture,
       buttonLabel: l10n.common_continue,

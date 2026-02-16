@@ -4,6 +4,7 @@ import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Full-screen legal document viewer
 class LegalDocumentView extends ConsumerWidget {
@@ -32,8 +33,8 @@ class LegalDocumentView extends ConsumerWidget {
         ),
         title: AppText(
           documentType == LegalDocumentType.termsOfService
-              ? 'Terms of Service'
-              : 'Privacy Policy',
+              ? AppStrings.termsOfService
+              : AppStrings.privacyPolicy,
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),
@@ -57,13 +58,13 @@ class LegalDocumentView extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               AppText(
-                'Failed to load document',
+                AppStrings.failedToLoadDocument,
                 variant: AppTextVariant.bodyLarge,
                 color: colors.textPrimary,
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
-                'Please try again later',
+                AppStrings.tryAgainLater,
                 variant: AppTextVariant.bodySmall,
                 color: colors.textSecondary,
               ),
@@ -105,7 +106,7 @@ class LegalDocumentView extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: AppText(
-                  'Effective: ${_formatDate(document.effectiveDate)}',
+                  '${AppStrings.effective} : ${_formatDate(document.effectiveDate)}',
                   variant: AppTextVariant.bodySmall,
                   color: colors.textTertiary,
                 ),
@@ -145,7 +146,7 @@ class LegalDocumentView extends ConsumerWidget {
                             ),
                             const SizedBox(width: AppSpacing.sm),
                             AppText(
-                              'What\'s New',
+                              AppStrings.whatsNew,
                               variant: AppTextVariant.labelLarge,
                               color: colors.infoText,
                             ),
@@ -230,10 +231,10 @@ class LegalDocumentView extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
     ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 }
 
@@ -305,13 +306,13 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppText(
-                  'Legal Agreements',
+                  AppStrings.legalAgreements,
                   variant: AppTextVariant.titleLarge,
                   color: colors.textPrimary,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 AppText(
-                  'Please review and accept our terms to continue',
+                  AppStrings.reviewTermsPrompt,
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
@@ -329,7 +330,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
               children: [
                 // Terms of Service
                 _buildDocumentTile(
-                  title: 'Terms of Service',
+                  title: AppStrings.termsOfService,
                   version: termsAsync.maybeWhen(
                     data: (doc) => 'v${doc.version}',
                     orElse: () => '',
@@ -346,7 +347,7 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
 
                 // Privacy Policy
                 _buildDocumentTile(
-                  title: 'Privacy Policy',
+                  title: AppStrings.privacyPolicy,
                   version: privacyAsync.maybeWhen(
                     data: (doc) => 'v${doc.version}',
                     orElse: () => '',
@@ -374,14 +375,14 @@ class _LegalConsentSheetState extends ConsumerState<LegalConsentSheet> {
             child: Column(
               children: [
                 AppText(
-                  'By tapping Accept, you agree to our Terms of Service and acknowledge our Privacy Policy',
+                  AppStrings.acceptTermsDisclaimer,
                   variant: AppTextVariant.bodySmall,
                   color: colors.textTertiary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppButton(
-                  label: 'Accept & Continue',
+                  label: AppStrings.acceptAndContinue,
                   onPressed: canAccept && !_isAccepting ? _handleAccept : null,
                   variant: AppButtonVariant.primary,
                   size: AppButtonSize.large,

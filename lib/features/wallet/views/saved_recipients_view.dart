@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
 import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
@@ -154,7 +155,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppText(
-                  'No results found',
+                  AppStrings.noResultsFound,
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                 ),
@@ -227,13 +228,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 AppText(
-                  'No recipients found',
+                  AppStrings.noRecipientsFound,
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: 'Add Recipient',
+                  label: AppStrings.addRecipient,
                   onPressed: _showAddRecipient,
                   variant: AppButtonVariant.secondary,
                 ),
@@ -279,7 +280,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             ),
             const SizedBox(height: AppSpacing.lg),
             AppText(
-              'Failed to load contacts',
+              AppStrings.failedToLoadContacts,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
             ),
@@ -311,7 +312,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Favorite updated'),
+            content: Text(AppStrings.favoriteUpdated),
             backgroundColor: context.colors.success,
           ),
         );
@@ -730,7 +731,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
 
           // Add Button
           AppButton(
-            label: 'Add Recipient',
+            label: AppStrings.addRecipient,
             onPressed: _canAdd() ? _add : null,
             variant: AppButtonVariant.primary,
             isFullWidth: true,

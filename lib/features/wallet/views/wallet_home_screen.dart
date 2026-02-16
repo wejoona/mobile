@@ -19,6 +19,7 @@ import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -242,7 +243,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           child: Row(
             children: [
               UserAvatar(
-                imageUrl: userState.avatarUrl,
+                imageUrl: userState.effectiveAvatarUrl,
                 firstName: userState.firstName,
                 lastName: userState.lastName,
                 size: UserAvatar.sizeMedium,
@@ -286,7 +287,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 Icons.settings_outlined,
                 color: colors.textSecondary,
               ),
-              tooltip: 'Settings',
+              tooltip: AppStrings.settings,
             ),
           ],
         ),
@@ -1078,13 +1079,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           CircularProgressIndicator(color: colors.gold, strokeWidth: 2),
           const SizedBox(height: AppSpacing.lg),
           AppText(
-            'Setting up your wallet...',
+            AppStrings.settingUpWallet,
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.xs),
           AppText(
-            'This will only take a moment',
+            AppStrings.onlyTakeAMoment,
             variant: AppTextVariant.bodyMedium,
             color: colors.textSecondary,
           ),
@@ -1325,13 +1326,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     }
     switch (type) {
       case TransactionType.deposit:
-        return 'Deposit';
+        return AppStrings.depositLabel;
       case TransactionType.withdrawal:
-        return 'Withdrawal';
+        return AppStrings.withdrawalLabel;
       case TransactionType.transferInternal:
-        return 'Transfer Received';
+        return AppStrings.transferReceived;
       case TransactionType.transferExternal:
-        return 'Transfer Sent';
+        return AppStrings.transferSent;
     }
   }
 

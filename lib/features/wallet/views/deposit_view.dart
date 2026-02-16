@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
@@ -109,7 +110,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Deposit Funds',
+          AppStrings.depositFunds,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -129,7 +130,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
             // Payment Methods by Universe
             AppText(
-              'Select Payment Method',
+              AppStrings.selectPaymentMethod,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -156,7 +157,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
             // Continue Button
             AppButton(
-              label: 'Continue',
+              label: AppStrings.continueLabel,
               onPressed: _canSubmit() ? () => _submit() : null,
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -177,7 +178,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            'Amount to deposit',
+            AppStrings.amountToDeposit,
             variant: AppTextVariant.cardLabel,
             color: colors.textSecondary,
           ),

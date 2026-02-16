@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 
 class ConfirmScreen extends ConsumerWidget {
   const ConfirmScreen({super.key});
@@ -204,8 +206,26 @@ class ConfirmScreen extends ConsumerWidget {
               padding: EdgeInsets.all(AppSpacing.md),
               child: AppButton(
                 label: l10n.send_confirmAndSend,
-                onPressed: () {
+                onPressed: () async {
                   HapticFeedback.mediumImpact();
+
+                  // Risk-based step-up evaluation
+                  final securityService = ref.read(riskBasedSecurityServiceProvider);
+                  final decision = await securityService.evaluateTransaction(
+                    type: 'transfer',
+                    amount: state.amount!,
+                    currency: 'USDC',
+                    recipientId: state.recipient?.phoneNumber,
+                    recipientType: 'internal',
+                  );
+
+                  if (decision.stepUpRequired) {
+                    if (!context.mounted) return;
+                    final passed = await RiskStepUpDialog.show(context, decision: decision);
+                    if (!passed) return;
+                  }
+
+                  if (!context.mounted) return;
                   context.push('/send/pin');
                 },
                 isFullWidth: true,

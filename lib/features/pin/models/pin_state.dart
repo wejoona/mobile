@@ -22,7 +22,7 @@ class PinState {
     this.status = PinStatus.notSet,
     this.isLoading = false,
     this.error,
-    this.remainingAttempts = 3,
+    this.remainingAttempts = 5,
     this.lockoutSeconds = 0,
   });
 

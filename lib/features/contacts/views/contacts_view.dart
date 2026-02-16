@@ -23,14 +23,14 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contacts'),
+        title: const Text('Contacts'),  // "Contacts" is the same in French
         actions: [
           IconButton(icon: const Icon(Icons.person_add_rounded), onPressed: () {}),
         ],
       ),
       body: contactsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (contacts) {
           final filtered = _searchQuery.isEmpty
               ? contacts
@@ -39,9 +39,9 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
           if (contacts.isEmpty) {
             return EmptyState(
               icon: Icons.people_rounded,
-              title: 'No contacts yet',
-              subtitle: 'Sync your phone contacts to find friends on Korido',
-              actionLabel: 'Sync Contacts',
+              title: 'Aucun contact',
+              subtitle: 'Synchronisez vos contacts téléphoniques pour trouver vos amis sur Korido.',
+              actionLabel: 'Synchroniser les contacts',
               onAction: () async {
                 final actions = ref.read(contactActionsProvider);
                 await actions.syncPhoneContacts([]);
@@ -55,7 +55,7 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: AppSearchBar(
-                  hintText: 'Search contacts...',
+                  hintText: 'Rechercher des contacts...',
                   onChanged: (q) => setState(() => _searchQuery = q),
                 ),
               ),
@@ -67,13 +67,13 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
                       if (_searchQuery.isEmpty && favorites.isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: Text('Favorites', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          child: Text('Favoris', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                         ),
                         ...favorites.map((c) => ContactTile(contact: c, onTap: () {})),
                         const Divider(),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                          child: Text('All Contacts', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          child: Text('Tous les contacts', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                         ),
                       ],
                       ...filtered.map((c) => ContactTile(contact: c, onTap: () {})),

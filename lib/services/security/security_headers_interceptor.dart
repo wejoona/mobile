@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
@@ -10,12 +11,14 @@ import 'package:usdc_wallet/utils/logger.dart';
 /// - `X-Device-Id` — stable device identifier
 /// - `X-Device-Fingerprint` — SHA-256 hash of device properties
 /// - `X-Risk-Score` — client-side risk score (0.0–1.0)
+/// - `X-Risk-Session` — session risk token from POST /risk/session
 ///
 /// These allow the backend to correlate requests per device and flag
 /// anomalous behaviour even before server-side risk evaluation runs.
 class SecurityHeadersInterceptor extends Interceptor {
   final DeviceFingerprintService _fingerprintService;
   final ClientRiskScoreService _riskScoreService;
+  String? sessionRiskToken;
 
   /// Paths that are considered sensitive and receive full headers.
   static const _sensitivePaths = [
@@ -65,6 +68,11 @@ class SecurityHeadersInterceptor extends Interceptor {
         options.headers['X-Device-Fingerprint'] = fingerprint;
       }
 
+      // Attach session risk token if available
+      if (sessionRiskToken != null) {
+        options.headers['X-Risk-Session'] = sessionRiskToken;
+      }
+
       // Attach risk score only on sensitive endpoints to avoid overhead
       if (_isSensitive(options.path)) {
         final action = _inferAction(options.path);
@@ -92,3 +100,11 @@ class SecurityHeadersInterceptor extends Interceptor {
     return RiskAction.transfer;
   }
 }
+
+/// Provider for SecurityHeadersInterceptor (singleton so token can be set)
+final securityHeadersInterceptorProvider = Provider<SecurityHeadersInterceptor>((ref) {
+  return SecurityHeadersInterceptor(
+    fingerprintService: ref.read(deviceFingerprintServiceProvider),
+    riskScoreService: ref.read(clientRiskScoreServiceProvider),
+  );
+});

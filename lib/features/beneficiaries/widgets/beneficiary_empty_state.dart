@@ -14,12 +14,12 @@ class BeneficiaryEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.people_outline,
-      title: 'No saved recipients',
+      title: 'Aucun bénéficiaire enregistré',
       description:
-          'Save your frequent recipients for faster transfers next time.',
+          'Enregistrez vos bénéficiaires fréquents pour des transferts plus rapides.',
       action: onAddBeneficiary != null
           ? EmptyStateAction(
-              label: 'Add Recipient',
+              label: 'Ajouter un bénéficiaire',
               onPressed: onAddBeneficiary!,
             )
           : null,

@@ -143,7 +143,7 @@ class _KycViewState extends ConsumerState<KycView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Identity Verification',
+          "Vérification d'identité",
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -262,13 +262,13 @@ class _KycViewState extends ConsumerState<KycView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          'Personal Information',
+          'Informations personnelles',
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
         AppText(
-          'Please provide your personal details as they appear on your ID document.',
+          "Veuillez fournir vos informations personnelles telles qu'elles apparaissent sur votre pièce d'identité.",
           variant: AppTextVariant.bodyMedium,
           color: colors.textSecondary,
         ),
@@ -276,7 +276,7 @@ class _KycViewState extends ConsumerState<KycView> {
 
         // First Name
         AppInput(
-          label: 'First Name',
+          label: 'Prénom',
           controller: _firstNameController,
           hint: 'Enter your first name',
           keyboardType: TextInputType.name,
@@ -285,7 +285,7 @@ class _KycViewState extends ConsumerState<KycView> {
 
         // Last Name
         AppInput(
-          label: 'Last Name',
+          label: 'Nom de famille',
           controller: _lastNameController,
           hint: 'Enter your last name',
           keyboardType: TextInputType.name,
@@ -297,7 +297,7 @@ class _KycViewState extends ConsumerState<KycView> {
           onTap: _selectDateOfBirth,
           child: AbsorbPointer(
             child: AppInput(
-              label: 'Date of Birth',
+              label: 'Date de naissance',
               controller: TextEditingController(
                 text: _dateOfBirth != null
                     ? DateFormat('MMM dd, yyyy').format(_dateOfBirth!)
@@ -337,7 +337,7 @@ class _KycViewState extends ConsumerState<KycView> {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
-                  'Your information must match the ID document you will upload in the next steps.',
+                  "Vos informations doivent correspondre à la pièce d'identité que vous téléchargerez aux étapes suivantes.",
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -354,13 +354,13 @@ class _KycViewState extends ConsumerState<KycView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          'Select Document Type',
+          'Choisir le type de document',
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.sm),
         AppText(
-          'Choose the type of government-issued ID you want to use for verification.',
+          "Choisissez le type de pièce d'identité officielle que vous souhaitez utiliser pour la vérification.",
           variant: AppTextVariant.bodyMedium,
           color: colors.textSecondary,
         ),
@@ -384,7 +384,7 @@ class _KycViewState extends ConsumerState<KycView> {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
-                  'Make sure your document is valid and not expired. We accept documents from most countries.',
+                  'Assurez-vous que votre document est valide et non expiré. Nous acceptons les documents de la plupart des pays.',
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -407,7 +407,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         const SizedBox(height: AppSpacing.sm),
         AppText(
-          'Take clear photos of the front and back of your document.',
+          'Prenez des photos claires du recto et du verso de votre document.',
           variant: AppTextVariant.bodyMedium,
           color: colors.textSecondary,
         ),
@@ -637,7 +637,7 @@ class _KycViewState extends ConsumerState<KycView> {
 
         // Personal Information Section
         AppText(
-          'Personal Information',
+          'Informations personnelles',
           variant: AppTextVariant.labelLarge,
           color: colors.textPrimary,
         ),
@@ -650,7 +650,7 @@ class _KycViewState extends ConsumerState<KycView> {
         ),
         _ReviewItem(
           icon: Icons.cake,
-          label: 'Date of Birth',
+          label: 'Date de naissance',
           value: _dateOfBirth != null
               ? DateFormat('MMM dd, yyyy').format(_dateOfBirth!)
               : 'Not set',
@@ -1271,7 +1271,7 @@ class _KycViewState extends ConsumerState<KycView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Identity Verification',
+          "Vérification d'identité",
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -1324,7 +1324,7 @@ class _KycViewState extends ConsumerState<KycView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Identity Verification',
+          "Vérification d'identité",
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(

@@ -1,11 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
 
 /// Profile Edit Screen
 /// Allows users to update their personal information
@@ -22,6 +28,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   bool _isLoading = false;
+  File? _selectedImage;
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -32,6 +40,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _firstNameController.text = userState.firstName ?? '';
       _lastNameController.text = userState.lastName ?? '';
       _emailController.text = userState.email ?? '';
+      // Load existing avatar
+      if (userState.avatarUrl != null && userState.avatarUrl!.startsWith('/')) {
+        final file = File(userState.avatarUrl!);
+        if (file.existsSync()) {
+          setState(() => _selectedImage = file);
+        }
+      }
+      _avatarUrl = userState.avatarUrl;
     });
   }
 
@@ -53,7 +69,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Edit Profile',
+          'Modifier le profil',
           variant: AppTextVariant.titleLarge,
           color: context.colors.textPrimary,
         ),
@@ -75,7 +91,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               // First Name
               AppText(
-                'First Name',
+                'Prénom',
                 variant: AppTextVariant.labelMedium,
                 color: context.colors.textSecondary,
               ),
@@ -99,7 +115,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               // Last Name
               AppText(
-                'Last Name',
+                'Nom de famille',
                 variant: AppTextVariant.labelMedium,
                 color: context.colors.textSecondary,
               ),
@@ -123,7 +139,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               // Email (Optional)
               AppText(
-                'Email (Optional)',
+                'E-mail (optionnel)',
                 variant: AppTextVariant.labelMedium,
                 color: context.colors.textSecondary,
               ),
@@ -149,7 +165,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               // Phone Number (Read-only)
               AppText(
-                'Phone Number',
+                'Numéro de téléphone',
                 variant: AppTextVariant.labelMedium,
                 color: context.colors.textSecondary,
               ),
@@ -189,7 +205,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
-                'Phone number cannot be changed',
+                'Le numéro de téléphone ne peut pas être modifié',
                 variant: AppTextVariant.bodySmall,
                 color: context.colors.textSecondary,
               ),
@@ -212,54 +228,134 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
   Widget _buildAvatarSection(UserState userState) {
     return Center(
-      child: Stack(
-        children: [
-          // Avatar
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: context.colors.goldGradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.full),
-              boxShadow: AppShadows.goldGlow,
-            ),
-            child: Center(
-              child: AppText(
-                _getInitials(userState),
-                variant: AppTextVariant.displaySmall,
-                color: context.colors.textInverse,
-              ),
-            ),
-          ),
-          // Edit button
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 32,
-              height: 32,
+      child: GestureDetector(
+        onTap: _pickProfileImage,
+        child: Stack(
+          children: [
+            // Avatar
+            Container(
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
-                color: context.colors.gold,
+                gradient: _selectedImage == null
+                    ? LinearGradient(
+                        colors: context.colors.goldGradient,
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
                 borderRadius: BorderRadius.circular(AppRadius.full),
-                border: Border.all(
-                  color: context.colors.canvas,
-                  width: 2,
+                boxShadow: AppShadows.goldGlow,
+                image: _selectedImage != null
+                    ? DecorationImage(
+                        image: FileImage(_selectedImage!),
+                        fit: BoxFit.cover,
+                      )
+                    : _avatarUrl != null
+                        ? DecorationImage(
+                            image: NetworkImage(_avatarUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+              ),
+              child: _selectedImage == null && _avatarUrl == null
+                  ? Center(
+                      child: AppText(
+                        _getInitials(userState),
+                        variant: AppTextVariant.displaySmall,
+                        color: context.colors.textInverse,
+                      ),
+                    )
+                  : null,
+            ),
+            // Edit button
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: context.colors.gold,
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  border: Border.all(
+                    color: context.colors.canvas,
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  Icons.camera_alt,
+                  size: 16,
+                  color: context.colors.textInverse,
                 ),
               ),
-              child: Icon(
-                Icons.edit,
-                size: 16,
-                color: context.colors.textInverse,
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _pickProfileImage() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Prendre une photo'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Choisir dans la galerie'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (source == null) return;
+
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: source,
+      preferredCameraDevice: CameraDevice.front,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 85,
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
+    }
+  }
+
+  Future<String?> _uploadProfileImage(File image) async {
+    try {
+      final dio = ref.read(dioProvider);
+      final formData = FormData.fromMap({
+        'avatar': await MultipartFile.fromFile(
+          image.path,
+          filename: 'avatar.jpg',
+        ),
+      });
+
+      final response = await dio.post('/user/avatar', data: formData);
+
+      // ignore: avoid_dynamic_calls
+      if (response.data['success'] == true) {
+        // ignore: avoid_dynamic_calls
+        return response.data['data']?['avatarUrl'] as String?;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   String _getInitials(UserState userState) {
@@ -296,19 +392,54 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Update user profile
+      String? savedAvatarUrl;
+
+      // Save profile image locally + attempt backend upload
+      if (_selectedImage != null) {
+        // Save to app documents for persistence
+        final appDir = await getApplicationDocumentsDirectory();
+        final savedPath = '${appDir.path}/profile_avatar.jpg';
+        await _selectedImage!.copy(savedPath);
+        savedAvatarUrl = savedPath;
+
+        // Persist local path for app restart
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'local_avatar_path', value: savedPath);
+
+        // Also try uploading to backend (best-effort)
+        final url = await _uploadProfileImage(_selectedImage!);
+        if (url != null) {
+          savedAvatarUrl = url; // Prefer server URL if available
+        }
+      }
+
+      // Update backend profile (best-effort)
+      final dio = ref.read(dioProvider);
+      try {
+        await dio.put('/user/profile', data: {
+          'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
+          if (_emailController.text.trim().isNotEmpty)
+            'email': _emailController.text.trim(),
+        });
+      } catch (_) {
+        // Backend update failed — still save locally
+      }
+
+      // Update local state (including avatar)
       ref.read(userStateMachineProvider.notifier).updateProfile(
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         email: _emailController.text.trim().isEmpty
             ? null
             : _emailController.text.trim(),
+        avatarUrl: savedAvatarUrl,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Profile updated successfully'),
+            content: Text('Profil mis à jour avec succès'),
             backgroundColor: context.colors.success,
           ),
         );

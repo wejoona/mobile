@@ -41,18 +41,18 @@ class TransactionLimits {
 
   factory TransactionLimits.fromJson(Map<String, dynamic> json) {
     return TransactionLimits(
-      dailyLimit: (json['dailyLimit'] as num).toDouble(),
+      dailyLimit: (json['dailyLimit'] as num?)?.toDouble() ?? 0.0,
       weeklyLimit: (json['weeklyLimit'] as num?)?.toDouble() ?? 0.0,
-      monthlyLimit: (json['monthlyLimit'] as num).toDouble(),
+      monthlyLimit: (json['monthlyLimit'] as num?)?.toDouble() ?? 0.0,
       singleTransactionLimit: (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
       singleTransactionMax: (json['singleTransactionMax'] as num?)?.toDouble() ?? (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
       withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
-      dailyUsed: (json['dailyUsed'] as num).toDouble(),
+      dailyUsed: (json['dailyUsed'] as num?)?.toDouble() ?? 0.0,
       weeklyUsed: (json['weeklyUsed'] as num?)?.toDouble() ?? 0.0,
-      monthlyUsed: (json['monthlyUsed'] as num).toDouble(),
+      monthlyUsed: (json['monthlyUsed'] as num?)?.toDouble() ?? 0.0,
       currency: json['currency'] as String? ?? 'USDC',
-      kycTier: json['kycTier'] as int,
-      tierName: json['tierName'] as String,
+      kycTier: (json['kycTier'] as num?)?.toInt() ?? 0,
+      tierName: json['tierName'] as String? ?? 'Basic',
       nextTierName: json['nextTierName'] as String?,
       nextTierDailyLimit: json['nextTierDailyLimit'] != null
           ? (json['nextTierDailyLimit'] as num).toDouble()

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -40,11 +41,19 @@ class UserStateMachine extends Notifier<UserState> {
       final phone = await _storage.read(key: _phoneKey);
 
       if (token != null && token.isNotEmpty) {
+        // Load local avatar immediately (before network call)
+        String? localAvatar;
+        final savedAvatar = await _storage.read(key: 'local_avatar_path');
+        if (savedAvatar != null && await File(savedAvatar).exists()) {
+          localAvatar = savedAvatar;
+        }
+
         // We have a token, set authenticated state first
         state = UserState(
           status: AuthStatus.authenticated,
           accessToken: token,
           phone: phone,
+          avatarUrl: localAvatar,
         );
 
         // Fetch user profile to populate all user data
@@ -80,12 +89,22 @@ class UserStateMachine extends Notifier<UserState> {
         lastName: profile.lastName,
         email: profile.email,
         avatarUrl: profile.avatarUrl,
+        avatarThumb: profile.avatarThumb,
         countryCode: profile.countryCode,
         kycStatus: _parseKycStatus(profile.kycStatus),
       );
 
       // Also update storage with the phone in case it wasn't stored
       await _storage.write(key: _phoneKey, value: profile.phone);
+
+      // Prefer local file for instant display; fall back to server URL
+      final localAvatar = await _storage.read(key: 'local_avatar_path');
+      if (localAvatar != null && await File(localAvatar).exists()) {
+        state = state.copyWith(avatarUrl: localAvatar);
+      } else if (profile.avatarUrl == null || profile.avatarUrl!.isEmpty) {
+        // No local, no server — no avatar
+      }
+      // else: server URL already set above in copyWith
     } catch (e) {
       // Profile fetch failed, but user is still authenticated
       // Don't change auth status

@@ -167,7 +167,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
           // Receipt Number
           _buildReceiptRow(
             context,
-            'Receipt Number',
+            'Numéro de reçu',
             receipt.receiptNumber,
             copyable: true,
           ),
@@ -200,7 +200,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
           // Total
           _buildReceiptRow(
             context,
-            'Total Paid',
+            'Total payé',
             '${receipt.totalAmount.toStringAsFixed(0)} ${receipt.currency}',
             isHighlighted: true,
           ),
@@ -219,7 +219,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
             _buildReceiptRow(
               context,
-              'Reference',
+              'Référence',
               receipt.providerReference!,
               copyable: true,
             ),
@@ -294,7 +294,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
       child: Column(
         children: [
           AppText(
-            'Your Token',
+            'Votre jeton',
             variant: AppTextVariant.labelMedium,
             color: colors.gold,
           ),
@@ -357,7 +357,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Scan for receipt details',
+            'Scannez pour les détails du reçu',
             style: TextStyle(
               color: Colors.black54,
               fontSize: 12,
@@ -391,7 +391,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
             AppText(
-              'Failed to Load Receipt',
+              'Impossible de charger le reçu',
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -404,7 +404,7 @@ class BillPaymentSuccessView extends ConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'Return Home',
+              label: "Retour à l'accueil",
               onPressed: () => context.go('/home'),
             ),
           ],

@@ -31,7 +31,7 @@ class PinService {
   /// Set a new PIN
   /// SECURITY: PIN is hashed with a unique salt before storage
   Future<bool> setPin(String pin) async {
-    if (pin.length != 4 || !RegExp(r'^\d{4}$').hasMatch(pin)) {
+    if (pin.length != 6 || !RegExp(r'^\d{6}$').hasMatch(pin)) {
       return false;
     }
 
@@ -326,25 +326,10 @@ class PinService {
 
   /// Check for weak PINs
   bool _isWeakPin(String pin) {
-    // Common weak PINs
-    const weakPins = [
-      '0000', '1111', '2222', '3333', '4444',
-      '5555', '6666', '7777', '8888', '9999',
-      '1234', '4321', '1212', '2121', '0123',
-      '1010', '2020', '1122', '2211', '1357',
-      '2468', '0852', '9876', '6789',
-    ];
+    // Check for all same digit (000000, 111111, etc.)
+    if (pin.split('').toSet().length == 1) return true;
 
-    if (weakPins.contains(pin)) {
-      return true;
-    }
-
-    // Check for repeated digits
-    if (pin[0] == pin[1] && pin[1] == pin[2] && pin[2] == pin[3]) {
-      return true;
-    }
-
-    // Check for sequential digits
+    // Check for sequential digits (123456, 234567, etc.)
     final digits = pin.split('').map(int.parse).toList();
     bool isSequential = true;
     for (int i = 1; i < digits.length; i++) {
@@ -355,7 +340,7 @@ class PinService {
     }
     if (isSequential) return true;
 
-    // Check for reverse sequential
+    // Check for reverse sequential (654321, 987654, etc.)
     isSequential = true;
     for (int i = 1; i < digits.length; i++) {
       if (digits[i] != digits[i - 1] - 1) {
@@ -364,6 +349,12 @@ class PinService {
       }
     }
     if (isSequential) return true;
+
+    // Check for repeating pairs (121212, 010101, etc.)
+    if (pin.length == 6) {
+      final pair = pin.substring(0, 2);
+      if (pin == pair * 3) return true;
+    }
 
     return false;
   }

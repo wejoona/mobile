@@ -44,10 +44,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
         _biometricEnabled = isEnabled;
       });
 
-      // Auto-show biometric if enabled
-      if (_biometricSupported && _biometricEnabled) {
-        _handleBiometric();
-      }
+      // Biometric is user-initiated only — no auto-fire
     }
   }
 

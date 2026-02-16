@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -64,7 +65,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Pay Bills',
+          AppStrings.payBills,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -84,7 +85,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
 
             // Bill Categories
             AppText(
-              'Select Category',
+              AppStrings.selectCategory,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -108,7 +109,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
 
                 // Account Number
                 AppText(
-                  'Account/Meter Number',
+                  AppStrings.accountMeterNumber,
                   variant: AppTextVariant.labelMedium,
                   color: colors.textSecondary,
                 ),

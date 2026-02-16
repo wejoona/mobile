@@ -160,7 +160,7 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
                         AppText('Wallet: ${walletState.status.name}', variant: AppTextVariant.bodySmall),
                         AppText('KYC: ${appState.kyc.name}', variant: AppTextVariant.bodySmall),
                         if (walletState.error != null)
-                          AppText('Error: ${walletState.error}', variant: AppTextVariant.bodySmall, color: colors.error),
+                          AppText('Erreur : ${walletState.error}', variant: AppTextVariant.bodySmall, color: colors.error),
                       ],
                     ),
                   ),

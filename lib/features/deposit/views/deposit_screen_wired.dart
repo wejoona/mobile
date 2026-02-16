@@ -138,7 +138,7 @@ class _ResultScreen extends StatelessWidget {
               ),
               if (result.reference != null) ...[
                 const SizedBox(height: AppSpacing.sm),
-                Text('Reference: ${result.reference}', style: Theme.of(context).textTheme.bodySmall),
+                Text('Référence : ${result.reference}', style: Theme.of(context).textTheme.bodySmall),
               ],
               if (result.instructions != null) ...[
                 const SizedBox(height: AppSpacing.md),

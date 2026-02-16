@@ -14,12 +14,12 @@ class CardEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.credit_card_outlined,
-      title: 'No cards yet',
+      title: 'Aucune carte',
       description:
-          'Create a virtual card to make online payments with your Korido balance.',
+          'Créez une carte virtuelle pour effectuer des paiements en ligne avec votre solde Korido.',
       action: onCreateCard != null
           ? EmptyStateAction(
-              label: 'Create Card',
+              label: 'Créer une carte',
               onPressed: onCreateCard!,
             )
           : null,

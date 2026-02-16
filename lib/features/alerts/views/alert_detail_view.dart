@@ -38,7 +38,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Alert Details',
+          "Détails de l'alerte",
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -61,7 +61,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
               ),
               const SizedBox(height: AppSpacing.lg),
               AppText(
-                'Failed to load alert',
+                "Impossible de charger l'alerte",
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
               ),
@@ -79,7 +79,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           if (alert == null) {
             return Center(
               child: AppText(
-                'Alert not found',
+                'Alerte introuvable',
                 variant: AppTextVariant.titleMedium,
                 color: colors.textSecondary,
               ),
@@ -258,7 +258,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            'Details',
+            'Détails',
             variant: AppTextVariant.labelMedium,
             color: colors.textTertiary,
           ),
@@ -286,7 +286,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            'Related Transaction',
+            'Transaction associée',
             variant: AppTextVariant.labelMedium,
             color: colors.textTertiary,
           ),
@@ -333,7 +333,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  'Action Taken',
+                  'Action effectuée',
                   variant: AppTextVariant.labelMedium,
                   color: colors.textTertiary,
                 ),
@@ -366,7 +366,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          'Quick Actions',
+          'Actions rapides',
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),

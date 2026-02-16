@@ -9,9 +9,9 @@ class DepositEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return const EmptyState(
       icon: Icons.account_balance_wallet_outlined,
-      title: 'No deposit methods available',
+      title: 'Aucune méthode de dépôt disponible',
       description:
-          'Deposit methods will be available once your account is verified.',
+          'Les méthodes de dépôt seront disponibles une fois votre compte vérifié.',
     );
   }
 }

@@ -22,6 +22,7 @@ class ProfilePictureService {
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.front,
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 85,

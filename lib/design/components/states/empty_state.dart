@@ -188,7 +188,7 @@ class EmptyStateVariant {
       description: description,
       action: onClear != null
           ? EmptyStateAction(
-              label: 'Clear Search',
+              label: 'Effacer la recherche',
               onPressed: onClear,
             )
           : null,
@@ -207,7 +207,7 @@ class EmptyStateVariant {
       description: description,
       action: onAdd != null
           ? EmptyStateAction(
-              label: 'Add Beneficiary',
+              label: 'Ajouter un bénéficiaire',
               onPressed: onAdd,
             )
           : null,
@@ -238,7 +238,7 @@ class EmptyStateVariant {
       description: description,
       action: onRetry != null
           ? EmptyStateAction(
-              label: 'Retry',
+              label: 'Réessayer',
               onPressed: onRetry,
             )
           : null,

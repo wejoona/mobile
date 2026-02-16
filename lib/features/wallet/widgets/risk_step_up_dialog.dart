@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Dialog that handles risk-based step-up verification
 /// Shows appropriate UI based on the step-up type required
@@ -43,10 +46,37 @@ class RiskStepUpDialog extends ConsumerStatefulWidget {
 class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   bool _isProcessing = false;
   bool _showLiveness = false;
+  bool _showOtp = false;
   String? _error;
+
+  // OTP
+  final _otpController = TextEditingController();
+  int _resendCountdown = 0;
+  Timer? _resendTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.decision.stepUpType == StepUpType.otp) {
+      _showOtp = true;
+      // Auto-send OTP on dialog open
+      WidgetsBinding.instance.addPostFrameCallback((_) => _sendOtp());
+    }
+  }
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    _resendTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_showOtp) {
+      return _buildOtpView();
+    }
+
     if (_showLiveness) {
       return _buildLivenessView();
     }
@@ -371,6 +401,145 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         setState(() => _isProcessing = false);
       }
     }
+  }
+
+  Future<void> _sendOtp() async {
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/step-up/send-otp', data: {
+        'challengeToken': widget.decision.challengeToken,
+      });
+      _startResendCountdown();
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Failed to send OTP: $e');
+    }
+  }
+
+  void _startResendCountdown() {
+    setState(() => _resendCountdown = 60);
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) { timer.cancel(); return; }
+      setState(() {
+        _resendCountdown--;
+        if (_resendCountdown <= 0) timer.cancel();
+      });
+    });
+  }
+
+  Future<void> _verifyOtp(String code) async {
+    setState(() { _isProcessing = true; _error = null; });
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.post('/step-up/verify-otp', data: {
+        'challengeToken': widget.decision.challengeToken,
+        'code': code,
+      });
+      // ignore: avoid_dynamic_calls
+      if (response.data['success'] == true && response.data['data']['valid'] == true) {
+        widget.onSuccess();
+      } else {
+        setState(() => _error = 'Invalid OTP code');
+      }
+    } catch (e) {
+      setState(() => _error = 'Verification failed: $e');
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  Widget _buildOtpView() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40, height: 4,
+            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(height: 24),
+          const Icon(Icons.sms, size: 48, color: Colors.orange),
+          const SizedBox(height: 16),
+          const Text('Enter Verification Code', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text('A 6-digit code has been sent to your phone', style: TextStyle(color: Colors.grey[600])),
+          const SizedBox(height: 24),
+
+          // 6-digit OTP input with PIN-style boxes
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(6, (index) {
+              final hasChar = _otpController.text.length > index;
+              return Container(
+                width: 44, height: 52,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: hasChar ? Colors.orange : Colors.grey[300]!,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  hasChar ? _otpController.text[index] : '',
+                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              );
+            }),
+          ),
+
+          // Hidden text field for keyboard input
+          SizedBox(
+            height: 0,
+            child: TextField(
+              controller: _otpController,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+              onChanged: (value) {
+                setState(() {});
+                if (value.length == 6) {
+                  _verifyOtp(value);
+                }
+              },
+            ),
+          ),
+
+          if (_error != null) ...[
+            const SizedBox(height: 16),
+            Text(_error!, style: const TextStyle(color: Colors.red)),
+          ],
+
+          if (_isProcessing) ...[
+            const SizedBox(height: 16),
+            const CircularProgressIndicator(),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Resend button
+          TextButton(
+            onPressed: _resendCountdown > 0 ? null : _sendOtp,
+            child: Text(
+              _resendCountdown > 0
+                  ? 'Resend code in ${_resendCountdown}s'
+                  : 'Resend code',
+            ),
+          ),
+
+          TextButton(
+            onPressed: widget.onCancel,
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLivenessView() {

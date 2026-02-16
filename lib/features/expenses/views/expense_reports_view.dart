@@ -415,7 +415,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Erreur : $e'),
             backgroundColor: context.colors.error,
           ),
         );
@@ -472,7 +472,7 @@ class _ExpenseReportsViewState extends ConsumerState<ExpenseReportsView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $e'),
+            content: Text('Erreur : $e'),
             backgroundColor: context.colors.error,
           ),
         );

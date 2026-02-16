@@ -47,8 +47,8 @@ class ErrorState extends StatelessWidget {
   const ErrorState.network({
     required this.onRetry,
     super.key,
-    this.title = 'Connection Error',
-    this.message = 'Please check your internet connection and try again',
+    this.title = 'Erreur de connexion',
+    this.message = 'Veuillez vérifier votre connexion internet et réessayer.',
   })  : icon = Icons.wifi_off_outlined,
         onContactSupport = null,
         padding = null,
@@ -58,8 +58,8 @@ class ErrorState extends StatelessWidget {
   const ErrorState.server({
     required this.onRetry,
     super.key,
-    this.title = 'Server Error',
-    this.message = 'Our servers are experiencing issues. Please try again later',
+    this.title = 'Erreur serveur',
+    this.message = 'Nos serveurs rencontrent des difficultés. Veuillez réessayer plus tard.',
     this.onContactSupport,
   })  : icon = Icons.cloud_off_outlined,
         padding = null,
@@ -188,7 +188,7 @@ class ErrorState extends StatelessWidget {
                   const Icon(Icons.refresh, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Try Again',
+                    'Réessayer',
                     style: AppTypography.button,
                   ),
                 ],
@@ -223,7 +223,7 @@ class ErrorState extends StatelessWidget {
                   const Icon(Icons.support_agent_outlined, size: 20),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Contact Support',
+                    'Contacter le support',
                     style: AppTypography.button.copyWith(
                       color: colors.textPrimary,
                     ),

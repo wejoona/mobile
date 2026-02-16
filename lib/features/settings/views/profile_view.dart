@@ -50,25 +50,13 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
           children: [
             // Avatar
             Center(
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: context.colors.goldGradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: AppShadows.goldGlow,
-                ),
-                child: Center(
-                  child: AppText(
-                    _getInitials(userState),
-                    variant: AppTextVariant.headlineLarge,
-                    color: context.colors.textInverse,
-                  ),
-                ),
+              child: UserAvatar(
+                imageUrl: userState.effectiveAvatarUrl,
+                firstName: userState.firstName,
+                lastName: userState.lastName,
+                size: UserAvatar.sizeXLarge,
+                showBorder: true,
+                borderColor: colors.gold,
               ),
             ),
 

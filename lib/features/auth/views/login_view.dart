@@ -12,6 +12,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Login screen with two modes:
 /// 1. Returning user with biometric → full-screen biometric prompt
@@ -85,7 +86,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     try {
       final biometricService = ref.read(biometricServiceProvider);
       final authenticatedBio = await biometricService.authenticate(
-        localizedReason: 'Unlock Korido',
+        localizedReason: AppStrings.unlockKorido,
       );
 
       if (authenticatedBio.success && mounted) {
@@ -95,7 +96,7 @@ class _LoginViewState extends ConsumerState<LoginView>
           return;
         }
         if (mounted) {
-          setState(() => _biometricError = 'Session expired. Please log in again.');
+          setState(() => _biometricError = AppStrings.sessionExpiredRelogin);
           // Clear invalid tokens and switch to phone
           await Future.delayed(const Duration(seconds: 2));
           if (mounted) _switchToPhone();
@@ -250,7 +251,7 @@ class _LoginViewState extends ConsumerState<LoginView>
               const SizedBox(height: AppSpacing.lg),
 
               AppText(
-                _biometricInProgress ? 'Authenticating...' : 'Tap to unlock',
+                _biometricInProgress ? AppStrings.authenticating : AppStrings.tapToUnlock,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),
@@ -261,7 +262,7 @@ class _LoginViewState extends ConsumerState<LoginView>
               TextButton(
                 onPressed: _switchToPhone,
                 child: AppText(
-                  'Use phone number instead',
+                  AppStrings.usePhoneInstead,
                   variant: AppTextVariant.labelMedium,
                   color: colors.gold,
                 ),

@@ -23,7 +23,7 @@ class PinNotifier extends Notifier<PinState> {
     if (hasPin) {
       state = state.copyWith(
         status: PinStatus.active,
-        remainingAttempts: 3,
+        remainingAttempts: PinService.maxAttempts,
       );
     } else {
       state = state.copyWith(status: PinStatus.notSet);
@@ -42,7 +42,7 @@ class PinNotifier extends Notifier<PinState> {
         state = state.copyWith(
           status: PinStatus.active,
           isLoading: false,
-          remainingAttempts: 3,
+          remainingAttempts: PinService.maxAttempts,
         );
         return true;
       } else {
@@ -72,7 +72,7 @@ class PinNotifier extends Notifier<PinState> {
       if (success) {
         state = state.copyWith(
           isLoading: false,
-          remainingAttempts: 3,
+          remainingAttempts: PinService.maxAttempts,
         );
         return true;
       } else {
@@ -97,7 +97,7 @@ class PinNotifier extends Notifier<PinState> {
     final result = await service.verifyPinLocally(pin);
 
     if (result.success) {
-      state = state.copyWith(remainingAttempts: 5);
+      state = state.copyWith(remainingAttempts: PinService.maxAttempts);
       return true;
     } else {
       if (result.isLocked) {
@@ -124,7 +124,7 @@ class PinNotifier extends Notifier<PinState> {
         state = state.copyWith(
           status: PinStatus.active,
           lockoutSeconds: 0,
-          remainingAttempts: 5,
+          remainingAttempts: PinService.maxAttempts,
         );
       } else {
         state = state.copyWith(lockoutSeconds: state.lockoutSeconds - 1);

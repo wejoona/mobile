@@ -28,19 +28,29 @@ class ReferralsView extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.canvas,
+      appBar: AppBar(
+        backgroundColor: colors.canvas,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: AppText(
+          l10n.referrals_title,
+          variant: AppTextVariant.headlineMedium,
+          color: colors.textPrimary,
+        ),
+        centerTitle: false,
+        elevation: 0,
+      ),
       body: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              AppText(
-                l10n.referrals_title,
-                variant: AppTextVariant.headlineMedium,
-                color: colors.textPrimary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
+              // Subtitle
               AppText(
                 l10n.referrals_subtitle,
                 variant: AppTextVariant.bodyMedium,

@@ -14,12 +14,12 @@ class ReferralEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.people_outline,
-      title: 'Invite friends',
+      title: 'Invitez vos amis',
       description:
-          'Share your referral code and earn rewards when friends join Korido.',
+          'Partagez votre code de parrainage et gagnez des récompenses quand vos amis rejoignent Korido.',
       action: onShareCode != null
           ? EmptyStateAction(
-              label: 'Share Code',
+              label: 'Partager le code',
               onPressed: onShareCode!,
             )
           : null,

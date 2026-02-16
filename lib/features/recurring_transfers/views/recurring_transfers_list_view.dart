@@ -18,12 +18,12 @@ class RecurringTransfersListView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Recurring Transfers'),
         actions: [
-          IconButton(icon: const Icon(Icons.add_rounded), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Nouveau virement récurrent', onPressed: () {}),
         ],
       ),
       body: transfersAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (transfers) {
           if (transfers.isEmpty) {
             return const EmptyState(

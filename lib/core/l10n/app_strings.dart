@@ -109,6 +109,134 @@ abstract class AppStrings {
   static const kycVerified = 'Vérifié'; // Verified
   static const kycRejected = 'Rejeté'; // Rejected
 
+  // ── Auth Biometric ──
+  static const unlockKorido = 'Déverrouiller Korido'; // Unlock Korido
+  static const authenticateToAccess = 'Authentifiez-vous pour accéder à Korido'; // Authenticate to access Korido
+  static const sessionExpiredRelogin = 'Session expirée. Veuillez vous reconnecter.'; // Session expired. Please log in again.
+  static const authenticating = 'Authentification...'; // Authenticating...
+  static const tapToUnlock = 'Appuyez pour déverrouiller'; // Tap to unlock
+  static const usePhoneInstead = 'Utiliser le numéro de téléphone'; // Use phone number instead
+
+  // ── Legal ──
+  static const termsOfService = 'Conditions d\'utilisation'; // Terms of Service
+  static const privacyPolicy = 'Politique de confidentialité'; // Privacy Policy
+  static const failedToLoadDocument = 'Impossible de charger le document'; // Failed to load document
+  static const tryAgainLater = 'Veuillez réessayer plus tard'; // Please try again later
+  static const whatsNew = 'Nouveautés'; // What's New
+  static const legalAgreements = 'Accords juridiques'; // Legal Agreements
+  static const reviewTermsPrompt = 'Veuillez lire et accepter nos conditions pour continuer'; // Please review and accept our terms to continue
+  static const acceptTermsDisclaimer = 'En appuyant sur Accepter, vous acceptez nos Conditions d\'utilisation et reconnaissez notre Politique de confidentialité'; // By tapping Accept...
+  static const acceptAndContinue = 'Accepter et continuer'; // Accept & Continue
+  static const effective = 'En vigueur'; // Effective
+
+  // ── Wallet Home ──
+  static const settingUpWallet = 'Configuration de votre portefeuille...'; // Setting up your wallet...
+  static const onlyTakeAMoment = 'Cela ne prendra qu\'un instant'; // This will only take a moment
+  static const depositLabel = 'Dépôt'; // Deposit
+  static const withdrawalLabel = 'Retrait'; // Withdrawal
+  static const transferReceived = 'Transfert reçu'; // Transfer Received
+  static const transferSent = 'Transfert envoyé'; // Transfer Sent
+
+  // ── Deposit ──
+  static const depositFunds = 'Déposer des fonds'; // Deposit Funds
+  static const selectPaymentMethod = 'Choisir le mode de paiement'; // Select Payment Method
+  static const amountToDeposit = 'Montant à déposer'; // Amount to deposit
+  static const continueLabel = 'Continuer'; // Continue
+  static const paymentInstructions = 'Instructions de paiement'; // Payment Instructions
+  static const pendingPayment = 'Paiement en attente'; // Pending Payment
+  static const completePaymentPrompt = 'Effectuez le paiement pour alimenter votre portefeuille'; // Complete the payment...
+  static const amountToPay = 'Montant à payer'; // Amount to Pay
+  static const youWillReceive = 'Vous recevrez environ'; // You will receive ~
+
+  // ── Bill Pay ──
+  static const payBills = 'Payer les factures'; // Pay Bills
+  static const selectCategory = 'Choisir une catégorie'; // Select Category
+  static const accountMeterNumber = 'Numéro de compte/compteur'; // Account/Meter Number
+  static const amountLabel = 'Montant'; // Amount
+
+  // ── Scan ──
+  static const scanQrCode = 'Scanner le code QR'; // Scan QR Code
+  static const invalidQrCode = 'Code QR invalide. Veuillez scanner un code de paiement Korido.'; // Invalid QR code...
+  static const shareQrToReceive = 'Partagez ce code QR pour recevoir des paiements'; // Share this QR code...
+  static const anyoneCanScan = 'Toute personne ayant Korido peut scanner ce code pour vous envoyer de l\'argent.'; // Anyone with Korido...
+  static const qrSavedToGallery = 'Code QR enregistré dans la galerie'; // QR code saved to gallery
+  static const failedToSaveQr = 'Impossible d\'enregistrer le code QR'; // Failed to save QR code
+
+  // ── Budget ──
+  static const monthlyBudget = 'Budget mensuel'; // Monthly Budget
+  static const spent = 'Dépensé'; // Spent
+  static const remaining = 'Restant'; // Remaining
+  static const dailyBudget = 'Budget quotidien'; // Daily Budget
+  static const budgetCategories = 'Catégories de budget'; // Budget Categories
+  static const budgetInsights = 'Aperçu du budget'; // Budget Insights
+  static const budgetingTips = 'Conseils de budget'; // Budgeting Tips
+  static const addBudgetCategory = 'Ajouter une catégorie'; // Add Budget Category
+
+  // ── Airtime ──
+  static const buyAirtime = 'Acheter du crédit'; // Buy Airtime
+  static const airtime = 'Crédit'; // Airtime
+  static const dataBundles = 'Forfaits data'; // Data Bundles
+  static const selectNetwork = 'Choisir un réseau'; // Select Network
+  static const processing = 'Traitement...'; // Processing...
+
+  // ── Virtual Card ──
+  static const virtualCardTitle = 'Carte virtuelle'; // Virtual Card
+  static const virtualDebitCard = 'Carte de débit virtuelle'; // Virtual Debit Card
+
+  // ── Request Money ──
+  static const requestAmount = 'Montant demandé'; // Request Amount
+  static const addNote = 'Ajouter une note (optionnel)'; // Add a Note (Optional)
+  static const generateRequest = 'Générer la demande'; // Generate Request
+  static const copyLink = 'Copier le lien'; // Copy Link
+  static const share = 'Partager'; // Share
+  static const createNewRequest = 'Nouvelle demande'; // Create New Request
+  static const howItWorks = 'Comment ça marche'; // How it works
+
+  // ── Saved Recipients ──
+  static const all = 'Tous'; // All
+  static const favorites = 'Favoris'; // Favorites
+  static const noResultsFound = 'Aucun résultat trouvé'; // No results found
+  static const noRecipientsFound = 'Aucun destinataire trouvé'; // No recipients found
+  static const addRecipient = 'Ajouter un destinataire'; // Add Recipient
+  static const failedToLoadContacts = 'Impossible de charger les contacts'; // Failed to load contacts
+  static const favoriteUpdated = 'Favori mis à jour'; // Favorite updated
+  static const failedToUpdateFavorite = 'Impossible de mettre à jour le favori'; // Failed to update favorite
+
+  // ── Savings Goals ──
+  static const savingsGoals = 'Objectifs d\'épargne'; // Savings Goals
+  static const yourGoals = 'Vos objectifs'; // Your Goals
+  static const newGoal = 'Nouvel objectif'; // New Goal
+  static const totalSaved = 'Total épargné'; // Total Saved
+  static const available = 'Disponible'; // Available
+  static const autoSaving = 'Épargne automatique'; // Auto-Saving
+
+  // ── Scheduled Transfers ──
+  static const scheduledTransfers = 'Transferts programmés'; // Scheduled Transfers
+  static const newSchedule = 'Nouveau programme'; // New Schedule
+  static const noScheduledTransfers = 'Aucun transfert programmé'; // No Scheduled Transfers
+  static const setupRecurring = 'Configurez des transferts récurrents automatiques pour gagner du temps.'; // Set up automatic recurring transfers...
+
+  // ── Split Bill ──
+  static const totalBillAmount = 'Montant total de la facture'; // Total Bill Amount
+  static const whatsThisFor = 'C\'est pour quoi ?'; // What's this for?
+  static const sending = 'Envoi...'; // Sending...
+  static const sendPaymentRequests = 'Envoyer les demandes de paiement'; // Send Payment Requests
+  static const splitEqually = 'Partager également'; // Split Equally
+  static const customAmounts = 'Montants personnalisés'; // Custom Amounts
+  static const includeMyselfInSplit = 'M\'inclure dans le partage'; // Include myself in the split
+  static const splitWith = 'Partager avec'; // Split With
+  static const addPerson = 'Ajouter une personne'; // Add Person
+  static const you = 'Vous'; // You
+  static const yourShare = 'Votre part'; // Your share
+
+  // ── Withdraw ──
+  static const confirmWithdrawal = 'Confirmer le retrait'; // Confirm Withdrawal
+  static const enterPinToWithdraw = 'Entrez votre PIN pour retirer les fonds'; // Enter your PIN to withdraw funds
+  static const withdrawalSubmitted = 'Demande de retrait soumise avec succès !'; // Withdrawal request submitted successfully!
+  static const withdrawalProcessingTime = 'Les retraits sont généralement traités sous 1 à 3 jours ouvrables. Des frais peuvent s\'appliquer.'; // Withdrawals typically process...
+  static const bankName = 'Nom de la banque'; // Bank Name
+  static const accountNumber = 'Numéro de compte'; // Account Number
+
   // ── Errors ──
   static const networkError = 'Erreur de connexion. Vérifiez votre internet.'; // Network error
   static const serverError = 'Erreur serveur. Réessayez plus tard.'; // Server error

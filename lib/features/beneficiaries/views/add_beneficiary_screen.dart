@@ -307,7 +307,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
         final colors = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: AppText(e.toString()),
+            content: AppText('Impossible d\'ajouter le bénéficiaire. Veuillez réessayer.'),
             backgroundColor: colors.error,
           ),
         );

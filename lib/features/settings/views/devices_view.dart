@@ -8,13 +8,22 @@ class DevicesView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // In real app, this would be a FutureProvider
     return Scaffold(
-      appBar: AppBar(title: const Text('Active Devices')),
-      body: const EmptyState(
-        icon: Icons.devices_rounded,
-        title: 'Your Devices',
-        subtitle: 'Manage devices that have access to your account',
+      appBar: AppBar(title: const Text('Appareils actifs')),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // TODO: invalidate devices provider when wired
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            EmptyState(
+              icon: Icons.devices_rounded,
+              title: 'Vos appareils',
+              subtitle: 'Gérez les appareils ayant accès à votre compte',
+            ),
+          ],
+        ),
       ),
     );
   }

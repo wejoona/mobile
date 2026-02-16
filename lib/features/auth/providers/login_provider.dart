@@ -5,6 +5,8 @@ import 'package:usdc_wallet/features/auth/models/login_state.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/features/auth/providers/session_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 
 /// Login state provider
 final loginProvider = NotifierProvider<LoginNotifier, LoginState>(
@@ -206,6 +208,14 @@ class LoginNotifier extends Notifier<LoginState> {
         // Non-blocking — don't fail login if device registration fails
       }
 
+      // Unlock session so router doesn't redirect to lock screen
+      try {
+        ref.read(authProvider.notifier).unlock();
+      } catch (_) {}
+      try {
+        ref.read(sessionServiceProvider.notifier).unlockSession();
+      } catch (_) {}
+
       state = state.copyWith(
         isLoading: false,
         currentStep: LoginStep.success,
@@ -254,24 +264,37 @@ class LoginNotifier extends Notifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Call biometric service
       final biometricService = ref.read(biometricServiceProvider);
       final result = await biometricService.authenticate(
-        localizedReason: 'Verify your identity to login',
+        localizedReason: 'Vérifiez votre identité pour continuer',
       );
 
       if (result.success) {
-        // Store auth token and complete login
-        if (state.sessionToken != null) {
+        // Biometric passed — use stored tokens (session restore) or login flow tokens
+        final storedToken = state.sessionToken ??
+            await _storage.read(key: StorageKeys.accessToken);
+
+        if (storedToken != null) {
           await _storage.write(
             key: StorageKeys.accessToken,
-            value: state.sessionToken!,
+            value: storedToken,
           );
+          final refreshToken = state.refreshToken ??
+              await _storage.read(key: StorageKeys.refreshToken);
           await ref.read(sessionProvider.notifier).setTokens(
-            accessToken: state.sessionToken!,
-            refreshToken: state.refreshToken ?? state.sessionToken!,
+            accessToken: storedToken,
+            refreshToken: refreshToken ?? storedToken,
           );
         }
+
+        // Unlock session so router doesn't redirect back to lock screen
+        try {
+          ref.read(authProvider.notifier).unlock();
+        } catch (_) {}
+        try {
+          final sessionSvc = ref.read(sessionServiceProvider.notifier);
+          sessionSvc.unlockSession();
+        } catch (_) {}
 
         state = state.copyWith(
           isLoading: false,
@@ -282,7 +305,7 @@ class LoginNotifier extends Notifier<LoginState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: 'Biometric authentication failed',
+          error: result.errorMessage ?? 'Authentification biométrique échouée',
         );
         return false;
       }

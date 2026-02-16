@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExternalConfirmScreen extends ConsumerStatefulWidget {
@@ -304,6 +306,10 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
   }
 
   Future<void> _handleConfirm() async {
+    // Require PIN/biometric verification before executing irreversible blockchain transfer
+    final verified = await _verifyIdentity();
+    if (!verified || !mounted) return;
+
     setState(() => _isLoading = true);
     try {
       final success = await ref.read(externalTransferProvider.notifier).executeTransfer();
@@ -319,6 +325,182 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  /// Verify user identity via PIN or biometric before executing external transfer
+  Future<bool> _verifyIdentity() async {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    // Try biometric first if available
+    final biometricService = ref.read(biometricServiceProvider);
+    final biometricAvailable = await biometricService.canCheckBiometrics();
+    final biometricEnabled = await biometricService.isBiometricEnabled();
+
+    if (biometricAvailable && biometricEnabled) {
+      final result = await biometricService.authenticate(
+        localizedReason: l10n.send_biometricReason,
+      );
+      if (result.success) return true;
+      // Fall through to PIN if biometric fails/cancelled
+    }
+
+    // Show PIN dialog
+    if (!mounted) return false;
+    final pinResult = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _PinVerificationDialog(ref: ref),
+    );
+
+    return pinResult == true;
+  }
+}
+
+/// PIN verification dialog for external transfers
+class _PinVerificationDialog extends StatefulWidget {
+  final WidgetRef ref;
+
+  const _PinVerificationDialog({required this.ref});
+
+  @override
+  State<_PinVerificationDialog> createState() => _PinVerificationDialogState();
+}
+
+class _PinVerificationDialogState extends State<_PinVerificationDialog> {
+  final _pinController = TextEditingController();
+  bool _isVerifying = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    return AlertDialog(
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+      ),
+      title: Row(
+        children: [
+          Icon(Icons.lock_outline, color: colors.gold, size: 24),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: AppText(
+              l10n.send_verifyPin,
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            l10n.send_enterPinToConfirm,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          TextField(
+            controller: _pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 6,
+            textAlign: TextAlign.center,
+            style: AppTypography.headlineMedium.copyWith(
+              color: colors.textPrimary,
+              letterSpacing: 8,
+            ),
+            decoration: InputDecoration(
+              counterText: '',
+              hintText: '••••••',
+              hintStyle: TextStyle(color: colors.textTertiary, letterSpacing: 8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: colors.border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: colors.gold, width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: colors.error),
+              ),
+              errorText: _error,
+            ),
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(6),
+            ],
+            onChanged: (value) {
+              if (_error != null) setState(() => _error = null);
+              if (value.length == 6) _verifyPin(value);
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isVerifying ? null : () => Navigator.pop(context, false),
+          child: AppText(
+            l10n.action_cancel,
+            variant: AppTextVariant.labelMedium,
+            color: colors.textSecondary,
+          ),
+        ),
+        if (_isVerifying)
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: colors.gold),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Future<void> _verifyPin(String pin) async {
+    setState(() {
+      _isVerifying = true;
+      _error = null;
+    });
+
+    try {
+      final pinService = widget.ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinLocally(pin);
+
+      if (mounted) {
+        if (result.success) {
+          Navigator.pop(context, true);
+        } else {
+          setState(() {
+            _error = result.message ?? 'PIN incorrect';
+            _isVerifying = false;
+            _pinController.clear();
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isVerifying = false;
+          _pinController.clear();
+        });
       }
     }
   }

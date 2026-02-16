@@ -40,7 +40,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Alert Preferences',
+          "Préférences d'alertes",
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -51,7 +51,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           TextButton(
             onPressed: state.isSaving ? null : () => _resetToDefault(l10n, colors),
             child: AppText(
-              'Reset',
+              'Réinitialiser',
               variant: AppTextVariant.labelMedium,
               color: colors.textSecondary,
             ),
@@ -65,7 +65,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           : state.preferences == null
               ? Center(
                   child: AppText(
-                    'Failed to load preferences',
+                    'Impossible de charger les préférences',
                     variant: AppTextVariant.bodyMedium,
                     color: colors.textSecondary,
                   ),
@@ -96,16 +96,16 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           const SizedBox(height: AppSpacing.md),
           _buildChannelToggle(
             icon: Icons.notifications,
-            title: 'Push Notifications',
-            subtitle: 'Receive alerts on your device',
+            title: 'Notifications push',
+            subtitle: 'Recevoir les alertes sur votre appareil',
             value: prefs.pushAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).togglePushAlerts(value),
             colors: colors,
           ),
           _buildChannelToggle(
             icon: Icons.email,
-            title: 'Email Alerts',
-            subtitle: 'Receive alerts via email',
+            title: 'Alertes par e-mail',
+            subtitle: 'Recevoir les alertes par e-mail',
             value: prefs.emailAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleEmailAlerts(value),
             colors: colors,
@@ -113,7 +113,7 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           _buildChannelToggle(
             icon: Icons.sms,
             title: 'SMS Alerts',
-            subtitle: 'Receive critical alerts via SMS',
+            subtitle: 'Recevoir les alertes critiques par SMS',
             value: prefs.smsAlerts,
             onChanged: (value) => ref.read(alertPreferencesProvider.notifier).toggleSmsAlerts(value),
             colors: colors,
@@ -125,8 +125,8 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           _buildSectionHeader('Alert Thresholds', colors),
           const SizedBox(height: AppSpacing.md),
           _buildThresholdSlider(
-            title: 'Large Transaction Threshold',
-            subtitle: 'Alert when transaction exceeds this amount',
+            title: 'Seuil de grosse transaction',
+            subtitle: 'Alerter lorsque la transaction dépasse ce montant',
             value: prefs.largeTransactionThreshold,
             min: 100,
             max: 10000,
@@ -136,8 +136,8 @@ class _AlertPreferencesViewState extends ConsumerState<AlertPreferencesView> {
           ),
           const SizedBox(height: AppSpacing.lg),
           _buildThresholdSlider(
-            title: 'Low Balance Alert',
-            subtitle: 'Alert when balance drops below this',
+            title: 'Alerte de solde bas',
+            subtitle: 'Alerter lorsque le solde descend en dessous de ce seuil',
             value: prefs.balanceLowThreshold,
             min: 0,
             max: 500,

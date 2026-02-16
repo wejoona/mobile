@@ -73,6 +73,16 @@ class AuthService {
     }
   }
 
+  /// POST /auth/logout - Invalidate session on backend
+  Future<void> logout() async {
+    try {
+      await _dio.post('/auth/logout');
+    } catch (e) {
+      // Non-critical — we clear local tokens regardless
+      AppLogger('Auth').error('Backend logout failed', e);
+    }
+  }
+
   /// POST /auth/refresh - Refresh access token using refresh token
   Future<RefreshResponse> refreshToken({required String refreshToken}) async {
     try {

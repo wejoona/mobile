@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -20,7 +21,7 @@ class DepositInstructionsView extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Payment Instructions',
+          AppStrings.paymentInstructions,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -50,7 +51,7 @@ class DepositInstructionsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
 
             AppText(
-              'Pending Payment',
+              AppStrings.pendingPayment,
               variant: AppTextVariant.headlineSmall,
               color: colors.textPrimary,
             ),
@@ -58,7 +59,7 @@ class DepositInstructionsView extends ConsumerWidget {
             const SizedBox(height: AppSpacing.sm),
 
             AppText(
-              'Complete the payment to add funds to your wallet',
+              AppStrings.completePaymentPrompt,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
@@ -73,7 +74,7 @@ class DepositInstructionsView extends ConsumerWidget {
               child: Column(
                 children: [
                   AppText(
-                    'Amount to Pay',
+                    AppStrings.amountToPay,
                     variant: AppTextVariant.labelMedium,
                     color: colors.textSecondary,
                   ),
@@ -110,7 +111,7 @@ class DepositInstructionsView extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    'Payment Instructions',
+                    AppStrings.paymentInstructions,
                     variant: AppTextVariant.titleSmall,
                     color: colors.textPrimary,
                   ),

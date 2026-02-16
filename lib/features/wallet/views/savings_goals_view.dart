@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -63,7 +64,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Savings Goals',
+          AppStrings.savingsGoals,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -89,7 +90,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
 
             // Goals List
             AppText(
-              'Your Goals',
+              AppStrings.yourGoals,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
             ),
@@ -112,7 +113,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
         backgroundColor: colors.gold,
         icon: Icon(Icons.add, color: colors.canvas),
         label: AppText(
-          'New Goal',
+          AppStrings.newGoal,
           variant: AppTextVariant.labelMedium,
           color: colors.canvas,
         ),
@@ -150,7 +151,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Total Saved',
+                      AppStrings.totalSaved,
                       variant: AppTextVariant.labelSmall,
                       color: colors.textSecondary,
                     ),
@@ -166,7 +167,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   AppText(
-                    'Available',
+                    AppStrings.available,
                     variant: AppTextVariant.labelSmall,
                     color: colors.textSecondary,
                   ),
@@ -188,7 +189,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               _buildSummaryItem('${_goals.length}', 'Active Goals', colors),
               _buildSummaryItem(
                 '${_goals.where((g) => g.autoSaveEnabled).length}',
-                'Auto-Saving',
+                AppStrings.autoSaving,
                 colors,
               ),
               _buildSummaryItem(

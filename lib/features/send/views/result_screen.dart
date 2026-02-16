@@ -328,7 +328,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
+            content: Text('Une erreur est survenue. Veuillez réessayer.'),
             backgroundColor: colors.error,
           ),
         );
@@ -359,6 +359,6 @@ ${l10n.appName}
     // Reset the send state
     ref.read(sendMoneyProvider.notifier).reset();
     // Navigate to home
-    context.go('/');
+    context.go('/home');
   }
 }

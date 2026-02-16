@@ -256,7 +256,7 @@ class SettingsView extends ConsumerWidget {
           child: AppButton(
             label: l10n.auth_logout,
             onPressed: () => _showLogoutDialog(context, ref),
-            variant: AppButtonVariant.secondary,
+            variant: AppButtonVariant.danger,
             isFullWidth: true,
           ),
         ),
@@ -445,7 +445,7 @@ class SettingsView extends ConsumerWidget {
             child: AppButton(
               label: l10n.auth_logout,
               onPressed: () => _showLogoutDialog(context, ref),
-              variant: AppButtonVariant.secondary,
+              variant: AppButtonVariant.danger,
               isFullWidth: true,
             ),
           ),
@@ -602,7 +602,7 @@ class SettingsView extends ConsumerWidget {
         AppButton(
           label: l10n.auth_logout,
           onPressed: () => _showLogoutDialog(context, ref!),
-          variant: AppButtonVariant.secondary,
+          variant: AppButtonVariant.danger,
           isFullWidth: true,
         ),
 
@@ -809,7 +809,7 @@ class _BiometricTile extends ConsumerWidget {
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
                   final authenticatedBio = await service.authenticate(
-                    localizedReason: 'Authenticate to enable biometric login',
+                    localizedReason: 'Authentifiez-vous pour activer la connexion biométrique',
                   );
                   if (authenticatedBio.success) {
                     await service.enableBiometric();
@@ -826,7 +826,7 @@ class _BiometricTile extends ConsumerWidget {
           ),
           loading: () => _SettingsTile(
             icon: Icons.fingerprint,
-            title: 'Biometric Login',
+            title: 'Connexion biométrique',
             trailing: const SizedBox(
               width: 20,
               height: 20,
@@ -836,15 +836,15 @@ class _BiometricTile extends ConsumerWidget {
           ),
           error: (_, __) => _SettingsTile(
             icon: Icons.fingerprint,
-            title: 'Biometric Login',
-            subtitle: 'Error',
+            title: 'Connexion biométrique',
+            subtitle: 'Erreur',
             onTap: () {},
           ),
         );
       },
       loading: () => _SettingsTile(
         icon: Icons.fingerprint,
-        title: 'Biometric Login',
+        title: 'Connexion biométrique',
         trailing: const SizedBox(
           width: 20,
           height: 20,
@@ -854,8 +854,8 @@ class _BiometricTile extends ConsumerWidget {
       ),
       error: (_, __) => _SettingsTile(
         icon: Icons.fingerprint,
-        title: 'Biometric Login',
-        subtitle: 'Error',
+        title: 'Connexion biométrique',
+        subtitle: 'Erreur',
         onTap: () {},
       ),
     );
@@ -910,7 +910,7 @@ class _ProfileCard extends ConsumerWidget {
         children: [
           // Avatar with profile image or initials
           UserAvatar(
-            imageUrl: userState.avatarUrl,
+            imageUrl: userState.effectiveAvatarUrl,
             firstName: userState.firstName,
             lastName: userState.lastName,
             size: 56,

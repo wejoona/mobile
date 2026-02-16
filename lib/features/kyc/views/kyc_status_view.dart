@@ -223,7 +223,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            'Verification Details',
+            'Détails de la vérification',
             variant: AppTextVariant.titleMedium,
             color: colors.gold,
           ),
@@ -236,7 +236,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
             _buildDetailRow('Document', 'Submitted', colors),
           if (verification.faceMatchScore != null)
             _buildDetailRow(
-              'Face Match',
+              'Correspondance faciale',
               '${(verification.faceMatchScore! * 100).toStringAsFixed(0)}%',
               colors,
             ),

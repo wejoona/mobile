@@ -48,7 +48,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
 
           // FAQ Section
           AppText(
-            'Frequently Asked Questions',
+            'Questions fréquentes',
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -60,7 +60,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
 
           // Contact Section
           AppText(
-            'Need More Help?',
+            "Besoin d'aide supplémentaire ?",
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -69,7 +69,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           _buildContactCard(
             colors: colors,
             icon: Icons.email_outlined,
-            title: 'Email Support',
+            title: 'Support par e-mail',
             subtitle: 'support@joonapay.com',
             onTap: () => _copyToClipboard('support@joonapay.com'),
           ),
@@ -79,7 +79,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           _buildContactCard(
             colors: colors,
             icon: Icons.chat_bubble_outline,
-            title: 'WhatsApp Support',
+            title: 'Support WhatsApp',
             subtitle: '+225 XX XX XX XX',
             onTap: () => _openWhatsApp(),
           ),
@@ -97,7 +97,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           child: _buildQuickActionCard(
             colors: colors,
             icon: Icons.bug_report_outlined,
-            label: 'Report Problem',
+            label: 'Signaler un problème',
             onTap: () => _showReportDialog(),
           ),
         ),
@@ -106,7 +106,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
           child: _buildQuickActionCard(
             colors: colors,
             icon: Icons.chat_outlined,
-            label: 'Live Chat',
+            label: 'Chat en direct',
             onTap: () => _openLiveChat(),
           ),
         ),

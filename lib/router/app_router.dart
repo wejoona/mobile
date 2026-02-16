@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/views/login_view.dart';
 import 'package:usdc_wallet/features/auth/views/login_otp_view.dart';
-import 'package:usdc_wallet/features/auth/views/login_pin_view.dart';
+import 'package:usdc_wallet/features/pin/views/pin_screen.dart';
 import 'package:usdc_wallet/features/auth/views/otp_view.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
@@ -244,10 +244,12 @@ class _ConnectivityBanner extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 4),
       color: Colors.red.shade700,
-      child: const Text(
-        'No internet connection',
+      child: Text(
+        Localizations.localeOf(context).languageCode == 'fr'
+            ? 'Pas de connexion internet'
+            : 'No internet connection',
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -341,13 +343,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Lock screen guard — user has token but needs PIN/biometric
       // Must be checked BEFORE FSM redirect to avoid redirect loops
       final isLockedState = authState.isLocked;
-      if (isLockedState && location != '/session-locked') {
+      if (isLockedState && location != '/session-locked' && location != '/pin/reset') {
         return '/session-locked';
       }
 
       // FSM wants to redirect to a specific state screen - but allow sub-navigation
       // Skip FSM redirect when locked (AuthProvider.locked is separate from FSM AuthLocked)
-      if (!isLockedState && !isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow) {
+      // FSM redirect — but NEVER redirect away from /home (user just unlocked)
+      if (!isLockedState && !isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow && location != '/home') {
         debugPrint('[Router] Redirecting to FSM target: $fsmTargetRoute');
         return fsmTargetRoute;
       }
@@ -460,7 +463,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login/pin',
         pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
           state: state,
-          child: const LoginPinView(),
+          child: const PinScreen(pinContext: PinContext.login),
         ),
       ),
       GoRoute(
@@ -497,7 +500,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/session-locked',
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
-          child: const SessionLockedView(),
+          child: const PinScreen(
+            pinContext: PinContext.sessionLock,
+            successRoute: '/home',
+          ),
         ),
       ),
       GoRoute(
@@ -682,7 +688,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/send/pin',
         pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
           state: state,
-          child: const PinVerificationScreen(),
+          child: const PinScreen(pinContext: PinContext.confirmAction),
         ),
       ),
       GoRoute(

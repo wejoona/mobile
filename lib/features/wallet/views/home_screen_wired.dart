@@ -4,6 +4,8 @@ import 'package:usdc_wallet/features/wallet/providers/home_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_visibility_provider.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/error/error_handler.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
@@ -42,6 +44,8 @@ class HomeScreenWired extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(walletBalanceProvider);
           ref.invalidate(notificationsProvider);
+          ref.invalidate(transactionsProvider);
+          ref.invalidate(userStateMachineProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.md),

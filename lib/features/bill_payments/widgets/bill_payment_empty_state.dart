@@ -14,12 +14,12 @@ class BillPaymentEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.receipt_outlined,
-      title: 'No bill payments',
+      title: 'Aucun paiement de facture',
       description:
-          'Pay your utility bills, airtime, and more directly from your Korido wallet.',
+          'Payez vos factures d\'eau, d\'électricité, de téléphone et plus directement depuis votre portefeuille Korido.',
       action: onPayBill != null
           ? EmptyStateAction(
-              label: 'Pay a Bill',
+              label: 'Payer une facture',
               onPressed: onPayBill!,
             )
           : null,

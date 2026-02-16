@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth/error_codes.dart' as auth_error;
+import 'package:local_auth_platform_interface/types/biometric_type.dart' as platform;
 
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
 const _kBiometricEnabledKey = 'biometric_enabled';
 
-/// Run 372: Biometric authentication service
+/// App-level biometric types
 enum BiometricType { fingerprint, faceId, iris, none }
 
 class BiometricResult {
@@ -34,15 +37,41 @@ enum BiometricFailureReason {
 
 class BiometricService {
   static const _storage = FlutterSecureStorage();
+  final LocalAuthentication _localAuth = LocalAuthentication();
 
+  /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
-    // Check if device supports biometric authentication
-    return true;
+    try {
+      return await _localAuth.canCheckBiometrics || await _localAuth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
   }
 
+  /// Determine which biometric type is available (Face ID, Touch ID, etc.)
   Future<BiometricType> getAvailableType() async {
-    // Determine which biometric type is available
-    return BiometricType.fingerprint;
+    try {
+      final biometrics = await _localAuth.getAvailableBiometrics();
+
+      if (biometrics.contains(platform.BiometricType.face)) {
+        return BiometricType.faceId;
+      }
+      if (biometrics.contains(platform.BiometricType.fingerprint)) {
+        return BiometricType.fingerprint;
+      }
+      if (biometrics.contains(platform.BiometricType.iris)) {
+        return BiometricType.iris;
+      }
+      // strong/weak = device has some biometric
+      if (biometrics.contains(platform.BiometricType.strong) ||
+          biometrics.contains(platform.BiometricType.weak)) {
+        return BiometricType.fingerprint; // generic fallback
+      }
+
+      return BiometricType.none;
+    } catch (_) {
+      return BiometricType.none;
+    }
   }
 
   Future<bool> isEnrolled() async {
@@ -50,17 +79,60 @@ class BiometricService {
     return value == 'true';
   }
 
+  /// Authenticate using device biometric (Face ID / Touch ID / fingerprint).
+  /// The OS decides which biometric to use — we just request authentication.
   Future<BiometricResult> authenticate({
     String localizedReason = 'Authentifiez-vous pour continuer',
     bool stickyAuth = true,
   }) async {
     try {
-      // Platform-specific biometric authentication
-      await Future.delayed(const Duration(milliseconds: 500));
-      return const BiometricResult.success();
-    } catch (e) {
-      return BiometricResult.failure(
-        'Echec de l\'authentification biometrique',
+      final available = await isAvailable();
+      if (!available) {
+        return const BiometricResult.failure(
+          'Authentification biométrique non disponible',
+          reason: BiometricFailureReason.notAvailable,
+        );
+      }
+
+      final didAuthenticate = await _localAuth.authenticate(
+        localizedReason: localizedReason,
+        options: AuthenticationOptions(
+          stickyAuth: stickyAuth,
+          biometricOnly: true,
+          useErrorDialogs: true,
+          sensitiveTransaction: true,
+        ),
+      );
+
+      if (didAuthenticate) {
+        return const BiometricResult.success();
+      } else {
+        return const BiometricResult.failure(
+          'Authentification annulée',
+          reason: BiometricFailureReason.cancelled,
+        );
+      }
+    } on Exception catch (e) {
+      final message = e.toString();
+
+      if (message.contains(auth_error.notAvailable) ||
+          message.contains(auth_error.notEnrolled)) {
+        return const BiometricResult.failure(
+          'Biométrie non configurée sur cet appareil',
+          reason: BiometricFailureReason.notEnrolled,
+        );
+      }
+
+      if (message.contains(auth_error.lockedOut) ||
+          message.contains(auth_error.permanentlyLockedOut)) {
+        return const BiometricResult.failure(
+          'Biométrie verrouillée. Utilisez votre code d\'accès.',
+          reason: BiometricFailureReason.lockedOut,
+        );
+      }
+
+      return const BiometricResult.failure(
+        'Échec de l\'authentification biométrique',
         reason: BiometricFailureReason.unknown,
       );
     }
@@ -74,50 +146,32 @@ class BiometricService {
     await _storage.write(key: _kBiometricEnabledKey, value: 'false');
   }
 
-  /// Check if biometric authentication is enabled for this user
-  Future<bool> isBiometricEnabled() async {
-    return isEnrolled();
-  }
+  Future<bool> isBiometricEnabled() async => isEnrolled();
 
-  /// Get list of available biometric types on this device
   Future<List<BiometricType>> getAvailableBiometrics() async {
     final type = await getAvailableType();
     if (type == BiometricType.none) return [];
     return [type];
   }
 
-  /// Check if the device supports biometric authentication
-  Future<bool> isDeviceSupported() async {
-    return isAvailable();
-  }
+  Future<bool> isDeviceSupported() async => isAvailable();
+  Future<bool> canCheckBiometrics() async => isAvailable();
+  Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 
-  /// Check if the device can check biometrics (alias for isAvailable)
-  Future<bool> canCheckBiometrics() async {
-    return isAvailable();
-  }
-
-  /// Get the primary biometric type available on this device
-  Future<BiometricType> getPrimaryBiometricType() async {
-    return getAvailableType();
-  }
-
-  /// Enable biometric authentication for this user.
   Future<void> enableBiometric() async {
     await _storage.write(key: _kBiometricEnabledKey, value: 'true');
   }
 
-  /// Disable biometric authentication for this user.
   Future<void> disableBiometric() async {
     await _storage.write(key: _kBiometricEnabledKey, value: 'false');
   }
 
-  /// Authenticate for sensitive operations (higher security level).
   Future<BiometricResult> authenticateSensitive({
     String localizedReason = 'Vérification de sécurité requise',
   }) async {
     return authenticate(localizedReason: localizedReason);
   }
 
-  Future<BiometricResult> guardPinChange() async => authenticate(localizedReason: 'Vérifiez votre identité pour changer le PIN');
-
+  Future<BiometricResult> guardPinChange() async =>
+      authenticate(localizedReason: 'Vérifiez votre identité pour changer le PIN');
 }

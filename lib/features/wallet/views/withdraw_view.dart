@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/index.dart';
@@ -155,8 +156,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     // Show PIN confirmation
     final result = await PinConfirmationSheet.show(
       context: context,
-      title: 'Confirm Withdrawal',
-      subtitle: 'Enter your PIN to withdraw funds',
+      title: AppStrings.confirmWithdrawal,
+      subtitle: AppStrings.enterPinToWithdraw,
       amount: amount,
       recipient: recipientDisplay,
       onConfirm: (pin) async {
@@ -188,7 +189,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Withdrawal request submitted successfully!'),
+              content: Text(AppStrings.withdrawalSubmitted),
               backgroundColor: context.colors.success,
             ),
           );

@@ -7,7 +7,7 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
-import 'package:usdc_wallet/services/security/security_headers_interceptor.dart';
+import 'package:usdc_wallet/services/security/security_headers_interceptor.dart' show securityHeadersInterceptorProvider;
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
 import 'package:usdc_wallet/services/api/retry_interceptor.dart';
@@ -36,7 +36,7 @@ class ApiConfig {
   );
 
   /// Default development URL — dev API with debug endpoints
-  static const String _defaultDevUrl = 'https://dev-api.joonapay.com/api/v1';
+  static const String _defaultDevUrl = 'https://api.joonapay.com/api/v1';
 
   /// Default production URL
   static const String _defaultProdUrl = 'https://api.joonapay.com/api/v1';
@@ -141,10 +141,8 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
 
   // SECURITY: Add device fingerprint and risk score headers
-  dio.interceptors.add(SecurityHeadersInterceptor(
-    fingerprintService: ref.read(deviceFingerprintServiceProvider),
-    riskScoreService: ref.read(clientRiskScoreServiceProvider),
-  ));
+  final securityHeadersInterceptor = ref.read(securityHeadersInterceptorProvider);
+  dio.interceptors.add(securityHeadersInterceptor);
 
   // Add auth interceptor
   dio.interceptors.add(AuthInterceptor(ref));

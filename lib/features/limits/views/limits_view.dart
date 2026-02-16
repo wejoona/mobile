@@ -15,28 +15,41 @@ class LimitsView extends ConsumerWidget {
     final kycAsync = ref.watch(kycProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Limits')),
-      body: limitsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (limits) => ListView(
-          children: [
-            LimitUsageCard(limits: limits),
-            const SizedBox(height: 8),
-            kycAsync.when(
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
-              data: (kyc) => KycStatusCard(profile: kyc, onUpgrade: () {}),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Upgrade your KYC level to increase transaction limits. Limits reset daily, weekly, and monthly.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+      appBar: AppBar(title: const Text('Limites')),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(transactionLimitsProvider);
+          ref.invalidate(kycProfileProvider);
+        },
+        child: limitsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [Center(child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Text('Erreur : $e'),
+            ))],
+          ),
+          data: (limits) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              LimitUsageCard(limits: limits),
+              const SizedBox(height: 8),
+              kycAsync.when(
+                loading: () => const SizedBox.shrink(),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (kyc) => KycStatusCard(profile: kyc, onUpgrade: () {}),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Augmentez votre niveau KYC pour accroître vos limites de transaction. Les limites se réinitialisent quotidiennement, hebdomadairement et mensuellement.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

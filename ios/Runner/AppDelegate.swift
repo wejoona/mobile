@@ -8,6 +8,7 @@ import CryptoKit
     private var attestationKeyId: String?
     private var securityOverlayView: UIView?
     private var securityChannel: FlutterMethodChannel?
+    private var appIsDarkMode: Bool? = nil  // nil = not yet synced from Flutter
 
     override func application(
         _ application: UIApplication,
@@ -56,6 +57,11 @@ import CryptoKit
             case "disableSecureMode":
                 self?.hideSecurityOverlay()
                 result(true)
+            case "setThemeMode":
+                if let isDark = call.arguments as? Bool {
+                    self?.appIsDarkMode = isDark
+                }
+                result(true)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -90,14 +96,63 @@ import CryptoKit
         guard securityOverlayView == nil, let window = self.window else { return }
 
         let overlay = UIView(frame: window.bounds)
-        overlay.backgroundColor = UIColor(red: 26/255, green: 26/255, blue: 31/255, alpha: 1.0) // AppColors.obsidian
+        // Use Flutter-synced value, fallback to reading from Keychain directly
+        let isDark: Bool
+        if let synced = appIsDarkMode {
+            isDark = synced
+        } else {
+            // Read directly from Keychain (FlutterSecureStorage stores under "app_theme_mode")
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: "app_theme_mode",
+                kSecAttrService as String: "flutter_secure_storage_service",
+                kSecReturnData as String: true,
+                kSecMatchLimit as String: kSecMatchLimitOne
+            ]
+            var item: CFTypeRef?
+            let status = SecItemCopyMatching(query as CFDictionary, &item)
+            if status == errSecSuccess,
+               let data = item as? Data,
+               let value = String(data: data, encoding: .utf8) {
+                isDark = (value == "dark")
+            } else {
+                // No saved preference — follow system
+                isDark = self.window?.rootViewController?.traitCollection.userInterfaceStyle == .dark
+            }
+        }
 
-        // Add app logo or blur effect
+        // Theme-aware background
+        let bgColor = isDark
+            ? UIColor(red: 10/255, green: 10/255, blue: 12/255, alpha: 1.0)
+            : UIColor(red: 250/255, green: 250/255, blue: 248/255, alpha: 1.0)
+        overlay.backgroundColor = bgColor
+
+        // Blur effect for premium feel
+        let blurStyle: UIBlurEffect.Style = isDark ? .dark : .light
+        let blurEffect = UIBlurEffect(style: blurStyle)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.frame = overlay.bounds
+        blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        overlay.addSubview(blurView)
+
+        // App logo — centered, larger
         let logoImageView = UIImageView(image: UIImage(named: "AppIcon"))
         logoImageView.contentMode = .scaleAspectFit
-        logoImageView.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
-        logoImageView.center = overlay.center
+        logoImageView.frame = CGRect(x: 0, y: 0, width: 100, height: 100)
+        logoImageView.center = CGPoint(x: overlay.center.x, y: overlay.center.y - 30)
+        logoImageView.layer.cornerRadius = 22
+        logoImageView.clipsToBounds = true
         overlay.addSubview(logoImageView)
+
+        // "Korido" text below logo
+        let label = UILabel()
+        label.text = "Korido"
+        label.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
+        label.textColor = isDark ? UIColor.white : UIColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
+        label.textAlignment = .center
+        label.sizeToFit()
+        label.center = CGPoint(x: overlay.center.x, y: logoImageView.frame.maxY + 24)
+        overlay.addSubview(label)
 
         window.addSubview(overlay)
         securityOverlayView = overlay

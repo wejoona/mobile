@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
@@ -58,7 +59,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
             if (!_showQr) ...[
               // Amount Input
               AppText(
-                'Request Amount',
+                AppStrings.requestAmount,
                 variant: AppTextVariant.labelMedium,
                 color: colors.textSecondary,
               ),
@@ -84,7 +85,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
 
               // Generate Request Button
               AppButton(
-                label: 'Generate Request',
+                label: AppStrings.generateRequest,
                 onPressed: _canGenerate() ? _generateRequest : null,
                 variant: AppButtonVariant.primary,
                 isFullWidth: true,
@@ -148,7 +149,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                   Expanded(
                     child: _ShareButton(
                       icon: Icons.copy,
-                      label: 'Copy Link',
+                      label: AppStrings.copyLink,
                       onTap: _copyLink,
                     ),
                   ),
@@ -156,7 +157,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                   Expanded(
                     child: _ShareButton(
                       icon: Icons.share,
-                      label: 'Share',
+                      label: AppStrings.share,
                       onTap: _shareRequest,
                     ),
                   ),
@@ -175,7 +176,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
 
               // New Request Button
               AppButton(
-                label: 'Create New Request',
+                label: AppStrings.createNewRequest,
                 onPressed: () {
                   setState(() {
                     _showQr = false;
@@ -251,7 +252,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
               Icon(Icons.info_outline, color: context.colors.info, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
-                'How it works',
+                AppStrings.howItWorks,
                 variant: AppTextVariant.labelMedium,
                 color: colors.textPrimary,
               ),

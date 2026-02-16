@@ -80,7 +80,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 
       if (next.status == SessionStatus.expired && previous.status != SessionStatus.expired) {
         _handleSessionExpired();
-      } else if (next.status == SessionStatus.locked && previous.status != SessionStatus.locked) {
+      } else if (next.status == SessionStatus.locked && 
+                 previous.status == SessionStatus.active) {
+        // Only show lock screen if transitioning FROM active (not on initial restore)
         _handleSessionLocked();
       }
     });
@@ -101,8 +103,8 @@ class _SessionManagerState extends ConsumerState<SessionManager>
           children: [
             widget.child,
 
-            // Session expiring warning overlay
-            if (sessionState.isExpiring)
+            // Session expiring warning overlay (only on authenticated screens, not PIN/login)
+            if (sessionState.isExpiring && _shouldShowExpiringOverlay(context))
               _SessionExpiringOverlay(
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
                 onExtend: () {
@@ -117,6 +119,25 @@ class _SessionManagerState extends ConsumerState<SessionManager>
         ),
       ),
     );
+  }
+
+  /// Check if we should show the expiring overlay based on current route
+  bool _shouldShowExpiringOverlay(BuildContext context) {
+    try {
+      final location = GoRouterState.of(context).uri.path;
+      // Don't show on auth-related screens
+      const suppressedRoutes = [
+        '/login',
+        '/pin',
+        '/register',
+        '/onboarding',
+        '/session-locked',
+        '/verify',
+      ];
+      return !suppressedRoutes.any((r) => location.startsWith(r));
+    } catch (_) {
+      return true; // Show by default if route check fails
+    }
   }
 
   void _handleSessionExpired() {
@@ -159,15 +180,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     if (!mounted) return;
 
     try {
-      final colors = context.colors;
-      showModalBottomSheet(
-        context: context,
-        isDismissible: false,
-        enableDrag: false,
-        isScrollControlled: true,
-        backgroundColor: colors.canvas,
-        builder: (context) => const _LockScreen(),
-      );
+      context.go('/session-locked');
     } catch (e) {
       // Navigator not ready yet, ignore
       AppLogger('Could not show lock screen').error('Could not show lock screen', e);
@@ -291,268 +304,3 @@ class _SessionExpiringOverlay extends StatelessWidget {
   }
 }
 
-/// Lock screen requiring PIN/biometric to unlock
-class _LockScreen extends ConsumerStatefulWidget {
-  const _LockScreen();
-
-  @override
-  ConsumerState<_LockScreen> createState() => _LockScreenState();
-}
-
-class _LockScreenState extends ConsumerState<_LockScreen> {
-  String _enteredPin = '';
-  String? _error;
-  bool _isVerifying = false;
-  bool _isLocked = false;
-  // ignore: unused_field
-  int? _lockRemainingSeconds;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          children: [
-            const Spacer(),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: colors.gold.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.lock,
-                color: colors.gold,
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            AppText(
-              'Session Locked',
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AppText(
-              'Enter your PIN to continue',
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-            ),
-            const SizedBox(height: AppSpacing.xxxl),
-
-            // PIN dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
-                final isFilled = index < _enteredPin.length;
-                final hasError = _error != null;
-
-                return Container(
-                  width: 20,
-                  height: 20,
-                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: isFilled
-                        ? (hasError ? colors.error : colors.gold)
-                        : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: hasError
-                          ? colors.error
-                          : (isFilled ? colors.gold : colors.borderSubtle),
-                      width: 2,
-                    ),
-                  ),
-                );
-              }),
-            ),
-
-            if (_error != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              AppText(
-                _error!,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.error,
-              ),
-            ],
-
-            const Spacer(),
-
-            // PIN pad
-            _buildPinPad(colors),
-
-            const SizedBox(height: AppSpacing.xxl),
-
-            // Logout option
-            TextButton(
-              onPressed: () {
-                ref.read(sessionServiceProvider.notifier).endSession();
-                Navigator.of(context).pop();
-                context.go('/login');
-              },
-              child: AppText(
-                'Log out instead',
-                variant: AppTextVariant.labelMedium,
-                color: colors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPinPad(ThemeColors colors) {
-    return Column(
-      children: [
-        for (var row = 0; row < 4; row++)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (var col = 0; col < 3; col++)
-                  _buildPinButton(row, col, colors),
-              ],
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildPinButton(int row, int col, ThemeColors colors) {
-    String? label;
-    VoidCallback? onTap;
-    IconData? icon;
-
-    if (row < 3) {
-      final number = row * 3 + col + 1;
-      label = '$number';
-      onTap = () => _onDigitPressed(number);
-    } else {
-      if (col == 0) {
-        // Biometric button
-        icon = Icons.fingerprint;
-        onTap = _onBiometricPressed;
-      } else if (col == 1) {
-        label = '0';
-        onTap = () => _onDigitPressed(0);
-      } else {
-        // Delete button
-        icon = Icons.backspace_outlined;
-        onTap = _onDeletePressed;
-      }
-    }
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 72,
-        height: 72,
-        margin: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: colors.container,
-          shape: BoxShape.circle,
-          border: Border.all(color: colors.borderSubtle),
-        ),
-        child: Center(
-          child: icon != null
-              ? Icon(icon, color: colors.textSecondary, size: 28)
-              : AppText(
-                  label ?? '',
-                  variant: AppTextVariant.headlineSmall,
-                  color: colors.textPrimary,
-                ),
-        ),
-      ),
-    );
-  }
-
-  void _onDigitPressed(int digit) {
-    if (_enteredPin.length >= 4) return;
-
-    setState(() {
-      _error = null;
-      _enteredPin += digit.toString();
-    });
-
-    if (_enteredPin.length == 4) {
-      _verifyPin();
-    }
-  }
-
-  void _onDeletePressed() {
-    if (_enteredPin.isEmpty) return;
-
-    setState(() {
-      _error = null;
-      _enteredPin = _enteredPin.substring(0, _enteredPin.length - 1);
-    });
-  }
-
-  Future<void> _onBiometricPressed() async {
-    final biometricService = ref.read(biometricServiceProvider);
-
-    // Check if biometric is enabled for this user
-    final isEnabled = await biometricService.isBiometricEnabled();
-    if (!isEnabled) {
-      setState(() {
-        _error = 'Biometric not enabled';
-      });
-      return;
-    }
-
-    // Authenticate with biometric
-    final _biometricResult = await biometricService.authenticate(
-      localizedReason: 'Unlock your Korido wallet',
-    );
-
-    if (_biometricResult.success) {
-      _unlockSession();
-    } else {
-      setState(() {
-        _error = 'Biometric authentication failed';
-      });
-    }
-  }
-
-  void _verifyPin() async {
-    if (_isVerifying || _isLocked) return;
-
-    setState(() {
-      _isVerifying = true;
-      _error = null;
-    });
-
-    try {
-      final pinService = ref.read(pinServiceProvider);
-      final result = await pinService.verifyPinLocally(_enteredPin);
-
-      if (result.success) {
-        _unlockSession();
-      } else {
-        setState(() {
-          _error = result.message ?? 'Incorrect PIN';
-          _enteredPin = '';
-          _isLocked = result.isLocked;
-          _lockRemainingSeconds = result.lockRemainingSeconds;
-        });
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isVerifying = false;
-        });
-      }
-    }
-  }
-
-  void _unlockSession() {
-    ref.read(sessionServiceProvider.notifier).unlockSession();
-    Navigator.of(context).pop();
-  }
-}

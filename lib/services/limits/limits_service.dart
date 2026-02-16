@@ -12,7 +12,16 @@ class LimitsService {
   /// GET /user/limits
   Future<TransactionLimits> getLimits() async {
     final response = await _dio.get('/user/limits');
-    return TransactionLimits.fromJson(response.data as Map<String, dynamic>);
+    final raw = response.data;
+    if (raw is Map<String, dynamic>) {
+      // Could be {data: {...}} or direct
+      final data = raw.containsKey('data') && raw['data'] is Map
+          ? raw['data'] as Map<String, dynamic>
+          : raw;
+      return TransactionLimits.fromJson(data);
+    }
+    // Fallback defaults
+    return TransactionLimits.fromJson(<String, dynamic>{});
   }
 
   /// GET /user/limits/usage

@@ -67,3 +67,10 @@ export 'package:usdc_wallet/services/performance/firebase_performance_service.da
 
 // App Review
 export 'package:usdc_wallet/services/app_review/app_review_service.dart';
+
+// Realtime (WebSocket + polling fallback)
+export 'package:usdc_wallet/services/realtime/realtime_service.dart';
+
+// Sync (push queue + manual triggers)
+export 'package:usdc_wallet/services/sync/sync_service.dart';
+export 'package:usdc_wallet/services/sync/sync_provider.dart';

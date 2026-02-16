@@ -135,7 +135,7 @@ class TransactionDetailView extends ConsumerWidget {
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: l10n.transactionDetails_date,
-                    value: DateFormat('MMM dd, yyyy • HH:mm').format(transaction.createdAt),
+                    value: DateFormat('dd MMM yyyy • HH:mm', 'fr').format(transaction.createdAt),
                     colors: colors,
                   ),
                   Divider(color: colors.borderSubtle),
@@ -359,38 +359,38 @@ class TransactionDetailView extends ConsumerWidget {
 
     final receiptText = '''
 ━━━━━━━━━━━━━━━━━━━━━━
-      JOONAPAY RECEIPT
+       REÇU KORIDO
 ━━━━━━━━━━━━━━━━━━━━━━
 
-Transaction ID: ${transaction.id.substring(0, 8)}...
-Date: $dateStr
-Type: $typeStr
-Amount: $amountStr ${transaction.currency}
-Status: $statusStr
-${transaction.recipientPhone != null ? 'Recipient: ${transaction.recipientPhone}' : ''}
-${transaction.description != null ? 'Note: ${transaction.description}' : ''}
+Réf. : ${transaction.id.substring(0, 8)}...
+Date : $dateStr
+Type : $typeStr
+Montant : $amountStr ${transaction.currency}
+Statut : $statusStr
+${transaction.recipientPhone != null ? 'Destinataire : ${transaction.recipientPhone}' : ''}
+${transaction.description != null ? 'Note : ${transaction.description}' : ''}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-    Thank you for using
+    Merci d\'utiliser
          Korido
 ━━━━━━━━━━━━━━━━━━━━━━
 ''';
 
     SharePlus.instance.share(ShareParams(text: 
-      receiptText.trim(), title: 'Korido Transaction Receipt',
+      receiptText.trim(), title: 'Reçu Korido',
     ));
   }
 
   String _getTransactionTypeLabel(TransactionType type) {
     switch (type) {
       case TransactionType.deposit:
-        return 'Deposit';
+        return 'Dépôt';
       case TransactionType.withdrawal:
-        return 'Withdrawal';
+        return 'Retrait';
       case TransactionType.transferInternal:
-        return 'Transfer Received';
+        return 'Transfert reçu';
       case TransactionType.transferExternal:
-        return 'Transfer Sent';
+        return 'Transfert envoyé';
     }
   }
 }

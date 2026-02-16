@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -57,7 +58,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const AppText(
-          'Buy Airtime',
+          AppStrings.buyAirtime,
           variant: AppTextVariant.titleLarge,
         ),
         leading: IconButton(
@@ -70,8 +71,8 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
           labelColor: colors.gold,
           unselectedLabelColor: colors.textSecondary,
           tabs: const [
-            Tab(text: 'Airtime'),
-            Tab(text: 'Data Bundles'),
+            Tab(text: AppStrings.airtime),
+            Tab(text: AppStrings.dataBundles),
           ],
         ),
       ),
@@ -98,7 +99,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
 
           // Provider Selection
           AppText(
-            'Select Network',
+            AppStrings.selectNetwork,
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
@@ -148,7 +149,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
 
           // Buy Button
           AppButton(
-            label: _isLoading ? 'Processing...' : 'Buy Airtime',
+            label: _isLoading ? 'Processing...' : AppStrings.buyAirtime,
             onPressed: _canBuy() ? _buyAirtime : null,
             variant: AppButtonVariant.primary,
             isFullWidth: true,
@@ -185,7 +186,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
 
           // Provider Selection
           AppText(
-            'Select Network',
+            AppStrings.selectNetwork,
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),

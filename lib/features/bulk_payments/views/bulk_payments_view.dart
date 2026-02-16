@@ -14,19 +14,19 @@ class BulkPaymentsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bulk Payments'),
-        actions: [IconButton(icon: const Icon(Icons.add_rounded), onPressed: () {})],
+        title: const Text('Paiements groupés'),
+        actions: [IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Nouveau paiement', onPressed: () {})],
       ),
       body: paymentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (payments) {
           if (payments.isEmpty) {
             return const EmptyState(
               icon: Icons.groups_rounded,
-              title: 'No bulk payments',
-              subtitle: 'Pay multiple people at once by uploading a CSV or adding recipients manually',
-              actionLabel: 'New Bulk Payment',
+              title: 'Aucun paiement groupé',
+              subtitle: 'Payez plusieurs personnes à la fois en important un CSV ou en ajoutant des bénéficiaires manuellement.',
+              actionLabel: 'Nouveau paiement groupé',
             );
           }
           return RefreshIndicator(

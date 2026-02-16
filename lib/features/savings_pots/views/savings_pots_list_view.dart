@@ -27,7 +27,7 @@ class SavingsPotsListView extends ConsumerWidget {
       ),
       body: potsAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (pots) {
           if (pots.isEmpty) {
             return EmptyState(

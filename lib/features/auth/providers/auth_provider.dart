@@ -5,6 +5,7 @@ import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -73,10 +74,11 @@ class AuthNotifier extends Notifier<AuthState> {
       final token = await _storage.read(key: StorageKeys.accessToken);
 
       if (token != null) {
-        // Token exists — restore session
-        state = state.copyWith(status: AuthStatus.authenticated);
+        // Token exists — go to locked state (require PIN/biometric to unlock)
+        // This ensures returning users always see the lock screen first
+        state = state.copyWith(status: AuthStatus.locked);
 
-        // Sync FSM: restore auth state and trigger data fetches
+        // Sync FSM: restore auth state and trigger data fetches in background
         final userId = await _storage.read(key: 'user_id');
         final refreshToken = await _storage.read(key: 'refresh_token');
         ref.read(appFsmProvider.notifier).restoreSession(
@@ -106,6 +108,26 @@ class AuthNotifier extends Notifier<AuthState> {
   void unlock() {
     if (state.status == AuthStatus.locked) {
       state = state.copyWith(status: AuthStatus.authenticated);
+      // Proactively refresh token after unlock — session may have expired while locked
+      _refreshTokenOnUnlock();
+      // Start real-time sync (WebSocket + polling fallback)
+      ref.read(realtimeServiceProvider).start();
+    }
+  }
+
+  Future<void> _refreshTokenOnUnlock() async {
+    try {
+      final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
+      if (storedRefresh == null) return;
+
+      final response = await _authService.refreshToken(refreshToken: storedRefresh);
+
+      await _storage.write(key: StorageKeys.accessToken, value: response.accessToken);
+      if (response.refreshToken != null) {
+        await _storage.write(key: StorageKeys.refreshToken, value: response.refreshToken!);
+      }
+    } catch (_) {
+      // Token refresh failed — the 401 interceptor will handle it on next API call
     }
   }
 
@@ -294,7 +316,13 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Logout
   Future<void> logout() async {
-    // End session first
+    // Stop real-time sync
+    ref.read(realtimeServiceProvider).stop();
+
+    // Notify backend first (while we still have the token)
+    await _authService.logout();
+
+    // End session
     await ref.read(sessionServiceProvider.notifier).endSession();
 
     await _storage.delete(key: StorageKeys.accessToken);

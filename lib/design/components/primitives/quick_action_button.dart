@@ -25,9 +25,12 @@ class QuickActionButton extends StatelessWidget {
     final bg = backgroundColor ?? theme.colorScheme.primaryContainer;
     final fg = iconColor ?? theme.colorScheme.onPrimaryContainer;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
@@ -48,6 +51,7 @@ class QuickActionButton extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
         ],
+        ),
       ),
     );
   }

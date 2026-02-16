@@ -21,14 +21,13 @@ class DevicesRepository {
     String? locale,
   }) async {
     final response = await _dio.post('/devices/register', data: {
-      'deviceId': deviceId,
+      'deviceIdentifier': deviceId,
       'platform': platform,
       if (model != null) 'model': model,
       if (brand != null) 'brand': brand,
       if (osVersion != null) 'osVersion': osVersion,
       if (appVersion != null) 'appVersion': appVersion,
       if (fcmToken != null) 'fcmToken': fcmToken,
-      if (locale != null) 'locale': locale,
     });
     return Device.fromJson(response.data);
   }

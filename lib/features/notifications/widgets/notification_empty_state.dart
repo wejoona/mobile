@@ -9,8 +9,8 @@ class NotificationEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return const EmptyState(
       icon: Icons.notifications_none_outlined,
-      title: 'No notifications',
-      description: 'You are all caught up! New notifications will appear here.',
+      title: 'Aucune notification',
+      description: 'Vous êtes à jour ! Les nouvelles notifications apparaîtront ici.',
     );
   }
 }

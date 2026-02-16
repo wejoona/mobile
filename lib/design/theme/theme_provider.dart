@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/design/theme/app_theme.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/theme/theme_transition.dart';
+
+const _securityChannel = MethodChannel('com.joonapay.usdc_wallet/security');
+
+/// Sync theme to native iOS security overlay
+Future<void> _syncThemeToNative(bool isDark) async {
+  try {
+    await _securityChannel.invokeMethod('setThemeMode', isDark);
+  } catch (_) {}
+}
 
 /// Theme mode state - supports system, light, and dark
 enum AppThemeMode {
@@ -101,6 +111,9 @@ class ThemeNotifier extends Notifier<ThemeState> {
           orElse: () => AppThemeMode.system,
         );
         state = ThemeState(mode: mode);
+        // Sync to native - assume system brightness for now
+        final brightness = PlatformDispatcher.instance.platformBrightness;
+        _syncThemeToNative(state.isDark(brightness));
       }
     } catch (e) {
       // Ignore errors, use default
@@ -121,6 +134,12 @@ class ThemeNotifier extends Notifier<ThemeState> {
     } catch (e) {
       // Ignore storage errors
     }
+
+    // Sync to native iOS overlay
+    final isDark = systemBrightness != null
+        ? state.isDark(systemBrightness)
+        : mode == AppThemeMode.dark;
+    _syncThemeToNative(isDark);
 
     // Smooth status bar transition
     if (systemBrightness != null) {

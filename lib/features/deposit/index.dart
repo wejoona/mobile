@@ -11,7 +11,6 @@ export 'package:usdc_wallet/features/deposit/repositories/deposit_repository.dar
 export 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
 export 'package:usdc_wallet/features/deposit/views/deposit_screen.dart';
 export 'package:usdc_wallet/features/deposit/views/deposit_status_screen.dart';
-export 'package:usdc_wallet/features/deposit/views/deposit_view.dart';
 export 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 export 'package:usdc_wallet/features/deposit/views/provider_selection_screen.dart';
 export 'package:usdc_wallet/features/deposit/widgets/deposit_empty_state.dart';

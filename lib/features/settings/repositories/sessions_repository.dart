@@ -12,9 +12,17 @@ class SessionsRepository {
   /// Get all active sessions
   Future<List<Session>> getSessions() async {
     final response = await _dio.get('/sessions');
-    // ignore: avoid_dynamic_calls
-    return (response.data['sessions'] as List)
-        .map((json) => Session.fromJson(json))
+    final raw = response.data;
+    final List items;
+    if (raw is Map<String, dynamic>) {
+      items = (raw['sessions'] ?? raw['data'] ?? []) as List;
+    } else if (raw is List) {
+      items = raw;
+    } else {
+      items = [];
+    }
+    return items
+        .map((json) => Session.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 

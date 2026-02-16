@@ -60,7 +60,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       debugPrint('[Selfie] Simulator detected - using gallery fallback');
       if (mounted) {
         setState(() {
-          _cameraError = 'Camera mocked for simulator. Please use gallery.';
+          _cameraError = 'Caméra simulée. Veuillez utiliser la galerie.';
           _viewState = _SelfieViewState.error;
         });
       }
@@ -75,7 +75,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
         debugPrint('[Selfie] No cameras available');
         if (mounted) {
           setState(() {
-            _cameraError = 'No cameras available on this device';
+            _cameraError = 'Aucune caméra disponible sur cet appareil';
             _viewState = _SelfieViewState.error;
           });
         }
@@ -124,7 +124,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       AppLogger('Selfie camera error').error('Camera initialization error', e);
       if (mounted) {
         setState(() {
-          _cameraError = 'Camera not available. Please use gallery instead.';
+          _cameraError = 'Caméra non disponible. Veuillez utiliser la galerie.';
           _viewState = _SelfieViewState.error;
         });
       }
@@ -152,7 +152,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
   Widget _buildInstructionScreen(BuildContext context, AppLocalizations l10n) {
     return KycInstructionScreen(
       title: l10n.kyc_selfie_title,
-      description: 'We need a clear photo of your face to verify your identity.',
+      description: "Nous avons besoin d'une photo claire de votre visage pour vérifier votre identité.",
       icon: Icons.face,
       instructions: KycInstructions.selfie,
       buttonLabel: l10n.common_continue,
@@ -172,7 +172,7 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
             CircularProgressIndicator(color: colors.gold),
             const SizedBox(height: AppSpacing.lg),
             AppText(
-              'Starting camera...',
+              'Démarrage de la caméra...',
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
             ),

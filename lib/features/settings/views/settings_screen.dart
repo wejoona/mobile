@@ -72,8 +72,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.edit_outlined,
-              title: 'Edit Profile',
-              subtitle: 'Update your personal information',
+              title: 'Modifier le profil',
+              subtitle: 'Mettre à jour vos informations personnelles',
               onTap: () => context.push('/settings/profile/edit'),
             ),
             _KycTile(onTap: () => context.push('/settings/kyc')),
@@ -85,21 +85,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.lock_outline,
-              title: 'Change PIN',
-              subtitle: 'Update your 4-digit security PIN',
+              title: 'Changer le PIN',
+              subtitle: 'Modifier votre code PIN à 6 chiffres',
               onTap: () => context.push('/settings/pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(
               icon: Icons.devices,
               title: l10n.settings_devices,
-              subtitle: 'Manage trusted devices',
+              subtitle: 'Gérer les appareils de confiance',
               onTap: () => context.push('/settings/devices'),
             ),
             _SettingsTile(
               icon: Icons.history,
-              title: 'Active Sessions',
-              subtitle: 'View and manage active sessions',
+              title: 'Sessions actives',
+              subtitle: 'Voir et gérer les sessions actives',
               onTap: () => context.push('/settings/sessions'),
             ),
             _SettingsTile(
@@ -126,14 +126,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsTile(
               icon: Icons.notifications_outlined,
               title: l10n.settings_notifications,
-              subtitle: 'Manage notification preferences',
+              subtitle: 'Gérer les préférences de notification',
               onTap: () => context.push('/settings/notifications'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // ABOUT SECTION
-            _SectionHeader('About'),
+            _SectionHeader('À propos'),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.help_outline,
@@ -143,13 +143,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
-              title: 'Terms of Service',
-              subtitle: 'View our terms',
+              title: "Conditions d'utilisation",
+              subtitle: 'Voir nos conditions',
               onTap: () => _openExternalLink('https://joonapay.com/terms'),
             ),
             _SettingsTile(
               icon: Icons.privacy_tip_outlined,
-              title: 'Privacy Policy',
+              title: 'Politique de confidentialité',
               subtitle: 'How we handle your data',
               onTap: () => _openExternalLink('https://joonapay.com/privacy'),
             ),
@@ -763,7 +763,7 @@ class _ProfileCard extends ConsumerWidget {
         children: [
           // Avatar with profile image or initials
           UserAvatar(
-            imageUrl: userState.avatarUrl,
+            imageUrl: userState.effectiveAvatarUrl,
             firstName: userState.firstName,
             lastName: userState.lastName,
             size: 56,

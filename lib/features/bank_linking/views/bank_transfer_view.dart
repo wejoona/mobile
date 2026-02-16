@@ -367,7 +367,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: AppText(
-            e.toString(),
+            'Une erreur est survenue. Veuillez réessayer.',
             style: AppTypography.bodyMedium,
           ),
           backgroundColor: context.colors.error,

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 
 /// Enter PIN View — reusable PIN verification screen.
 /// Uses design system PinDots + PinPad for consistency with OTP/lock screens.
@@ -105,7 +106,7 @@ class _EnterPinViewState extends ConsumerState<EnterPinView> {
 
                         const SizedBox(height: AppSpacing.md),
 
-                        if (pinState.remainingAttempts < 5)
+                        if (pinState.remainingAttempts < PinService.maxAttempts)
                           AppText(
                             l10n.pin_attemptsRemaining(pinState.remainingAttempts),
                             variant: AppTextVariant.bodyMedium,

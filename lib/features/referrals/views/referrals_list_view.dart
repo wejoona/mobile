@@ -17,7 +17,7 @@ class ReferralsListView extends ConsumerWidget {
       appBar: AppBar(title: const Text('Referrals')),
       body: referralAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (info) => RefreshIndicator(
           onRefresh: () => ref.refresh(referralProvider.future),
           child: ListView(

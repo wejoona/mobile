@@ -9,9 +9,9 @@ class InsightsEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return const EmptyState(
       icon: Icons.analytics_outlined,
-      title: 'Not enough data',
+      title: 'Pas assez de données',
       description:
-          'Make a few transactions and we will show you spending insights and trends.',
+          'Effectuez quelques transactions et nous vous montrerons vos tendances de dépenses.',
     );
   }
 }

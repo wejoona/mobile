@@ -31,7 +31,7 @@ class DeviceRegistrationService {
         final ios = await deviceInfo.iosInfo;
         deviceId = ios.identifierForVendor ?? 'unknown-ios';
         platform = 'ios';
-        model = ios.utsname.machine;
+        model = ios.name; // e.g. "Ben's iPhone 16 Pro Max"
         brand = 'Apple';
         osVersion = ios.systemVersion;
       } else if (Platform.isAndroid) {

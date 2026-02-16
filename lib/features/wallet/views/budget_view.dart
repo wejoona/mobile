@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -127,7 +128,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Monthly Budget',
+                      AppStrings.monthlyBudget,
                       variant: AppTextVariant.labelSmall,
                       color: colors.textSecondary,
                     ),
@@ -182,7 +183,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
             children: [
               Expanded(
                 child: _buildOverviewItem(
-                  'Spent',
+                  AppStrings.spent,
                   '\$${_totalSpent.toStringAsFixed(0)}',
                   colors.textPrimary,
                   colors,
@@ -195,7 +196,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               ),
               Expanded(
                 child: _buildOverviewItem(
-                  'Remaining',
+                  AppStrings.remaining,
                   '\$${remaining.toStringAsFixed(0)}',
                   remaining < 0 ? context.colors.error : context.colors.success,
                   colors,
@@ -208,7 +209,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               ),
               Expanded(
                 child: _buildOverviewItem(
-                  'Daily Budget',
+                  AppStrings.dailyBudget,
                   '\$${dailyBudget.toStringAsFixed(0)}',
                   context.colors.gold,
                   colors,
@@ -267,7 +268,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         AppText(
-          'Budget Categories',
+          AppStrings.budgetCategories,
           variant: AppTextVariant.titleMedium,
           color: colors.textPrimary,
         ),
@@ -375,7 +376,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               Icon(Icons.insights, color: context.colors.gold, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
-                'Budget Insights',
+                AppStrings.budgetInsights,
                 variant: AppTextVariant.labelMedium,
                 color: colors.textPrimary,
               ),
@@ -444,7 +445,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               Icon(Icons.tips_and_updates, color: context.colors.gold, size: 20),
               const SizedBox(width: AppSpacing.sm),
               AppText(
-                'Budgeting Tips',
+                AppStrings.budgetingTips,
                 variant: AppTextVariant.labelMedium,
                 color: colors.textPrimary,
               ),
@@ -506,7 +507,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const AppText(
-                  'Add Budget Category',
+                  AppStrings.addBudgetCategory,
                   variant: AppTextVariant.titleMedium,
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -519,7 +520,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                 AppInput(
                   controller: budgetController,
                   hint: '\$0',
-                  label: 'Monthly Budget',
+                  label: AppStrings.monthlyBudget,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -665,7 +666,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildDetailItem('Budget', '\$${category.budget.toStringAsFixed(0)}', colors),
-                _buildDetailItem('Spent', '\$${category.spent.toStringAsFixed(0)}', colors),
+                _buildDetailItem(AppStrings.spent, '\$${category.spent.toStringAsFixed(0)}', colors),
                 _buildDetailItem('Left', '\$${(category.budget - category.spent).toStringAsFixed(0)}', colors),
               ],
             ),

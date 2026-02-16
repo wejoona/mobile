@@ -320,6 +320,6 @@ ${l10n.sendExternal_status}: ${_getStatusDisplay(result.status, l10n)}
     // Reset state
     ref.read(externalTransferProvider.notifier).reset();
     // Navigate to home
-    context.go('/');
+    context.go('/home');
   }
 }

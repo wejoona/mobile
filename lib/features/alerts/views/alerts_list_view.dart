@@ -66,7 +66,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           children: [
             Flexible(
               child: AppText(
-                'Alerts',
+                'Alertes',
                 variant: AppTextVariant.titleLarge,
               ),
             ),
@@ -107,7 +107,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.push('/alerts/preferences'),
-            tooltip: 'Alert Preferences',
+            tooltip: "Préférences d'alertes",
           ),
         ],
       ),
@@ -213,7 +213,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
       child: Row(
         children: [
           _buildFilterChip(
-            label: 'All',
+            label: 'Tous',
             isSelected: _filterSeverity == null && _filterType == null,
             onTap: () {
               setState(() {
@@ -225,7 +225,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
-            label: 'Critical',
+            label: 'Critique',
             isSelected: _filterSeverity == AlertSeverity.critical,
             color: AlertSeverity.critical.color,
             onTap: () {
@@ -239,7 +239,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
-            label: 'Warning',
+            label: 'Avertissement',
             isSelected: _filterSeverity == AlertSeverity.warning,
             color: AlertSeverity.warning.color,
             onTap: () {
@@ -266,7 +266,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           ),
           const SizedBox(width: AppSpacing.sm),
           _buildFilterChip(
-            label: 'Security',
+            label: 'Sécurité',
             isSelected: _filterType == AlertType.loginNewDevice,
             onTap: () {
               setState(() {
@@ -338,14 +338,14 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppText(
-            'No Alerts',
+            'Aucune alerte',
             variant: AppTextVariant.titleMedium,
             color: colors.textPrimary,
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
             _filterSeverity != null || _filterType != null
-                ? 'No alerts match your filter'
+                ? 'Aucune alerte ne correspond à votre filtre'
                 : "You're all caught up!",
             variant: AppTextVariant.bodyMedium,
             color: colors.textSecondary,
@@ -360,7 +360,7 @@ class _AlertsListViewState extends ConsumerState<AlertsListView> {
                 });
               },
               child: AppText(
-                'Clear filters',
+                'Effacer les filtres',
                 variant: AppTextVariant.labelMedium,
                 color: colors.gold,
               ),

@@ -12,6 +12,7 @@ import 'package:usdc_wallet/services/session/session_manager.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
+import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 void main() async {
@@ -91,6 +92,9 @@ class KoridoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize app lifecycle observer for auto-lock on background
+    ref.read(appLifecycleObserverProvider);
+
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);
     final localeState = ref.watch(localeProvider);

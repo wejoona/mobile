@@ -3,29 +3,44 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
-import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
+import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
   const CardsListView({super.key});
+
+  Widget _buildLoadingSkeleton() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ShimmerLoading(width: 300, height: 190, borderRadius: 16),
+            const SizedBox(height: 24),
+            ShimmerLoading(width: 200, height: 16),
+            const SizedBox(height: 8),
+            ShimmerLoading(width: 150, height: 14),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cardsAsync = ref.watch(cardsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Cards')),
+      appBar: AppBar(title: const Text('Mes cartes')),
       body: cardsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => _buildLoadingSkeleton(),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (cards) {
           if (cards.isEmpty) {
-            return EmptyState(
-              icon: Icons.credit_card_rounded,
-              title: 'No cards yet',
-              subtitle: 'Request a virtual card to make online payments with your USDC balance',
-              actionLabel: 'Request Card',
-              onAction: () async {
+            return CardEmptyState(
+              onCreateCard: () async {
                 final actions = ref.read(cardActionsProvider);
                 await actions.requestVirtual({});
                 ref.invalidate(cardsProvider);

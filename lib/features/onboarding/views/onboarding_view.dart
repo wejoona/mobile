@@ -28,33 +28,45 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<_OnboardingPage> _pages = const [
-    _OnboardingPage(
+  List<_OnboardingPage> get _pages => [
+    const _OnboardingPage(
       icon: Icons.account_balance_wallet,
-      title: 'Your Money, Your Way',
-      description:
-          'Store, send, and receive USDC securely. Your digital wallet for the modern world.',
+      titleFr: 'Votre argent, simplifié',
+      titleEn: 'Your Money, Simplified',
+      descriptionFr:
+          'Gardez, envoyez et recevez de l\'argent en toute sécurité. Votre portefeuille digital en FCFA.',
+      descriptionEn:
+          'Store, send, and receive money securely. Your digital wallet in FCFA.',
       color: Color(0xFFD4AF37),
     ),
-    _OnboardingPage(
+    const _OnboardingPage(
       icon: Icons.send,
-      title: 'Send Money Instantly',
-      description:
-          'Transfer funds to friends and family in seconds. No borders, no delays.',
+      titleFr: 'Envoyez en un instant',
+      titleEn: 'Send Money Instantly',
+      descriptionFr:
+          'Transférez de l\'argent à vos proches en quelques secondes. Par numéro de téléphone, c\'est tout.',
+      descriptionEn:
+          'Transfer money to friends and family in seconds. Just a phone number.',
       color: Color(0xFF4CAF50),
     ),
-    _OnboardingPage(
+    const _OnboardingPage(
       icon: Icons.swap_horiz,
-      title: 'Easy Deposits & Withdrawals',
-      description:
-          'Add money via Mobile Money, bank transfer, or card. Cash out anytime.',
+      titleFr: 'Orange, MTN, Wave, Moov',
+      titleEn: 'Orange, MTN, Wave, Moov',
+      descriptionFr:
+          'Déposez et retirez via Mobile Money. Compatible avec tous vos opérateurs.',
+      descriptionEn:
+          'Deposit and withdraw via Mobile Money. Works with all your providers.',
       color: Color(0xFF2196F3),
     ),
-    _OnboardingPage(
+    const _OnboardingPage(
       icon: Icons.security,
-      title: 'Bank-Level Security',
-      description:
-          'Your funds are protected with state-of-the-art encryption and biometric authentication.',
+      titleFr: 'Sécurité maximale',
+      titleEn: 'Maximum Security',
+      descriptionFr:
+          'Protégé par code PIN et empreinte digitale. Votre argent est en sécurité.',
+      descriptionEn:
+          'Protected by PIN and fingerprint. Your money is safe.',
       color: Color(0xFF9C27B0),
     ),
   ];
@@ -80,7 +92,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
               child: TextButton(
                 onPressed: _completeOnboarding,
                 child: AppText(
-                  'Skip',
+                  Localizations.localeOf(context).languageCode == 'fr' ? 'Passer' : 'Skip',
                   variant: AppTextVariant.labelLarge,
                   color: colors.textSecondary,
                 ),
@@ -117,7 +129,9 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: AppButton(
-                label: _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
+                label: _currentPage == _pages.length - 1
+                    ? (Localizations.localeOf(context).languageCode == 'fr' ? 'Commencer' : 'Get Started')
+                    : (Localizations.localeOf(context).languageCode == 'fr' ? 'Suivant' : 'Next'),
                 onPressed: _onNextPressed,
                 variant: AppButtonVariant.primary,
                 isFullWidth: true,
@@ -153,7 +167,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
 
           // Title
           AppText(
-            page.title,
+            page.title(context),
             variant: AppTextVariant.headlineMedium,
             color: colors.textPrimary,
             textAlign: TextAlign.center,
@@ -164,7 +178,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: AppText(
-              page.description,
+              page.description(context),
               variant: AppTextVariant.bodyLarge,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
@@ -197,15 +211,31 @@ class _OnboardingViewState extends ConsumerState<OnboardingView> {
 class _OnboardingPage {
   const _OnboardingPage({
     required this.icon,
-    required this.title,
-    required this.description,
+    required this.titleFr,
+    required this.titleEn,
+    required this.descriptionFr,
+    required this.descriptionEn,
     required this.color,
   });
 
   final IconData icon;
-  final String title;
-  final String description;
+  final String titleFr;
+  final String titleEn;
+  final String descriptionFr;
+  final String descriptionEn;
   final Color color;
+
+  /// Returns title based on locale (French-first)
+  String title(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale.languageCode == 'fr' ? titleFr : titleEn;
+  }
+
+  /// Returns description based on locale (French-first)
+  String description(BuildContext context) {
+    final locale = Localizations.localeOf(context);
+    return locale.languageCode == 'fr' ? descriptionFr : descriptionEn;
+  }
 }
 
 class _PageDot extends StatelessWidget {

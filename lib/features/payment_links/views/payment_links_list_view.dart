@@ -17,12 +17,12 @@ class PaymentLinksListView extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Payment Links'),
         actions: [
-          IconButton(icon: const Icon(Icons.add_rounded), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Créer un lien', onPressed: () {}),
         ],
       ),
       body: linksAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (links) {
           if (links.isEmpty) {
             return const EmptyState(

@@ -1,8 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:usdc_wallet/design/tokens/colors.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// UserAvatar - Displays user profile picture with fallback
 ///
@@ -137,15 +140,66 @@ class UserAvatar extends StatelessWidget {
       ),
       child: ClipOval(
         child: imageUrl != null && imageUrl!.isNotEmpty
-            ? _buildNetworkImage()
+            ? (_isLocalFilePath(imageUrl!)
+                ? _buildLocalImage()
+                : imageUrl!.startsWith('data:')
+                    ? _buildBase64Image(context)
+                    : _buildNetworkImage())
             : _buildInitialsFallback(context),
       ),
     );
   }
 
+  Widget _buildLocalImage() {
+    return Image.file(
+      File(imageUrl!),
+      fit: BoxFit.cover,
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stack) => _buildInitialsFallback(context),
+    );
+  }
+
+  /// True only for actual local file paths (e.g. /Users/..., /var/..., /data/...)
+  /// False for relative API paths like /user/avatar/xxx
+  bool _isLocalFilePath(String path) {
+    if (!path.startsWith('/')) return false;
+    // Local file paths from getApplicationDocumentsDirectory() start with these
+    return path.startsWith('/Users/') ||
+        path.startsWith('/var/') ||
+        path.startsWith('/data/') ||
+        path.startsWith('/private/') ||
+        path.startsWith('/storage/');
+  }
+
+  /// Resolve URL: if it's a relative path like /user/avatar/xxx, prepend base URL
+  String _resolveUrl(String url) {
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    // Relative API path — prepend base URL from ApiConfig
+    return '${ApiConfig.baseUrl}$url';
+  }
+
+  Widget _buildBase64Image(BuildContext context) {
+    try {
+      // Parse data:image/jpeg;base64,XXXX
+      final parts = imageUrl!.split(',');
+      if (parts.length != 2) return _buildInitialsFallback(context);
+      final bytes = base64Decode(parts[1]);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        width: size,
+        height: size,
+        errorBuilder: (ctx, error, stack) => _buildInitialsFallback(ctx),
+      );
+    } catch (_) {
+      return _buildInitialsFallback(context);
+    }
+  }
+
   Widget _buildNetworkImage() {
     return CachedNetworkImage(
-      imageUrl: imageUrl!,
+      imageUrl: _resolveUrl(imageUrl!),
       fit: BoxFit.cover,
       placeholder: (context, url) => AppSkeleton.circle(size: size),
       errorWidget: (context, url, error) => _buildInitialsFallback(context),

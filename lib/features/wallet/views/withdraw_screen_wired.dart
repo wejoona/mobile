@@ -4,6 +4,8 @@ import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
+import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 
 /// Fully wired withdrawal screen.
 class WithdrawScreenWired extends ConsumerStatefulWidget {
@@ -119,7 +121,24 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
 
             FilledButton(
               onPressed: state.method != null && state.amount != null && !state.isLoading
-                  ? () => notifier.submit()
+                  ? () async {
+                      // Risk-based step-up evaluation
+                      final securityService = ref.read(riskBasedSecurityServiceProvider);
+                      final decision = await securityService.evaluateTransaction(
+                        type: 'withdrawal',
+                        amount: state.amount!,
+                        currency: 'USDC',
+                        recipientType: 'external',
+                      );
+
+                      if (decision.stepUpRequired) {
+                        if (!context.mounted) return;
+                        final passed = await RiskStepUpDialog.show(context, decision: decision);
+                        if (!passed) return;
+                      }
+
+                      notifier.submit();
+                    }
                   : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))

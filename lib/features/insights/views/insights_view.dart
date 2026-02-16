@@ -16,7 +16,7 @@ class InsightsView extends ConsumerWidget {
       appBar: AppBar(title: const Text('Insights')),
       body: insightsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Erreur : $e')),
         data: (insights) => ListView(
           children: [
             Padding(
@@ -32,7 +32,7 @@ class InsightsView extends ConsumerWidget {
             if (insights.categoryBreakdown.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text('Spending by Category', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text('Dépenses par catégorie', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 12),
               Padding(

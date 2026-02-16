@@ -199,18 +199,27 @@ class SessionService extends Notifier<SessionState> {
   }
 
   /// App entered background
+  Timer? _backgroundLockTimer;
+
   void onAppBackground() {
     _backgroundEnteredAt = DateTime.now();
     state = state.copyWith(isInBackground: true);
 
-    // Lock session immediately when going to background
-    if (state.status == SessionStatus.active) {
-      lockSession();
-    }
+    // Don't lock immediately — give a grace period for camera, image picker,
+    // biometric prompts, etc. which briefly send the app to background.
+    // Lock after 30 seconds in background.
+    _backgroundLockTimer?.cancel();
+    _backgroundLockTimer = Timer(const Duration(seconds: 30), () {
+      if (state.isInBackground && state.status == SessionStatus.active) {
+        lockSession();
+      }
+    });
   }
 
   /// App returned to foreground
   void onAppForeground() {
+    _backgroundLockTimer?.cancel();
+    _backgroundLockTimer = null;
     final wasInBackground = _backgroundEnteredAt;
     _backgroundEnteredAt = null;
     state = state.copyWith(isInBackground: false);
@@ -290,16 +299,16 @@ class SessionService extends Notifier<SessionState> {
         sessionStarted = DateTime.tryParse(sessionStartStr);
       }
 
-      // Restore session - start as active (lock will happen on app background)
+      // Restore session - start as locked (user must enter PIN first)
       state = SessionState(
-        status: SessionStatus.active,
+        status: SessionStatus.locked,
         sessionStarted: sessionStarted,
         tokenExpiresAt: expiresAt,
         lastActivity: DateTime.now(),
       );
 
-      // Start inactivity timer
-      _startInactivityTimer();
+      // Only start token refresh timer, NOT inactivity timer
+      // Inactivity timer starts when session is unlocked via PIN/biometric
       _startTokenRefreshTimer();
     }
   }
@@ -423,10 +432,12 @@ class SessionService extends Notifier<SessionState> {
     _warningTimer?.cancel();
     _countdownTimer?.cancel();
     _tokenRefreshTimer?.cancel();
+    _backgroundLockTimer?.cancel();
     _inactivityTimer = null;
     _warningTimer = null;
     _countdownTimer = null;
     _tokenRefreshTimer = null;
+    _backgroundLockTimer = null;
   }
 }
 

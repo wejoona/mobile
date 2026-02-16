@@ -14,15 +14,20 @@ class SecuritySettingsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Security')),
-      body: ListView(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(securitySettingsProvider);
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
         children: [
           const SizedBox(height: 16),
           SettingsSection(
-            title: 'Authentication',
+            title: 'Authentification',
             items: [
               SettingsToggle(
                 leading: const Icon(Icons.fingerprint_rounded),
-                title: 'Biometric Login',
+                title: 'Connexion biométrique',
                 subtitle: 'Use Face ID or fingerprint to unlock',
                 value: settings.biometricEnabled,
                 onChanged: (v) => notifier.setBiometric(v),
@@ -30,44 +35,44 @@ class SecuritySettingsView extends ConsumerWidget {
               SettingsToggle(
                 leading: const Icon(Icons.lock_clock_rounded),
                 title: 'PIN on App Open',
-                subtitle: 'Require PIN every time you open the app',
+                subtitle: "Exiger le PIN à chaque ouverture de l'application",
                 value: settings.pinOnAppOpen,
                 onChanged: (v) => notifier.setPinOnAppOpen(v),
               ),
               SettingsItem(
                 leading: const Icon(Icons.timer_rounded),
-                title: 'Auto-Lock',
+                title: 'Verrouillage auto',
                 subtitle: 'After ${settings.autoLockMinutes} minutes of inactivity',
                 onTap: () => _showAutoLockPicker(context, ref),
               ),
             ],
           ),
           SettingsSection(
-            title: 'Privacy',
+            title: 'Confidentialité',
             items: [
               SettingsToggle(
                 leading: const Icon(Icons.screenshot_rounded),
-                title: 'Screenshot Protection',
-                subtitle: 'Prevent screenshots in sensitive screens',
+                title: "Protection des captures d'écran",
+                subtitle: "Empêcher les captures d'écran sur les écrans sensibles",
                 value: settings.screenshotProtection,
                 onChanged: (v) => notifier.setScreenshotProtection(v),
               ),
             ],
           ),
           SettingsSection(
-            title: 'Alerts',
+            title: 'Alertes',
             items: [
               SettingsToggle(
                 leading: const Icon(Icons.notifications_active_rounded),
-                title: 'Transaction Alerts',
-                subtitle: 'Get notified for every transaction',
+                title: 'Alertes de transaction',
+                subtitle: 'Être notifié pour chaque transaction',
                 value: settings.transactionAlerts,
                 onChanged: (v) => notifier.setTransactionAlerts(v),
               ),
             ],
           ),
           SettingsSection(
-            title: 'Account',
+            title: 'Compte',
             items: [
               SettingsItem(
                 leading: const Icon(Icons.key_rounded),
@@ -82,6 +87,7 @@ class SecuritySettingsView extends ConsumerWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }

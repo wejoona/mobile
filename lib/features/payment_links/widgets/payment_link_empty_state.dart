@@ -14,12 +14,12 @@ class PaymentLinkEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.link_outlined,
-      title: 'No payment links',
+      title: 'Aucun lien de paiement',
       description:
-          'Create a payment link to receive money from anyone, even without a Korido account.',
+          'Créez un lien de paiement pour recevoir de l\'argent de n\'importe qui, même sans compte Korido.',
       action: onCreateLink != null
           ? EmptyStateAction(
-              label: 'Create Link',
+              label: 'Créer un lien',
               onPressed: onCreateLink!,
             )
           : null,
