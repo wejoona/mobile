@@ -256,13 +256,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      greeting,
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
-                    ),
                     if (displayName != null) ...[
-                      const SizedBox(height: AppSpacing.xxs),
                       AppText(
                         displayName,
                         variant: AppTextVariant.headlineSmall,
@@ -270,7 +264,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: AppSpacing.xxs),
                     ],
+                    AppText(
+                      greeting,
+                      variant: AppTextVariant.bodyMedium,
+                      color: colors.textSecondary,
+                    ),
                   ],
                 ),
               ),

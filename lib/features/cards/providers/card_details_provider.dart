@@ -1,5 +1,8 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/domain/entities/card.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 
 /// Run 385: Card details provider with sensitive data reveal
 class CardDetailsState {
@@ -39,13 +42,20 @@ class CardDetailsState {
 }
 
 class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
-  CardDetailsNotifier() : super(const CardDetailsState());
+  final Ref _ref;
+  final String _cardId;
+
+  CardDetailsNotifier(this._ref, this._cardId) : super(const CardDetailsState()) {
+    loadCard(_cardId);
+  }
 
   Future<void> loadCard(String cardId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
-      state = state.copyWith(isLoading: false);
+      final service = _ref.read(cardsServiceProvider);
+      final data = await service.getCard(cardId);
+      final card = KoridoCard.fromJson(data);
+      state = state.copyWith(isLoading: false, card: card);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -69,21 +79,33 @@ class CardDetailsNotifier extends StateNotifier<CardDetailsState> {
 
   Future<void> freezeCard() async {
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 500));
-    state = state.copyWith(isLoading: false);
+    try {
+      final service = _ref.read(cardsServiceProvider);
+      await service.freezeCard(_cardId);
+      state = state.copyWith(isLoading: false);
+      _ref.invalidate(cardsProvider);
+      await loadCard(_cardId);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
 
   Future<void> unfreezeCard() async {
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 500));
-    state = state.copyWith(isLoading: false);
+    try {
+      final service = _ref.read(cardsServiceProvider);
+      await service.unfreezeCard(_cardId);
+      state = state.copyWith(isLoading: false);
+      _ref.invalidate(cardsProvider);
+      await loadCard(_cardId);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
   }
 }
 
 final cardDetailsProvider =
     StateNotifierProvider.family<CardDetailsNotifier, CardDetailsState, String>(
         (ref, cardId) {
-  final notifier = CardDetailsNotifier();
-  notifier.loadCard(cardId);
-  return notifier;
+  return CardDetailsNotifier(ref, cardId);
 });

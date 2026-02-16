@@ -1,3 +1,10 @@
+int _parseInt(dynamic value, int fallback) {
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? fallback;
+  if (value is num) return value.toInt();
+  return fallback;
+}
+
 /// Card entity - mirrors backend Card domain entity.
 class KoridoCard {
   final String id;
@@ -54,30 +61,54 @@ class KoridoCard {
   }
 
   factory KoridoCard.fromJson(Map<String, dynamic> json) {
+    // Extract last4 from maskedCardNumber if 'last4' not present
+    String last4 = json['last4'] as String? ?? '';
+    if (last4.isEmpty && json['maskedCardNumber'] != null) {
+      final masked = json['maskedCardNumber'] as String;
+      last4 = masked.length >= 4 ? masked.substring(masked.length - 4) : masked;
+    }
+    if (last4.isEmpty) last4 = '****';
+
+    // Map backend 'cardType' to CardType enum
+    final rawType = json['type'] ?? json['cardType'];
+    final cardType = CardType.values.firstWhere(
+      (e) => e.name == rawType,
+      orElse: () => CardType.virtual,
+    );
+
+    // Map backend status: derive from frozenAt if needed
+    final rawStatus = json['status'] as String? ?? 'active';
+    final isFrozenFromBackend = json['frozenAt'] != null;
+    CardStatus status;
+    if (isFrozenFromBackend && rawStatus == 'active') {
+      status = CardStatus.frozen;
+    } else {
+      status = CardStatus.values.firstWhere(
+        (e) => e.name == rawStatus,
+        orElse: () => CardStatus.active,
+      );
+    }
+
     return KoridoCard(
       id: json['id'] as String,
       userId: json['userId'] as String? ?? '',
-      last4: json['last4'] as String? ?? '****',
+      last4: last4,
       brand: json['brand'] as String? ?? 'Visa',
-      type: CardType.values.firstWhere(
-        (e) => e.name == json['type'],
-        orElse: () => CardType.virtual,
-      ),
-      status: CardStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => CardStatus.active,
-      ),
+      type: cardType,
+      status: status,
       nickname: json['nickname'] as String?,
-      expiryMonth: json['expiryMonth'] as int? ?? 12,
-      expiryYear: json['expiryYear'] as int? ?? 2030,
+      expiryMonth: _parseInt(json['expiryMonth'], 12),
+      expiryYear: _parseInt(json['expiryYear'], 2030),
       spendingLimit: (json['spendingLimit'] as num?)?.toDouble(),
-      currentSpend: (json['currentSpend'] as num?)?.toDouble(),
+      currentSpend: (json['currentSpend'] as num?)?.toDouble() ?? (json['spentAmount'] as num?)?.toDouble(),
       createdAt: DateTime.parse(
         json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
       ),
       blockedAt: json['blockedAt'] != null
           ? DateTime.parse(json['blockedAt'] as String)
-          : null,
+          : json['frozenAt'] != null
+              ? DateTime.parse(json['frozenAt'] as String)
+              : null,
     );
   }
 

@@ -8,10 +8,17 @@ class BulkPaymentsService {
 
   Future<List<BulkBatch>> getBatches() async {
     final response = await _dio.get('/bulk-payments/batches');
-    // ignore: avoid_dynamic_calls
-    return (response.data['batches'] as List)
-        .map((json) => BulkBatch.fromJson(json))
-        .toList();
+    final data = response.data;
+    // Backend returns { batches: [...] }; handle both wrapped and direct list
+    final List items;
+    if (data is Map && data.containsKey('batches')) {
+      items = data['batches'] as List? ?? [];
+    } else if (data is List) {
+      items = data;
+    } else {
+      items = [];
+    }
+    return items.map((json) => BulkBatch.fromJson(json as Map<String, dynamic>)).toList();
   }
 
   Future<BulkBatch> submitBatch(BulkBatch batch) async {
@@ -33,8 +40,9 @@ class BulkPaymentsService {
   Future<String> downloadFailedPayments(String batchId) async {
     final response =
         await _dio.get('/bulk-payments/batches/$batchId/failed-report');
-    // ignore: avoid_dynamic_calls
-    return response.data['csv'] as String;
+    final data = response.data;
+    if (data is Map) return data['csv'] as String? ?? '';
+    return data?.toString() ?? '';
   }
 
 

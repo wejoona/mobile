@@ -13,10 +13,17 @@ class RecurringTransfersService {
   /// Get all recurring transfers for the current user
   Future<List<RecurringTransfer>> getRecurringTransfers() async {
     final response = await _dio.get('/recurring-transfers');
-    // ignore: avoid_dynamic_calls
-    return (response.data['transfers'] as List)
-        .map((json) => RecurringTransfer.fromJson(json))
-        .toList();
+    final data = response.data;
+    // Backend returns { transfers: [...] }; handle both wrapped and direct list
+    final List items;
+    if (data is Map && data.containsKey('transfers')) {
+      items = data['transfers'] as List? ?? [];
+    } else if (data is List) {
+      items = data;
+    } else {
+      items = [];
+    }
+    return items.map((json) => RecurringTransfer.fromJson(json)).toList();
   }
 
   /// Get a single recurring transfer by ID
@@ -49,15 +56,17 @@ class RecurringTransfersService {
   }
 
   /// Pause a recurring transfer
+  /// Backend returns partial { id, status, updatedAt }, so re-fetch full transfer
   Future<RecurringTransfer> pauseRecurringTransfer(String id) async {
-    final response = await _dio.post('/recurring-transfers/$id/pause');
-    return RecurringTransfer.fromJson(response.data);
+    await _dio.post('/recurring-transfers/$id/pause');
+    return getRecurringTransfer(id);
   }
 
   /// Resume a paused recurring transfer
+  /// Backend returns partial { id, status, updatedAt }, so re-fetch full transfer
   Future<RecurringTransfer> resumeRecurringTransfer(String id) async {
-    final response = await _dio.post('/recurring-transfers/$id/resume');
-    return RecurringTransfer.fromJson(response.data);
+    await _dio.post('/recurring-transfers/$id/resume');
+    return getRecurringTransfer(id);
   }
 
   /// Cancel a recurring transfer
@@ -68,19 +77,17 @@ class RecurringTransfersService {
   /// Get execution history for a recurring transfer
   Future<List<ExecutionHistory>> getExecutionHistory(String id) async {
     final response = await _dio.get('/recurring-transfers/$id/history');
-    // ignore: avoid_dynamic_calls
-    return (response.data['history'] as List)
-        .map((json) => ExecutionHistory.fromJson(json))
-        .toList();
+    final data = response.data;
+    final List items = (data is Map ? data['history'] : data) as List? ?? [];
+    return items.map((json) => ExecutionHistory.fromJson(json)).toList();
   }
 
   /// Get upcoming executions (next 7 days)
   Future<List<UpcomingExecution>> getUpcomingExecutions() async {
     final response = await _dio.get('/recurring-transfers/upcoming');
-    // ignore: avoid_dynamic_calls
-    return (response.data['upcoming'] as List)
-        .map((json) => UpcomingExecution.fromJson(json))
-        .toList();
+    final data = response.data;
+    final List items = (data is Map ? data['upcoming'] : data) as List? ?? [];
+    return items.map((json) => UpcomingExecution.fromJson(json)).toList();
   }
 
   /// Get next 3 scheduled dates for a specific recurring transfer
@@ -89,9 +96,8 @@ class RecurringTransfersService {
       '/recurring-transfers/$id/next-dates',
       queryParameters: {'count': count},
     );
-    // ignore: avoid_dynamic_calls
-    return (response.data['dates'] as List)
-        .map((date) => DateTime.parse(date as String))
-        .toList();
+    final data = response.data;
+    final List items = (data is Map ? data['dates'] : data) as List? ?? [];
+    return items.map((date) => DateTime.parse(date as String)).toList();
   }
 }

@@ -75,7 +75,7 @@ class SavingsPotsService {
   Future<dynamic> updatePot({String? id, String? name, String? emoji, String? color, double? targetAmount, Map<String, dynamic>? data}) async {
     final potId = id ?? '';
     final payload = data ?? {'name': name, 'targetAmount': targetAmount};
-    final response = await _dio.patch('/savings-pots/$potId', data: payload);
+    final response = await _dio.put('/savings-pots/$potId', data: payload);
     return SavingsPot.fromJson(response.data as Map<String, dynamic>);
   }
   Future<SavingsPot> addToPot(String potId, double amount) => deposit(potId, amount);

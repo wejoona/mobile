@@ -26,10 +26,17 @@ class PaymentLinksService {
         if (offset != null) 'offset': offset,
       },
     );
-    // ignore: avoid_dynamic_calls
-    return (response.data['links'] as List)
-        .map((json) => PaymentLink.fromJson(json))
-        .toList();
+    final data = response.data;
+    // Backend returns { links: [...], total: ... }; handle both wrapped and direct list
+    final List items;
+    if (data is Map && data.containsKey('links')) {
+      items = data['links'] as List? ?? [];
+    } else if (data is List) {
+      items = data;
+    } else {
+      items = [];
+    }
+    return items.map((json) => PaymentLink.fromJson(json)).toList();
   }
 
   /// Get a specific payment link by ID

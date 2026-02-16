@@ -9,9 +9,22 @@ class CardsService {
   CardsService(this._dio);
 
   /// Get all cards for the user
+  /// Backend returns { cards: [...] } (CardListResponseDto)
   Future<Map<String, dynamic>> getCards() async {
     final response = await _dio.get('/cards');
-    return response.data as Map<String, dynamic>;
+    final data = response.data;
+    // Normalize: backend returns { cards: [...] }, but callers expect { data: [...] }
+    if (data is Map<String, dynamic>) {
+      if (data.containsKey('cards') && !data.containsKey('data')) {
+        return {'data': data['cards']};
+      }
+      return data;
+    }
+    // Direct list response
+    if (data is List) {
+      return {'data': data};
+    }
+    return {'data': []};
   }
 
   /// Get a single card by ID

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/domain/entities/bulk_payment.dart';
+import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
 
-/// Card displaying a bulk payment status.
+/// Card displaying a bulk payment batch status.
 class BulkPaymentCard extends StatelessWidget {
-  final BulkPayment payment;
+  final BulkBatch payment;
   final VoidCallback? onTap;
 
   const BulkPaymentCard({super.key, required this.payment, this.onTap});
@@ -12,6 +12,10 @@ class BulkPaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final pendingCount = payment.totalCount - payment.successCount - payment.failedCount;
+    final progress = payment.totalCount > 0
+        ? (payment.successCount + payment.failedCount) / payment.totalCount
+        : 0.0;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -36,21 +40,21 @@ class BulkPaymentCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(payment.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                        Text('${payment.totalItems} recipients • \$${payment.totalAmount.toStringAsFixed(2)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                        Text('${payment.totalCount} destinataires • \$${payment.totalAmount.toStringAsFixed(2)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              ProgressBar(value: payment.progress, height: 4),
+              ProgressBar(value: progress, height: 4),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _StatusChip(count: payment.successCount, label: 'Success', color: Colors.green),
-                  _StatusChip(count: payment.failureCount, label: 'Failed', color: Colors.red),
-                  _StatusChip(count: payment.pendingCount, label: 'Pending', color: Colors.orange),
+                  _StatusChip(count: payment.successCount, label: 'Réussi', color: Colors.green),
+                  _StatusChip(count: payment.failedCount, label: 'Échoué', color: Colors.red),
+                  _StatusChip(count: pendingCount, label: 'En attente', color: Colors.orange),
                 ],
               ),
             ],
