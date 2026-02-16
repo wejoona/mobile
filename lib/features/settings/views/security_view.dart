@@ -624,42 +624,13 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Expanded(
-                  child: ListView(
-                    controller: scrollController,
-                    children: [
-                      _buildLoginHistoryItem(
-                        l10n: l10n,
-                        colors: colors,
-                        time: 'Today, 10:30 AM',
-                        device: 'iPhone 15 Pro',
-                        location: 'San Francisco, CA',
-                        success: true,
-                      ),
-                      _buildLoginHistoryItem(
-                        l10n: l10n,
-                        colors: colors,
-                        time: 'Yesterday, 3:45 PM',
-                        device: 'MacBook Pro',
-                        location: 'San Francisco, CA',
-                        success: true,
-                      ),
-                      _buildLoginHistoryItem(
-                        l10n: l10n,
-                        colors: colors,
-                        time: 'Yesterday, 9:12 AM',
-                        device: 'Unknown Device',
-                        location: 'New York, NY',
-                        success: false,
-                      ),
-                      _buildLoginHistoryItem(
-                        l10n: l10n,
-                        colors: colors,
-                        time: 'Jan 20, 2:30 PM',
-                        device: 'iPhone 15 Pro',
-                        location: 'Los Angeles, CA',
-                        success: true,
-                      ),
-                    ],
+                  child: Center(
+                    child: AppText(
+                      'L\'historique de connexion sera disponible prochainement.',
+                      variant: AppTextVariant.bodyMedium,
+                      color: colors.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ],
