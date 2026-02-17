@@ -93,6 +93,7 @@ class UserState {
   final String? firstName;
   final String? lastName;
   final String? email;
+  final bool emailVerified;
   final String? avatarUrl;
   final String? avatarThumb;
   final String countryCode;
@@ -109,6 +110,7 @@ class UserState {
     this.firstName,
     this.lastName,
     this.email,
+    this.emailVerified = false,
     this.avatarUrl,
     this.avatarThumb,
     this.countryCode = 'CI',
@@ -134,6 +136,7 @@ class UserState {
     String? firstName,
     String? lastName,
     String? email,
+    bool? emailVerified,
     String? avatarUrl,
     String? avatarThumb,
     String? countryCode,
@@ -150,6 +153,7 @@ class UserState {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
+      emailVerified: emailVerified ?? this.emailVerified,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       avatarThumb: avatarThumb ?? this.avatarThumb,
       countryCode: countryCode ?? this.countryCode,

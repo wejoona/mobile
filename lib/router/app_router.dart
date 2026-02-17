@@ -61,6 +61,7 @@ import 'package:usdc_wallet/features/settings/views/currency_view.dart';
 import 'package:usdc_wallet/features/settings/views/devices_screen.dart';
 import 'package:usdc_wallet/features/settings/views/sessions_screen.dart';
 import 'package:usdc_wallet/features/settings/views/profile_edit_screen.dart';
+import 'package:usdc_wallet/features/profile/views/email_verification_screen.dart';
 import 'package:usdc_wallet/features/settings/views/help_screen.dart';
 import 'package:usdc_wallet/features/settings/views/cookie_policy_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
@@ -1087,6 +1088,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.fade(
           state: state,
           child: const SessionsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/profile/verify-email',
+        pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
+          state: state,
+          child: const EmailVerificationScreen(),
         ),
       ),
       GoRoute(

@@ -88,6 +88,7 @@ class UserStateMachine extends Notifier<UserState> {
         firstName: profile.firstName,
         lastName: profile.lastName,
         email: profile.email,
+        emailVerified: profile.emailVerified,
         avatarUrl: profile.avatarUrl,
         avatarThumb: profile.avatarThumb,
         countryCode: profile.countryCode,
@@ -224,6 +225,7 @@ class UserStateMachine extends Notifier<UserState> {
     String? firstName,
     String? lastName,
     String? email,
+    bool? emailVerified,
     String? avatarUrl,
     KycStatus? kycStatus,
   }) {
@@ -231,6 +233,7 @@ class UserStateMachine extends Notifier<UserState> {
       firstName: firstName ?? state.firstName,
       lastName: lastName ?? state.lastName,
       email: email ?? state.email,
+      emailVerified: emailVerified ?? state.emailVerified,
       avatarUrl: avatarUrl ?? state.avatarUrl,
       kycStatus: kycStatus ?? state.kycStatus,
     );

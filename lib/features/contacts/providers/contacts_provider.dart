@@ -112,10 +112,21 @@ class ContactsNotifier extends Notifier<ContactsState> {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/contacts/synced');
       final data = response.data as Map<String, dynamic>;
-      final items = (data['data'] as List? ?? [])
+      var items = (data['data'] as List? ?? [])
           .map((e) => SyncedContact.fromJson(e as Map<String, dynamic>))
           .toList();
+
+      // Check which contacts are registered Korido users
+      items = await _checkRegisteredContacts(dio, items);
+
       final joonaPayCount = items.where((c) => c.isKoridoUser).length;
+      // Sort: Korido users first
+      items.sort((a, b) {
+        if (a.isKoridoUser && !b.isKoridoUser) return -1;
+        if (!a.isKoridoUser && b.isKoridoUser) return 1;
+        return a.name.compareTo(b.name);
+      });
+
       state = state.copyWith(
         contacts: items,
         isLoading: false,
@@ -124,6 +135,46 @@ class ContactsNotifier extends Notifier<ContactsState> {
       );
     } catch (e) {
       state = state.copyWith(isLoading: false);
+    }
+  }
+
+  /// Call POST /contacts/check to detect registered Korido users
+  Future<List<SyncedContact>> _checkRegisteredContacts(
+    dynamic dio,
+    List<SyncedContact> contacts,
+  ) async {
+    if (contacts.isEmpty) return contacts;
+
+    try {
+      final phoneNumbers = contacts.map((c) => c.phone).toList();
+      // ignore: avoid_dynamic_calls
+      final response = await dio.post(
+        '/contacts/check',
+        data: {'phoneNumbers': phoneNumbers},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final registered = (data['registered'] as List? ?? [])
+          .cast<Map<String, dynamic>>();
+
+      // Build a set of registered phones for quick lookup
+      final registeredPhones = <String, Map<String, dynamic>>{};
+      for (final r in registered) {
+        registeredPhones[r['phone'] as String] = r;
+      }
+
+      return contacts.map((c) {
+        final match = registeredPhones[c.phone];
+        if (match != null) {
+          return c.copyWith(
+            isKoridoUser: true,
+            joonaPayUserId: match['userId'] as String?,
+          );
+        }
+        return c;
+      }).toList();
+    } catch (_) {
+      // If check fails, return contacts as-is
+      return contacts;
     }
   }
 

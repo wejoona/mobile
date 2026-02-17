@@ -36,6 +36,15 @@ class UserApi {
   /// DELETE /user/avatar
   Future<Response> deleteAvatar() => _dio.delete('/user/avatar');
 
+  // ── Email Verification ──
+
+  /// POST /user/verify-email
+  Future<Response> verifyEmail(String code) =>
+      _dio.post('/user/verify-email', data: {'code': code});
+
+  /// GET /user/email-status
+  Future<Response> getEmailStatus() => _dio.get('/user/email-status');
+
   // ── Locale ──
 
   /// PUT /user/locale

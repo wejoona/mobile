@@ -72,6 +72,34 @@ class UserService {
     }
   }
 
+  /// POST /user/verify-email — verify email with OTP code
+  Future<void> verifyEmail(String code) async {
+    try {
+      await _dio.post('/user/verify-email', data: {'code': code});
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// GET /user/email-status — check email verification status
+  Future<Map<String, dynamic>> getEmailStatus() async {
+    try {
+      final response = await _dio.get('/user/email-status');
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// Resend email verification code (re-PUT the same email triggers new code)
+  Future<void> resendEmailVerification(String email) async {
+    try {
+      await _dio.put('/user/profile', data: {'email': email});
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   /// PUT /user/locale - Update preferred locale
   Future<void> updateLocale(String locale) async {
     try {
@@ -90,6 +118,7 @@ class UserProfile {
   final String? firstName;
   final String? lastName;
   final String? email;
+  final bool emailVerified;
   final String? avatarUrl;
   final String? avatarThumb;
   final String countryCode;
@@ -106,6 +135,7 @@ class UserProfile {
     this.firstName,
     this.lastName,
     this.email,
+    this.emailVerified = false,
     this.avatarUrl,
     this.avatarThumb,
     required this.countryCode,
@@ -137,6 +167,7 @@ class UserProfile {
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
+      emailVerified: json['emailVerified'] as bool? ?? false,
       avatarUrl: json['avatarUrl'] as String?,
       avatarThumb: json['avatarThumb'] as String?,
       countryCode: json['countryCode'] as String? ?? 'CI',
@@ -152,7 +183,7 @@ class UserProfile {
 
   Map<String, dynamic> toJson() => {
     'id': id, 'phone': phone, 'phoneVerified': phoneVerified,
-    'firstName': firstName, 'lastName': lastName, 'email': email,
+    'firstName': firstName, 'lastName': lastName, 'email': email, 'emailVerified': emailVerified,
     'avatarUrl': avatarUrl, 'countryCode': countryCode,
     'kycStatus': kycStatus, 'role': role, 'status': status,
     'createdAt': createdAt.toIso8601String(),

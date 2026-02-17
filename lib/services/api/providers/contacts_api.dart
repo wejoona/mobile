@@ -13,4 +13,8 @@ class ContactsApi {
   /// POST /contacts/sync — sync device contacts
   Future<Response> sync(List<Map<String, dynamic>> contacts) =>
       _dio.post('/contacts/sync', data: {'contacts': contacts});
+
+  /// POST /contacts/check — check which phone numbers are registered
+  Future<Response> checkContacts(List<String> phoneNumbers) =>
+      _dio.post('/contacts/check', data: {'phoneNumbers': phoneNumbers});
 }

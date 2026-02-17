@@ -31,6 +31,7 @@ import 'package:usdc_wallet/services/api/providers/insights_api.dart';
 import 'package:usdc_wallet/services/api/providers/merchant_api.dart';
 import 'package:usdc_wallet/services/api/providers/bulk_payments_api.dart';
 import 'package:usdc_wallet/services/api/providers/expenses_api.dart';
+import 'package:usdc_wallet/services/api/providers/config_api.dart';
 
 /// Unified API interface — one import, all endpoints.
 class ApiProvider {
@@ -54,7 +55,8 @@ class ApiProvider {
         insights = InsightsApi(dio),
         merchant = MerchantApi(dio),
         bulkPayments = BulkPaymentsApi(dio),
-        expenses = ExpensesApi(dio);
+        expenses = ExpensesApi(dio),
+        config = ConfigApi(dio);
 
   final AuthApi auth;
   final UserApi user;
@@ -76,6 +78,7 @@ class ApiProvider {
   final MerchantApi merchant;
   final BulkPaymentsApi bulkPayments;
   final ExpensesApi expenses;
+  final ConfigApi config;
 }
 
 /// Riverpod provider — inject everywhere via `ref.read(apiProvider)`.

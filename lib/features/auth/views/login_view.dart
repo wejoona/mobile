@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
@@ -52,6 +53,8 @@ class _LoginViewState extends ConsumerState<LoginView>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Pre-fetch countries from API
+      ref.read(countriesProvider);
       _determineLoginMode();
     });
   }
@@ -598,12 +601,16 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   void _showCountryPicker() {
+    final countriesAsync = ref.read(countriesProvider);
+    final countries = countriesAsync.valueOrNull ?? SupportedCountries.all;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => _CountryPickerSheet(
         selectedCountry: _selectedCountry,
+        countries: countries,
         onSelect: (country) {
           setState(() {
             _selectedCountry = country;
@@ -639,10 +646,12 @@ class _LoginViewState extends ConsumerState<LoginView>
 class _CountryPickerSheet extends StatefulWidget {
   const _CountryPickerSheet({
     required this.selectedCountry,
+    required this.countries,
     required this.onSelect,
   });
 
   final CountryConfig selectedCountry;
+  final List<CountryConfig> countries;
   final ValueChanged<CountryConfig> onSelect;
 
   @override
@@ -651,7 +660,7 @@ class _CountryPickerSheet extends StatefulWidget {
 
 class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   final _searchController = TextEditingController();
-  List<CountryConfig> _filteredCountries = SupportedCountries.all;
+  late List<CountryConfig> _filteredCountries = widget.countries;
 
   @override
   void dispose() {
@@ -662,10 +671,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   void _filterCountries(String query) {
     setState(() {
       if (query.isEmpty) {
-        _filteredCountries = SupportedCountries.all;
+        _filteredCountries = widget.countries;
       } else {
         final lower = query.toLowerCase();
-        _filteredCountries = SupportedCountries.all
+        _filteredCountries = widget.countries
             .where((c) =>
                 c.name.toLowerCase().contains(lower) ||
                 c.prefix.contains(lower) ||

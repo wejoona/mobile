@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/settings/providers/sessions_provider.dart';
 
 class SecurityView extends ConsumerStatefulWidget {
   const SecurityView({super.key});
@@ -577,14 +578,21 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             AppButton(
               label: l10n.security_logoutAll,
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(dialogContext);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.security_logoutAllSuccess),
-                    backgroundColor: context.colors.success,
-                  ),
-                );
+                final success = await ref.read(sessionsProvider.notifier).logoutAllDevices();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(success
+                          ? l10n.security_logoutAllSuccess
+                          : 'Erreur lors de la déconnexion'),
+                      backgroundColor: success
+                          ? context.colors.success
+                          : context.colors.error,
+                    ),
+                  );
+                }
               },
               variant: AppButtonVariant.danger,
               size: AppButtonSize.small,
@@ -598,6 +606,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
   void _showLoginHistory() {
     final l10n = AppLocalizations.of(context)!;
 
+    // Trigger loading sessions
+    ref.read(sessionsProvider.notifier).loadSessions();
+
     final colors = context.colors;
     showModalBottomSheet(
       context: context,
@@ -606,39 +617,90 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       isScrollControlled: true,
-      builder: (context) {
-        final colors = context.colors;
+      builder: (sheetContext) {
         return DraggableScrollableSheet(
           initialChildSize: 0.6,
           minChildSize: 0.4,
           maxChildSize: 0.9,
           expand: false,
-          builder: (context, scrollController) => Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  l10n.security_loginHistoryTitle,
-                  variant: AppTextVariant.titleMedium,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                Expanded(
-                  child: Center(
-                    child: AppText(
-                      'L\'historique de connexion sera disponible prochainement.',
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textSecondary,
-                      textAlign: TextAlign.center,
+          builder: (context, scrollController) => Consumer(
+            builder: (context, ref, _) {
+              final sessionsState = ref.watch(sessionsProvider);
+              final colors = context.colors;
+
+              return Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      l10n.security_loginHistoryTitle,
+                      variant: AppTextVariant.titleMedium,
                     ),
-                  ),
+                    const SizedBox(height: AppSpacing.lg),
+                    if (sessionsState.isLoading)
+                      const Expanded(
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    else if (sessionsState.error != null)
+                      Expanded(
+                        child: Center(
+                          child: AppText(
+                            l10n.security_errorLoadingState,
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.textSecondary,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    else if (sessionsState.sessions.isEmpty)
+                      Expanded(
+                        child: Center(
+                          child: AppText(
+                            'Aucun historique de connexion disponible.',
+                            variant: AppTextVariant.bodyMedium,
+                            color: colors.textSecondary,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                    else
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: sessionsState.sessions.length,
+                          itemBuilder: (context, index) {
+                            final session = sessionsState.sessions[index];
+                            return _buildLoginHistoryItem(
+                              l10n: l10n,
+                              colors: colors,
+                              device: session.deviceDescription,
+                              location: session.location ?? session.ipAddress ?? 'Inconnu',
+                              time: _formatSessionTime(session.lastActivityAt),
+                              success: session.isActive,
+                            );
+                          },
+                        ),
+                      ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },
     );
+  }
+
+  String _formatSessionTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) return 'À l\'instant';
+    if (difference.inMinutes < 60) return 'Il y a ${difference.inMinutes} min';
+    if (difference.inHours < 24) return 'Il y a ${difference.inHours}h';
+    if (difference.inDays < 7) return 'Il y a ${difference.inDays}j';
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
   }
 
   Widget _buildLoginHistoryItem({

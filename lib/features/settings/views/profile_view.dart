@@ -48,6 +48,51 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           children: [
+            // Email verification banner
+            if (userState.email != null &&
+                userState.email!.isNotEmpty &&
+                !userState.emailVerified)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: GestureDetector(
+                  onTap: () => context.push('/profile/verify-email'),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: colors.warning.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(color: colors.warning.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning_amber_rounded,
+                            color: colors.warning, size: 22),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText(
+                                'Vérifiez votre email',
+                                variant: AppTextVariant.labelMedium,
+                                color: colors.textPrimary,
+                              ),
+                              const SizedBox(height: 2),
+                              AppText(
+                                userState.email!,
+                                variant: AppTextVariant.bodySmall,
+                                color: colors.textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right, color: colors.textSecondary),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
             // Avatar
             Center(
               child: UserAvatar(
@@ -95,6 +140,19 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               label: l10n.profile_email,
               value: userState.email ?? l10n.profile_notSet,
               icon: Icons.email,
+              isVerified: userState.emailVerified,
+              trailing: userState.email != null &&
+                      userState.email!.isNotEmpty &&
+                      !userState.emailVerified
+                  ? TextButton(
+                      onPressed: () => context.push('/profile/verify-email'),
+                      child: AppText(
+                        l10n.profile_verify,
+                        variant: AppTextVariant.labelMedium,
+                        color: context.colors.gold,
+                      ),
+                    )
+                  : null,
             ),
 
             const SizedBox(height: AppSpacing.md),
