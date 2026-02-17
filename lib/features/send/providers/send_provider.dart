@@ -6,6 +6,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
@@ -209,6 +210,13 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       // Payment confirmed haptic
       await hapticService.paymentConfirmed();
+
+      // Analytics: send_money
+      ref.read(analyticsServiceProvider).trackSendMoney(
+        currency: 'USDC',
+        recipientType: 'internal',
+        success: true,
+      );
 
       // Track successful transaction for app review prompt
       final appReviewService = ref.read(appReviewServiceProvider);

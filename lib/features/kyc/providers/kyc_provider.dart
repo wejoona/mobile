@@ -5,6 +5,7 @@ import 'package:usdc_wallet/features/kyc/models/document_type.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_document.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// KYC profile provider — wired to KycService.
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
@@ -134,12 +135,15 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
 
   Future<void> submitKyc() async {
     state = state.copyWith(isLoading: true);
+    ref.read(analyticsServiceProvider).trackKycStarted();
     try {
       final service = ref.read(kycServiceProvider);
       await service.submitKycFromData(data: state.personalInfo);
       state = state.copyWith(isLoading: false);
+      ref.read(analyticsServiceProvider).trackKycCompleted(success: true);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      ref.read(analyticsServiceProvider).trackKycCompleted(success: false);
     }
   }
 

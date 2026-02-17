@@ -293,8 +293,12 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       amount = double.tryParse(_amountController.text);
     }
 
+    final authState = ref.read(authProvider);
+    final userId = authState.user?.id;
+
     return _qrService.generateReceiveQr(
       phone: phone,
+      userId: userId,
       amount: amount,
       currency: 'USD',
       name: name,

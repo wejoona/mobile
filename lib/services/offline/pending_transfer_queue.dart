@@ -102,11 +102,33 @@ class PendingTransferQueue {
   // Queue Management
   // ============================================================
 
+  /// Taille maximale de la file d'attente
+  static const int maxQueueSize = 50;
+
+  /// Âge maximum d'un élément (24h)
+  static const Duration maxAge = Duration(hours: 24);
+
   /// Add transfer to queue
   Future<void> enqueue(PendingTransfer transfer) async {
     final queue = getQueue();
+
+    // Expirer les éléments trop anciens
+    _expireOldItems(queue);
+
+    // Vérifier la taille maximale
+    if (queue.length >= maxQueueSize) {
+      throw Exception('File d\'attente pleine ($maxQueueSize éléments max)');
+    }
+
     queue.add(transfer);
     await _saveQueue(queue);
+  }
+
+  /// Supprimer les éléments expirés (> 24h)
+  void _expireOldItems(List<PendingTransfer> queue) {
+    final cutoff = DateTime.now().subtract(maxAge);
+    queue.removeWhere((t) =>
+        t.status == TransferStatus.pending && t.timestamp.isBefore(cutoff));
   }
 
   /// Get all pending transfers

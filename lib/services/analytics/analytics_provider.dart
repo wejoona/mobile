@@ -2,10 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
-/// Run 371: Riverpod provider for analytics service
-final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
-  return AnalyticsService();
-});
+// analyticsServiceProvider est défini dans analytics_service.dart
 
 /// Analytics screen tracking mixin for ConsumerState
 mixin AnalyticsScreenTracker<T extends ConsumerStatefulWidget>

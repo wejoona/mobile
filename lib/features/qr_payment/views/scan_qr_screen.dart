@@ -11,6 +11,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {
@@ -323,6 +324,11 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
             AppButton(
               label: 'Send Money',
               onPressed: () {
+                // Analytics: QR scan payment initiated
+                ref.read(analyticsServiceProvider).trackAction('qr_payment_scanned', properties: {
+                  'has_amount': _scannedData!.amount != null,
+                  'currency': _scannedData!.currency ?? 'USD',
+                });
                 // Navigate to send view with prefilled data
                 context.pop(); // Close scanner
                 context.push('/send', extra: {

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// Steps in the deposit flow.
 enum DepositFlowStep {
@@ -120,10 +121,18 @@ class DepositNotifier extends Notifier<DepositState> {
       });
       final result = DepositResult.fromJson(response.data as Map<String, dynamic>);
       state = state.copyWith(isLoading: false, result: result, step: DepositFlowStep.processing);
+      ref.read(analyticsServiceProvider).trackDeposit(
+        method: state.selectedMethod!.name,
+        success: true,
+      );
       // Start polling for status updates
       _startPolling(result.id);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString(), step: DepositFlowStep.failed);
+      ref.read(analyticsServiceProvider).trackDeposit(
+        method: state.selectedMethod?.name ?? 'unknown',
+        success: false,
+      );
     }
   }
 

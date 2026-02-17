@@ -14,6 +14,7 @@ import 'package:usdc_wallet/services/api/retry_interceptor.dart';
 import 'package:usdc_wallet/services/security/jwe/jwe_service.dart';
 import 'package:usdc_wallet/services/security/jwe/jwe_interceptor.dart';
 import 'package:usdc_wallet/mocks/index.dart';
+import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
 
 /// API Configuration
 /// SECURITY: Use HTTPS in production, HTTP only for local development
@@ -149,6 +150,9 @@ final dioProvider = Provider<Dio>((ref) {
   final jweService = ref.read(jweServiceProvider);
   jweService.init(dio); // Needs Dio to fetch server public key
   dio.interceptors.add(JweInterceptor(jweService));
+
+  // Offline queue detection for transfer endpoints
+  dio.interceptors.add(ref.read(offlineQueueInterceptorProvider));
 
   // Retry transient failures (GET only, exponential backoff)
   dio.interceptors.add(RetryInterceptor(dio: dio));

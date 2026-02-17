@@ -5,6 +5,7 @@ class QrCodeService {
   /// Generate QR data for receiving payment
   String generateReceiveQr({
     required String phone,
+    String? userId,
     double? amount,
     String? currency,
     String? name,

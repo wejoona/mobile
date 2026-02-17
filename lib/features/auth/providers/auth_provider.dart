@@ -6,6 +6,7 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// Auth State
 enum AuthStatus {
@@ -65,6 +66,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
   AuthService get _authService => ref.read(authServiceProvider);
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
+  AnalyticsService get _analytics => ref.read(analyticsServiceProvider);
 
   /// Check if user is already authenticated
   Future<void> checkAuth() async {
@@ -148,6 +150,9 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.otpSent,
         otpExpiresIn: response.expiresIn,
       );
+
+      // Analytics: registration
+      _analytics.trackRegistration(country: countryCode);
 
       // Sync with FSM: notify that OTP was sent
       ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
@@ -245,6 +250,10 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.authenticated,
         user: response.user,
       );
+
+      // Analytics: login success
+      _analytics.trackLogin(method: 'otp');
+      _analytics.setUserProperties(userId: response.user.id);
 
       // Register device with backend (fire-and-forget)
       ref.read(deviceRegistrationServiceProvider).registerCurrentDevice();

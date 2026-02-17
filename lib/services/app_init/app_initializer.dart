@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/time/server_time_service.dart';
+import 'package:usdc_wallet/services/security/device_integrity_service.dart';
+import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// Application initialization service.
 ///
@@ -17,13 +19,39 @@ class AppInitializer {
 
   AppInitializer(this._ref);
 
+  /// Rapport d'intégrité — disponible après initialize()
+  DeviceIntegrityReport? integrityReport;
+
   /// Run all initialization tasks.
   Future<void> initialize() async {
     await _setupSystemChrome();
+    await _initAnalytics();
+    await _checkDeviceIntegrity();
     await _syncServerTime();
     await _registerDevice();
     if (kDebugMode) {
       debugPrint('[AppInitializer] Initialization complete');
+    }
+  }
+
+  Future<void> _initAnalytics() async {
+    try {
+      final analytics = _ref.read(analyticsServiceProvider);
+      await analytics.initialize();
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AppInitializer] Analytics init failed: $e');
+    }
+  }
+
+  Future<void> _checkDeviceIntegrity() async {
+    try {
+      final integrityService = _ref.read(deviceIntegrityServiceProvider);
+      integrityReport = await integrityService.checkAll();
+      if (kDebugMode && integrityReport != null && !integrityReport!.isSecure) {
+        debugPrint('[AppInitializer] Device integrity warnings: ${integrityReport!.threats}');
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AppInitializer] Device integrity check failed: $e');
     }
   }
 
