@@ -60,15 +60,13 @@ class CertificatePinning {
   ///   openssl enc -base64
   /// ```
   static const List<String> _trustedFingerprints = [
-    // Production API certificate - api.joonapay.com
-    // DEPLOYMENT: Run the openssl command above and replace this value
-    // Generated: [DATE] - Expires: [DATE]
-    String.fromEnvironment('CERT_PIN_1', defaultValue: 'REPLACE_WITH_ACTUAL_FINGERPRINT_1'),
+    // Production API certificate - api.joonapay.com (leaf SPKI SHA-256)
+    // Generated: 2026-02-17
+    '0ooL4eQsEMj6lnm33qMAdKWlYsbH1IW49TkdFDraPzY=',
 
-    // Backup certificate for rotation
-    // DEPLOYMENT: Generate a backup certificate and add its fingerprint here
-    // Generated: [DATE] - Expires: [DATE]
-    String.fromEnvironment('CERT_PIN_2', defaultValue: 'REPLACE_WITH_ACTUAL_FINGERPRINT_2'),
+    // Intermediate CA certificate (backup pin for rotation)
+    // Generated: 2026-02-17
+    'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
   ];
 
   /// Trusted hosts that require certificate pinning

@@ -119,13 +119,11 @@ final dioProvider = Provider<Dio>((ref) {
     },
   ));
 
-  // SECURITY: Certificate pinning disabled until real fingerprints are configured
-  // TODO: Generate real SPKI fingerprints and re-enable before production launch
-  // if (!MockConfig.useMocks && ApiConfig.isProduction) {
-  //   dio.enableCertificatePinning();
-  //   logger.info('Certificate pinning enabled');
-  // }
-  logger.info('Certificate pinning: disabled (placeholder fingerprints)');
+  // SECURITY: Certificate pinning for production
+  if (!MockConfig.useMocks) {
+    dio.enableCertificatePinning();
+    logger.info('Certificate pinning enabled');
+  }
 
   // MOCKING: Add mock interceptor first if mocks are enabled
   if (MockConfig.useMocks) {
