@@ -569,7 +569,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Connecting to support agent...'),
+                    content: Text(AppLocalizations.of(context)!.settings_connectingToSupport),
                     backgroundColor: context.colors.info,
                   ),
                 );
@@ -614,7 +614,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
   void _markHelpful(bool helpful) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(helpful ? 'Thanks for your feedback!' : 'We\'ll improve this answer'),
+        content: Text(helpful ? AppLocalizations.of(context)!.settings_thanksFeedback : AppLocalizations.of(context)!.settings_improveAnswer),
         backgroundColor: context.colors.info,
       ),
     );

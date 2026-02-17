@@ -187,7 +187,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Impossible d\'enregistrer la dépense. Veuillez réessayer.'),
+            content: Text(AppLocalizations.of(context)!.expenses_saveError),
             backgroundColor: context.colors.error,
           ),
         );

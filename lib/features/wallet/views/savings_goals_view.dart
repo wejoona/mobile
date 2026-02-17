@@ -8,6 +8,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SavingsGoalsView extends ConsumerStatefulWidget {
   const SavingsGoalsView({super.key});
@@ -595,7 +596,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Goal created successfully!'),
+                          content: Text(AppLocalizations.of(context)!.savingsGoals_created),
                           backgroundColor: context.colors.success,
                         ),
                       );
@@ -796,7 +797,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
   void _withdrawFromGoal(_SavingsGoal goal) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Withdraw feature coming soon'),
+        content: Text(AppLocalizations.of(context)!.withdraw_comingSoon),
         backgroundColor: context.colors.info,
       ),
     );
@@ -808,7 +809,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: colors.container,
-        title: const AppText('Delete Goal?', variant: AppTextVariant.titleMedium),
+        title: AppText(AppLocalizations.of(context)!.savingsGoals_deleteConfirm, variant: AppTextVariant.titleMedium),
         content: AppText(
           'Are you sure you want to delete "${goal.name}"? Any saved funds will be returned to your wallet.',
           variant: AppTextVariant.bodyMedium,
@@ -817,7 +818,7 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText('Cancel', color: colors.textSecondary),
+            child: AppText(AppLocalizations.of(context)!.action_cancel, color: colors.textSecondary),
           ),
           TextButton(
             onPressed: () {
@@ -825,12 +826,12 @@ class _SavingsGoalsViewState extends ConsumerState<SavingsGoalsView> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Goal deleted'),
+                  content: Text(AppLocalizations.of(context)!.savingsGoals_deleted),
                   backgroundColor: context.colors.info,
                 ),
               );
             },
-            child: AppText('Delete', color: context.colors.error),
+            child: AppText(AppLocalizations.of(context)!.common_delete, color: context.colors.error),
           ),
         ],
       ),

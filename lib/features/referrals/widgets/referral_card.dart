@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Run 381: Referral share card widget with copy-to-clipboard
 class ReferralCard extends StatelessWidget {
@@ -100,9 +101,9 @@ class ReferralCard extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: referralCode));
     HapticService().lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Code copie!'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.referrals_codeCopied),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

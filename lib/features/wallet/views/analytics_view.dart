@@ -503,8 +503,8 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
             const SizedBox(height: AppSpacing.lg),
             ListTile(
               leading: const Icon(Icons.description_outlined),
-              title: const Text('Export as CSV'),
-              subtitle: const Text('Spreadsheet-compatible format'),
+              title: Text(l10n.transactions_exportAsCsv),
+              subtitle: Text(l10n.common_errorFormat('CSV')),
               onTap: () {
                 Navigator.pop(ctx);
                 _doExportCsv(context, l10n);
@@ -512,8 +512,8 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
             ),
             ListTile(
               leading: const Icon(Icons.picture_as_pdf_outlined),
-              title: const Text('Share Report'),
-              subtitle: const Text('Share summary as text'),
+              title: Text(l10n.insights_export_report),
+              subtitle: Text(AppLocalizations.of(context)!.action_share),
               onTap: () {
                 Navigator.pop(ctx);
                 _doShareTextReport(context, l10n);
@@ -569,7 +569,7 @@ class _AnalyticsViewState extends ConsumerState<AnalyticsView> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Export failed: $e'),
+            content: Text(l10n.common_errorFormat(e.toString())),
             backgroundColor: context.colors.error,
           ),
         );

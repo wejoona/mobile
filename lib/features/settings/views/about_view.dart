@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/app_info.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Run 377: About screen with app version, legal links, and credits
 class AboutView extends StatelessWidget {
@@ -40,7 +41,7 @@ class AboutView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                const AppText('Korido', style: AppTextStyle.headingMedium),
+                const AppText(AppStrings.appName, style: AppTextStyle.headingMedium),
                 const SizedBox(height: AppSpacing.xs),
                 AppText(
                   'Votre portefeuille USDC',

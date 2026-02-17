@@ -618,7 +618,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Category added'),
+                          content: Text(l10n.budget_categoryAdded),
                           backgroundColor: context.colors.success,
                         ),
                       );
@@ -774,7 +774,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.elevated,
-        title: const AppText('Delete Category?', variant: AppTextVariant.titleMedium),
+        title: AppText(AppLocalizations.of(context)!.budget_deleteCategory, variant: AppTextVariant.titleMedium),
         content: AppText(
           'Are you sure you want to delete "${category.nameKey}"?',
           variant: AppTextVariant.bodyMedium,
@@ -783,14 +783,14 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText('Cancel', color: colors.textSecondary),
+            child: AppText(AppLocalizations.of(context)!.action_cancel, color: colors.textSecondary),
           ),
           TextButton(
             onPressed: () {
               setState(() => _categories.removeWhere((c) => c.nameKey == category.nameKey));
               Navigator.pop(context);
             },
-            child: AppText('Delete', color: context.colors.error),
+            child: AppText(AppLocalizations.of(context)!.common_delete, color: context.colors.error),
           ),
         ],
       ),
@@ -800,7 +800,7 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
   void _showEditMode() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Tap any category to edit its budget'),
+        content: Text(AppLocalizations.of(context)!.budget_tapCategoryToEdit),
         backgroundColor: context.colors.info,
       ),
     );

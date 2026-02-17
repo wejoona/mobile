@@ -4,6 +4,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Card widget displaying a sub-business
 class SubBusinessCard extends StatelessWidget {
@@ -129,7 +130,7 @@ class SubBusinessCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onTransfer,
                       icon: const Icon(Icons.swap_horiz, size: 16),
-                      label: const Text('Transfer'),
+                      label: Text(AppLocalizations.of(context)!.subBusiness_transfer),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.colors.gold,
                         side: BorderSide(color: context.colors.gold.withValues(alpha: 0.3)),
@@ -145,7 +146,7 @@ class SubBusinessCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: onTap,
                       icon: const Icon(Icons.visibility_outlined, size: 16),
-                      label: const Text('View'),
+                      label: Text(AppLocalizations.of(context)!.subBusiness_view),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: context.colors.textSecondary,
                         side: BorderSide(

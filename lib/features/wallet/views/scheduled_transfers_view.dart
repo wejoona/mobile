@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Frequency of scheduled transfer
 enum TransferFrequency {
@@ -323,7 +324,7 @@ class _ScheduledTransfersViewState
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Schedule created successfully!'),
+                content: Text(AppLocalizations.of(context)!.scheduledTransfers_created),
                 backgroundColor: context.colors.success,
               ),
             );
@@ -350,7 +351,7 @@ class _ScheduledTransfersViewState
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Schedule deleted'),
+              content: Text(AppLocalizations.of(context)!.scheduledTransfers_deleted),
               backgroundColor: context.colors.success,
             ),
           );

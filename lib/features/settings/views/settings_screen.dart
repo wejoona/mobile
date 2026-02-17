@@ -296,7 +296,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // In production, use url_launcher package
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText('Opening: $url'),
+        content: AppText(AppLocalizations.of(context)!.settings_openingUrl(url)),
         backgroundColor: context.colors.info,
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/components/primitives/search_bar.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
 import 'package:usdc_wallet/design/components/primitives/contact_tile.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Recipient search field with contact suggestions.
 class RecipientSearchField extends StatelessWidget {
@@ -23,6 +24,7 @@ class RecipientSearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -48,7 +50,7 @@ class RecipientSearchField extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.only(left: 4),
-            child: Text('Contacts', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            child: Text(l10n.contacts_allContacts, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           ),
           const SizedBox(height: 4),
           ...suggestions.take(5).map((contact) => ContactTile(

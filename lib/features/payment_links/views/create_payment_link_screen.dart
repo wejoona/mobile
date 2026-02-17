@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/payment_links/providers/create_payment_link_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Create payment link screen.
 class CreatePaymentLinkScreen extends ConsumerStatefulWidget {
@@ -37,7 +38,7 @@ class _CreatePaymentLinkScreenState extends ConsumerState<CreatePaymentLinkScree
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Creer un lien de paiement')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.paymentLinks_create)),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -70,8 +71,8 @@ class _CreatePaymentLinkScreenState extends ConsumerState<CreatePaymentLinkScree
             const SizedBox(height: AppSpacing.md),
 
             SwitchListTile(
-              title: const Text('Usage unique'),
-              subtitle: const Text('Le lien expire apres un paiement'),
+              title: Text(AppLocalizations.of(context)!.paymentLinks_singleUse),
+              subtitle: Text(AppLocalizations.of(context)!.paymentLinks_singleUseDescription),
               value: state.oneTime ?? true,
               onChanged: notifier.setOneTime,
             ),
@@ -88,7 +89,7 @@ class _CreatePaymentLinkScreenState extends ConsumerState<CreatePaymentLinkScree
               onPressed: state.amount != null && !state.isLoading ? () => notifier.create() : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Generer le lien'),
+                  : Text(AppLocalizations.of(context)!.paymentLinks_generate),
             ),
           ],
         ),
@@ -106,7 +107,7 @@ class _LinkCreatedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Lien cree')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.paymentLinks_created)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -115,7 +116,7 @@ class _LinkCreatedScreen extends StatelessWidget {
             children: [
               Icon(Icons.link, size: 64, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: AppSpacing.md),
-              Text('Lien de paiement pret', style: Theme.of(context).textTheme.headlineSmall),
+              Text(AppLocalizations.of(context)!.paymentLinks_ready, style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.lg),
               Card(
                 child: Padding(
@@ -127,7 +128,7 @@ class _LinkCreatedScreen extends StatelessWidget {
                         icon: const Icon(Icons.copy),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: link.url));
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lien copie')));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.paymentLinks_copied)));
                         },
                       ),
                     ],
@@ -140,7 +141,7 @@ class _LinkCreatedScreen extends StatelessWidget {
                 children: [
                   OutlinedButton.icon(
                     icon: const Icon(Icons.share),
-                    label: const Text('Partager'),
+                    label: Text(AppLocalizations.of(context)!.action_share),
                     onPressed: () {
                       // SharePlus.instance.share(ShareParams(text: link.url))
                     },

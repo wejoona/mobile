@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/features/payment_links/models/payment_link.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Card displaying a payment link.
 class PaymentLinkCard extends StatelessWidget {
@@ -60,7 +61,7 @@ class PaymentLinkCard extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => ClipboardUtils.copy(link.url),
                         icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: const Text('Copy'),
+                        label: Text(AppLocalizations.of(context)!.action_copy),
                         style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),
                       ),
                     ),
@@ -69,7 +70,7 @@ class PaymentLinkCard extends StatelessWidget {
                       child: FilledButton.icon(
                         onPressed: () => ShareUtils.sharePaymentLink(url: link.url, amount: link.amount, currency: link.currency, description: link.description),
                         icon: const Icon(Icons.share_rounded, size: 16),
-                        label: const Text('Share'),
+                        label: Text(AppLocalizations.of(context)!.action_share),
                         style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
                       ),
                     ),

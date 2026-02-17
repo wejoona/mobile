@@ -441,7 +441,7 @@ class DevicesScreen extends ConsumerWidget {
                     children: [
                       Icon(Icons.verified_user_outlined, size: 18, color: colors.success),
                       const SizedBox(width: 10),
-                      Text('Approuver', style: TextStyle(color: colors.textPrimary)),
+                      Text(AppLocalizations.of(context)!.settings_approve, style: TextStyle(color: colors.textPrimary)),
                     ],
                   ),
                 ),

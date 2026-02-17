@@ -333,7 +333,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Impossible de créer la carte. Veuillez réessayer.'),
+          content: Text(AppLocalizations.of(context)!.cards_createError),
           backgroundColor: context.colors.error,
         ),
       );

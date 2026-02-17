@@ -6,6 +6,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Fully wired withdrawal screen.
 class WithdrawScreenWired extends ConsumerStatefulWidget {
@@ -46,10 +47,10 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Solde: \$${balance.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+            Text('${AppLocalizations.of(context)!.wallet_availableBalance}: ${balance.toStringAsFixed(2)} USDC', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.lg),
 
-            Text('Methode de retrait', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.withdraw_method, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
 
             Wrap(
@@ -166,10 +167,10 @@ class _WithdrawResult extends StatelessWidget {
           children: [
             Icon(Icons.check_circle_outline, size: 64, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: AppSpacing.md),
-            Text('Retrait initie', style: Theme.of(context).textTheme.headlineSmall),
+            Text(AppLocalizations.of(context)!.withdraw_initiated, style: Theme.of(context).textTheme.headlineSmall),
             if (result.reference != null) ...[
               const SizedBox(height: AppSpacing.sm),
-              Text('Ref: ${result.reference}'),
+              Text('${AppLocalizations.of(context)!.billPayments_reference}: ${result.reference}'),
             ],
             const SizedBox(height: AppSpacing.xl),
             FilledButton(onPressed: onDone, child: Text(AppStrings.done)),

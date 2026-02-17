@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// A wrapper that handles loading, error, and data states for async screens.
 /// Provides pull-to-refresh support and error retry.
@@ -116,7 +117,7 @@ class AsyncScreen<T> extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry ?? (onRefresh != null ? () => onRefresh!() : null),
               icon: const Icon(Icons.refresh, semanticLabel: 'Retry'),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context)!.action_retry),
             ),
           ],
         ),

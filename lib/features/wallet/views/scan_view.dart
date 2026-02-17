@@ -294,7 +294,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save: $e'),
+            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
             backgroundColor: context.colors.error,
           ),
         );
@@ -334,7 +334,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to share: $e'),
+            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
             backgroundColor: context.colors.error,
           ),
         );

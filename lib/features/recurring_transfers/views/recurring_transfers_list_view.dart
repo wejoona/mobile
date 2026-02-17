@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_tra
 import 'package:usdc_wallet/features/recurring_transfers/widgets/recurring_transfer_card.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Recurring transfers list screen.
 class RecurringTransfersListView extends ConsumerWidget {
@@ -16,14 +17,14 @@ class RecurringTransfersListView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recurring Transfers'),
+        title: Text(AppLocalizations.of(context)!.recurringTransfers_title),
         actions: [
           IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Nouveau virement récurrent', onPressed: () {}),
         ],
       ),
       body: transfersAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString()))),
         data: (transfers) {
           if (transfers.isEmpty) {
             return const EmptyState(
@@ -45,7 +46,7 @@ class RecurringTransfersListView extends ConsumerWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Monthly total', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          Text(AppLocalizations.of(context)!.analytics_monthlyTotal, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                           Text('\$${monthlyAmount.toStringAsFixed(2)}/mo', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                         ],
                       ),

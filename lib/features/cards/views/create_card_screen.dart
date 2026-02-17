@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/cards/providers/create_card_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Create card screen.
 class CreateCardScreen extends ConsumerStatefulWidget {
@@ -28,20 +29,20 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
 
     ref.listen<CreateCardState>(createCardProvider, (_, next) {
       if (next.isComplete) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Carte creee avec succes')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.cards_cardCreated)));
         Navigator.pop(context, true);
         notifier.reset();
       }
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nouvelle carte')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.cards_newCard)),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Type de carte', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.cards_cardType, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.md),
 
             Row(
@@ -92,7 +93,7 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
               onPressed: !state.isLoading ? () => notifier.create() : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Creer la carte'),
+                  : Text(AppLocalizations.of(context)!.cards_createCard),
             ),
           ],
         ),

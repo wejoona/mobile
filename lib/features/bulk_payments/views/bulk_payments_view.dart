@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
 import 'package:usdc_wallet/features/bulk_payments/widgets/bulk_payment_card.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Bulk payments list screen.
 class BulkPaymentsView extends ConsumerWidget {
@@ -14,12 +15,12 @@ class BulkPaymentsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paiements groupés'),
+        title: Text(AppLocalizations.of(context)!.bulkPayments_title),
         actions: [IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Nouveau paiement', onPressed: () {})],
       ),
       body: paymentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.bulkPayments_error(e.toString()))),
         data: (payments) {
           if (payments.isEmpty) {
             return const EmptyState(

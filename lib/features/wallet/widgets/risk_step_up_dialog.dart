@@ -6,6 +6,7 @@ import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Dialog that handles risk-based step-up verification
 /// Shows appropriate UI based on the step-up type required
@@ -296,7 +297,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             foregroundColor: Colors.black,
             padding: const EdgeInsets.symmetric(vertical: 16),
           ),
-          child: const Text('Close'),
+          child: Text(AppLocalizations.of(context)!.common_close),
         ),
       );
     }
@@ -327,7 +328,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         const SizedBox(height: 12),
         TextButton(
           onPressed: _isProcessing ? null : widget.onCancel,
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.action_cancel),
         ),
       ],
     );
@@ -465,7 +466,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           const SizedBox(height: 24),
           const Icon(Icons.sms, size: 48, color: Colors.orange),
           const SizedBox(height: 16),
-          const Text('Enter Verification Code', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(AppLocalizations.of(context)!.bankLinking_enterCode, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Text('A 6-digit code has been sent to your phone', style: TextStyle(color: Colors.grey[600])),
           const SizedBox(height: 24),
@@ -535,7 +536,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
 
           TextButton(
             onPressed: widget.onCancel,
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.action_cancel),
           ),
         ],
       ),

@@ -51,7 +51,7 @@
   "auth_resendCode": "Renvoyer le code",
   "auth_phoneInvalid": "Veuillez entrer un numéro de téléphone valide",
   "auth_otp": "Code OTP",
-  "auth_resendOtp": "Renvoyer le code OTP",
+  "auth_resendOtp": "Renvoyer le code",
   "auth_error_invalidOtp": "Code OTP invalide. Veuillez réessayer.",
   "login_welcomeBack": "Bon retour",
   "login_enterPhone": "Entrez votre numéro de téléphone pour vous connecter",
@@ -1391,7 +1391,6 @@
   "expenses_exportPdf": "Exporter en PDF",
   "expenses_exportCsv": "Exporter en CSV",
   "expenses_reportGenerated": "Rapport généré avec succès",
-
   "security_title": "Sécurité",
   "security_authentication": "Authentification",
   "security_changePin": "Changer le code PIN",
@@ -1454,12 +1453,7 @@
   "security_deleteAccountTitle": "Supprimer le compte?",
   "security_deleteAccountMessage": "Cette action est permanente et ne peut pas être annulée. Toutes vos données, l'historique des transactions et les fonds seront perdus.",
   "security_delete": "Supprimer",
-
   "profile_title": "Profil",
-  "profile_phoneNumber": "Numéro de téléphone",
-  "profile_firstName": "Prénom",
-  "profile_lastName": "Nom de famille",
-  "profile_email": "Email",
   "profile_kycStatus": "Statut KYC",
   "profile_country": "Pays",
   "profile_notSet": "Non défini",
@@ -1473,7 +1467,6 @@
   "profile_countryKenya": "Kenya",
   "profile_countryGhana": "Ghana",
   "profile_countrySenegal": "Sénégal",
-
   "changePin_title": "Changer le code PIN",
   "changePin_newPinTitle": "Nouveau code PIN",
   "changePin_confirmTitle": "Confirmer le code PIN",
@@ -1492,7 +1485,6 @@
   "changePin_successMessage": "Code PIN modifié avec succès!",
   "changePin_errorFailedToSet": "Échec de la définition du nouveau code PIN. Veuillez essayer un code PIN différent.",
   "changePin_errorFailedToSave": "Échec de l'enregistrement du code PIN. Veuillez réessayer.",
-
   "notifications_email": "Notifications par email",
   "notifications_emailReceipts": "Reçus par email",
   "notifications_emailReceiptsDescription": "Recevoir les reçus de transaction par email",
@@ -1520,13 +1512,11 @@
   "notifications_transactionsDescription": "Recevoir des notifications pour les transferts et paiements",
   "notifications_unsavedChanges": "Modifications non enregistrées",
   "notifications_unsavedChangesMessage": "Vous avez des modifications non enregistrées. Les ignorer ?",
-
   "help_callUs": "Appelez-nous",
   "help_emailUs": "Envoyez-nous un email",
   "help_getHelp": "Obtenir de l'aide",
   "help_results": "Résultats",
   "help_searchPlaceholder": "Rechercher des articles d'aide...",
-
   "action_discard": "Ignorer",
   "common_comingSoon": "Bientôt disponible",
   "common_maybeLater": "Peut-être plus tard",
@@ -1534,67 +1524,54 @@
   "common_share": "Partager",
   "error_invalidNumber": "Numéro invalide",
   "export_title": "Exporter",
-
   "bankLinking_accountDetails": "Détails du compte",
   "@bankLinking_accountDetails": {
     "description": "Account details header"
   },
-
   "bankLinking_accountHolderName": "Nom du titulaire",
   "@bankLinking_accountHolderName": {
     "description": "Account holder name field"
   },
-
   "bankLinking_accountHolderNameRequired": "Le nom du titulaire est requis",
   "@bankLinking_accountHolderNameRequired": {
     "description": "Account holder name validation error"
   },
-
   "bankLinking_accountNumber": "Numéro de compte",
   "@bankLinking_accountNumber": {
     "description": "Account number field"
   },
-
   "bankLinking_accountNumberRequired": "Le numéro de compte est requis",
   "@bankLinking_accountNumberRequired": {
     "description": "Account number validation error"
   },
-
   "bankLinking_amount": "Montant",
   "@bankLinking_amount": {
     "description": "Amount field"
   },
-
   "bankLinking_amountRequired": "Le montant est requis",
   "@bankLinking_amountRequired": {
     "description": "Amount validation error"
   },
-
   "bankLinking_balance": "Solde",
   "@bankLinking_balance": {
     "description": "Balance label"
   },
-
   "bankLinking_balanceCheck": "Vérification du solde",
   "@bankLinking_balanceCheck": {
     "description": "Balance check action"
   },
-
   "bankLinking_confirmDeposit": "Confirmer le dépôt",
   "@bankLinking_confirmDeposit": {
     "description": "Confirm deposit button"
   },
-
   "bankLinking_confirmWithdraw": "Confirmer le retrait",
   "@bankLinking_confirmWithdraw": {
     "description": "Confirm withdrawal button"
   },
-
   "bankLinking_deposit": "Dépôt",
   "@bankLinking_deposit": {
     "description": "Deposit action"
   },
-
   "bankLinking_depositConfirmation": "Déposer {amount} depuis votre banque ?",
   "@bankLinking_depositConfirmation": {
     "description": "Deposit confirmation message",
@@ -1604,112 +1581,90 @@
       }
     }
   },
-
   "bankLinking_depositFromBank": "Dépôt depuis la banque",
   "@bankLinking_depositFromBank": {
     "description": "Deposit from bank action"
   },
-
   "bankLinking_depositInfo": "Les fonds seront crédités sous 24 heures",
   "@bankLinking_depositInfo": {
     "description": "Deposit information message"
   },
-
   "bankLinking_depositSuccess": "Dépôt réussi",
   "@bankLinking_depositSuccess": {
     "description": "Deposit success message"
   },
-
   "bankLinking_devOtpHint": "OTP dev: 123456",
   "@bankLinking_devOtpHint": {
     "description": "Development OTP hint"
   },
-
   "bankLinking_directDebit": "Prélèvement automatique",
   "@bankLinking_directDebit": {
     "description": "Direct debit label"
   },
-
   "bankLinking_enterAmount": "Entrez le montant",
   "@bankLinking_enterAmount": {
     "description": "Enter amount placeholder"
   },
-
   "bankLinking_failed": "Échoué",
   "@bankLinking_failed": {
     "description": "Failed status"
   },
-
   "bankLinking_invalidAmount": "Montant invalide",
   "@bankLinking_invalidAmount": {
     "description": "Invalid amount error"
   },
-
   "bankLinking_invalidOtp": "OTP invalide",
   "@bankLinking_invalidOtp": {
     "description": "Invalid OTP error"
   },
-
   "bankLinking_linkAccount": "Lier le compte",
   "@bankLinking_linkAccount": {
     "description": "Link account action"
   },
-
   "bankLinking_linkAccountDesc": "Liez votre compte bancaire pour des transferts faciles",
   "@bankLinking_linkAccountDesc": {
     "description": "Link account description"
   },
-
   "bankLinking_linkedAccounts": "Comptes liés",
   "@bankLinking_linkedAccounts": {
     "description": "Linked accounts title"
   },
-
   "bankLinking_linkFailed": "Échec de la liaison du compte",
   "@bankLinking_linkFailed": {
     "description": "Link failed error message"
   },
-
   "bankLinking_linkNewAccount": "Lier un nouveau compte",
   "@bankLinking_linkNewAccount": {
     "description": "Link new account action"
   },
-
   "bankLinking_noLinkedAccounts": "Aucun compte lié",
   "@bankLinking_noLinkedAccounts": {
     "description": "No linked accounts message"
   },
-
   "bankLinking_otpCode": "Code OTP",
   "@bankLinking_otpCode": {
     "description": "OTP code field"
   },
-
   "bankLinking_otpResent": "OTP renvoyé",
   "@bankLinking_otpResent": {
     "description": "OTP resent confirmation"
   },
-
   "bankLinking_pending": "En attente",
   "@bankLinking_pending": {
     "description": "Pending status"
   },
-
   "bankLinking_primary": "Principal",
   "@bankLinking_primary": {
     "description": "Primary account label"
   },
-
   "bankLinking_primaryAccountSet": "Compte principal défini",
   "@bankLinking_primaryAccountSet": {
     "description": "Primary account set confirmation"
   },
-
   "bankLinking_resendOtp": "Renvoyer l'OTP",
   "@bankLinking_resendOtp": {
     "description": "Resend OTP action"
   },
-
   "bankLinking_resendOtpIn": "Renvoyer l'OTP dans {seconds}s",
   "@bankLinking_resendOtpIn": {
     "description": "Resend OTP countdown",
@@ -1719,72 +1674,58 @@
       }
     }
   },
-
   "bankLinking_selectBank": "Sélectionner une banque",
   "@bankLinking_selectBank": {
     "description": "Select bank action"
   },
-
   "bankLinking_selectBankDesc": "Choisissez votre banque à lier",
   "@bankLinking_selectBankDesc": {
     "description": "Select bank description"
   },
-
   "bankLinking_selectBankTitle": "Sélectionnez votre banque",
   "@bankLinking_selectBankTitle": {
     "description": "Select bank title"
   },
-
   "bankLinking_suspended": "Suspendu",
   "@bankLinking_suspended": {
     "description": "Suspended status"
   },
-
   "bankLinking_verificationDesc": "Entrez l'OTP envoyé sur votre téléphone",
   "@bankLinking_verificationDesc": {
     "description": "Verification description"
   },
-
   "bankLinking_verificationFailed": "Vérification échouée",
   "@bankLinking_verificationFailed": {
     "description": "Verification failed error"
   },
-
   "bankLinking_verificationRequired": "Vérification requise",
   "@bankLinking_verificationRequired": {
     "description": "Verification required title"
   },
-
   "bankLinking_verificationSuccess": "Compte vérifié",
   "@bankLinking_verificationSuccess": {
     "description": "Verification success message"
   },
-
   "bankLinking_verificationTitle": "Vérifier le compte",
   "@bankLinking_verificationTitle": {
     "description": "Verify account title"
   },
-
   "bankLinking_verified": "Vérifié",
   "@bankLinking_verified": {
     "description": "Verified status"
   },
-
   "bankLinking_verify": "Vérifier",
   "@bankLinking_verify": {
     "description": "Verify action"
   },
-
   "bankLinking_verifyAccount": "Vérifier le compte",
   "@bankLinking_verifyAccount": {
     "description": "Verify account action"
   },
-
   "bankLinking_withdraw": "Retrait",
   "@bankLinking_withdraw": {
     "description": "Withdraw action"
   },
-
   "bankLinking_withdrawConfirmation": "Retirer {amount} vers votre banque ?",
   "@bankLinking_withdrawConfirmation": {
     "description": "Withdraw confirmation message",
@@ -1794,557 +1735,446 @@
       }
     }
   },
-
   "bankLinking_withdrawInfo": "Les fonds arriveront sous 1-3 jours ouvrés",
   "@bankLinking_withdrawInfo": {
     "description": "Withdraw information message"
   },
-
   "bankLinking_withdrawSuccess": "Retrait réussi",
   "@bankLinking_withdrawSuccess": {
     "description": "Withdrawal success message"
   },
-
   "bankLinking_withdrawTime": "Délai de traitement: 1-3 jours ouvrés",
   "@bankLinking_withdrawTime": {
     "description": "Withdrawal processing time"
   },
-
   "bankLinking_withdrawToBank": "Retrait vers la banque",
   "@bankLinking_withdrawToBank": {
     "description": "Withdraw to bank action"
   },
-
   "common_confirm": "Confirmer",
   "@common_confirm": {
     "description": "Confirm button text"
   },
-
   "expenses_totalAmount": "Montant total",
   "@expenses_totalAmount": {
     "description": "Total amount label for expenses"
   },
-
   "kyc_additionalDocs_title": "Documents supplémentaires",
   "@kyc_additionalDocs_title": {
     "description": "Additional documents screen title"
   },
-
   "kyc_additionalDocs_description": "Fournir des informations supplémentaires pour vérification",
   "@kyc_additionalDocs_description": {
     "description": "Additional documents screen description"
   },
-
   "kyc_additionalDocs_employment_title": "Informations d'emploi",
   "@kyc_additionalDocs_employment_title": {
     "description": "Employment section title"
   },
-
   "kyc_additionalDocs_occupation": "Profession",
   "@kyc_additionalDocs_occupation": {
     "description": "Occupation field label"
   },
-
   "kyc_additionalDocs_employer": "Employeur",
   "@kyc_additionalDocs_employer": {
     "description": "Employer field label"
   },
-
   "kyc_additionalDocs_monthlyIncome": "Revenu mensuel",
   "@kyc_additionalDocs_monthlyIncome": {
     "description": "Monthly income field label"
   },
-
   "kyc_additionalDocs_sourceOfFunds_title": "Source des fonds",
   "@kyc_additionalDocs_sourceOfFunds_title": {
     "description": "Source of funds section title"
   },
-
   "kyc_additionalDocs_sourceOfFunds_description": "Parlez-nous de votre source de fonds",
   "@kyc_additionalDocs_sourceOfFunds_description": {
     "description": "Source of funds section description"
   },
-
   "kyc_additionalDocs_sourceDetails": "Détails de la source",
   "@kyc_additionalDocs_sourceDetails": {
     "description": "Source details field label"
   },
-
   "kyc_additionalDocs_supportingDocs_title": "Documents justificatifs",
   "@kyc_additionalDocs_supportingDocs_title": {
     "description": "Supporting documents section title"
   },
-
   "kyc_additionalDocs_supportingDocs_description": "Télécharger des documents pour vérifier vos informations",
   "@kyc_additionalDocs_supportingDocs_description": {
     "description": "Supporting documents section description"
   },
-
   "kyc_additionalDocs_takePhoto": "Prendre une photo",
   "@kyc_additionalDocs_takePhoto": {
     "description": "Take photo button text"
   },
-
   "kyc_additionalDocs_uploadFile": "Télécharger un fichier",
   "@kyc_additionalDocs_uploadFile": {
     "description": "Upload file button text"
   },
-
   "kyc_additionalDocs_error": "Échec de la soumission des documents",
   "@kyc_additionalDocs_error": {
     "description": "Error message when document submission fails"
   },
-
   "kyc_additionalDocs_info_title": "Pourquoi nous en avons besoin",
   "@kyc_additionalDocs_info_title": {
     "description": "Info section title"
   },
-
   "kyc_additionalDocs_info_description": "Cela nous aide à vérifier votre identité",
   "@kyc_additionalDocs_info_description": {
     "description": "Info section description"
   },
-
   "kyc_additionalDocs_submit": "Soumettre les documents",
   "@kyc_additionalDocs_submit": {
     "description": "Submit documents button text"
   },
-
   "kyc_additionalDocs_sourceType_salary": "Salaire",
   "@kyc_additionalDocs_sourceType_salary": {
     "description": "Salary source type"
   },
-
   "kyc_additionalDocs_sourceType_business": "Revenu d'entreprise",
   "@kyc_additionalDocs_sourceType_business": {
     "description": "Business income source type"
   },
-
   "kyc_additionalDocs_sourceType_investments": "Investissements",
   "@kyc_additionalDocs_sourceType_investments": {
     "description": "Investments source type"
   },
-
   "kyc_additionalDocs_sourceType_savings": "Épargne",
   "@kyc_additionalDocs_sourceType_savings": {
     "description": "Savings source type"
   },
-
   "kyc_additionalDocs_sourceType_inheritance": "Héritage",
   "@kyc_additionalDocs_sourceType_inheritance": {
     "description": "Inheritance source type"
   },
-
   "kyc_additionalDocs_sourceType_gift": "Don",
   "@kyc_additionalDocs_sourceType_gift": {
     "description": "Gift source type"
   },
-
   "kyc_additionalDocs_sourceType_other": "Autre",
   "@kyc_additionalDocs_sourceType_other": {
     "description": "Other source type"
   },
-
   "kyc_additionalDocs_suggestion_paySlip": "Bulletin de salaire",
   "@kyc_additionalDocs_suggestion_paySlip": {
     "description": "Pay slip document suggestion"
   },
-
   "kyc_additionalDocs_suggestion_bankStatement": "Relevé bancaire",
   "@kyc_additionalDocs_suggestion_bankStatement": {
     "description": "Bank statement document suggestion"
   },
-
   "kyc_additionalDocs_suggestion_businessReg": "Enregistrement d'entreprise",
   "@kyc_additionalDocs_suggestion_businessReg": {
     "description": "Business registration document suggestion"
   },
-
   "kyc_additionalDocs_suggestion_taxReturn": "Déclaration d'impôts",
   "@kyc_additionalDocs_suggestion_taxReturn": {
     "description": "Tax return document suggestion"
   },
-
   "kyc_address_title": "Vérification d'adresse",
   "@kyc_address_title": {
     "description": "Address verification screen title"
   },
-
   "kyc_address_description": "Vérifiez votre adresse résidentielle",
   "@kyc_address_description": {
     "description": "Address verification screen description"
   },
-
   "kyc_address_form_title": "Votre adresse",
   "@kyc_address_form_title": {
     "description": "Address form section title"
   },
-
   "kyc_address_addressLine1": "Adresse ligne 1",
   "@kyc_address_addressLine1": {
     "description": "Address line 1 field label"
   },
-
   "kyc_address_addressLine2": "Adresse ligne 2",
   "@kyc_address_addressLine2": {
     "description": "Address line 2 field label"
   },
-
   "kyc_address_city": "Ville",
   "@kyc_address_city": {
     "description": "City field label"
   },
-
   "kyc_address_state": "État/Région",
   "@kyc_address_state": {
     "description": "State/Region field label"
   },
-
   "kyc_address_postalCode": "Code postal",
   "@kyc_address_postalCode": {
     "description": "Postal code field label"
   },
-
   "kyc_address_country": "Pays",
   "@kyc_address_country": {
     "description": "Country field label"
   },
-
   "kyc_address_proofDocument_title": "Justificatif de domicile",
   "@kyc_address_proofDocument_title": {
     "description": "Proof of address section title"
   },
-
   "kyc_address_proofDocument_description": "Télécharger un document indiquant votre adresse",
   "@kyc_address_proofDocument_description": {
     "description": "Proof of address section description"
   },
-
   "kyc_address_takePhoto": "Prendre une photo",
   "@kyc_address_takePhoto": {
     "description": "Take photo button text"
   },
-
   "kyc_address_retakePhoto": "Reprendre une photo",
   "@kyc_address_retakePhoto": {
     "description": "Retake photo button text"
   },
-
   "kyc_address_chooseFile": "Choisir un fichier",
   "@kyc_address_chooseFile": {
     "description": "Choose file button text"
   },
-
   "kyc_address_changeFile": "Changer de fichier",
   "@kyc_address_changeFile": {
     "description": "Change file button text"
   },
-
   "kyc_address_uploadDocument": "Télécharger le document",
   "@kyc_address_uploadDocument": {
     "description": "Upload document button text"
   },
-
   "kyc_address_submit": "Soumettre l'adresse",
   "@kyc_address_submit": {
     "description": "Submit address button text"
   },
-
   "kyc_address_error": "Échec de la soumission de l'adresse",
   "@kyc_address_error": {
     "description": "Error message when address submission fails"
   },
-
   "kyc_address_info_title": "Documents acceptés",
   "@kyc_address_info_title": {
     "description": "Accepted documents info title"
   },
-
   "kyc_address_info_description": "Les documents doivent être datés de moins de 3 mois",
   "@kyc_address_info_description": {
     "description": "Accepted documents info description"
   },
-
   "kyc_address_docType_utilityBill": "Facture de services publics",
   "@kyc_address_docType_utilityBill": {
     "description": "Utility bill document type"
   },
-
   "kyc_address_docType_utilityBill_description": "Facture d'électricité, d'eau ou de gaz",
   "@kyc_address_docType_utilityBill_description": {
     "description": "Utility bill document type description"
   },
-
   "kyc_address_docType_bankStatement": "Relevé bancaire",
   "@kyc_address_docType_bankStatement": {
     "description": "Bank statement document type"
   },
-
   "kyc_address_docType_bankStatement_description": "Relevé bancaire récent",
   "@kyc_address_docType_bankStatement_description": {
     "description": "Bank statement document type description"
   },
-
   "kyc_address_docType_governmentLetter": "Lettre du gouvernement",
   "@kyc_address_docType_governmentLetter": {
     "description": "Government letter document type"
   },
-
   "kyc_address_docType_governmentLetter_description": "Correspondance officielle du gouvernement",
   "@kyc_address_docType_governmentLetter_description": {
     "description": "Government letter document type description"
   },
-
   "kyc_address_docType_rentalAgreement": "Contrat de location",
   "@kyc_address_docType_rentalAgreement": {
     "description": "Rental agreement document type"
   },
-
   "kyc_address_docType_rentalAgreement_description": "Contrat de location ou de bail signé",
   "@kyc_address_docType_rentalAgreement_description": {
     "description": "Rental agreement document type description"
   },
-
   "kyc_video_title": "Vérification vidéo",
   "@kyc_video_title": {
     "description": "Video verification screen title"
   },
-
   "kyc_video_instructions_title": "Avant de commencer",
   "@kyc_video_instructions_title": {
     "description": "Video instructions section title"
   },
-
   "kyc_video_instructions_description": "Suivez ces directives pour de meilleurs résultats",
   "@kyc_video_instructions_description": {
     "description": "Video instructions section description"
   },
-
   "kyc_video_instruction_lighting_title": "Bon éclairage",
   "@kyc_video_instruction_lighting_title": {
     "description": "Lighting instruction title"
   },
-
   "kyc_video_instruction_lighting_description": "Trouvez un endroit bien éclairé",
   "@kyc_video_instruction_lighting_description": {
     "description": "Lighting instruction description"
   },
-
   "kyc_video_instruction_position_title": "Position du visage",
   "@kyc_video_instruction_position_title": {
     "description": "Face position instruction title"
   },
-
   "kyc_video_instruction_position_description": "Gardez votre visage dans le cadre",
   "@kyc_video_instruction_position_description": {
     "description": "Face position instruction description"
   },
-
   "kyc_video_instruction_quiet_title": "Environnement calme",
   "@kyc_video_instruction_quiet_title": {
     "description": "Quiet environment instruction title"
   },
-
   "kyc_video_instruction_quiet_description": "Trouvez un endroit calme",
   "@kyc_video_instruction_quiet_description": {
     "description": "Quiet environment instruction description"
   },
-
   "kyc_video_instruction_solo_title": "Soyez seul",
   "@kyc_video_instruction_solo_title": {
     "description": "Solo instruction title"
   },
-
   "kyc_video_instruction_solo_description": "Seul vous devez être dans le cadre",
   "@kyc_video_instruction_solo_description": {
     "description": "Solo instruction description"
   },
-
   "kyc_video_actions_title": "Suivez les instructions",
   "@kyc_video_actions_title": {
     "description": "Video actions section title"
   },
-
   "kyc_video_actions_description": "Complétez chaque action comme demandé",
   "@kyc_video_actions_description": {
     "description": "Video actions section description"
   },
-
   "kyc_video_action_lookStraight": "Regardez droit",
   "@kyc_video_action_lookStraight": {
     "description": "Look straight action"
   },
-
   "kyc_video_action_turnLeft": "Tournez à gauche",
   "@kyc_video_action_turnLeft": {
     "description": "Turn left action"
   },
-
   "kyc_video_action_turnRight": "Tournez à droite",
   "@kyc_video_action_turnRight": {
     "description": "Turn right action"
   },
-
   "kyc_video_action_smile": "Souriez",
   "@kyc_video_action_smile": {
     "description": "Smile action"
   },
-
   "kyc_video_action_blink": "Clignez des yeux",
   "@kyc_video_action_blink": {
     "description": "Blink action"
   },
-
   "kyc_video_startRecording": "Commencer l'enregistrement",
   "@kyc_video_startRecording": {
     "description": "Start recording button text"
   },
-
   "kyc_video_continue": "Continuer",
   "@kyc_video_continue": {
     "description": "Continue button text"
   },
-
   "kyc_video_preview_title": "Aperçu",
   "@kyc_video_preview_title": {
     "description": "Video preview section title"
   },
-
   "kyc_video_preview_description": "Examinez votre vidéo",
   "@kyc_video_preview_description": {
     "description": "Video preview section description"
   },
-
   "kyc_video_preview_videoRecorded": "Vidéo enregistrée",
   "@kyc_video_preview_videoRecorded": {
     "description": "Video recorded status message"
   },
-
   "kyc_video_retake": "Recommencer",
   "@kyc_video_retake": {
     "description": "Retake video button text"
   },
-
   "kyc_upgrade_title": "Mise à niveau de vérification",
   "@kyc_upgrade_title": {
     "description": "Upgrade verification screen title"
   },
-
   "kyc_upgrade_selectTier": "Sélectionner le niveau",
   "@kyc_upgrade_selectTier": {
     "description": "Select tier section title"
   },
-
   "kyc_upgrade_selectTier_description": "Choisissez votre niveau de vérification",
   "@kyc_upgrade_selectTier_description": {
     "description": "Select tier section description"
   },
-
   "kyc_upgrade_currentTier": "Niveau actuel",
   "@kyc_upgrade_currentTier": {
     "description": "Current tier label"
   },
-
   "kyc_upgrade_recommended": "Recommandé",
   "@kyc_upgrade_recommended": {
     "description": "Recommended tier badge"
   },
-
   "kyc_upgrade_perTransaction": "Par transaction",
   "@kyc_upgrade_perTransaction": {
     "description": "Per transaction limit label"
   },
-
   "kyc_upgrade_dailyLimit": "Limite quotidienne",
   "@kyc_upgrade_dailyLimit": {
     "description": "Daily limit label"
   },
-
   "kyc_upgrade_monthlyLimit": "Limite mensuelle",
   "@kyc_upgrade_monthlyLimit": {
     "description": "Monthly limit label"
   },
-
   "kyc_upgrade_andMore": "et plus",
   "@kyc_upgrade_andMore": {
     "description": "And more features text"
   },
-
   "kyc_upgrade_requirements_title": "Exigences",
   "@kyc_upgrade_requirements_title": {
     "description": "Requirements section title"
   },
-
   "kyc_upgrade_requirement_idDocument": "Document d'identité",
   "@kyc_upgrade_requirement_idDocument": {
     "description": "ID document requirement"
   },
-
   "kyc_upgrade_requirement_selfie": "Selfie",
   "@kyc_upgrade_requirement_selfie": {
     "description": "Selfie requirement"
   },
-
   "kyc_upgrade_requirement_addressProof": "Justificatif de domicile",
   "@kyc_upgrade_requirement_addressProof": {
     "description": "Address proof requirement"
   },
-
   "kyc_upgrade_requirement_sourceOfFunds": "Source des fonds",
   "@kyc_upgrade_requirement_sourceOfFunds": {
     "description": "Source of funds requirement"
   },
-
   "kyc_upgrade_requirement_videoVerification": "Vérification vidéo",
   "@kyc_upgrade_requirement_videoVerification": {
     "description": "Video verification requirement"
   },
-
   "kyc_upgrade_startVerification": "Commencer la vérification",
   "@kyc_upgrade_startVerification": {
     "description": "Start verification button text"
   },
-
   "kyc_upgrade_reason_title": "Pourquoi mettre à niveau?",
   "@kyc_upgrade_reason_title": {
     "description": "Why upgrade section title"
   },
-
   "settings_deviceTrustedSuccess": "Appareil marqué comme fiable",
   "@settings_deviceTrustedSuccess": {
     "description": "Success message when device is marked as trusted"
   },
-
   "settings_deviceTrustError": "Échec de la confiance de l'appareil",
   "@settings_deviceTrustError": {
     "description": "Error message when device trust fails"
   },
-
   "settings_deviceRemovedSuccess": "Appareil supprimé avec succès",
   "@settings_deviceRemovedSuccess": {
     "description": "Success message when device is removed"
   },
-
   "settings_deviceRemoveError": "Échec de la suppression de l'appareil",
   "@settings_deviceRemoveError": {
     "description": "Error message when device removal fails"
   },
-
   "settings_help": "Aide et support",
   "@settings_help": {
     "description": "Help and support settings option"
   },
-
   "action_copiedToClipboard": "Copié dans le presse-papiers",
   "@action_copiedToClipboard": {
     "description": "Message shown when text is copied to clipboard"
   },
-
   "transfer_successTitle": "Transfert réussi!",
   "@transfer_successTitle": {
     "description": "Title for successful transfer screen"
   },
-
   "transfer_successMessage": "Votre transfert de {amount} a réussi",
   "@transfer_successMessage": {
     "description": "Message for successful transfer",
@@ -2355,222 +2185,178 @@
       }
     }
   },
-
   "transactions_transactionId": "ID de transaction",
   "@transactions_transactionId": {
     "description": "Transaction ID label"
   },
-
   "common_amount": "Montant",
   "@common_amount": {
     "description": "Amount label"
   },
-
   "transactions_status": "Statut",
   "@transactions_status": {
     "description": "Transaction status label"
   },
-
   "transactions_completed": "Terminé",
   "@transactions_completed": {
     "description": "Completed transaction status"
   },
-
   "transactions_noAccountTitle": "Aucun Portefeuille",
   "@transactions_noAccountTitle": {
     "description": "Title when user has no wallet/account"
   },
-
   "transactions_noAccountMessage": "Créez votre portefeuille pour commencer à suivre vos transactions et votre historique de paiements.",
   "@transactions_noAccountMessage": {
     "description": "Message when user has no wallet/account"
   },
-
   "transactions_connectionErrorTitle": "Impossible de Charger",
   "@transactions_connectionErrorTitle": {
     "description": "Title when there's a connection error"
   },
-
   "transactions_connectionErrorMessage": "Veuillez vérifier votre connexion internet et réessayer.",
   "@transactions_connectionErrorMessage": {
     "description": "Message when there's a connection error"
   },
-
   "transactions_emptyStateTitle": "Aucune Transaction",
   "@transactions_emptyStateTitle": {
     "description": "Title for empty transactions state"
   },
-
   "transactions_emptyStateMessage": "Une fois que vous effectuez votre premier dépôt ou transfert, votre historique de transactions apparaîtra ici.",
   "@transactions_emptyStateMessage": {
     "description": "Message for empty transactions state"
   },
-
   "transactions_emptyStateAction": "Faire un Premier Dépôt",
   "@transactions_emptyStateAction": {
     "description": "CTA button for empty transactions state"
   },
-
   "common_note": "Note",
   "@common_note": {
     "description": "Note label"
   },
-
   "action_shareReceipt": "Partager le reçu",
   "@action_shareReceipt": {
     "description": "Share receipt button text"
   },
-
   "withdraw_mobileMoney": "Mobile Money",
   "@withdraw_mobileMoney": {
     "description": "Mobile Money withdrawal method"
   },
-
   "withdraw_bankTransfer": "Virement bancaire",
   "@withdraw_bankTransfer": {
     "description": "Bank transfer withdrawal method"
   },
-
   "withdraw_crypto": "Portefeuille crypto",
   "@withdraw_crypto": {
     "description": "Crypto wallet withdrawal method"
   },
-
   "withdraw_mobileMoneyDesc": "Retirer vers Orange Money, MTN, Wave",
   "@withdraw_mobileMoneyDesc": {
     "description": "Mobile Money withdrawal description"
   },
-
   "withdraw_bankDesc": "Transférer vers votre compte bancaire",
   "@withdraw_bankDesc": {
     "description": "Bank transfer withdrawal description"
   },
-
   "withdraw_cryptoDesc": "Envoyer vers un portefeuille externe",
   "@withdraw_cryptoDesc": {
     "description": "Crypto withdrawal description"
   },
-
   "navigation_withdraw": "Retirer",
   "@navigation_withdraw": {
     "description": "Withdraw navigation item"
   },
-
   "withdraw_method": "Méthode de retrait",
   "@withdraw_method": {
     "description": "Withdrawal method label"
   },
-
   "withdraw_processingInfo": "Les délais de traitement varient selon la méthode",
   "@withdraw_processingInfo": {
     "description": "Withdrawal processing time info"
   },
-
   "withdraw_amountLabel": "Montant à retirer",
   "@withdraw_amountLabel": {
     "description": "Withdrawal amount label"
   },
-
   "withdraw_mobileNumber": "Numéro Mobile Money",
   "@withdraw_mobileNumber": {
     "description": "Mobile Money number input label"
   },
-
   "withdraw_bankDetails": "Coordonnées bancaires",
   "@withdraw_bankDetails": {
     "description": "Bank details input label"
   },
-
   "withdraw_walletAddress": "Adresse du portefeuille",
   "@withdraw_walletAddress": {
     "description": "Crypto wallet address input label"
   },
-
   "withdraw_networkWarning": "Assurez-vous d'envoyer vers une adresse Solana USDC",
   "@withdraw_networkWarning": {
     "description": "Warning about network compatibility"
   },
-
   "settings_rateApp": "Noter Korido",
   "@settings_rateApp": {
     "description": "Rate app option in settings"
   },
-
   "settings_rateAppDescription": "Vous aimez Korido? Notez-nous sur l'App Store",
   "@settings_rateAppDescription": {
     "description": "Description for rate app option"
   },
-
   "legal_cookiePolicy": "Politique de cookies",
   "@legal_cookiePolicy": {
     "description": "Cookie policy title"
   },
-
   "legal_effectiveDate": "En vigueur depuis",
   "@legal_effectiveDate": {
     "description": "Effective date label"
   },
-
   "legal_whatsNew": "Nouveautes",
   "@legal_whatsNew": {
     "description": "What's new in document"
   },
-
   "legal_contactUs": "Nous contacter",
   "@legal_contactUs": {
     "description": "Contact us section title"
   },
-
   "legal_cookieContactDescription": "Si vous avez des questions sur notre politique de cookies, veuillez nous contacter:",
   "@legal_cookieContactDescription": {
     "description": "Cookie policy contact description"
   },
-
   "legal_cookieCategories": "Categories de cookies",
   "@legal_cookieCategories": {
     "description": "Cookie categories section title"
   },
-
   "legal_essential": "Essentiels",
   "@legal_essential": {
     "description": "Essential cookies label"
   },
-
   "legal_functional": "Fonctionnels",
   "@legal_functional": {
     "description": "Functional cookies label"
   },
-
   "legal_analytics": "Analytiques",
   "@legal_analytics": {
     "description": "Analytics cookies label"
   },
-
   "legal_required": "Requis",
   "@legal_required": {
     "description": "Required indicator"
   },
-
   "legal_cookiePolicyDescription": "Consulter notre politique d'utilisation des cookies",
   "@legal_cookiePolicyDescription": {
     "description": "Cookie policy description in settings"
   },
-
   "legal_legalDocuments": "Documents juridiques",
   "@legal_legalDocuments": {
     "description": "Legal documents section title"
   },
-
   "error_loadFailed": "Echec du chargement",
   "@error_loadFailed": {
     "description": "Generic load failed error"
   },
-
   "error_tryAgainLater": "Veuillez reessayer plus tard",
   "@error_tryAgainLater": {
     "description": "Try again later message"
   },
-
   "biometric_enrollment_title": "Sécurisez votre compte",
   "biometric_enrollment_subtitle": "Ajoutez une couche de sécurité supplémentaire avec l'authentification biométrique",
   "biometric_enrollment_enable": "Activer l'authentification biométrique",
@@ -2638,282 +2424,226 @@
   "biometric_error_hardware_unavailable": "Le matériel biométrique n'est pas disponible",
   "biometric_change_detected_title": "Changement biométrique détecté",
   "biometric_change_detected_message": "L'enregistrement biométrique de l'appareil a changé. Pour des raisons de sécurité, l'authentification biométrique a été désactivée. Veuillez vous réinscrire si vous souhaitez continuer à l'utiliser",
-
   "error_timeout": "La requête a expiré. Veuillez vérifier votre connexion et réessayer.",
   "@error_timeout": {
     "description": "Request timeout error"
   },
-
   "error_noInternet": "Aucune connexion Internet. Veuillez vérifier votre réseau et réessayer.",
   "@error_noInternet": {
     "description": "No internet connection error"
   },
-
   "error_requestCancelled": "La requête a été annulée",
   "@error_requestCancelled": {
     "description": "Request cancelled error"
   },
-
   "error_sslError": "Erreur de sécurité de connexion. Veuillez réessayer.",
   "@error_sslError": {
     "description": "SSL/Certificate error"
   },
-
   "error_otpExpired": "Le code de vérification a expiré. Demandez un nouveau code.",
   "@error_otpExpired": {
     "description": "OTP expired error"
   },
-
   "error_tooManyOtpAttempts": "Trop de tentatives échouées. Veuillez attendre avant de réessayer.",
   "@error_tooManyOtpAttempts": {
     "description": "Too many OTP attempts error"
   },
-
   "error_invalidCredentials": "Identifiants invalides. Veuillez vérifier et réessayer.",
   "@error_invalidCredentials": {
     "description": "Invalid credentials error"
   },
-
   "error_accountLocked": "Votre compte a été verrouillé. Veuillez contacter le support.",
   "@error_accountLocked": {
     "description": "Account locked error"
   },
-
   "error_accountSuspended": "Votre compte a été suspendu. Veuillez contacter le support pour assistance.",
   "@error_accountSuspended": {
     "description": "Account suspended error"
   },
-
   "error_sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
   "@error_sessionExpired": {
     "description": "Session expired error"
   },
-
   "error_kycRequired": "Vérification d'identité requise pour continuer. Complétez la vérification dans les paramètres.",
   "@error_kycRequired": {
     "description": "KYC required error"
   },
-
   "error_kycPending": "Votre vérification d'identité est en cours d'examen. Veuillez patienter.",
   "@error_kycPending": {
     "description": "KYC pending error"
   },
-
   "error_kycRejected": "Votre vérification d'identité a été rejetée. Veuillez soumettre à nouveau avec des documents valides.",
   "@error_kycRejected": {
     "description": "KYC rejected error"
   },
-
   "error_kycExpired": "Votre vérification d'identité a expiré. Veuillez vérifier à nouveau.",
   "@error_kycExpired": {
     "description": "KYC expired error"
   },
-
   "error_amountTooLow": "Le montant est inférieur au minimum. Veuillez saisir un montant plus élevé.",
   "@error_amountTooLow": {
     "description": "Amount too low error"
   },
-
   "error_amountTooHigh": "Le montant dépasse le maximum. Veuillez saisir un montant inférieur.",
   "@error_amountTooHigh": {
     "description": "Amount too high error"
   },
-
   "error_dailyLimitExceeded": "Limite de transaction quotidienne atteinte. Réessayez demain ou améliorez votre compte.",
   "@error_dailyLimitExceeded": {
     "description": "Daily limit exceeded error"
   },
-
   "error_monthlyLimitExceeded": "Limite de transaction mensuelle atteinte. Veuillez patienter ou améliorer votre compte.",
   "@error_monthlyLimitExceeded": {
     "description": "Monthly limit exceeded error"
   },
-
   "error_transactionLimitExceeded": "Limite de transaction dépassée pour cette opération.",
   "@error_transactionLimitExceeded": {
     "description": "Transaction limit exceeded error"
   },
-
   "error_duplicateTransaction": "Cette transaction a déjà été traitée. Veuillez vérifier votre historique.",
   "@error_duplicateTransaction": {
     "description": "Duplicate transaction error"
   },
-
   "error_pinLocked": "PIN verrouillé en raison de trop de tentatives incorrectes. Réinitialisez votre PIN pour continuer.",
   "@error_pinLocked": {
     "description": "PIN locked error"
   },
-
   "error_pinTooWeak": "Le PIN est trop simple. Veuillez choisir un PIN plus fort.",
   "@error_pinTooWeak": {
     "description": "PIN too weak error"
   },
-
   "error_beneficiaryNotFound": "Bénéficiaire non trouvé. Veuillez vérifier et réessayer.",
   "@error_beneficiaryNotFound": {
     "description": "Beneficiary not found error"
   },
-
   "error_beneficiaryLimitReached": "Nombre maximum de bénéficiaires atteint. Supprimez-en un pour ajouter un nouveau bénéficiaire.",
   "@error_beneficiaryLimitReached": {
     "description": "Beneficiary limit reached error"
   },
-
   "error_providerUnavailable": "Le fournisseur de services est actuellement indisponible. Veuillez réessayer plus tard.",
   "@error_providerUnavailable": {
     "description": "Provider unavailable error"
   },
-
   "error_providerTimeout": "Le fournisseur de services ne répond pas. Veuillez réessayer.",
   "@error_providerTimeout": {
     "description": "Provider timeout error"
   },
-
   "error_providerMaintenance": "Le fournisseur de services est en maintenance. Veuillez réessayer plus tard.",
   "@error_providerMaintenance": {
     "description": "Provider maintenance error"
   },
-
   "error_rateLimited": "Trop de requêtes. Veuillez ralentir et réessayer dans un instant.",
   "@error_rateLimited": {
     "description": "Rate limited error"
   },
-
   "error_invalidAddress": "Adresse de portefeuille invalide. Veuillez vérifier et réessayer.",
   "@error_invalidAddress": {
     "description": "Invalid address error"
   },
-
   "error_invalidCountry": "Service non disponible dans votre pays.",
   "@error_invalidCountry": {
     "description": "Invalid country error"
   },
-
   "error_deviceNotTrusted": "Cet appareil n'est pas de confiance. Veuillez vérifier votre identité.",
   "@error_deviceNotTrusted": {
     "description": "Device not trusted error"
   },
-
   "error_deviceLimitReached": "Nombre maximum d'appareils atteint. Supprimez un appareil pour ajouter celui-ci.",
   "@error_deviceLimitReached": {
     "description": "Device limit reached error"
   },
-
   "error_biometricRequired": "L'authentification biométrique est requise pour cette action.",
   "@error_biometricRequired": {
     "description": "Biometric required error"
   },
-
   "error_badRequest": "Requête invalide. Veuillez vérifier vos informations et réessayer.",
   "@error_badRequest": {
     "description": "Bad request error (400)"
   },
-
   "error_unauthorized": "Authentification requise. Veuillez vous reconnecter.",
   "@error_unauthorized": {
     "description": "Unauthorized error (401)"
   },
-
   "error_accessDenied": "Vous n'avez pas la permission d'effectuer cette action.",
   "@error_accessDenied": {
     "description": "Access denied error (403)"
   },
-
   "error_notFound": "Ressource demandée non trouvée.",
   "@error_notFound": {
     "description": "Not found error (404)"
   },
-
   "error_conflict": "La requête entre en conflit avec l'état actuel. Veuillez actualiser et réessayer.",
   "@error_conflict": {
     "description": "Conflict error (409)"
   },
-
   "error_validationFailed": "Veuillez vérifier les informations que vous avez fournies et réessayer.",
   "@error_validationFailed": {
     "description": "Validation failed error (422)"
   },
-
   "error_serverError": "Erreur du serveur. Notre équipe a été informée. Veuillez réessayer plus tard.",
   "@error_serverError": {
     "description": "Server error (500)"
   },
-
   "error_serviceUnavailable": "Service temporairement indisponible. Veuillez réessayer dans quelques instants.",
   "@error_serviceUnavailable": {
     "description": "Service unavailable error (503)"
   },
-
   "error_gatewayTimeout": "Le service met trop de temps à répondre. Veuillez réessayer.",
   "@error_gatewayTimeout": {
     "description": "Gateway timeout error (504)"
   },
-
   "error_authenticationFailed": "Authentification échouée. Veuillez réessayer.",
   "@error_authenticationFailed": {
     "description": "Authentication failed error"
   },
-
   "error_suggestion_checkConnection": "Vérifiez votre connexion Internet",
   "@error_suggestion_checkConnection": {
     "description": "Suggestion to check connection"
   },
-
   "error_suggestion_tryAgain": "Réessayer",
   "@error_suggestion_tryAgain": {
     "description": "Suggestion to try again"
   },
-
   "error_suggestion_loginAgain": "Connectez-vous à nouveau",
   "@error_suggestion_loginAgain": {
     "description": "Suggestion to login again"
   },
-
   "error_suggestion_completeKyc": "Complétez la vérification",
   "@error_suggestion_completeKyc": {
     "description": "Suggestion to complete KYC"
   },
-
   "error_suggestion_addFunds": "Ajoutez des fonds à votre portefeuille",
   "@error_suggestion_addFunds": {
     "description": "Suggestion to add funds"
   },
-
   "error_suggestion_waitOrUpgrade": "Attendez ou améliorez votre compte",
   "@error_suggestion_waitOrUpgrade": {
     "description": "Suggestion to wait or upgrade"
   },
-
   "error_suggestion_tryLater": "Réessayez plus tard",
   "@error_suggestion_tryLater": {
     "description": "Suggestion to try later"
   },
-
   "error_suggestion_resetPin": "Réinitialisez votre PIN",
   "@error_suggestion_resetPin": {
     "description": "Suggestion to reset PIN"
   },
-
   "error_suggestion_slowDown": "Ralentissez et attendez un instant",
   "@error_suggestion_slowDown": {
     "description": "Suggestion to slow down"
   },
-
   "error_offline_title": "Vous êtes hors ligne",
   "@error_offline_title": {
     "description": "Offline mode title"
   },
-
   "error_offline_message": "Vous n'êtes pas connecté à Internet. Certaines fonctionnalités peuvent ne pas être disponibles.",
   "@error_offline_message": {
     "description": "Offline mode message"
   },
-
   "error_offline_retry": "Réessayer la connexion",
   "@error_offline_retry": {
     "description": "Retry connection button"
   },
-
   "action_skip": "Passer",
   "action_next": "Suivant",
   "onboarding_page1_title": "Votre argent, à votre façon",
@@ -2936,7 +2666,6 @@
   "onboarding_page4_feature1": "Protection par code PIN et biométrie",
   "onboarding_page4_feature2": "Chiffrement de bout en bout",
   "onboarding_page4_feature3": "Surveillance anti-fraude 24h/24 et 7j/7",
-  "onboarding_getStarted": "Commencer",
   "welcome_title": "Bienvenue, {name} !",
   "welcome_subtitle": "Votre portefeuille Korido est prêt. Commencez à envoyer et recevoir de l'argent dès aujourd'hui !",
   "welcome_addFunds": "Ajouter des fonds",
@@ -3019,7 +2748,6 @@
   "help_fees_comparison_description": "Nos frais sont nettement inférieurs à ceux des services de transfert d'argent traditionnels :",
   "help_fees_comparison_traditional": "Services traditionnels",
   "help_fees_comparison_joonapay": "Korido",
-
   "offline_banner_title": "Vous êtes hors ligne",
   "offline_banner_last_sync": "Dernière synchro {time}",
   "offline_banner_syncing": "Synchronisation des opérations...",
@@ -3049,7 +2777,6 @@
   "state_deviceChangedDescription": "Cela semble être un nouvel appareil. Veuillez vérifier votre identité pour continuer.",
   "state_sessionConflict": "Une autre session est active",
   "state_sessionConflictDescription": "Vous êtes connecté sur un autre appareil. Veuillez vous déconnecter là-bas ou continuer ici.",
-
   "auth_lockedReason": "Votre compte a été temporairement verrouillé en raison de plusieurs tentatives échouées",
   "auth_accountLocked": "Compte temporairement verrouillé",
   "auth_tryAgainIn": "Réessayez dans",
@@ -3067,7 +2794,6 @@
   "biometric_usePinInstead": "Utiliser le code PIN",
   "auth_otpExpired": "Code OTP expiré",
   "auth_otpExpiredMessage": "Votre code de vérification a expiré. Veuillez demander un nouveau code.",
-  "auth_resendOtp": "Renvoyer le code",
   "session_locked": "Session verrouillée",
   "session_lockedMessage": "Votre session a été verrouillée. Veuillez entrer votre code PIN pour continuer.",
   "session_enterPinToUnlock": "Entrez le code PIN pour déverrouiller",
@@ -3119,14 +2845,12 @@
   "kyc_restriction3": "Les retraits peuvent être restreints",
   "kyc_renewDocuments": "Renouveler les documents",
   "kyc_remindLater": "Me le rappeler plus tard",
-
   "action_backToHome": "Retour à l'accueil",
   "action_checkStatus": "Vérifier le statut",
   "action_ok": "OK",
   "common_errorTryAgain": "Une erreur est survenue. Veuillez réessayer.",
   "common_loading": "Chargement...",
   "common_unknownError": "Une erreur inconnue est survenue",
-
   "deposit_amount": "Montant",
   "deposit_approveOnPhone": "Approuvez le paiement sur votre téléphone en saisissant votre code PIN",
   "deposit_balanceUpdated": "Votre solde a été mis à jour",
@@ -3154,5 +2878,151 @@
   "deposit_waitingForApproval": "En attente d'approbation sur votre téléphone",
   "deposit_waitingForPayment": "En attente de paiement",
   "deposit_youPay": "Vous payez",
-  "deposit_youReceive": "Vous recevez"
+  "deposit_youReceive": "Vous recevez",
+  "airtime_billPaymentSuccess": "Paiement de facture de ${amount} réussi !",
+  "airtime_providerSelected": "Fournisseur {provider} sélectionné",
+  "airtime_purchaseSuccess": "Crédit de ${amount} acheté avec succès !",
+  "analytics_failedToLoad": "Impossible de charger les analyses",
+  "analytics_monthlyTotal": "Total mensuel",
+  "bankLinking_accounts": "Comptes bancaires",
+  "bankLinking_enterCode": "Saisissez le code de vérification",
+  "bankLinking_linkSuccess": "Compte bancaire lié avec succès",
+  "beneficiaries_addError": "Impossible d'ajouter le bénéficiaire. Veuillez réessayer.",
+  "beneficiaries_deleteConfirm": "Supprimer le destinataire ?",
+  "beneficiaries_failedToAdd": "Impossible d'ajouter le destinataire",
+  "beneficiaries_failedToDelete": "Impossible de supprimer le contact",
+  "beneficiaries_failedToUpdateFavorite": "Impossible de mettre à jour le favori",
+  "beneficiaries_recipientAdded": "Destinataire ajouté",
+  "beneficiaries_recipientRemoved": "Destinataire supprimé",
+  "billPayments_category": "Catégorie",
+  "billPayments_paymentComplete": "Paiement effectué",
+  "budget_categoryAdded": "Catégorie ajoutée",
+  "budget_deleteCategory": "Supprimer la catégorie ?",
+  "budget_tapCategoryToEdit": "Appuyez sur une catégorie pour modifier son budget",
+  "bulkPayments_error": "Erreur : {error}",
+  "bulkPayments_fileLoadError": "Impossible de charger le fichier. Veuillez réessayer.",
+  "cards_blockError": "Impossible de bloquer la carte. Veuillez réessayer.",
+  "cards_cardCreated": "Carte créée avec succès",
+  "cards_cardType": "Type de carte",
+  "cards_createCard": "Créer la carte",
+  "cards_createError": "Impossible de créer la carte. Veuillez réessayer.",
+  "cards_error": "Erreur : {error}",
+  "cards_myCards": "Mes cartes",
+  "cards_newCard": "Nouvelle carte",
+  "common_copy": "Copier",
+  "common_default": "Par défaut",
+  "common_errorFormat": "Erreur : {error}",
+  "common_genericError": "Une erreur est survenue. Veuillez réessayer.",
+  "common_recent": "Récent",
+  "common_seeAll": "Voir tout",
+  "common_status": "Statut",
+  "common_tooManyAttempts": "Trop de tentatives incorrectes. Veuillez réessayer plus tard.",
+  "common_type": "Type",
+  "contacts_allContacts": "Tous les contacts",
+  "contacts_error": "Erreur : {error}",
+  "contacts_favorites": "Favoris",
+  "deviceVerification_failed": "Vérification échouée",
+  "expenses_captureError": "Erreur lors de la capture. Veuillez réessayer.",
+  "expenses_receiptProcessError": "Erreur lors du traitement du reçu. Veuillez réessayer.",
+  "expenses_reportError": "Erreur : {error}",
+  "expenses_saveError": "Impossible d'enregistrer la dépense. Veuillez réessayer.",
+  "insights_error": "Erreur : {error}",
+  "kyc_cameraInitFailed": "Échec de l'initialisation de la caméra",
+  "kyc_completeLivenessFirst": "Veuillez d'abord compléter la vérification de vivacité",
+  "kyc_completeVerification": "Complétez la vérification pour augmenter votre limite quotidienne à ${limit}",
+  "kyc_documentType": "Type de document",
+  "kyc_documentsSubmitted": "Documents soumis",
+  "kyc_failedToPickImage": "Impossible de sélectionner l'image",
+  "kyc_failedToSubmit": "Impossible de soumettre la vérification KYC",
+  "kyc_failedToTakeSelfie": "Impossible de prendre le selfie",
+  "kyc_livenessCheckFailed": "Vérification de vivacité échouée : {reason}",
+  "kyc_livenessCheckPassed": "Vérification de vivacité réussie ! Vous pouvez maintenant prendre votre selfie.",
+  "kyc_submit": "Soumettre",
+  "kyc_takeSelfie": "Prenez un selfie",
+  "kyc_verificationProcessing": "Votre vérification sera traitée sous 24-48h.",
+  "kyc_verify": "Vérifier",
+  "limits_error": "Erreur : {error}",
+  "limits_maxPerTransaction": "Max par transaction",
+  "limits_transactionLimits": "Limites de transaction",
+  "liveness_goBack": "Retour",
+  "liveness_title": "Vérification de vivacité",
+  "liveness_tryAgain": "Réessayer",
+  "merchant_dashboard": "Tableau de bord marchand",
+  "merchant_myQrCode": "Mon code QR",
+  "merchant_requestPayment": "Demande de paiement",
+  "merchant_scanToPay": "Scannez pour me payer",
+  "merchant_shareQr": "Partager le code QR",
+  "paymentLinks_copied": "Lien copié",
+  "paymentLinks_create": "Créer un lien de paiement",
+  "paymentLinks_error": "Erreur : {error}",
+  "paymentLinks_generate": "Générer le lien",
+  "paymentLinks_ready": "Lien de paiement prêt",
+  "paymentLinks_singleUse": "Usage unique",
+  "paymentLinks_singleUseDescription": "Le lien expire après un paiement",
+  "profile_completion": "Complétion du profil",
+  "profile_setName": "Définir votre nom",
+  "qr_failedToScan": "Impossible de scanner le code QR depuis l'image",
+  "qr_failedToShare": "Impossible de partager le code QR",
+  "qr_myCode": "Mon code QR",
+  "qr_noCodeFound": "Aucun code QR trouvé dans l'image",
+  "qr_receive": "Recevoir",
+  "qr_scanToPay": "Scannez pour me payer",
+  "qr_shareCode": "Partager le code QR",
+  "receipts_enterEmailAddress": "Saisissez l'adresse e-mail",
+  "receipts_receiptView": "Reçu",
+  "receipts_referenceNumberCopied": "Numéro de référence copié",
+  "recurringTransfers_createTransfer": "Créer le transfert",
+  "recurringTransfers_created": "Transfert récurrent créé",
+  "referrals_error": "Erreur : {error}",
+  "referrals_yourReferrals": "Vos parrainages",
+  "savingsGoals_created": "Objectif créé avec succès !",
+  "savingsGoals_deleteConfirm": "Supprimer l'objectif ?",
+  "savingsGoals_deleted": "Objectif supprimé",
+  "savingsGoals_setTargetDate": "Définir la date cible (optionnel)",
+  "savingsGoals_totalSavings": "Épargne totale",
+  "savingsPots_createPot": "Créer la cagnotte",
+  "savingsPots_error": "Erreur : {error}",
+  "scheduledTransfers_created": "Programme créé avec succès !",
+  "scheduledTransfers_deleted": "Programme supprimé",
+  "security_account": "Compte",
+  "security_autoLock": "Verrouillage automatique",
+  "security_autoLockAfter": "Verrouillage après",
+  "security_autoLockMinutes": "Après {minutes} minutes d'inactivité",
+  "security_manageDevices": "Gérer les appareils",
+  "security_minutesFormat": "{minutes} minutes",
+  "security_pinOnAppOpen": "Exiger le PIN à l'ouverture",
+  "security_pinOnAppOpenSubtitle": "Exiger le PIN à chaque ouverture de l'application",
+  "security_screenshotProtection": "Protection des captures d'écran",
+  "security_screenshotProtectionSubtitle": "Empêcher les captures d'écran sur les écrans sensibles",
+  "security_transactionAlerts": "Alertes de transaction",
+  "security_transactionAlertsSubtitle": "Être notifié pour chaque transaction",
+  "send_searchRecipient": "Rechercher un destinataire",
+  "settings_activeDevices": "Appareils actifs",
+  "settings_approve": "Approuver",
+  "settings_chooseFromGallery": "Choisir dans la galerie",
+  "settings_connectingToSupport": "Connexion à un agent de support...",
+  "settings_copiedToClipboard": "Copié dans le presse-papiers",
+  "settings_failedToUpdateProfile": "Impossible de mettre à jour le profil",
+  "settings_improveAnswer": "Nous améliorerons cette réponse",
+  "settings_openingLiveChat": "Ouverture du chat en direct...",
+  "settings_openingUrl": "Ouverture : {url}",
+  "settings_openingWhatsApp": "Ouverture de WhatsApp...",
+  "settings_performanceMonitor": "Moniteur de performance",
+  "settings_problemReported": "Problème signalé. Nous reviendrons vers vous bientôt.",
+  "settings_profileUpdated": "Profil mis à jour avec succès",
+  "settings_takePhoto": "Prendre une photo",
+  "settings_thanksFeedback": "Merci pour votre retour !",
+  "settings_verificationFailed": "La vérification a échoué. Veuillez réessayer.",
+  "splitBill_requestsSent": "Demandes de paiement envoyées à {count} personnes",
+  "subBusiness_view": "Voir",
+  "transactions_export": "Exporter les transactions",
+  "transactions_exportAsCsv": "Exporter en CSV",
+  "transactions_exported": "Transactions exportées en {format}",
+  "transactions_noTransactionsYet": "Aucune transaction pour le moment",
+  "transactions_viewTransaction": "Voir la transaction",
+  "wallet_insufficientBalance": "Solde insuffisant",
+  "wallet_pending": "En attente : ${amount}",
+  "withdraw_comingSoon": "Fonctionnalité de retrait bientôt disponible",
+  "withdraw_failed": "Le retrait a échoué. Veuillez réessayer.",
+  "withdraw_initiated": "Retrait initié"
 }

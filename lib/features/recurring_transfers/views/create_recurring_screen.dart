@@ -4,6 +4,7 @@ import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Create recurring transfer screen.
 class CreateRecurringScreen extends ConsumerStatefulWidget {
@@ -33,14 +34,14 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
 
     ref.listen<CreateRecurringState>(createRecurringProvider, (_, next) {
       if (next.isComplete) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transfert recurrent cree')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.recurringTransfers_created)));
         Navigator.pop(context, true);
         notifier.reset();
       }
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Transfert recurrent')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.recurringTransfers_title)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
@@ -73,7 +74,7 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            Text('Frequence', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.recurringTransfers_frequency, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
@@ -88,7 +89,7 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
 
             ListTile(
               leading: const Icon(Icons.calendar_today_outlined),
-              title: Text('Debut: ${_formatDate(state.startDate)}'),
+              title: Text('${AppLocalizations.of(context)!.recurringTransfers_startDate}: ${_formatDate(state.startDate)}'),
               onTap: () async {
                 final date = await showDatePicker(
                   context: context,
@@ -125,7 +126,7 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
                   : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Creer le transfert'),
+                  : Text(AppLocalizations.of(context)!.recurringTransfers_createTransfer),
             ),
           ],
         ),

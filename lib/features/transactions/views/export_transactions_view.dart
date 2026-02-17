@@ -483,7 +483,7 @@ class _ExportTransactionsViewState extends ConsumerState<ExportTransactionsView>
       final format = _selectedFormat == ExportFormat.csv ? 'CSV' : 'PDF';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Transactions exported as $format'),
+          content: Text(AppLocalizations.of(context)!.transactions_exported(format)),
           backgroundColor: context.colors.success,
           action: SnackBarAction(
             label: 'Share',

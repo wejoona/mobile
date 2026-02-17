@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
 import 'package:usdc_wallet/design/components/primitives/contact_tile.dart';
 import 'package:usdc_wallet/design/components/primitives/search_bar.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Contacts list screen.
 class ContactsView extends ConsumerStatefulWidget {
@@ -30,7 +31,7 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
       ),
       body: contactsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.contacts_error(e.toString()))),
         data: (contacts) {
           final filtered = _searchQuery.isEmpty
               ? contacts
@@ -67,13 +68,13 @@ class _ContactsViewState extends ConsumerState<ContactsView> {
                       if (_searchQuery.isEmpty && favorites.isNotEmpty) ...[
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                          child: Text('Favoris', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          child: Text(AppLocalizations.of(context)!.contacts_favorites, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                         ),
                         ...favorites.map((c) => ContactTile(contact: c, onTap: () {})),
                         const Divider(),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                          child: Text('Tous les contacts', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                          child: Text(AppLocalizations.of(context)!.contacts_allContacts, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                         ),
                       ],
                       ...filtered.map((c) => ContactTile(contact: c, onTap: () {})),

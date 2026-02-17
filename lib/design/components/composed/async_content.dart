@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Generic async content handler for Riverpod AsyncValue.
 ///
@@ -39,7 +40,7 @@ class AsyncContent<T> extends StatelessWidget {
 
     return value.when(
       loading: () => loading ?? _defaultLoading(colors),
-      error: (error, _) => _buildError(error.toString(), colors),
+      error: (error, _) => _buildError(context, error.toString(), colors),
       data: (data) {
         if (isEmpty != null && isEmpty!(data)) {
           return _buildEmpty(colors);
@@ -49,7 +50,7 @@ class AsyncContent<T> extends StatelessWidget {
     );
   }
 
-  Widget _buildError(String message, ThemeColors colors) {
+  Widget _buildError(BuildContext context, String message, ThemeColors colors) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -68,7 +69,7 @@ class AsyncContent<T> extends StatelessWidget {
               TextButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context)!.action_retry),
               ),
             ],
           ],

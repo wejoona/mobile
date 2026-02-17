@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/utils/duration_extensions.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Tile showing a registered device.
 class DeviceTile extends StatelessWidget {
@@ -38,7 +39,7 @@ class DeviceTile extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                         decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(4)),
-                        child: Text('This device', style: TextStyle(fontSize: 10, color: Colors.green.shade700, fontWeight: FontWeight.w500)),
+                        child: Text(AppLocalizations.of(context)!.settings_thisDevice, style: TextStyle(fontSize: 10, color: Colors.green.shade700, fontWeight: FontWeight.w500)),
                       ),
                     ],
                   ],

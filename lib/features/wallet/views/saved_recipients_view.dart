@@ -320,7 +320,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         final error = ref.read(contactProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? 'Failed to update favorite'),
+            content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToUpdateFavorite),
             backgroundColor: context.colors.error,
           ),
         );
@@ -334,7 +334,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.elevated,
-        title: Text('Delete Recipient?', style: TextStyle(color: colors.textPrimary)),
+        title: Text(AppLocalizations.of(context)!.beneficiaries_deleteConfirm, style: TextStyle(color: colors.textPrimary)),
         content: Text(
           'Remove ${contact.name} from your saved recipients?',
           style: TextStyle(color: colors.textSecondary),
@@ -342,7 +342,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+            child: Text(AppLocalizations.of(context)!.action_cancel, style: TextStyle(color: colors.textSecondary)),
           ),
           TextButton(
             onPressed: () async {
@@ -354,7 +354,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Recipient removed'),
+                      content: Text(AppLocalizations.of(context)!.beneficiaries_recipientRemoved),
                       backgroundColor: context.colors.success,
                     ),
                   );
@@ -362,14 +362,14 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                   final error = ref.read(contactProvider).error;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(error ?? 'Failed to delete contact'),
+                      content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToDelete),
                       backgroundColor: context.colors.error,
                     ),
                   );
                 }
               }
             },
-            child: Text('Delete', style: TextStyle(color: context.colors.error)),
+            child: Text(AppLocalizations.of(context)!.common_delete, style: TextStyle(color: context.colors.error)),
           ),
         ],
       ),
@@ -395,7 +395,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Recipient added'),
+                content: Text(AppLocalizations.of(context)!.beneficiaries_recipientAdded),
                 backgroundColor: context.colors.success,
               ),
             );
@@ -433,7 +433,7 @@ class _RecipientCard extends StatelessWidget {
             final dialogColors = context.colors;
             return AlertDialog(
               backgroundColor: dialogColors.container,
-              title: Text('Delete Recipient?', style: TextStyle(color: dialogColors.textPrimary)),
+              title: Text(AppLocalizations.of(context)!.beneficiaries_deleteConfirm, style: TextStyle(color: dialogColors.textPrimary)),
               content: Text(
                 'Remove ${contact.name} from your saved recipients?',
                 style: TextStyle(color: dialogColors.textSecondary),
@@ -441,11 +441,11 @@ class _RecipientCard extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
-                  child: Text('Cancel', style: TextStyle(color: dialogColors.textSecondary)),
+                  child: Text(AppLocalizations.of(context)!.action_cancel, style: TextStyle(color: dialogColors.textSecondary)),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: Text('Delete', style: TextStyle(color: context.colors.error)),
+                  child: Text(AppLocalizations.of(context)!.common_delete, style: TextStyle(color: context.colors.error)),
                 ),
               ],
             );
@@ -794,7 +794,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
         final error = ref.read(contactProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? 'Failed to add recipient'),
+            content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToAdd),
             backgroundColor: context.colors.error,
           ),
         );

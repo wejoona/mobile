@@ -12437,6 +12437,882 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You Receive'**
   String get deposit_youReceive;
+
+  /// No description provided for @airtime_billPaymentSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Bill payment of \\\${amount} successful!'**
+  String airtime_billPaymentSuccess(Object amount);
+
+  /// No description provided for @airtime_providerSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected {provider}'**
+  String airtime_providerSelected(Object provider);
+
+  /// No description provided for @airtime_purchaseSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Airtime of \\\${amount} purchased successfully!'**
+  String airtime_purchaseSuccess(Object amount);
+
+  /// No description provided for @analytics_failedToLoad.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load analytics'**
+  String get analytics_failedToLoad;
+
+  /// No description provided for @analytics_monthlyTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly total'**
+  String get analytics_monthlyTotal;
+
+  /// No description provided for @bankLinking_accounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Accounts'**
+  String get bankLinking_accounts;
+
+  /// No description provided for @bankLinking_enterCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Verification Code'**
+  String get bankLinking_enterCode;
+
+  /// No description provided for @bankLinking_linkSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank account linked successfully'**
+  String get bankLinking_linkSuccess;
+
+  /// No description provided for @beneficiaries_addError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to add beneficiary. Please try again.'**
+  String get beneficiaries_addError;
+
+  /// No description provided for @beneficiaries_deleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Recipient?'**
+  String get beneficiaries_deleteConfirm;
+
+  /// No description provided for @beneficiaries_failedToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to add recipient'**
+  String get beneficiaries_failedToAdd;
+
+  /// No description provided for @beneficiaries_failedToDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete contact'**
+  String get beneficiaries_failedToDelete;
+
+  /// No description provided for @beneficiaries_failedToUpdateFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update favorite'**
+  String get beneficiaries_failedToUpdateFavorite;
+
+  /// No description provided for @beneficiaries_recipientAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient added'**
+  String get beneficiaries_recipientAdded;
+
+  /// No description provided for @beneficiaries_recipientRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipient removed'**
+  String get beneficiaries_recipientRemoved;
+
+  /// No description provided for @billPayments_category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get billPayments_category;
+
+  /// No description provided for @billPayments_paymentComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Complete'**
+  String get billPayments_paymentComplete;
+
+  /// No description provided for @budget_categoryAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Category added'**
+  String get budget_categoryAdded;
+
+  /// No description provided for @budget_deleteCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Category?'**
+  String get budget_deleteCategory;
+
+  /// No description provided for @budget_tapCategoryToEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any category to edit its budget'**
+  String get budget_tapCategoryToEdit;
+
+  /// No description provided for @bulkPayments_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String bulkPayments_error(Object error);
+
+  /// No description provided for @bulkPayments_fileLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load file. Please try again.'**
+  String get bulkPayments_fileLoadError;
+
+  /// No description provided for @cards_blockError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to block card. Please try again.'**
+  String get cards_blockError;
+
+  /// No description provided for @cards_cardCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Card created successfully'**
+  String get cards_cardCreated;
+
+  /// No description provided for @cards_cardType.
+  ///
+  /// In en, this message translates to:
+  /// **'Card Type'**
+  String get cards_cardType;
+
+  /// No description provided for @cards_createCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Card'**
+  String get cards_createCard;
+
+  /// No description provided for @cards_createError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to create card. Please try again.'**
+  String get cards_createError;
+
+  /// No description provided for @cards_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String cards_error(Object error);
+
+  /// No description provided for @cards_myCards.
+  ///
+  /// In en, this message translates to:
+  /// **'My Cards'**
+  String get cards_myCards;
+
+  /// No description provided for @cards_newCard.
+  ///
+  /// In en, this message translates to:
+  /// **'New Card'**
+  String get cards_newCard;
+
+  /// No description provided for @common_copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get common_copy;
+
+  /// No description provided for @common_default.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get common_default;
+
+  /// No description provided for @common_errorFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String common_errorFormat(Object error);
+
+  /// No description provided for @common_genericError.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again.'**
+  String get common_genericError;
+
+  /// No description provided for @common_recent.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get common_recent;
+
+  /// No description provided for @common_seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get common_seeAll;
+
+  /// No description provided for @common_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get common_status;
+
+  /// No description provided for @common_tooManyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many incorrect attempts. Please try again later.'**
+  String get common_tooManyAttempts;
+
+  /// No description provided for @common_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get common_type;
+
+  /// No description provided for @contacts_allContacts.
+  ///
+  /// In en, this message translates to:
+  /// **'All Contacts'**
+  String get contacts_allContacts;
+
+  /// No description provided for @contacts_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String contacts_error(Object error);
+
+  /// No description provided for @contacts_favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get contacts_favorites;
+
+  /// No description provided for @deviceVerification_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed'**
+  String get deviceVerification_failed;
+
+  /// No description provided for @expenses_captureError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error capturing. Please try again.'**
+  String get expenses_captureError;
+
+  /// No description provided for @expenses_receiptProcessError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error processing receipt. Please try again.'**
+  String get expenses_receiptProcessError;
+
+  /// No description provided for @expenses_reportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String expenses_reportError(Object error);
+
+  /// No description provided for @expenses_saveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to save expense. Please try again.'**
+  String get expenses_saveError;
+
+  /// No description provided for @insights_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String insights_error(Object error);
+
+  /// No description provided for @kyc_cameraInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera initialization failed'**
+  String get kyc_cameraInitFailed;
+
+  /// No description provided for @kyc_completeLivenessFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Please complete liveness check first'**
+  String get kyc_completeLivenessFirst;
+
+  /// No description provided for @kyc_completeVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete verification to increase your daily limit to \\\${limit}'**
+  String kyc_completeVerification(Object limit);
+
+  /// No description provided for @kyc_documentType.
+  ///
+  /// In en, this message translates to:
+  /// **'Document Type'**
+  String get kyc_documentType;
+
+  /// No description provided for @kyc_documentsSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents Submitted'**
+  String get kyc_documentsSubmitted;
+
+  /// No description provided for @kyc_failedToPickImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pick image'**
+  String get kyc_failedToPickImage;
+
+  /// No description provided for @kyc_failedToSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit KYC'**
+  String get kyc_failedToSubmit;
+
+  /// No description provided for @kyc_failedToTakeSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to take selfie'**
+  String get kyc_failedToTakeSelfie;
+
+  /// No description provided for @kyc_livenessCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Liveness check failed: {reason}'**
+  String kyc_livenessCheckFailed(Object reason);
+
+  /// No description provided for @kyc_livenessCheckPassed.
+  ///
+  /// In en, this message translates to:
+  /// **'Liveness check passed! You can now take your selfie.'**
+  String get kyc_livenessCheckPassed;
+
+  /// No description provided for @kyc_submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get kyc_submit;
+
+  /// No description provided for @kyc_takeSelfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a Selfie'**
+  String get kyc_takeSelfie;
+
+  /// No description provided for @kyc_verificationProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification will be processed within 24-48 hours.'**
+  String get kyc_verificationProcessing;
+
+  /// No description provided for @kyc_verify.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get kyc_verify;
+
+  /// No description provided for @limits_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String limits_error(Object error);
+
+  /// No description provided for @limits_maxPerTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Max per transaction'**
+  String get limits_maxPerTransaction;
+
+  /// No description provided for @limits_transactionLimits.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Limits'**
+  String get limits_transactionLimits;
+
+  /// No description provided for @liveness_goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get liveness_goBack;
+
+  /// No description provided for @liveness_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Liveness Check'**
+  String get liveness_title;
+
+  /// No description provided for @liveness_tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get liveness_tryAgain;
+
+  /// No description provided for @merchant_dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Merchant Dashboard'**
+  String get merchant_dashboard;
+
+  /// No description provided for @merchant_myQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'My QR Code'**
+  String get merchant_myQrCode;
+
+  /// No description provided for @merchant_requestPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Request Payment'**
+  String get merchant_requestPayment;
+
+  /// No description provided for @merchant_scanToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to pay me'**
+  String get merchant_scanToPay;
+
+  /// No description provided for @merchant_shareQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Share QR Code'**
+  String get merchant_shareQr;
+
+  /// No description provided for @paymentLinks_copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get paymentLinks_copied;
+
+  /// No description provided for @paymentLinks_create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a Payment Link'**
+  String get paymentLinks_create;
+
+  /// No description provided for @paymentLinks_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String paymentLinks_error(Object error);
+
+  /// No description provided for @paymentLinks_generate.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate Link'**
+  String get paymentLinks_generate;
+
+  /// No description provided for @paymentLinks_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment Link Ready'**
+  String get paymentLinks_ready;
+
+  /// No description provided for @paymentLinks_singleUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Single use'**
+  String get paymentLinks_singleUse;
+
+  /// No description provided for @paymentLinks_singleUseDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Link expires after one payment'**
+  String get paymentLinks_singleUseDescription;
+
+  /// No description provided for @profile_completion.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile completion'**
+  String get profile_completion;
+
+  /// No description provided for @profile_setName.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your name'**
+  String get profile_setName;
+
+  /// No description provided for @qr_failedToScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to scan QR from image'**
+  String get qr_failedToScan;
+
+  /// No description provided for @qr_failedToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to share QR code'**
+  String get qr_failedToShare;
+
+  /// No description provided for @qr_myCode.
+  ///
+  /// In en, this message translates to:
+  /// **'My QR Code'**
+  String get qr_myCode;
+
+  /// No description provided for @qr_noCodeFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No QR code found in image'**
+  String get qr_noCodeFound;
+
+  /// No description provided for @qr_receive.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive'**
+  String get qr_receive;
+
+  /// No description provided for @qr_scanToPay.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan to pay me'**
+  String get qr_scanToPay;
+
+  /// No description provided for @qr_shareCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Share QR Code'**
+  String get qr_shareCode;
+
+  /// No description provided for @receipts_enterEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Email Address'**
+  String get receipts_enterEmailAddress;
+
+  /// No description provided for @receipts_receiptView.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receipts_receiptView;
+
+  /// No description provided for @receipts_referenceNumberCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Reference number copied'**
+  String get receipts_referenceNumberCopied;
+
+  /// No description provided for @recurringTransfers_createTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Transfer'**
+  String get recurringTransfers_createTransfer;
+
+  /// No description provided for @recurringTransfers_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring transfer created'**
+  String get recurringTransfers_created;
+
+  /// No description provided for @referrals_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String referrals_error(Object error);
+
+  /// No description provided for @referrals_yourReferrals.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Referrals'**
+  String get referrals_yourReferrals;
+
+  /// No description provided for @savingsGoals_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal created successfully!'**
+  String get savingsGoals_created;
+
+  /// No description provided for @savingsGoals_deleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Goal?'**
+  String get savingsGoals_deleteConfirm;
+
+  /// No description provided for @savingsGoals_deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal deleted'**
+  String get savingsGoals_deleted;
+
+  /// No description provided for @savingsGoals_setTargetDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Set target date (optional)'**
+  String get savingsGoals_setTargetDate;
+
+  /// No description provided for @savingsGoals_totalSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Savings'**
+  String get savingsGoals_totalSavings;
+
+  /// No description provided for @savingsPots_createPot.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Pot'**
+  String get savingsPots_createPot;
+
+  /// No description provided for @savingsPots_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String savingsPots_error(Object error);
+
+  /// No description provided for @scheduledTransfers_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule created successfully!'**
+  String get scheduledTransfers_created;
+
+  /// No description provided for @scheduledTransfers_deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule deleted'**
+  String get scheduledTransfers_deleted;
+
+  /// No description provided for @security_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get security_account;
+
+  /// No description provided for @security_autoLock.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-lock'**
+  String get security_autoLock;
+
+  /// No description provided for @security_autoLockAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Lock After'**
+  String get security_autoLockAfter;
+
+  /// No description provided for @security_autoLockMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'After {minutes} minutes of inactivity'**
+  String security_autoLockMinutes(Object minutes);
+
+  /// No description provided for @security_manageDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Devices'**
+  String get security_manageDevices;
+
+  /// No description provided for @security_minutesFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes'**
+  String security_minutesFormat(Object minutes);
+
+  /// No description provided for @security_pinOnAppOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Require PIN on App Open'**
+  String get security_pinOnAppOpen;
+
+  /// No description provided for @security_pinOnAppOpenSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Require PIN every time the app opens'**
+  String get security_pinOnAppOpenSubtitle;
+
+  /// No description provided for @security_screenshotProtection.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshot Protection'**
+  String get security_screenshotProtection;
+
+  /// No description provided for @security_screenshotProtectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prevent screenshots on sensitive screens'**
+  String get security_screenshotProtectionSubtitle;
+
+  /// No description provided for @security_transactionAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction Alerts'**
+  String get security_transactionAlerts;
+
+  /// No description provided for @security_transactionAlertsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified for every transaction'**
+  String get security_transactionAlertsSubtitle;
+
+  /// No description provided for @send_searchRecipient.
+  ///
+  /// In en, this message translates to:
+  /// **'Search recipient'**
+  String get send_searchRecipient;
+
+  /// No description provided for @settings_activeDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Devices'**
+  String get settings_activeDevices;
+
+  /// No description provided for @settings_approve.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get settings_approve;
+
+  /// No description provided for @settings_chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get settings_chooseFromGallery;
+
+  /// No description provided for @settings_connectingToSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to support agent...'**
+  String get settings_connectingToSupport;
+
+  /// No description provided for @settings_copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get settings_copiedToClipboard;
+
+  /// No description provided for @settings_failedToUpdateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile'**
+  String get settings_failedToUpdateProfile;
+
+  /// No description provided for @settings_improveAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll improve this answer'**
+  String get settings_improveAnswer;
+
+  /// No description provided for @settings_openingLiveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening live chat...'**
+  String get settings_openingLiveChat;
+
+  /// No description provided for @settings_openingUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening: {url}'**
+  String settings_openingUrl(Object url);
+
+  /// No description provided for @settings_openingWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening WhatsApp...'**
+  String get settings_openingWhatsApp;
+
+  /// No description provided for @settings_performanceMonitor.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Monitor'**
+  String get settings_performanceMonitor;
+
+  /// No description provided for @settings_problemReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Problem reported. We\'ll get back to you soon.'**
+  String get settings_problemReported;
+
+  /// No description provided for @settings_profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get settings_profileUpdated;
+
+  /// No description provided for @settings_takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get settings_takePhoto;
+
+  /// No description provided for @settings_thanksFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for your feedback!'**
+  String get settings_thanksFeedback;
+
+  /// No description provided for @settings_verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get settings_verificationFailed;
+
+  /// No description provided for @splitBill_requestsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment requests sent to {count} people'**
+  String splitBill_requestsSent(Object count);
+
+  /// No description provided for @subBusiness_view.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get subBusiness_view;
+
+  /// No description provided for @transactions_export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Transactions'**
+  String get transactions_export;
+
+  /// No description provided for @transactions_exportAsCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as CSV'**
+  String get transactions_exportAsCsv;
+
+  /// No description provided for @transactions_exported.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions exported as {format}'**
+  String transactions_exported(Object format);
+
+  /// No description provided for @transactions_noTransactionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get transactions_noTransactionsYet;
+
+  /// No description provided for @transactions_viewTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'View Transaction'**
+  String get transactions_viewTransaction;
+
+  /// No description provided for @wallet_insufficientBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient balance'**
+  String get wallet_insufficientBalance;
+
+  /// No description provided for @wallet_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending: \\\${amount}'**
+  String wallet_pending(Object amount);
+
+  /// No description provided for @withdraw_comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdraw feature coming soon'**
+  String get withdraw_comingSoon;
+
+  /// No description provided for @withdraw_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal failed. Please try again.'**
+  String get withdraw_failed;
+
+  /// No description provided for @withdraw_initiated.
+  ///
+  /// In en, this message translates to:
+  /// **'Withdrawal initiated'**
+  String get withdraw_initiated;
 }
 
 class _AppLocalizationsDelegate

@@ -201,7 +201,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
           final error = ref.read(withdrawProvider).error;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error ?? 'Withdrawal failed. Please try again.'),
+              content: Text(error ?? AppLocalizations.of(context)!.withdraw_failed),
               backgroundColor: context.colors.error,
             ),
           );
@@ -211,7 +211,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Too many incorrect attempts. Please try again later.'),
+            content: Text(AppLocalizations.of(context)!.common_tooManyAttempts),
             backgroundColor: context.colors.error,
           ),
         );

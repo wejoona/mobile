@@ -5,6 +5,7 @@ import 'package:usdc_wallet/features/savings_pots/widgets/savings_pot_card.dart'
 import 'package:usdc_wallet/features/savings_pots/widgets/create_pot_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Savings pots list screen.
 class SavingsPotsListView extends ConsumerWidget {
@@ -17,7 +18,7 @@ class SavingsPotsListView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Savings Pots'),
+        title: Text(AppLocalizations.of(context)!.savingsPots_title),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
@@ -27,7 +28,7 @@ class SavingsPotsListView extends ConsumerWidget {
       ),
       body: potsAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.savingsPots_error(e.toString()))),
         data: (pots) {
           if (pots.isEmpty) {
             return EmptyState(
@@ -47,7 +48,7 @@ class SavingsPotsListView extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Text('Total Savings', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                      Text(AppLocalizations.of(context)!.savingsGoals_totalSavings, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 4),
                       Text('\$${totalSavings.toStringAsFixed(2)}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                     ],

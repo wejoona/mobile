@@ -431,7 +431,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors du traitement du reçu. Veuillez réessayer.'),
+            content: Text(AppLocalizations.of(context)!.expenses_receiptProcessError),
             backgroundColor: Colors.orange,
           ),
         );
@@ -520,7 +520,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors de la capture. Veuillez réessayer.'),
+            content: Text(AppLocalizations.of(context)!.expenses_captureError),
             backgroundColor: context.colors.error,
           ),
         );

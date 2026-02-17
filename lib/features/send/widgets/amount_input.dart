@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/config/fee_schedule.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Approximate USDC to XOF rate (1 USDC ≈ 600 XOF).
 /// In production this should come from the exchange rate provider.
@@ -105,7 +106,7 @@ class AmountInput extends StatelessWidget {
                 if (exceedsBalance && amount > 0)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text('Solde insuffisant', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)),
+                    child: Text(AppLocalizations.of(context)!.wallet_insufficientBalance, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.error)),
                   ),
               ],
             );

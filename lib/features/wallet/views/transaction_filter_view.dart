@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Run 346: Transaction filter bottom sheet view
 class TransactionFilterView extends ConsumerStatefulWidget {
@@ -51,7 +52,7 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           // Type filter
-          const AppText('Type', style: AppTextStyle.labelLarge),
+          AppText(AppLocalizations.of(context)!.common_type, style: AppTextStyle.labelLarge),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,
@@ -85,7 +86,7 @@ class _TransactionFilterViewState extends ConsumerState<TransactionFilterView> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           // Status filter
-          const AppText('Statut', style: AppTextStyle.labelLarge),
+          AppText(AppLocalizations.of(context)!.common_status, style: AppTextStyle.labelLarge),
           const SizedBox(height: AppSpacing.sm),
           Wrap(
             spacing: AppSpacing.sm,

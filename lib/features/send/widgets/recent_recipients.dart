@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Horizontal list of recent recipients for quick send.
 class RecentRecipients extends StatelessWidget {
@@ -18,7 +19,7 @@ class RecentRecipients extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('Recent', style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+          child: Text(AppLocalizations.of(context)!.common_recent, style: theme.textTheme.labelMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         ),
         const SizedBox(height: 8),
         SizedBox(

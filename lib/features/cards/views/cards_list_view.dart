@@ -5,6 +5,7 @@ import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
@@ -33,10 +34,10 @@ class CardsListView extends ConsumerWidget {
     final cardsAsync = ref.watch(cardsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mes cartes')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.cards_myCards)),
       body: cardsAsync.when(
         loading: () => _buildLoadingSkeleton(),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.cards_error(e.toString()))),
         data: (cards) {
           if (cards.isEmpty) {
             return CardEmptyState(

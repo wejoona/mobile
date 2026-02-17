@@ -304,12 +304,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera_alt),
-              title: const Text('Prendre une photo'),
+              title: Text(AppLocalizations.of(context)!.settings_takePhoto),
               onTap: () => Navigator.pop(ctx, ImageSource.camera),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choisir dans la galerie'),
+              title: Text(AppLocalizations.of(context)!.settings_chooseFromGallery),
               onTap: () => Navigator.pop(ctx, ImageSource.gallery),
             ),
           ],
@@ -439,7 +439,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Profil mis à jour avec succès'),
+            content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
             backgroundColor: context.colors.success,
           ),
         );
@@ -449,7 +449,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update profile: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.settings_failedToUpdateProfile),
             backgroundColor: context.colors.error,
           ),
         );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
 import 'package:usdc_wallet/features/insights/widgets/spending_chart.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Spending insights screen.
 class InsightsView extends ConsumerWidget {
@@ -13,10 +14,10 @@ class InsightsView extends ConsumerWidget {
     final period = ref.watch(insightsPeriodProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Insights')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.insights_title)),
       body: insightsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.insights_error(e.toString()))),
         data: (insights) => ListView(
           children: [
             Padding(
@@ -32,7 +33,7 @@ class InsightsView extends ConsumerWidget {
             if (insights.categoryBreakdown.isNotEmpty) ...[
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text('Dépenses par catégorie', style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(AppLocalizations.of(context)!.insights_categories, style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
               ),
               const SizedBox(height: 12),
               Padding(

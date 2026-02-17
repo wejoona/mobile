@@ -291,7 +291,7 @@ class ExternalResultScreen extends ConsumerWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Would open: $explorerUrl'),
+        content: Text(AppLocalizations.of(context)!.settings_openingUrl(explorerUrl)),
         backgroundColor: context.colors.info,
         duration: const Duration(seconds: 3),
       ),

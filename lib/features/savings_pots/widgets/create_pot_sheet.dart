@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dart';
 import 'package:usdc_wallet/utils/form_validators.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Bottom sheet for creating a new savings pot.
 class CreatePotSheet extends StatefulWidget {
@@ -40,7 +41,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -100,7 +101,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
                       onPressed: _isLoading ? null : _submit,
                       child: _isLoading
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Text('Create Pot'),
+                          : Text(AppLocalizations.of(context)!.savingsPots_createPot),
                     ),
                   ),
                 ],

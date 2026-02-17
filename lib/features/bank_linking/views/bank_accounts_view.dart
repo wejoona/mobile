@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/bank_linking/providers/bank_accounts_provid
 import 'package:usdc_wallet/features/bank_linking/widgets/bank_account_card.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/confirmation_dialog.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Bank accounts list screen.
 class BankAccountsView extends ConsumerWidget {
@@ -11,16 +12,17 @@ class BankAccountsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final accountsAsync = ref.watch(bankAccountsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bank Accounts'),
+        title: Text(l10n.bankLinking_accounts),
         actions: [IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Ajouter un compte', onPressed: () {})],
       ),
       body: accountsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString()))),
         data: (accounts) {
           if (accounts.isEmpty) {
             return const EmptyState(

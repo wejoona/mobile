@@ -328,7 +328,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Une erreur est survenue. Veuillez réessayer.'),
+            content: Text(AppLocalizations.of(context)!.common_genericError),
             backgroundColor: colors.error,
           ),
         );

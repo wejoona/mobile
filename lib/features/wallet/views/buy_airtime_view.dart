@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class BuyAirtimeView extends ConsumerStatefulWidget {
   const BuyAirtimeView({super.key});
@@ -632,7 +633,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Airtime of \$${_amountController.text} purchased successfully!'),
+          content: Text(AppLocalizations.of(context)!.airtime_purchaseSuccess(_amountController.text)),
           backgroundColor: context.colors.success,
         ),
       );
@@ -678,7 +679,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: AppText('Cancel', color: colors.textSecondary),
+            child: AppText(AppLocalizations.of(context)!.action_cancel, color: colors.textSecondary),
           ),
           TextButton(
             onPressed: () async {
@@ -697,7 +698,7 @@ class _BuyAirtimeViewState extends ConsumerState<BuyAirtimeView>
                 ref.read(walletStateMachineProvider.notifier).refresh();
               }
             },
-            child: AppText('Buy Now', color: colors.gold),
+            child: AppText(AppLocalizations.of(context)!.action_confirm, color: colors.gold),
           ),
         ],
       ),

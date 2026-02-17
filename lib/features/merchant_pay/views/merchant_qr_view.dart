@@ -51,7 +51,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to share QR code')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.qr_failedToShare)),
         );
       }
     } finally {
@@ -80,7 +80,7 @@ class _MerchantQrViewState extends ConsumerState<MerchantQrView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText('My QR Code', variant: AppTextVariant.titleMedium),
+        title: AppText(AppLocalizations.of(context)!.qr_myCode, variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(

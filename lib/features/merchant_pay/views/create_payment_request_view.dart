@@ -131,7 +131,7 @@ Powered by Korido
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText('Request Payment', variant: AppTextVariant.titleMedium),
+        title: AppText(AppLocalizations.of(context)!.merchant_requestPayment, variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           if (state.paymentRequest != null)

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/create_pot_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Create savings pot screen — wired to CreatePotNotifier.
 class CreatePotScreen extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(createPotProvider);
     final notifier = ref.read(createPotProvider.notifier);
 
@@ -98,7 +100,7 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
               onPressed: !state.isLoading ? () => notifier.create() : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Creer la cagnotte'),
+                  : Text(l10n.savingsPots_createPot),
             ),
           ],
         ),

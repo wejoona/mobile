@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/payment_links/providers/payment_links_provi
 import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Payment links list screen.
 class PaymentLinksListView extends ConsumerWidget {
@@ -15,14 +16,14 @@ class PaymentLinksListView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment Links'),
+        title: Text(AppLocalizations.of(context)!.paymentLinks_title),
         actions: [
           IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Créer un lien', onPressed: () {}),
         ],
       ),
       body: linksAsync.when(
         loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.paymentLinks_error(e.toString()))),
         data: (links) {
           if (links.isEmpty) {
             return const EmptyState(

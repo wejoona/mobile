@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payment_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Wired bill payment screen.
 class BillPaymentScreenWired extends ConsumerStatefulWidget {
@@ -36,9 +37,9 @@ class _BillPaymentScreenWiredState extends ConsumerState<BillPaymentScreenWired>
             children: [
               Icon(Icons.check_circle, size: 64, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: AppSpacing.md),
-              Text('Paiement effectue', style: Theme.of(context).textTheme.headlineSmall),
+              Text(AppLocalizations.of(context)!.billPayments_paymentComplete, style: Theme.of(context).textTheme.headlineSmall),
               if (state.result!.reference != null)
-                Text('Ref: ${state.result!.reference}'),
+                Text('${AppLocalizations.of(context)!.billPayments_reference}: ${state.result!.reference}'),
               const SizedBox(height: AppSpacing.xl),
               FilledButton(
                 onPressed: () { notifier.reset(); Navigator.pop(context); },
@@ -57,7 +58,7 @@ class _BillPaymentScreenWiredState extends ConsumerState<BillPaymentScreenWired>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Categorie', style: Theme.of(context).textTheme.titleMedium),
+            Text(AppLocalizations.of(context)!.billPayments_category, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,

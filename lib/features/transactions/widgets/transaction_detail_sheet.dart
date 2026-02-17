@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/components/primitives/pill_badge.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Transaction detail bottom sheet.
 class TransactionDetailSheet extends StatelessWidget {
@@ -83,7 +84,7 @@ class TransactionDetailSheet extends StatelessWidget {
                       child: OutlinedButton.icon(
                         onPressed: () => ClipboardUtils.copyTransactionId(transaction.id),
                         icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: const Text('Copy ID'),
+                        label: Text(AppLocalizations.of(context)!.action_copy),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -98,7 +99,7 @@ class TransactionDetailSheet extends StatelessWidget {
                           note: transaction.description,
                         ),
                         icon: const Icon(Icons.share_rounded, size: 16),
-                        label: const Text('Share'),
+                        label: Text(AppLocalizations.of(context)!.action_share),
                       ),
                     ),
                   ],

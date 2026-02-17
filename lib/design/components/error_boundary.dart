@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Catches widget build errors and displays a recovery UI.
 class ErrorBoundary extends StatefulWidget {
@@ -108,7 +109,7 @@ class _DefaultErrorFallback extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, semanticLabel: 'Retry'),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context)!.action_tryAgain),
             ),
           ],
         ),

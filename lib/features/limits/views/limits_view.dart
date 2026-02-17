@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_usage_card.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/widgets/kyc_status_card.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Transaction limits overview screen.
 class LimitsView extends ConsumerWidget {
@@ -15,7 +16,7 @@ class LimitsView extends ConsumerWidget {
     final kycAsync = ref.watch(kycProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Limites')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.limits_title)),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(transactionLimitsProvider);
@@ -27,7 +28,7 @@ class LimitsView extends ConsumerWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             children: [Center(child: Padding(
               padding: const EdgeInsets.all(32),
-              child: Text('Erreur : $e'),
+              child: Text(AppLocalizations.of(context)!.limits_error(e.toString())),
             ))],
           ),
           data: (limits) => ListView(

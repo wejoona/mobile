@@ -82,7 +82,7 @@ class _ChangePinViewState extends ConsumerState<ChangePinView> {
       // Liveness failed — go back to explanation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('La vérification a échoué. Veuillez réessayer.'),
+          content: Text(AppLocalizations.of(context)!.settings_verificationFailed),
           backgroundColor: context.colors.error,
         ),
       );

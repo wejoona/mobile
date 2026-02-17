@@ -7,6 +7,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class DepositInstructionsView extends ConsumerWidget {
   const DepositInstructionsView({super.key, required this.response});
@@ -282,7 +283,7 @@ class DepositInstructionsView extends ConsumerWidget {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied to clipboard'),
+        content: Text(AppLocalizations.of(context)!.settings_copiedToClipboard),
         backgroundColor: context.colors.success,
       ),
     );

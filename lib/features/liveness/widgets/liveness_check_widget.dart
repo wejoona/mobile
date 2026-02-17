@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Provider to detect simulator (mock flow)
 final isSimulatorProvider = Provider<bool>((ref) => false);
@@ -456,12 +457,12 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               foregroundColor: colors.textInverse,
               minimumSize: const Size(200, 48),
             ),
-            child: const Text('Try Again'),
+            child: Text(AppLocalizations.of(context)!.liveness_tryAgain),
           ),
           const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: widget.onCancel,
-            child: Text('Go Back', style: TextStyle(color: colors.textSecondary)),
+            child: Text(AppLocalizations.of(context)!.liveness_goBack, style: TextStyle(color: colors.textSecondary)),
           ),
         ],
       ),

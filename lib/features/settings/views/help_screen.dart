@@ -306,7 +306,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText('Copied to clipboard'),
+        content: AppText(AppLocalizations.of(context)!.settings_copiedToClipboard),
         backgroundColor: context.colors.success,
       ),
     );
@@ -316,7 +316,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     // In production, use url_launcher to open whatsapp://
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText('Opening WhatsApp...'),
+        content: AppText(AppLocalizations.of(context)!.settings_openingWhatsApp),
         backgroundColor: context.colors.info,
       ),
     );
@@ -326,7 +326,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
     // In production, integrate with support chat service
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText('Opening live chat...'),
+        content: AppText(AppLocalizations.of(context)!.settings_openingLiveChat),
         backgroundColor: context.colors.info,
       ),
     );
@@ -377,7 +377,7 @@ class _HelpScreenState extends ConsumerState<HelpScreen> {
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: AppText('Problem reported. We\'ll get back to you soon.'),
+                  content: AppText(AppLocalizations.of(context)!.settings_problemReported),
                   backgroundColor: context.colors.success,
                 ),
               );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/bank_account.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Card displaying a linked bank account.
 class BankAccountCard extends StatelessWidget {
@@ -40,7 +41,7 @@ class BankAccountCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                             decoration: BoxDecoration(color: theme.colorScheme.primaryContainer, borderRadius: BorderRadius.circular(4)),
-                            child: Text('Default', style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimaryContainer, fontWeight: FontWeight.w500)),
+                            child: Text(AppLocalizations.of(context)!.common_default, style: TextStyle(fontSize: 10, color: theme.colorScheme.onPrimaryContainer, fontWeight: FontWeight.w500)),
                           ),
                         ],
                       ],

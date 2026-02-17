@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// QR Scanner Widget
 /// A customizable QR code scanner with overlay and torch support
@@ -233,7 +234,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 _initializeController();
                 setState(() {});
               },
-              child: const Text('Try Again'),
+              child: Text(AppLocalizations.of(context)!.action_tryAgain),
             ),
           ],
         ),

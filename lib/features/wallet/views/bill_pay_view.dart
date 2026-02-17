@@ -7,6 +7,7 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 enum BillCategory { electricity, water, internet, tv, phone, insurance, tax, other }
 
@@ -405,7 +406,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
           // Pre-fill from recent bill
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Selected ${bill.provider}'),
+              content: Text(AppLocalizations.of(context)!.airtime_providerSelected(bill.provider)),
               backgroundColor: context.colors.info,
             ),
           );
@@ -523,7 +524,7 @@ class _BillPayViewState extends ConsumerState<BillPayView> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Bill payment of \$${_amountController.text} successful!'),
+          content: Text(AppLocalizations.of(context)!.airtime_billPaymentSuccess(_amountController.text)),
           backgroundColor: context.colors.success,
         ),
       );

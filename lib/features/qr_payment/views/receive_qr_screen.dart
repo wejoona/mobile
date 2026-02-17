@@ -13,6 +13,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Screen for displaying user's QR code to receive payments
 class ReceiveQrScreen extends ConsumerStatefulWidget {
@@ -343,7 +344,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to save: $e'),
+            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
             backgroundColor: context.colors.error,
           ),
         );
@@ -394,7 +395,7 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to share: $e'),
+            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
             backgroundColor: context.colors.error,
           ),
         );

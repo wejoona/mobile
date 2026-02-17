@@ -415,7 +415,7 @@ class _CardSettingsViewState extends ConsumerState<CardSettingsView> {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Impossible de bloquer la carte. Veuillez réessayer.'),
+              content: Text(AppLocalizations.of(context)!.cards_blockError),
               backgroundColor: context.colors.error,
             ),
           );

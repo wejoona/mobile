@@ -31,7 +31,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText('Merchant Dashboard', variant: AppTextVariant.titleMedium),
+        title: AppText(l10n.merchant_dashboard, variant: AppTextVariant.titleMedium),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
@@ -440,7 +440,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText('Failed to load analytics', color: context.colors.error),
+            child: AppText(AppLocalizations.of(context)!.analytics_failedToLoad, color: context.colors.error),
           ),
           data: (analytics) => _buildAnalyticsCards(analytics),
         ),
@@ -537,7 +537,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             ),
             TextButton(
               onPressed: () => context.push('/merchant-transactions', extra: merchant.merchantId),
-              child: AppText('See All', color: context.colors.gold),
+              child: AppText(AppLocalizations.of(context)!.common_seeAll, color: context.colors.gold),
             ),
           ],
         ),
@@ -552,7 +552,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText('Failed to load transactions', color: context.colors.error),
+            child: AppText(AppLocalizations.of(context)!.analytics_failedToLoad, color: context.colors.error),
           ),
           data: (response) {
             if (response.transactions.isEmpty) {
@@ -564,7 +564,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                     children: [
                       Icon(Icons.receipt_long, size: 48, color: context.colors.textSecondary),
                       SizedBox(height: AppSpacing.sm),
-                      AppText('No transactions yet', color: context.colors.textSecondary),
+                      AppText(AppLocalizations.of(context)!.transactions_noTransactionsYet, color: context.colors.textSecondary),
                     ],
                   ),
                 ),

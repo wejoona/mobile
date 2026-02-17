@@ -6835,4 +6835,513 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get deposit_youReceive => 'Vous recevez';
+
+  @override
+  String airtime_billPaymentSuccess(Object amount) {
+    return 'Paiement de facture de \$$amount réussi !';
+  }
+
+  @override
+  String airtime_providerSelected(Object provider) {
+    return 'Fournisseur $provider sélectionné';
+  }
+
+  @override
+  String airtime_purchaseSuccess(Object amount) {
+    return 'Crédit de \$$amount acheté avec succès !';
+  }
+
+  @override
+  String get analytics_failedToLoad => 'Impossible de charger les analyses';
+
+  @override
+  String get analytics_monthlyTotal => 'Total mensuel';
+
+  @override
+  String get bankLinking_accounts => 'Comptes bancaires';
+
+  @override
+  String get bankLinking_enterCode => 'Saisissez le code de vérification';
+
+  @override
+  String get bankLinking_linkSuccess => 'Compte bancaire lié avec succès';
+
+  @override
+  String get beneficiaries_addError =>
+      'Impossible d\'ajouter le bénéficiaire. Veuillez réessayer.';
+
+  @override
+  String get beneficiaries_deleteConfirm => 'Supprimer le destinataire ?';
+
+  @override
+  String get beneficiaries_failedToAdd =>
+      'Impossible d\'ajouter le destinataire';
+
+  @override
+  String get beneficiaries_failedToDelete =>
+      'Impossible de supprimer le contact';
+
+  @override
+  String get beneficiaries_failedToUpdateFavorite =>
+      'Impossible de mettre à jour le favori';
+
+  @override
+  String get beneficiaries_recipientAdded => 'Destinataire ajouté';
+
+  @override
+  String get beneficiaries_recipientRemoved => 'Destinataire supprimé';
+
+  @override
+  String get billPayments_category => 'Catégorie';
+
+  @override
+  String get billPayments_paymentComplete => 'Paiement effectué';
+
+  @override
+  String get budget_categoryAdded => 'Catégorie ajoutée';
+
+  @override
+  String get budget_deleteCategory => 'Supprimer la catégorie ?';
+
+  @override
+  String get budget_tapCategoryToEdit =>
+      'Appuyez sur une catégorie pour modifier son budget';
+
+  @override
+  String bulkPayments_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get bulkPayments_fileLoadError =>
+      'Impossible de charger le fichier. Veuillez réessayer.';
+
+  @override
+  String get cards_blockError =>
+      'Impossible de bloquer la carte. Veuillez réessayer.';
+
+  @override
+  String get cards_cardCreated => 'Carte créée avec succès';
+
+  @override
+  String get cards_cardType => 'Type de carte';
+
+  @override
+  String get cards_createCard => 'Créer la carte';
+
+  @override
+  String get cards_createError =>
+      'Impossible de créer la carte. Veuillez réessayer.';
+
+  @override
+  String cards_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get cards_myCards => 'Mes cartes';
+
+  @override
+  String get cards_newCard => 'Nouvelle carte';
+
+  @override
+  String get common_copy => 'Copier';
+
+  @override
+  String get common_default => 'Par défaut';
+
+  @override
+  String common_errorFormat(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get common_genericError =>
+      'Une erreur est survenue. Veuillez réessayer.';
+
+  @override
+  String get common_recent => 'Récent';
+
+  @override
+  String get common_seeAll => 'Voir tout';
+
+  @override
+  String get common_status => 'Statut';
+
+  @override
+  String get common_tooManyAttempts =>
+      'Trop de tentatives incorrectes. Veuillez réessayer plus tard.';
+
+  @override
+  String get common_type => 'Type';
+
+  @override
+  String get contacts_allContacts => 'Tous les contacts';
+
+  @override
+  String contacts_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get contacts_favorites => 'Favoris';
+
+  @override
+  String get deviceVerification_failed => 'Vérification échouée';
+
+  @override
+  String get expenses_captureError =>
+      'Erreur lors de la capture. Veuillez réessayer.';
+
+  @override
+  String get expenses_receiptProcessError =>
+      'Erreur lors du traitement du reçu. Veuillez réessayer.';
+
+  @override
+  String expenses_reportError(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get expenses_saveError =>
+      'Impossible d\'enregistrer la dépense. Veuillez réessayer.';
+
+  @override
+  String insights_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get kyc_cameraInitFailed => 'Échec de l\'initialisation de la caméra';
+
+  @override
+  String get kyc_completeLivenessFirst =>
+      'Veuillez d\'abord compléter la vérification de vivacité';
+
+  @override
+  String kyc_completeVerification(Object limit) {
+    return 'Complétez la vérification pour augmenter votre limite quotidienne à \$$limit';
+  }
+
+  @override
+  String get kyc_documentType => 'Type de document';
+
+  @override
+  String get kyc_documentsSubmitted => 'Documents soumis';
+
+  @override
+  String get kyc_failedToPickImage => 'Impossible de sélectionner l\'image';
+
+  @override
+  String get kyc_failedToSubmit =>
+      'Impossible de soumettre la vérification KYC';
+
+  @override
+  String get kyc_failedToTakeSelfie => 'Impossible de prendre le selfie';
+
+  @override
+  String kyc_livenessCheckFailed(Object reason) {
+    return 'Vérification de vivacité échouée : $reason';
+  }
+
+  @override
+  String get kyc_livenessCheckPassed =>
+      'Vérification de vivacité réussie ! Vous pouvez maintenant prendre votre selfie.';
+
+  @override
+  String get kyc_submit => 'Soumettre';
+
+  @override
+  String get kyc_takeSelfie => 'Prenez un selfie';
+
+  @override
+  String get kyc_verificationProcessing =>
+      'Votre vérification sera traitée sous 24-48h.';
+
+  @override
+  String get kyc_verify => 'Vérifier';
+
+  @override
+  String limits_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get limits_maxPerTransaction => 'Max par transaction';
+
+  @override
+  String get limits_transactionLimits => 'Limites de transaction';
+
+  @override
+  String get liveness_goBack => 'Retour';
+
+  @override
+  String get liveness_title => 'Vérification de vivacité';
+
+  @override
+  String get liveness_tryAgain => 'Réessayer';
+
+  @override
+  String get merchant_dashboard => 'Tableau de bord marchand';
+
+  @override
+  String get merchant_myQrCode => 'Mon code QR';
+
+  @override
+  String get merchant_requestPayment => 'Demande de paiement';
+
+  @override
+  String get merchant_scanToPay => 'Scannez pour me payer';
+
+  @override
+  String get merchant_shareQr => 'Partager le code QR';
+
+  @override
+  String get paymentLinks_copied => 'Lien copié';
+
+  @override
+  String get paymentLinks_create => 'Créer un lien de paiement';
+
+  @override
+  String paymentLinks_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get paymentLinks_generate => 'Générer le lien';
+
+  @override
+  String get paymentLinks_ready => 'Lien de paiement prêt';
+
+  @override
+  String get paymentLinks_singleUse => 'Usage unique';
+
+  @override
+  String get paymentLinks_singleUseDescription =>
+      'Le lien expire après un paiement';
+
+  @override
+  String get profile_completion => 'Complétion du profil';
+
+  @override
+  String get profile_setName => 'Définir votre nom';
+
+  @override
+  String get qr_failedToScan =>
+      'Impossible de scanner le code QR depuis l\'image';
+
+  @override
+  String get qr_failedToShare => 'Impossible de partager le code QR';
+
+  @override
+  String get qr_myCode => 'Mon code QR';
+
+  @override
+  String get qr_noCodeFound => 'Aucun code QR trouvé dans l\'image';
+
+  @override
+  String get qr_receive => 'Recevoir';
+
+  @override
+  String get qr_scanToPay => 'Scannez pour me payer';
+
+  @override
+  String get qr_shareCode => 'Partager le code QR';
+
+  @override
+  String get receipts_enterEmailAddress => 'Saisissez l\'adresse e-mail';
+
+  @override
+  String get receipts_receiptView => 'Reçu';
+
+  @override
+  String get receipts_referenceNumberCopied => 'Numéro de référence copié';
+
+  @override
+  String get recurringTransfers_createTransfer => 'Créer le transfert';
+
+  @override
+  String get recurringTransfers_created => 'Transfert récurrent créé';
+
+  @override
+  String referrals_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get referrals_yourReferrals => 'Vos parrainages';
+
+  @override
+  String get savingsGoals_created => 'Objectif créé avec succès !';
+
+  @override
+  String get savingsGoals_deleteConfirm => 'Supprimer l\'objectif ?';
+
+  @override
+  String get savingsGoals_deleted => 'Objectif supprimé';
+
+  @override
+  String get savingsGoals_setTargetDate => 'Définir la date cible (optionnel)';
+
+  @override
+  String get savingsGoals_totalSavings => 'Épargne totale';
+
+  @override
+  String get savingsPots_createPot => 'Créer la cagnotte';
+
+  @override
+  String savingsPots_error(Object error) {
+    return 'Erreur : $error';
+  }
+
+  @override
+  String get scheduledTransfers_created => 'Programme créé avec succès !';
+
+  @override
+  String get scheduledTransfers_deleted => 'Programme supprimé';
+
+  @override
+  String get security_account => 'Compte';
+
+  @override
+  String get security_autoLock => 'Verrouillage automatique';
+
+  @override
+  String get security_autoLockAfter => 'Verrouillage après';
+
+  @override
+  String security_autoLockMinutes(Object minutes) {
+    return 'Après $minutes minutes d\'inactivité';
+  }
+
+  @override
+  String get security_manageDevices => 'Gérer les appareils';
+
+  @override
+  String security_minutesFormat(Object minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get security_pinOnAppOpen => 'Exiger le PIN à l\'ouverture';
+
+  @override
+  String get security_pinOnAppOpenSubtitle =>
+      'Exiger le PIN à chaque ouverture de l\'application';
+
+  @override
+  String get security_screenshotProtection =>
+      'Protection des captures d\'écran';
+
+  @override
+  String get security_screenshotProtectionSubtitle =>
+      'Empêcher les captures d\'écran sur les écrans sensibles';
+
+  @override
+  String get security_transactionAlerts => 'Alertes de transaction';
+
+  @override
+  String get security_transactionAlertsSubtitle =>
+      'Être notifié pour chaque transaction';
+
+  @override
+  String get send_searchRecipient => 'Rechercher un destinataire';
+
+  @override
+  String get settings_activeDevices => 'Appareils actifs';
+
+  @override
+  String get settings_approve => 'Approuver';
+
+  @override
+  String get settings_chooseFromGallery => 'Choisir dans la galerie';
+
+  @override
+  String get settings_connectingToSupport =>
+      'Connexion à un agent de support...';
+
+  @override
+  String get settings_copiedToClipboard => 'Copié dans le presse-papiers';
+
+  @override
+  String get settings_failedToUpdateProfile =>
+      'Impossible de mettre à jour le profil';
+
+  @override
+  String get settings_improveAnswer => 'Nous améliorerons cette réponse';
+
+  @override
+  String get settings_openingLiveChat => 'Ouverture du chat en direct...';
+
+  @override
+  String settings_openingUrl(Object url) {
+    return 'Ouverture : $url';
+  }
+
+  @override
+  String get settings_openingWhatsApp => 'Ouverture de WhatsApp...';
+
+  @override
+  String get settings_performanceMonitor => 'Moniteur de performance';
+
+  @override
+  String get settings_problemReported =>
+      'Problème signalé. Nous reviendrons vers vous bientôt.';
+
+  @override
+  String get settings_profileUpdated => 'Profil mis à jour avec succès';
+
+  @override
+  String get settings_takePhoto => 'Prendre une photo';
+
+  @override
+  String get settings_thanksFeedback => 'Merci pour votre retour !';
+
+  @override
+  String get settings_verificationFailed =>
+      'La vérification a échoué. Veuillez réessayer.';
+
+  @override
+  String splitBill_requestsSent(Object count) {
+    return 'Demandes de paiement envoyées à $count personnes';
+  }
+
+  @override
+  String get subBusiness_view => 'Voir';
+
+  @override
+  String get transactions_export => 'Exporter les transactions';
+
+  @override
+  String get transactions_exportAsCsv => 'Exporter en CSV';
+
+  @override
+  String transactions_exported(Object format) {
+    return 'Transactions exportées en $format';
+  }
+
+  @override
+  String get transactions_noTransactionsYet =>
+      'Aucune transaction pour le moment';
+
+  @override
+  String get transactions_viewTransaction => 'Voir la transaction';
+
+  @override
+  String get wallet_insufficientBalance => 'Solde insuffisant';
+
+  @override
+  String wallet_pending(Object amount) {
+    return 'En attente : \$$amount';
+  }
+
+  @override
+  String get withdraw_comingSoon =>
+      'Fonctionnalité de retrait bientôt disponible';
+
+  @override
+  String get withdraw_failed => 'Le retrait a échoué. Veuillez réessayer.';
+
+  @override
+  String get withdraw_initiated => 'Retrait initié';
 }

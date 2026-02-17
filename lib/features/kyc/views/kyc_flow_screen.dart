@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_submission_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Multi-step KYC flow screen.
 class KycFlowScreen extends ConsumerStatefulWidget {
@@ -109,9 +110,9 @@ class _KycFlowScreenState extends ConsumerState<KycFlowScreen> {
             children: [
               Icon(Icons.check_circle, size: 64, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: AppSpacing.md),
-              Text('Documents soumis', style: Theme.of(context).textTheme.headlineSmall),
+              Text(AppLocalizations.of(context)!.kyc_documentsSubmitted, style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: AppSpacing.sm),
-              const Text('Votre verification sera traitee sous 24-48h.'),
+              Text(AppLocalizations.of(context)!.kyc_verificationProcessing),
               const SizedBox(height: AppSpacing.xl),
               FilledButton(onPressed: () => Navigator.pop(context), child: Text(AppStrings.done)),
             ],
@@ -163,7 +164,7 @@ class _DocumentTypeStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Type de document', style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.kyc_documentType, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           ...[
             ('Carte nationale d\'identite', Icons.credit_card),
@@ -254,7 +255,7 @@ class _SelfieStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('Prenez un selfie', style: Theme.of(context).textTheme.titleMedium),
+          Text(AppLocalizations.of(context)!.kyc_takeSelfie, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           if (selfie != null)
             ClipOval(child: Image.file(selfie!, width: 200, height: 200, fit: BoxFit.cover))
@@ -268,7 +269,7 @@ class _SelfieStep extends StatelessWidget {
               ),
             ),
           const SizedBox(height: AppSpacing.lg),
-          if (selfie != null) TextButton(onPressed: onCapture, child: const Text('Reprendre')),
+          if (selfie != null) TextButton(onPressed: onCapture, child: Text(AppLocalizations.of(context)!.kyc_retake)),
           const SizedBox(height: AppSpacing.md),
           FilledButton(onPressed: selfie != null ? onNext : null, child: Text(AppStrings.next)),
         ],
@@ -309,7 +310,7 @@ class _ReviewStep extends StatelessWidget {
             onPressed: !isLoading ? onSubmit : null,
             child: isLoading
                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : const Text('Soumettre'),
+                : Text(AppLocalizations.of(context)!.kyc_submit),
           ),
         ],
       ),

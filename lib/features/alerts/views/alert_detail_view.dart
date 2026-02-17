@@ -298,7 +298,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
             child: OutlinedButton.icon(
               onPressed: () => context.push('/transactions/${alert.transactionId}'),
               icon: const Icon(Icons.receipt_long, size: 18),
-              label: const Text('View Transaction'),
+              label: Text(AppLocalizations.of(context)!.transactions_viewTransaction),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colors.gold,
                 side: BorderSide(color: colors.gold),

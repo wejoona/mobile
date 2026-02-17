@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// A read-only field with a copy button (e.g. wallet address, referral code).
 class CopyField extends StatelessWidget {
@@ -20,9 +21,9 @@ class CopyField extends StatelessWidget {
     onCopied?.call();
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Copied to clipboard'),
-          duration: Duration(seconds: 2),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settings_copiedToClipboard),
+          duration: const Duration(seconds: 2),
         ),
       );
     }

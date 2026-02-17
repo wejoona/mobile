@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/user.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
 import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Profile header with avatar, name, and completion progress.
 class ProfileHeader extends StatelessWidget {
@@ -16,6 +17,7 @@ class ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     // ignore: dead_null_aware_expression
     final initials = _getInitials(user.displayName ?? user.phone ); // ignore: dead_code
     // ignore: dead_null_aware_expression
@@ -66,7 +68,7 @@ class ProfileHeader extends StatelessWidget {
 
           // Name
           // ignore: dead_null_aware_expression
-          Text(user.displayName ?? 'Set your name', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+          Text(user.displayName ?? AppLocalizations.of(context)!.profile_setName, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
           if (user.phone != null) // ignore: unnecessary_null_comparison
             Text(user.phone, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
           const SizedBox(height: 16),
@@ -76,7 +78,7 @@ class ProfileHeader extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Profile completion', style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(l10n.profile_completion, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                 Text('${(user.profileCompletion * 100).round()}%', style: theme.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600)),
               ],
             ),

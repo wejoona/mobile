@@ -181,7 +181,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Verification failed: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.deviceVerification_failed),
             backgroundColor: context.colors.error,
           ),
         );
@@ -262,7 +262,7 @@ class _DeviceVerificationViewState extends ConsumerState<DeviceVerificationView>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Verification failed: ${e.toString()}'),
+            content: Text(AppLocalizations.of(context)!.deviceVerification_failed),
             backgroundColor: context.colors.error,
           ),
         );

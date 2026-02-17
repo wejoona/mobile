@@ -15,6 +15,7 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// KYC Document Type
 enum KycDocumentType {
@@ -1059,7 +1060,7 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: $e'),
+            content: Text(AppLocalizations.of(context)!.kyc_failedToPickImage),
             backgroundColor: context.colors.error,
           ),
         );
@@ -1092,7 +1093,7 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Liveness check passed! You can now take your selfie.'),
+            content: Text(AppLocalizations.of(context)!.kyc_livenessCheckPassed),
             backgroundColor: context.colors.success,
           ),
         );
@@ -1101,7 +1102,7 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Liveness check failed: ${result.failureReason ?? "Please try again"}'),
+            content: Text(AppLocalizations.of(context)!.kyc_livenessCheckFailed(result.failureReason ?? '')),
             backgroundColor: context.colors.error,
           ),
         );
@@ -1114,7 +1115,7 @@ class _KycViewState extends ConsumerState<KycView> {
     if (!_livenessCheckPassed) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please complete liveness check first'),
+          content: Text(AppLocalizations.of(context)!.kyc_completeLivenessFirst),
           backgroundColor: context.colors.warning,
         ),
       );
@@ -1139,7 +1140,7 @@ class _KycViewState extends ConsumerState<KycView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to take selfie: $e'),
+            content: Text(AppLocalizations.of(context)!.kyc_failedToTakeSelfie),
             backgroundColor: context.colors.error,
           ),
         );
@@ -1223,7 +1224,7 @@ class _KycViewState extends ConsumerState<KycView> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Failed to submit KYC: ${e.toString()}'),
+              content: Text(AppLocalizations.of(context)!.kyc_failedToSubmit),
               backgroundColor: context.colors.error,
             ),
           );

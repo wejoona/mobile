@@ -8,6 +8,7 @@ import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
 import 'package:usdc_wallet/features/receipts/services/receipt_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Bottom sheet for sharing transaction receipt
 /// TODO: Replace hardcoded strings with AppLocalizations after running flutter gen-l10n
@@ -305,7 +306,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Reference number copied'),
+        content: Text(AppLocalizations.of(context)!.receipts_referenceNumberCopied),
         backgroundColor: context.colors.success,
         duration: Duration(seconds: 2),
       ),
@@ -321,7 +322,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.surface,
-        title: const AppText('Enter Email Address', variant: AppTextVariant.titleMedium),
+        title: AppText(AppLocalizations.of(context)!.receipts_enterEmailAddress, variant: AppTextVariant.titleMedium),
         content: AppInput(
           controller: controller,
           label: 'Email Address',
@@ -331,7 +332,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const AppText('Cancel'),
+            child: AppText(AppLocalizations.of(context)!.action_cancel),
           ),
           AppButton(
             label: 'Continue',

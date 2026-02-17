@@ -254,7 +254,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Impossible de charger le fichier. Veuillez réessayer.'),
+            content: Text(AppLocalizations.of(context)!.bulkPayments_fileLoadError),
             backgroundColor: context.colors.error,
           ),
         );

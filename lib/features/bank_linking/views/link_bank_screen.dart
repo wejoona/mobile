@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/link_bank_provider.dart';
 import 'package:usdc_wallet/config/west_african_banks.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Link bank account screen.
 class LinkBankScreen extends ConsumerStatefulWidget {
@@ -25,25 +26,26 @@ class _LinkBankScreenState extends ConsumerState<LinkBankScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(linkBankProvider);
     final notifier = ref.read(linkBankProvider.notifier);
 
     ref.listen<LinkBankState>(linkBankProvider, (_, next) {
       if (next.isComplete) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Compte bancaire lie avec succes')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.bankLinking_linkSuccess)));
         Navigator.pop(context, true);
         notifier.reset();
       }
     });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lier un compte bancaire')),
+      appBar: AppBar(title: Text(l10n.bankLinking_linkAccount)),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Selectionnez votre banque', style: Theme.of(context).textTheme.titleMedium),
+            Text(l10n.bankLinking_selectBank, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: AppSpacing.sm),
 
             SizedBox(
@@ -118,7 +120,7 @@ class _LinkBankScreenState extends ConsumerState<LinkBankScreen> {
                   : null,
               child: state.isLoading
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Lier le compte'),
+                  : Text(l10n.bankLinking_linkAccount),
             ),
           ],
         ),

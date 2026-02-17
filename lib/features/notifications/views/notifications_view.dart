@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Notifications list screen.
 class NotificationsView extends ConsumerWidget {
@@ -16,7 +17,7 @@ class NotificationsView extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(AppLocalizations.of(context)!.notifications_title),
         actions: [
           if (unreadCount > 0)
             TextButton(
@@ -25,7 +26,7 @@ class NotificationsView extends ConsumerWidget {
                 await actions.markAllAsRead();
                 ref.invalidate(notificationsProvider);
               },
-              child: const Text('Mark all read'),
+              child: Text(AppLocalizations.of(context)!.notifications_markAllRead),
             ),
         ],
       ),
@@ -52,7 +53,7 @@ class NotificationsView extends ConsumerWidget {
             )),
           ),
         ),
-        error: (e, _) => Center(child: Text('Erreur : $e')),
+        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString()))),
         data: (notifications) {
           if (notifications.isEmpty) {
             return const EmptyState(

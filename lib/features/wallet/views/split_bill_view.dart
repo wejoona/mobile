@@ -666,7 +666,7 @@ class _SplitBillViewState extends ConsumerState<SplitBillView> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Payment requests sent to ${_participants.length} people'),
+          content: Text(AppLocalizations.of(context)!.splitBill_requestsSent(_participants.length)),
           backgroundColor: context.colors.success,
         ),
       );

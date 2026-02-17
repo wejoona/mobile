@@ -489,7 +489,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
     if (_controller == null || !_controller!.value.isInitialized) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera initialization failed')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.kyc_cameraInitFailed)),
       );
       return;
     }

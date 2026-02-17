@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/limit.dart';
 import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Card showing transaction limit usage.
 class LimitUsageCard extends StatelessWidget {
@@ -19,7 +20,7 @@ class LimitUsageCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Transaction Limits', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+            Text(AppLocalizations.of(context)!.limits_transactionLimits, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             _LimitRow(label: 'Daily', used: limits.dailyUsed, limit: limits.dailyLimit, currency: limits.currency),
             const SizedBox(height: 12),
@@ -32,7 +33,7 @@ class LimitUsageCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Max per transaction', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                Text(AppLocalizations.of(context)!.limits_maxPerTransaction, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                 Text('\$${limits.singleTransactionMax.toStringAsFixed(2)}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
               ],
             ),

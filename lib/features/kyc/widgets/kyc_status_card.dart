@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// KYC status overview card.
 class KycStatusCard extends StatelessWidget {
@@ -39,9 +40,9 @@ class KycStatusCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: Text('Complete verification to increase your daily limit to \$${profile.dailyLimit}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
+                  Expanded(child: Text(AppLocalizations.of(context)!.kyc_completeVerification(profile.dailyLimit.toString()), style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
                   const SizedBox(width: 12),
-                  FilledButton(onPressed: onUpgrade, style: FilledButton.styleFrom(visualDensity: VisualDensity.compact), child: const Text('Verify')),
+                  FilledButton(onPressed: onUpgrade, style: FilledButton.styleFrom(visualDensity: VisualDensity.compact), child: Text(AppLocalizations.of(context)!.kyc_verify)),
                 ],
               ),
             ],

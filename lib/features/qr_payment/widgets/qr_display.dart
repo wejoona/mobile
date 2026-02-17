@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Widget to display user's QR code for receiving payments.
 class QrCodeDisplay extends StatelessWidget {
@@ -48,13 +49,13 @@ class QrCodeDisplay extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text('Scan to pay me', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        Text(AppLocalizations.of(context)!.qr_scanToPay, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         if (onShare != null) ...[
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: onShare,
             icon: const Icon(Icons.share_rounded, size: 18),
-            label: const Text('Share QR Code'),
+            label: Text(AppLocalizations.of(context)!.qr_shareCode),
           ),
         ],
       ],

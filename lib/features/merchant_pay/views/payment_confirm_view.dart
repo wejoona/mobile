@@ -7,6 +7,7 @@ import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Payment Confirm View
 /// Bottom sheet for confirming merchant payment
@@ -191,7 +192,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Cancel'),
+                      child: Text(AppLocalizations.of(context)!.action_cancel),
                     ),
                   ),
                   const SizedBox(width: 16),

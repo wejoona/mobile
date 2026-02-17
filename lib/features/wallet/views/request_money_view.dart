@@ -342,7 +342,7 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     Clipboard.setData(ClipboardData(text: _generatePaymentLink()));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Payment link copied!'),
+        content: Text(AppLocalizations.of(context)!.paymentLinks_copied),
         backgroundColor: context.colors.success,
       ),
     );

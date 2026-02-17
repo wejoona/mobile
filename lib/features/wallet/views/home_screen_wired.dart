@@ -9,6 +9,7 @@ import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/error/error_handler.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Wired home screen with real data from providers.
 class HomeScreenWired extends ConsumerWidget {
@@ -80,7 +81,7 @@ class HomeScreenWired extends ConsumerWidget {
                 _QuickAction(icon: Icons.arrow_upward, label: AppStrings.send, onTap: () => Navigator.pushNamed(context, '/send')),
                 _QuickAction(icon: Icons.arrow_downward, label: AppStrings.receive, onTap: () => Navigator.pushNamed(context, '/receive')),
                 _QuickAction(icon: Icons.add, label: AppStrings.deposit, onTap: () => Navigator.pushNamed(context, '/deposit')),
-                _QuickAction(icon: Icons.qr_code_scanner, label: 'Scan', onTap: () => Navigator.pushNamed(context, '/scan')),
+                _QuickAction(icon: Icons.qr_code_scanner, label: AppStrings.search, onTap: () => Navigator.pushNamed(context, '/scan')),
               ],
             ),
 
@@ -152,7 +153,7 @@ class _BalanceCard extends StatelessWidget {
             ),
             if (balance.pending > 0 && isVisible) ...[
               const SizedBox(height: AppSpacing.xs),
-              Text('En attente: \$${balance.pending.toStringAsFixed(2)}', style: Theme.of(context).textTheme.bodySmall),
+              Text(AppLocalizations.of(context)!.wallet_pending(balance.pending.toStringAsFixed(2)), style: Theme.of(context).textTheme.bodySmall),
             ],
           ],
         ),

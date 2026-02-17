@@ -10,8 +10,10 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {
@@ -419,8 +421,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
       if (result == null || !result.barcodes.isNotEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No QR code found in image'),
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.qr_noCodeFound),
             ),
           );
         }
@@ -443,8 +445,8 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
       AppLogger('Gallery QR import error').error('Gallery QR import error', e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to scan QR from image'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.qr_failedToScan),
           ),
         );
       }

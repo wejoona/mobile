@@ -85,7 +85,7 @@ class _MerchantTransactionsViewState
       setState(() => _isLoadingMore = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load transactions')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.analytics_failedToLoad)),
         );
       }
     }

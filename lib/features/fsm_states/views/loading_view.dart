@@ -157,10 +157,10 @@ class _LoadingViewState extends ConsumerState<LoadingView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText('FSM: ${appState.name}', variant: AppTextVariant.bodySmall),
-                        AppText('Wallet: ${walletState.status.name}', variant: AppTextVariant.bodySmall),
+                        AppText('${walletState.status.name}', variant: AppTextVariant.bodySmall),
                         AppText('KYC: ${appState.kyc.name}', variant: AppTextVariant.bodySmall),
                         if (walletState.error != null)
-                          AppText('Erreur : ${walletState.error}', variant: AppTextVariant.bodySmall, color: colors.error),
+                          AppText(walletState.error ?? '', variant: AppTextVariant.bodySmall, color: colors.error),
                       ],
                     ),
                   ),
