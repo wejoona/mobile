@@ -129,6 +129,9 @@ PODS:
   - Flutter (1.0.0)
   - flutter_contacts (0.0.1):
     - Flutter
+  - flutter_jailbreak_detection (1.0.0):
+    - Flutter
+    - IOSSecuritySuite
   - flutter_local_notifications (0.0.1):
     - Flutter
   - flutter_secure_storage_darwin (10.0.0):
@@ -198,6 +201,7 @@ PODS:
     - Flutter
   - integration_test (0.0.1):
     - Flutter
+  - IOSSecuritySuite (2.2.0)
   - local_auth_darwin (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -249,6 +253,7 @@ DEPENDENCIES:
   - firebase_messaging (from `.symlinks/plugins/firebase_messaging/ios`)
   - Flutter (from `Flutter`)
   - flutter_contacts (from `.symlinks/plugins/flutter_contacts/ios`)
+  - flutter_jailbreak_detection (from `.symlinks/plugins/flutter_jailbreak_detection/ios`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - image_gallery_saver_plus (from `.symlinks/plugins/image_gallery_saver_plus/ios`)
@@ -284,6 +289,7 @@ SPEC REPOS:
     - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleUtilities
+    - IOSSecuritySuite
     - nanopb
     - PromisesObjC
     - PromisesSwift
@@ -312,6 +318,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   flutter_contacts:
     :path: ".symlinks/plugins/flutter_contacts/ios"
+  flutter_jailbreak_detection:
+    :path: ".symlinks/plugins/flutter_jailbreak_detection/ios"
   flutter_local_notifications:
     :path: ".symlinks/plugins/flutter_local_notifications/ios"
   flutter_secure_storage_darwin:
@@ -368,6 +376,7 @@ SPEC CHECKSUMS:
   FirebaseSessions: b9a92c1c51bbb81e78fc3142cda6d925d700f8e7
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_contacts: 5383945387e7ca37cf963d4be57c21f2fc15ca9f
+  flutter_jailbreak_detection: a74360daaf5cbc80639959463b4b1395873c90b5
   flutter_local_notifications: 395056b3175ba4f08480a7c5de30cd36d69827e4
   flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   GoogleAdsOnDeviceConversion: 2be6297a4f048459e0ae17fad9bfd2844e10cf64
@@ -378,6 +387,7 @@ SPEC CHECKSUMS:
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
   integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  IOSSecuritySuite: ba76f34cb367b9230934ac37904e26a40d033e3d
   local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275

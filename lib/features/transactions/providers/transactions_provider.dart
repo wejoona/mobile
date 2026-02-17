@@ -43,7 +43,8 @@ class TransactionPage {
   const TransactionPage({this.items = const [], this.total = 0, this.page = 1, this.limit = 20, this.hasMore = false});
 
   factory TransactionPage.fromJson(Map<String, dynamic> json) => TransactionPage(
-    items: ((json['data'] ?? json['items']) as List?)?.map((e) => TransactionItem.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+    // Backend returns { transactions: [...] } — also check 'data' and 'items' for compat
+    items: ((json['transactions'] ?? json['data'] ?? json['items']) as List?)?.map((e) => TransactionItem.fromJson(e as Map<String, dynamic>)).toList() ?? [],
     // ignore: avoid_dynamic_calls
     total: json['total'] as int? ?? json['meta']?['total'] as int? ?? 0,
     // ignore: avoid_dynamic_calls
@@ -78,8 +79,13 @@ class TransactionItem {
     required this.createdAt,
   });
 
-  bool get isCredit => type == 'deposit' || type == 'received';
-  bool get isDebit => type == 'withdrawal' || type == 'sent';
+  /// Whether this transaction is a credit (money in).
+  /// Backend types: deposit, transfer_internal (with positive amount)
+  bool get isCredit => type == 'deposit' || type == 'received' || (type == 'transfer_internal' && amount > 0);
+
+  /// Whether this transaction is a debit (money out).
+  /// Backend types: withdrawal, transfer_internal (with negative amount), transfer_external
+  bool get isDebit => type == 'withdrawal' || type == 'sent' || type == 'transfer_external' || (type == 'transfer_internal' && amount < 0);
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) => TransactionItem(
     id: json['id'] as String,

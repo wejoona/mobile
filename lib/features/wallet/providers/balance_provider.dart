@@ -27,14 +27,31 @@ class WalletBalance {
   );
 }
 
-/// Wallet balance provider — wired to GET /wallet/balance.
+/// Wallet balance provider — wired to GET /wallet.
+/// Backend serves balance at GET /wallet (not /wallet/balance).
 final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
   Timer(const Duration(seconds: 30), () => link.close());
 
-  final response = await dio.get('/wallet/balance');
-  return WalletBalance.fromJson(response.data as Map<String, dynamic>);
+  final response = await dio.get('/wallet');
+  final data = response.data as Map<String, dynamic>;
+
+  // The backend returns { walletId, currency, balances: [{ currency, available, pending, total }] }
+  // Extract the first USDC balance entry
+  final balances = data['balances'] as List? ?? [];
+  if (balances.isNotEmpty) {
+    final first = balances.first as Map<String, dynamic>;
+    return WalletBalance.fromJson({
+      'available': first['available'],
+      'pending': first['pending'],
+      'total': first['total'],
+      'currency': first['currency'] ?? 'USDC',
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
+  }
+
+  return WalletBalance(updatedAt: DateTime.now());
 });
 
 /// Available balance shortcut.

@@ -64,15 +64,20 @@ class DepositResult {
   final String? paymentUrl;
   final String? instructions;
   final String? reference;
+  final String? token;
+  final String? paymentMethodType;
 
-  const DepositResult({required this.id, required this.status, this.paymentUrl, this.instructions, this.reference});
+  const DepositResult({required this.id, required this.status, this.paymentUrl, this.instructions, this.reference, this.token, this.paymentMethodType});
 
   factory DepositResult.fromJson(Map<String, dynamic> json) => DepositResult(
-    id: json['id'] as String,
-    status: json['status'] as String,
-    paymentUrl: json['paymentUrl'] as String?,
+    // Backend returns { depositId, token, paymentMethodType, instructions, expiresAt }
+    id: json['depositId'] as String? ?? json['id'] as String? ?? '',
+    status: json['status'] as String? ?? 'pending',
+    paymentUrl: json['deepLinkUrl'] as String? ?? json['paymentUrl'] as String?,
     instructions: json['instructions'] as String?,
     reference: json['reference'] as String?,
+    token: json['token'] as String?,
+    paymentMethodType: json['paymentMethodType'] as String?,
   );
 }
 
@@ -114,10 +119,12 @@ class DepositNotifier extends Notifier<DepositState> {
     state = state.copyWith(isLoading: true, step: DepositFlowStep.processing);
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/deposit/initiate', data: {
-        'amount': state.amount,
-        'method': state.selectedMethod!.name,
-        'currency': 'USDC',
+      // Map mobile deposit method to backend provider codes
+      final providerCode = _methodToProviderCode(state.selectedMethod!);
+      final response = await dio.post('/deposits/initiate', data: {
+        'amount': state.amountXOF ?? state.amount,
+        'currency': 'XOF',
+        'providerCode': providerCode,
       });
       final result = DepositResult.fromJson(response.data as Map<String, dynamic>);
       state = state.copyWith(isLoading: false, result: result, step: DepositFlowStep.processing);
@@ -201,6 +208,22 @@ class DepositNotifier extends Notifier<DepositState> {
   Future<void> initiateDeposit() async => initiate();
   void selectProviderData(dynamic data) {}
   void setOtp(String otp) => state = state.copyWith(otpInput: otp);
+
+  /// Map mobile DepositMethod enum to backend provider codes.
+  static String _methodToProviderCode(DepositMethod method) {
+    switch (method) {
+      case DepositMethod.orangeMoney:
+        return 'OMCI';
+      case DepositMethod.mtnMomo:
+        return 'MTNCI';
+      case DepositMethod.moovMoney:
+        return 'MOOVCI';
+      case DepositMethod.wave:
+        return 'WAVECI';
+      case DepositMethod.bankTransfer:
+        return 'BANK';
+    }
+  }
 }
 
 final depositProvider = NotifierProvider<DepositNotifier, DepositState>(DepositNotifier.new);
