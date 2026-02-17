@@ -105,6 +105,7 @@ dependencies:
   # In-app review for app store ratings
   in_app_review: ^2.0.9
   pointycastle: ^4.0.0
+  flutter_jailbreak_detection: ^1.10.0
 
 dev_dependencies:
   flutter_test:

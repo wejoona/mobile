@@ -5,6 +5,7 @@ import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/time/server_time_service.dart';
 import 'package:usdc_wallet/services/security/device_integrity_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/security/tamper_detection_service.dart';
 
 /// Application initialization service.
 ///
@@ -22,15 +23,34 @@ class AppInitializer {
   /// Rapport d'intégrité — disponible après initialize()
   DeviceIntegrityReport? integrityReport;
 
+  /// Whether the device was flagged as rooted/jailbroken.
+  bool get isDeviceTampered =>
+      _ref.read(tamperDetectionServiceProvider).isCompromised;
+
   /// Run all initialization tasks.
   Future<void> initialize() async {
     await _setupSystemChrome();
     await _initAnalytics();
+    await _checkTamperDetection();
     await _checkDeviceIntegrity();
     await _syncServerTime();
     await _registerDevice();
     if (kDebugMode) {
       debugPrint('[AppInitializer] Initialization complete');
+    }
+  }
+
+  Future<void> _checkTamperDetection() async {
+    try {
+      final tamperService = _ref.read(tamperDetectionServiceProvider);
+      final compromised = await tamperService.check();
+      if (compromised) {
+        if (kDebugMode) {
+          debugPrint('[AppInitializer] Device is rooted/jailbroken — will block');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AppInitializer] Tamper detection failed: $e');
     }
   }
 

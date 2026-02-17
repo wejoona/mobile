@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
