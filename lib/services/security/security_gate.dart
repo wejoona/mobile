@@ -39,16 +39,35 @@ class _SecurityGateState extends State<SecurityGate> {
     final security = DeviceSecurity();
     final result = await security.checkSecurity();
 
+    // Also check via flutter_jailbreak_detection for a second opinion
+    bool jailbreakDetected = false;
+    try {
+      jailbreakDetected = await FlutterJailbreakDetection.jailbroken;
+    } catch (e) {
+      AppLogger('Debug').debug('flutter_jailbreak_detection check failed: $e');
+    }
+
+    final combinedSecure = result.isSecure && !jailbreakDetected;
+    final combinedResult = DeviceSecurityResult(
+      isSecure: combinedSecure,
+      threats: [
+        ...result.threats,
+        if (jailbreakDetected) 'Root/jailbreak detected (flutter_jailbreak_detection)',
+      ],
+      message: combinedSecure
+          ? result.message
+          : 'Device compromised: ${result.threats.join(', ')}${jailbreakDetected ? ', jailbreak detected' : ''}',
+    );
+
     if (mounted) {
       setState(() {
         _isLoading = false;
-        _isSecure = result.isSecure;
-        _result = result;
+        _isSecure = combinedSecure;
+        _result = combinedResult;
       });
 
-      // Log security events (would send to analytics in production)
-      if (!result.isSecure) {
-        AppLogger('Debug').debug('SECURITY ALERT: Device compromised - ${result.threats}');
+      if (!combinedSecure) {
+        AppLogger('Debug').debug('SECURITY ALERT: Device compromised - ${combinedResult.threats}');
       }
     }
   }
