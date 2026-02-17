@@ -13,6 +13,7 @@ import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
 import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
+import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 void main() async {
@@ -39,51 +40,62 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Global error handling
-  FlutterError.onError = (details) {
-    FlutterError.presentError(details);
-    crashReporting.recordError(details.exception, details.stack);
-  };
+  // Determine environment from build config
+  const environment = String.fromEnvironment('ENV', defaultValue: 'dev');
 
-  // Custom error widget for release mode
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                const SizedBox(height: 16),
-                const Text(
-                  'Oops! Something went wrong.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
+  // Initialize Sentry and run the app inside its error zone
+  final sentryService = SentryService();
+  await sentryService.initializeAndRunApp(
+    environment: environment,
+    appRunner: () async {
+      // Global error handling — forward to both Crashlytics and Sentry
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        crashReporting.recordError(details.exception, details.stack);
+        sentryService.captureFlutterError(details);
+      };
+
+      // Custom error widget for release mode
+      ErrorWidget.builder = (FlutterErrorDetails details) {
+        return MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Oops! Something went wrong.',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Please restart the app.',
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Please restart the app.',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  };
+        );
+      };
 
-  // SECURITY: Wrap app with SecurityGate to block compromised devices
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPreferences),
-      ],
-      child: const KoridoApp(),
-    ),
+      // SECURITY: Wrap app with SecurityGate to block compromised devices
+      runApp(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+          ],
+          child: const KoridoApp(),
+        ),
+      );
+    },
   );
 }
 

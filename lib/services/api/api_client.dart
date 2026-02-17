@@ -14,6 +14,7 @@ import 'package:usdc_wallet/services/api/retry_interceptor.dart';
 import 'package:usdc_wallet/services/security/jwe/jwe_service.dart';
 import 'package:usdc_wallet/services/security/jwe/jwe_interceptor.dart';
 import 'package:usdc_wallet/mocks/index.dart';
+import 'package:usdc_wallet/services/security/certificate_pinning.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
 
 /// API Configuration
