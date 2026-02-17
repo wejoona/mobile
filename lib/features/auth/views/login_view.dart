@@ -602,7 +602,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
   void _showCountryPicker() {
     final countriesAsync = ref.read(countriesProvider);
-    final countries = countriesAsync.valueOrNull ?? SupportedCountries.all;
+    final countries = countriesAsync.value ?? SupportedCountries.all;
 
     showModalBottomSheet(
       context: context,

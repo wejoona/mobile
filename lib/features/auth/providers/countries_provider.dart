@@ -35,4 +35,12 @@ final countriesProvider = FutureProvider<List<CountryConfig>>((ref) async {
 
 /// Selected country state — persists choice across the session
 final selectedCountryProvider =
-    StateProvider<CountryConfig>((ref) => SupportedCountries.defaultCountry);
+    NotifierProvider<SelectedCountryNotifier, CountryConfig>(
+        SelectedCountryNotifier.new);
+
+class SelectedCountryNotifier extends Notifier<CountryConfig> {
+  @override
+  CountryConfig build() => SupportedCountries.defaultCountry;
+
+  void select(CountryConfig country) => state = country;
+}
