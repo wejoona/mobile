@@ -17,8 +17,8 @@ final sentryServiceProvider = Provider<SentryService>((ref) {
 class SentryService {
   static final _logger = AppLogger('Sentry');
 
-  /// Placeholder DSN — replace with real project DSN before production.
-  static const _defaultDsn = 'https://placeholder@sentry.io/0';
+  /// Korido mobile Sentry DSN (self-hosted).
+  static const _defaultDsn = 'https://d68989681327f488d5cb348626e66356@sentry.wejoona.com/3';
 
   /// Whether Sentry has been initialized.
   bool _initialized = false;
