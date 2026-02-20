@@ -8,6 +8,8 @@ import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/services/session/user_session.dart';
+import 'package:usdc_wallet/services/session/user_session_repository.dart';
 
 /// User/Auth State Machine - manages user authentication globally
 class UserStateMachine extends Notifier<UserState> {
@@ -25,22 +27,24 @@ class UserStateMachine extends Notifier<UserState> {
   AuthService get _authService => ref.read(authServiceProvider);
   UserService get _userService => ref.read(userServiceProvider);
 
-  /// Check for stored authentication on app start
+  /// Check for stored authentication on app start.
+  ///
+  /// Uses UserSessionRepository as primary source of truth. Falls back to
+  /// legacy token storage for migration.
   Future<void> _checkStoredAuth() async {
     // Safety check - ensure we're mounted
     try {
-      // First update to loading
       state = const UserState(status: AuthStatus.loading);
     } catch (e) {
-      // Provider not ready, skip
       return;
     }
 
     try {
-      final token = await _storage.read(key: _tokenKey);
-      final phone = await _storage.read(key: _phoneKey);
+      // Try loading from UserSession first (new persistent session)
+      final sessionRepo = ref.read(userSessionRepositoryProvider);
+      final session = await sessionRepo.load();
 
-      if (token != null && token.isNotEmpty) {
+      if (session != null) {
         // Load local avatar immediately (before network call)
         String? localAvatar;
         final savedAvatar = await _storage.read(key: 'local_avatar_path');
@@ -48,18 +52,23 @@ class UserStateMachine extends Notifier<UserState> {
           localAvatar = savedAvatar;
         }
 
-        // We have a token, set authenticated state first
+        // Restore user state from persisted session (no network needed!)
         state = UserState(
           status: AuthStatus.authenticated,
-          accessToken: token,
-          phone: phone,
-          avatarUrl: localAvatar,
+          userId: session.userId,
+          phone: session.phoneNumber,
+          firstName: session.firstName,
+          lastName: session.lastName,
+          email: session.email,
+          countryCode: session.countryCode ?? 'CI',
+          accessToken: session.accessToken,
+          avatarUrl: localAvatar ?? session.avatarUrl,
         );
 
-        // Fetch user profile to populate all user data
+        // Fetch fresh profile in background (don't block)
         _fetchUserProfile();
 
-        // Trigger wallet and transaction fetch after a small delay
+        // Trigger wallet and transaction fetch
         Future.delayed(const Duration(milliseconds: 100), () {
           try {
             ref.read(walletStateMachineProvider.notifier).fetch();
@@ -67,6 +76,35 @@ class UserStateMachine extends Notifier<UserState> {
           } catch (e) {
             // Ignore if providers not ready
           }
+        });
+        return;
+      }
+
+      // Fallback: legacy token check
+      final token = await _storage.read(key: _tokenKey);
+      final phone = await _storage.read(key: _phoneKey);
+
+      if (token != null && token.isNotEmpty) {
+        String? localAvatar;
+        final savedAvatar = await _storage.read(key: 'local_avatar_path');
+        if (savedAvatar != null && await File(savedAvatar).exists()) {
+          localAvatar = savedAvatar;
+        }
+
+        state = UserState(
+          status: AuthStatus.authenticated,
+          accessToken: token,
+          phone: phone,
+          avatarUrl: localAvatar,
+        );
+
+        _fetchUserProfile();
+
+        Future.delayed(const Duration(milliseconds: 100), () {
+          try {
+            ref.read(walletStateMachineProvider.notifier).fetch();
+            ref.read(transactionStateMachineProvider.notifier).fetch();
+          } catch (e) {}
         });
       } else {
         state = const UserState(status: AuthStatus.unauthenticated);
@@ -177,9 +215,28 @@ class UserStateMachine extends Notifier<UserState> {
         otp: otp,
       );
 
-      // Store credentials
+      // Store credentials (legacy)
       await _storage.write(key: _tokenKey, value: response.accessToken);
       await _storage.write(key: _phoneKey, value: state.phone);
+
+      // Also persist to UserSession for robust session management
+      final sessionRepo = ref.read(userSessionRepositoryProvider);
+      final now = DateTime.now();
+      final userSession = UserSession(
+        userId: response.user.id,
+        phoneNumber: state.phone!,
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        email: response.user.email,
+        countryCode: response.user.countryCode,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken ?? '',
+        tokenExpiresAt: now.add(const Duration(minutes: 15)), // default
+        lastActive: now,
+        sessionCreatedAt: now,
+        avatarUrl: response.user.avatarUrl,
+      );
+      await sessionRepo.save(userSession);
 
       // Reset state machines BEFORE updating auth state to ensure clean slate
       // This prevents any residual data from previous sessions from showing

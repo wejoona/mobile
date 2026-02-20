@@ -2,18 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/services/session/user_session.dart';
+import 'package:usdc_wallet/services/session/user_session_repository.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Auth State
 enum AuthStatus {
   initial,
   loading,
   authenticated,
-  locked, // Has token but needs PIN/biometric to unlock
+  locked, // Has session but needs PIN/biometric to unlock
   unauthenticated,
   otpSent,
   error,
@@ -25,6 +28,7 @@ class AuthState {
   final String? phone;
   final String? error;
   final int? otpExpiresIn;
+  final UserSession? session; // Persisted session
 
   const AuthState({
     this.status = AuthStatus.initial,
@@ -32,6 +36,7 @@ class AuthState {
     this.phone,
     this.error,
     this.otpExpiresIn,
+    this.session,
   });
 
   AuthState copyWith({
@@ -40,6 +45,7 @@ class AuthState {
     String? phone,
     String? error,
     int? otpExpiresIn,
+    UserSession? session,
   }) {
     return AuthState(
       status: status ?? this.status,
@@ -47,51 +53,74 @@ class AuthState {
       phone: phone ?? this.phone,
       error: error,
       otpExpiresIn: otpExpiresIn ?? this.otpExpiresIn,
+      session: session ?? this.session,
     );
   }
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isLocked => status == AuthStatus.locked;
   bool get isLoading => status == AuthStatus.loading;
+  bool get hasSession => session != null;
 }
 
-/// Auth Notifier
+/// Auth Notifier — uses [UserSessionRepository] for persistent session.
 class AuthNotifier extends Notifier<AuthState> {
+  static final _log = AppLogger('AuthNotifier');
+
   @override
   AuthState build() {
-    // Restore session from secure storage on startup
     Future.microtask(() => checkAuth());
     return const AuthState();
   }
 
   AuthService get _authService => ref.read(authServiceProvider);
   FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
+  UserSessionRepository get _sessionRepo => ref.read(userSessionRepositoryProvider);
   AnalyticsService get _analytics => ref.read(analyticsServiceProvider);
 
-  /// Check if user is already authenticated
+  /// Check for a persisted session on startup.
+  ///
+  /// Flow:
+  /// 1. Load UserSession from secure storage
+  /// 2. If exists + session valid → locked (require PIN/biometric)
+  ///    - Token refresh happens on unlock, NOT here
+  /// 3. If no session → unauthenticated
   Future<void> checkAuth() async {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
-      final token = await _storage.read(key: StorageKeys.accessToken);
+      final session = await _sessionRepo.load();
 
-      if (token != null) {
-        // Token exists — go to locked state (require PIN/biometric to unlock)
-        // This ensures returning users always see the lock screen first
-        state = state.copyWith(status: AuthStatus.locked);
+      if (session != null) {
+        _log.info('Restored session for user ${session.userId} (token expired: ${session.isTokenExpired})');
 
-        // Sync FSM: restore auth state and trigger data fetches in background
-        final userId = await _storage.read(key: 'user_id');
-        final refreshToken = await _storage.read(key: 'refresh_token');
+        // Session exists — show lock screen (PIN/biometric).
+        // We do NOT check token validity here. Token refresh happens after unlock.
+        state = state.copyWith(
+          status: AuthStatus.locked,
+          session: session,
+          phone: session.phoneNumber,
+        );
+
+        // Sync FSM with restored session
         ref.read(appFsmProvider.notifier).restoreSession(
-          userId: userId ?? '',
-          accessToken: token,
-          refreshToken: refreshToken,
+          userId: session.userId,
+          accessToken: session.accessToken,
+          refreshToken: session.refreshToken,
         );
       } else {
+        // No session — check for legacy token storage (migration path)
+        final legacyToken = await _storage.read(key: 'access_token');
+        if (legacyToken != null) {
+          _log.info('Found legacy token, migrating to UserSession');
+          // Can't create a full session without user data, go to login
+          await _storage.delete(key: 'access_token');
+        }
+
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
     } catch (e) {
+      _log.error('checkAuth failed', e);
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
         error: e.toString(),
@@ -106,38 +135,61 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Unlock the session after PIN/biometric verification
+  /// Unlock the session after PIN/biometric verification.
+  ///
+  /// This triggers a token refresh if the token is expired.
+  /// User sees home immediately with cached data while refresh happens in background.
   void unlock() {
-    if (state.status == AuthStatus.locked) {
-      state = state.copyWith(status: AuthStatus.authenticated);
-      // Proactively refresh token after unlock — session may have expired while locked
-      _refreshTokenOnUnlock();
-      // Start real-time sync (WebSocket + polling fallback)
-      ref.read(realtimeServiceProvider).start();
-    }
+    if (state.status != AuthStatus.locked) return;
+
+    state = state.copyWith(status: AuthStatus.authenticated);
+
+    // Proactively refresh token — but don't block unlock on it
+    _refreshTokenOnUnlock();
+
+    // Touch session lastActive
+    _sessionRepo.touchLastActive();
+
+    // Start real-time sync
+    ref.read(realtimeServiceProvider).start();
   }
 
   Future<void> _refreshTokenOnUnlock() async {
+    final session = state.session;
+    if (session == null || !session.canRefresh) return;
+
     try {
-      final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
-      if (storedRefresh == null) return;
+      final response = await _authService.refreshToken(refreshToken: session.refreshToken);
+      final expiresAt = DateTime.now().add(Duration(seconds: response.expiresIn));
 
-      final response = await _authService.refreshToken(refreshToken: storedRefresh);
+      // Update persisted session with new tokens
+      final updated = await _sessionRepo.updateTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        expiresAt: expiresAt,
+      );
 
-      await _storage.write(key: StorageKeys.accessToken, value: response.accessToken);
-      if (response.refreshToken != null) {
-        await _storage.write(key: StorageKeys.refreshToken, value: response.refreshToken!);
+      if (updated != null) {
+        state = state.copyWith(session: updated);
       }
-    } catch (_) {
-      // Token refresh failed — the 401 interceptor will handle it on next API call
+
+      // Also update legacy storage keys for api_client interceptor
+      await _storage.write(key: 'access_token', value: response.accessToken);
+      if (response.refreshToken != null) {
+        await _storage.write(key: 'refresh_token', value: response.refreshToken!);
+      }
+
+      _log.info('Token refreshed successfully on unlock');
+    } catch (e) {
+      _log.warn('Token refresh failed on unlock — will retry on next API call', e);
+      // Don't logout! The 401 interceptor will handle this on next API call.
+      // User can still see cached data.
     }
   }
 
   /// Register new user
   Future<void> register(String phone, String countryCode) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
-
-    // Sync with FSM: notify that login/register is starting
     ref.read(appFsmProvider.notifier).login(phone, countryCode);
 
     try {
@@ -151,15 +203,10 @@ class AuthNotifier extends Notifier<AuthState> {
         otpExpiresIn: response.expiresIn,
       );
 
-      // Analytics: registration
       _analytics.trackRegistration(country: countryCode);
-
-      // Sync with FSM: notify that OTP was sent
       ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
-
-      // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
     }
   }
@@ -167,9 +214,6 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Login existing user
   Future<void> login(String phone) async {
     state = state.copyWith(status: AuthStatus.loading, phone: phone);
-
-    // Sync with FSM: notify that login is starting
-    // Note: Using empty country code since login doesn't require it
     ref.read(appFsmProvider.notifier).login(phone, '');
 
     try {
@@ -180,12 +224,9 @@ class AuthNotifier extends Notifier<AuthState> {
         otpExpiresIn: response.expiresIn,
       );
 
-      // Sync with FSM: notify that OTP was sent
       ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
-
-      // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
     }
   }
@@ -201,8 +242,6 @@ class AuthNotifier extends Notifier<AuthState> {
     }
 
     state = state.copyWith(status: AuthStatus.loading);
-
-    // Sync with FSM: notify that OTP verification is starting
     ref.read(appFsmProvider.notifier).verifyOtp(otp);
 
     try {
@@ -211,37 +250,50 @@ class AuthNotifier extends Notifier<AuthState> {
         otp: otp,
       );
 
-      // Store tokens
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
+      // Create and persist UserSession
+      final now = DateTime.now();
+      final session = UserSession(
+        userId: response.user.id,
+        phoneNumber: state.phone!,
+        displayName: '${response.user.firstName ?? ''} ${response.user.lastName ?? ''}'.trim(),
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        email: response.user.email,
+        countryCode: response.user.countryCode,
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken ?? '',
+        tokenExpiresAt: now.add(Duration(seconds: response.expiresIn)),
+        lastActive: now,
+        sessionCreatedAt: now,
+        kycStatus: response.kycStatus,
+        hasCompletedKyc: response.kycStatus == 'verified',
+        avatarUrl: response.user.avatarUrl,
       );
 
-      // Store refresh token if provided for biometric login on next session
-      if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
-      }
+      await _sessionRepo.save(session);
+      _log.info('Created new session for user ${session.userId}');
 
-      // Start session with actual token validity from backend
+      // Also write to legacy storage for interceptor compatibility
+      await _storage.write(key: 'access_token', value: response.accessToken);
+      if (response.refreshToken != null) {
+        await _storage.write(key: 'refresh_token', value: response.refreshToken!);
+      }
+      await _storage.write(key: 'user_id', value: response.user.id);
+
+      // Start session service
       await ref.read(sessionServiceProvider.notifier).startSession(
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
         tokenValidity: Duration(seconds: response.expiresIn),
       );
 
-      // Sync with FSM: notify that auth verification succeeded
-      // Do this BEFORE setting authenticated status to ensure wallet fetch is queued
+      // Sync with FSM
       ref.read(appFsmProvider.notifier).onAuthVerified(
         userId: response.user.id,
         accessToken: response.accessToken,
         refreshToken: response.refreshToken,
       );
 
-      // Also report KYC status from the auth response to avoid waiting for separate fetch
-      // This ensures the FSM knows the KYC state immediately
       if (response.kycStatus != null) {
         ref.read(kycStateMachineProvider.notifier).updateFromAuthResponse(response.kycStatus);
       }
@@ -249,26 +301,20 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        session: session,
       );
 
-      // Analytics: login success
       _analytics.trackLogin(method: 'otp');
       _analytics.setUserProperties(userId: response.user.id);
-
-      // Register device with backend (fire-and-forget)
       ref.read(deviceRegistrationServiceProvider).registerCurrentDevice();
 
       return true;
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
-
-      // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
       return false;
     } catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.toString());
-
-      // Sync with FSM: notify auth failed
       ref.read(appFsmProvider.notifier).onAuthFailed(e.toString());
       return false;
     }
@@ -280,26 +326,27 @@ class AuthNotifier extends Notifier<AuthState> {
 
     try {
       final response = await _authService.refreshToken(refreshToken: refreshToken);
+      final now = DateTime.now();
+      final expiresAt = now.add(Duration(seconds: response.expiresIn));
 
-      // Store new tokens
-      await _storage.write(
-        key: StorageKeys.accessToken,
-        value: response.accessToken,
+      // Update session tokens
+      final updated = await _sessionRepo.updateTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+        expiresAt: expiresAt,
       );
+
+      // Update legacy storage
+      await _storage.write(key: 'access_token', value: response.accessToken);
       if (response.refreshToken != null) {
-        await _storage.write(
-          key: StorageKeys.refreshToken,
-          value: response.refreshToken!,
-        );
+        await _storage.write(key: 'refresh_token', value: response.refreshToken!);
       }
 
-      // Start session with actual token validity from backend
       await ref.read(sessionServiceProvider.notifier).startSession(
         accessToken: response.accessToken,
         tokenValidity: Duration(seconds: response.expiresIn),
       );
 
-      // Sync with FSM: notify that auth verification succeeded
       ref.read(appFsmProvider.notifier).onAuthVerified(
         userId: response.user?.id ?? '',
         accessToken: response.accessToken,
@@ -309,12 +356,12 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+        session: updated,
       );
 
       return true;
     } catch (e) {
-      // Clear invalid refresh token
-      await _storage.delete(key: StorageKeys.refreshToken);
+      _log.error('Biometric login failed', e);
       state = state.copyWith(
         status: AuthStatus.error,
         error: 'Biometric login failed. Please log in again.',
@@ -323,23 +370,21 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Logout
+  /// Logout — clears persisted session.
   Future<void> logout() async {
-    // Stop real-time sync
     ref.read(realtimeServiceProvider).stop();
-
-    // Notify backend first (while we still have the token)
     await _authService.logout();
-
-    // End session
     await ref.read(sessionServiceProvider.notifier).endSession();
 
-    await _storage.delete(key: StorageKeys.accessToken);
-    await _storage.delete(key: StorageKeys.refreshToken);
+    // Clear persisted session
+    await _sessionRepo.clear();
+
+    // Clear legacy storage
+    await _storage.delete(key: 'access_token');
+    await _storage.delete(key: 'refresh_token');
+    await _storage.delete(key: 'user_id');
 
     state = const AuthState(status: AuthStatus.unauthenticated);
-
-    // Sync with FSM: notify logout
     ref.read(appFsmProvider.notifier).logout();
   }
 
@@ -351,6 +396,22 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Update user data (called from profile updates)
   void updateUser(User user) {
     state = state.copyWith(user: user);
+    // Also update persisted session
+    _sessionRepo.updateProfile(
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+    );
+  }
+
+  /// Update session after wallet creation
+  void updateWalletId(String walletId) {
+    if (state.session != null) {
+      final updated = state.session!.copyWith(walletId: walletId);
+      state = state.copyWith(session: updated);
+      _sessionRepo.save(updated);
+    }
   }
 }
 

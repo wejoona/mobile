@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SplashView extends ConsumerStatefulWidget {
@@ -66,21 +66,24 @@ class _SplashViewState extends ConsumerState<SplashView>
       return;
     }
 
-    // Wait for auth state to finish loading (up to 3s)
-    // _checkStoredAuth runs async via Future.delayed(Duration.zero)
-    var authState = ref.read(userStateMachineProvider);
+    // Wait for auth provider to finish checking persisted session (up to 3s)
+    var authState = ref.read(auth.authProvider);
     final deadline = DateTime.now().add(const Duration(seconds: 3));
-    while ((authState.status == AuthStatus.initial || authState.status == AuthStatus.loading) &&
+    while ((authState.status == auth.AuthStatus.initial || authState.status == auth.AuthStatus.loading) &&
         DateTime.now().isBefore(deadline)) {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
-      authState = ref.read(userStateMachineProvider);
+      authState = ref.read(auth.authProvider);
     }
 
     if (!mounted) return;
 
     if (authState.isAuthenticated) {
       context.go('/home');
+    } else if (authState.isLocked) {
+      // User has a persisted session — go straight to lock screen (PIN/biometric)
+      // NOT the login screen. Token refresh happens after unlock.
+      context.go('/session-locked');
     } else {
       context.go('/login');
     }

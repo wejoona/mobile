@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart' show securityHeadersInterceptorProvider;
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
@@ -272,13 +274,13 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
       } else {
-        // Refresh failed, clear tokens and force logout
-        final storage = _ref.read(secureStorageProvider);
-        await storage.delete(key: StorageKeys.accessToken);
-        await storage.delete(key: StorageKeys.refreshToken);
-        // Force FSM back to unauthenticated so user sees login screen
+        // Refresh failed — DON'T immediately logout!
+        // Lock the session instead. User has cached data and can re-authenticate.
+        // Only a full 30-day session expiry or explicit logout should clear the session.
         try {
-          _ref.read(appFsmProvider.notifier).logout();
+          _ref.read(appFsmProvider.notifier).dispatch(
+            const AppSessionEvent(SessionLock(reason: 'Token refresh failed')),
+          );
         } catch (_) {
           // FSM might not be available in all contexts
         }

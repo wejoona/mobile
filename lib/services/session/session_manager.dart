@@ -76,11 +76,10 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       // Only handle state changes, not initial state
       if (previous == null) return;
 
-      if (next.status == SessionStatus.expired && previous.status != SessionStatus.expired) {
-        _handleSessionExpired();
-      } else if (next.status == SessionStatus.locked && 
+      if (next.status == SessionStatus.locked && 
                  previous.status == SessionStatus.active) {
-        // Only show lock screen if transitioning FROM active (not on initial restore)
+        // Session locked (inactivity, background, etc.) — show PIN screen.
+        // NOT a logout — user's persistent session is intact.
         _handleSessionLocked();
       }
     });
@@ -135,29 +134,6 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       return !suppressedRoutes.any((r) => location.startsWith(r));
     } catch (_) {
       return true; // Show by default if route check fails
-    }
-  }
-
-  void _handleSessionExpired() {
-    // Navigate to login - delay to ensure GoRouter is ready
-    if (mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          try {
-            final colors = context.colors;
-            context.go('/login');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Session expired. Please log in again.'),
-                backgroundColor: colors.warning,
-              ),
-            );
-          } catch (e) {
-            // GoRouter not ready yet, ignore - user will be redirected on next navigation
-            AppLogger('SessionManager').warn('Could not navigate on session expiry', e);
-          }
-        }
-      });
     }
   }
 
