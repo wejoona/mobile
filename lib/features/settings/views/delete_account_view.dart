@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Run 379: Account deletion view with confirmation steps
 class DeleteAccountView extends ConsumerStatefulWidget {
@@ -113,9 +115,26 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
 
   Future<void> _deleteAccount() async {
     setState(() => _isDeleting = true);
-    // Will be wired to actual account deletion API
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isDeleting = false);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/account/delete', data: {
+        if (_reasonController.text.isNotEmpty) 'reason': _reasonController.text.trim(),
+      });
+      // Logout after successful account deletion request
+      if (mounted) {
+        ref.read(authProvider.notifier).logout();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Impossible de supprimer le compte: ${e.toString()}'),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+    }
   }
 }
 

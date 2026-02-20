@@ -10,8 +10,8 @@ class SpendingTrend {
 
   factory SpendingTrend.fromJson(Map<String, dynamic> json) {
     return SpendingTrend(
-      date: DateTime.parse(json['date'] as String),
-      amount: (json['amount'] as num).toDouble(),
+      date: DateTime.tryParse(json['date'] as String? ?? '') ?? DateTime.now(),
+      amount: (json['amount'] as num?)?.toDouble() ?? 0,
     );
   }
 

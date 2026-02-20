@@ -32,9 +32,11 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
+      final amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) return;
       await widget.onCreate(
         _nameController.text.trim(),
-        double.parse(_amountController.text),
+        amount,
         _targetDate,
       );
       if (mounted) Navigator.of(context).pop();

@@ -86,8 +86,10 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
-    final biometricAvailable = ref.watch(biometricAvailableProvider);
-    final biometricEnabled = ref.watch(biometricEnabledProvider);
+    // Biometric quick-login: show fingerprint button if both available and enabled
+    final biometricAvailable = ref.watch(biometricAvailableProvider).value ?? false;
+    final biometricEnabled = ref.watch(biometricEnabledProvider).value ?? false;
+    final showBiometricOption = biometricAvailable && biometricEnabled;
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       AppLogger('Debug').debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
@@ -221,6 +223,20 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
                         // Resend code with timer
                         _buildResendButton(colors, authState, l10n),
+
+                        // Biometric quick-login option
+                        if (showBiometricOption) ...[
+                          const SizedBox(height: AppSpacing.lg),
+                          TextButton.icon(
+                            onPressed: authState.isLoading ? null : _authenticateWithBiometric,
+                            icon: Icon(Icons.fingerprint, color: colors.gold),
+                            label: AppText(
+                              l10n.auth_useBiometric,
+                              variant: AppTextVariant.bodyMedium,
+                              color: colors.gold,
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: AppSpacing.lg),
                       ],

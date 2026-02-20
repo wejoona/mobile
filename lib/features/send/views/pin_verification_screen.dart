@@ -169,13 +169,13 @@ class _PinVerificationScreenState
       final success = await ref.read(sendMoneyProvider.notifier).executeTransfer();
 
       if (mounted) {
+        setState(() => _isLoading = false);
         if (success) {
           context.go('/send/result');
         } else {
           final state = ref.read(sendMoneyProvider);
           setState(() {
             _error = state.error ?? l10n.error_transferFailed;
-            _isLoading = false;
           });
         }
       }
@@ -215,13 +215,13 @@ class _PinVerificationScreenState
       final success = await ref.read(sendMoneyProvider.notifier).executeTransfer();
 
       if (mounted) {
+        setState(() => _isLoading = false);
         if (success) {
           context.go('/send/result');
         } else {
           final state = ref.read(sendMoneyProvider);
           setState(() {
             _error = state.error ?? l10n.error_transferFailed;
-            _isLoading = false;
           });
         }
       }

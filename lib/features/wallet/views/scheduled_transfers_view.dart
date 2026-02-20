@@ -759,7 +759,7 @@ class _CreateScheduleSheetState extends State<_CreateScheduleSheet> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       recipientPhone: _phoneController.text,
       recipientName: _phoneController.text,
-      amount: double.parse(_amountController.text),
+      amount: double.tryParse(_amountController.text) ?? 0,
       frequency: _frequency,
       nextDate: _startDate,
       isActive: true,

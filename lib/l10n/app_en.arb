@@ -8414,5 +8414,6 @@
   "wallet_pending": "Pending: \\${amount}",
   "withdraw_comingSoon": "Withdraw feature coming soon",
   "withdraw_failed": "Withdrawal failed. Please try again.",
-  "withdraw_initiated": "Withdrawal initiated"
+  "withdraw_initiated": "Withdrawal initiated",
+  "auth_useBiometric": "Use biometric login"
 }

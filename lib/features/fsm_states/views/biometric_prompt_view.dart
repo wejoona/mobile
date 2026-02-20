@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -77,7 +76,6 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
     final firstName = userState.firstName ?? '';
-    final avatarUrl = userState.effectiveAvatarUrl;
 
     return Scaffold(
       backgroundColor: colors.canvas,

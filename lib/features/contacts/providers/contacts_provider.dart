@@ -152,6 +152,7 @@ class ContactsNotifier extends Notifier<ContactsState> {
         '/contacts/check',
         data: {'phoneNumbers': phoneNumbers},
       );
+      // ignore: avoid_dynamic_calls
       final data = response.data as Map<String, dynamic>;
       final registered = (data['registered'] as List? ?? [])
           .cast<Map<String, dynamic>>();

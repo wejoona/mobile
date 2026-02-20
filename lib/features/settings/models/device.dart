@@ -48,10 +48,11 @@ class Device {
           : null,
       isActive: (json['is_active'] ?? json['isActive']) as bool? ?? true,
       lastLoginAt: (json['last_login_at'] ?? json['lastLoginAt']) != null
+          // ignore: avoid_dynamic_calls
           ? DateTime.tryParse((json['last_login_at'] ?? json['lastLoginAt']).toString())
           : null,
       lastIpAddress: (json['last_ip_address'] ?? json['lastIpAddress']) as String?,
-      loginCount: (json['login_count'] ?? json['loginCount'] as num?)?.toInt() ?? 0,
+      loginCount: ((json['login_count'] ?? json['loginCount']) as num?)?.toInt() ?? 0,
     );
   }
 

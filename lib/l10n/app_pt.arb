@@ -7740,5 +7740,6 @@
   "offline_banner_reconnected": "Voltar online! todos synced.",
   "@offline_banner_reconnected": {
     "description": "Offline banner reconnected message"
-  }
+  },
+  "auth_useBiometric": "Usar login biométrico"
 }

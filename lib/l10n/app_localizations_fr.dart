@@ -7344,4 +7344,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get withdraw_initiated => 'Retrait initié';
+
+  @override
+  String get auth_useBiometric => 'Utiliser la biométrie';
 }

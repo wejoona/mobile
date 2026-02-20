@@ -3024,5 +3024,6 @@
   "wallet_pending": "En attente : ${amount}",
   "withdraw_comingSoon": "Fonctionnalité de retrait bientôt disponible",
   "withdraw_failed": "Le retrait a échoué. Veuillez réessayer.",
-  "withdraw_initiated": "Retrait initié"
+  "withdraw_initiated": "Retrait initié",
+  "auth_useBiometric": "Utiliser la biométrie"
 }

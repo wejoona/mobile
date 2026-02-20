@@ -488,11 +488,13 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
     setState(() => _isProcessing = true);
 
     try {
-      // ignore: unused_local_variable
-      final __expense = Expense(
+      final amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) return;
+
+      final expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         category: _selectedCategory,
-        amount: double.parse(_amountController.text),
+        amount: amount,
         currency: 'XOF',
         date: _selectedDate,
         vendor: _vendorController.text.isEmpty ? null : _vendorController.text,
@@ -503,6 +505,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         createdAt: DateTime.now(),
       );
 
+      await ExpensesService.addExpense(expense);
       ref.invalidate(expensesProvider);
 
       if (mounted) {

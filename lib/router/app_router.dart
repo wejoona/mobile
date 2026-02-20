@@ -128,7 +128,6 @@ import 'package:usdc_wallet/catalog/widget_catalog_view.dart';
 import 'package:usdc_wallet/features/send/views/recipient_screen.dart';
 import 'package:usdc_wallet/features/send/views/amount_screen.dart';
 import 'package:usdc_wallet/features/send/views/confirm_screen.dart';
-import 'package:usdc_wallet/features/send/views/pin_verification_screen.dart';
 import 'package:usdc_wallet/features/send/views/result_screen.dart';
 import 'package:usdc_wallet/features/send_external/views/address_input_screen.dart';
 import 'package:usdc_wallet/features/send_external/views/external_amount_screen.dart';

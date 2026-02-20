@@ -156,6 +156,9 @@ class DepositNotifier extends Notifier<DepositState> {
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
       return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
     }
   }
 
@@ -223,6 +226,9 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
       return true;
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }

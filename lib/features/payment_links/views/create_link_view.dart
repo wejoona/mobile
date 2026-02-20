@@ -190,7 +190,11 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
 
     setState(() => _isLoading = true);
     try {
-      final amount = double.parse(_amountController.text);
+      final amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
       final description = _descriptionController.text.trim();
 
       final request = CreateLinkRequest(

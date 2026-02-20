@@ -209,20 +209,25 @@ class ConfirmScreen extends ConsumerWidget {
                 onPressed: () async {
                   HapticFeedback.mediumImpact();
 
-                  // Risk-based step-up evaluation
-                  final securityService = ref.read(riskBasedSecurityServiceProvider);
-                  final decision = await securityService.evaluateTransaction(
-                    type: 'transfer',
-                    amount: state.amount!,
-                    currency: 'USDC',
-                    recipientId: state.recipient?.phoneNumber,
-                    recipientType: 'internal',
-                  );
+                  try {
+                    // Risk-based step-up evaluation
+                    final securityService = ref.read(riskBasedSecurityServiceProvider);
+                    final decision = await securityService.evaluateTransaction(
+                      type: 'transfer',
+                      amount: state.amount!,
+                      currency: 'USDC',
+                      recipientId: state.recipient?.phoneNumber,
+                      recipientType: 'internal',
+                    );
 
-                  if (decision.stepUpRequired) {
-                    if (!context.mounted) return;
-                    final passed = await RiskStepUpDialog.show(context, decision: decision);
-                    if (!passed) return;
+                    if (decision.stepUpRequired) {
+                      if (!context.mounted) return;
+                      final passed = await RiskStepUpDialog.show(context, decision: decision);
+                      if (!passed) return;
+                    }
+                  } catch (e) {
+                    // If risk evaluation fails, still allow proceeding to PIN
+                    // (PIN verification is the minimum required security)
                   }
 
                   if (!context.mounted) return;

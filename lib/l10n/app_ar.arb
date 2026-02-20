@@ -1,211 +1,169 @@
 {
   "@@locale": "ar",
-
   "appName": "كوريدو",
   "@appName": {
     "description": "Application name"
   },
-
   "navigation_home": "الرئيسية",
   "@navigation_home": {
     "description": "Home navigation label"
   },
-
   "navigation_settings": "الإعدادات",
   "@navigation_settings": {
     "description": "Settings navigation label"
   },
-
   "navigation_send": "إرسال",
   "@navigation_send": {
     "description": "Send navigation label"
   },
-
   "navigation_receive": "استقبال",
   "@navigation_receive": {
     "description": "Receive navigation label"
   },
-
   "navigation_transactions": "المعاملات",
   "@navigation_transactions": {
     "description": "Transactions navigation label"
   },
-
   "navigation_services": "الخدمات",
   "@navigation_services": {
     "description": "Services navigation label"
   },
-
   "action_continue": "متابعة",
   "@action_continue": {
     "description": "Continue action button"
   },
-
   "action_cancel": "إلغاء",
   "@action_cancel": {
     "description": "Cancel action button"
   },
-
   "action_confirm": "تأكيد",
   "@action_confirm": {
     "description": "Confirm action button"
   },
-
   "action_back": "رجوع",
   "@action_back": {
     "description": "Back action button"
   },
-
   "action_submit": "إرسال",
   "@action_submit": {
     "description": "Submit action button"
   },
-
   "action_done": "تم",
   "@action_done": {
     "description": "Done action button"
   },
-
   "action_save": "حفظ",
   "@action_save": {
     "description": "Save action button"
   },
-
   "action_edit": "تعديل",
   "@action_edit": {
     "description": "Edit action button"
   },
-
   "action_copy": "نسخ",
   "@action_copy": {
     "description": "Copy action button"
   },
-
   "action_share": "مشاركة",
   "@action_share": {
     "description": "Share action button"
   },
-
   "action_scan": "مسح",
   "@action_scan": {
     "description": "Scan action button"
   },
-
   "action_retry": "إعادة المحاولة",
   "@action_retry": {
     "description": "Retry action button"
   },
-
   "action_clearAll": "مسح الكل",
   "@action_clearAll": {
     "description": "Clear all filters action"
   },
-
   "action_clearFilters": "مسح الفلاتر",
   "@action_clearFilters": {
     "description": "Clear filters button"
   },
-
   "action_clear": "مسح",
   "@action_clear": {
     "description": "Clear action button"
   },
-
   "action_tryAgain": "حاول مرة أخرى",
   "@action_tryAgain": {
     "description": "Try again button"
   },
-
   "action_remove": "إزالة",
   "@action_remove": {
     "description": "Remove action button"
   },
-
   "auth_login": "تسجيل الدخول",
   "@auth_login": {
     "description": "Login label"
   },
-
   "auth_verify": "تحقق",
   "@auth_verify": {
     "description": "Verify label"
   },
-
   "auth_enterOtp": "أدخل رمز التحقق",
   "@auth_enterOtp": {
     "description": "Enter OTP label"
   },
-
   "auth_phoneNumber": "رقم الهاتف",
   "@auth_phoneNumber": {
     "description": "Phone number label"
   },
-
   "auth_pin": "الرمز السري",
   "@auth_pin": {
     "description": "PIN label"
   },
-
   "auth_logout": "تسجيل الخروج",
   "@auth_logout": {
     "description": "Logout label"
   },
-
   "auth_logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
   "@auth_logoutConfirm": {
     "description": "Logout confirmation message"
   },
-
   "auth_welcomeBack": "مرحباً بعودتك",
   "@auth_welcomeBack": {
     "description": "Welcome back message"
   },
-
   "auth_createWallet": "إنشاء محفظة USDC الخاصة بك",
   "@auth_createWallet": {
     "description": "Create wallet subtitle"
   },
-
   "auth_createAccount": "إنشاء حساب",
   "@auth_createAccount": {
     "description": "Create account button"
   },
-
   "auth_alreadyHaveAccount": "لديك حساب بالفعل؟ ",
   "@auth_alreadyHaveAccount": {
     "description": "Already have account prompt"
   },
-
   "auth_dontHaveAccount": "ليس لديك حساب؟ ",
   "@auth_dontHaveAccount": {
     "description": "Don't have account prompt"
   },
-
   "auth_signIn": "تسجيل الدخول",
   "@auth_signIn": {
     "description": "Sign in link"
   },
-
   "auth_signUp": "التسجيل",
   "@auth_signUp": {
     "description": "Sign up link"
   },
-
   "auth_country": "الدولة",
   "@auth_country": {
     "description": "Country label"
   },
-
   "auth_selectCountry": "اختر الدولة",
   "@auth_selectCountry": {
     "description": "Select country title"
   },
-
   "auth_searchCountry": "البحث عن دولة...",
   "@auth_searchCountry": {
     "description": "Search country placeholder"
   },
-
   "auth_enterDigits": "أدخل {count} أرقام",
   "@auth_enterDigits": {
     "description": "Enter digits helper text",
@@ -216,32 +174,26 @@
       }
     }
   },
-
   "auth_termsPrompt": "بالمتابعة، أنت توافق على",
   "@auth_termsPrompt": {
     "description": "Terms agreement prompt"
   },
-
   "auth_termsOfService": "شروط الخدمة",
   "@auth_termsOfService": {
     "description": "Terms of service link"
   },
-
   "auth_privacyPolicy": "سياسة الخصوصية",
   "@auth_privacyPolicy": {
     "description": "Privacy policy link"
   },
-
   "auth_and": " و ",
   "@auth_and": {
     "description": "And conjunction"
   },
-
   "auth_secureLogin": "تسجيل دخول آمن",
   "@auth_secureLogin": {
     "description": "Secure login title"
   },
-
   "auth_otpMessage": "أدخل الرمز المكون من 6 أرقام المرسل إلى {phone}",
   "@auth_otpMessage": {
     "description": "OTP verification message",
@@ -252,67 +204,54 @@
       }
     }
   },
-
   "auth_waitingForSms": "في انتظار الرسالة...",
   "@auth_waitingForSms": {
     "description": "Waiting for SMS indicator"
   },
-
   "auth_resendCode": "إعادة إرسال الرمز",
   "@auth_resendCode": {
     "description": "Resend code button"
   },
-
   "auth_phoneInvalid": "الرجاء إدخال رقم هاتف صحيح",
   "@auth_phoneInvalid": {
     "description": "Invalid phone number error"
   },
-
   "auth_otp": "رمز التحقق",
   "@auth_otp": {
     "description": "OTP code field label"
   },
-
   "auth_resendOtp": "إعادة إرسال رمز التحقق",
   "@auth_resendOtp": {
     "description": "Resend OTP button"
   },
-
   "auth_error_invalidOtp": "رمز التحقق غير صحيح. الرجاء المحاولة مرة أخرى.",
   "@auth_error_invalidOtp": {
     "description": "Invalid OTP error message"
   },
-
   "login_welcomeBack": "مرحباً بعودتك",
   "@login_welcomeBack": {
     "description": "Login welcome message"
   },
-
   "login_enterPhone": "أدخل رقم هاتفك لتسجيل الدخول",
   "@login_enterPhone": {
     "description": "Login phone input subtitle"
   },
-
   "login_rememberPhone": "تذكر هذا الجهاز",
   "@login_rememberPhone": {
     "description": "Remember device checkbox"
   },
-
   "login_noAccount": "ليس لديك حساب؟",
   "@login_noAccount": {
     "description": "No account prompt"
   },
-
   "login_createAccount": "إنشاء حساب",
   "@login_createAccount": {
     "description": "Create account link"
   },
-
   "login_verifyCode": "تحقق من الرمز",
   "@login_verifyCode": {
     "description": "OTP verification title"
   },
-
   "login_codeSentTo": "أدخل الرمز المكون من 6 أرقام المرسل إلى {countryCode} {phone}",
   "@login_codeSentTo": {
     "description": "Code sent message",
@@ -325,12 +264,10 @@
       }
     }
   },
-
   "login_resendCode": "إعادة إرسال الرمز",
   "@login_resendCode": {
     "description": "Resend code button"
   },
-
   "login_resendIn": "إعادة الإرسال خلال {seconds} ثانية",
   "@login_resendIn": {
     "description": "Resend countdown",
@@ -340,27 +277,22 @@
       }
     }
   },
-
   "login_verifying": "جاري التحقق...",
   "@login_verifying": {
     "description": "Verifying message"
   },
-
   "login_enterPin": "أدخل الرمز السري",
   "@login_enterPin": {
     "description": "PIN entry title"
   },
-
   "login_pinSubtitle": "أدخل الرمز السري المكون من 6 أرقام للوصول إلى محفظتك",
   "@login_pinSubtitle": {
     "description": "PIN entry subtitle"
   },
-
   "login_forgotPin": "نسيت الرمز السري؟",
   "@login_forgotPin": {
     "description": "Forgot PIN link"
   },
-
   "login_attemptsRemaining": "{count, plural, =1{محاولة واحدة متبقية} other{{count} محاولات متبقية}}",
   "@login_attemptsRemaining": {
     "description": "PIN attempts remaining",
@@ -370,347 +302,278 @@
       }
     }
   },
-
   "login_accountLocked": "الحساب مقفل",
   "@login_accountLocked": {
     "description": "Account locked title"
   },
-
   "login_lockedMessage": "عدد كبير جداً من المحاولات الفاشلة. تم قفل حسابك لمدة 15 دقيقة من أجل الأمان.",
   "@login_lockedMessage": {
     "description": "Account locked message"
   },
-
   "common_ok": "موافق",
   "@common_ok": {
     "description": "OK button"
   },
-
   "common_continue": "متابعة",
   "@common_continue": {
     "description": "Continue button"
   },
-
   "wallet_balance": "الرصيد",
   "@wallet_balance": {
     "description": "Wallet balance label"
   },
-
   "wallet_sendMoney": "إرسال أموال",
   "@wallet_sendMoney": {
     "description": "Send money label"
   },
-
   "wallet_receiveMoney": "استقبال أموال",
   "@wallet_receiveMoney": {
     "description": "Receive money label"
   },
-
   "wallet_transactionHistory": "سجل المعاملات",
   "@wallet_transactionHistory": {
     "description": "Transaction history label"
   },
-
   "wallet_availableBalance": "الرصيد المتاح",
   "@wallet_availableBalance": {
     "description": "Available balance label"
   },
-
   "wallet_totalBalance": "إجمالي الرصيد",
   "@wallet_totalBalance": {
     "description": "Total balance label"
   },
-
   "wallet_usdBalance": "دولار أمريكي",
   "@wallet_usdBalance": {
     "description": "USD balance label"
   },
-
   "wallet_usdcBalance": "USDC",
   "@wallet_usdcBalance": {
     "description": "USDC balance label"
   },
-
   "wallet_fiatBalance": "رصيد العملة الورقية",
   "@wallet_fiatBalance": {
     "description": "Fiat balance subtitle"
   },
-
   "wallet_stablecoin": "عملة مستقرة",
   "@wallet_stablecoin": {
     "description": "Stablecoin subtitle"
   },
-
   "wallet_createWallet": "إنشاء محفظة",
   "@wallet_createWallet": {
     "description": "Create wallet button"
   },
-
   "wallet_noWalletFound": "لم يتم العثور على محفظة",
   "@wallet_noWalletFound": {
     "description": "No wallet found title"
   },
-
   "wallet_createWalletMessage": "أنشئ محفظتك لبدء إرسال واستقبال الأموال",
   "@wallet_createWalletMessage": {
     "description": "Create wallet message"
   },
-
   "wallet_loadingWallet": "جاري تحميل المحفظة...",
   "@wallet_loadingWallet": {
     "description": "Loading wallet message"
   },
-
   "wallet_activateTitle": "تفعيل محفظتك",
   "@wallet_activateTitle": {
     "description": "Title for wallet activation card"
   },
-
   "wallet_activateDescription": "قم بإعداد محفظة USDC الخاصة بك لبدء إرسال واستقبال الأموال فوراً",
   "@wallet_activateDescription": {
     "description": "Description for wallet activation"
   },
-
   "wallet_activateButton": "تفعيل المحفظة",
   "@wallet_activateButton": {
     "description": "Button to activate wallet"
   },
-
   "wallet_activating": "جاري تفعيل محفظتك...",
   "@wallet_activating": {
     "description": "Loading message during wallet activation"
   },
-
   "wallet_activateFailed": "فشل تفعيل المحفظة. الرجاء المحاولة مرة أخرى.",
   "@wallet_activateFailed": {
     "description": "Error message when wallet activation fails"
   },
-
   "home_welcomeBack": "مرحباً بعودتك",
   "@home_welcomeBack": {
     "description": "Welcome back greeting"
   },
-
   "home_allServices": "جميع الخدمات",
   "@home_allServices": {
     "description": "All services link"
   },
-
   "home_viewAllFeatures": "عرض جميع الميزات المتاحة",
   "@home_viewAllFeatures": {
     "description": "View all features subtitle"
   },
-
   "home_recentTransactions": "المعاملات الأخيرة",
   "@home_recentTransactions": {
     "description": "Recent transactions title"
   },
-
   "home_noTransactionsYet": "لا توجد معاملات بعد",
   "@home_noTransactionsYet": {
     "description": "No transactions yet title"
   },
-
   "home_transactionsWillAppear": "ستظهر معاملاتك الأخيرة هنا",
   "@home_transactionsWillAppear": {
     "description": "Transactions will appear message"
   },
-
   "home_balance": "الرصيد",
   "@home_balance": {
     "description": "Balance label on home screen"
   },
-
   "send_title": "إرسال أموال",
   "@send_title": {
     "description": "Send money page title"
   },
-
   "send_toPhone": "إلى رقم هاتف",
   "@send_toPhone": {
     "description": "To phone tab"
   },
-
   "send_toWallet": "إلى محفظة",
   "@send_toWallet": {
     "description": "To wallet tab"
   },
-
   "send_recent": "الأخيرة",
   "@send_recent": {
     "description": "Recent contacts label"
   },
-
   "send_recipient": "المستلم",
   "@send_recipient": {
     "description": "Recipient label"
   },
-
   "send_saved": "المحفوظة",
   "@send_saved": {
     "description": "Saved recipients button"
   },
-
   "send_contacts": "جهات الاتصال",
   "@send_contacts": {
     "description": "Contacts button"
   },
-
   "send_amountUsd": "المبلغ (دولار أمريكي)",
   "@send_amountUsd": {
     "description": "Amount in USD label"
   },
-
   "send_walletAddress": "عنوان المحفظة",
   "@send_walletAddress": {
     "description": "Wallet address label"
   },
-
   "send_networkInfo": "قد تستغرق التحويلات الخارجية بضع دقائق. تطبق رسوم صغيرة.",
   "@send_networkInfo": {
     "description": "Network info message"
   },
-
   "send_transferSuccess": "تم التحويل بنجاح!",
   "@send_transferSuccess": {
     "description": "Transfer success message"
   },
-
   "send_invalidAmount": "أدخل مبلغاً صحيحاً",
   "@send_invalidAmount": {
     "description": "Invalid amount error"
   },
-
   "send_insufficientBalance": "الرصيد غير كافٍ",
   "@send_insufficientBalance": {
     "description": "Insufficient balance error"
   },
-
   "send_addressMustStartWith0x": "يجب أن يبدأ العنوان بـ 0x",
   "@send_addressMustStartWith0x": {
     "description": "Address format error"
   },
-
   "send_addressLength": "يجب أن يكون العنوان 42 حرفاً بالضبط",
   "@send_addressLength": {
     "description": "Address length error"
   },
-
   "send_invalidEthereumAddress": "صيغة عنوان إيثريوم غير صحيحة",
   "@send_invalidEthereumAddress": {
     "description": "Invalid Ethereum address error"
   },
-
   "send_saveRecipientPrompt": "حفظ المستلم؟",
   "@send_saveRecipientPrompt": {
     "description": "Save recipient dialog title"
   },
-
   "send_saveRecipientMessage": "هل تريد حفظ هذا المستلم للتحويلات المستقبلية؟",
   "@send_saveRecipientMessage": {
     "description": "Save recipient dialog message"
   },
-
   "send_notNow": "ليس الآن",
   "@send_notNow": {
     "description": "Not now button"
   },
-
   "send_saveRecipientTitle": "حفظ المستلم",
   "@send_saveRecipientTitle": {
     "description": "Save recipient input title"
   },
-
   "send_enterRecipientName": "أدخل اسماً لهذا المستلم",
   "@send_enterRecipientName": {
     "description": "Enter recipient name prompt"
   },
-
   "send_name": "الاسم",
   "@send_name": {
     "description": "Name input placeholder"
   },
-
   "send_recipientSaved": "تم حفظ المستلم",
   "@send_recipientSaved": {
     "description": "Recipient saved success message"
   },
-
   "send_failedToSaveRecipient": "فشل حفظ المستلم",
   "@send_failedToSaveRecipient": {
     "description": "Failed to save recipient error"
   },
-
   "send_selectSavedRecipient": "اختر مستلماً محفوظاً",
   "@send_selectSavedRecipient": {
     "description": "Select saved recipient sheet title"
   },
-
   "send_selectContact": "اختر جهة اتصال",
   "@send_selectContact": {
     "description": "Select contact sheet title"
   },
-
   "send_searchRecipients": "البحث عن مستلمين...",
   "@send_searchRecipients": {
     "description": "Search recipients placeholder"
   },
-
   "send_searchContacts": "البحث في جهات الاتصال...",
   "@send_searchContacts": {
     "description": "Search contacts placeholder"
   },
-
   "send_noSavedRecipients": "لا يوجد مستلمون محفوظون",
   "@send_noSavedRecipients": {
     "description": "No saved recipients message"
   },
-
   "send_failedToLoadRecipients": "فشل تحميل المستلمين",
   "@send_failedToLoadRecipients": {
     "description": "Failed to load recipients error"
   },
-
   "send_joonaPayUser": "مستخدم جونا باي",
   "@send_joonaPayUser": {
     "description": "Korido user badge"
   },
-
   "send_tooManyAttempts": "عدد كبير جداً من المحاولات غير الصحيحة. الرجاء المحاولة لاحقاً.",
   "@send_tooManyAttempts": {
     "description": "Too many PIN attempts error"
   },
-
   "receive_title": "استقبال USDC",
   "@receive_title": {
     "description": "Receive USDC page title"
   },
-
   "receive_receiveUsdc": "استقبال USDC",
   "@receive_receiveUsdc": {
     "description": "Receive USDC info title"
   },
-
   "receive_onlySendUsdc": "شارك عنوانك لاستقبال USDC",
   "@receive_onlySendUsdc": {
     "description": "Receive USDC info"
   },
-
   "receive_yourWalletAddress": "عنوان محفظتك",
   "@receive_yourWalletAddress": {
     "description": "Your wallet address label"
   },
-
   "receive_walletNotAvailable": "عنوان المحفظة غير متاح",
   "@receive_walletNotAvailable": {
     "description": "Wallet address not available message"
   },
-
   "receive_addressCopied": "تم نسخ العنوان إلى الحافظة (يمسح تلقائياً خلال 60 ثانية)",
   "@receive_addressCopied": {
     "description": "Address copied success message"
   },
-
   "receive_shareMessage": "أرسل USDC إلى محفظة جونا باي الخاصة بي:\n\n{address}",
   "@receive_shareMessage": {
     "description": "Share wallet address message",
@@ -721,412 +584,330 @@
       }
     }
   },
-
   "receive_shareSubject": "عنوان محفظة USDC الخاصة بي",
   "@receive_shareSubject": {
     "description": "Share subject"
   },
-
   "receive_important": "مهم",
   "@receive_important": {
     "description": "Important warning label"
   },
-
   "receive_warningMessage": "أرسل USDC فقط إلى هذا العنوان. إرسال رموز أخرى قد يؤدي إلى فقدان دائم للأموال.",
   "@receive_warningMessage": {
     "description": "Important warning message"
   },
-
   "transactions_title": "المعاملات",
   "@transactions_title": {
     "description": "Transactions page title"
   },
-
   "transactions_searchPlaceholder": "البحث في المعاملات...",
   "@transactions_searchPlaceholder": {
     "description": "Search transactions placeholder"
   },
-
   "transactions_noResultsFound": "لم يتم العثور على نتائج",
   "@transactions_noResultsFound": {
     "description": "No results found title"
   },
-
   "transactions_noTransactions": "لا توجد معاملات",
   "@transactions_noTransactions": {
     "description": "No transactions title"
   },
-
   "transactions_adjustFilters": "حاول تعديل الفلاتر أو استعلام البحث للعثور على ما تبحث عنه.",
   "@transactions_adjustFilters": {
     "description": "Adjust filters message"
   },
-
   "transactions_historyMessage": "سيظهر سجل معاملاتك هنا بمجرد إجراء أول إيداع أو تحويل.",
   "@transactions_historyMessage": {
     "description": "Transaction history message"
   },
-
   "transactions_somethingWentWrong": "حدث خطأ ما",
   "@transactions_somethingWentWrong": {
     "description": "Something went wrong title"
   },
-
   "transactions_today": "اليوم",
   "@transactions_today": {
     "description": "Today label"
   },
-
   "transactions_yesterday": "أمس",
   "@transactions_yesterday": {
     "description": "Yesterday label"
   },
-
   "transactions_deposit": "إيداع",
   "@transactions_deposit": {
     "description": "Deposit transaction type"
   },
-
   "transactions_withdrawal": "سحب",
   "@transactions_withdrawal": {
     "description": "Withdrawal transaction type"
   },
-
   "transactions_transferReceived": "تحويل مستلم",
   "@transactions_transferReceived": {
     "description": "Transfer received transaction type"
   },
-
   "transactions_transferSent": "تحويل مرسل",
   "@transactions_transferSent": {
     "description": "Transfer sent transaction type"
   },
-
   "transactions_mobileMoneyDeposit": "إيداع من المحفظة الإلكترونية",
   "@transactions_mobileMoneyDeposit": {
     "description": "Mobile money deposit subtitle"
   },
-
   "transactions_mobileMoneyWithdrawal": "سحب إلى المحفظة الإلكترونية",
   "@transactions_mobileMoneyWithdrawal": {
     "description": "Mobile money withdrawal subtitle"
   },
-
   "transactions_fromKoridoUser": "من مستخدم جونا باي",
   "@transactions_fromKoridoUser": {
     "description": "From Korido user subtitle"
   },
-
   "transactions_externalWallet": "محفظة خارجية",
   "@transactions_externalWallet": {
     "description": "External wallet subtitle"
   },
-
   "transactions_deposits": "الإيداعات",
   "@transactions_deposits": {
     "description": "Deposits filter"
   },
-
   "transactions_withdrawals": "السحوبات",
   "@transactions_withdrawals": {
     "description": "Withdrawals filter"
   },
-
   "transactions_receivedFilter": "المستلمة",
   "@transactions_receivedFilter": {
     "description": "Received filter"
   },
-
   "transactions_sentFilter": "المرسلة",
   "@transactions_sentFilter": {
     "description": "Sent filter"
   },
-
   "services_title": "الخدمات",
   "@services_title": {
     "description": "Services page title"
   },
-
   "services_coreServices": "الخدمات الأساسية",
   "@services_coreServices": {
     "description": "Core services section"
   },
-
   "services_financialServices": "الخدمات المالية",
   "@services_financialServices": {
     "description": "Financial services section"
   },
-
   "services_billsPayments": "الفواتير والمدفوعات",
   "@services_billsPayments": {
     "description": "Bills and payments section"
   },
-
   "services_toolsAnalytics": "الأدوات والتحليلات",
   "@services_toolsAnalytics": {
     "description": "Tools and analytics section"
   },
-
   "services_sendMoney": "إرسال أموال",
   "@services_sendMoney": {
     "description": "Send money service"
   },
-
   "services_sendMoneyDesc": "تحويل إلى أي محفظة",
   "@services_sendMoneyDesc": {
     "description": "Send money description"
   },
-
   "services_receiveMoney": "استقبال أموال",
   "@services_receiveMoney": {
     "description": "Receive money service"
   },
-
   "services_receiveMoneyDesc": "احصل على عنوان محفظتك",
   "@services_receiveMoneyDesc": {
     "description": "Receive money description"
   },
-
   "services_requestMoney": "طلب أموال",
   "@services_requestMoney": {
     "description": "Request money service"
   },
-
   "services_requestMoneyDesc": "إنشاء طلب دفع",
   "@services_requestMoneyDesc": {
     "description": "Request money description"
   },
-
   "services_scanQr": "مسح رمز الاستجابة السريعة",
   "@services_scanQr": {
     "description": "Scan QR service"
   },
-
   "services_scanQrDesc": "امسح للدفع أو الاستقبال",
   "@services_scanQrDesc": {
     "description": "Scan QR description"
   },
-
   "services_recipients": "المستلمون",
   "@services_recipients": {
     "description": "Recipients service"
   },
-
   "services_recipientsDesc": "إدارة جهات الاتصال المحفوظة",
   "@services_recipientsDesc": {
     "description": "Recipients description"
   },
-
   "services_scheduledTransfers": "التحويلات المجدولة",
   "@services_scheduledTransfers": {
     "description": "Scheduled transfers service"
   },
-
   "services_scheduledTransfersDesc": "إدارة الدفعات المتكررة",
   "@services_scheduledTransfersDesc": {
     "description": "Scheduled transfers description"
   },
-
   "services_virtualCard": "بطاقة افتراضية",
   "@services_virtualCard": {
     "description": "Virtual card service"
   },
-
   "services_virtualCardDesc": "بطاقة للتسوق عبر الإنترنت",
   "@services_virtualCardDesc": {
     "description": "Virtual card description"
   },
-
   "services_savingsGoals": "أهداف الادخار",
   "@services_savingsGoals": {
     "description": "Savings goals service"
   },
-
   "services_savingsGoalsDesc": "تتبع مدخراتك",
   "@services_savingsGoalsDesc": {
     "description": "Savings goals description"
   },
-
   "services_budget": "الميزانية",
   "@services_budget": {
     "description": "Budget service"
   },
-
   "services_budgetDesc": "إدارة حدود الإنفاق",
   "@services_budgetDesc": {
     "description": "Budget description"
   },
-
   "services_currencyConverter": "محول العملات",
   "@services_currencyConverter": {
     "description": "Currency converter service"
   },
-
   "services_currencyConverterDesc": "تحويل العملات",
   "@services_currencyConverterDesc": {
     "description": "Currency converter description"
   },
-
   "services_billPayments": "دفع الفواتير",
   "@services_billPayments": {
     "description": "Bill payments service"
   },
-
   "services_billPaymentsDesc": "دفع فواتير المرافق",
   "@services_billPaymentsDesc": {
     "description": "Bill payments description"
   },
-
   "services_buyAirtime": "شراء رصيد",
   "@services_buyAirtime": {
     "description": "Buy airtime service"
   },
-
   "services_buyAirtimeDesc": "شحن رصيد الهاتف",
   "@services_buyAirtimeDesc": {
     "description": "Buy airtime description"
   },
-
   "services_splitBills": "تقسيم الفواتير",
   "@services_splitBills": {
     "description": "Split bills service"
   },
-
   "services_splitBillsDesc": "مشاركة النفقات",
   "@services_splitBillsDesc": {
     "description": "Split bills description"
   },
-
   "services_analytics": "التحليلات",
   "@services_analytics": {
     "description": "Analytics service"
   },
-
   "services_analyticsDesc": "عرض رؤى الإنفاق",
   "@services_analyticsDesc": {
     "description": "Analytics description"
   },
-
   "services_referrals": "الإحالات",
   "@services_referrals": {
     "description": "Referrals service"
   },
-
   "services_referralsDesc": "ادعُ واكسب",
   "@services_referralsDesc": {
     "description": "Referrals description"
   },
-
   "settings_profile": "الملف الشخصي",
   "@settings_profile": {
     "description": "Profile settings label"
   },
-
   "settings_profileDescription": "إدارة معلوماتك الشخصية",
   "@settings_profileDescription": {
     "description": "Profile settings description"
   },
-
   "settings_security": "الأمان",
   "@settings_security": {
     "description": "Security settings section label"
   },
-
   "settings_securitySettings": "إعدادات الأمان",
   "@settings_securitySettings": {
     "description": "Security settings label"
   },
-
   "settings_securityDescription": "الرمز السري، التحقق بخطوتين، البيومترية",
   "@settings_securityDescription": {
     "description": "Security settings description"
   },
-
   "settings_language": "اللغة",
   "@settings_language": {
     "description": "Language settings label"
   },
-
   "settings_theme": "السمة",
   "@settings_theme": {
     "description": "Theme settings label"
   },
-
   "settings_selectTheme": "اختر السمة",
   "@settings_selectTheme": {
     "description": "Select theme dialog title"
   },
-
   "settings_themeLight": "فاتح",
   "@settings_themeLight": {
     "description": "Light theme option"
   },
-
   "settings_themeDark": "داكن",
   "@settings_themeDark": {
     "description": "Dark theme option"
   },
-
   "settings_themeSystem": "النظام",
   "@settings_themeSystem": {
     "description": "System theme option (follows device)"
   },
-
   "settings_notifications": "الإشعارات",
   "@settings_notifications": {
     "description": "Notifications settings label"
   },
-
   "settings_preferences": "التفضيلات",
   "@settings_preferences": {
     "description": "Preferences section label"
   },
-
   "settings_defaultCurrency": "العملة الافتراضية",
   "@settings_defaultCurrency": {
     "description": "Default currency label"
   },
-
   "settings_support": "الدعم",
   "@settings_support": {
     "description": "Support section label"
   },
-
   "settings_helpSupport": "المساعدة والدعم",
   "@settings_helpSupport": {
     "description": "Help and support label"
   },
-
   "settings_helpDescription": "الأسئلة الشائعة، الدردشة، الاتصال",
   "@settings_helpDescription": {
     "description": "Help and support description"
   },
-
   "settings_kycVerification": "التحقق من الهوية",
   "@settings_kycVerification": {
     "description": "KYC verification label"
   },
-
   "settings_transactionLimits": "حدود المعاملات",
   "@settings_transactionLimits": {
     "description": "Transaction limits label"
   },
-
   "settings_limitsDescription": "عرض وزيادة الحدود",
   "@settings_limitsDescription": {
     "description": "Transaction limits description"
   },
-
   "settings_referEarn": "أحل واكسب",
   "@settings_referEarn": {
     "description": "Refer and earn label"
   },
-
   "settings_referDescription": "ادعُ الأصدقاء واكسب مكافآت",
   "@settings_referDescription": {
     "description": "Refer and earn description"
   },
-
   "settings_version": "الإصدار {version}",
   "@settings_version": {
     "description": "App version label",
@@ -1137,707 +918,566 @@
       }
     }
   },
-
   "settings_devices": "الأجهزة",
   "@settings_devices": {
     "description": "Devices screen title"
   },
-
   "settings_devicesDescription": "إدارة الأجهزة التي لديها وصول إلى حسابك. إلغاء الوصول من أي جهاز.",
   "@settings_devicesDescription": {
     "description": "Devices screen description"
   },
-
   "settings_thisDevice": "هذا الجهاز",
   "@settings_thisDevice": {
     "description": "Current device badge"
   },
-
   "settings_lastActive": "آخر نشاط",
   "@settings_lastActive": {
     "description": "Last active label"
   },
-
   "settings_loginCount": "تسجيلات الدخول",
   "@settings_loginCount": {
     "description": "Login count label"
   },
-
   "settings_times": "مرات",
   "@settings_times": {
     "description": "Times unit"
   },
-
   "settings_lastIp": "آخر عنوان IP",
   "@settings_lastIp": {
     "description": "Last IP address label"
   },
-
   "settings_trustDevice": "الوثوق بالجهاز",
   "@settings_trustDevice": {
     "description": "Trust device button"
   },
-
   "settings_removeDevice": "إزالة الجهاز",
   "@settings_removeDevice": {
     "description": "Remove device button"
   },
-
   "settings_removeDeviceConfirm": "سيتم تسجيل خروج هذا الجهاز وسيحتاج إلى المصادقة مرة أخرى للوصول إلى حسابك.",
   "@settings_removeDeviceConfirm": {
     "description": "Remove device confirmation message"
   },
-
   "settings_noDevices": "لم يتم العثور على أجهزة",
   "@settings_noDevices": {
     "description": "Empty state title"
   },
-
   "settings_noDevicesDescription": "ليس لديك أي أجهزة مسجلة بعد.",
   "@settings_noDevicesDescription": {
     "description": "Empty state description"
   },
-
   "kyc_verified": "تم التحقق",
   "@kyc_verified": {
     "description": "KYC verified status"
   },
-
   "kyc_pending": "قيد المراجعة",
   "@kyc_pending": {
     "description": "KYC pending status"
   },
-
   "kyc_rejected": "مرفوض - أعد المحاولة",
   "@kyc_rejected": {
     "description": "KYC rejected status"
   },
-
   "kyc_notStarted": "لم يبدأ",
   "@kyc_notStarted": {
     "description": "KYC not started status"
   },
-
   "kyc_title": "التحقق من الهوية",
   "@kyc_title": {
     "description": "KYC page title"
   },
-
   "kyc_selectDocumentType": "اختر نوع المستند",
   "@kyc_selectDocumentType": {
     "description": "Document type selection title"
   },
-
   "kyc_selectDocumentType_description": "اختر نوع المستند الذي تريد التحقق به",
   "@kyc_selectDocumentType_description": {
     "description": "Document type selection description"
   },
-
   "kyc_documentType_nationalId": "بطاقة الهوية الوطنية",
   "@kyc_documentType_nationalId": {
     "description": "National ID document type"
   },
-
   "kyc_documentType_nationalId_description": "بطاقة هوية صادرة من الحكومة",
   "@kyc_documentType_nationalId_description": {
     "description": "National ID document description"
   },
-
   "kyc_documentType_passport": "جواز السفر",
   "@kyc_documentType_passport": {
     "description": "Passport document type"
   },
-
   "kyc_documentType_passport_description": "وثيقة سفر دولية",
   "@kyc_documentType_passport_description": {
     "description": "Passport document description"
   },
-
   "kyc_documentType_driversLicense": "رخصة القيادة",
   "@kyc_documentType_driversLicense": {
     "description": "Driver's license document type"
   },
-
   "kyc_documentType_driversLicense_description": "رخصة قيادة صادرة من الحكومة",
   "@kyc_documentType_driversLicense_description": {
     "description": "Driver's license document description"
   },
-
   "kyc_capture_frontSide_guidance": "وجّه الجانب الأمامي من مستندك داخل الإطار",
   "@kyc_capture_frontSide_guidance": {
     "description": "Front side capture guidance"
   },
-
   "kyc_capture_backSide_guidance": "وجّه الجانب الخلفي من مستندك داخل الإطار",
   "@kyc_capture_backSide_guidance": {
     "description": "Back side capture guidance"
   },
-
   "kyc_capture_nationalIdInstructions": "ضع بطاقة الهوية مسطحة ومضاءة جيداً داخل الإطار",
   "@kyc_capture_nationalIdInstructions": {
     "description": "National ID capture instructions"
   },
-
   "kyc_capture_passportInstructions": "ضع صفحة صورة جواز السفر داخل الإطار",
   "@kyc_capture_passportInstructions": {
     "description": "Passport capture instructions"
   },
-
   "kyc_capture_driversLicenseInstructions": "ضع رخصة القيادة مسطحة داخل الإطار",
   "@kyc_capture_driversLicenseInstructions": {
     "description": "Driver's license capture instructions"
   },
-
   "kyc_capture_backInstructions": "الآن التقط الجانب الخلفي من مستندك",
   "@kyc_capture_backInstructions": {
     "description": "Back side capture instructions"
   },
-
   "kyc_checkingQuality": "جاري التحقق من جودة الصورة...",
   "@kyc_checkingQuality": {
     "description": "Image quality check message"
   },
-
   "kyc_reviewImage": "مراجعة الصورة",
   "@kyc_reviewImage": {
     "description": "Review image screen title"
   },
-
   "kyc_retake": "إعادة الالتقاط",
   "@kyc_retake": {
     "description": "Retake photo button"
   },
-
   "kyc_accept": "قبول",
   "@kyc_accept": {
     "description": "Accept photo button"
   },
-
   "kyc_error_imageQuality": "جودة الصورة غير مقبولة. الرجاء المحاولة مرة أخرى.",
   "@kyc_error_imageQuality": {
     "description": "Generic image quality error"
   },
-
   "kyc_error_imageBlurry": "الصورة ضبابية جداً. أمسك هاتفك بثبات وحاول مرة أخرى.",
   "@kyc_error_imageBlurry": {
     "description": "Blurry image error"
   },
-
   "kyc_error_imageGlare": "تم اكتشاف وهج كثير. تجنب الضوء المباشر وحاول مرة أخرى.",
   "@kyc_error_imageGlare": {
     "description": "Glare detected error"
   },
-
   "kyc_error_imageTooDark": "الصورة مظلمة جداً. استخدم إضاءة أفضل وحاول مرة أخرى.",
   "@kyc_error_imageTooDark": {
     "description": "Image too dark error"
   },
-
   "kyc_status_pending_title": "ابدأ التحقق",
   "@kyc_status_pending_title": {
     "description": "Pending status title"
   },
-
   "kyc_status_pending_description": "أكمل التحقق من هويتك لفتح حدود أعلى وجميع الميزات.",
   "@kyc_status_pending_description": {
     "description": "Pending status description"
   },
-
   "kyc_status_submitted_title": "التحقق قيد التقدم",
   "@kyc_status_submitted_title": {
     "description": "Submitted status title"
   },
-
   "kyc_status_submitted_description": "يتم مراجعة مستنداتك. عادة ما يستغرق ذلك 1-2 يوم عمل.",
   "@kyc_status_submitted_description": {
     "description": "Submitted status description"
   },
-
   "kyc_status_approved_title": "اكتمل التحقق",
   "@kyc_status_approved_title": {
     "description": "Approved status title"
   },
-
   "kyc_status_approved_description": "تم التحقق من هويتك. لديك الآن إمكانية الوصول إلى جميع الميزات!",
   "@kyc_status_approved_description": {
     "description": "Approved status description"
   },
-
   "kyc_status_rejected_title": "فشل التحقق",
   "@kyc_status_rejected_title": {
     "description": "Rejected status title"
   },
-
   "kyc_status_rejected_description": "لم نتمكن من التحقق من مستنداتك. يرجى مراجعة السبب أدناه والمحاولة مرة أخرى.",
   "@kyc_status_rejected_description": {
     "description": "Rejected status description"
   },
-
   "kyc_status_additionalInfo_title": "معلومات إضافية مطلوبة",
   "@kyc_status_additionalInfo_title": {
     "description": "Additional info needed title"
   },
-
   "kyc_status_additionalInfo_description": "يرجى تقديم معلومات إضافية لإكمال التحقق الخاص بك.",
   "@kyc_status_additionalInfo_description": {
     "description": "Additional info needed description"
   },
-
   "kyc_rejectionReason": "سبب الرفض",
   "@kyc_rejectionReason": {
     "description": "Rejection reason label"
   },
-
   "kyc_tryAgain": "حاول مرة أخرى",
   "@kyc_tryAgain": {
     "description": "Try again button"
   },
-
   "kyc_startVerification": "ابدأ التحقق",
   "@kyc_startVerification": {
     "description": "Start verification button"
   },
-
   "kyc_info_security_title": "بياناتك آمنة",
   "@kyc_info_security_title": {
     "description": "Security info title"
   },
-
   "kyc_info_security_description": "جميع المستندات مشفرة ومخزنة بشكل آمن",
   "@kyc_info_security_description": {
     "description": "Security info description"
   },
-
   "kyc_info_time_title": "عملية سريعة",
   "@kyc_info_time_title": {
     "description": "Time info title"
   },
-
   "kyc_info_time_description": "عادةً ما يستغرق التحقق 1-2 يوم عمل",
   "@kyc_info_time_description": {
     "description": "Time info description"
   },
-
   "kyc_info_documents_title": "المستندات المطلوبة",
   "@kyc_info_documents_title": {
     "description": "Documents info title"
   },
-
   "kyc_info_documents_description": "بطاقة هوية أو جواز سفر صالح صادر من الحكومة",
   "@kyc_info_documents_description": {
     "description": "Documents info description"
   },
-
   "kyc_reviewDocuments": "مراجعة المستندات",
   "@kyc_reviewDocuments": {
     "description": "Review documents title"
   },
-
   "kyc_review_description": "راجع المستندات الملتقطة قبل إرسالها للتحقق",
   "@kyc_review_description": {
     "description": "Review screen description"
   },
-
   "kyc_review_documents": "المستندات",
   "@kyc_review_documents": {
     "description": "Documents section label"
   },
-
   "kyc_review_documentFront": "الجانب الأمامي للمستند",
   "@kyc_review_documentFront": {
     "description": "Document front label"
   },
-
   "kyc_review_documentBack": "الجانب الخلفي للمستند",
   "@kyc_review_documentBack": {
     "description": "Document back label"
   },
-
   "kyc_review_selfie": "صورة شخصية",
   "@kyc_review_selfie": {
     "description": "Selfie section label"
   },
-
   "kyc_review_yourSelfie": "صورتك الشخصية",
   "@kyc_review_yourSelfie": {
     "description": "Your selfie label"
   },
-
   "kyc_submitForVerification": "إرسال للتحقق",
   "@kyc_submitForVerification": {
     "description": "Submit button label"
   },
-
   "kyc_selfie_title": "التقط صورة شخصية",
   "@kyc_selfie_title": {
     "description": "Selfie capture title"
   },
-
   "kyc_selfie_guidance": "ضع وجهك في الإطار البيضاوي",
   "@kyc_selfie_guidance": {
     "description": "Selfie capture guidance"
   },
-
   "kyc_selfie_livenessHint": "تأكد من أنك في منطقة مضاءة جيداً",
   "@kyc_selfie_livenessHint": {
     "description": "Selfie liveness hint"
   },
-
   "kyc_selfie_instructions": "انظر مباشرة إلى الكاميرا وحافظ على وجهك داخل الإطار",
   "@kyc_selfie_instructions": {
     "description": "Selfie capture instructions"
   },
-
   "kyc_reviewSelfie": "مراجعة الصورة الشخصية",
   "@kyc_reviewSelfie": {
     "description": "Review selfie title"
   },
-
   "kyc_submitted_title": "تم إرسال التحقق",
   "@kyc_submitted_title": {
     "description": "Submission success title"
   },
-
   "kyc_submitted_description": "شكراً لك! تم إرسال مستنداتك للتحقق. سنخطرك بمجرد اكتمال المراجعة.",
   "@kyc_submitted_description": {
     "description": "Submission success description"
   },
-
   "kyc_submitted_timeEstimate": "عادةً ما يستغرق التحقق 1-2 يوم عمل",
   "@kyc_submitted_timeEstimate": {
     "description": "Time estimate for verification"
   },
-
   "transaction_sent": "مرسل",
   "@transaction_sent": {
     "description": "Transaction sent label"
   },
-
   "transaction_received": "مستلم",
   "@transaction_received": {
     "description": "Transaction received label"
   },
-
   "transaction_pending": "قيد الانتظار",
   "@transaction_pending": {
     "description": "Transaction pending status"
   },
-
   "transaction_failed": "فشل",
   "@transaction_failed": {
     "description": "Transaction failed status"
   },
-
   "transaction_completed": "مكتمل",
   "@transaction_completed": {
     "description": "Transaction completed status"
   },
-
   "error_generic": "واجهنا مشكلة. الرجاء المحاولة مرة أخرى بعد قليل.",
   "@error_generic": {
     "description": "Generic error message"
   },
-
   "error_network": "غير قادر على الاتصال. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
   "@error_network": {
     "description": "Network error message"
   },
-
   "error_failedToLoadBalance": "غير قادر على تحميل رصيدك. اسحب للأسفل للتحديث أو حاول مرة أخرى لاحقاً.",
   "@error_failedToLoadBalance": {
     "description": "Failed to load balance error"
   },
-
   "error_failedToLoadTransactions": "غير قادر على تحميل المعاملات. اسحب للأسفل للتحديث أو حاول مرة أخرى لاحقاً.",
   "@error_failedToLoadTransactions": {
     "description": "Failed to load transactions error"
   },
-
   "language_english": "الإنجليزية",
   "@language_english": {
     "description": "English language name"
   },
-
   "language_french": "الفرنسية",
   "@language_french": {
     "description": "French language name"
   },
-
   "language_selectLanguage": "اختر اللغة",
   "@language_selectLanguage": {
     "description": "Select language label"
   },
-
   "language_changeLanguage": "تغيير اللغة",
   "@language_changeLanguage": {
     "description": "Change language label"
   },
-
   "currency_primary": "العملة الأساسية",
   "@currency_primary": {
     "description": "Primary currency section label"
   },
-
   "currency_reference": "العملة المرجعية",
   "@currency_reference": {
     "description": "Reference currency section label"
   },
-
   "currency_referenceDescription": "يعرض ما يعادل العملة المحلية أسفل رصيد USDC الخاص بك للإشارة فقط. أسعار الصرف تقريبية.",
   "@currency_referenceDescription": {
     "description": "Reference currency description"
   },
-
   "currency_showReference": "إظهار العملة المحلية",
   "@currency_showReference": {
     "description": "Show reference currency toggle label"
   },
-
   "currency_showReferenceDescription": "عرض قيمة العملة المحلية التقريبية أسفل مبالغ USDC",
   "@currency_showReferenceDescription": {
     "description": "Show reference currency toggle description"
   },
-
   "currency_preview": "معاينة",
   "@currency_preview": {
     "description": "Currency preview section label"
   },
-
   "settings_activeSessions": "الجلسات النشطة",
   "@settings_activeSessions": {
     "description": "Active sessions settings item"
   },
-
   "sessions_currentSession": "الجلسة الحالية",
   "@sessions_currentSession": {
     "description": "Current session badge"
   },
-
   "sessions_unknownLocation": "موقع غير معروف",
   "@sessions_unknownLocation": {
     "description": "Unknown location placeholder"
   },
-
   "sessions_unknownIP": "عنوان IP غير معروف",
   "@sessions_unknownIP": {
     "description": "Unknown IP placeholder"
   },
-
   "sessions_lastActive": "آخر نشاط",
   "@sessions_lastActive": {
     "description": "Last active label"
   },
-
   "sessions_revokeTitle": "إلغاء الجلسة",
   "@sessions_revokeTitle": {
     "description": "Revoke session dialog title"
   },
-
   "sessions_revokeMessage": "هل أنت متأكد من أنك تريد إلغاء هذه الجلسة؟ سيتم تسجيل خروج هذا الجهاز فوراً.",
   "@sessions_revokeMessage": {
     "description": "Revoke session dialog message"
   },
-
   "sessions_revoke": "إلغاء",
   "@sessions_revoke": {
     "description": "Revoke button label"
   },
-
   "sessions_revokeSuccess": "تم إلغاء الجلسة بنجاح",
   "@sessions_revokeSuccess": {
     "description": "Revoke session success message"
   },
-
   "sessions_logoutAllDevices": "تسجيل الخروج من جميع الأجهزة",
   "@sessions_logoutAllDevices": {
     "description": "Logout all devices button"
   },
-
   "sessions_logoutAllTitle": "تسجيل الخروج من جميع الأجهزة؟",
   "@sessions_logoutAllTitle": {
     "description": "Logout all devices dialog title"
   },
-
   "sessions_logoutAllMessage": "سيؤدي هذا إلى تسجيل خروجك من جميع الأجهزة بما في ذلك هذا الجهاز. ستحتاج إلى تسجيل الدخول مرة أخرى.",
   "@sessions_logoutAllMessage": {
     "description": "Logout all devices dialog message"
   },
-
   "sessions_logoutAllWarning": "لا يمكن التراجع عن هذا الإجراء",
   "@sessions_logoutAllWarning": {
     "description": "Logout all devices warning"
   },
-
   "sessions_logoutAll": "تسجيل خروج الكل",
   "@sessions_logoutAll": {
     "description": "Logout all confirmation button"
   },
-
   "sessions_logoutAllSuccess": "تم تسجيل الخروج من جميع الأجهزة",
   "@sessions_logoutAllSuccess": {
     "description": "Logout all success message"
   },
-
   "sessions_errorLoading": "فشل تحميل الجلسات",
   "@sessions_errorLoading": {
     "description": "Error loading sessions title"
   },
-
   "sessions_noActiveSessions": "لا توجد جلسات نشطة",
   "@sessions_noActiveSessions": {
     "description": "No active sessions title"
   },
-
   "sessions_noActiveSessionsDesc": "ليس لديك أي جلسات نشطة في الوقت الحالي.",
   "@sessions_noActiveSessionsDesc": {
     "description": "No active sessions description"
   },
-
   "beneficiaries_title": "المستفيدون",
   "@beneficiaries_title": {
     "description": "Beneficiaries screen title"
   },
-
   "beneficiaries_tabAll": "الكل",
   "@beneficiaries_tabAll": {
     "description": "All beneficiaries tab"
   },
-
   "beneficiaries_tabFavorites": "المفضلة",
   "@beneficiaries_tabFavorites": {
     "description": "Favorites tab"
   },
-
   "beneficiaries_tabRecent": "الأخيرة",
   "@beneficiaries_tabRecent": {
     "description": "Recent tab"
   },
-
   "beneficiaries_searchHint": "البحث بالاسم أو رقم الهاتف",
   "@beneficiaries_searchHint": {
     "description": "Search hint text"
   },
-
   "beneficiaries_addTitle": "إضافة مستفيد",
   "@beneficiaries_addTitle": {
     "description": "Add beneficiary screen title"
   },
-
   "beneficiaries_editTitle": "تعديل المستفيد",
   "@beneficiaries_editTitle": {
     "description": "Edit beneficiary screen title"
   },
-
   "beneficiaries_fieldName": "الاسم",
   "@beneficiaries_fieldName": {
     "description": "Name field label"
   },
-
   "beneficiaries_fieldPhone": "رقم الهاتف",
   "@beneficiaries_fieldPhone": {
     "description": "Phone field label"
   },
-
   "beneficiaries_fieldAccountType": "نوع الحساب",
   "@beneficiaries_fieldAccountType": {
     "description": "Account type field label"
   },
-
   "beneficiaries_fieldWalletAddress": "عنوان المحفظة",
   "@beneficiaries_fieldWalletAddress": {
     "description": "Wallet address field label"
   },
-
   "beneficiaries_fieldBankCode": "رمز البنك",
   "@beneficiaries_fieldBankCode": {
     "description": "Bank code field label"
   },
-
   "beneficiaries_fieldBankAccount": "رقم الحساب البنكي",
   "@beneficiaries_fieldBankAccount": {
     "description": "Bank account field label"
   },
-
   "beneficiaries_fieldMobileMoneyProvider": "مزود المحفظة الإلكترونية",
   "@beneficiaries_fieldMobileMoneyProvider": {
     "description": "Mobile money provider field label"
   },
-
   "beneficiaries_typeJoonapay": "مستخدم جونا باي",
   "@beneficiaries_typeJoonapay": {
     "description": "Korido user account type"
   },
-
   "beneficiaries_typeWallet": "محفظة خارجية",
   "@beneficiaries_typeWallet": {
     "description": "External wallet account type"
   },
-
   "beneficiaries_typeBank": "حساب بنكي",
   "@beneficiaries_typeBank": {
     "description": "Bank account type"
   },
-
   "beneficiaries_typeMobileMoney": "محفظة إلكترونية",
   "@beneficiaries_typeMobileMoney": {
     "description": "Mobile money account type"
   },
-
   "beneficiaries_addButton": "إضافة مستفيد",
   "@beneficiaries_addButton": {
     "description": "Add beneficiary button"
   },
-
   "beneficiaries_addFirst": "أضف مستفيدك الأول",
   "@beneficiaries_addFirst": {
     "description": "Add first beneficiary button"
   },
-
   "beneficiaries_emptyTitle": "لا يوجد مستفيدون بعد",
   "@beneficiaries_emptyTitle": {
     "description": "Empty state title"
   },
-
   "beneficiaries_emptyMessage": "أضف مستفيدين لإرسال الأموال بشكل أسرع في المرة القادمة",
   "@beneficiaries_emptyMessage": {
     "description": "Empty state message"
   },
-
   "beneficiaries_emptyFavoritesTitle": "لا توجد مفضلات",
   "@beneficiaries_emptyFavoritesTitle": {
     "description": "Empty favorites title"
   },
-
   "beneficiaries_emptyFavoritesMessage": "ضع نجمة على المستفيدين المستخدمين بشكل متكرر لرؤيتهم هنا",
   "@beneficiaries_emptyFavoritesMessage": {
     "description": "Empty favorites message"
   },
-
   "beneficiaries_emptyRecentTitle": "لا توجد تحويلات أخيرة",
   "@beneficiaries_emptyRecentTitle": {
     "description": "Empty recent title"
   },
-
   "beneficiaries_emptyRecentMessage": "سيظهر هنا المستفيدون الذين أرسلت لهم الأموال",
   "@beneficiaries_emptyRecentMessage": {
     "description": "Empty recent message"
   },
-
   "beneficiaries_menuEdit": "تعديل",
   "@beneficiaries_menuEdit": {
     "description": "Edit menu item"
   },
-
   "beneficiaries_menuDelete": "حذف",
   "@beneficiaries_menuDelete": {
     "description": "Delete menu item"
   },
-
   "beneficiaries_deleteTitle": "حذف المستفيد؟",
   "@beneficiaries_deleteTitle": {
     "description": "Delete confirmation title"
   },
-
   "beneficiaries_deleteMessage": "هل أنت متأكد من حذف {name}؟",
   "@beneficiaries_deleteMessage": {
     "description": "Delete confirmation message",
@@ -1847,267 +1487,214 @@
       }
     }
   },
-
   "beneficiaries_deleteSuccess": "تم حذف المستفيد بنجاح",
   "@beneficiaries_deleteSuccess": {
     "description": "Delete success message"
   },
-
   "beneficiaries_createSuccess": "تمت إضافة المستفيد بنجاح",
   "@beneficiaries_createSuccess": {
     "description": "Create success message"
   },
-
   "beneficiaries_updateSuccess": "تم تحديث المستفيد بنجاح",
   "@beneficiaries_updateSuccess": {
     "description": "Update success message"
   },
-
   "beneficiaries_errorTitle": "خطأ في تحميل المستفيدين",
   "@beneficiaries_errorTitle": {
     "description": "Error loading title"
   },
-
   "beneficiaries_accountDetails": "تفاصيل الحساب",
   "@beneficiaries_accountDetails": {
     "description": "Account details section title"
   },
-
   "beneficiaries_statistics": "إحصائيات التحويل",
   "@beneficiaries_statistics": {
     "description": "Statistics section title"
   },
-
   "beneficiaries_totalTransfers": "إجمالي التحويلات",
   "@beneficiaries_totalTransfers": {
     "description": "Total transfers label"
   },
-
   "beneficiaries_totalAmount": "المبلغ الإجمالي",
   "@beneficiaries_totalAmount": {
     "description": "Total amount label"
   },
-
   "beneficiaries_lastTransfer": "آخر تحويل",
   "@beneficiaries_lastTransfer": {
     "description": "Last transfer label"
   },
-
   "common_cancel": "إلغاء",
   "@common_cancel": {
     "description": "Cancel button"
   },
-
   "common_delete": "حذف",
   "@common_delete": {
     "description": "Delete button"
   },
-
   "common_save": "حفظ",
   "@common_save": {
     "description": "Save button"
   },
-
   "common_retry": "إعادة المحاولة",
   "@common_retry": {
     "description": "Retry button"
   },
-
   "common_verified": "تم التحقق",
   "@common_verified": {
     "description": "Verified status"
   },
-
   "error_required": "هذا الحقل مطلوب",
   "@error_required": {
     "description": "Required field error"
   },
-
   "qr_receiveTitle": "استقبال دفعة",
   "@qr_receiveTitle": {
     "description": "Receive QR screen title"
   },
-
   "qr_scanTitle": "مسح رمز الاستجابة السريعة",
   "@qr_scanTitle": {
     "description": "Scan QR screen title"
   },
-
   "qr_requestSpecificAmount": "طلب مبلغ محدد",
   "@qr_requestSpecificAmount": {
     "description": "Checkbox label for including amount in QR"
   },
-
   "qr_amountLabel": "المبلغ (دولار أمريكي)",
   "@qr_amountLabel": {
     "description": "Amount input label"
   },
-
   "qr_howToReceive": "كيفية استقبال الدفعة",
   "@qr_howToReceive": {
     "description": "Instructions title"
   },
-
   "qr_receiveInstructions": "شارك رمز الاستجابة السريعة هذا مع المرسل. يمكنهم مسحه بتطبيق جونا باي لإرسال الأموال إليك فوراً.",
   "@qr_receiveInstructions": {
     "description": "Instructions for receiving payment"
   },
-
   "qr_savedToGallery": "تم حفظ رمز الاستجابة السريعة في المعرض",
   "@qr_savedToGallery": {
     "description": "Success message for saving QR"
   },
-
   "qr_failedToSave": "فشل حفظ رمز الاستجابة السريعة",
   "@qr_failedToSave": {
     "description": "Error message for saving QR"
   },
-
   "qr_initializingCamera": "جاري تهيئة الكاميرا...",
   "@qr_initializingCamera": {
     "description": "Loading message for camera"
   },
-
   "qr_scanInstruction": "امسح رمز استجابة سريعة من جونا باي",
   "@qr_scanInstruction": {
     "description": "Main scanner instruction"
   },
-
   "qr_scanSubInstruction": "وجّه كاميرتك إلى رمز استجابة سريعة لإرسال الأموال",
   "@qr_scanSubInstruction": {
     "description": "Secondary scanner instruction"
   },
-
   "qr_scanned": "تم مسح رمز الاستجابة السريعة",
   "@qr_scanned": {
     "description": "Success title after scanning"
   },
-
   "qr_invalidCode": "رمز استجابة سريعة غير صالح",
   "@qr_invalidCode": {
     "description": "Error title for invalid QR"
   },
-
   "qr_invalidCodeMessage": "هذا الرمز ليس رمز دفع صالح من جونا باي.",
   "@qr_invalidCodeMessage": {
     "description": "Error message for invalid QR"
   },
-
   "qr_scanAgain": "امسح مرة أخرى",
   "@qr_scanAgain": {
     "description": "Button to retry scanning"
   },
-
   "qr_sendMoney": "إرسال أموال",
   "@qr_sendMoney": {
     "description": "Button to proceed with payment"
   },
-
   "qr_cameraPermissionRequired": "إذن الكاميرا مطلوب",
   "@qr_cameraPermissionRequired": {
     "description": "Permission denied title"
   },
-
   "qr_cameraPermissionMessage": "يرجى منح إذن الكاميرا لمسح رموز الاستجابة السريعة.",
   "@qr_cameraPermissionMessage": {
     "description": "Permission denied message"
   },
-
   "qr_openSettings": "فتح الإعدادات",
   "@qr_openSettings": {
     "description": "Button to open app settings"
   },
-
   "qr_galleryImportSoon": "استيراد المعرض قريباً",
   "@qr_galleryImportSoon": {
     "description": "Placeholder message for gallery import feature"
   },
-
   "home_goodMorning": "صباح الخير",
   "@home_goodMorning": {
     "description": "Good morning greeting"
   },
-
   "home_goodAfternoon": "مساء الخير",
   "@home_goodAfternoon": {
     "description": "Good afternoon greeting"
   },
-
   "home_goodEvening": "مساء الخير",
   "@home_goodEvening": {
     "description": "Good evening greeting"
   },
-
   "home_goodNight": "ليلة سعيدة",
   "@home_goodNight": {
     "description": "Good night greeting"
   },
-
   "home_totalBalance": "إجمالي الرصيد",
   "@home_totalBalance": {
     "description": "Total balance label"
   },
-
   "home_hideBalance": "إخفاء الرصيد",
   "@home_hideBalance": {
     "description": "Hide balance tooltip"
   },
-
   "home_showBalance": "إظهار الرصيد",
   "@home_showBalance": {
     "description": "Show balance tooltip"
   },
-
   "home_quickAction_send": "إرسال",
   "@home_quickAction_send": {
     "description": "Quick action send label"
   },
-
   "home_quickAction_receive": "استقبال",
   "@home_quickAction_receive": {
     "description": "Quick action receive label"
   },
-
   "home_quickAction_deposit": "إيداع",
   "@home_quickAction_deposit": {
     "description": "Quick action deposit label"
   },
-
   "home_quickAction_history": "السجل",
   "@home_quickAction_history": {
     "description": "Quick action history label"
   },
-
   "home_kycBanner_title": "أكمل التحقق لفتح جميع الميزات",
   "@home_kycBanner_title": {
     "description": "KYC banner title"
   },
-
   "home_kycBanner_action": "تحقق الآن",
   "@home_kycBanner_action": {
     "description": "KYC banner action button"
   },
-
   "home_recentActivity": "النشاط الأخير",
   "@home_recentActivity": {
     "description": "Recent activity section title"
   },
-
   "home_seeAll": "عرض الكل",
   "@home_seeAll": {
     "description": "See all link text"
   },
-
   "deposit_title": "إيداع أموال",
   "@deposit_title": {
     "description": "Deposit screen title"
   },
-
   "deposit_quickAmounts": "مبالغ سريعة",
   "@deposit_quickAmounts": {
     "description": "Quick amounts section label"
   },
-
   "deposit_rateUpdated": "تم التحديث {time}",
   "@deposit_rateUpdated": {
     "description": "Exchange rate update time",
@@ -2117,57 +1704,46 @@
       }
     }
   },
-
   "deposit_youWillReceive": "ستستلم",
   "@deposit_youWillReceive": {
     "description": "Amount you will receive label"
   },
-
   "deposit_youWillPay": "ستدفع",
   "@deposit_youWillPay": {
     "description": "Amount you will pay label"
   },
-
   "deposit_limits": "حدود الإيداع",
   "@deposit_limits": {
     "description": "Deposit limits label"
   },
-
   "deposit_selectProvider": "اختر المزود",
   "@deposit_selectProvider": {
     "description": "Select provider screen title"
   },
-
   "deposit_chooseProvider": "اختر طريقة دفع",
   "@deposit_chooseProvider": {
     "description": "Choose provider instruction"
   },
-
   "deposit_amountToPay": "المبلغ المطلوب دفعه",
   "@deposit_amountToPay": {
     "description": "Amount to pay label"
   },
-
   "deposit_noFee": "بدون رسوم",
   "@deposit_noFee": {
     "description": "No fee label"
   },
-
   "deposit_fee": "رسوم",
   "@deposit_fee": {
     "description": "Fee suffix"
   },
-
   "deposit_paymentInstructions": "تعليمات الدفع",
   "@deposit_paymentInstructions": {
     "description": "Payment instructions screen title"
   },
-
   "deposit_expiresIn": "تنتهي خلال",
   "@deposit_expiresIn": {
     "description": "Expiration countdown label"
   },
-
   "deposit_via": "عبر {provider}",
   "@deposit_via": {
     "description": "Payment via provider label",
@@ -2177,22 +1753,18 @@
       }
     }
   },
-
   "deposit_referenceNumber": "الرقم المرجعي",
   "@deposit_referenceNumber": {
     "description": "Reference number label"
   },
-
   "deposit_howToPay": "كيفية إتمام الدفع",
   "@deposit_howToPay": {
     "description": "Payment instructions section title"
   },
-
   "deposit_ussdCode": "رمز USSD",
   "@deposit_ussdCode": {
     "description": "USSD code label"
   },
-
   "deposit_openApp": "فتح تطبيق {provider}",
   "@deposit_openApp": {
     "description": "Open provider app button",
@@ -2202,202 +1774,162 @@
       }
     }
   },
-
   "deposit_completedPayment": "أكملت الدفع",
   "@deposit_completedPayment": {
     "description": "Completed payment button"
   },
-
   "deposit_copied": "تم النسخ إلى الحافظة",
   "@deposit_copied": {
     "description": "Copied to clipboard message"
   },
-
   "deposit_cancelTitle": "إلغاء الإيداع؟",
   "@deposit_cancelTitle": {
     "description": "Cancel deposit dialog title"
   },
-
   "deposit_cancelMessage": "سيتم إلغاء جلسة الدفع الخاصة بك. يمكنك بدء إيداع جديد لاحقاً.",
   "@deposit_cancelMessage": {
     "description": "Cancel deposit dialog message"
   },
-
   "deposit_processing": "قيد المعالجة",
   "@deposit_processing": {
     "description": "Processing status title"
   },
-
   "deposit_success": "نجح الإيداع!",
   "@deposit_success": {
     "description": "Success status title"
   },
-
   "deposit_failed": "فشل الإيداع",
   "@deposit_failed": {
     "description": "Failed status title"
   },
-
   "deposit_expired": "انتهت صلاحية الجلسة",
   "@deposit_expired": {
     "description": "Expired status title"
   },
-
   "deposit_processingMessage": "نحن نعالج دفعتك. قد يستغرق ذلك بضع لحظات.",
   "@deposit_processingMessage": {
     "description": "Processing status message"
   },
-
   "deposit_successMessage": "تمت إضافة أموالك إلى محفظتك!",
   "@deposit_successMessage": {
     "description": "Success status message"
   },
-
   "deposit_failedMessage": "لم نتمكن من معالجة دفعتك. الرجاء المحاولة مرة أخرى.",
   "@deposit_failedMessage": {
     "description": "Failed status message"
   },
-
   "deposit_expiredMessage": "انتهت صلاحية جلسة الدفع الخاصة بك. يرجى بدء إيداع جديد.",
   "@deposit_expiredMessage": {
     "description": "Expired status message"
   },
-
   "deposit_deposited": "تم إيداعه",
   "@deposit_deposited": {
     "description": "Deposited amount label"
   },
-
   "deposit_received": "تم استلامه",
   "@deposit_received": {
     "description": "Received amount label"
   },
-
   "deposit_backToHome": "العودة إلى الرئيسية",
   "@deposit_backToHome": {
     "description": "Back to home button"
   },
-
   "common_error": "حدث خطأ",
   "@common_error": {
     "description": "Generic error message"
   },
-
   "common_requiredField": "هذا الحقل مطلوب",
   "@common_requiredField": {
     "description": "Required field validation message"
   },
-
   "pin_createTitle": "إنشاء الرمز السري",
   "@pin_createTitle": {
     "description": "Create PIN screen title"
   },
-
   "pin_confirmTitle": "تأكيد الرمز السري",
   "@pin_confirmTitle": {
     "description": "Confirm PIN screen title"
   },
-
   "pin_changeTitle": "تغيير الرمز السري",
   "@pin_changeTitle": {
     "description": "Change PIN screen title"
   },
-
   "pin_resetTitle": "إعادة تعيين الرمز السري",
   "@pin_resetTitle": {
     "description": "Reset PIN screen title"
   },
-
   "pin_enterNewPin": "أدخل رمزك السري الجديد المكون من 6 أرقام",
   "@pin_enterNewPin": {
     "description": "Enter new PIN instruction"
   },
-
   "pin_reenterPin": "أعد إدخال رمزك السري للتأكيد",
   "@pin_reenterPin": {
     "description": "Re-enter PIN instruction"
   },
-
   "pin_enterCurrentPin": "أدخل رمزك السري الحالي",
   "@pin_enterCurrentPin": {
     "description": "Enter current PIN instruction"
   },
-
   "pin_confirmNewPin": "أكد رمزك السري الجديد",
   "@pin_confirmNewPin": {
     "description": "Confirm new PIN instruction"
   },
-
   "pin_requirements": "متطلبات الرمز السري",
   "@pin_requirements": {
     "description": "PIN requirements section title"
   },
-
   "pin_rule_6digits": "6 أرقام",
   "@pin_rule_6digits": {
     "description": "PIN must be 6 digits rule"
   },
-
   "pin_rule_noSequential": "لا أرقام متتالية (123456)",
   "@pin_rule_noSequential": {
     "description": "No sequential numbers rule"
   },
-
   "pin_rule_noRepeated": "لا أرقام مكررة (111111)",
   "@pin_rule_noRepeated": {
     "description": "No repeated digits rule"
   },
-
   "pin_error_sequential": "لا يمكن أن يكون الرمز السري أرقاماً متتالية",
   "@pin_error_sequential": {
     "description": "Sequential PIN error message"
   },
-
   "pin_error_repeated": "لا يمكن أن يكون الرمز السري كله رقماً واحداً",
   "@pin_error_repeated": {
     "description": "Repeated digit PIN error message"
   },
-
   "pin_error_noMatch": "الرموز السرية غير متطابقة. الرجاء المحاولة مرة أخرى.",
   "@pin_error_noMatch": {
     "description": "PIN mismatch error message"
   },
-
   "pin_error_wrongCurrent": "الرمز السري الحالي غير صحيح",
   "@pin_error_wrongCurrent": {
     "description": "Wrong current PIN error message"
   },
-
   "pin_error_saveFailed": "فشل حفظ الرمز السري. الرجاء المحاولة مرة أخرى.",
   "@pin_error_saveFailed": {
     "description": "Failed to save PIN error message"
   },
-
   "pin_error_changeFailed": "فشل تغيير الرمز السري. الرجاء المحاولة مرة أخرى.",
   "@pin_error_changeFailed": {
     "description": "Failed to change PIN error message"
   },
-
   "pin_error_resetFailed": "فشلت إعادة تعيين الرمز السري. الرجاء المحاولة مرة أخرى.",
   "@pin_error_resetFailed": {
     "description": "Failed to reset PIN error message"
   },
-
   "pin_success_set": "تم إنشاء الرمز السري بنجاح",
   "@pin_success_set": {
     "description": "PIN created success message"
   },
-
   "pin_success_changed": "تم تغيير الرمز السري بنجاح",
   "@pin_success_changed": {
     "description": "PIN changed success message"
   },
-
   "pin_success_reset": "تمت إعادة تعيين الرمز السري بنجاح",
   "@pin_success_reset": {
     "description": "PIN reset success message"
   },
-
   "pin_attemptsRemaining": "{count, plural, =1{محاولة واحدة متبقية} other{{count} محاولات متبقية}}",
   "@pin_attemptsRemaining": {
     "description": "Attempts remaining message",
@@ -2407,644 +1939,517 @@
       }
     }
   },
-
   "pin_forgotPin": "نسيت الرمز السري؟",
   "@pin_forgotPin": {
     "description": "Forgot PIN link text"
   },
-
   "pin_locked_title": "الرمز السري مقفل",
   "@pin_locked_title": {
     "description": "PIN locked screen title"
   },
-
   "pin_locked_message": "عدد كبير جداً من المحاولات الفاشلة. رمزك السري مقفل مؤقتاً.",
   "@pin_locked_message": {
     "description": "PIN locked message"
   },
-
   "pin_locked_tryAgainIn": "حاول مرة أخرى خلال",
   "@pin_locked_tryAgainIn": {
     "description": "Try again in label"
   },
-
   "pin_resetViaOtp": "إعادة تعيين الرمز السري عبر الرسائل القصيرة",
   "@pin_resetViaOtp": {
     "description": "Reset PIN via OTP button"
   },
-
   "pin_reset_requestTitle": "إعادة تعيين رمزك السري",
   "@pin_reset_requestTitle": {
     "description": "Reset PIN request title"
   },
-
   "pin_reset_requestMessage": "سنرسل رمز تحقق إلى رقم هاتفك المسجل لإعادة تعيين رمزك السري.",
   "@pin_reset_requestMessage": {
     "description": "Reset PIN request message"
   },
-
   "pin_reset_sendOtp": "إرسال رمز التحقق",
   "@pin_reset_sendOtp": {
     "description": "Send OTP button"
   },
-
   "pin_reset_enterOtp": "أدخل الرمز المكون من 6 أرقام المرسل إلى هاتفك",
   "@pin_reset_enterOtp": {
     "description": "Enter OTP instruction"
   },
-
   "send_selectRecipient": "اختر المستلم",
   "@send_selectRecipient": {
     "description": "Select recipient screen title"
   },
-
   "send_recipientPhone": "رقم هاتف المستلم",
   "@send_recipientPhone": {
     "description": "Recipient phone input label"
   },
-
   "send_fromContacts": "جهات الاتصال",
   "@send_fromContacts": {
     "description": "Select from contacts button"
   },
-
   "send_fromBeneficiaries": "المستفيدون",
   "@send_fromBeneficiaries": {
     "description": "Select from beneficiaries button"
   },
-
   "send_recentRecipients": "المستلمون الأخيرون",
   "@send_recentRecipients": {
     "description": "Recent recipients section title"
   },
-
   "send_contactsPermissionDenied": "إذن الوصول إلى جهات الاتصال مطلوب لاختيار جهة اتصال",
   "@send_contactsPermissionDenied": {
     "description": "Contacts permission denied message"
   },
-
   "send_searchBeneficiaries": "البحث في المستفيدين",
   "@send_searchBeneficiaries": {
     "description": "Search beneficiaries placeholder"
   },
-
   "send_noBeneficiariesFound": "لم يتم العثور على مستفيدين",
   "@send_noBeneficiariesFound": {
     "description": "No beneficiaries found message"
   },
-
   "send_enterAmount": "أدخل المبلغ",
   "@send_enterAmount": {
     "description": "Enter amount screen title"
   },
-
   "send_amount": "المبلغ",
   "@send_amount": {
     "description": "Amount label"
   },
-
   "send_max": "الحد الأقصى",
   "@send_max": {
     "description": "Max button label"
   },
-
   "send_note": "ملاحظة",
   "@send_note": {
     "description": "Note/memo label"
   },
-
   "send_noteOptional": "إضافة ملاحظة (اختياري)",
   "@send_noteOptional": {
     "description": "Note placeholder"
   },
-
   "send_fee": "الرسوم",
   "@send_fee": {
     "description": "Fee label"
   },
-
   "send_total": "الإجمالي",
   "@send_total": {
     "description": "Total amount label"
   },
-
   "send_confirmTransfer": "تأكيد التحويل",
   "@send_confirmTransfer": {
     "description": "Confirm transfer screen title"
   },
-
   "send_pinVerificationRequired": "سيُطلب منك إدخال رمزك السري لتأكيد هذا التحويل",
   "@send_pinVerificationRequired": {
     "description": "PIN verification info message"
   },
-
   "send_confirmAndSend": "تأكيد وإرسال",
   "@send_confirmAndSend": {
     "description": "Confirm and send button"
   },
-
   "send_verifyPin": "التحقق من الرمز السري",
   "@send_verifyPin": {
     "description": "PIN verification screen title"
   },
-
   "send_enterPinToConfirm": "أدخل رمزك السري",
   "@send_enterPinToConfirm": {
     "description": "Enter PIN instruction"
   },
-
   "send_pinVerificationDescription": "أدخل رمزك السري المكون من 6 أرقام لتأكيد هذا التحويل",
   "@send_pinVerificationDescription": {
     "description": "PIN verification description"
   },
-
   "send_useBiometric": "استخدام البيومترية",
   "@send_useBiometric": {
     "description": "Use biometric button"
   },
-
   "send_biometricReason": "تحقق من هويتك لإكمال التحويل",
   "@send_biometricReason": {
     "description": "Biometric authentication reason"
   },
-
   "send_transferFailed": "فشل التحويل",
   "@send_transferFailed": {
     "description": "Transfer failed title"
   },
-
   "send_transferSuccessMessage": "تم إرسال أموالك بنجاح",
   "@send_transferSuccessMessage": {
     "description": "Transfer success message"
   },
-
   "send_sentTo": "تم الإرسال إلى",
   "@send_sentTo": {
     "description": "Sent to label"
   },
-
   "send_reference": "المرجع",
   "@send_reference": {
     "description": "Transaction reference label"
   },
-
   "send_date": "التاريخ",
   "@send_date": {
     "description": "Transaction date label"
   },
-
   "send_saveAsBeneficiary": "حفظ كمستفيد",
   "@send_saveAsBeneficiary": {
     "description": "Save as beneficiary button"
   },
-
   "send_shareReceipt": "مشاركة الإيصال",
   "@send_shareReceipt": {
     "description": "Share receipt button"
   },
-
   "send_transferReceipt": "إيصال التحويل",
   "@send_transferReceipt": {
     "description": "Transfer receipt title for sharing"
   },
-
   "send_beneficiarySaved": "تم حفظ المستفيد بنجاح",
   "@send_beneficiarySaved": {
     "description": "Beneficiary saved success message"
   },
-
   "error_phoneRequired": "رقم الهاتف مطلوب",
   "@error_phoneRequired": {
     "description": "Phone number required error"
   },
-
   "error_phoneInvalid": "رقم هاتف غير صالح",
   "@error_phoneInvalid": {
     "description": "Invalid phone number error"
   },
-
   "error_amountRequired": "المبلغ مطلوب",
   "@error_amountRequired": {
     "description": "Amount required error"
   },
-
   "error_amountInvalid": "مبلغ غير صالح",
   "@error_amountInvalid": {
     "description": "Invalid amount error"
   },
-
   "error_insufficientBalance": "الرصيد غير كافٍ",
   "@error_insufficientBalance": {
     "description": "Insufficient balance error"
   },
-
   "error_pinIncorrect": "الرمز السري غير صحيح. الرجاء المحاولة مرة أخرى.",
   "@error_pinIncorrect": {
     "description": "Incorrect PIN error"
   },
-
   "error_biometricFailed": "فشلت المصادقة البيومترية",
   "@error_biometricFailed": {
     "description": "Biometric authentication failed error"
   },
-
   "error_transferFailed": "فشل التحويل. الرجاء المحاولة مرة أخرى.",
   "@error_transferFailed": {
     "description": "Transfer failed error"
   },
-
   "common_copiedToClipboard": "تم النسخ إلى الحافظة",
   "@common_copiedToClipboard": {
     "description": "Copied to clipboard message"
   },
-
   "notifications_permission_title": "ابقَ على اطلاع",
   "@notifications_permission_title": {
     "description": "Notification permission screen title"
   },
-
   "notifications_permission_description": "احصل على تحديثات فورية حول معاملاتك وتنبيهات الأمان ونشاط الحساب المهم.",
   "@notifications_permission_description": {
     "description": "Notification permission screen description"
   },
-
   "notifications_benefit_transactions": "تحديثات المعاملات",
   "@notifications_benefit_transactions": {
     "description": "Transaction benefit title"
   },
-
   "notifications_benefit_transactions_desc": "تنبيهات فورية عند إرسال أو استقبال الأموال",
   "@notifications_benefit_transactions_desc": {
     "description": "Transaction benefit description"
   },
-
   "notifications_benefit_security": "تنبيهات الأمان",
   "@notifications_benefit_security": {
     "description": "Security benefit title"
   },
-
   "notifications_benefit_security_desc": "تلقي إشعارات بشأن النشاط المشبوه وتسجيلات الدخول من أجهزة جديدة",
   "@notifications_benefit_security_desc": {
     "description": "Security benefit description"
   },
-
   "notifications_benefit_updates": "التحديثات المهمة",
   "@notifications_benefit_updates": {
     "description": "Updates benefit title"
   },
-
   "notifications_benefit_updates_desc": "ابقَ على اطلاع بالميزات الجديدة والعروض الخاصة",
   "@notifications_benefit_updates_desc": {
     "description": "Updates benefit description"
   },
-
   "notifications_enable_notifications": "تفعيل الإشعارات",
   "@notifications_enable_notifications": {
     "description": "Enable notifications button"
   },
-
   "notifications_maybe_later": "ربما لاحقاً",
   "@notifications_maybe_later": {
     "description": "Maybe later button"
   },
-
   "notifications_enabled_success": "تم تفعيل الإشعارات بنجاح",
   "@notifications_enabled_success": {
     "description": "Notifications enabled success message"
   },
-
   "notifications_permission_denied_title": "الإذن مطلوب",
   "@notifications_permission_denied_title": {
     "description": "Permission denied dialog title"
   },
-
   "notifications_permission_denied_message": "لتلقي الإشعارات، يجب تفعيلها في إعدادات جهازك.",
   "@notifications_permission_denied_message": {
     "description": "Permission denied dialog message"
   },
-
   "action_open_settings": "فتح الإعدادات",
   "@action_open_settings": {
     "description": "Open settings button"
   },
-
   "notifications_preferences_title": "تفضيلات الإشعارات",
   "@notifications_preferences_title": {
     "description": "Notification preferences screen title"
   },
-
   "notifications_preferences_description": "اختر الإشعارات التي تريد تلقيها",
   "@notifications_preferences_description": {
     "description": "Notification preferences screen description"
   },
-
   "notifications_pref_transaction_title": "تنبيهات المعاملات",
   "@notifications_pref_transaction_title": {
     "description": "Transaction alerts section title"
   },
-
   "notifications_pref_transaction_alerts": "جميع تنبيهات المعاملات",
   "@notifications_pref_transaction_alerts": {
     "description": "Transaction alerts label"
   },
-
   "notifications_pref_transaction_alerts_desc": "تلقي إشعارات لجميع المعاملات الواردة والصادرة",
   "@notifications_pref_transaction_alerts_desc": {
     "description": "Transaction alerts description"
   },
-
   "notifications_pref_security_title": "الأمان",
   "@notifications_pref_security_title": {
     "description": "Security section title"
   },
-
   "notifications_pref_security_alerts": "تنبيهات الأمان",
   "@notifications_pref_security_alerts": {
     "description": "Security alerts label"
   },
-
   "notifications_pref_security_alerts_desc": "تنبيهات الأمان الحرجة (لا يمكن تعطيلها)",
   "@notifications_pref_security_alerts_desc": {
     "description": "Security alerts description"
   },
-
   "notifications_pref_promotional_title": "ترويجية",
   "@notifications_pref_promotional_title": {
     "description": "Promotional section title"
   },
-
   "notifications_pref_promotions": "العروض الترويجية والعروض",
   "@notifications_pref_promotions": {
     "description": "Promotions label"
   },
-
   "notifications_pref_promotions_desc": "العروض الخاصة والحملات الترويجية",
   "@notifications_pref_promotions_desc": {
     "description": "Promotions description"
   },
-
   "notifications_pref_price_title": "تحديثات السوق",
   "@notifications_pref_price_title": {
     "description": "Price alerts section title"
   },
-
   "notifications_pref_price_alerts": "تنبيهات الأسعار",
   "@notifications_pref_price_alerts": {
     "description": "Price alerts label"
   },
-
   "notifications_pref_price_alerts_desc": "تحركات أسعار USDC والعملات الرقمية",
   "@notifications_pref_price_alerts_desc": {
     "description": "Price alerts description"
   },
-
   "notifications_pref_summary_title": "التقارير",
   "@notifications_pref_summary_title": {
     "description": "Summary section title"
   },
-
   "notifications_pref_weekly_summary": "ملخص الإنفاق الأسبوعي",
   "@notifications_pref_weekly_summary": {
     "description": "Weekly summary label"
   },
-
   "notifications_pref_weekly_summary_desc": "تلقي ملخص لنشاطك الأسبوعي",
   "@notifications_pref_weekly_summary_desc": {
     "description": "Weekly summary description"
   },
-
   "notifications_pref_thresholds_title": "عتبات التنبيه",
   "@notifications_pref_thresholds_title": {
     "description": "Thresholds section title"
   },
-
   "notifications_pref_thresholds_description": "تعيين مبالغ مخصصة لتشغيل التنبيهات",
   "@notifications_pref_thresholds_description": {
     "description": "Thresholds section description"
   },
-
   "notifications_pref_large_transaction_threshold": "تنبيه معاملة كبيرة",
   "@notifications_pref_large_transaction_threshold": {
     "description": "Large transaction threshold label"
   },
-
   "notifications_pref_low_balance_threshold": "تنبيه رصيد منخفض",
   "@notifications_pref_low_balance_threshold": {
     "description": "Low balance threshold label"
   },
-
   "settings_editProfile": "تعديل الملف الشخصي",
   "@settings_editProfile": {
     "description": "Edit profile screen title"
   },
-
   "settings_account": "الحساب",
   "@settings_account": {
     "description": "Account section header"
   },
-
   "settings_about": "حول",
   "@settings_about": {
     "description": "About section header"
   },
-
   "settings_termsOfService": "شروط الخدمة",
   "@settings_termsOfService": {
     "description": "Terms of service label"
   },
-
   "settings_privacyPolicy": "سياسة الخصوصية",
   "@settings_privacyPolicy": {
     "description": "Privacy policy label"
   },
-
   "settings_appVersion": "إصدار التطبيق",
   "@settings_appVersion": {
     "description": "App version label"
   },
-
   "profile_firstName": "الاسم الأول",
   "@profile_firstName": {
     "description": "First name field label"
   },
-
   "profile_lastName": "اسم العائلة",
   "@profile_lastName": {
     "description": "Last name field label"
   },
-
   "profile_email": "البريد الإلكتروني",
   "@profile_email": {
     "description": "Email field label"
   },
-
   "profile_phoneNumber": "رقم الهاتف",
   "@profile_phoneNumber": {
     "description": "Phone number field label"
   },
-
   "profile_phoneCannotChange": "لا يمكن تغيير رقم الهاتف",
   "@profile_phoneCannotChange": {
     "description": "Phone number read-only hint"
   },
-
   "profile_updateSuccess": "تم تحديث الملف الشخصي بنجاح",
   "@profile_updateSuccess": {
     "description": "Profile update success message"
   },
-
   "profile_updateError": "فشل تحديث الملف الشخصي",
   "@profile_updateError": {
     "description": "Profile update error message"
   },
-
   "help_faq": "الأسئلة الشائعة",
   "@help_faq": {
     "description": "FAQ section title"
   },
-
   "help_needMoreHelp": "هل تحتاج المزيد من المساعدة؟",
   "@help_needMoreHelp": {
     "description": "Contact section title"
   },
-
   "help_reportProblem": "الإبلاغ عن مشكلة",
   "@help_reportProblem": {
     "description": "Report problem button"
   },
-
   "help_liveChat": "دردشة مباشرة",
   "@help_liveChat": {
     "description": "Live chat button"
   },
-
   "help_emailSupport": "دعم البريد الإلكتروني",
   "@help_emailSupport": {
     "description": "Email support label"
   },
-
   "help_whatsappSupport": "دعم واتساب",
   "@help_whatsappSupport": {
     "description": "WhatsApp support label"
   },
-
   "help_copiedToClipboard": "تم النسخ إلى الحافظة",
   "@help_copiedToClipboard": {
     "description": "Copied to clipboard message"
   },
-
   "help_needHelp": "هل تحتاج مساعدة؟",
   "@help_needHelp": {
     "description": "Need help button text"
   },
-
   "transactionDetails_title": "تفاصيل المعاملة",
   "@transactionDetails_title": {
     "description": "Transaction details screen title"
   },
-
   "transactionDetails_transactionId": "معرف المعاملة",
   "@transactionDetails_transactionId": {
     "description": "Transaction ID label"
   },
-
   "transactionDetails_date": "التاريخ",
   "@transactionDetails_date": {
     "description": "Transaction date label"
   },
-
   "transactionDetails_currency": "العملة",
   "@transactionDetails_currency": {
     "description": "Transaction currency label"
   },
-
   "transactionDetails_recipientPhone": "هاتف المستلم",
   "@transactionDetails_recipientPhone": {
     "description": "Recipient phone label"
   },
-
   "transactionDetails_recipientAddress": "عنوان المستلم",
   "@transactionDetails_recipientAddress": {
     "description": "Recipient address label"
   },
-
   "transactionDetails_description": "الوصف",
   "@transactionDetails_description": {
     "description": "Transaction description label"
   },
-
   "transactionDetails_additionalDetails": "تفاصيل إضافية",
   "@transactionDetails_additionalDetails": {
     "description": "Additional transaction details section"
   },
-
   "transactionDetails_failureReason": "سبب الفشل",
   "@transactionDetails_failureReason": {
     "description": "Transaction failure reason label"
   },
-
   "filters_title": "تصفية المعاملات",
   "@filters_title": {
     "description": "Filter transactions screen title"
   },
-
   "filters_reset": "إعادة تعيين",
   "@filters_reset": {
     "description": "Reset filters button"
   },
-
   "filters_transactionType": "نوع المعاملة",
   "@filters_transactionType": {
     "description": "Transaction type filter label"
   },
-
   "filters_status": "الحالة",
   "@filters_status": {
     "description": "Status filter label"
   },
-
   "filters_dateRange": "نطاق التاريخ",
   "@filters_dateRange": {
     "description": "Date range filter label"
   },
-
   "filters_amountRange": "نطاق المبلغ",
   "@filters_amountRange": {
     "description": "Amount range filter label"
   },
-
   "filters_sortBy": "الترتيب حسب",
   "@filters_sortBy": {
     "description": "Sort by filter label"
   },
-
   "filters_from": "من",
   "@filters_from": {
     "description": "Date range from label"
   },
-
   "filters_to": "إلى",
   "@filters_to": {
     "description": "Date range to label"
   },
-
   "filters_clear": "مسح",
   "@filters_clear": {
     "description": "Clear filters button"
   },
-
   "send_noContactsFound": "لم يتم العثور على جهات اتصال",
   "@send_noContactsFound": {
     "description": "No contacts found message"
   },
-
   "send_selectBeneficiary": "اختر مستفيداً",
   "@send_selectBeneficiary": {
     "description": "Beneficiary picker title"
   },
-
   "language_arabic": "العربية",
   "@language_arabic": {
     "description": "Arabic language name"
-  }
+  },
+  "auth_useBiometric": "استخدام تسجيل الدخول البيومتري"
 }

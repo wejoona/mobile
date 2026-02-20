@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Run 378: Data export view for GDPR compliance and user data portability
 class ExportDataView extends ConsumerStatefulWidget {
@@ -96,9 +97,41 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
   }
 
   Future<void> _export() async {
+    if (!_includeTransactions && !_includeProfile && !_includeContacts) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez sélectionner au moins un type de données')),
+      );
+      return;
+    }
     setState(() => _isExporting = true);
-    await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() => _isExporting = false);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/account/export', data: {
+        'includeTransactions': _includeTransactions,
+        'includeProfile': _includeProfile,
+        'includeContacts': _includeContacts,
+        'format': _format,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Export demandé. Vous recevrez un email avec vos données.'),
+            backgroundColor: context.colors.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: ${e.toString()}'),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isExporting = false);
+    }
   }
 }
 

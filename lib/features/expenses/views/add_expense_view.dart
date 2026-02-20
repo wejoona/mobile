@@ -11,6 +11,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
+import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -156,11 +157,13 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
     setState(() => _isLoading = true);
 
     try {
-      // ignore: unused_local_variable
-      final __expense = Expense(
+      final amount = double.tryParse(_amountController.text);
+      if (amount == null || amount <= 0) return;
+
+      final expense = Expense(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         category: _selectedCategory,
-        amount: double.parse(_amountController.text),
+        amount: amount,
         currency: 'XOF',
         date: _selectedDate,
         vendor: _vendorController.text.isEmpty ? null : _vendorController.text,
@@ -170,6 +173,7 @@ class _AddExpenseViewState extends ConsumerState<AddExpenseView> {
         createdAt: DateTime.now(),
       );
 
+      await ExpensesService.addExpense(expense);
       ref.invalidate(expensesProvider);
 
       if (mounted) {

@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
-import 'package:usdc_wallet/services/security/client_risk_score_service.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart' show securityHeadersInterceptorProvider;
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';

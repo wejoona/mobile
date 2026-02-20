@@ -311,7 +311,11 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
 
     try {
       final name = _nameController.text.trim();
-      final limit = double.parse(_limitController.text);
+      final limit = double.tryParse(_limitController.text);
+      if (limit == null || limit <= 0) {
+        if (mounted) setState(() => _isSubmitting = false);
+        return;
+      }
 
       await ref.read(cardActionsProvider).requestCard({
             'cardholderName': name,

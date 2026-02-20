@@ -7219,4 +7219,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get withdraw_initiated => 'Withdrawal initiated';
+
+  @override
+  String get auth_useBiometric => 'Usar login biométrico';
 }

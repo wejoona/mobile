@@ -107,7 +107,10 @@ class DepositNotifier extends Notifier<DepositState> {
       case DepositFlowStep.enterAmount:
         state = state.copyWith(step: DepositFlowStep.selectProvider);
       case DepositFlowStep.instructions:
+        state = state.copyWith(step: DepositFlowStep.enterAmount);
       case DepositFlowStep.processing:
+        // Cancel polling when user navigates back from processing
+        _pollingTimer?.cancel();
         state = state.copyWith(step: DepositFlowStep.enterAmount);
       default:
         break;
@@ -201,7 +204,10 @@ class DepositNotifier extends Notifier<DepositState> {
     if (depositId == null) return;
     await _pollStatus(depositId);
   }
-  void reset() => state = const DepositState();
+  void reset() {
+    _pollingTimer?.cancel();
+    state = const DepositState();
+  }
 
   // === Stub methods for views ===
   Future<void> confirmDeposit() async => initiate();

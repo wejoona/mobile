@@ -79,6 +79,12 @@ class DeviceActions {
     await _dio.post('/devices/$deviceId/trust');
     _ref.invalidate(devicesProvider);
   }
+
+  Future<void> revokeAllOtherDevices() async {
+    // ignore: avoid_dynamic_calls
+    await _dio.post('/devices/revoke-others');
+    _ref.invalidate(devicesProvider);
+  }
 }
 
 final deviceActionsProvider = Provider<DeviceActions>((ref) {

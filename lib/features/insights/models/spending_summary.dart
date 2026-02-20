@@ -20,14 +20,15 @@ class SpendingSummary {
 
   factory SpendingSummary.fromJson(Map<String, dynamic> json) {
     return SpendingSummary(
-      totalSpent: (json['totalSpent'] as num).toDouble(),
-      totalReceived: (json['totalReceived'] as num).toDouble(),
-      netFlow: (json['netFlow'] as num).toDouble(),
-      topCategories: (json['topCategories'] as List<dynamic>)
-          .map((e) => SpendingCategory.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      percentageChange: (json['percentageChange'] as num).toDouble(),
-      isIncrease: json['isIncrease'] as bool,
+      totalSpent: (json['totalSpent'] as num?)?.toDouble() ?? 0,
+      totalReceived: (json['totalReceived'] as num?)?.toDouble() ?? 0,
+      netFlow: (json['netFlow'] as num?)?.toDouble() ?? 0,
+      topCategories: (json['topCategories'] as List<dynamic>?)
+              ?.map((e) => SpendingCategory.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      percentageChange: (json['percentageChange'] as num?)?.toDouble() ?? 0,
+      isIncrease: json['isIncrease'] as bool? ?? false,
     );
   }
 

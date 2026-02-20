@@ -639,8 +639,7 @@ class DevicesScreen extends ConsumerWidget {
 
     if (confirmed) {
       try {
-        // Call logout all endpoint
-        await ref.read(deviceActionsProvider).refresh();
+        await ref.read(deviceActionsProvider).revokeAllOtherDevices();
         if (context.mounted) {
           await context.showSuccessAlert(
             title: l10n.action_done,

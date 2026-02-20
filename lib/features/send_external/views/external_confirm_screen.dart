@@ -332,7 +332,6 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
   /// Verify user identity via PIN or biometric before executing external transfer
   Future<bool> _verifyIdentity() async {
     final l10n = AppLocalizations.of(context)!;
-    final colors = context.colors;
 
     // Try biometric first if available
     final biometricService = ref.read(biometricServiceProvider);

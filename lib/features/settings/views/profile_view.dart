@@ -251,20 +251,6 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
     );
   }
 
-  String _getInitials(UserState userState) {
-    final firstName = userState.firstName;
-    final lastName = userState.lastName;
-
-    if (firstName != null && lastName != null) {
-      return '${firstName[0]}${lastName[0]}'.toUpperCase();
-    } else if (firstName != null) {
-      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
-    } else if (userState.phone != null) {
-      return userState.phone!.substring(userState.phone!.length - 2);
-    }
-    return 'U';
-  }
-
   String _getKycStatusText(KycStatus status, AppLocalizations l10n) {
     switch (status) {
       case KycStatus.none:

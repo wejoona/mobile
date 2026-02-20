@@ -13,7 +13,6 @@ import 'package:usdc_wallet/features/qr_payment/models/qr_payment_data.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Screen for scanning QR codes to send payments
 class ScanQrScreen extends ConsumerStatefulWidget {

@@ -13313,6 +13313,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Withdrawal initiated'**
   String get withdraw_initiated;
+
+  /// No description provided for @auth_useBiometric.
+  ///
+  /// In en, this message translates to:
+  /// **'Use biometric login'**
+  String get auth_useBiometric;
 }
 
 class _AppLocalizationsDelegate

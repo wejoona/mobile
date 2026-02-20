@@ -20,13 +20,13 @@ class TopRecipient {
 
   factory TopRecipient.fromJson(Map<String, dynamic> json) {
     return TopRecipient(
-      id: json['id'] as String,
-      name: json['name'] as String,
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? 'Unknown',
       phoneNumber: json['phoneNumber'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
-      totalSent: (json['totalSent'] as num).toDouble(),
-      percentage: (json['percentage'] as num).toDouble(),
-      transactionCount: json['transactionCount'] as int,
+      totalSent: (json['totalSent'] as num?)?.toDouble() ?? 0,
+      percentage: (json['percentage'] as num?)?.toDouble() ?? 0,
+      transactionCount: (json['transactionCount'] as num?)?.toInt() ?? 0,
     );
   }
 

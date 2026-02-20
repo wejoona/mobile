@@ -18,11 +18,11 @@ class SpendingCategory {
 
   factory SpendingCategory.fromJson(Map<String, dynamic> json) {
     return SpendingCategory(
-      name: json['name'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      percentage: (json['percentage'] as num).toDouble(),
-      color: Color(json['color'] as int),
-      transactionCount: json['transactionCount'] as int,
+      name: json['name'] as String? ?? 'Unknown',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      percentage: (json['percentage'] as num?)?.toDouble() ?? 0,
+      color: Color(json['color'] as int? ?? 0xFF9E9E9E),
+      transactionCount: (json['transactionCount'] as num?)?.toInt() ?? 0,
     );
   }
 

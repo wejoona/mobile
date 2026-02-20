@@ -7200,4 +7200,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get withdraw_initiated => 'Withdrawal initiated';
+
+  @override
+  String get auth_useBiometric => 'Use biometric login';
 }

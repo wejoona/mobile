@@ -298,7 +298,8 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final amount = double.parse(_amountController.text.trim());
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) return;
 
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
