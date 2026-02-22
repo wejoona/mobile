@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -396,11 +394,10 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
       final dio = ref.read(dioProvider);
       final pinService = ref.read(pinServiceProvider);
 
-      // Hash the new PIN for transmission (same method as PinService)
-      // We need to call the backend reset endpoint with OTP + hashed PIN
+      // Send plaintext PIN over HTTPS — backend handles bcrypt hashing
       await dio.post('/user/pin/reset', data: {
         'otp': _otpController.text,
-        'newPinHash': _hashPinForBackend(_newPin),
+        'newPin': _newPin,
       });
 
       // Also update local PIN storage
@@ -437,14 +434,6 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         _resetConfirmPin();
       }
     }
-  }
-
-  /// Hash PIN using SHA256 for backend transmission
-  /// Backend expects 64-char hex SHA256 hash
-  String _hashPinForBackend(String pin) {
-    final bytes = utf8.encode(pin);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
   }
 
   void _resetNewPin() {

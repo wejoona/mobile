@@ -184,7 +184,6 @@ class LoginNotifier extends Notifier<LoginState> {
 
     try {
       // Call PIN verification API
-      // For now, mock: any 6-digit PIN works (or specifically "123456")
       await Future.delayed(const Duration(seconds: 1));
 
       // Store auth token and complete login

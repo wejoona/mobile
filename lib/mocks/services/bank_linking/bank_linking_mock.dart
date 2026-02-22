@@ -288,8 +288,8 @@ class BankLinkingMock {
       );
     }
 
-    // Mock OTP validation (accept "123456")
-    if (otp != '123456') {
+    // Mock OTP validation (accept any 6-digit code in dev)
+    if (otp == null || otp.length != 6) {
       return MockResponse(
         statusCode: 400,
         data: {'message': 'Invalid OTP code'},

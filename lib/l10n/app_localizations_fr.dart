@@ -5229,7 +5229,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get bankLinking_depositSuccess => 'Dépôt réussi';
 
   @override
-  String get bankLinking_devOtpHint => 'OTP dev: 123456';
+  String get bankLinking_devOtpHint => 'OTP dev: 000000';
 
   @override
   String get bankLinking_directDebit => 'Prélèvement automatique';

@@ -17,6 +17,8 @@ class OtpVerificationView extends ConsumerStatefulWidget {
 }
 
 class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
+  final _otpController = TextEditingController();
+  final _otpFocusNode = FocusNode();
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -25,7 +27,26 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   bool _hasError = false;
 
   @override
+  void initState() {
+    super.initState();
+    _otpController.addListener(_onHiddenFieldChanged);
+  }
+
+  void _onHiddenFieldChanged() {
+    final text = _otpController.text;
+    if (text.length == 6 && RegExp(r'^\d{6}$').hasMatch(text)) {
+      for (int i = 0; i < 6; i++) {
+        _controllers[i].text = text[i];
+      }
+      setState(() {});
+      _submitOtp();
+    }
+  }
+
+  @override
   void dispose() {
+    _otpController.dispose();
+    _otpFocusNode.dispose();
     for (var controller in _controllers) {
       controller.dispose();
     }
@@ -77,6 +98,23 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
                 ),
               ),
               SizedBox(height: AppSpacing.xxl),
+              // Hidden field for SMS autofill and paste support
+              SizedBox(
+                height: 0,
+                child: AutofillGroup(
+                  child: TextField(
+                    controller: _otpController,
+                    focusNode: _otpFocusNode,
+                    autofillHints: const [AutofillHints.oneTimeCode],
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+              ),
               // OTP input boxes
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -195,6 +233,19 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
 
   void _handleOtpChange(String value, int index) {
     setState(() => _hasError = false);
+
+    // Handle paste: if user pastes a full code into one box
+    if (value.length > 1) {
+      final digits = value.replaceAll(RegExp(r'\D'), '');
+      if (digits.length >= 6) {
+        for (int i = 0; i < 6; i++) {
+          _controllers[i].text = digits[i];
+        }
+        setState(() {});
+        _submitOtp();
+        return;
+      }
+    }
 
     if (value.isNotEmpty) {
       // Move to next box

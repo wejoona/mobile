@@ -1,6 +1,7 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/index.dart';
 
 /// Onboarding state.
 class OnboardingState {
@@ -17,6 +18,9 @@ class OnboardingState {
   final String? email;
   final int otpResendCountdown;
   final String? sessionToken;
+  final String? refreshToken;
+  final String? verificationId;
+  final int? otpExpiresIn;
 
   const OnboardingState({
     this.currentPage = 0,
@@ -32,6 +36,9 @@ class OnboardingState {
     this.email,
     this.otpResendCountdown = 0,
     this.sessionToken,
+    this.refreshToken,
+    this.verificationId,
+    this.otpExpiresIn,
   });
 
   OnboardingState copyWith({
@@ -48,6 +55,9 @@ class OnboardingState {
     String? email,
     int? otpResendCountdown,
     String? sessionToken,
+    String? refreshToken,
+    String? verificationId,
+    int? otpExpiresIn,
     bool clearError = false,
   }) => OnboardingState(
     currentPage: currentPage ?? this.currentPage,
@@ -63,6 +73,9 @@ class OnboardingState {
     email: email ?? this.email,
     otpResendCountdown: otpResendCountdown ?? this.otpResendCountdown,
     sessionToken: sessionToken ?? this.sessionToken,
+    refreshToken: refreshToken ?? this.refreshToken,
+    verificationId: verificationId ?? this.verificationId,
+    otpExpiresIn: otpExpiresIn ?? this.otpExpiresIn,
   );
 }
 
@@ -108,31 +121,44 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = const OnboardingState(isLoading: false);
   }
 
-  // === Stub methods for view compatibility ===
+  Timer? _resendTimer;
+
+  // === Auth methods ===
   Future<void> submitPhoneNumber([String? phone]) async {
     if (phone != null) state = state.copyWith(phoneNumber: phone);
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/auth/register', data: {
-        'phone': state.phoneNumber,
-        if (state.countryCode != null) 'countryCode': state.countryCode,
-      });
-      state = state.copyWith(isLoading: false);
+      final authService = ref.read(authServiceProvider);
+      final response = await authService.register(
+        phone: state.phoneNumber!,
+        countryCode: state.countryCode ?? 'CI',
+      );
+      state = state.copyWith(
+        isLoading: false,
+        verificationId: response.verificationId,
+        otpExpiresIn: response.expiresIn,
+      );
+      _startResendCountdown();
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
+
   Future<void> verifyOtp([String? otp]) async {
     if (otp != null) state = state.copyWith(otp: otp);
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/auth/verify-otp', data: {
-        'phone': state.phoneNumber,
-        'otp': state.otp,
-      });
-      state = state.copyWith(isLoading: false);
+      final authService = ref.read(authServiceProvider);
+      final response = await authService.verifyOtp(
+        phone: state.phoneNumber!,
+        otp: state.otp!,
+        verificationId: state.verificationId,
+      );
+      state = state.copyWith(
+        isLoading: false,
+        sessionToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -150,7 +176,35 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     await submitProfile(data, firstName, lastName, email);
   }
   Future<void> resendOtp() async {
+    if (state.otpResendCountdown > 0) return;
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final authService = ref.read(authServiceProvider);
+      final response = await authService.register(
+        phone: state.phoneNumber!,
+        countryCode: state.countryCode ?? 'CI',
+      );
+      state = state.copyWith(
+        isLoading: false,
+        verificationId: response.verificationId,
+        otpExpiresIn: response.expiresIn,
+      );
+      _startResendCountdown();
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  void _startResendCountdown() {
     state = state.copyWith(otpResendCountdown: 60);
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (state.otpResendCountdown > 0) {
+        state = state.copyWith(otpResendCountdown: state.otpResendCountdown - 1);
+      } else {
+        timer.cancel();
+      }
+    });
   }
   void startKyc() {}
   void skipKyc() => state = state.copyWith(isComplete: true);

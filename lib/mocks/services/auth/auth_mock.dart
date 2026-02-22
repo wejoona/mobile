@@ -31,7 +31,8 @@ class AuthMockState {
 
   /// Generate and store OTP for a phone
   static String generateOtp(String phone) {
-    pendingOtp = '123456'; // Dev OTP for easy testing
+    // In dev mode, use a predictable OTP for testing (logged to console)
+    pendingOtp = '000000'; // Dev OTP — visible in mock logs
     otpExpiry = DateTime.now().add(const Duration(minutes: 5));
     currentPhone = phone;
     return pendingOtp!;

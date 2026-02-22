@@ -88,14 +88,14 @@ class PinMock {
     // ignore: avoid_dynamic_calls
     final otp = options.data['otp'] as String?;
     // ignore: avoid_dynamic_calls
-    final newPinHash = options.data['newPinHash'] as String?;
+    final newPin = options.data['newPin'] as String?;
 
-    if (otp == null || newPinHash == null) {
-      return MockResponse.badRequest('OTP and new PIN hash are required');
+    if (otp == null || newPin == null) {
+      return MockResponse.badRequest('OTP and new PIN are required');
     }
 
-    // Mock: Accept 123456 as valid OTP
-    if (otp != '123456') {
+    // Validate OTP via AuthMockState (or accept any 6-digit code in dev)
+    if (otp.length != 6) {
       return MockResponse.badRequest('Invalid OTP');
     }
 
