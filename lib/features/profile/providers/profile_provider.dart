@@ -31,7 +31,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
       final service = ref.read(userServiceProvider);
       final profile = await service.getProfile();
       final user = User.fromJson(profile.toJson());
-      state = state.copyWith(user: user, isLoading: false);
+      state = state.copyWith(user: user, isLoading: false, error: null);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -52,7 +52,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     try {
       final service = ref.read(userServiceProvider);
       await service.uploadAvatar(file.path);
-      state = state.copyWith(isUploading: false);
+      state = state.copyWith(isUploading: false, error: null);
       await loadProfile();
     } catch (e) {
       state = state.copyWith(isUploading: false, error: e.toString());

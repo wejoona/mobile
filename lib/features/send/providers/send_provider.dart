@@ -8,8 +8,10 @@ import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -22,6 +24,9 @@ class SendMoneyState {
   final List<RecentRecipient> recentRecipients;
   final double availableBalance;
   final double fee;
+  final String? pinToken;
+  final String? idempotencyKey;
+  final bool isSubmitting;
 
   const SendMoneyState({
     this.isLoading = false,
@@ -33,6 +38,9 @@ class SendMoneyState {
     this.recentRecipients = const [],
     this.availableBalance = 0.0,
     this.fee = 0.0,
+    this.pinToken,
+    this.idempotencyKey,
+    this.isSubmitting = false,
   });
 
   bool get canProceedToAmount => recipient != null;

@@ -4,6 +4,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Transfers Service - mirrors backend TransfersController
 /// Uses risk-based adaptive security (Visa 3DS / Apple style)
@@ -15,10 +17,15 @@ class TransfersService {
 
   /// POST /transfers/internal
   /// Internal transfers between Korido users - typically low risk
+  /// [pinToken] — required by backend PinVerificationGuard (X-Pin-Token header)
+  /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
+  /// [amount] — in user-facing units (dollars). Converted to cents before sending.
   Future<TransferResult> createInternalTransfer({
     required String recipientPhone,
     required double amount,
     String? note,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     // Internal transfers usually get green flow (no verification)
     // But still check for anomalies
@@ -52,11 +59,20 @@ class TransfersService {
     }
 
     try {
-      final response = await _dio.post('/transfers/internal', data: {
-        'recipientPhone': recipientPhone,
-        'amount': amount,
-        if (note != null) 'note': note,
-      });
+      final response = await _dio.post(
+        '/transfers/internal',
+        data: {
+          'recipientPhone': recipientPhone,
+          'amount': toCents(amount),
+          if (note != null) 'note': note,
+        },
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return TransferResult.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -70,14 +86,19 @@ class TransfersService {
   /// 🟢 GREEN (low risk): No verification
   /// 🟡 YELLOW (medium risk): Biometric only
   /// 🔴 RED (high risk): Liveness required
+  /// [pinToken] — required by backend PinVerificationGuard (X-Pin-Token header)
+  /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
+  /// [amount] — in user-facing units (dollars). Converted to cents before sending.
   Future<TransferResult> createExternalTransfer({
     required String recipientAddress,
     required double amount,
     String? blockchain,
     String? note,
     bool isFirstTransactionToRecipient = false,
-    String? challengeToken, // Pre-validated challenge token
-    String? livenessSessionId, // Completed liveness session
+    String? challengeToken,
+    String? livenessSessionId,
+    required String pinToken,
+    required String idempotencyKey,
   }) async {
     // Check if we have a pre-validated step-up
     if (challengeToken != null && _riskSecurity != null) {
@@ -126,13 +147,22 @@ class TransfersService {
     }
 
     try {
-      final response = await _dio.post('/transfers/external', data: {
-        'recipientAddress': recipientAddress,
-        'amount': amount,
-        if (blockchain != null) 'blockchain': blockchain,
-        if (note != null) 'note': note,
-        if (challengeToken != null) 'challengeToken': challengeToken,
-      });
+      final response = await _dio.post(
+        '/transfers/external',
+        data: {
+          'recipientAddress': recipientAddress,
+          'amount': toCents(amount),
+          if (blockchain != null) 'blockchain': blockchain,
+          if (note != null) 'note': note,
+          if (challengeToken != null) 'challengeToken': challengeToken,
+        },
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return TransferResult.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

@@ -7,7 +7,8 @@ import 'package:usdc_wallet/services/service_providers.dart';
 final bankAccountsProvider = FutureProvider<List<BankAccount>>((ref) async {
   final service = ref.watch(bankLinkingServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 2), () => link.close());
+  final timer = Timer(const Duration(minutes: 2), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final data = await service.getBankAccounts();
   return data.map((e) => BankAccount.fromJson(e as Map<String, dynamic>)).toList();

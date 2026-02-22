@@ -26,7 +26,8 @@ final transactionsProvider = FutureProvider<TransactionPage>((ref) async {
   final filter = ref.watch(transactionFilterProvider);
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 1), () => link.close());
+  final timer = Timer(const Duration(minutes: 1), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/wallet/transactions', queryParameters: filter.toQueryParams());
   return TransactionPage.fromJson(response.data as Map<String, dynamic>);

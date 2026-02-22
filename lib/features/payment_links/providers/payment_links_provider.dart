@@ -7,7 +7,8 @@ import 'package:usdc_wallet/services/service_providers.dart';
 final paymentLinksProvider = FutureProvider<List<PaymentLink>>((ref) async {
   final service = ref.watch(paymentLinksServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 2), () => link.close());
+  final timer = Timer(const Duration(minutes: 2), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   return await service.getPaymentLinks();
 });

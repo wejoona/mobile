@@ -7,7 +7,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 final notificationsProvider = FutureProvider<List<AppNotification>>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 1), () => link.close());
+  final timer = Timer(const Duration(minutes: 1), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/notifications');
   final data = response.data as Map<String, dynamic>;

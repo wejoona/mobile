@@ -6,6 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
+import 'package:usdc_wallet/features/settings/providers/security_settings_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Run 341: Profile security overview - shows security status and actions
 class ProfileSecurityView extends ConsumerWidget {
@@ -13,11 +17,13 @@ class ProfileSecurityView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: const AppText(
-          'Securite du compte',
+        title: AppText(
+          l10n.security_accountSecurity,
           style: AppTextStyle.headingSmall,
         ),
         backgroundColor: context.colors.surface,
@@ -28,37 +34,37 @@ class ProfileSecurityView extends ConsumerWidget {
         children: [
           _SecurityScoreCard(),
           const SizedBox(height: AppSpacing.xxl),
-          const SectionHeader(title: 'Authentification'),
+          SectionHeader(title: l10n.security_authentication),
           const SizedBox(height: AppSpacing.sm),
           _SecurityOption(
             icon: Icons.pin_outlined,
-            title: 'Code PIN',
-            subtitle: 'Modifier votre code PIN',
+            title: l10n.security_changePin,
+            subtitle: l10n.security_changePinSubtitle,
             status: _SecurityStatus.active,
             onTap: () => Navigator.of(context).pushNamed('/pin/change'),
           ),
           _SecurityOption(
             icon: Icons.fingerprint,
-            title: 'Biometrie',
-            subtitle: 'Empreinte digitale ou Face ID',
+            title: l10n.security_biometricLogin,
+            subtitle: l10n.security_biometricSubtitle,
             status: _SecurityStatus.active,
             onTap: () =>
                 Navigator.of(context).pushNamed('/settings/biometric'),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const SectionHeader(title: 'Appareils'),
+          SectionHeader(title: l10n.security_devices),
           const SizedBox(height: AppSpacing.sm),
           _SecurityOption(
             icon: Icons.devices,
-            title: 'Appareils connectes',
-            subtitle: 'Gerer vos appareils',
+            title: l10n.security_devices,
+            subtitle: l10n.security_devicesSubtitle,
             status: _SecurityStatus.info,
             onTap: () => Navigator.of(context).pushNamed('/settings/devices'),
           ),
           _SecurityOption(
             icon: Icons.history,
-            title: 'Sessions actives',
-            subtitle: 'Voir les sessions en cours',
+            title: l10n.security_activeSessions,
+            subtitle: l10n.security_activeSessionsSubtitle,
             status: _SecurityStatus.info,
             onTap: () => Navigator.of(context).pushNamed('/settings/sessions'),
           ),
@@ -70,26 +76,74 @@ class ProfileSecurityView extends ConsumerWidget {
 
 enum _SecurityStatus { active, inactive, info }
 
-class _SecurityScoreCard extends StatelessWidget {
+/// Calculates security score based on actual user state:
+/// PIN set (+25), biometric enabled (+25), KYC verified (+25), email verified (+25)
+class _SecurityScoreCard extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final profileState = ref.watch(profileProvider);
+    final securitySettings = ref.watch(securitySettingsProvider);
+    final kycStatus = ref.watch(kycStatusProvider);
+
+    // Calculate score
+    int score = 0;
+    final user = profileState.user;
+
+    // PIN set (+25)
+    if (user?.hasPin == true) score += 25;
+
+    // Biometric enabled (+25)
+    if (securitySettings.biometricEnabled) score += 25;
+
+    // KYC verified (+25)
+    final kycVerified = kycStatus.whenOrNull(
+      data: (status) => status.status == 'approved' || status.status == 'auto_approved',
+    ) ?? false;
+    if (kycVerified) score += 25;
+
+    // Email verified (+25)
+    if (user?.email != null && user!.email!.isNotEmpty) score += 25;
+
+    // Determine level
+    final String levelText;
+    final Color levelColor;
+    final String description;
+    if (score >= 75) {
+      levelText = l10n.security_scoreExcellent;
+      levelColor = context.colors.gold;
+      description = l10n.security_wellProtected;
+    } else if (score >= 50) {
+      levelText = l10n.security_scoreGood;
+      levelColor = AppColors.successBase;
+      description = l10n.security_scoreGoodDesc;
+    } else if (score >= 25) {
+      levelText = l10n.security_scoreModerate;
+      levelColor = AppColors.warningBase;
+      description = l10n.security_scoreModerateDesc;
+    } else {
+      levelText = l10n.security_scoreLow;
+      levelColor = AppColors.errorBase;
+      description = l10n.security_scoreLowDesc;
+    }
+
     return Semantics(
-      label: 'Score de securite: Eleve',
+      label: '${l10n.security_scoreTitle}: $levelText ($score%)',
       child: GradientCard(
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             children: [
-              Icon(Icons.shield, color: context.colors.gold, size: 48),
+              Icon(Icons.shield, color: levelColor, size: 48),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                'Securite Elevee',
+                '$levelText ($score%)',
                 style: AppTextStyle.headingSmall,
-                color: context.colors.gold,
+                color: levelColor,
               ),
               const SizedBox(height: AppSpacing.xs),
               AppText(
-                'Votre compte est bien protege',
+                description,
                 style: AppTextStyle.bodySmall,
                 color: context.colors.textSecondary,
               ),

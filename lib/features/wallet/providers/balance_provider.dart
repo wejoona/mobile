@@ -32,7 +32,8 @@ class WalletBalance {
 final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(seconds: 30), () => link.close());
+  final timer = Timer(const Duration(seconds: 30), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/wallet');
   final data = response.data as Map<String, dynamic>;

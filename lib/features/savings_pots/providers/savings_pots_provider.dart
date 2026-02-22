@@ -8,7 +8,8 @@ import 'package:usdc_wallet/services/savings_pots/savings_pots_service.dart';
 final savingsPotsProvider = FutureProvider<List<SavingsPot>>((ref) async {
   final service = ref.watch(savingsPotsServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 2), () => link.close());
+  final timer = Timer(const Duration(minutes: 2), () => link.close());
+  ref.onDispose(() => timer.cancel());
   return service.getAll();
 });
 

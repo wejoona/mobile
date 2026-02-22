@@ -4,20 +4,8 @@ import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 
-/// Wallet Balance Provider with TTL-based caching
-/// Cache duration: 30 seconds
-final walletBalanceProvider =
-    FutureProvider<WalletBalanceResponse>((ref) async {
-  final service = ref.watch(walletServiceProvider);
-  final link = ref.keepAlive();
-
-  // Auto-invalidate after 30 seconds
-  Timer(const Duration(seconds: 30), () {
-    link.close();
-  });
-
-  return service.getBalance();
-});
+// NOTE: walletBalanceProvider is defined in balance_provider.dart (canonical).
+// Do NOT re-declare it here. Import from balance_provider.dart instead.
 
 /// Deposit Channels Provider with TTL-based caching
 /// Cache duration: 30 minutes (channels rarely change)
@@ -29,10 +17,11 @@ final depositChannelsProvider =
   final service = ref.watch(walletServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 minutes
-  Timer(const Duration(minutes: 30), () {
+  // Auto-invalidate after 30 minutes — properly disposed
+  final timer = Timer(const Duration(minutes: 30), () {
     link.close();
   });
+  ref.onDispose(() => timer.cancel());
 
   return service.getDepositChannels(currency: currency);
 });
@@ -44,10 +33,11 @@ final exchangeRateProvider = FutureProvider
   final service = ref.watch(walletServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 seconds
-  Timer(const Duration(seconds: 30), () {
+  // Auto-invalidate after 30 seconds — properly disposed
+  final timer = Timer(const Duration(seconds: 30), () {
     link.close();
   });
+  ref.onDispose(() => timer.cancel());
 
   return service.getRate(
     sourceCurrency: params.sourceCurrency,
@@ -95,10 +85,11 @@ final kycStatusProvider =
   final service = ref.watch(walletServiceProvider);
   final link = ref.keepAlive();
 
-  // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
+  // Auto-invalidate after 5 minutes — properly disposed
+  final timer = Timer(const Duration(minutes: 5), () {
     link.close();
   });
+  ref.onDispose(() => timer.cancel());
 
   return service.getKycStatus();
 });

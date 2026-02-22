@@ -10,7 +10,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 final devicesProvider = FutureProvider<List<Device>>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 5), () => link.close());
+  final timer = Timer(const Duration(minutes: 5), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/devices');
   // Backend may return {data: [...]} or [...] directly

@@ -15,9 +15,8 @@ final billCategoriesProvider = FutureProvider.family<BillCategoriesResponse, Str
     final link = ref.keepAlive();
 
     // Auto-invalidate after 30 minutes
-    Timer(const Duration(minutes: 30), () {
-      link.close();
-    });
+    final timer = Timer(const Duration(minutes: 30), () {      link.close();    });
+    ref.onDispose(() => timer.cancel());
 
     return service.getCategories(country: country);
   },
@@ -30,9 +29,8 @@ final billProvidersProvider = FutureProvider.family<BillProvidersResponse, BillP
     final link = ref.keepAlive();
 
     // Auto-invalidate after 10 minutes
-    Timer(const Duration(minutes: 10), () {
-      link.close();
-    });
+    final timer = Timer(const Duration(minutes: 10), () {      link.close();    });
+    ref.onDispose(() => timer.cancel());
 
     return service.getProviders(
       country: params.country,

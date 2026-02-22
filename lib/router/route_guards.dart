@@ -4,7 +4,8 @@ library;
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/router/route_names.dart';
 
-/// Routes that do not require authentication.
+/// Single source of truth: routes that do not require authentication.
+/// NOTE: /pin/setup and /pin/confirm require auth (removed from public).
 const _publicRoutes = {
   RouteNames.splash,
   RouteNames.login,
@@ -16,6 +17,15 @@ const _publicRoutes = {
   RouteNames.payLink,
 };
 
+/// Public route paths (derived from names for path-based checks).
+const _publicPaths = [
+  '/',
+  '/login',
+  '/onboarding',
+  '/splash',
+  '/pay/',
+];
+
 /// Routes that require KYC tier 2+.
 const _kycRequiredRoutes = {
   RouteNames.sendExternal,
@@ -24,11 +34,16 @@ const _kycRequiredRoutes = {
   RouteNames.requestCard,
 };
 
-/// Check if a route requires authentication.
+/// Check if a route name is public (no auth required).
 bool isPublicRoute(String routeName) => _publicRoutes.contains(routeName);
 
 /// Check if a route requires KYC verification.
 bool requiresKyc(String routeName) => _kycRequiredRoutes.contains(routeName);
+
+/// Check if a path is public (for path-based redirect logic).
+bool isPublicPath(String path) {
+  return _publicPaths.any((p) => path.startsWith(p));
+}
 
 /// GoRouter redirect function for auth guards.
 String? authRedirect({
@@ -46,7 +61,7 @@ String? authRedirect({
 
   // If not authenticated and trying to access protected route
   if (!isAuthenticated) {
-    if (!_isPublicPath(currentRoute)) {
+    if (!isPublicPath(currentRoute)) {
       return '/login';
     }
     return null;
@@ -63,14 +78,4 @@ String? authRedirect({
   }
 
   return null;
-}
-
-bool _isPublicPath(String path) {
-  const publicPaths = [
-    '/login',
-    '/onboarding',
-    '/splash',
-    '/pay/',
-  ];
-  return publicPaths.any((p) => path.startsWith(p));
 }

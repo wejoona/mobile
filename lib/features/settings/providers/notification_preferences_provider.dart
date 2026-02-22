@@ -218,9 +218,8 @@ final notificationPreferencesFutureProvider =
   final link = ref.keepAlive();
 
   // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(minutes: 5), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   return service.getPreferences();
 });

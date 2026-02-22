@@ -9,7 +9,8 @@ import 'package:usdc_wallet/services/service_providers.dart';
 final recurringTransfersProvider = FutureProvider<List<RecurringTransfer>>((ref) async {
   final service = ref.watch(recurringTransfersServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 2), () => link.close());
+  final timer = Timer(const Duration(minutes: 2), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   return await service.getRecurringTransfers();
 });

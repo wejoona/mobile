@@ -183,9 +183,13 @@ class LoginNotifier extends Notifier<LoginState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Call PIN verification API
-      // For now, mock: any 6-digit PIN works (or specifically "123456")
-      await Future.delayed(const Duration(seconds: 1));
+      // Verify PIN with backend — returns a PIN token for subsequent requests
+      final pinService = ref.read(pinServiceProvider);
+      final pinResult = await pinService.verifyPinWithBackend(pin);
+
+      if (!pinResult.success) {
+        throw Exception(pinResult.message ?? 'PIN verification failed');
+      }
 
       // Store auth token and complete login
       if (state.sessionToken != null) {

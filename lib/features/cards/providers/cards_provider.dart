@@ -7,7 +7,8 @@ import 'package:usdc_wallet/services/service_providers.dart';
 final cardsProvider = FutureProvider<List<KoridoCard>>((ref) async {
   final service = ref.watch(cardsServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 2), () => link.close());
+  final timer = Timer(const Duration(minutes: 2), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final data = await service.getCards();
   final items = (data['data'] as List?) ?? [];

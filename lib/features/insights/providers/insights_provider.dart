@@ -8,7 +8,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 final spendingInsightsProvider = FutureProvider<SpendingInsights>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 10), () => link.close());
+  final timer = Timer(const Duration(minutes: 10), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final response = await dio.get('/wallet/transactions/stats');
   return SpendingInsights.fromJson(response.data as Map<String, dynamic>);

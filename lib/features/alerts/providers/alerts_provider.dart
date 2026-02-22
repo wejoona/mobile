@@ -45,7 +45,8 @@ class AppAlert {
 final activeAlertsProvider = FutureProvider<List<AppAlert>>((ref) async {
   final dio = ref.watch(dioProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 10), () => link.close());
+  final timer = Timer(const Duration(minutes: 10), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   try {
     final response = await dio.get('/alerts');

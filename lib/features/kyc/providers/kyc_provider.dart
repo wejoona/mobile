@@ -11,7 +11,8 @@ import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   final service = ref.watch(kycServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 5), () => link.close());
+  final timer = Timer(const Duration(minutes: 5), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final data = await service.getKycStatus();
   return KycProfile(userId: '', level: KycLevel.none, status: data.status, rejectionReason: data.rejectionReason);

@@ -7,7 +7,8 @@ import 'package:usdc_wallet/services/limits/limits_service.dart';
 final transactionLimitsProvider = FutureProvider<TransactionLimits>((ref) async {
   final service = ref.watch(limitsServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 5), () => link.close());
+  final timer = Timer(const Duration(minutes: 5), () => link.close());
+  ref.onDispose(() => timer.cancel());
   return service.getLimits();
 });
 

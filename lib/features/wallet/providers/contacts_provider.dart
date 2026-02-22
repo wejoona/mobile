@@ -15,9 +15,8 @@ final contactsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  Timer(const Duration(seconds: 30), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   return service.getContacts();
 });
@@ -29,9 +28,8 @@ final favoritesProvider = FutureProvider.autoDispose<List<Contact>>((ref) async 
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  Timer(const Duration(seconds: 30), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   return service.getFavorites();
 });
@@ -43,9 +41,8 @@ final recentsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  Timer(const Duration(seconds: 30), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   return service.getRecents();
 });

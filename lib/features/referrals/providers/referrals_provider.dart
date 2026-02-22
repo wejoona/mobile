@@ -6,7 +6,8 @@ import 'package:usdc_wallet/services/referrals/referrals_service.dart';
 final referralProvider = FutureProvider<ReferralInfo>((ref) async {
   final service = ref.watch(referralsServiceProvider);
   final link = ref.keepAlive();
-  Timer(const Duration(minutes: 5), () => link.close());
+  final timer = Timer(const Duration(minutes: 5), () => link.close());
+  ref.onDispose(() => timer.cancel());
 
   final data = await service.getReferralInfo();
   return ReferralInfo.fromJson(data);

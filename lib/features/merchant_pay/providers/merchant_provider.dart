@@ -10,9 +10,8 @@ final merchantProfileProvider = FutureProvider<MerchantResponse?>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(minutes: 5), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   try {
     return await service.getMyMerchant();
@@ -44,9 +43,8 @@ final merchantAnalyticsProvider = FutureProvider.family<MerchantAnalyticsRespons
   final link = ref.keepAlive();
 
   // Auto-invalidate after 5 minutes
-  Timer(const Duration(minutes: 5), () {
-    link.close();
-  });
+  final timer = Timer(const Duration(minutes: 5), () {    link.close();  });
+  ref.onDispose(() => timer.cancel());
 
   return service.getAnalytics(
     merchantId: params.merchantId,
