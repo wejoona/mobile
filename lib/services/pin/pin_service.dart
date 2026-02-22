@@ -354,7 +354,31 @@ class PinService {
     if (pin.length == 6) {
       final pair = pin.substring(0, 2);
       if (pin == pair * 3) return true;
+
+      // Check for repeating triples (112233, 001122, etc.)
+      final triple1 = pin.substring(0, 3);
+      final triple2 = pin.substring(3, 6);
+      if (triple1 == triple2) return true;
+
+      // Check for double-digit pairs (112233)
+      if (pin.length == 6) {
+        final isDoubleDigitPairs = pin[0] == pin[1] && pin[2] == pin[3] && pin[4] == pin[5];
+        if (isDoubleDigitPairs) return true;
+      }
+
+      // Check for mirrored patterns (123123)
+      if (pin.substring(0, 3) == pin.substring(3, 6)) return true;
     }
+
+    // Common PINs blocklist
+    const commonPins = {
+      '000000', '111111', '222222', '333333', '444444',
+      '555555', '666666', '777777', '888888', '999999',
+      '123456', '654321', '123123', '112233', '121212',
+      '696969', '131313', '420420', '000001', '100000',
+      '111222', '222111', '123321', '102030', '010203',
+    };
+    if (commonPins.contains(pin)) return true;
 
     return false;
   }

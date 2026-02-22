@@ -43,15 +43,23 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final potAsync = ref.watch(savingsPotByIdProvider(widget.potId));
     final state = ref.watch(savingsPotsStateProvider);
-    final pot = state.selectedPot;
 
-    if (pot == null) {
-      return Scaffold(
+    return potAsync.when(
+      loading: () => Scaffold(
         backgroundColor: context.colors.canvas,
         body: const Center(child: CircularProgressIndicator()),
-      );
-    }
+      ),
+      error: (e, _) => Scaffold(
+        backgroundColor: context.colors.canvas,
+        body: Center(child: Text(l10n.savingsPots_error(e.toString()))),
+      ),
+      data: (pot) => _buildPotDetail(context, ref, pot, state, l10n),
+    );
+  }
+
+  Widget _buildPotDetail(BuildContext context, WidgetRef ref, SavingsPot pot, SavingsPotsState state, AppLocalizations l10n) {
 
     // Show confetti if goal reached
     if (pot.isGoalReached && !_confettiController.state.toString().contains('playing')) {

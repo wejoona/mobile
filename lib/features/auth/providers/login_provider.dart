@@ -223,22 +223,36 @@ class LoginNotifier extends Notifier<LoginState> {
 
       return true;
     } catch (e) {
+      // Use backend lockout state from PinService if available
+      final pinService = ref.read(pinServiceProvider);
+      final lockCheck = await pinService.verifyPinLocally('');
+      // ^ Quick check to get lockout state (will fail but returns lock info)
+
       final newAttempts = state.pinAttempts + 1;
 
-      if (newAttempts >= 3) {
-        // Lock account after 3 failed attempts
+      if (lockCheck.isLocked) {
+        // Backend/local lockout is active
+        state = state.copyWith(
+          isLoading: false,
+          isLocked: true,
+          pinAttempts: newAttempts,
+          error: lockCheck.message ?? 'Too many failed attempts. Account locked.',
+        );
+        _startLockoutTimer(lockCheck.lockRemainingSeconds ?? 900);
+      } else if (newAttempts >= 3) {
         state = state.copyWith(
           isLoading: false,
           isLocked: true,
           pinAttempts: newAttempts,
           error: 'Too many failed attempts. Account locked for 15 minutes.',
         );
-        _startLockoutTimer();
+        _startLockoutTimer(900);
       } else {
+        final remaining = lockCheck.remainingAttempts ?? (3 - newAttempts);
         state = state.copyWith(
           isLoading: false,
           pinAttempts: newAttempts,
-          error: 'Incorrect PIN, ${3 - newAttempts} attempts remaining',
+          error: 'Incorrect PIN, $remaining attempts remaining',
         );
       }
 
@@ -246,10 +260,10 @@ class LoginNotifier extends Notifier<LoginState> {
     }
   }
 
-  /// Start lockout timer
-  void _startLockoutTimer() {
+  /// Start lockout timer with duration from backend
+  void _startLockoutTimer(int seconds) {
     _lockoutTimer?.cancel();
-    _lockoutTimer = Timer(const Duration(minutes: 15), () {
+    _lockoutTimer = Timer(Duration(seconds: seconds), () {
       state = state.copyWith(
         isLocked: false,
         pinAttempts: 0,

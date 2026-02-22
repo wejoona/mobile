@@ -57,6 +57,14 @@ class _PinScreenState extends ConsumerState<PinScreen> {
   }
 
   Future<void> _checkBiometric() async {
+    // Only offer biometric if PIN is confirmed (set) on device
+    final pinService = ref.read(pinServiceProvider);
+    final hasPin = await pinService.hasPin();
+    if (!hasPin) {
+      if (mounted) setState(() => _biometricAvailable = false);
+      return;
+    }
+
     final bio = ref.read(biometricServiceProvider);
     final available = await bio.isAvailable();
     final enabled = await bio.isBiometricEnabled();
@@ -129,7 +137,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
   Future<void> _handleBiometric() async {
     final bio = ref.read(biometricServiceProvider);
     final result = await bio.authenticate(
-      localizedReason: 'Vérifiez votre identité pour continuer',
+      localizedReason: AppLocalizations.of(context)!.biometric_reason,
     );
     if (result.success && mounted) _onSuccess();
   }

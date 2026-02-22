@@ -98,7 +98,7 @@ class _SecurityScoreCard extends ConsumerWidget {
 
     // KYC verified (+25)
     final kycVerified = kycStatus.whenOrNull(
-      data: (status) => status.status == 'approved' || status.status == 'auto_approved',
+      data: (status) => status.kycStatus == 'approved' || status.kycStatus == 'auto_approved',
     ) ?? false;
     if (kycVerified) score += 25;
 
