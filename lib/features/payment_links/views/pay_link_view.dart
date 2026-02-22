@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
@@ -438,7 +439,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       SizedBox(height: AppSpacing.xs),
                       AppText(
                         _xofRate != null
-                            ? '${Formatters.formatCurrency(_link!.amount * _xofRate!)} XOF'
+                            ? formatXof(_link!.amount * _xofRate!)
                             : '${_link!.currency}',
                         variant: AppTextVariant.bodyMedium,
                         color: context.colors.textSecondary,

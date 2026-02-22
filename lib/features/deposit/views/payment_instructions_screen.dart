@@ -11,6 +11,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Payment Instructions Screen
 ///
@@ -188,7 +189,7 @@ class _PaymentInstructionsScreenState
                 color: colors.textSecondary,
               ),
               AppText(
-                '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}',
+                formatXof(state.amountUSD ?? 0),
                 variant: AppTextVariant.headlineSmall,
                 color: colors.gold,
               ),

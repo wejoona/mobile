@@ -165,7 +165,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
                   return touchedBarSpots.map((barSpot) {
                     final trend = widget.trends[barSpot.x.toInt()];
                     return LineTooltipItem(
-                      '\$${trend.amount.toStringAsFixed(2)}\n${_formatDate(trend.date)}',
+                      '${formatXof(trend.amount)}\n${_formatDate(trend.date)}',
                       AppTypography.bodySmall.copyWith(
                         color: context.colors.textPrimary,
                         fontWeight: FontWeight.bold,
@@ -218,7 +218,7 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
 
   Widget _buildLeftTitle(double value, TitleMeta meta) {
     return AppText(
-      '\$${_formatAmount(value)}',
+      formatXof(value, showSymbol: false),
       variant: AppTextVariant.bodySmall,
       color: context.colors.textSecondary,
       textAlign: TextAlign.left,

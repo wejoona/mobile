@@ -13,6 +13,7 @@ import 'package:usdc_wallet/features/savings_pots/models/pot_transaction.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/add_to_pot_sheet.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/withdraw_from_pot_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Detail view for a single savings pot
 class PotDetailView extends ConsumerStatefulWidget {
@@ -57,8 +58,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
       _confettiController.play();
     }
 
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -191,7 +191,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
 
           // Current amount
           AppText(
-            currencyFormat.format(pot.currentAmount),
+            formatXof(pot.currentAmount),
             variant: AppTextVariant.displayMedium,
             color: pot.color,
             fontWeight: FontWeight.bold,
@@ -211,7 +211,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             ),
             SizedBox(height: AppSpacing.sm),
             AppText(
-              '${currencyFormat.format(pot.currentAmount)} of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
+              '${formatXof(pot.currentAmount)} of ${formatXof(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
               variant: AppTextVariant.bodyMedium,
               color: context.colors.textSecondary,
             ),
@@ -334,7 +334,7 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
             ),
           ),
           AppText(
-            '${isDeposit ? '+' : '-'}${currencyFormat.format(transaction.amount)}',
+            '${isDeposit ? '+' : '-'}${formatXof(transaction.amount)}',
             variant: AppTextVariant.bodyLarge,
             color: isDeposit ? context.colors.success : context.colors.warning,
             fontWeight: FontWeight.bold,

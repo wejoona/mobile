@@ -169,7 +169,7 @@ class DepositNotifier extends Notifier<DepositState> {
 
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.get('/wallet/transactions/deposit/$depositId/status');
+      final response = await dio.get('/deposits/$depositId');
       final data = response.data as Map<String, dynamic>;
       final status = data['status'] as String?;
 

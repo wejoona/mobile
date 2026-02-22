@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Request Card View
 ///
@@ -275,7 +276,7 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
           border: Border.all(color: colors.border),
         ),
         child: AppText(
-          '\$$amount',
+          formatXof(amount.toDouble()),
           variant: AppTextVariant.labelMedium,
           color: colors.textPrimary,
         ),

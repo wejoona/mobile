@@ -99,7 +99,7 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
               ),
               const SizedBox(height: 4),
               Text(
-                '\$${widget.categories[_touchedIndex].amount.toStringAsFixed(2)}',
+                formatXof(widget.categories[_touchedIndex].amount),
                 style: AppTypography.titleMedium.copyWith(
                   color: context.colors.gold,
                   fontWeight: FontWeight.bold,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/design/components/primitives/progress_bar.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Card displaying a bulk payment batch status.
 class BulkPaymentCard extends StatelessWidget {
@@ -40,7 +41,7 @@ class BulkPaymentCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(payment.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                        Text('${payment.totalCount} destinataires • \$${payment.totalAmount.toStringAsFixed(2)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                        Text('${payment.totalCount} destinataires • ${formatXof(payment.totalAmount)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
                       ],
                     ),
                   ),

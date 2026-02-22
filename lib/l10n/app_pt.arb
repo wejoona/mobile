@@ -7741,5 +7741,39 @@
   "@offline_banner_reconnected": {
     "description": "Offline banner reconnected message"
   },
-  "auth_useBiometric": "Usar login biométrico"
+  "auth_useBiometric": "Usar login biométrico",
+  "security_accountSecurity": "Segurança da Conta",
+  "security_wellProtected": "Sua conta está bem protegida",
+  "security_scoreGoodDesc": "Boa segurança, mas pode melhorar",
+  "security_scoreModerateDesc": "Segurança moderada. Ative mais proteções",
+  "security_scoreLowDesc": "Segurança baixa. Tome medidas para proteger sua conta",
+  "verification_accountVerification": "Verificação da Conta",
+  "verification_phoneNumber": "Número de Telefone",
+  "verification_verified": "Verificado",
+  "verification_personalInfo": "Informação Pessoal",
+  "verification_complete": "Completo",
+  "verification_toComplete": "A completar",
+  "verification_identityDocument": "Documento de Identidade",
+  "verification_verifyIdentity": "Verificar sua identidade",
+  "verification_selfie": "Selfie de Verificação",
+  "verification_confirmIdentity": "Confirme sua identidade",
+  "verification_continue": "Continuar Verificação",
+  "verification_step": "Etapa {step}",
+  "@verification_step": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "delete_accountTitle": "Excluir Minha Conta",
+  "delete_warningMessage": "Atenção: esta ação é irreversível. Todos os seus dados serão permanentemente excluídos.",
+  "delete_consequencesTitle": "O que acontece quando você exclui sua conta:",
+  "delete_consequenceBalance": "Seu saldo restante será perdido",
+  "delete_consequenceHistory": "Histórico de transações excluído",
+  "delete_consequenceIrreversible": "Impossível recuperar sua conta",
+  "delete_consequenceKyc": "Dados KYC apagados em 30 dias",
+  "delete_contactSupportTitle": "Contatar Suporte",
+  "delete_contactSupportDescription": "Para excluir sua conta, entre em contato com nossa equipe de suporte. Eles irão guiá-lo no processo.",
+  "delete_contactSupportButton": "Contatar Suporte"
 }

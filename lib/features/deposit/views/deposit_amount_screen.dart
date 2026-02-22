@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Deposit Amount Screen
 class DepositAmountScreen extends ConsumerStatefulWidget {
@@ -253,7 +254,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
               ),
               AppText(
                 _isXOF
-                    ? '\$${convertedAmount.toStringAsFixed(2)}'
+                    ? formatXof(convertedAmount)
                     : '${convertedAmount.toStringAsFixed(0)} XOF',
                 variant: AppTextVariant.titleMedium,
                 color: colors.gold,
@@ -458,7 +459,7 @@ class _QuickAmountButton extends StatelessWidget {
         label = amount.toStringAsFixed(0);
       }
     } else {
-      label = '\$${amount.toStringAsFixed(0)}';
+      label = formatXof(amount);
     }
 
     return GestureDetector(

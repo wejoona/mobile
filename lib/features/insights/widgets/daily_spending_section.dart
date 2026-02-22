@@ -61,7 +61,7 @@ class DailySpendingSection extends ConsumerWidget {
                   Expanded(
                     child: _buildStatCard(
                       label: l10n.insights_daily_average,
-                      value: '\$${avgSpending.toStringAsFixed(2)}',
+                      value: formatXof(avgSpending),
                       icon: Icons.trending_flat,
                       color: context.colors.textSecondary,
                     ),
@@ -70,7 +70,7 @@ class DailySpendingSection extends ConsumerWidget {
                   Expanded(
                     child: _buildStatCard(
                       label: l10n.insights_highest_day,
-                      value: '\$${maxDay.amount.toStringAsFixed(2)}',
+                      value: formatXof(maxDay.amount),
                       icon: Icons.trending_up,
                       color: context.colors.gold,
                     ),

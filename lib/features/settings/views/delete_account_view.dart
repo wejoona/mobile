@@ -3,35 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-/// Run 379: Account deletion view with confirmation steps
-class DeleteAccountView extends ConsumerStatefulWidget {
+/// Account deletion view — backend endpoint not yet implemented.
+/// Shows "Contact support" flow instead of a broken delete button.
+class DeleteAccountView extends ConsumerWidget {
   const DeleteAccountView({super.key});
 
   @override
-  ConsumerState<DeleteAccountView> createState() => _DeleteAccountViewState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
 
-class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
-  bool _confirmed = false;
-  bool _isDeleting = false;
-  final _reasonController = TextEditingController();
-
-  @override
-  void dispose() {
-    _reasonController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: const AppText(
-          'Supprimer mon compte',
+        title: AppText(
+          l10n.delete_accountTitle,
           style: AppTextStyle.headingSmall,
         ),
         backgroundColor: context.colors.surface,
@@ -39,102 +27,69 @@ class _DeleteAccountViewState extends ConsumerState<DeleteAccountView> {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          const AlertBanner(
-            message: 'Attention: cette action est irreversible. '
-                'Toutes vos donnees seront definitivement supprimees.',
+          AlertBanner(
+            message: l10n.delete_warningMessage,
             type: AlertVariant.error,
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
-            'Que se passe-t-il quand vous supprimez votre compte:',
+          AppText(
+            l10n.delete_consequencesTitle,
             style: AppTextStyle.labelLarge,
           ),
           const SizedBox(height: AppSpacing.lg),
           _ConsequenceItem(
-            text: 'Votre solde restant sera perdu',
+            text: l10n.delete_consequenceBalance,
             icon: Icons.account_balance_wallet_outlined,
           ),
           _ConsequenceItem(
-            text: 'Historique des transactions supprime',
+            text: l10n.delete_consequenceHistory,
             icon: Icons.history,
           ),
           _ConsequenceItem(
-            text: 'Impossible de recuperer votre compte',
+            text: l10n.delete_consequenceIrreversible,
             icon: Icons.no_accounts,
           ),
           _ConsequenceItem(
-            text: 'Donnees KYC effacees sous 30 jours',
+            text: l10n.delete_consequenceKyc,
             icon: Icons.badge_outlined,
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          AppInput(
-            controller: _reasonController,
-            label: 'Raison de suppression (optionnel)',
-            hint: 'Dites-nous pourquoi vous partez...',
-            maxLines: 3,
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // Contact support instead of broken delete
+          Icon(Icons.support_agent, size: 48, color: context.colors.gold),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.delete_contactSupportTitle,
+            style: AppTextStyle.headingSmall,
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.xxl),
-          Row(
-            children: [
-              Semantics(
-                label: 'Confirmer la suppression du compte',
-                child: Checkbox(
-                  value: _confirmed,
-                  onChanged: (v) => setState(() => _confirmed = v ?? false),
-                  activeColor: context.colors.error,
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _confirmed = !_confirmed),
-                  child: const AppText(
-                    'Je comprends que cette action est irreversible',
-                    style: AppTextStyle.bodySmall,
-                  ),
-                ),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            l10n.delete_contactSupportDescription,
+            style: AppTextStyle.bodySmall,
+            color: context.colors.textSecondary,
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.xxl),
           AppButton(
-            label: 'Supprimer definitivement',
-            variant: AppButtonVariant.danger,
-            isLoading: _isDeleting,
-            onPressed: _confirmed && !_isDeleting ? _deleteAccount : null,
+            label: l10n.delete_contactSupportButton,
+            variant: AppButtonVariant.primary,
+            onPressed: () async {
+              final uri = Uri.parse('mailto:support@joonapay.com?subject=Account%20Deletion%20Request');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            },
           ),
           const SizedBox(height: AppSpacing.md),
           AppButton(
-            label: 'Annuler',
+            label: l10n.common_cancel,
             variant: AppButtonVariant.ghost,
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
       ),
     );
-  }
-
-  Future<void> _deleteAccount() async {
-    setState(() => _isDeleting = true);
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/account/delete', data: {
-        if (_reasonController.text.isNotEmpty) 'reason': _reasonController.text.trim(),
-      });
-      // Logout after successful account deletion request
-      if (mounted) {
-        ref.read(authProvider.notifier).logout();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isDeleting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Impossible de supprimer le compte: ${e.toString()}'),
-            backgroundColor: context.colors.error,
-          ),
-        );
-      }
-    }
   }
 }
 

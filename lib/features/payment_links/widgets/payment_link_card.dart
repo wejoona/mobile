@@ -3,6 +3,7 @@ import 'package:usdc_wallet/features/payment_links/models/payment_link.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Card displaying a payment link.
 class PaymentLinkCard extends StatelessWidget {
@@ -40,7 +41,7 @@ class PaymentLinkCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('\$${link.amount.toStringAsFixed(2)} ${link.currency}', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+                        Text(formatCurrency(link.amount, link.currency), style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                         if (link.description != null)
                           Text(link.description!, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant), maxLines: 1, overflow: TextOverflow.ellipsis),
                       ],

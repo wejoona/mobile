@@ -153,7 +153,20 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = state.copyWith(otpResendCountdown: 60);
   }
   void startKyc() {}
-  void skipKyc() => state = state.copyWith(isComplete: true);
+
+  /// Skip KYC — notify backend so it records the user's choice,
+  /// then mark onboarding complete locally.
+  Future<void> skipKyc() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/user/kyc/skip');
+    } catch (_) {
+      // Non-blocking — still complete onboarding even if backend call fails
+    }
+    await completeOnboarding();
+    state = state.copyWith(isLoading: false);
+  }
 
 }
 

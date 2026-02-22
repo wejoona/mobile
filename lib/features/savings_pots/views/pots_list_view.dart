@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/pot_card.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Main screen showing list of savings pots
 class PotsListView extends ConsumerStatefulWidget {
@@ -31,8 +32,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final colors = context.colors;
+        final colors = context.colors;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -129,7 +129,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                currencyFormat.format(state.totalSaved),
+                formatXof(state.totalSaved),
                 variant: AppTextVariant.displaySmall,
                 color: colors.gold,
                 fontWeight: FontWeight.bold,

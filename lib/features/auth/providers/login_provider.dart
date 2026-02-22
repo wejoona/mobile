@@ -191,13 +191,8 @@ class LoginNotifier extends Notifier<LoginState> {
         throw Exception(pinResult.message ?? 'PIN verification failed');
       }
 
-      // Store auth token and complete login
+      // Store auth token and complete login via session provider (single source of truth)
       if (state.sessionToken != null) {
-        await _storage.write(
-          key: StorageKeys.accessToken,
-          value: state.sessionToken!,
-        );
-        // Notify session provider so app knows we're authenticated
         await ref.read(sessionProvider.notifier).setTokens(
           accessToken: state.sessionToken!,
           refreshToken: state.refreshToken ?? state.sessionToken!,
@@ -279,10 +274,7 @@ class LoginNotifier extends Notifier<LoginState> {
             await _storage.read(key: StorageKeys.accessToken);
 
         if (storedToken != null) {
-          await _storage.write(
-            key: StorageKeys.accessToken,
-            value: storedToken,
-          );
+          // Use session provider as single source of truth (no direct storage writes)
           final refreshToken = state.refreshToken ??
               await _storage.read(key: StorageKeys.refreshToken);
           await ref.read(sessionProvider.notifier).setTokens(

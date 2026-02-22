@@ -104,7 +104,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Total spent
           _buildStatItem(
             l10n.insights_total_spent,
-            '\$${totalSpent.toStringAsFixed(2)}',
+            formatXof(totalSpent),
             context.colors.errorText,
           ),
 
@@ -113,7 +113,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Total received
           _buildStatItem(
             l10n.insights_total_received,
-            '\$${totalReceived.toStringAsFixed(2)}',
+            formatXof(totalReceived),
             context.colors.successText,
           ),
 
@@ -130,7 +130,7 @@ class SpendingSummaryCard extends ConsumerWidget {
           // Net flow
           _buildStatItem(
             l10n.insights_net_flow,
-            '${netFlow >= 0 ? '+' : ''}\$${netFlow.toStringAsFixed(2)}',
+            '${netFlow >= 0 ? '+' : '-'}${formatXof(netFlow.abs())}',
             netFlow >= 0 ? context.colors.successText : context.colors.errorText,
             isLarge: true,
           ),

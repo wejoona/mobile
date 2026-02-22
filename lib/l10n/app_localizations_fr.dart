@@ -7347,4 +7347,95 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get auth_useBiometric => 'Utiliser la biométrie';
+
+  @override
+  String get security_accountSecurity => 'Sécurité du compte';
+
+  @override
+  String get security_wellProtected => 'Votre compte est bien protégé';
+
+  @override
+  String get security_scoreGoodDesc =>
+      'Bonne sécurité, mais vous pouvez l\'améliorer';
+
+  @override
+  String get security_scoreModerateDesc =>
+      'Sécurité modérée. Activez plus de protections';
+
+  @override
+  String get security_scoreLowDesc =>
+      'Sécurité faible. Agissez pour protéger votre compte';
+
+  @override
+  String get verification_accountVerification => 'Vérification du compte';
+
+  @override
+  String get verification_phoneNumber => 'Numéro de téléphone';
+
+  @override
+  String get verification_verified => 'Vérifié';
+
+  @override
+  String get verification_personalInfo => 'Information personnelle';
+
+  @override
+  String get verification_complete => 'Complété';
+
+  @override
+  String get verification_toComplete => 'À remplir';
+
+  @override
+  String get verification_identityDocument => 'Document d\'identité';
+
+  @override
+  String get verification_verifyIdentity => 'Vérifier votre identité';
+
+  @override
+  String get verification_selfie => 'Selfie de vérification';
+
+  @override
+  String get verification_confirmIdentity => 'Confirmez votre identité';
+
+  @override
+  String get verification_continue => 'Continuer la vérification';
+
+  @override
+  String verification_step(int step) {
+    return 'Étape $step';
+  }
+
+  @override
+  String get delete_accountTitle => 'Supprimer mon compte';
+
+  @override
+  String get delete_warningMessage =>
+      'Attention: cette action est irréversible. Toutes vos données seront définitivement supprimées.';
+
+  @override
+  String get delete_consequencesTitle =>
+      'Que se passe-t-il quand vous supprimez votre compte:';
+
+  @override
+  String get delete_consequenceBalance => 'Votre solde restant sera perdu';
+
+  @override
+  String get delete_consequenceHistory =>
+      'Historique des transactions supprimé';
+
+  @override
+  String get delete_consequenceIrreversible =>
+      'Impossible de récupérer votre compte';
+
+  @override
+  String get delete_consequenceKyc => 'Données KYC effacées sous 30 jours';
+
+  @override
+  String get delete_contactSupportTitle => 'Contacter le support';
+
+  @override
+  String get delete_contactSupportDescription =>
+      'Pour supprimer votre compte, veuillez contacter notre équipe de support. Ils vous guideront dans le processus.';
+
+  @override
+  String get delete_contactSupportButton => 'Contacter le support';
 }

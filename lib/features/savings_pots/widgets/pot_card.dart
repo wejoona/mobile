@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/domain/entities/savings_pot.dart';
-import 'package:intl/intl.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Card widget displaying a savings pot
 class PotCard extends StatelessWidget {
@@ -17,8 +17,7 @@ class PotCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final colors = context.colors;
+        final colors = context.colors;
 
     return GestureDetector(
       onTap: onTap,
@@ -56,7 +55,7 @@ class PotCard extends StatelessWidget {
 
             // Current amount
             AppText(
-              currencyFormat.format(pot.currentAmount),
+              formatXof(pot.currentAmount),
               variant: AppTextVariant.headlineSmall,
               color: pot.color,
               fontWeight: FontWeight.bold,
@@ -68,7 +67,7 @@ class PotCard extends StatelessWidget {
               _buildProgressBar(context),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                'of ${currencyFormat.format(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
+                'of ${formatXof(pot.targetAmount)} (${(pot.progress * 100).toStringAsFixed(0)}%)',
                 variant: AppTextVariant.bodySmall,
                 color: colors.textSecondary,
               ),

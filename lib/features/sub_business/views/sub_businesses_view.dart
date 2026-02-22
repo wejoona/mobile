@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/features/sub_business/widgets/sub_business_card.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Main screen showing list of sub-businesses
 class SubBusinessesView extends ConsumerStatefulWidget {
@@ -32,8 +32,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
     // ignore: unused_local_variable
-    final __currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -106,8 +105,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
       0.0,
       (sum, sb) => sum + sb.balance,
     );
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return ListView(
       padding: EdgeInsets.all(AppSpacing.md),
       children: [
@@ -135,7 +133,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
               ),
               SizedBox(height: AppSpacing.xs),
               AppText(
-                currencyFormat.format(totalBalance),
+                formatXof(totalBalance),
                 variant: AppTextVariant.displaySmall,
                 color: context.colors.canvas,
                 fontWeight: FontWeight.bold,

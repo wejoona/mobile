@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Merchant Transactions View
 /// Shows full transaction history for a merchant
@@ -161,8 +162,7 @@ class _MerchantTransactionsViewState
   }
 
   Widget _buildTransactionItem(MerchantTransaction tx) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
+        final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
 
     Color statusColor;
     IconData statusIcon;
@@ -227,8 +227,8 @@ class _MerchantTransactionsViewState
                 children: [
                   AppText(
                     tx.status == 'refunded'
-                        ? '-${currencyFormat.format(tx.amount)}'
-                        : '+${currencyFormat.format(tx.netAmount)}',
+                        ? '-${formatXof(tx.amount)}'
+                        : '+${formatXof(tx.netAmount)}',
                     variant: AppTextVariant.bodyLarge,
                     color: tx.status == 'refunded'
                         ? context.colors.warning
@@ -236,7 +236,7 @@ class _MerchantTransactionsViewState
                   ),
                   if (tx.fee > 0)
                     AppText(
-                      'Fee: ${currencyFormat.format(tx.fee)}',
+                      'Fee: ${formatXof(tx.fee)}',
                       variant: AppTextVariant.labelSmall,
                       color: context.colors.textSecondary,
                     ),
@@ -268,8 +268,7 @@ class _MerchantTransactionsViewState
   }
 
   void _showTransactionDetails(MerchantTransaction tx) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    final dateFormat = DateFormat('MMMM dd, yyyy HH:mm:ss');
+        final dateFormat = DateFormat('MMMM dd, yyyy HH:mm:ss');
 
     showModalBottomSheet(
       context: context,
@@ -302,9 +301,9 @@ class _MerchantTransactionsViewState
               SizedBox(height: AppSpacing.lg),
               _buildDetailRow('Reference', tx.reference),
               _buildDetailRow('Payment ID', tx.paymentId),
-              _buildDetailRow('Amount', currencyFormat.format(tx.amount)),
-              _buildDetailRow('Fee', currencyFormat.format(tx.fee)),
-              _buildDetailRow('Net Amount', currencyFormat.format(tx.netAmount)),
+              _buildDetailRow('Amount', formatXof(tx.amount)),
+              _buildDetailRow('Fee', formatXof(tx.fee)),
+              _buildDetailRow('Net Amount', formatXof(tx.netAmount)),
               _buildDetailRow('Status', tx.status.toUpperCase()),
               _buildDetailRow('Date', dateFormat.format(tx.createdAt)),
               if (tx.description != null)

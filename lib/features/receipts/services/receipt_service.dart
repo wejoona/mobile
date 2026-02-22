@@ -12,6 +12,7 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_format.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Service for generating and sharing transaction receipts
 class ReceiptService {
@@ -26,9 +27,7 @@ class ReceiptService {
     // we generate a formatted text receipt as a fallback image using dart:ui.
     final receiptData = ReceiptData.fromTransaction(transaction);
     final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    final currencyFormatter =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     // Build a simple text-based receipt that can be shared
     // ignore: unused_local_variable
     final __lines = <String>[
@@ -38,10 +37,10 @@ class ReceiptService {
       '',
       'Status: ${receiptData.getStatusLabel().toUpperCase()}',
       '',
-      'Amount: ${currencyFormatter.format(receiptData.amount)} ${receiptData.currency}',
+      'Amount: ${formatXof(receiptData.amount)} ${receiptData.currency}',
       if (receiptData.fee > 0)
-        'Fee:    ${currencyFormatter.format(receiptData.fee)}',
-      'Total:  ${currencyFormatter.format(receiptData.total)} ${receiptData.currency}',
+        'Fee:    ${formatXof(receiptData.fee)}',
+      'Total:  ${formatXof(receiptData.total)} ${receiptData.currency}',
       '',
       '───────────────────────────',
       '',
@@ -74,8 +73,7 @@ class ReceiptService {
     final pdf = pw.Document();
 
     final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    final currencyFormatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -148,10 +146,10 @@ class ReceiptService {
                 pw.SizedBox(height: 24),
 
                 // Amount Section
-                _buildPdfRow('Amount', currencyFormatter.format(receiptData.amount)),
+                _buildPdfRow('Amount', formatXof(receiptData.amount)),
                 if (receiptData.fee > 0) ...[
                   pw.SizedBox(height: 12),
-                  _buildPdfRow('Fee', currencyFormatter.format(receiptData.fee)),
+                  _buildPdfRow('Fee', formatXof(receiptData.fee)),
                 ],
                 pw.SizedBox(height: 12),
                 pw.Container(
@@ -162,7 +160,7 @@ class ReceiptService {
                   ),
                   child: _buildPdfRow(
                     'Total',
-                    '${currencyFormatter.format(receiptData.total)} ${receiptData.currency}',
+                    '${formatXof(receiptData.total)} ${receiptData.currency}',
                     isBold: true,
                   ),
                 ),
@@ -310,7 +308,7 @@ class ReceiptService {
     try {
       final receiptData = ReceiptData.fromTransaction(transaction);
       final dateStr = DateFormat('MMM dd, yyyy').format(receiptData.date);
-      final amountStr = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(receiptData.total);
+      final amountStr = formatXof(receiptData.total);
 
       final message = '''
 Payment receipt from Korido
@@ -347,7 +345,7 @@ Thank you for using Korido!
     try {
       final receiptData = ReceiptData.fromTransaction(transaction);
       final dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(receiptData.date);
-      final amountStr = NumberFormat.currency(symbol: '\$', decimalDigits: 2).format(receiptData.total);
+      final amountStr = formatXof(receiptData.total);
 
       final subject = Uri.encodeComponent('Korido Transaction Receipt - ${receiptData.referenceNumber}');
       final body = Uri.encodeComponent('''

@@ -7203,4 +7203,93 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auth_useBiometric => 'Use biometric login';
+
+  @override
+  String get security_accountSecurity => 'Account Security';
+
+  @override
+  String get security_wellProtected => 'Your account is well protected';
+
+  @override
+  String get security_scoreGoodDesc => 'Good security, but you can improve';
+
+  @override
+  String get security_scoreModerateDesc =>
+      'Moderate security. Enable more protections';
+
+  @override
+  String get security_scoreLowDesc =>
+      'Low security. Take action to protect your account';
+
+  @override
+  String get verification_accountVerification => 'Account Verification';
+
+  @override
+  String get verification_phoneNumber => 'Phone Number';
+
+  @override
+  String get verification_verified => 'Verified';
+
+  @override
+  String get verification_personalInfo => 'Personal Information';
+
+  @override
+  String get verification_complete => 'Complete';
+
+  @override
+  String get verification_toComplete => 'To complete';
+
+  @override
+  String get verification_identityDocument => 'Identity Document';
+
+  @override
+  String get verification_verifyIdentity => 'Verify your identity';
+
+  @override
+  String get verification_selfie => 'Verification Selfie';
+
+  @override
+  String get verification_confirmIdentity => 'Confirm your identity';
+
+  @override
+  String get verification_continue => 'Continue Verification';
+
+  @override
+  String verification_step(int step) {
+    return 'Step $step';
+  }
+
+  @override
+  String get delete_accountTitle => 'Delete My Account';
+
+  @override
+  String get delete_warningMessage =>
+      'Warning: this action is irreversible. All your data will be permanently deleted.';
+
+  @override
+  String get delete_consequencesTitle =>
+      'What happens when you delete your account:';
+
+  @override
+  String get delete_consequenceBalance => 'Your remaining balance will be lost';
+
+  @override
+  String get delete_consequenceHistory => 'Transaction history deleted';
+
+  @override
+  String get delete_consequenceIrreversible =>
+      'Impossible to recover your account';
+
+  @override
+  String get delete_consequenceKyc => 'KYC data erased within 30 days';
+
+  @override
+  String get delete_contactSupportTitle => 'Contact Support';
+
+  @override
+  String get delete_contactSupportDescription =>
+      'To delete your account, please contact our support team. They will guide you through the process.';
+
+  @override
+  String get delete_contactSupportButton => 'Contact Support';
 }

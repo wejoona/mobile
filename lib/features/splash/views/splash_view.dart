@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class SplashView extends ConsumerStatefulWidget {
@@ -19,6 +19,7 @@ class _SplashViewState extends ConsumerState<SplashView>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
+  bool _hasNavigated = false;
 
   @override
   void initState() {
@@ -44,46 +45,59 @@ class _SplashViewState extends ConsumerState<SplashView>
     );
 
     _controller.forward();
-
-    // Navigate after animation and state check
-    _navigateToNextScreen();
+    _waitForAnimationThenListen();
   }
 
-  Future<void> _navigateToNextScreen() async {
-    // Wait for animation to complete
+  Future<void> _waitForAnimationThenListen() async {
+    // Wait for splash animation
     await Future.delayed(const Duration(milliseconds: 2000));
+    if (!mounted || _hasNavigated) return;
 
-    if (!mounted) return;
-
-    // Check onboarding status
+    // Check onboarding status first
     final prefs = await SharedPreferences.getInstance();
     final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
-    if (!mounted) return;
+    if (!mounted || _hasNavigated) return;
 
     if (!onboardingCompleted) {
+      _hasNavigated = true;
       context.go('/onboarding');
       return;
     }
 
-    // Wait for auth state to finish loading (up to 3s)
-    // _checkStoredAuth runs async via Future.delayed(Duration.zero)
-    var authState = ref.read(userStateMachineProvider);
-    final deadline = DateTime.now().add(const Duration(seconds: 3));
-    while ((authState.status == AuthStatus.initial || authState.status == AuthStatus.loading) &&
-        DateTime.now().isBefore(deadline)) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (!mounted) return;
-      authState = ref.read(userStateMachineProvider);
+    // Check current auth state — if already resolved, navigate immediately
+    final currentState = ref.read(auth.authProvider);
+    if (_tryNavigate(currentState)) return;
+
+    // Listen reactively for auth state changes (no polling loop)
+    ref.listenManual(auth.authProvider, (_, next) {
+      _tryNavigate(next);
+    });
+
+    // Safety timeout — if auth never resolves in 5s, go to login
+    Future.delayed(const Duration(seconds: 5), () {
+      if (!mounted || _hasNavigated) return;
+      _hasNavigated = true;
+      context.go('/login');
+    });
+  }
+
+  bool _tryNavigate(auth.AuthState authState) {
+    if (_hasNavigated || !mounted) return true;
+    if (authState.status == auth.AuthStatus.initial ||
+        authState.status == auth.AuthStatus.loading) {
+      return false; // Still loading
     }
 
-    if (!mounted) return;
-
+    _hasNavigated = true;
     if (authState.isAuthenticated) {
       context.go('/home');
+    } else if (authState.isLocked) {
+      context.go('/session-locked');
     } else {
       context.go('/login');
     }
+    return true;
   }
 
   @override

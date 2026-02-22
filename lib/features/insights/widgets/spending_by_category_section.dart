@@ -92,7 +92,7 @@ class SpendingByCategorySection extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           AppText(
-                            '\$${category.amount.toStringAsFixed(2)}',
+                            formatXof(category.amount),
                             variant: AppTextVariant.bodyMedium,
                             color: context.colors.textPrimary,
                             fontWeight: FontWeight.bold,

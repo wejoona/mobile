@@ -13319,6 +13319,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use biometric login'**
   String get auth_useBiometric;
+
+  /// No description provided for @security_accountSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Security'**
+  String get security_accountSecurity;
+
+  /// No description provided for @security_wellProtected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is well protected'**
+  String get security_wellProtected;
+
+  /// No description provided for @security_scoreGoodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Good security, but you can improve'**
+  String get security_scoreGoodDesc;
+
+  /// No description provided for @security_scoreModerateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate security. Enable more protections'**
+  String get security_scoreModerateDesc;
+
+  /// No description provided for @security_scoreLowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Low security. Take action to protect your account'**
+  String get security_scoreLowDesc;
+
+  /// No description provided for @verification_accountVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Verification'**
+  String get verification_accountVerification;
+
+  /// No description provided for @verification_phoneNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get verification_phoneNumber;
+
+  /// No description provided for @verification_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verification_verified;
+
+  /// No description provided for @verification_personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get verification_personalInfo;
+
+  /// No description provided for @verification_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get verification_complete;
+
+  /// No description provided for @verification_toComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'To complete'**
+  String get verification_toComplete;
+
+  /// No description provided for @verification_identityDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Document'**
+  String get verification_identityDocument;
+
+  /// No description provided for @verification_verifyIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity'**
+  String get verification_verifyIdentity;
+
+  /// No description provided for @verification_selfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Selfie'**
+  String get verification_selfie;
+
+  /// No description provided for @verification_confirmIdentity.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your identity'**
+  String get verification_confirmIdentity;
+
+  /// No description provided for @verification_continue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Verification'**
+  String get verification_continue;
+
+  /// No description provided for @verification_step.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step}'**
+  String verification_step(int step);
+
+  /// No description provided for @delete_accountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete My Account'**
+  String get delete_accountTitle;
+
+  /// No description provided for @delete_warningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: this action is irreversible. All your data will be permanently deleted.'**
+  String get delete_warningMessage;
+
+  /// No description provided for @delete_consequencesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What happens when you delete your account:'**
+  String get delete_consequencesTitle;
+
+  /// No description provided for @delete_consequenceBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Your remaining balance will be lost'**
+  String get delete_consequenceBalance;
+
+  /// No description provided for @delete_consequenceHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction history deleted'**
+  String get delete_consequenceHistory;
+
+  /// No description provided for @delete_consequenceIrreversible.
+  ///
+  /// In en, this message translates to:
+  /// **'Impossible to recover your account'**
+  String get delete_consequenceIrreversible;
+
+  /// No description provided for @delete_consequenceKyc.
+  ///
+  /// In en, this message translates to:
+  /// **'KYC data erased within 30 days'**
+  String get delete_consequenceKyc;
+
+  /// No description provided for @delete_contactSupportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get delete_contactSupportTitle;
+
+  /// No description provided for @delete_contactSupportDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'To delete your account, please contact our support team. They will guide you through the process.'**
+  String get delete_contactSupportDescription;
+
+  /// No description provided for @delete_contactSupportButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get delete_contactSupportButton;
 }
 
 class _AppLocalizationsDelegate

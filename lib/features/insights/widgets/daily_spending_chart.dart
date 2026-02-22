@@ -62,7 +62,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   final trend = widget.dailyTrends[groupIndex];
                   return BarTooltipItem(
-                    '\$${trend.amount.toStringAsFixed(2)}\n${DateFormat('MMM d').format(trend.date)}',
+                    '${formatXof(trend.amount)}\n${DateFormat('MMM d').format(trend.date)}',
                     AppTypography.bodySmall.copyWith(
                       color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -182,7 +182,7 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
 
   Widget _buildLeftTitle(double value, TitleMeta meta) {
     return Text(
-      '\$${_formatAmount(value)}',
+      formatXof(value, showSymbol: false),
       style: AppTypography.bodySmall.copyWith(
         color: context.colors.textSecondary,
       ),

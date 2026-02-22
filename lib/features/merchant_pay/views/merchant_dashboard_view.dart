@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/services/merchant_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Merchant Dashboard View
 /// Main dashboard for business users to manage their merchant account
@@ -195,8 +196,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
   }
 
   Widget _buildQuickStats(MerchantResponse merchant) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return AppCard(
       variant: AppCardVariant.goldAccent,
       padding: EdgeInsets.all(AppSpacing.lg),
@@ -252,7 +252,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Expanded(
                 child: _buildStatItem(
                   'Today\'s Sales',
-                  currencyFormat.format(merchant.dailyVolume),
+                  formatXof(merchant.dailyVolume),
                   Icons.today,
                 ),
               ),
@@ -264,7 +264,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
               Expanded(
                 child: _buildStatItem(
                   'Monthly Sales',
-                  currencyFormat.format(merchant.monthlyVolume),
+                  formatXof(merchant.monthlyVolume),
                   Icons.calendar_month,
                 ),
               ),
@@ -449,8 +449,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
   }
 
   Widget _buildAnalyticsCards(MerchantAnalyticsResponse analytics) {
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -461,13 +460,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
       children: [
         _buildAnalyticsCard(
           'Total Volume',
-          currencyFormat.format(analytics.totalVolume),
+          formatXof(analytics.totalVolume),
           Icons.attach_money,
           context.colors.success,
         ),
         _buildAnalyticsCard(
           'Total Fees',
-          currencyFormat.format(analytics.totalFees),
+          formatXof(analytics.totalFees),
           Icons.receipt,
           context.colors.warning,
         ),

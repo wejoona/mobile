@@ -47,7 +47,7 @@ class _CategoryBar extends StatelessWidget {
           children: [
             Text(ExpenseCategories.label(category.category), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
             Text(
-              '\$${category.totalAmount.toStringAsFixed(2)} (${category.percentageOfTotal.toStringAsFixed(0)}%)',
+              '${formatXof(category.totalAmount)} (${category.percentageOfTotal.toStringAsFixed(0)}%)',
               style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
             ),
           ],
@@ -137,7 +137,7 @@ class _FlowItem extends StatelessWidget {
       children: [
         Text(label, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
         const SizedBox(height: 4),
-        Text('$prefix\$${amount.toStringAsFixed(2)}', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: color)),
+        Text('$prefix${formatXof(amount)}', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: color)),
       ],
     );
   }

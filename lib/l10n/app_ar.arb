@@ -2451,5 +2451,39 @@
   "@language_arabic": {
     "description": "Arabic language name"
   },
-  "auth_useBiometric": "استخدام تسجيل الدخول البيومتري"
+  "auth_useBiometric": "استخدام تسجيل الدخول البيومتري",
+  "security_accountSecurity": "أمان الحساب",
+  "security_wellProtected": "حسابك محمي بشكل جيد",
+  "security_scoreGoodDesc": "أمان جيد، لكن يمكنك التحسين",
+  "security_scoreModerateDesc": "أمان متوسط. فعّل المزيد من الحماية",
+  "security_scoreLowDesc": "أمان منخفض. اتخذ إجراء لحماية حسابك",
+  "verification_accountVerification": "التحقق من الحساب",
+  "verification_phoneNumber": "رقم الهاتف",
+  "verification_verified": "تم التحقق",
+  "verification_personalInfo": "المعلومات الشخصية",
+  "verification_complete": "مكتمل",
+  "verification_toComplete": "للإكمال",
+  "verification_identityDocument": "وثيقة الهوية",
+  "verification_verifyIdentity": "تحقق من هويتك",
+  "verification_selfie": "صورة ذاتية للتحقق",
+  "verification_confirmIdentity": "أكد هويتك",
+  "verification_continue": "متابعة التحقق",
+  "verification_step": "الخطوة {step}",
+  "@verification_step": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "delete_accountTitle": "حذف حسابي",
+  "delete_warningMessage": "تحذير: هذا الإجراء لا رجعة فيه. سيتم حذف جميع بياناتك نهائياً.",
+  "delete_consequencesTitle": "ماذا يحدث عند حذف حسابك:",
+  "delete_consequenceBalance": "سيتم فقدان رصيدك المتبقي",
+  "delete_consequenceHistory": "حذف سجل المعاملات",
+  "delete_consequenceIrreversible": "لا يمكن استرداد حسابك",
+  "delete_consequenceKyc": "بيانات KYC تُمحى خلال 30 يوماً",
+  "delete_contactSupportTitle": "اتصل بالدعم",
+  "delete_contactSupportDescription": "لحذف حسابك، يرجى الاتصال بفريق الدعم. سيرشدونك خلال العملية.",
+  "delete_contactSupportButton": "اتصل بالدعم"
 }

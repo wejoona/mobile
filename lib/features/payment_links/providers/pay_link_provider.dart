@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// State for paying a payment link (from deep link or QR).
 class PayLinkState {
@@ -10,30 +14,37 @@ class PayLinkState {
   final PaymentLinkDetail? linkDetail;
   final bool isComplete;
 
-  const PayLinkState({this.isLoading = false, this.isProcessing = false, this.error, this.linkDetail, this.isComplete = false});
+  final String? pinToken;
+  final String? idempotencyKey;
 
-  PayLinkState copyWith({bool? isLoading, bool? isProcessing, String? error, PaymentLinkDetail? linkDetail, bool? isComplete}) => PayLinkState(
+  const PayLinkState({this.isLoading = false, this.isProcessing = false, this.error, this.linkDetail, this.isComplete = false, this.pinToken, this.idempotencyKey});
+
+  PayLinkState copyWith({bool? isLoading, bool? isProcessing, String? error, PaymentLinkDetail? linkDetail, bool? isComplete, String? pinToken, String? idempotencyKey}) => PayLinkState(
     isLoading: isLoading ?? this.isLoading,
     isProcessing: isProcessing ?? this.isProcessing,
     error: error,
     linkDetail: linkDetail ?? this.linkDetail,
     isComplete: isComplete ?? this.isComplete,
+    pinToken: pinToken ?? this.pinToken,
+    idempotencyKey: idempotencyKey ?? this.idempotencyKey,
   );
 }
 
 /// Payment link detail from API.
 class PaymentLinkDetail {
   final String id;
+  final String code;
   final String creatorName;
   final double amount;
   final String currency;
   final String? description;
   final bool isExpired;
 
-  const PaymentLinkDetail({required this.id, required this.creatorName, required this.amount, this.currency = 'USDC', this.description, this.isExpired = false});
+  const PaymentLinkDetail({required this.id, required this.code, required this.creatorName, required this.amount, this.currency = 'USDC', this.description, this.isExpired = false});
 
   factory PaymentLinkDetail.fromJson(Map<String, dynamic> json) => PaymentLinkDetail(
     id: json['id'] as String,
+    code: json['code'] as String? ?? json['shortCode'] as String? ?? json['id'] as String,
     creatorName: json['creatorName'] as String? ?? 'Unknown',
     amount: (json['amount'] as num).toDouble(),
     currency: json['currency'] as String? ?? 'USDC',
@@ -60,16 +71,53 @@ class PayLinkNotifier extends Notifier<PayLinkState> {
     }
   }
 
-  /// Pay the link.
-  Future<void> pay({String? pin}) async {
+  /// Verify PIN before paying.
+  Future<bool> verifyPin(String pin) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinWithBackend(pin);
+      if (result.success && result.pinToken != null) {
+        state = state.copyWith(
+          isLoading: false,
+          pinToken: result.pinToken,
+          idempotencyKey: generateIdempotencyKey(),
+        );
+        return true;
+      }
+      state = state.copyWith(isLoading: false, error: result.message ?? 'PIN verification failed');
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Pay the link. Requires verifyPin() first.
+  /// Uses the link code (not ID) in the URL path per backend API.
+  Future<void> pay() async {
     if (state.linkDetail == null) return;
+    if (state.pinToken == null || state.idempotencyKey == null) {
+      state = state.copyWith(error: 'PIN verification required');
+      return;
+    }
+    if (state.isProcessing) return; // double-submit guard
     state = state.copyWith(isProcessing: true);
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('/payment-links/${state.linkDetail!.id}/pay', data: {
-        'amount': state.linkDetail!.amount,
-        if (pin != null) 'pin': pin,
-      });
+      final code = state.linkDetail!.code;
+      await dio.post(
+        '/payment-links/code/$code/pay',
+        data: {
+          'amount': toCents(state.linkDetail!.amount),
+        },
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: state.pinToken!,
+            idempotencyKey: state.idempotencyKey!,
+          ),
+        ),
+      );
       state = state.copyWith(isProcessing: false, isComplete: true);
       ref.invalidate(walletBalanceProvider);
     } catch (e) {

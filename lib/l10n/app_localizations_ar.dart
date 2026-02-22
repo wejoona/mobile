@@ -7203,4 +7203,89 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get auth_useBiometric => 'استخدام تسجيل الدخول البيومتري';
+
+  @override
+  String get security_accountSecurity => 'أمان الحساب';
+
+  @override
+  String get security_wellProtected => 'حسابك محمي بشكل جيد';
+
+  @override
+  String get security_scoreGoodDesc => 'أمان جيد، لكن يمكنك التحسين';
+
+  @override
+  String get security_scoreModerateDesc => 'أمان متوسط. فعّل المزيد من الحماية';
+
+  @override
+  String get security_scoreLowDesc => 'أمان منخفض. اتخذ إجراء لحماية حسابك';
+
+  @override
+  String get verification_accountVerification => 'التحقق من الحساب';
+
+  @override
+  String get verification_phoneNumber => 'رقم الهاتف';
+
+  @override
+  String get verification_verified => 'تم التحقق';
+
+  @override
+  String get verification_personalInfo => 'المعلومات الشخصية';
+
+  @override
+  String get verification_complete => 'مكتمل';
+
+  @override
+  String get verification_toComplete => 'للإكمال';
+
+  @override
+  String get verification_identityDocument => 'وثيقة الهوية';
+
+  @override
+  String get verification_verifyIdentity => 'تحقق من هويتك';
+
+  @override
+  String get verification_selfie => 'صورة ذاتية للتحقق';
+
+  @override
+  String get verification_confirmIdentity => 'أكد هويتك';
+
+  @override
+  String get verification_continue => 'متابعة التحقق';
+
+  @override
+  String verification_step(int step) {
+    return 'الخطوة $step';
+  }
+
+  @override
+  String get delete_accountTitle => 'حذف حسابي';
+
+  @override
+  String get delete_warningMessage =>
+      'تحذير: هذا الإجراء لا رجعة فيه. سيتم حذف جميع بياناتك نهائياً.';
+
+  @override
+  String get delete_consequencesTitle => 'ماذا يحدث عند حذف حسابك:';
+
+  @override
+  String get delete_consequenceBalance => 'سيتم فقدان رصيدك المتبقي';
+
+  @override
+  String get delete_consequenceHistory => 'حذف سجل المعاملات';
+
+  @override
+  String get delete_consequenceIrreversible => 'لا يمكن استرداد حسابك';
+
+  @override
+  String get delete_consequenceKyc => 'بيانات KYC تُمحى خلال 30 يوماً';
+
+  @override
+  String get delete_contactSupportTitle => 'اتصل بالدعم';
+
+  @override
+  String get delete_contactSupportDescription =>
+      'لحذف حسابك، يرجى الاتصال بفريق الدعم. سيرشدونك خلال العملية.';
+
+  @override
+  String get delete_contactSupportButton => 'اتصل بالدعم';
 }

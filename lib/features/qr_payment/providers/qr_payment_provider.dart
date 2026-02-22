@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// QR payment types.
 enum QrPaymentType { p2p, merchant, paymentLink }
@@ -15,14 +19,19 @@ class QrPaymentState {
   final bool isProcessing;
   final bool isComplete;
 
-  const QrPaymentState({this.isLoading = false, this.error, this.scannedData, this.isProcessing = false, this.isComplete = false});
+  final String? pinToken;
+  final String? idempotencyKey;
 
-  QrPaymentState copyWith({bool? isLoading, String? error, QrPaymentData? scannedData, bool? isProcessing, bool? isComplete}) => QrPaymentState(
+  const QrPaymentState({this.isLoading = false, this.error, this.scannedData, this.isProcessing = false, this.isComplete = false, this.pinToken, this.idempotencyKey});
+
+  QrPaymentState copyWith({bool? isLoading, String? error, QrPaymentData? scannedData, bool? isProcessing, bool? isComplete, String? pinToken, String? idempotencyKey}) => QrPaymentState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     scannedData: scannedData ?? this.scannedData,
     isProcessing: isProcessing ?? this.isProcessing,
     isComplete: isComplete ?? this.isComplete,
+    pinToken: pinToken ?? this.pinToken,
+    idempotencyKey: idempotencyKey ?? this.idempotencyKey,
   );
 }
 
@@ -50,41 +59,82 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
     }
   }
 
-  /// Execute payment from QR data.
-  Future<void> pay(double amount, {String? pin}) async {
+  /// Verify PIN and store token for payment.
+  Future<bool> verifyPin(String pin) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinWithBackend(pin);
+      if (result.success && result.pinToken != null) {
+        state = state.copyWith(
+          isLoading: false,
+          pinToken: result.pinToken,
+          idempotencyKey: generateIdempotencyKey(),
+        );
+        return true;
+      }
+      state = state.copyWith(isLoading: false, error: result.message ?? 'PIN verification failed');
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Execute payment from QR data. Requires verifyPin() first.
+  Future<void> pay(double amount) async {
     if (state.scannedData == null) return;
+    if (state.pinToken == null || state.idempotencyKey == null) {
+      state = state.copyWith(error: 'PIN verification required');
+      return;
+    }
+    if (state.isProcessing) return; // double-submit guard
     state = state.copyWith(isProcessing: true);
     try {
       final dio = ref.read(dioProvider);
       final data = state.scannedData!;
+      final headers = transactionHeaders(
+        pinToken: state.pinToken!,
+        idempotencyKey: state.idempotencyKey!,
+      );
+      final options = Options(headers: headers);
+      final amountCents = toCents(amount);
 
+      // data.type is a String? — match against string values, not enum
       switch (data.type) {
-        // ignore: constant_pattern_never_matches_value_type
-        case QrPaymentType.p2p:
+        case 'p2p':
           await dio.post('/transfers/internal', data: {
             'recipientIdentifier': data.recipient,
-            'amount': amount,
+            'amount': amountCents,
             'currency': 'USDC',
-            if (pin != null) 'pin': pin,
-          });
+          }, options: options);
           break;
-        // ignore: constant_pattern_never_matches_value_type
-        case QrPaymentType.merchant:
-          await dio.post('/payments/merchant', data: {
+        case 'merchant':
+          await dio.post('/merchants/pay', data: {
             'merchantId': data.merchantId,
-            'amount': amount,
+            'amount': amountCents,
             'currency': 'USDC',
             if (data.reference != null) 'reference': data.reference,
-            if (pin != null) 'pin': pin,
-          });
+          }, options: options);
           break;
-        // ignore: constant_pattern_never_matches_value_type
-        case QrPaymentType.paymentLink:
-          await dio.post('/payment-links/${data.paymentLinkId}/pay', data: {
-            'amount': amount,
-            if (pin != null) 'pin': pin,
-          });
+        case 'paymentLink':
+          // Backend expects code, not ID
+          await dio.post('/payment-links/code/${data.paymentLinkId}/pay', data: {
+            'amount': amountCents,
+          }, options: options);
           break;
+        default:
+          // Fallback: treat as p2p if userId is available
+          if (data.userId.isNotEmpty || data.phone != null) {
+            await dio.post('/transfers/internal', data: {
+              'recipientIdentifier': data.phone ?? data.userId,
+              'amount': amountCents,
+              'currency': 'USDC',
+            }, options: options);
+          } else {
+            state = state.copyWith(isProcessing: false, error: 'Unknown QR payment type: ${data.type}');
+            return;
+          }
       }
 
       state = state.copyWith(isProcessing: false, isComplete: true);

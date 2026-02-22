@@ -3025,5 +3025,39 @@
   "withdraw_comingSoon": "Fonctionnalité de retrait bientôt disponible",
   "withdraw_failed": "Le retrait a échoué. Veuillez réessayer.",
   "withdraw_initiated": "Retrait initié",
-  "auth_useBiometric": "Utiliser la biométrie"
+  "auth_useBiometric": "Utiliser la biométrie",
+  "security_accountSecurity": "Sécurité du compte",
+  "security_wellProtected": "Votre compte est bien protégé",
+  "security_scoreGoodDesc": "Bonne sécurité, mais vous pouvez l'améliorer",
+  "security_scoreModerateDesc": "Sécurité modérée. Activez plus de protections",
+  "security_scoreLowDesc": "Sécurité faible. Agissez pour protéger votre compte",
+  "verification_accountVerification": "Vérification du compte",
+  "verification_phoneNumber": "Numéro de téléphone",
+  "verification_verified": "Vérifié",
+  "verification_personalInfo": "Information personnelle",
+  "verification_complete": "Complété",
+  "verification_toComplete": "À remplir",
+  "verification_identityDocument": "Document d'identité",
+  "verification_verifyIdentity": "Vérifier votre identité",
+  "verification_selfie": "Selfie de vérification",
+  "verification_confirmIdentity": "Confirmez votre identité",
+  "verification_continue": "Continuer la vérification",
+  "verification_step": "Étape {step}",
+  "@verification_step": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "delete_accountTitle": "Supprimer mon compte",
+  "delete_warningMessage": "Attention: cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+  "delete_consequencesTitle": "Que se passe-t-il quand vous supprimez votre compte:",
+  "delete_consequenceBalance": "Votre solde restant sera perdu",
+  "delete_consequenceHistory": "Historique des transactions supprimé",
+  "delete_consequenceIrreversible": "Impossible de récupérer votre compte",
+  "delete_consequenceKyc": "Données KYC effacées sous 30 jours",
+  "delete_contactSupportTitle": "Contacter le support",
+  "delete_contactSupportDescription": "Pour supprimer votre compte, veuillez contacter notre équipe de support. Ils vous guideront dans le processus.",
+  "delete_contactSupportButton": "Contacter le support"
 }

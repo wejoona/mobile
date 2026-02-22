@@ -87,7 +87,7 @@ class _TopRecipientsChartState extends State<TopRecipientsChart> {
                       ),
                     ),
                     AppText(
-                      '\$${recipient.totalSent.toStringAsFixed(2)}',
+                      formatXof(recipient.totalSent),
                       variant: AppTextVariant.bodyMedium,
                       color: context.colors.textPrimary,
                       fontWeight: FontWeight.bold,

@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Receipt widget for rendering as image or PDF
 /// This widget can be captured using RepaintBoundary or screenshot package
@@ -22,8 +23,7 @@ class ReceiptWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    final currencyFormatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),

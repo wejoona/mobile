@@ -7222,4 +7222,92 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get auth_useBiometric => 'Usar login biométrico';
+
+  @override
+  String get security_accountSecurity => 'Segurança da Conta';
+
+  @override
+  String get security_wellProtected => 'Sua conta está bem protegida';
+
+  @override
+  String get security_scoreGoodDesc => 'Boa segurança, mas pode melhorar';
+
+  @override
+  String get security_scoreModerateDesc =>
+      'Segurança moderada. Ative mais proteções';
+
+  @override
+  String get security_scoreLowDesc =>
+      'Segurança baixa. Tome medidas para proteger sua conta';
+
+  @override
+  String get verification_accountVerification => 'Verificação da Conta';
+
+  @override
+  String get verification_phoneNumber => 'Número de Telefone';
+
+  @override
+  String get verification_verified => 'Verificado';
+
+  @override
+  String get verification_personalInfo => 'Informação Pessoal';
+
+  @override
+  String get verification_complete => 'Completo';
+
+  @override
+  String get verification_toComplete => 'A completar';
+
+  @override
+  String get verification_identityDocument => 'Documento de Identidade';
+
+  @override
+  String get verification_verifyIdentity => 'Verificar sua identidade';
+
+  @override
+  String get verification_selfie => 'Selfie de Verificação';
+
+  @override
+  String get verification_confirmIdentity => 'Confirme sua identidade';
+
+  @override
+  String get verification_continue => 'Continuar Verificação';
+
+  @override
+  String verification_step(int step) {
+    return 'Etapa $step';
+  }
+
+  @override
+  String get delete_accountTitle => 'Excluir Minha Conta';
+
+  @override
+  String get delete_warningMessage =>
+      'Atenção: esta ação é irreversível. Todos os seus dados serão permanentemente excluídos.';
+
+  @override
+  String get delete_consequencesTitle =>
+      'O que acontece quando você exclui sua conta:';
+
+  @override
+  String get delete_consequenceBalance => 'Seu saldo restante será perdido';
+
+  @override
+  String get delete_consequenceHistory => 'Histórico de transações excluído';
+
+  @override
+  String get delete_consequenceIrreversible => 'Impossível recuperar sua conta';
+
+  @override
+  String get delete_consequenceKyc => 'Dados KYC apagados em 30 dias';
+
+  @override
+  String get delete_contactSupportTitle => 'Contatar Suporte';
+
+  @override
+  String get delete_contactSupportDescription =>
+      'Para excluir sua conta, entre em contato com nossa equipe de suporte. Eles irão guiá-lo no processo.';
+
+  @override
+  String get delete_contactSupportButton => 'Contatar Suporte';
 }

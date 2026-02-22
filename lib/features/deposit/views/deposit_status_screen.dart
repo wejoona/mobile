@@ -5,6 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Deposit Status Screen
 ///
@@ -90,7 +91,7 @@ class DepositStatusScreen extends ConsumerWidget {
                                 color: colors.textSecondary,
                               ),
                               AppText(
-                                '\$${(state.amountUSD ?? 0).toStringAsFixed(2)}',
+                                formatXof(state.amountUSD ?? 0),
                                 variant: AppTextVariant.titleMedium,
                                 color: colors.gold,
                               ),

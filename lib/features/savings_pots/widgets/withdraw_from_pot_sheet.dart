@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Bottom sheet for withdrawing money from a pot
 class WithdrawFromPotSheet extends ConsumerStatefulWidget {
@@ -32,8 +32,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
     final pot = state.pots.where((p) => p.id == widget.potId).firstOrNull;
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     if (pot == null) {
       return const SizedBox.shrink();
     }
@@ -86,7 +85,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
                   color: context.colors.textSecondary,
                 ),
                 AppText(
-                  currencyFormat.format(pot.currentAmount),
+                  formatXof(pot.currentAmount),
                   variant: AppTextVariant.bodyLarge,
                   fontWeight: FontWeight.bold,
                   color: pot.color,

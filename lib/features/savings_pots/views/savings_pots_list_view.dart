@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
@@ -50,7 +51,7 @@ class SavingsPotsListView extends ConsumerWidget {
                     children: [
                       Text(AppLocalizations.of(context)!.savingsGoals_totalSavings, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 4),
-                      Text('\$${totalSavings.toStringAsFixed(2)}', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(formatXof(totalSavings), style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),

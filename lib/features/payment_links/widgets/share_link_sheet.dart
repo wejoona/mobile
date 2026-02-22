@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ShareLinkSheet extends StatelessWidget {
   const ShareLinkSheet({
@@ -152,7 +153,7 @@ Powered by Korido
     if (currency == 'XOF') {
       return 'CFA ${amount.toStringAsFixed(0)}';
     }
-    return '\$${amount.toStringAsFixed(2)}';
+    return formatXof(amount);
   }
 }
 

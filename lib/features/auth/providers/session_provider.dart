@@ -6,6 +6,9 @@ import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 enum AuthState { unknown, authenticated, unauthenticated, expired }
 
 /// Session management provider.
+/// @deprecated Prefer [AuthNotifier] from auth_provider.dart for new code.
+/// This provider is retained for backward compatibility with login_provider.dart.
+/// TODO: Consolidate SessionNotifier into AuthNotifier to eliminate dual auth state.
 class SessionNotifier extends Notifier<AuthState> {
   static const _tokenKey = 'access_token';
   static const _refreshKey = 'refresh_token';

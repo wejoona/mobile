@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ReferralsView extends ConsumerWidget {
   const ReferralsView({super.key});
@@ -206,7 +207,7 @@ class ReferralsView extends ConsumerWidget {
                     child: _StatCard(
                       colors: colors,
                       icon: Icons.attach_money,
-                      value: '\$${totalEarned.toStringAsFixed(2)}',
+                      value: formatXof(totalEarned),
                       label: l10n.referrals_totalEarned,
                     ),
                   ),
@@ -323,7 +324,7 @@ class ReferralsView extends ConsumerWidget {
                         ),
                         if (entry.reward != null)
                           AppText(
-                            '+\$${entry.reward!.toStringAsFixed(2)}',
+                            '+${formatXof(entry.reward!)}',
                             variant: AppTextVariant.bodyMedium,
                             color: colors.success,
                           ),

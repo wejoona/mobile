@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Bottom sheet for adding money to a pot
 class AddToPotSheet extends ConsumerStatefulWidget {
@@ -32,8 +32,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
     final availableBalance = walletState.usdcBalance;
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.md,
@@ -82,7 +81,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
                   color: context.colors.textSecondary,
                 ),
                 AppText(
-                  currencyFormat.format(availableBalance),
+                  formatXof(availableBalance),
                   variant: AppTextVariant.bodyLarge,
                   fontWeight: FontWeight.bold,
                 ),

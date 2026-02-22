@@ -231,6 +231,7 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
 
       state = state.copyWith(
         isLoading: false,
+        isSubmitting: false,
         result: result,
       );
 
@@ -245,6 +246,7 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
+        isSubmitting: false,
         error: e.toString(),
       );
       return false;

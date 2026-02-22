@@ -10,6 +10,7 @@ import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input
@@ -443,7 +444,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
         const SizedBox(width: AppSpacing.xs),
         AppText(
           l10n.billPayments_available(
-            '\$${balance.toStringAsFixed(2)}',
+            formatXof(balance),
             'USD',
           ),
           variant: AppTextVariant.labelMedium,

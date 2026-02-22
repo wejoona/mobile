@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Screen showing details of a single sub-business
 class SubBusinessDetailView extends ConsumerStatefulWidget {
@@ -40,8 +41,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
       (sb) => sb.id == widget.subBusinessId,
     );
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
-    final currencyFormat = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-
+    
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -84,7 +84,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
-                  currencyFormat.format(subBusiness.balance),
+                  formatXof(subBusiness.balance),
                   variant: AppTextVariant.displaySmall,
                   color: context.colors.canvas,
                   fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart
 import 'package:usdc_wallet/features/referrals/widgets/referral_card.dart';
 import 'package:usdc_wallet/utils/duration_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Referrals program screen.
 class ReferralsListView extends ConsumerWidget {
@@ -43,7 +44,7 @@ class ReferralsListView extends ConsumerWidget {
                   title: Text(entry.referredName),
                   subtitle: Text(entry.createdAt.timeAgo),
                   trailing: entry.reward != null
-                      ? Text('+\$${entry.reward!.toStringAsFixed(2)}', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w600))
+                      ? Text('+${formatXof(entry.reward!)}', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.w600))
                       : Text(entry.status, style: theme.textTheme.bodySmall),
                 )),
               ],

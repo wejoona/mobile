@@ -8415,5 +8415,39 @@
   "withdraw_comingSoon": "Withdraw feature coming soon",
   "withdraw_failed": "Withdrawal failed. Please try again.",
   "withdraw_initiated": "Withdrawal initiated",
-  "auth_useBiometric": "Use biometric login"
+  "auth_useBiometric": "Use biometric login",
+  "security_accountSecurity": "Account Security",
+  "security_wellProtected": "Your account is well protected",
+  "security_scoreGoodDesc": "Good security, but you can improve",
+  "security_scoreModerateDesc": "Moderate security. Enable more protections",
+  "security_scoreLowDesc": "Low security. Take action to protect your account",
+  "verification_accountVerification": "Account Verification",
+  "verification_phoneNumber": "Phone Number",
+  "verification_verified": "Verified",
+  "verification_personalInfo": "Personal Information",
+  "verification_complete": "Complete",
+  "verification_toComplete": "To complete",
+  "verification_identityDocument": "Identity Document",
+  "verification_verifyIdentity": "Verify your identity",
+  "verification_selfie": "Verification Selfie",
+  "verification_confirmIdentity": "Confirm your identity",
+  "verification_continue": "Continue Verification",
+  "verification_step": "Step {step}",
+  "@verification_step": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "delete_accountTitle": "Delete My Account",
+  "delete_warningMessage": "Warning: this action is irreversible. All your data will be permanently deleted.",
+  "delete_consequencesTitle": "What happens when you delete your account:",
+  "delete_consequenceBalance": "Your remaining balance will be lost",
+  "delete_consequenceHistory": "Transaction history deleted",
+  "delete_consequenceIrreversible": "Impossible to recover your account",
+  "delete_consequenceKyc": "KYC data erased within 30 days",
+  "delete_contactSupportTitle": "Contact Support",
+  "delete_contactSupportDescription": "To delete your account, please contact our support team. They will guide you through the process.",
+  "delete_contactSupportButton": "Contact Support"
 }
