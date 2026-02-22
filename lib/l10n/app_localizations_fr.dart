@@ -7082,6 +7082,32 @@ class AppLocalizationsFr extends AppLocalizations {
   String get liveness_tryAgain => 'Réessayer';
 
   @override
+  String get liveness_failed => 'La vérification a échoué. Veuillez réessayer.';
+
+  @override
+  String get liveness_verificationFailed => 'Échec de la vérification';
+
+  @override
+  String get liveness_identityVerified => 'Identité vérifiée';
+
+  @override
+  String get liveness_verificationInProgress => 'Vérification en cours';
+
+  @override
+  String get liveness_manualReviewMessage =>
+      'Votre vérification sera examinée manuellement...';
+
+  @override
+  String get liveness_proceedingToVerification =>
+      'Passage à la vérification...';
+
+  @override
+  String get biometric_reason => 'Vérifiez votre identité pour continuer';
+
+  @override
+  String get pin_unlocked => 'Déverrouillé';
+
+  @override
   String get merchant_dashboard => 'Tableau de bord marchand';
 
   @override

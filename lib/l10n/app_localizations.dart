@@ -12846,6 +12846,54 @@ abstract class AppLocalizations {
   /// **'Try Again'**
   String get liveness_tryAgain;
 
+  /// No description provided for @liveness_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please try again.'**
+  String get liveness_failed;
+
+  /// No description provided for @liveness_verificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Failed'**
+  String get liveness_verificationFailed;
+
+  /// No description provided for @liveness_identityVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Identity Verified'**
+  String get liveness_identityVerified;
+
+  /// No description provided for @liveness_verificationInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification In Progress'**
+  String get liveness_verificationInProgress;
+
+  /// No description provided for @liveness_manualReviewMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your verification will be reviewed manually...'**
+  String get liveness_manualReviewMessage;
+
+  /// No description provided for @liveness_proceedingToVerification.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceeding to verification...'**
+  String get liveness_proceedingToVerification;
+
+  /// No description provided for @biometric_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify your identity to continue'**
+  String get biometric_reason;
+
+  /// No description provided for @pin_unlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlocked'**
+  String get pin_unlocked;
+
   /// No description provided for @merchant_dashboard.
   ///
   /// In en, this message translates to:

@@ -6944,6 +6944,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get liveness_tryAgain => 'Try Again';
 
   @override
+  String get liveness_failed => 'Verification failed. Please try again.';
+
+  @override
+  String get liveness_verificationFailed => 'Verification Failed';
+
+  @override
+  String get liveness_identityVerified => 'Identity Verified';
+
+  @override
+  String get liveness_verificationInProgress => 'Verification In Progress';
+
+  @override
+  String get liveness_manualReviewMessage =>
+      'Your verification will be reviewed manually...';
+
+  @override
+  String get liveness_proceedingToVerification =>
+      'Proceeding to verification...';
+
+  @override
+  String get biometric_reason => 'Verify your identity to continue';
+
+  @override
+  String get pin_unlocked => 'Unlocked';
+
+  @override
   String get merchant_dashboard => 'Merchant Dashboard';
 
   @override

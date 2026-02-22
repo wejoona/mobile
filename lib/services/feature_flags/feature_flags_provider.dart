@@ -109,3 +109,7 @@ final referralProgramEnabledProvider = Provider<bool>((ref) {
 final recurringTransfersEnabledProvider = Provider<bool>((ref) {
   return ref.watch(featureFlagsProvider)[FeatureFlagKeys.recurringTransfers] ?? false;
 });
+
+final virtualCardsEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider)[FeatureFlagKeys.virtualCards] ?? false;
+});
