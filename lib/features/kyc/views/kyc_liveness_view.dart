@@ -50,7 +50,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         // Low score — decline, allow retry
         setState(() {
           _hasFailed = true;
-          _errorMessage = result.failureReason ?? 'La vérification a échoué. Veuillez réessayer.';
+          _errorMessage = result.failureReason ?? l10n.liveness_failed;
         });
     }
   }
