@@ -178,7 +178,7 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                     Icon(Icons.lock_open_rounded, size: 48, color: colors.gold),
                     const SizedBox(height: 16),
                     AppText(
-                      'Déverrouillé',
+                      AppLocalizations.of(context)!.pin_unlocked,
                       variant: AppTextVariant.titleMedium,
                       color: colors.textPrimary,
                     ),

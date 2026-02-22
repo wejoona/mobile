@@ -5,13 +5,22 @@ import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Spending insights provider — wired to transaction stats API.
+/// Re-fetches when the selected period changes.
 final spendingInsightsProvider = FutureProvider<SpendingInsights>((ref) async {
   final dio = ref.watch(dioProvider);
+  final period = ref.watch(insightsPeriodProvider);
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 10), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final response = await dio.get('/wallet/transactions/stats');
+  final now = DateTime.now();
+  final from = now.subtract(Duration(days: period.days));
+
+  final response = await dio.get('/wallet/transactions/stats', queryParameters: {
+    'from': from.toIso8601String(),
+    'to': now.toIso8601String(),
+    'period': period.name,
+  });
   return SpendingInsights.fromJson(response.data as Map<String, dynamic>);
 });
 

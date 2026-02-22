@@ -38,7 +38,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, NotificationPreferencesState state, ThemeColorsData colors, AppLocalizations l10n) {
+  Widget _buildBody(BuildContext context, WidgetRef ref, NotificationPreferencesState state, ThemeColors colors, AppLocalizations l10n) {
     if (state.isLoading && !state.hasData) {
       return Center(
         child: CircularProgressIndicator(color: colors.gold),

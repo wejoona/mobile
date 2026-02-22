@@ -279,7 +279,7 @@ class LoginNotifier extends Notifier<LoginState> {
     try {
       final biometricService = ref.read(biometricServiceProvider);
       final result = await biometricService.authenticate(
-        localizedReason: 'Vérifiez votre identité pour continuer',
+        localizedReason: 'Verify your identity to continue',
       );
 
       if (result.success) {
@@ -315,7 +315,7 @@ class LoginNotifier extends Notifier<LoginState> {
       } else {
         state = state.copyWith(
           isLoading: false,
-          error: result.errorMessage ?? 'Authentification biométrique échouée',
+          error: result.errorMessage ?? 'Biometric authentication failed',
         );
         return false;
       }
