@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
@@ -232,15 +235,25 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   Future<void> _saveToGallery() async {
     setState(() {
       _isLoading = true;
-      _loadingMessage = 'Generating image...';
+      _loadingMessage = 'Generating PDF...';
     });
 
     try {
-      final imageBytes = await _receiptService.generateReceiptImage(widget.transaction);
+      final pdfBytes = await _receiptService.generateReceiptDocument(widget.transaction);
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'Korido_Receipt_$timestamp';
+      final fileName = 'Korido_Receipt_$timestamp.pdf';
 
-      final success = await _receiptService.saveToGallery(imageBytes, fileName);
+      // Save PDF to files directory and share
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsBytes(pdfBytes);
+
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
+        text: 'Korido transaction receipt',
+      ));
+
+      final success = true;
 
       if (!mounted) return;
 

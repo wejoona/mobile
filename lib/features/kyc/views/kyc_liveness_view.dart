@@ -50,7 +50,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         // Low score — decline, allow retry
         setState(() {
           _hasFailed = true;
-          _errorMessage = result.failureReason ?? l10n.liveness_failed;
+          _errorMessage = result.failureReason ?? AppLocalizations.of(context)!.liveness_failed;
         });
     }
   }
@@ -117,26 +117,26 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 AppText(
-                  'Échec de la vérification',
+                  l10n.liveness_verificationFailed,
                   variant: AppTextVariant.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppText(
-                  _errorMessage ?? 'Veuillez réessayer',
+                  _errorMessage ?? l10n.liveness_tryAgain,
                   variant: AppTextVariant.bodyMedium,
                   color: colors.textSecondary,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 AppButton(
-                  label: 'Réessayer',
+                  label: l10n.liveness_tryAgain,
                   onPressed: _retry,
                   isFullWidth: true,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 AppButton(
-                  label: 'Retour',
+                  label: l10n.liveness_goBack,
                   variant: AppButtonVariant.secondary,
                   onPressed: _onCancel,
                   isFullWidth: true,
@@ -165,16 +165,16 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
               const SizedBox(height: AppSpacing.xxl),
               AppText(
                 isManualReview
-                    ? 'Vérification en cours'
-                    : 'Identité vérifiée',
+                    ? l10n.liveness_verificationInProgress
+                    : l10n.liveness_identityVerified,
                 variant: AppTextVariant.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 isManualReview
-                    ? 'Votre vérification sera examinée manuellement...'
-                    : 'Passage à la vérification...',
+                    ? l10n.liveness_manualReviewMessage
+                    : l10n.liveness_proceedingToVerification,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),

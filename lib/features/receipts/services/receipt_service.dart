@@ -16,54 +16,10 @@ import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Service for generating and sharing transaction receipts
 class ReceiptService {
-  /// Generate receipt image from transaction.
-  /// Renders a PDF receipt then converts the first page to PNG bytes.
-  Future<Uint8List> generateReceiptImage(Transaction transaction) async {
-    // Generate the PDF first
-    final pdfBytes = await generateReceiptPdf(transaction);
-
-    // Convert PDF to PNG using the pdf package's raster capabilities
-    // Since direct PDF-to-image is complex in Flutter without native plugins,
-    // we generate a formatted text receipt as a fallback image using dart:ui.
-    final receiptData = ReceiptData.fromTransaction(transaction);
-    final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    
-    // Build a simple text-based receipt that can be shared
-    // ignore: unused_local_variable
-    final __lines = <String>[
-      '═══════════════════════════',
-      '       KORIDO RECEIPT',
-      '═══════════════════════════',
-      '',
-      'Status: ${receiptData.getStatusLabel().toUpperCase()}',
-      '',
-      'Amount: ${formatXof(receiptData.amount)} ${receiptData.currency}',
-      if (receiptData.fee > 0)
-        'Fee:    ${formatXof(receiptData.fee)}',
-      'Total:  ${formatXof(receiptData.total)} ${receiptData.currency}',
-      '',
-      '───────────────────────────',
-      '',
-      if (receiptData.recipientPhone != null)
-        'Phone:  ${receiptData.recipientPhone}',
-      if (receiptData.recipientAddress != null)
-        'Address: ${receiptData.recipientAddress}',
-      '',
-      'Date:   ${dateFormatter.format(receiptData.date)}',
-      'Ref:    ${receiptData.referenceNumber}',
-      'Type:   ${receiptData.getTypeLabel()}',
-      if (receiptData.description != null) 'Note:   ${receiptData.description}',
-      '',
-      '═══════════════════════════',
-      '    Thank you for using',
-      '          Korido',
-      '═══════════════════════════',
-    ];
-
-    // Save as PDF instead (image generation requires a render context)
-    // Return PDF bytes as the receipt — callers should use generateReceiptPdf
-    // for proper PDF output, or share as text for image-based needs.
-    return pdfBytes;
+  /// Generate receipt document (PDF bytes).
+  /// Use shareReceipt() for sharing, or save with .pdf extension.
+  Future<Uint8List> generateReceiptDocument(Transaction transaction) async {
+    return generateReceiptPdf(transaction);
   }
 
   /// Generate receipt PDF from transaction
