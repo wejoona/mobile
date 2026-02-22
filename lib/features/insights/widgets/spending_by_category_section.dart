@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';

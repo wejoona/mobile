@@ -14,6 +14,7 @@ import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
+import 'package:usdc_wallet/router/route_guards.dart';
 import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
 import 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 import 'package:usdc_wallet/features/wallet/views/deposit_instructions_view.dart';
@@ -308,8 +309,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                             walletState.status == WalletStatus.initial;
 
       // Allow splash, onboarding, and auth routes without auth
-      final publicRoutes = ['/', '/onboarding', '/login', '/login/otp', '/login/pin', '/otp', '/pin/setup', '/pin/confirm', '/pin/reset', '/session-locked'];
-      final isPublicRoute = publicRoutes.any((route) => location.startsWith(route));
+      // Use unified public path check from route_guards.dart
+      // NOTE: /pin/setup and /pin/confirm require auth; /session-locked is allowed for locked sessions
+      final isPublicRoute = isPublicPath(location) ||
+          location.startsWith('/pin/reset') ||
+          location.startsWith('/session-locked');
 
       // FSM-specific routes that should bypass normal redirect logic
       final fsmRoutes = [

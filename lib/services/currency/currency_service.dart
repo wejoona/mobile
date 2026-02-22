@@ -207,6 +207,16 @@ class CurrencyService {
   String formatReferenceAmount(double amount, ReferenceCurrency currency) {
     if (currency == ReferenceCurrency.none) return '';
 
+    // XOF/XAF: whole francs, space separators, FCFA suffix
+    if (currency == ReferenceCurrency.xof || currency == ReferenceCurrency.xaf) {
+      final formatted = amount.round().toString();
+      final intPart = formatted.replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (match) => '${match[1]} ',
+      );
+      return '$intPart FCFA';
+    }
+
     // Format with appropriate decimal places
     String formatted;
     if (currency == ReferenceCurrency.eur || currency == ReferenceCurrency.usd) {

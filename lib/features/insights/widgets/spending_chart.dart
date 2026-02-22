@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 

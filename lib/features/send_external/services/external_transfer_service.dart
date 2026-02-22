@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// External Transfer Service - handles crypto transfers to wallet addresses
 class ExternalTransferService {
@@ -42,13 +44,27 @@ class ExternalTransferService {
   }
 
   /// Execute external transfer
+  /// [pinToken] — required by backend PinVerificationGuard
+  /// [idempotencyKey] — required by backend IdempotencyGuard
   Future<ExternalTransferResult> sendExternal(
-    ExternalTransferRequest request,
-  ) async {
+    ExternalTransferRequest request, {
+    required String pinToken,
+    required String idempotencyKey,
+  }) async {
     try {
+      final data = request.toJson();
+      // Convert amount from dollars to cents for the backend
+      data['amount'] = toCents(request.amount);
+
       final response = await _dio.post(
-        '/wallet/transfer/external',
-        data: request.toJson(),
+        '/transfers/external',
+        data: data,
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
       );
       return ExternalTransferResult.fromJson(response.data);
     } on DioException catch (e) {

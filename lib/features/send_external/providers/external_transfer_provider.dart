@@ -5,6 +5,8 @@ import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/domain/entities/wallet.dart';
 import 'package:usdc_wallet/features/send_external/services/external_transfer_service.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 
 /// External Transfer State
 class ExternalTransferState {
@@ -18,6 +20,9 @@ class ExternalTransferState {
   final double availableBalance;
   final ExternalTransferResult? result;
   final bool isEstimatingFee;
+  final String? pinToken;
+  final String? idempotencyKey;
+  final bool isSubmitting;
 
   const ExternalTransferState({
     this.isLoading = false,
@@ -30,6 +35,9 @@ class ExternalTransferState {
     this.availableBalance = 0.0,
     this.result,
     this.isEstimatingFee = false,
+    this.pinToken,
+    this.idempotencyKey,
+    this.isSubmitting = false,
   });
 
   bool get hasValidAddress =>
@@ -55,6 +63,9 @@ class ExternalTransferState {
     double? availableBalance,
     ExternalTransferResult? result,
     bool? isEstimatingFee,
+    String? pinToken,
+    String? idempotencyKey,
+    bool? isSubmitting,
   }) {
     return ExternalTransferState(
       isLoading: isLoading ?? this.isLoading,
@@ -67,6 +78,9 @@ class ExternalTransferState {
       availableBalance: availableBalance ?? this.availableBalance,
       result: result ?? this.result,
       isEstimatingFee: isEstimatingFee ?? this.isEstimatingFee,
+      pinToken: pinToken ?? this.pinToken,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
 
@@ -156,7 +170,32 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
     }
   }
 
-  /// Execute external transfer
+  /// Verify PIN and store token for subsequent transfer execution.
+  Future<bool> verifyPin(String pin) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinWithBackend(pin);
+      if (result.success && result.pinToken != null) {
+        state = state.copyWith(
+          isLoading: false,
+          pinToken: result.pinToken,
+          idempotencyKey: generateIdempotencyKey(),
+        );
+        return true;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: result.message ?? 'PIN verification failed',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Execute external transfer. Requires verifyPin() to have been called first.
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
       state = state.copyWith(error: 'Invalid transfer details');
@@ -168,7 +207,14 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
       return false;
     }
 
-    state = state.copyWith(isLoading: true, error: null);
+    if (state.pinToken == null || state.idempotencyKey == null) {
+      state = state.copyWith(error: 'PIN verification required');
+      return false;
+    }
+
+    if (state.isSubmitting) return false;
+
+    state = state.copyWith(isLoading: true, isSubmitting: true, error: null);
     try {
       final service = ref.read(externalTransferServiceProvider);
       final request = ExternalTransferRequest(
@@ -177,7 +223,11 @@ class ExternalTransferNotifier extends Notifier<ExternalTransferState> {
         network: state.selectedNetwork,
       );
 
-      final result = await service.sendExternal(request);
+      final result = await service.sendExternal(
+        request,
+        pinToken: state.pinToken!,
+        idempotencyKey: state.idempotencyKey!,
+      );
 
       state = state.copyWith(
         isLoading: false,

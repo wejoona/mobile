@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Wallet balance display with show/hide toggle and currency.
 class BalanceDisplay extends StatelessWidget {
@@ -37,31 +38,18 @@ class BalanceDisplay extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (showCurrency) ...[
-          Text(
-            '\$',
-            style: style?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
           child: Text(
-            isVisible ? amount.toStringAsFixed(2) : '••••••',
+            isVisible
+                ? (showCurrency
+                    ? formatCurrency(amount, currency)
+                    : _formatAmountOnly(amount, currency))
+                : '••••••',
             key: ValueKey(isVisible),
             style: style,
           ),
         ),
-        if (showCurrency) ...[
-          const SizedBox(width: 8),
-          Text(
-            currency,
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-          ),
-        ],
         if (onToggleVisibility != null) ...[
           const SizedBox(width: 8),
           IconButton(
@@ -78,5 +66,16 @@ class BalanceDisplay extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  /// Format just the numeric amount without currency symbol/suffix.
+  String _formatAmountOnly(double amount, String currency) {
+    switch (currency.toUpperCase()) {
+      case 'XOF':
+      case 'XAF':
+        return formatXof(amount, showSymbol: false);
+      default:
+        return formatUsdc(amount, showSymbol: false);
+    }
   }
 }

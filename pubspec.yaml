@@ -76,6 +76,7 @@ dependencies:
   flutter_widget_from_html_core: ^0.15.2
   # Image picker for KYC document upload
   image_picker: ^1.0.7
+  flutter_image_compress: ^2.3.0
   # Camera for liveness detection and KYC document capture
   camera: ^0.11.1
   # Firebase for push notifications

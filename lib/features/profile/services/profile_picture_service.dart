@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -119,20 +120,58 @@ class ProfilePictureService {
     }
   }
 
-  /// Compress image to max size (in bytes)
-  /// Note: Basic compression is done by image_picker via imageQuality
-  /// For advanced compression, we'd need flutter_image_compress package
+  /// Compress image to max size (in bytes).
+  /// Uses flutter_image_compress for real compression.
+  /// Target: max 500KB, 80% quality, max 1024px dimension.
   Future<File> compressImage(File file, {int maxSizeBytes = 500 * 1024}) async {
     final fileSize = await file.length();
 
     if (fileSize <= maxSizeBytes) {
-      _logger.info('Image size OK: ${fileSize} bytes');
+      _logger.info('Image size OK: $fileSize bytes');
       return file;
     }
 
-    // If we need more compression, we'd use flutter_image_compress here
-    // For now, rely on image_picker's imageQuality parameter
-    _logger.warn('Image size: $fileSize bytes (exceeds $maxSizeBytes). Using picker compression.');
-    return file;
+    _logger.info('Compressing image: $fileSize bytes -> target $maxSizeBytes bytes');
+
+    try {
+      final result = await FlutterImageCompress.compressWithFile(
+        file.absolute.path,
+        minWidth: 1024,
+        minHeight: 1024,
+        quality: 80,
+        format: CompressFormat.jpeg,
+      );
+
+      if (result == null) {
+        _logger.warn('Compression returned null, using original');
+        return file;
+      }
+
+      // If still too large, try lower quality
+      if (result.length > maxSizeBytes) {
+        _logger.info('Still ${result.length} bytes, retrying at 60% quality');
+        final retry = await FlutterImageCompress.compressWithFile(
+          file.absolute.path,
+          minWidth: 800,
+          minHeight: 800,
+          quality: 60,
+          format: CompressFormat.jpeg,
+        );
+        if (retry != null && retry.length < result.length) {
+          final outPath = '${file.parent.path}/compressed_${file.path.split('/').last}';
+          final outFile = File(outPath)..writeAsBytesSync(retry);
+          _logger.info('Compressed to ${retry.length} bytes');
+          return outFile;
+        }
+      }
+
+      final outPath = '${file.parent.path}/compressed_${file.path.split('/').last}';
+      final outFile = File(outPath)..writeAsBytesSync(result);
+      _logger.info('Compressed to ${result.length} bytes');
+      return outFile;
+    } catch (e) {
+      _logger.error('Compression failed: $e, using original');
+      return file;
+    }
   }
 }

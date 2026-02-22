@@ -324,15 +324,39 @@ class KycService {
   }
 
   /// Submit KYC from collected form data map.
+  /// All required fields must be present — no hardcoded fallbacks.
   Future<void> submitKycFromData({required Map<String, dynamic> data}) async {
+    final firstName = data['firstName'] as String? ?? '';
+    final lastName = data['lastName'] as String? ?? '';
+    final country = data['country'] as String? ?? '';
+    final dobStr = data['dateOfBirth'] as String? ?? '';
+    final documentType = data['documentType'] as String? ?? '';
+    final documentPaths = (data['documentPaths'] as List<String>?) ?? [];
+    final selfiePath = data['selfiePath'] as String? ?? '';
+
+    if (firstName.isEmpty || lastName.isEmpty) {
+      throw ArgumentError('firstName and lastName are required');
+    }
+    if (country.isEmpty) {
+      throw ArgumentError('country is required');
+    }
+    final dob = DateTime.tryParse(dobStr);
+    if (dob == null) {
+      throw ArgumentError('Valid dateOfBirth is required');
+    }
+    if (documentType.isEmpty) {
+      throw ArgumentError('documentType is required');
+    }
+
     await submitKyc(
-      firstName: data['firstName'] as String? ?? '',
-      lastName: data['lastName'] as String? ?? '',
-      country: data['country'] as String? ?? 'CI',
-      dateOfBirth: DateTime.tryParse(data['dateOfBirth'] as String? ?? '') ?? DateTime(2000, 1, 1),
-      documentType: data['documentType'] as String? ?? 'passport',
-      documentPaths: (data['documentPaths'] as List<String>?) ?? [],
-      selfiePath: data['selfiePath'] as String? ?? '',
+      firstName: firstName,
+      lastName: lastName,
+      country: country,
+      dateOfBirth: dob,
+      documentType: documentType,
+      documentPaths: documentPaths,
+      selfiePath: selfiePath,
+      idNumber: data['idNumber'] as String?,
     );
   }
 

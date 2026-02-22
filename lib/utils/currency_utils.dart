@@ -12,14 +12,19 @@ String formatUsdc(double amount, {bool showSymbol = true}) {
   return showSymbol ? '$result USDC' : result;
 }
 
-/// Format XOF amount: "25,000 XOF"
+/// Format XOF/CFA amount: "25 000 FCFA" (no decimals, space separators)
 String formatXof(double amount, {bool showSymbol = true}) {
-  final formatted = amount.toStringAsFixed(0);
+  final formatted = amount.round().toString();
   final intPart = formatted.replaceAllMapped(
     RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-    (m) => '${m[1]},',
+    (m) => '${m[1]} ',
   );
-  return showSymbol ? '$intPart XOF' : intPart;
+  return showSymbol ? '$intPart FCFA' : intPart;
+}
+
+/// Format XAF amount (Central African CFA): "25 000 FCFA"
+String formatXaf(double amount, {bool showSymbol = true}) {
+  return formatXof(amount, showSymbol: showSymbol);
 }
 
 /// Auto-format based on currency code
@@ -30,13 +35,15 @@ String formatCurrency(double amount, String currency) {
       return formatUsdc(amount);
     case 'XOF':
       return formatXof(amount);
+    case 'XAF':
+      return formatXaf(amount);
     default:
       return '${amount.toStringAsFixed(2)} $currency';
   }
 }
 
 /// Convert USDC to XOF (approximate)
-double usdcToXof(double usdc, {double rate = 600.0}) => usdc * rate;
+double usdcToXof(double usdc, {double rate = 615.0}) => usdc * rate;
 
 /// Convert XOF to USDC (approximate)
-double xofToUsdc(double xof, {double rate = 600.0}) => xof / rate;
+double xofToUsdc(double xof, {double rate = 615.0}) => xof / rate;

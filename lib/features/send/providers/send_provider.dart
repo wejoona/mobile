@@ -59,6 +59,9 @@ class SendMoneyState {
     List<RecentRecipient>? recentRecipients,
     double? availableBalance,
     double? fee,
+    String? pinToken,
+    String? idempotencyKey,
+    bool? isSubmitting,
   }) {
     return SendMoneyState(
       isLoading: isLoading ?? this.isLoading,
@@ -70,6 +73,9 @@ class SendMoneyState {
       recentRecipients: recentRecipients ?? this.recentRecipients,
       availableBalance: availableBalance ?? this.availableBalance,
       fee: fee ?? this.fee,
+      pinToken: pinToken ?? this.pinToken,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
 
@@ -185,7 +191,34 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     state = state.copyWith(note: note);
   }
 
-  /// Execute transfer
+  /// Verify PIN and store token for subsequent transfer execution.
+  /// Must be called before executeTransfer().
+  Future<bool> verifyPin(String pin) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final pinService = ref.read(pinServiceProvider);
+      final result = await pinService.verifyPinWithBackend(pin);
+      if (result.success && result.pinToken != null) {
+        // Generate idempotency key once per user action
+        state = state.copyWith(
+          isLoading: false,
+          pinToken: result.pinToken,
+          idempotencyKey: generateIdempotencyKey(),
+        );
+        return true;
+      }
+      state = state.copyWith(
+        isLoading: false,
+        error: result.message ?? 'PIN verification failed',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      return false;
+    }
+  }
+
+  /// Execute transfer. Requires verifyPin() to have been called first.
   Future<bool> executeTransfer() async {
     if (!state.canProceedToConfirm) {
       state = state.copyWith(error: 'Invalid transfer details');
@@ -199,19 +232,30 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       return false;
     }
 
+    if (state.pinToken == null || state.idempotencyKey == null) {
+      state = state.copyWith(error: 'PIN verification required');
+      await hapticService.error();
+      return false;
+    }
+
+    // Prevent double-submit
+    if (state.isSubmitting) return false;
+
     // Payment initiated haptic
     await hapticService.paymentStart();
 
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, isSubmitting: true, error: null);
     try {
       final transfersService = ref.read(transfersServiceProvider);
       final result = await transfersService.createInternalTransfer(
         recipientPhone: state.recipient!.phoneNumber,
         amount: state.amount!,
         note: state.note,
+        pinToken: state.pinToken!,
+        idempotencyKey: state.idempotencyKey!,
       );
 
-      state = state.copyWith(isLoading: false, result: result);
+      state = state.copyWith(isLoading: false, isSubmitting: false, result: result);
 
       // Immediately refresh balance + transactions
       ref.read(realtimeServiceProvider).refreshAfterTransaction();
@@ -232,7 +276,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoading: false, isSubmitting: false, error: e.toString());
       await hapticService.error();
       return false;
     }

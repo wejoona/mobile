@@ -7,17 +7,49 @@ class KycRepository {
   KycRepository(this._service);
 
   Future<dynamic> getKycStatus() => _service.getKycStatus();
+
+  /// Submit documents for KYC verification.
+  /// All required fields must be provided — no hardcoded fallbacks.
   Future<dynamic> submitDocuments({
-    String? documentType, String? documentNumber, String? documentPath,
-    String? firstName, String? lastName, String? nationality,
-    String? dateOfBirth, String? country, List<String>? documentPaths, String? selfiePath,
-  }) => _service.submitKyc(
-    firstName: firstName ?? '', lastName: lastName ?? '',
-    country: country ?? 'CI', dateOfBirth: DateTime.tryParse(dateOfBirth ?? '') ?? DateTime(2000),
-    documentType: documentType ?? 'passport',
-    documentPaths: documentPaths ?? (documentPath != null ? [documentPath] : []),
-    selfiePath: selfiePath ?? '',
-  );
+    required String firstName,
+    required String lastName,
+    required String country,
+    required String dateOfBirth,
+    required String documentType,
+    String? documentNumber,
+    String? documentPath,
+    List<String>? documentPaths,
+    String? selfiePath,
+  }) {
+    if (firstName.isEmpty || lastName.isEmpty) {
+      throw ArgumentError('firstName and lastName are required for KYC submission');
+    }
+    if (country.isEmpty) {
+      throw ArgumentError('country is required for KYC submission');
+    }
+    if (documentType.isEmpty) {
+      throw ArgumentError('documentType is required for KYC submission');
+    }
+    final parsedDob = DateTime.tryParse(dateOfBirth);
+    if (parsedDob == null) {
+      throw ArgumentError('Valid dateOfBirth is required for KYC submission');
+    }
+    final paths = documentPaths ?? (documentPath != null ? [documentPath] : []);
+    if (paths.isEmpty) {
+      throw ArgumentError('At least one document path is required for KYC submission');
+    }
+
+    return _service.submitKyc(
+      firstName: firstName,
+      lastName: lastName,
+      country: country,
+      dateOfBirth: parsedDob,
+      documentType: documentType,
+      documentPaths: paths,
+      selfiePath: selfiePath ?? '',
+      idNumber: documentNumber,
+    );
+  }
 }
 
 final kycRepositoryProvider = Provider<KycRepository>((ref) {

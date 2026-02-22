@@ -1,91 +1,15 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/notifications/notifications_service.dart';
+/// DEPRECATED: Use the consolidated notification preferences provider from settings.
+///
+/// This file re-exports the settings notification preferences provider
+/// to maintain backward compatibility. All notification preference logic
+/// lives in `lib/features/settings/providers/notification_preferences_provider.dart`.
+library;
 
-/// Notification Preferences Notifier
-class NotificationPreferencesNotifier
-    extends AsyncNotifier<NotificationPreferences> {
-  @override
-  Future<NotificationPreferences> build() async {
-    final service = ref.watch(notificationPreferencesServiceProvider);
-    return await service.getPreferences();
-  }
+export 'package:usdc_wallet/features/settings/providers/notification_preferences_provider.dart';
 
-  /// Update transaction alerts preference
-  Future<void> updateTransactionAlerts(bool value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(transactionAlerts: value);
-    });
-  }
-
-  /// Update security alerts preference
-  Future<void> updateSecurityAlerts(bool value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(securityAlerts: value);
-    });
-  }
-
-  /// Update promotions preference
-  Future<void> updatePromotions(bool value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(promotions: value);
-    });
-  }
-
-  /// Update price alerts preference
-  Future<void> updatePriceAlerts(bool value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(priceAlerts: value);
-    });
-  }
-
-  /// Update weekly summary preference
-  Future<void> updateWeeklySummary(bool value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(weeklySummary: value);
-    });
-  }
-
-  /// Update large transaction threshold
-  Future<void> updateLargeTransactionThreshold(double value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(largeTransactionThreshold: value);
-    });
-  }
-
-  /// Update low balance threshold
-  Future<void> updateLowBalanceThreshold(double value) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      return await service.updatePreference(lowBalanceThreshold: value);
-    });
-  }
-
-  /// Reset to defaults
-  Future<void> resetToDefaults() async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final service = ref.read(notificationPreferencesServiceProvider);
-      final defaults = const NotificationPreferences();
-      await service.savePreferences(defaults);
-      return defaults;
-    });
-  }
-}
-
-/// Notification Preferences Notifier Provider
-final notificationPreferencesNotifierProvider = AsyncNotifierProvider<
-    NotificationPreferencesNotifier,
-    NotificationPreferences>(NotificationPreferencesNotifier.new);
+/// Legacy alias — prefer using `notificationPreferencesProvider` directly.
+/// This provider name is kept for backward compatibility with screens
+/// that imported `notificationPreferencesNotifierProvider`.
+///
+/// Migration: replace `notificationPreferencesNotifierProvider` with
+/// `notificationPreferencesProvider` in consuming views.

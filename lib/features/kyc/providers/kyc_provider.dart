@@ -139,7 +139,21 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     ref.read(analyticsServiceProvider).trackKycStarted();
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKycFromData(data: state.personalInfo);
+      // Include documents and selfie — not just personalInfo
+      final documentPaths = state.capturedDocuments
+          .map((doc) => doc.imagePath)
+          .where((path) => path.isNotEmpty)
+          .toList();
+      await service.submitKyc(
+        firstName: state.personalInfo['firstName'] ?? '',
+        lastName: state.personalInfo['lastName'] ?? '',
+        country: state.personalInfo['country'] ?? '',
+        dateOfBirth: DateTime.tryParse(state.personalInfo['dateOfBirth'] ?? '') ?? DateTime(2000, 1, 1),
+        documentType: state.selectedDocumentType?.toApiString() ?? state.personalInfo['documentType'] ?? '',
+        documentPaths: documentPaths,
+        selfiePath: state.selfiePath ?? '',
+        idNumber: state.personalInfo['documentNumber'],
+      );
       state = state.copyWith(isLoading: false);
       ref.read(analyticsServiceProvider).trackKycCompleted(success: true);
     } catch (e) {
@@ -183,7 +197,12 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
 
   KycStatus _mapStatus(KycProfile profile) {
     if (profile.isVerified) return KycStatus.verified;
-    return KycStatus.pending;
+    if (profile.isRejected) return KycStatus.rejected;
+    if (profile.isExpired) return KycStatus.none; // Expired → needs re-submission
+    if (profile.status == KycStatus.submitted) return KycStatus.submitted;
+    if (profile.status == KycStatus.additionalInfoNeeded) return KycStatus.additionalInfoNeeded;
+    if (profile.status == KycStatus.documentsPending) return KycStatus.documentsPending;
+    return profile.status;
   }
 }
 
