@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
