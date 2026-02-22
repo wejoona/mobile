@@ -117,7 +117,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
       }
     }
 
-    // Trigger balance animation when loaded
+    // Trigger balance animation when loaded or after refresh completes
     if (walletState.status == WalletStatus.loaded &&
         !_balanceAnimationController.isAnimating &&
         _balanceAnimationController.status != AnimationStatus.completed) {
@@ -127,6 +127,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         _displayedBalance != walletState.usdcBalance) {
       _displayedBalance = walletState.usdcBalance;
       _balanceAnimationController.forward(from: 0);
+    }
+
+    // Reset animation controller when refreshing so it replays on completion
+    if (walletState.status == WalletStatus.refreshing) {
+      _balanceAnimationController.reset();
     }
 
     return Scaffold(
@@ -476,7 +481,8 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             const SizedBox(height: AppSpacing.xl),
 
             // Primary Balance - CENTERED, ANIMATED
-            if (walletState.isLoading)
+            // Show skeleton only on initial load, NOT during pull-to-refresh
+            if (walletState.status == WalletStatus.loading)
               const SizedBox(
                 height: 56,
                 child: Center(
