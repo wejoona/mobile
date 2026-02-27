@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -30,15 +31,10 @@ class StaffMemberCard extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: _getRoleColor(staff.role).withValues(alpha: 0.2),
-              child: AppText(
-                staff.name.substring(0, 1).toUpperCase(),
-                variant: AppTextVariant.bodyLarge,
-                color: _getRoleColor(staff.role),
-                fontWeight: FontWeight.bold,
-              ),
+            UserAvatar(
+              firstName: staff.name.split(' ').first,
+              lastName: staff.name.split(' ').length > 1 ? staff.name.split(' ').last : null,
+              size: UserAvatar.sizeMedium,
             ),
             SizedBox(width: AppSpacing.md),
 

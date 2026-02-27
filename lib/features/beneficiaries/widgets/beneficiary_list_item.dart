@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// A single beneficiary list item.
@@ -18,19 +19,13 @@ class BeneficiaryListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final initials = _getInitials(beneficiary.name);
 
     return ListTile(
       onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: colors.primary.withValues(alpha: 0.1),
-        child: Text(
-          initials,
-          style: TextStyle(
-            color: colors.primary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      leading: UserAvatar(
+        firstName: beneficiary.name.split(' ').first,
+        lastName: beneficiary.name.split(' ').length > 1 ? beneficiary.name.split(' ').last : null,
+        size: 40,
       ),
       title: Text(
         beneficiary.name,
@@ -53,11 +48,4 @@ class BeneficiaryListItem extends StatelessWidget {
     );
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-    }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
-  }
 }

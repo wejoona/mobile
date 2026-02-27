@@ -100,26 +100,11 @@ class ContactCard extends StatelessWidget {
   }
 
   Widget _buildAvatar() {
-    if (contact.avatarUrl != null) {
-      return CircleAvatar(
-        radius: 24,
-        backgroundImage: NetworkImage(contact.avatarUrl!),
-        backgroundColor: AppColors.charcoal,
-      );
-    }
-
-    // Generate color from name
-    final color = _getColorFromName(contact.name);
-
-    return CircleAvatar(
-      radius: 24,
-      backgroundColor: color.withValues(alpha: 0.2),
-      child: AppText(
-        _getInitials(contact.name),
-        variant: AppTextVariant.bodyLarge,
-        color: color,
-        fontWeight: FontWeight.w600,
-      ),
+    return UserAvatar(
+      imageUrl: contact.avatarUrl,
+      firstName: contact.name.split(' ').first,
+      lastName: contact.name.split(' ').length > 1 ? contact.name.split(' ').last : null,
+      size: UserAvatar.sizeMedium,
     );
   }
 
@@ -172,23 +157,4 @@ class ContactCard extends StatelessWidget {
     );
   }
 
-  String _getInitials(String name) {
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
-  }
-
-  Color _getColorFromName(String name) {
-    final colors = [
-      AppColors.gold500,
-      AppColors.successLight,
-      AppColors.infoLight,
-      AppColors.warningLight,
-    ];
-
-    final hash = name.hashCode.abs();
-    return colors[hash % colors.length];
-  }
 }

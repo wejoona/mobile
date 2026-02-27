@@ -155,14 +155,10 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                   padding: EdgeInsets.all(AppSpacing.md),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: context.colors.gold.withValues(alpha: 0.2),
-                        child: AppText(
-                          member.name.substring(0, 1).toUpperCase(),
-                          variant: AppTextVariant.bodyLarge,
-                          color: context.colors.gold,
-                        ),
+                      UserAvatar(
+                        firstName: member.name.split(' ').first,
+                        lastName: member.name.split(' ').length > 1 ? member.name.split(' ').last : null,
+                        size: 40,
                       ),
                       SizedBox(width: AppSpacing.md),
                       Expanded(

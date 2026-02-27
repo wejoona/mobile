@@ -456,12 +456,10 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: context.colors.gold.withValues(alpha:0.2),
-                            child: Icon(
-                              Icons.person_outline,
-                              color: context.colors.gold,
-                            ),
+                          UserAvatar(
+                            firstName: _link!.recipientName.split(' ').first,
+                            lastName: _link!.recipientName.split(' ').length > 1 ? _link!.recipientName.split(' ').last : null,
+                            size: 40,
                           ),
                           SizedBox(width: AppSpacing.md),
                           Expanded(

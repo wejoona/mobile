@@ -146,13 +146,10 @@ class PendingTransfersScreen extends ConsumerWidget {
           // Recipient
           Row(
             children: [
-              CircleAvatar(
-                backgroundColor: colors.gold.withValues(alpha: 0.2),
-                child: Icon(
-                  Icons.person_outline,
-                  color: colors.gold,
-                  size: 20,
-                ),
+              UserAvatar(
+                firstName: (transfer.recipientName ?? transfer.recipientPhone).split(' ').first,
+                lastName: transfer.recipientName != null && transfer.recipientName!.split(' ').length > 1 ? transfer.recipientName!.split(' ').last : null,
+                size: 40,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(

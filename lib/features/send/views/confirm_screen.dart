@@ -51,12 +51,10 @@ class ConfirmScreen extends ConsumerWidget {
                         SizedBox(height: AppSpacing.sm),
                         Row(
                           children: [
-                            CircleAvatar(
-                              backgroundColor: colors.gold.withValues(alpha: 0.2),
-                              child: Icon(
-                                Icons.person_outline,
-                                color: colors.gold,
-                              ),
+                            UserAvatar(
+                              firstName: state.recipient!.name?.split(' ').first ?? state.recipient!.phoneNumber,
+                              lastName: state.recipient!.name != null && state.recipient!.name!.split(' ').length > 1 ? state.recipient!.name!.split(' ').last : null,
+                              size: 40,
                             ),
                             SizedBox(width: AppSpacing.md),
                             Expanded(

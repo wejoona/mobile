@@ -232,41 +232,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         onTap: _pickProfileImage,
         child: Stack(
           children: [
-            // Avatar
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                gradient: _selectedImage == null
-                    ? LinearGradient(
-                        colors: context.colors.goldGradient,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-                boxShadow: AppShadows.goldGlow,
-                image: _selectedImage != null
-                    ? DecorationImage(
-                        image: FileImage(_selectedImage!),
-                        fit: BoxFit.cover,
-                      )
-                    : _avatarUrl != null
-                        ? DecorationImage(
-                            image: NetworkImage(_avatarUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-              ),
-              child: _selectedImage == null && _avatarUrl == null
-                  ? Center(
-                      child: AppText(
-                        _getInitials(userState),
-                        variant: AppTextVariant.displaySmall,
-                        color: context.colors.textInverse,
-                      ),
-                    )
-                  : null,
+            UserAvatar(
+              imageUrl: _selectedImage?.path ?? _avatarUrl,
+              firstName: userState.firstName,
+              lastName: userState.lastName,
+              size: UserAvatar.sizeXLarge,
             ),
             // Edit button
             Positioned(
@@ -356,20 +326,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     } catch (e) {
       return null;
     }
-  }
-
-  String _getInitials(UserState userState) {
-    final firstName = userState.firstName;
-    final lastName = userState.lastName;
-
-    if (firstName != null && firstName.isNotEmpty && lastName != null && lastName.isNotEmpty) {
-      return '${firstName[0]}${lastName[0]}'.toUpperCase();
-    } else if (firstName != null && firstName.isNotEmpty) {
-      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
-    } else if (userState.phone != null && userState.phone!.length >= 2) {
-      return userState.phone!.substring(userState.phone!.length - 2);
-    }
-    return 'U';
   }
 
   String _formatPhone(String? phone) {

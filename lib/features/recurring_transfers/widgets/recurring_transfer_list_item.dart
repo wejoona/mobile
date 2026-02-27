@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
@@ -19,9 +20,10 @@ class RecurringTransferListItem extends StatelessWidget {
     final colors = context.colors;
     return ListTile(
       onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: colors.primary.withValues(alpha: 0.1),
-        child: Icon(Icons.repeat, color: colors.primary, size: 20),
+      leading: UserAvatar(
+        firstName: (transfer.recipientName ?? transfer.recipientPhone).split(' ').first,
+        lastName: transfer.recipientName != null && transfer.recipientName!.split(' ').length > 1 ? transfer.recipientName!.split(' ').last : null,
+        size: 40,
       ),
       title: Text(
         transfer.recipientName ?? transfer.recipientPhone,

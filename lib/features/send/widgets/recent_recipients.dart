@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Horizontal list of recent recipients for quick send.
@@ -31,8 +31,6 @@ class RecentRecipients extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(width: 16),
             itemBuilder: (_, index) {
               final r = recipients[index];
-              final color = ColorUtils.pastelFromString(r.name);
-              final initials = r.name.split(' ').map((w) => w.isNotEmpty ? w[0] : '').take(2).join().toUpperCase();
 
               return GestureDetector(
                 onTap: () => onSelect(r),
@@ -40,11 +38,11 @@ class RecentRecipients extends StatelessWidget {
                   width: 64,
                   child: Column(
                     children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundColor: color,
-                        backgroundImage: r.avatarUrl != null ? NetworkImage(r.avatarUrl!) : null,
-                        child: r.avatarUrl == null ? Text(initials, style: TextStyle(color: ColorUtils.contrastingText(color), fontWeight: FontWeight.w600, fontSize: 14)) : null,
+                      UserAvatar(
+                        imageUrl: r.avatarUrl,
+                        firstName: r.name.split(' ').first,
+                        lastName: r.name.split(' ').length > 1 ? r.name.split(' ').last : null,
+                        size: UserAvatar.sizeMedium,
                       ),
                       const SizedBox(height: 6),
                       Text(r.name.split(' ').first, style: theme.textTheme.labelSmall, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center),

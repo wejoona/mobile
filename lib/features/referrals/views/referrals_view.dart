@@ -295,14 +295,10 @@ class ReferralsView extends ConsumerWidget {
                     variant: AppCardVariant.subtle,
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 20,
-                          backgroundColor: colors.gold.withValues(alpha: 0.2),
-                          child: AppText(
-                            entry.referredName.isNotEmpty ? entry.referredName[0].toUpperCase() : '?',
-                            variant: AppTextVariant.bodyLarge,
-                            color: colors.gold,
-                          ),
+                        UserAvatar(
+                          firstName: entry.referredName.split(' ').first,
+                          lastName: entry.referredName.split(' ').length > 1 ? entry.referredName.split(' ').last : null,
+                          size: 40,
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(

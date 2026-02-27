@@ -24,14 +24,10 @@ class RecentRecipientCard extends StatelessWidget {
       child: Row(
         children: [
           // Avatar
-          CircleAvatar(
-            backgroundColor: colors.gold.withValues(alpha: 0.2),
-            child: AppText(
-              recipient.name[0].toUpperCase(),
-              variant: AppTextVariant.bodyLarge,
-              color: colors.gold,
-              fontWeight: FontWeight.w600,
-            ),
+          UserAvatar(
+            firstName: recipient.name.split(' ').first,
+            lastName: recipient.name.split(' ').length > 1 ? recipient.name.split(' ').last : null,
+            size: 40,
           ),
           SizedBox(width: AppSpacing.md),
 

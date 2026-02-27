@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
-import 'package:usdc_wallet/utils/color_utils.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 
 /// Standard contact list tile with avatar.
 class ContactTile extends StatelessWidget {
@@ -20,8 +20,6 @@ class ContactTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final avatarColor = ColorUtils.pastelFromString(contact.name);
-    final initials = _getInitials(contact.name);
 
     return InkWell(
       onTap: onTap,
@@ -30,22 +28,11 @@ class ContactTile extends StatelessWidget {
         child: Row(
           children: [
             // Avatar
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: avatarColor,
-              backgroundImage: contact.avatarUrl != null
-                  ? NetworkImage(contact.avatarUrl!)
-                  : null,
-              child: contact.avatarUrl == null
-                  ? Text(
-                      initials,
-                      style: TextStyle(
-                        color: ColorUtils.contrastingText(avatarColor),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    )
-                  : null,
+            UserAvatar(
+              imageUrl: contact.avatarUrl,
+              firstName: contact.name.split(' ').first,
+              lastName: contact.name.split(' ').length > 1 ? contact.name.split(' ').last : null,
+              size: 44,
             ),
             const SizedBox(width: 12),
             // Name and phone
@@ -87,12 +74,4 @@ class ContactTile extends StatelessWidget {
     );
   }
 
-  String _getInitials(String name) {
-    final words = name.trim().split(RegExp(r'\s+'));
-    if (words.isEmpty) return '';
-    if (words.length == 1) {
-      return words[0].substring(0, words[0].length.clamp(0, 2)).toUpperCase();
-    }
-    return '${words[0][0]}${words[1][0]}'.toUpperCase();
-  }
 }

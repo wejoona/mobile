@@ -165,14 +165,10 @@ class _ContactPickerBottomSheetState
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: colors.gold.withValues(alpha: 0.2),
-              child: AppText(
-                contact.name[0].toUpperCase(),
-                variant: AppTextVariant.bodyLarge,
-                color: colors.gold,
-                fontWeight: FontWeight.w600,
-              ),
+            UserAvatar(
+              firstName: contact.name.split(' ').first,
+              lastName: contact.name.split(' ').length > 1 ? contact.name.split(' ').last : null,
+              size: 40,
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(

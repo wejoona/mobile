@@ -161,14 +161,10 @@ class _BeneficiaryPickerBottomSheetState
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: colors.gold.withValues(alpha: 0.2),
-              child: AppText(
-                beneficiary.name[0].toUpperCase(),
-                variant: AppTextVariant.bodyLarge,
-                color: colors.gold,
-                fontWeight: FontWeight.w600,
-              ),
+            UserAvatar(
+              firstName: beneficiary.name.split(' ').first,
+              lastName: beneficiary.name.split(' ').length > 1 ? beneficiary.name.split(' ').last : null,
+              size: 40,
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(

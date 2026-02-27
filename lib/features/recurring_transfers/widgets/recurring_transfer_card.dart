@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
-import 'package:usdc_wallet/utils/color_utils.dart';
 
 /// Card showing a recurring transfer summary.
 class RecurringTransferCard extends StatelessWidget {
@@ -17,8 +17,6 @@ class RecurringTransferCard extends StatelessWidget {
     final statusColor = transfer.isActive
         ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
         : (isDark ? Colors.orange.shade300 : Colors.orange.shade700);
-    final avatarColor = ColorUtils.pastelFromString(transfer.recipientPhone);
-
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -29,10 +27,10 @@ class RecurringTransferCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: avatarColor,
-                child: const Icon(Icons.repeat_rounded, size: 20),
+              UserAvatar(
+                firstName: (transfer.recipientName ?? transfer.recipientPhone).split(' ').first,
+                lastName: (transfer.recipientName ?? '').split(' ').length > 1 ? (transfer.recipientName ?? '').split(' ').last : null,
+                size: 44,
               ),
               const SizedBox(width: 12),
               Expanded(

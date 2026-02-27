@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
 import 'package:usdc_wallet/features/referrals/providers/referrals_provider.dart';
 import 'package:usdc_wallet/features/referrals/widgets/referral_card.dart';
 import 'package:usdc_wallet/utils/duration_extensions.dart';
@@ -33,13 +34,10 @@ class ReferralsListView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 ...info.referrals.map((entry) => ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: entry.status == 'completed' ? Colors.green.shade100 : Colors.orange.shade100,
-                    child: Icon(
-                      entry.status == 'completed' ? Icons.check_rounded : Icons.hourglass_top_rounded,
-                      color: entry.status == 'completed' ? Colors.green.shade700 : Colors.orange.shade700,
-                      size: 20,
-                    ),
+                  leading: UserAvatar(
+                    firstName: entry.referredName.split(' ').first,
+                    lastName: entry.referredName.split(' ').length > 1 ? entry.referredName.split(' ').last : null,
+                    size: 40,
                   ),
                   title: Text(entry.referredName),
                   subtitle: Text(entry.createdAt.timeAgo),
