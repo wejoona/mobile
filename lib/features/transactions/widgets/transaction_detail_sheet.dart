@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart';
 import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dart';
 import 'package:usdc_wallet/design/components/primitives/info_row.dart';
-import 'package:usdc_wallet/design/components/primitives/pill_badge.dart';
 import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/color_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Transaction detail bottom sheet.
 class TransactionDetailSheet extends StatelessWidget {
@@ -36,7 +37,7 @@ class TransactionDetailSheet extends StatelessWidget {
         children: [
           BottomSheetHandle(title: 'Transaction Details', onClose: () => Navigator.pop(context)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxl),
             child: Column(
               children: [
                 // Amount
@@ -44,22 +45,22 @@ class TransactionDetailSheet extends StatelessWidget {
                   '${isCredit ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isCredit ? Colors.green.shade700 : theme.colorScheme.onSurface,
+                    color: isCredit ? context.colors.success : theme.colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: AppSpacing.xs),
                 PillBadge(
                   label: transaction.status.name.toUpperCase(),
                   backgroundColor: statusColor.withValues(alpha: 0.1),
                   textColor: statusColor,
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: AppSpacing.xl),
 
                 // Details
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       children: [
                         InfoRow(label: 'Type', value: transaction.type.name),
@@ -75,21 +76,23 @@ class TransactionDetailSheet extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppSpacing.lg),
 
                 // Actions
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton.icon(
+                      child: AppButton(
+                        label: AppLocalizations.of(context)!.action_copy,
                         onPressed: () => ClipboardUtils.copyTransactionId(transaction.id),
-                        icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: Text(AppLocalizations.of(context)!.action_copy),
+                        variant: AppButtonVariant.secondary,
+                        icon: Icons.copy_rounded,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: FilledButton.icon(
+                      child: AppButton(
+                        label: AppLocalizations.of(context)!.action_share,
                         onPressed: () => ShareUtils.shareTransactionReceipt(
                           transactionId: transaction.id,
                           amount: transaction.amount,
@@ -98,8 +101,7 @@ class TransactionDetailSheet extends StatelessWidget {
                           date: transaction.createdAt,
                           note: transaction.description,
                         ),
-                        icon: const Icon(Icons.share_rounded, size: 16),
-                        label: Text(AppLocalizations.of(context)!.action_share),
+                        icon: Icons.share_rounded,
                       ),
                     ),
                   ],

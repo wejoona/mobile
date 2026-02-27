@@ -4,6 +4,8 @@ import 'package:usdc_wallet/utils/clipboard_utils.dart';
 import 'package:usdc_wallet/utils/share_utils.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Card displaying a payment link.
 class PaymentLinkCard extends StatelessWidget {
@@ -15,11 +17,11 @@ class PaymentLinkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final statusColor = link.isPaid ? Colors.green : (link.isExpired ? Colors.grey : theme.colorScheme.primary);
+    final statusColor = link.isPaid ? context.colors.success : (link.isExpired ? context.colors.textSecondary : theme.colorScheme.primary);
     final statusLabel = link.isPaid ? 'Paid' : (link.isExpired ? 'Expired' : 'Active');
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: onTap,
@@ -36,7 +38,7 @@ class PaymentLinkCard extends StatelessWidget {
                     decoration: BoxDecoration(color: theme.colorScheme.primaryContainer, borderRadius: BorderRadius.circular(10)),
                     child: Icon(Icons.link_rounded, color: theme.colorScheme.onPrimaryContainer, size: 20),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,31 +50,32 @@ class PaymentLinkCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
                     decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
-                    child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.w500)),
+                    child: Text(statusLabel, style: AppTypography.labelMedium.copyWith(color: statusColor)),
                   ),
                 ],
               ),
               if (link.isActive) ...[
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton.icon(
+                      child: AppButton(
+                        label: AppLocalizations.of(context)!.action_copy,
                         onPressed: () => ClipboardUtils.copy(link.url),
-                        icon: const Icon(Icons.copy_rounded, size: 16),
-                        label: Text(AppLocalizations.of(context)!.action_copy),
-                        style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),
+                        variant: AppButtonVariant.secondary,
+                        icon: Icons.copy_rounded,
+                        size: AppButtonSize.small,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: FilledButton.icon(
+                      child: AppButton(
+                        label: AppLocalizations.of(context)!.action_share,
                         onPressed: () => ShareUtils.sharePaymentLink(url: link.url, amount: link.amount, currency: link.currency, description: link.description),
-                        icon: const Icon(Icons.share_rounded, size: 16),
-                        label: Text(AppLocalizations.of(context)!.action_share),
-                        style: FilledButton.styleFrom(visualDensity: VisualDensity.compact),
+                        icon: Icons.share_rounded,
+                        size: AppButtonSize.small,
                       ),
                     ),
                   ],

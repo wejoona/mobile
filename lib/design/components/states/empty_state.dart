@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Empty state component for no data scenarios
@@ -123,26 +124,10 @@ class EmptyState extends StatelessWidget {
   }
 
   Widget _buildActionButton(_ThemeColors colors) {
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton(
-        onPressed: action!.onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: colors.gold,
-          foregroundColor: colors.textInverse,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxl,
-            vertical: AppSpacing.md,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-        ),
-        child: Text(
-          action!.label,
-          style: AppTypography.button,
-        ),
-      ),
+    return AppButton(
+      label: action!.label,
+      onPressed: action!.onPressed,
+      icon: action!.icon,
     );
   }
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// A mixin for widgets that need consistent request lifecycle handling.
 ///
@@ -87,18 +89,18 @@ class _DefaultErrorWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-            const SizedBox(height: 16),
+            Icon(Icons.error_outline, size: 48, color: context.colors.error),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               'Something went wrong',
               style: Theme.of(context).textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               error.toString(),
               style: Theme.of(context).textTheme.bodySmall,
@@ -107,11 +109,11 @@ class _DefaultErrorWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 16),
-              FilledButton.icon(
+              const SizedBox(height: AppSpacing.lg),
+              AppButton(
+                label: 'Retry',
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                icon: Icons.refresh,
               ),
             ],
           ],
@@ -148,7 +150,7 @@ Future<bool> executeWithErrorHandling(
         SnackBar(
           content: Text(errorMessage ?? 'An error occurred: $e'),
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.red[700],
+          backgroundColor: AppColors.errorBase,
         ),
       );
     }

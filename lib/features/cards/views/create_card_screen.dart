@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/cards/providers/create_card_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Create card screen.
 class CreateCardScreen extends ConsumerStatefulWidget {
@@ -38,12 +39,12 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.cards_newCard)),
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(AppLocalizations.of(context)!.cards_cardType, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.md),
+            Text(AppLocalizations.of(context)!.cards_cardType, style: AppTypography.titleSmall),
+            SizedBox(height: AppSpacing.md),
 
             Row(
               children: [
@@ -56,7 +57,7 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
                     onTap: () => notifier.setCardType('virtual'),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: _CardTypeOption(
                     icon: Icons.credit_card_outlined,
@@ -69,7 +70,7 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
               ],
             ),
 
-            const SizedBox(height: AppSpacing.lg),
+            SizedBox(height: AppSpacing.lg),
 
             TextField(
               controller: _nicknameController,
@@ -85,15 +86,14 @@ class _CreateCardScreenState extends ConsumerState<CreateCardScreen> {
 
             if (state.error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppLocalizations.of(context)!.cards_createCard,
               onPressed: !state.isLoading ? () => notifier.create() : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppLocalizations.of(context)!.cards_createCard),
+              isLoading: state.isLoading,
             ),
           ],
         ),
@@ -116,9 +116,9 @@ class _CardTypeOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: selected ? Theme.of(context).colorScheme.primary : Colors.grey.shade300,
             width: selected ? 2 : 1,
@@ -127,10 +127,10 @@ class _CardTypeOption extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 32, color: selected ? Theme.of(context).colorScheme.primary : Colors.grey),
-            const SizedBox(height: AppSpacing.sm),
+            Icon(icon, size: 32, color: selected ? Theme.of(context).colorScheme.primary : context.colors.textSecondary),
+            SizedBox(height: AppSpacing.sm),
             Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: AppSpacing.xs),
+            SizedBox(height: AppSpacing.xs),
             Text(subtitle, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
           ],
         ),

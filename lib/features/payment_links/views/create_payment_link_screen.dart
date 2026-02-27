@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/payment_links/providers/create_payment_link_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Create payment link screen.
 class CreatePaymentLinkScreen extends ConsumerStatefulWidget {
@@ -85,11 +86,10 @@ class _CreatePaymentLinkScreenState extends ConsumerState<CreatePaymentLinkScree
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppLocalizations.of(context)!.paymentLinks_generate,
               onPressed: state.amount != null && !state.isLoading ? () => notifier.create() : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppLocalizations.of(context)!.paymentLinks_generate),
+              isLoading: state.isLoading,
             ),
           ],
         ),
@@ -139,15 +139,19 @@ class _LinkCreatedScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.share),
-                    label: Text(AppLocalizations.of(context)!.action_share),
+                  AppButton(
+                    label: AppLocalizations.of(context)!.action_share,
                     onPressed: () {
                       // SharePlus.instance.share(ShareParams(text: link.url))
                     },
+                    variant: AppButtonVariant.secondary,
+                    icon: Icons.share,
                   ),
                   const SizedBox(width: AppSpacing.md),
-                  FilledButton(onPressed: onDone, child: Text(AppStrings.done)),
+                  AppButton(
+                    label: AppStrings.done,
+                    onPressed: onDone,
+                  ),
                 ],
               ),
             ],

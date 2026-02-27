@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -21,7 +21,7 @@ class SubBusinessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -126,36 +126,22 @@ class SubBusinessCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppButton(
+                      label: AppLocalizations.of(context)!.subBusiness_transfer,
                       onPressed: onTransfer,
-                      icon: const Icon(Icons.swap_horiz, size: 16),
-                      label: Text(AppLocalizations.of(context)!.subBusiness_transfer),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: context.colors.gold,
-                        side: BorderSide(color: context.colors.gold.withValues(alpha: 0.3)),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                      ),
+                      icon: Icons.swap_horiz,
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.small,
                     ),
                   ),
                   SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppButton(
+                      label: AppLocalizations.of(context)!.subBusiness_view,
                       onPressed: onTap,
-                      icon: const Icon(Icons.visibility_outlined, size: 16),
-                      label: Text(AppLocalizations.of(context)!.subBusiness_view),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: context.colors.textSecondary,
-                        side: BorderSide(
-                          color: context.colors.textSecondary.withValues(alpha: 0.3),
-                        ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                      ),
+                      icon: Icons.visibility_outlined,
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.small,
                     ),
                   ),
                 ],

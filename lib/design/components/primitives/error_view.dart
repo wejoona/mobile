@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Standard error view with retry button.
 class ErrorView extends StatelessWidget {
@@ -45,7 +47,7 @@ class ErrorView extends StatelessWidget {
     final theme = Theme.of(context);
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(AppSpacing.xxxl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -55,7 +57,7 @@ class ErrorView extends StatelessWidget {
               color: theme.colorScheme.error.withValues(alpha: 0.6),
             ),
             if (title != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(
                 title!,
                 style: theme.textTheme.titleLarge?.copyWith(
@@ -64,7 +66,7 @@ class ErrorView extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               message,
               style: theme.textTheme.bodyMedium?.copyWith(
@@ -73,11 +75,11 @@ class ErrorView extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 24),
-              FilledButton.icon(
+              const SizedBox(height: AppSpacing.xxl),
+              AppButton(
+                label: retryLabel,
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(retryLabel),
+                icon: Icons.refresh_rounded,
               ),
             ],
           ],

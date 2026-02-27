@@ -187,59 +187,64 @@ class _PerformanceDebugScreenState
           color: colors.textPrimary,
         ),
         const SizedBox(height: AppSpacing.md),
-        _buildActionButton(
+        AppButton(
           label: 'Clear All Caches',
           icon: Icons.delete_sweep,
-          color: context.colors.error,
+          variant: AppButtonVariant.danger,
           onPressed: () {
             perfUtils.clearAllCaches();
             _refreshStats();
             _showSnackBar('All caches cleared');
           },
+          isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
-        _buildActionButton(
+        AppButton(
           label: 'Clear Wallet Cache',
           icon: Icons.account_balance_wallet,
-          color: context.colors.warning,
+          variant: AppButtonVariant.secondary,
           onPressed: () {
             perfUtils.clearWalletCache();
             _refreshStats();
             _showSnackBar('Wallet cache cleared');
           },
+          isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
-        _buildActionButton(
+        AppButton(
           label: 'Clear Transaction Cache',
           icon: Icons.receipt,
-          color: context.colors.warning,
+          variant: AppButtonVariant.secondary,
           onPressed: () {
             perfUtils.clearTransactionCache();
             _refreshStats();
             _showSnackBar('Transaction cache cleared');
           },
+          isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
-        _buildActionButton(
+        AppButton(
           label: 'Clear Referral Cache',
           icon: Icons.people,
-          color: context.colors.warning,
+          variant: AppButtonVariant.secondary,
           onPressed: () {
             perfUtils.clearReferralCache();
             _refreshStats();
             _showSnackBar('Referral cache cleared');
           },
+          isFullWidth: true,
         ),
         const SizedBox(height: AppSpacing.sm),
-        _buildActionButton(
+        AppButton(
           label: 'Clear In-Flight Requests',
           icon: Icons.cancel,
-          color: context.colors.error,
+          variant: AppButtonVariant.danger,
           onPressed: () {
             perfUtils.clearInFlightRequests();
             _refreshStats();
             _showSnackBar('In-flight requests cleared');
           },
+          isFullWidth: true,
         ),
       ],
     );
@@ -395,33 +400,6 @@ class _PerformanceDebugScreenState
             color: colors.textTertiary,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, color: color),
-        label: AppText(
-          label,
-          variant: AppTextVariant.bodyMedium,
-          color: color,
-        ),
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          side: BorderSide(color: color),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
-        ),
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/theme/app_theme.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/services/session/session_manager.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
@@ -71,21 +72,23 @@ void main() async {
           home: Scaffold(
             body: Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xxl),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                    const SizedBox(height: 16),
-                    const Text(
+                    Icon(Icons.error_outline, size: 48, color: AppColors.errorBase),
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
                       'Oops! Something went wrong.',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                      style: AppTypography.titleMedium,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
                       'Please restart the app.',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],

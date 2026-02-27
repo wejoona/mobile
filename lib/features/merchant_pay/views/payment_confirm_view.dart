@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/design/index.dart';
-import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/merchant_pay/providers/merchant_provider.dart';
@@ -115,7 +114,6 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
 
     return Container(
@@ -126,7 +124,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
       ),
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -137,100 +135,70 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: context.colors.textSecondary.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xxl),
 
               // Merchant info
-              _buildMerchantInfo(theme),
-              const SizedBox(height: 24),
+              _buildMerchantInfo(context),
+              const SizedBox(height: AppSpacing.xxl),
 
               // Amount section
-              _buildAmountSection(theme),
-              const SizedBox(height: 24),
+              _buildAmountSection(context),
+              const SizedBox(height: AppSpacing.xxl),
 
               // Error message
               if (_error != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.shade200),
+                    color: context.colors.errorBg,
+                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    border: Border.all(color: context.colors.error.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.error_outline, color: context.colors.error, size: 20),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           _error!,
-                          style: TextStyle(
-                            color: Colors.red.shade700,
-                            fontSize: 14,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: context.colors.error,
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
               ],
 
               // Action buttons
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: AppButton(
+                      label: AppLocalizations.of(context)!.action_cancel,
                       onPressed: _isProcessing ? null : widget.onCancel,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(AppLocalizations.of(context)!.action_cancel),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: AppSpacing.lg),
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _canProceed && !_isProcessing
-                          ? _showPinConfirmation
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        backgroundColor: theme.primaryColor,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: _isProcessing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(Colors.white),
-                              ),
-                            )
-                          : const Text(
-                              'Pay Now',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                    child: AppButton(
+                      label: 'Pay Now',
+                      onPressed: _canProceed && !_isProcessing ? _showPinConfirmation : null,
+                      isLoading: _isProcessing,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
             ],
           ),
         ),
@@ -238,12 +206,13 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     );
   }
 
-  Widget _buildMerchantInfo(ThemeData theme) {
+  Widget _buildMerchantInfo(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Row(
         children: [
@@ -253,11 +222,11 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
             height: 56,
             decoration: BoxDecoration(
               color: theme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
             child: widget.merchant.logoUrl != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                     child: Image.network(
                       widget.merchant.logoUrl!,
                       fit: BoxFit.cover,
@@ -274,7 +243,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                     size: 28,
                   ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.lg),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,15 +253,12 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                     Flexible(
                       child: Text(
                         widget.merchant.displayName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTypography.titleMedium,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (widget.merchant.isVerified) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSpacing.sm),
                       Icon(
                         Icons.verified,
                         color: Colors.blue.shade600,
@@ -301,12 +267,11 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                     ],
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   _formatCategory(widget.merchant.category),
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: context.colors.textSecondary,
                   ),
                 ),
               ],
@@ -317,26 +282,26 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     );
   }
 
-  Widget _buildAmountSection(ThemeData theme) {
+  Widget _buildAmountSection(BuildContext context) {
+    final theme = Theme.of(context);
     if (widget.merchant.isDynamicQr && widget.merchant.amount != null) {
       // Dynamic QR - show fixed amount
       return Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
           color: theme.primaryColor.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: theme.primaryColor.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [
-            const Text(
+            Text(
               'Amount to Pay',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+              style: AppTypography.bodyMedium.copyWith(
+                color: context.colors.textSecondary,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               '\$${widget.merchant.amount!.toStringAsFixed(2)}',
               style: TextStyle(
@@ -345,12 +310,11 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                 color: theme.primaryColor,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               'USDC',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey.shade600,
+              style: AppTypography.bodyLarge.copyWith(
+                color: context.colors.textSecondary,
               ),
             ),
           ],
@@ -362,20 +326,17 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Enter Amount',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppTypography.titleSmall,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Container(
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(16),
+            color: context.colors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.xl),
           child: Row(
             children: [
               Text(
@@ -400,7 +361,7 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
                   decoration: InputDecoration(
                     hintText: '0.00',
                     hintStyle: TextStyle(
-                      color: Colors.grey.shade400,
+                      color: context.colors.textSecondary.withValues(alpha: 0.5),
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -415,12 +376,11 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           'Min: \$0.01 | Max: \$10,000',
-          style: TextStyle(
-            color: Colors.grey.shade500,
-            fontSize: 12,
+          style: AppTypography.labelMedium.copyWith(
+            color: context.colors.textSecondary,
           ),
         ),
       ],
@@ -454,4 +414,3 @@ class _PaymentConfirmViewState extends ConsumerState<PaymentConfirmView> {
     return category[0].toUpperCase() + category.substring(1);
   }
 }
-

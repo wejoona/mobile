@@ -193,7 +193,7 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
                         child: AppText(
                           'ACTION REQUIRED',
                           variant: AppTextVariant.labelSmall,
-                          color: Colors.white,
+                          color: context.colors.textPrimary,
                         ),
                       ),
                     ],
@@ -293,17 +293,12 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
           const SizedBox(height: AppSpacing.md),
           _buildDetailRow('Transaction ID', alert.transactionId!.substring(0, 8), colors),
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => context.push('/transactions/${alert.transactionId}'),
-              icon: const Icon(Icons.receipt_long, size: 18),
-              label: Text(AppLocalizations.of(context)!.transactions_viewTransaction),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.gold,
-                side: BorderSide(color: colors.gold),
-              ),
-            ),
+          AppButton(
+            label: AppLocalizations.of(context)!.transactions_viewTransaction,
+            icon: Icons.receipt_long,
+            variant: AppButtonVariant.secondary,
+            onPressed: () => context.push('/transactions/${alert.transactionId}'),
+            isFullWidth: true,
           ),
         ],
       ),
@@ -377,40 +372,22 @@ class _AlertDetailViewState extends ConsumerState<AlertDetailView> {
   }
 
   Widget _buildActionButton(TransactionAlert alert, AlertAction action, ThemeColors colors) {
-    final isPrimary = action == AlertAction.verifyIdentity ||
-        action == AlertAction.blockRecipient;
     final isDanger = action == AlertAction.freezeAccount ||
         action == AlertAction.reportSuspicious;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: SizedBox(
-        width: double.infinity,
-        child: _isProcessingAction
-            ? Center(
-                child: CircularProgressIndicator(color: colors.gold),
-              )
-            : OutlinedButton.icon(
-                onPressed: () => _handleAction(alert, action),
-                icon: Icon(action.icon, size: 20),
-                label: Text(action.displayName),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: isDanger
-                      ? context.colors.error
-                      : isPrimary
-                          ? colors.gold
-                          : colors.textSecondary,
-                  side: BorderSide(
-                    color: isDanger
-                        ? context.colors.error
-                        : isPrimary
-                            ? colors.gold
-                            : context.colors.borderSubtle,
-                  ),
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                ),
-              ),
-      ),
+      child: _isProcessingAction
+          ? Center(
+              child: CircularProgressIndicator(color: colors.gold),
+            )
+          : AppButton(
+              label: action.displayName,
+              icon: action.icon,
+              variant: isDanger ? AppButtonVariant.danger : AppButtonVariant.secondary,
+              onPressed: () => _handleAction(alert, action),
+              isFullWidth: true,
+            ),
     );
   }
 

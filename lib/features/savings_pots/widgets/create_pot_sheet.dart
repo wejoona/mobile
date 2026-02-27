@@ -3,6 +3,8 @@ import 'package:usdc_wallet/design/components/primitives/bottom_sheet_handle.dar
 import 'package:usdc_wallet/utils/form_validators.dart';
 import 'package:usdc_wallet/utils/input_formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Bottom sheet for creating a new savings pot.
 class CreatePotSheet extends StatefulWidget {
@@ -43,7 +45,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())), backgroundColor: Colors.red),
+          SnackBar(content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())), backgroundColor: context.colors.error),
         );
       }
     } finally {
@@ -62,7 +64,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
         children: [
           BottomSheetHandle(title: 'New Savings Pot', onClose: () => Navigator.pop(context)),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxl),
             child: Form(
               key: _formKey,
               child: Column(
@@ -73,7 +75,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
                     validator: (v) => FormValidators.required(v, fieldName: 'Name'),
                     textCapitalization: TextCapitalization.words,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.lg),
                   TextFormField(
                     controller: _amountController,
                     decoration: const InputDecoration(labelText: 'Target Amount (USDC)', prefixText: '\$ '),
@@ -81,7 +83,7 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
                     inputFormatters: [AmountInputFormatter()],
                     validator: (v) => FormValidators.amount(v, min: 1),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppSpacing.lg),
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(_targetDate == null ? 'Set target date (optional)' : 'Target: ${_targetDate!.day}/${_targetDate!.month}/${_targetDate!.year}'),
@@ -96,15 +98,12 @@ class _CreatePotSheetState extends State<CreatePotSheet> {
                       if (date != null) setState(() => _targetDate = date);
                     },
                   ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _isLoading ? null : _submit,
-                      child: _isLoading
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : Text(AppLocalizations.of(context)!.savingsPots_createPot),
-                    ),
+                  SizedBox(height: AppSpacing.xxl),
+                  AppButton(
+                    label: AppLocalizations.of(context)!.savingsPots_createPot,
+                    onPressed: _isLoading ? null : _submit,
+                    isLoading: _isLoading,
+                    isFullWidth: true,
                   ),
                 ],
               ),

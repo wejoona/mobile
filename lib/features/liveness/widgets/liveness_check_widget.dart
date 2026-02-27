@@ -9,6 +9,8 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Provider to detect simulator (mock flow)
 final isSimulatorProvider = Provider<bool>((ref) => false);
@@ -306,14 +308,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               return Expanded(
                 child: Container(
                   height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
                   decoration: BoxDecoration(
                     color: i < _currentChallengeIndex
                         ? colors.success
                         : i == _currentChallengeIndex
                             ? colors.gold
                             : colors.surface,
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppSpacing.xxs),
                   ),
                 ),
               );
@@ -393,7 +395,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             border: Border.all(color: colors.gold, width: 4),
           ),
           child: Container(
-            margin: const EdgeInsets.all(4),
+            margin: const EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: colors.gold,
@@ -450,14 +452,9 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
             ),
           ],
           const SizedBox(height: AppSpacing.xl),
-          ElevatedButton(
+          AppButton(
+            label: AppLocalizations.of(context)!.liveness_tryAgain,
             onPressed: _retry,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.gold,
-              foregroundColor: colors.textInverse,
-              minimumSize: const Size(200, 48),
-            ),
-            child: Text(AppLocalizations.of(context)!.liveness_tryAgain),
           ),
           const SizedBox(height: AppSpacing.sm),
           TextButton(

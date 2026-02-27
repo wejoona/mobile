@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Error state component with retry functionality
@@ -165,72 +166,23 @@ class ErrorState extends StatelessWidget {
       children: [
         // Retry button (primary)
         if (onRetry != null) ...[
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: onRetry,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colors.gold,
-                foregroundColor: colors.textInverse,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                  vertical: AppSpacing.md,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.refresh, size: 20),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Réessayer',
-                    style: AppTypography.button,
-                  ),
-                ],
-              ),
-            ),
+          AppButton(
+            label: 'Réessayer',
+            onPressed: onRetry,
+            icon: Icons.refresh,
+            isFullWidth: true,
           ),
         ],
 
         // Contact support button (secondary)
         if (onContactSupport != null) ...[
           const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: OutlinedButton(
-              onPressed: onContactSupport,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.textPrimary,
-                side: BorderSide(color: colors.border),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xxl,
-                  vertical: AppSpacing.md,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.support_agent_outlined, size: 20),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Contacter le support',
-                    style: AppTypography.button.copyWith(
-                      color: colors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          AppButton(
+            label: 'Contacter le support',
+            onPressed: onContactSupport,
+            icon: Icons.support_agent_outlined,
+            variant: AppButtonVariant.secondary,
+            isFullWidth: true,
           ),
         ],
       ],

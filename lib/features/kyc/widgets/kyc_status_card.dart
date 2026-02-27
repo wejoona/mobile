@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/domain/entities/kyc_profile.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// KYC status overview card.
 class KycStatusCard extends StatelessWidget {
@@ -13,17 +15,17 @@ class KycStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.lg)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 _statusIcon(context),
-                const SizedBox(width: 12),
+                SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,24 +39,28 @@ class KycStatusCard extends StatelessWidget {
               ],
             ),
             if (profile.needsUpgrade) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: AppSpacing.md),
               Row(
                 children: [
                   Expanded(child: Text(AppLocalizations.of(context)!.kyc_completeVerification(profile.dailyLimit.toString()), style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant))),
-                  const SizedBox(width: 12),
-                  FilledButton(onPressed: onUpgrade, style: FilledButton.styleFrom(visualDensity: VisualDensity.compact), child: Text(AppLocalizations.of(context)!.kyc_verify)),
+                  SizedBox(width: AppSpacing.md),
+                  AppButton(
+                    label: AppLocalizations.of(context)!.kyc_verify,
+                    onPressed: onUpgrade,
+                    size: AppButtonSize.small,
+                  ),
                 ],
               ),
             ],
             if (profile.isRejected && profile.rejectionReason != null) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: AppSpacing.md),
               Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(8)),
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.red.shade50, borderRadius: BorderRadius.circular(AppSpacing.sm)),
                 child: Row(
                   children: [
                     Icon(Icons.info_outline, size: 16, color: Colors.red.shade700),
-                    const SizedBox(width: 8),
+                    SizedBox(width: AppSpacing.sm),
                     Expanded(child: Text(profile.rejectionReason!, style: TextStyle(fontSize: 12, color: Colors.red.shade700))),
                   ],
                 ),
@@ -80,24 +86,24 @@ class KycStatusCard extends StatelessWidget {
     }
     return Container(
       width: 44, height: 44,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(AppRadius.lg)),
       child: Icon(icon, color: color, size: 24),
     );
   }
 
   Widget _levelBadge(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: AppSpacing.xs),
       decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(20)),
       child: Text(profile.level.name.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
     );
   }
 
   Color _statusColor(BuildContext context) {
-    if (profile.isVerified) return Colors.green;
-    if (profile.isPending) return Colors.orange;
-    if (profile.isRejected) return Colors.red;
-    return Colors.grey;
+    if (profile.isVerified) return context.colors.success;
+    if (profile.isPending) return context.colors.warning;
+    if (profile.isRejected) return context.colors.error;
+    return context.colors.textSecondary;
   }
 
   String get _statusText {

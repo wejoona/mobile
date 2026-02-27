@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Create recurring transfer screen.
@@ -120,13 +121,12 @@ class _CreateRecurringScreenState extends ConsumerState<CreateRecurringScreen> {
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppLocalizations.of(context)!.recurringTransfers_createTransfer,
+              isLoading: state.isLoading,
               onPressed: state.recipientPhone != null && state.amount != null && !state.isLoading
                   ? () => notifier.create()
                   : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppLocalizations.of(context)!.recurringTransfers_createTransfer),
             ),
           ],
         ),

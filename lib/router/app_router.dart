@@ -151,6 +151,7 @@ import 'package:usdc_wallet/features/fsm_states/views/index.dart';
 import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 /// Navigation shell for bottom navigation - derives state from current route
@@ -1827,10 +1828,9 @@ class _FsmStatePlaceholder extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
             if (showAction && actionLabel != null)
-              SizedBox(
-                width: 200,
-                child: ElevatedButton(
-                  onPressed: () {
+              AppButton(
+                label: actionLabel!,
+                onPressed: () {
                   // Navigate based on the action
                   if (actionLabel == 'Get New OTP') {
                     context.go('/login');
@@ -1854,9 +1854,7 @@ class _FsmStatePlaceholder extends ConsumerWidget {
                     final fsm = ref.read(appFsmProvider.notifier);
                     fsm.createWallet();
                   }
-                  },
-                  child: Text(actionLabel!),
-                ),
+                },
               ),
             if (!showAction)
               const CircularProgressIndicator(),

@@ -4,6 +4,8 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/notifications/widgets/notification_tile.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Notifications list screen.
@@ -20,31 +22,33 @@ class NotificationsView extends ConsumerWidget {
         title: Text(AppLocalizations.of(context)!.notifications_title),
         actions: [
           if (unreadCount > 0)
-            TextButton(
+            AppButton(
+              label: AppLocalizations.of(context)!.notifications_markAllRead,
+              variant: AppButtonVariant.ghost,
+              size: AppButtonSize.small,
               onPressed: () async {
                 final actions = ref.read(notificationActionsProvider);
                 await actions.markAllAsRead();
                 ref.invalidate(notificationsProvider);
               },
-              child: Text(AppLocalizations.of(context)!.notifications_markAllRead),
             ),
         ],
       ),
       body: notificationsAsync.when(
         loading: () => Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: List.generate(5, (_) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Row(
                 children: [
                   const ShimmerLoading.circle(size: 40),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
                       ShimmerLoading(width: 180, height: 14),
-                      SizedBox(height: 6),
+                      SizedBox(height: AppSpacing.xs),
                       ShimmerLoading(width: 120, height: 12),
                     ],
                   )),

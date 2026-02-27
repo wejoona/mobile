@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Standalone liveness check view — wraps [LivenessCheckWidget].
 /// For KYC-specific liveness, see [KycLivenessView].
@@ -44,8 +46,8 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, size: 80, color: Colors.green),
-              const SizedBox(height: 16),
+              Icon(Icons.check_circle, size: 80, color: context.colors.success),
+              SizedBox(height: AppSpacing.lg),
               Text(AppLocalizations.of(context)!.liveness_title),
             ],
           ),
@@ -59,13 +61,13 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 80, color: Colors.red),
-              const SizedBox(height: 16),
+              Icon(Icons.error_outline, size: 80, color: context.colors.error),
+              SizedBox(height: AppSpacing.lg),
               Text(_errorMessage!),
-              const SizedBox(height: 24),
-              ElevatedButton(
+              SizedBox(height: AppSpacing.xxl),
+              AppButton(
+                label: AppLocalizations.of(context)!.liveness_tryAgain,
                 onPressed: () => setState(() => _errorMessage = null),
-                child: Text(AppLocalizations.of(context)!.liveness_tryAgain),
               ),
               TextButton(
                 onPressed: _onCancel,

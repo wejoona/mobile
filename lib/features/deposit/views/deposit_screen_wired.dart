@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Fully wired deposit screen.
 class DepositScreenWired extends ConsumerStatefulWidget {
@@ -95,13 +96,12 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppStrings.deposit,
               onPressed: state.selectedMethod != null && state.amount != null && !state.isLoading
                   ? () => notifier.initiate()
                   : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppStrings.deposit),
+              isLoading: state.isLoading,
             ),
           ],
         ),
@@ -150,7 +150,7 @@ class _ResultScreen extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: AppSpacing.xl),
-              FilledButton(onPressed: onDone, child: Text(AppStrings.done)),
+              AppButton(label: AppStrings.done, onPressed: onDone),
             ],
           ),
         ),

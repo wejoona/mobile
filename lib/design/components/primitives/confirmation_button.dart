@@ -45,7 +45,7 @@ class _ConfirmationButtonState extends State<ConfirmationButton> {
     final bgColor = _isConfirming
         ? (widget.isDestructive ? colors.error : colors.primary)
         : colors.surface;
-    final textColor = _isConfirming ? Colors.white : colors.textPrimary;
+    final textColor = _isConfirming ? colors.textInverse : colors.textPrimary;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -56,9 +56,9 @@ class _ConfirmationButtonState extends State<ConfirmationButton> {
           style: ElevatedButton.styleFrom(
             backgroundColor: bgColor,
             foregroundColor: textColor,
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
           ),
           child: widget.isLoading
@@ -72,9 +72,8 @@ class _ConfirmationButtonState extends State<ConfirmationButton> {
                 )
               : Text(
                   _isConfirming ? widget.confirmLabel : widget.label,
-                  style: const TextStyle(
+                  style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
                   ),
                 ),
         ),

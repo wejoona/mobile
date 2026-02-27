@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:safe_device/safe_device.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -79,7 +80,7 @@ class _SecurityGateState extends State<SecurityGate> {
           MaterialApp(
             debugShowCheckedModeBanner: false,
             home: Scaffold(
-              backgroundColor: const Color(0xFF111115),
+              backgroundColor: AppColors.graphite,
               body: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -87,12 +88,11 @@ class _SecurityGateState extends State<SecurityGate> {
                     const CircularProgressIndicator(
                       color: Color(0xFF00D4AA),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.lg),
                     Text(
                       'Verifying device security...',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 14,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: AppColors.textPrimary.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -119,10 +119,10 @@ class _SecurityGateState extends State<SecurityGate> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        backgroundColor: const Color(0xFF111115),
+        backgroundColor: AppColors.graphite,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xxl),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -130,72 +130,66 @@ class _SecurityGateState extends State<SecurityGate> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(40),
+                    color: AppColors.errorBase.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
                   child: const Icon(
                     Icons.security,
-                    color: Colors.red,
+                    color: AppColors.errorBase,
                     size: 40,
                   ),
                 ),
-                const SizedBox(height: 32),
-                const Text(
+                const SizedBox(height: AppSpacing.xxxl),
+                Text(
                   'Security Alert',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
                   'Korido cannot run on this device because security issues have been detected.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontSize: 16,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: AppColors.textPrimary.withValues(alpha: 0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.errorBase.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                     border: Border.all(
-                      color: Colors.red.withValues(alpha: 0.3),
+                      color: AppColors.errorBase.withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Detected issues:',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        style: AppTypography.labelLarge.copyWith(
+                          color: AppColors.errorBase,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       ...(_result?.threats ?? []).map((threat) => Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                             child: Row(
                               children: [
                                 const Icon(
                                   Icons.warning_amber_rounded,
-                                  color: Colors.red,
+                                  color: AppColors.errorBase,
                                   size: 16,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: AppSpacing.sm),
                                 Expanded(
                                   child: Text(
                                     threat,
-                                    style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.7),
-                                      fontSize: 14,
+                                    style: AppTypography.bodyMedium.copyWith(
+                                      color: AppColors.textPrimary.withValues(alpha: 0.7),
                                     ),
                                   ),
                                 ),
@@ -205,21 +199,19 @@ class _SecurityGateState extends State<SecurityGate> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppSpacing.xxxl),
                 Text(
                   'For your financial security, this app requires an unmodified device.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 14,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: AppColors.textPrimary.withValues(alpha: 0.5),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xxl),
                 Text(
                   'If you believe this is an error, please contact support.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 12,
+                  style: AppTypography.bodySmall.copyWith(
+                    color: AppColors.textPrimary.withValues(alpha: 0.5),
                   ),
                   textAlign: TextAlign.center,
                 ),

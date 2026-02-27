@@ -176,26 +176,10 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
           // Apply button
           Padding(
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.gold,
-                  foregroundColor: colors.canvas,
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                  ),
-                ),
-                onPressed: _applyFilters,
-                child: Text(
-                  'Apply Filters${_getActiveFilterCount() > 0 ? ' (${_getActiveFilterCount()})' : ''}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
+            child: AppButton(
+              label: 'Apply Filters${_getActiveFilterCount() > 0 ? ' (${_getActiveFilterCount()})' : ''}',
+              onPressed: _applyFilters,
+              isFullWidth: true,
             ),
           ),
 

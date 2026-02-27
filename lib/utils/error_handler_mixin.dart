@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 // import 'package:usdc_wallet/design/components/primitives/app_toast.dart';
 import 'package:usdc_wallet/utils/error_messages.dart';
@@ -33,7 +35,7 @@ mixin ErrorHandlerMixin {
         : message;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(fullMessage), backgroundColor: Colors.red),
+      SnackBar(content: Text(fullMessage), backgroundColor: context.colors.error),
     );
   }
 
@@ -56,14 +58,14 @@ mixin ErrorHandlerMixin {
     await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
+        backgroundColor: context.colors.surface,
         title: Text(
           dialogTitle,
-          style: const TextStyle(color: Colors.white),
+          style: AppTypography.titleSmall.copyWith(color: context.colors.textPrimary),
         ),
         content: Text(
           message,
-          style: const TextStyle(color: Colors.grey),
+          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
@@ -71,12 +73,13 @@ mixin ErrorHandlerMixin {
             child: Text(l10n.common_close),
           ),
           if (canRetry && onRetry != null)
-            ElevatedButton(
+            AppButton(
+              label: l10n.common_retry,
               onPressed: () {
                 Navigator.pop(context);
                 onRetry();
               },
-              child: Text(l10n.common_retry),
+              size: AppButtonSize.small,
             ),
         ],
       ),

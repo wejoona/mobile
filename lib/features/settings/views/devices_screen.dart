@@ -133,7 +133,7 @@ class DevicesScreen extends ConsumerWidget {
                       variant: AppTextVariant.titleSmall,
                       color: context.colors.textPrimary,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: AppSpacing.xxs),
                     AppText(
                       'Gérez l\'accès à votre compte',
                       variant: AppTextVariant.bodySmall,
@@ -306,7 +306,7 @@ class DevicesScreen extends ConsumerWidget {
                                   shape: BoxShape.circle,
                                 ),
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: AppSpacing.xs),
                               AppText(
                                 'Actif',
                                 variant: AppTextVariant.labelSmall,
@@ -317,7 +317,7 @@ class DevicesScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: AppSpacing.xs),
                     AppText(
                       '$deviceName · $osInfo${appVer != null ? " · v$appVer" : ""}',
                       variant: AppTextVariant.bodySmall,
@@ -407,7 +407,7 @@ class DevicesScreen extends ConsumerWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: AppSpacing.xxs),
                 AppText(
                   '${device.platform} ${device.osVersion ?? ""} · ${_formatLastActive(device.lastActiveAt)}',
                   variant: AppTextVariant.bodySmall,

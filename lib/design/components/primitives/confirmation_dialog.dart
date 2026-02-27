@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Standard confirmation dialog used across the app.
 class ConfirmationDialog extends StatelessWidget {
@@ -43,10 +44,6 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final btnColor = confirmColor ??
-        (isDestructive ? theme.colorScheme.error : theme.colorScheme.primary);
-
     return AlertDialog(
       title: Text(title),
       content: Text(message),
@@ -55,10 +52,11 @@ class ConfirmationDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(cancelLabel),
         ),
-        FilledButton(
+        AppButton(
+          label: confirmLabel,
           onPressed: () => Navigator.of(context).pop(true),
-          style: FilledButton.styleFrom(backgroundColor: btnColor),
-          child: Text(confirmLabel),
+          size: AppButtonSize.small,
+          variant: isDestructive ? AppButtonVariant.danger : AppButtonVariant.primary,
         ),
       ],
     );

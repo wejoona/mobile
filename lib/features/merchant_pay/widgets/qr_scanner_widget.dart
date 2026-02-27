@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// QR Scanner Widget
 /// A customizable QR code scanner with overlay and torch support
@@ -86,9 +88,9 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
 
         // Top controls
         Positioned(
-          top: MediaQuery.of(context).padding.top + 16,
-          left: 16,
-          right: 16,
+          top: MediaQuery.of(context).padding.top + AppSpacing.lg,
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -96,7 +98,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               IconButton(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
@@ -111,7 +113,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               IconButton(
                 onPressed: _toggleTorch,
                 icon: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(AppSpacing.sm),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
@@ -129,25 +131,23 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
         // Bottom info
         Positioned(
           bottom: 100,
-          left: 32,
-          right: 32,
+          left: AppSpacing.xxxl,
+          right: AppSpacing.xxxl,
           child: Column(
             children: [
               Text(
                 widget.title,
-                style: const TextStyle(
+                style: AppTypography.titleMedium.copyWith(
                   color: Colors.white,
-                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppSpacing.sm),
               Text(
                 widget.subtitle,
-                style: TextStyle(
+                style: AppTypography.bodyMedium.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 14,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -181,7 +181,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               height: scanAreaSize,
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
           ),
@@ -218,23 +218,20 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
               color: Colors.white,
               size: 64,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               errorMessage,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: AppTypography.bodyLarge.copyWith(color: Colors.white),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
+            const SizedBox(height: AppSpacing.xxl),
+            AppButton(
+              label: AppLocalizations.of(context)!.action_tryAgain,
               onPressed: () {
                 _controller?.dispose();
                 _initializeController();
                 setState(() {});
               },
-              child: Text(AppLocalizations.of(context)!.action_tryAgain),
             ),
           ],
         ),

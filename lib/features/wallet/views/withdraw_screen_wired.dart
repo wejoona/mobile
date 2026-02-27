@@ -4,11 +4,12 @@ import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Fully wired withdrawal screen.
 class WithdrawScreenWired extends ConsumerStatefulWidget {
@@ -122,7 +123,8 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppStrings.withdraw,
               onPressed: state.method != null && state.amount != null && !state.isLoading
                   ? () async {
                       // Risk-based step-up evaluation
@@ -156,9 +158,7 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
                       );
                     }
                   : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppStrings.withdraw),
+              isLoading: state.isLoading,
             ),
           ],
         ),
@@ -188,7 +188,7 @@ class _WithdrawResult extends StatelessWidget {
               Text('${AppLocalizations.of(context)!.billPayments_reference}: ${result.reference}'),
             ],
             const SizedBox(height: AppSpacing.xl),
-            FilledButton(onPressed: onDone, child: Text(AppStrings.done)),
+            AppButton(label: AppStrings.done, onPressed: onDone),
           ],
         ),
       ),

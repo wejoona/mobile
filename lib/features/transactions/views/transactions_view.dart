@@ -436,24 +436,14 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             ),
             const SizedBox(height: AppSpacing.xxxl),
             if (hasFilters)
-              OutlinedButton.icon(
+              AppButton(
+                label: l10n.action_clearAll,
                 onPressed: () {
                   _searchController.clear();
                   ref.read(transactionFilterProvider.notifier).clearAll();
                 },
-                icon: const Icon(Icons.filter_alt_off),
-                label: Text(l10n.action_clearAll),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: colors.gold,
-                  side: BorderSide(color: colors.gold),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.xl,
-                    vertical: AppSpacing.md,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                  ),
-                ),
+                icon: Icons.filter_alt_off,
+                variant: AppButtonVariant.secondary,
               )
             else
               AppButton(

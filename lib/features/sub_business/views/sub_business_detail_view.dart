@@ -41,7 +41,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
       (sb) => sb.id == widget.subBusinessId,
     );
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
-    
+
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -98,17 +98,19 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           Row(
             children: [
               Expanded(
-                child: _buildActionButton(
-                  icon: Icons.swap_horiz,
+                child: AppButton(
                   label: l10n.subBusiness_transfer,
+                  icon: Icons.swap_horiz,
+                  variant: AppButtonVariant.secondary,
                   onPressed: () => context.push('/sub-businesses/transfer/${widget.subBusinessId}'),
                 ),
               ),
               SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: _buildActionButton(
-                  icon: Icons.receipt_long,
+                child: AppButton(
                   label: l10n.subBusiness_transactions,
+                  icon: Icons.receipt_long,
+                  variant: AppButtonVariant.secondary,
                   onPressed: () => _showTransactions(context),
                 ),
               ),
@@ -128,13 +130,12 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 l10n.subBusiness_staff,
                 variant: AppTextVariant.headlineSmall,
               ),
-              TextButton.icon(
+              AppButton(
+                label: l10n.subBusiness_manageStaff,
+                icon: Icons.people,
+                variant: AppButtonVariant.ghost,
+                size: AppButtonSize.small,
                 onPressed: () => context.push('/sub-businesses/${widget.subBusinessId}/staff'),
-                icon: const Icon(Icons.people, size: 16),
-                label: Text(l10n.subBusiness_manageStaff),
-                style: TextButton.styleFrom(
-                  foregroundColor: context.colors.gold,
-                ),
               ),
             ],
           ),
@@ -196,26 +197,6 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: context.colors.gold,
-        side: BorderSide(color: context.colors.gold.withValues(alpha: 0.3)),
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
       ),
     );
   }

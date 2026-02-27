@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/create_pot_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Create savings pot screen — wired to CreatePotNotifier.
 class CreatePotScreen extends ConsumerStatefulWidget {
@@ -40,7 +41,7 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text(AppStrings.createPot)),
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -53,7 +54,7 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
               ),
               onChanged: notifier.setName,
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.md),
 
             TextField(
               controller: _amountController,
@@ -69,7 +70,7 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
                 if (amount != null) notifier.setTargetAmount(amount);
               },
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.md),
 
             ListTile(
               leading: const Icon(Icons.calendar_today_outlined),
@@ -92,15 +93,14 @@ class _CreatePotScreenState extends ConsumerState<CreatePotScreen> {
 
             if (state.error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                padding: EdgeInsets.only(bottom: AppSpacing.sm),
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: l10n.savingsPots_createPot,
               onPressed: !state.isLoading ? () => notifier.create() : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(l10n.savingsPots_createPot),
+              isLoading: state.isLoading,
             ),
           ],
         ),

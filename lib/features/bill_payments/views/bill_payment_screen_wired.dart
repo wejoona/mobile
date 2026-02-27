@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payment_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Wired bill payment screen.
 class BillPaymentScreenWired extends ConsumerStatefulWidget {
@@ -41,9 +42,9 @@ class _BillPaymentScreenWiredState extends ConsumerState<BillPaymentScreenWired>
               if (state.result!.reference != null)
                 Text('${AppLocalizations.of(context)!.billPayments_reference}: ${state.result!.reference}'),
               const SizedBox(height: AppSpacing.xl),
-              FilledButton(
+              AppButton(
+                label: AppStrings.done,
                 onPressed: () { notifier.reset(); Navigator.pop(context); },
-                child: Text(AppStrings.done),
               ),
             ],
           ),
@@ -105,13 +106,12 @@ class _BillPaymentScreenWiredState extends ConsumerState<BillPaymentScreenWired>
                 child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            FilledButton(
+            AppButton(
+              label: AppStrings.payBill,
               onPressed: state.selectedCategory != null && state.amount != null && state.subscriberNumber != null && !state.isLoading
                   ? () => notifier.pay()
                   : null,
-              child: state.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppStrings.payBill),
+              isLoading: state.isLoading,
             ),
           ],
         ),

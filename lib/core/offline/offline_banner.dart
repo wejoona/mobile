@@ -317,7 +317,7 @@ class OfflineBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.xs,
-        vertical: 2,
+        vertical: AppSpacing.xxs,
       ),
       decoration: BoxDecoration(
         color: AppColors.warningBase.withValues(alpha: 0.15),
@@ -331,7 +331,7 @@ class OfflineBadge extends StatelessWidget {
             size: 10,
             color: AppColors.warningText,
           ),
-          SizedBox(width: 2),
+          SizedBox(width: AppSpacing.xxs),
           Text(
             'Queued',
             style: TextStyle(

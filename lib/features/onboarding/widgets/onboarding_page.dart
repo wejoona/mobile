@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/onboarding/models/onboarding_page_data.dart';
 
 /// Single onboarding page.
@@ -13,7 +15,7 @@ class OnboardingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxxl),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -24,7 +26,7 @@ class OnboardingPage extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppSpacing.xxl),
             ),
             child: Image.asset(
               data.imagePath,
@@ -34,16 +36,18 @@ class OnboardingPage extends StatelessWidget {
           ),
           const Spacer(),
           // Title
-          Text(
+          AppText(
             data.title,
-            style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            variant: AppTextVariant.headlineSmall,
+            fontWeight: FontWeight.bold,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           // Description
-          Text(
+          AppText(
             data.description,
-            style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+            variant: AppTextVariant.bodyLarge,
+            color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
           const Spacer(flex: 2),

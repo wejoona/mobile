@@ -1,6 +1,7 @@
 import 'package:usdc_wallet/design/components/primitives/list_tile_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/utils/app_info.dart';
@@ -67,17 +68,17 @@ class AboutView extends StatelessWidget {
           _AboutLink(
             title: 'Conditions d\'utilisation',
             icon: Icons.description_outlined,
-            onTap: () => Navigator.of(context).pushNamed('/settings/terms'),
+            onTap: () => context.push('/settings/terms'),
           ),
           _AboutLink(
             title: 'Politique de confidentialite',
             icon: Icons.privacy_tip_outlined,
-            onTap: () => Navigator.of(context).pushNamed('/settings/privacy'),
+            onTap: () => context.push('/settings/privacy'),
           ),
           _AboutLink(
             title: 'Politique de cookies',
             icon: Icons.cookie_outlined,
-            onTap: () => Navigator.of(context).pushNamed('/settings/cookies'),
+            onTap: () => context.push('/settings/cookies'),
           ),
           _AboutLink(
             title: 'Licences open source',

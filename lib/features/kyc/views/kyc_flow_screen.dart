@@ -4,8 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_submission_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Multi-step KYC flow screen.
 class KycFlowScreen extends ConsumerStatefulWidget {
@@ -109,12 +110,12 @@ class _KycFlowScreenState extends ConsumerState<KycFlowScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.check_circle, size: 64, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               Text(AppLocalizations.of(context)!.kyc_documentsSubmitted, style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: AppSpacing.sm),
+              SizedBox(height: AppSpacing.sm),
               Text(AppLocalizations.of(context)!.kyc_verificationProcessing),
-              const SizedBox(height: AppSpacing.xl),
-              FilledButton(onPressed: () => Navigator.pop(context), child: Text(AppStrings.done)),
+              SizedBox(height: AppSpacing.xl),
+              AppButton(label: AppStrings.done, onPressed: () => Navigator.pop(context)),
             ],
           ),
         );
@@ -134,19 +135,19 @@ class _PersonalInfoStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(controller: firstNameController, decoration: const InputDecoration(labelText: 'Prenom')),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           TextField(controller: lastNameController, decoration: const InputDecoration(labelText: 'Nom')),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           TextField(controller: dobController, decoration: const InputDecoration(labelText: 'Date de naissance', hintText: 'JJ/MM/AAAA')),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           TextField(controller: addressController, decoration: const InputDecoration(labelText: 'Adresse')),
           const Spacer(),
-          FilledButton(onPressed: onNext, child: Text(AppStrings.next)),
+          AppButton(label: AppStrings.next, onPressed: onNext),
         ],
       ),
     );
@@ -160,12 +161,12 @@ class _DocumentTypeStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(AppLocalizations.of(context)!.kyc_documentType, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           ...[
             ('Carte nationale d\'identite', Icons.credit_card),
             ('Passeport', Icons.flight),
@@ -194,15 +195,15 @@ class _DocumentCaptureStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _CaptureButton(label: 'Recto du document', file: idFront, onCapture: onCaptureFront),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           _CaptureButton(label: 'Verso du document', file: idBack, onCapture: onCaptureBack),
           const Spacer(),
-          FilledButton(onPressed: idFront != null ? onNext : null, child: Text(AppStrings.next)),
+          AppButton(label: AppStrings.next, onPressed: idFront != null ? onNext : null),
         ],
       ),
     );
@@ -224,15 +225,15 @@ class _CaptureButton extends StatelessWidget {
         height: 150,
         decoration: BoxDecoration(
           border: Border.all(color: file != null ? Theme.of(context).colorScheme.primary : Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         ),
         child: file != null
-            ? ClipRRect(borderRadius: BorderRadius.circular(12), child: Image.file(file!, fit: BoxFit.cover, width: double.infinity))
+            ? ClipRRect(borderRadius: BorderRadius.circular(AppRadius.lg), child: Image.file(file!, fit: BoxFit.cover, width: double.infinity))
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.camera_alt_outlined, size: 40, color: Colors.grey),
-                  const SizedBox(height: AppSpacing.sm),
+                  Icon(Icons.camera_alt_outlined, size: 40, color: context.colors.textSecondary),
+                  SizedBox(height: AppSpacing.sm),
                   Text(label, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
@@ -251,12 +252,12 @@ class _SelfieStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(AppLocalizations.of(context)!.kyc_takeSelfie, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           if (selfie != null)
             ClipOval(child: Image.file(selfie!, width: 200, height: 200, fit: BoxFit.cover))
           else
@@ -265,13 +266,13 @@ class _SelfieStep extends StatelessWidget {
               child: Container(
                 width: 200, height: 200,
                 decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300, width: 2)),
-                child: const Icon(Icons.face, size: 80, color: Colors.grey),
+                child: Icon(Icons.face, size: 80, color: context.colors.textSecondary),
               ),
             ),
-          const SizedBox(height: AppSpacing.lg),
+          SizedBox(height: AppSpacing.lg),
           if (selfie != null) TextButton(onPressed: onCapture, child: Text(AppLocalizations.of(context)!.kyc_retake)),
-          const SizedBox(height: AppSpacing.md),
-          FilledButton(onPressed: selfie != null ? onNext : null, child: Text(AppStrings.next)),
+          SizedBox(height: AppSpacing.md),
+          AppButton(label: AppStrings.next, onPressed: selfie != null ? onNext : null),
         ],
       ),
     );
@@ -289,12 +290,12 @@ class _ReviewStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text('Vérification', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           _ReviewItem(label: 'Prenom', value: state.personalInfo['firstName'] ?? '-'),
           _ReviewItem(label: 'Nom', value: state.personalInfo['lastName'] ?? '-'),
           _ReviewItem(label: 'Date de naissance', value: state.personalInfo['dateOfBirth'] ?? '-'),
@@ -303,14 +304,13 @@ class _ReviewStep extends StatelessWidget {
           const Spacer(),
           if (error != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              padding: EdgeInsets.only(bottom: AppSpacing.sm),
               child: Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ),
-          FilledButton(
+          AppButton(
+            label: AppLocalizations.of(context)!.kyc_submit,
             onPressed: !isLoading ? onSubmit : null,
-            child: isLoading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                : Text(AppLocalizations.of(context)!.kyc_submit),
+            isLoading: isLoading,
           ),
         ],
       ),
@@ -326,7 +326,7 @@ class _ReviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

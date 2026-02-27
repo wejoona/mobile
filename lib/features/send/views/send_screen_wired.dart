@@ -5,7 +5,8 @@ import 'package:usdc_wallet/features/send/providers/send_fee_provider.dart';
 import 'package:usdc_wallet/features/send/providers/send_limits_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Fully wired send money screen.
 class SendScreenWired extends ConsumerStatefulWidget {
@@ -131,16 +132,15 @@ class _SendScreenWiredState extends ConsumerState<SendScreenWired> {
               ),
 
             // Submit
-            FilledButton(
+            AppButton(
+              label: AppStrings.send,
+              isLoading: sendState.isLoading,
               onPressed: sendState.isLoading ? null : () async {
                 final success = await ref.read(sendMoneyProvider.notifier).executeTransfer();
                 if (success && context.mounted) {
                   Navigator.pushReplacementNamed(context, '/transfer-success');
                 }
               },
-              child: sendState.isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(AppStrings.send),
             ),
           ],
         ),

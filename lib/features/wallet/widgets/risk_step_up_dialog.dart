@@ -7,6 +7,8 @@ import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// Dialog that handles risk-based step-up verification
 /// Shows appropriate UI based on the step-up type required
@@ -87,7 +89,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -96,58 +98,54 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: context.colors.textSecondary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // Flow indicator
           _buildFlowIndicator(),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // Title and description
           Text(
             _getTitle(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           Text(
             widget.decision.description,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
+            style: AppTypography.bodyLarge.copyWith(
+              color: context.colors.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
 
           // Risk factors (optional)
           if (widget.decision.factors.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             _buildRiskFactors(),
           ],
 
           // Error message
           if (_error != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(8),
+                color: context.colors.error,
+                borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red),
-                  const SizedBox(width: 8),
+                  Icon(Icons.error_outline, color: context.colors.error),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       _error!,
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(color: context.colors.error),
                     ),
                   ),
                 ],
@@ -155,12 +153,12 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             ),
           ],
 
-          const SizedBox(height: 32),
+          const SizedBox(height: AppSpacing.xxxl),
 
           // Action buttons
           _buildActionButtons(),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
         ],
       ),
     );
@@ -188,11 +186,11 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   Color _getFlowColor() {
     switch (widget.decision.flow) {
       case RiskFlow.green:
-        return Colors.green;
+        return AppColors.successBase;
       case RiskFlow.yellow:
-        return Colors.orange;
+        return AppColors.warningBase;
       case RiskFlow.red:
-        return Colors.red;
+        return AppColors.errorBase;
     }
   }
 
@@ -239,33 +237,33 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
     if (displayFactors.isEmpty) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(8),
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.sm),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Why verification is needed:',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            style: AppTypography.labelMedium.copyWith(
+              color: context.colors.textSecondary,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: AppSpacing.sm),
           ...displayFactors.map((factor) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 14, color: Colors.grey[500]),
-                    const SizedBox(width: 8),
+                    Icon(Icons.info_outline, size: 14, color: context.colors.textSecondary),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         _formatFactor(factor),
-                        style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                        style: AppTypography.cardLabel.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -288,44 +286,22 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
 
   Widget _buildActionButtons() {
     if (widget.decision.stepUpType == StepUpType.manualReview) {
-      return SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: widget.onCancel,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[200],
-            foregroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          child: Text(AppLocalizations.of(context)!.common_close),
-        ),
+      return AppButton(
+        label: AppLocalizations.of(context)!.common_close,
+        onPressed: widget.onCancel,
+        isFullWidth: true,
       );
     }
 
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _isProcessing ? null : _handleVerify,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getFlowColor(),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _isProcessing
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  )
-                : Text(_getButtonText()),
-          ),
+        AppButton(
+          label: _getButtonText(),
+          onPressed: _isProcessing ? null : _handleVerify,
+          isLoading: _isProcessing,
+          isFullWidth: true,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         TextButton(
           onPressed: _isProcessing ? null : widget.onCancel,
           child: Text(AppLocalizations.of(context)!.action_cancel),
@@ -455,21 +431,30 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 40, height: 4,
-            decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+            decoration: BoxDecoration(
+              color: context.colors.textSecondary.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          const SizedBox(height: 24),
-          const Icon(Icons.sms, size: 48, color: Colors.orange),
-          const SizedBox(height: 16),
-          Text(AppLocalizations.of(context)!.bankLinking_enterCode, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text('A 6-digit code has been sent to your phone', style: TextStyle(color: Colors.grey[600])),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
+          Icon(Icons.sms, size: 48, color: context.colors.warning),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            AppLocalizations.of(context)!.bankLinking_enterCode,
+            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'A 6-digit code has been sent to your phone',
+            style: TextStyle(color: context.colors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
 
           // 6-digit OTP input with PIN-style boxes
           Row(
@@ -478,18 +463,18 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
               final hasChar = _otpController.text.length > index;
               return Container(
                 width: 44, height: 52,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: hasChar ? Colors.orange : Colors.grey[300]!,
+                    color: hasChar ? context.colors.warning : context.colors.textSecondary.withValues(alpha: 0.3),
                     width: 2,
                   ),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppSpacing.sm),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   hasChar ? _otpController.text[index] : '',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
                 ),
               );
             }),
@@ -513,16 +498,16 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           ),
 
           if (_error != null) ...[
-            const SizedBox(height: 16),
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: AppSpacing.lg),
+            Text(_error!, style: TextStyle(color: context.colors.error)),
           ],
 
           if (_isProcessing) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             const CircularProgressIndicator(),
           ],
 
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
 
           // Resend button
           TextButton(
