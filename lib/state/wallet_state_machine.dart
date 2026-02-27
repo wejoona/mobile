@@ -23,6 +23,24 @@ class WalletStateMachine extends Notifier<WalletState> {
     // Guard against redundant fetches
     if (state.status == WalletStatus.loading) return;
 
+    // Pre-load cached data so UI never shows loading state on unlock
+    if (state.status == WalletStatus.initial) {
+      final cached = ref.read(localCacheServiceProvider).getCachedWallet();
+      if (cached != null) {
+        state = state.copyWith(
+          status: WalletStatus.loaded,
+          walletId: cached.walletId,
+          walletAddress: cached.address,
+          usdcBalance: cached.usdcBalance,
+          usdBalance: cached.usdBalance,
+          pendingBalance: cached.pendingBalance,
+          blockchain: cached.blockchain,
+          lastUpdated: cached.cachedAt,
+          isCached: true,
+        );
+      }
+    }
+
     // If already loaded with valid wallet data, don't refetch automatically
     // Use refresh() for manual refresh instead, or pass force: true
     if (!force && state.status == WalletStatus.loaded && state.walletId.isNotEmpty) {

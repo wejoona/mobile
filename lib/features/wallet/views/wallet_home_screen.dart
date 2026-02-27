@@ -616,6 +616,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
         StaggeredEntrance(index: 0, child: _buildHeader(context, l10n, userName, colors)),
         const SizedBox(height: AppSpacing.xxl),
         StaggeredEntrance(index: 1, child: _buildBalanceCard(context, ref, walletState, l10n, colors)),
+        if (walletState.isCached && walletState.lastUpdated != null)
+          Padding(
+            padding: const EdgeInsets.only(top: AppSpacing.sm),
+            child: _CachedDataChip(lastUpdated: walletState.lastUpdated!),
+          ),
         const SizedBox(height: AppSpacing.xxl),
         StaggeredEntrance(index: 2, child: _buildQuickActions(context, l10n, colors)),
         const SizedBox(height: AppSpacing.xxl),
@@ -1528,5 +1533,49 @@ extension _PaintCopyWith on Paint {
       ..color = alpha != null ? color.withValues(alpha: alpha) : color
       ..style = style
       ..strokeWidth = strokeWidth;
+  }
+}
+
+/// Small chip showing cached data age
+class _CachedDataChip extends StatelessWidget {
+  const _CachedDataChip({required this.lastUpdated});
+
+  final DateTime lastUpdated;
+
+  String _timeAgo() {
+    final diff = DateTime.now().difference(lastUpdated);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xxs,
+        ),
+        decoration: BoxDecoration(
+          color: colors.warningBase.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppRadius.full),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_rounded, size: 14, color: colors.warningText),
+            const SizedBox(width: AppSpacing.xs),
+            AppText(
+              'Cached · Updated ${_timeAgo()}',
+              variant: AppTextVariant.labelSmall,
+              color: colors.warningText,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

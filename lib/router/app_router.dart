@@ -363,7 +363,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // FSM wants to redirect to a specific state screen - but allow sub-navigation
       // Skip FSM redirect when locked (AuthProvider.locked is separate from FSM AuthLocked)
       // FSM redirect — but NEVER redirect away from /home (user just unlocked)
-      if (!isLockedState && !isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow && location != '/home') {
+      if (!isLockedState && !isFsmRoute && fsmTargetRoute != location && fsmTargetRoute != '/home' && !isWithinSameFlow) {
         debugPrint('[Router] Redirecting to FSM target: $fsmTargetRoute');
         return fsmTargetRoute;
       }
@@ -616,7 +616,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Main App Routes (with bottom nav - no animation for tab switching)
       ShellRoute(
-        builder: (context, state, child) => MainShell(child: child),
+        builder: (context, state, child) => _AuthGatedShell(child: child),
         routes: [
           GoRoute(
             path: '/home',
@@ -1864,5 +1864,28 @@ class _FsmStatePlaceholder extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Auth-gated shell: wraps MainShell and shows a blank screen if not authenticated.
+/// Prevents flash of home content before login/lock screen redirect completes.
+class _AuthGatedShell extends ConsumerWidget {
+  const _AuthGatedShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    // If not authenticated (initial, loading, unauthenticated, locked),
+    // show blank scaffold to prevent flash of home content
+    if (!authState.isAuthenticated) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      );
+    }
+
+    return MainShell(child: child);
   }
 }

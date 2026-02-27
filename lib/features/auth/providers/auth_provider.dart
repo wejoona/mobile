@@ -347,6 +347,9 @@ class AuthNotifier extends Notifier<AuthState> {
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
 
+    // Clear user state machine (clears cache, avatar, storage keys)
+    await ref.read(userStateMachineProvider.notifier).logout();
+
     state = const AuthState(status: AuthStatus.unauthenticated);
 
     // Sync with FSM: notify logout

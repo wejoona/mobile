@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
+import 'package:usdc_wallet/services/storage/sync_service.dart';
 
 /// Connectivity State
 class ConnectivityState {
@@ -71,9 +72,10 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
 
       state = state.copyWith(isOnline: isNowOnline);
 
-      // Process queue when going from offline to online
+      // Process queue and sync when going from offline to online
       if (!wasOnline && isNowOnline) {
         _processQueue();
+        ref.read(localSyncServiceProvider).onConnectivityRestored();
       }
     });
   }

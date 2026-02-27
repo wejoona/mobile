@@ -10,6 +10,7 @@ import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/services/avatar/avatar_cache_service.dart';
 
 /// User/Auth State Machine - manages user authentication globally
 class UserStateMachine extends Notifier<UserState> {
@@ -117,14 +118,20 @@ class UserStateMachine extends Notifier<UserState> {
       // Cache user profile locally
       ref.read(localSyncServiceProvider).cacheUserFromState(state);
 
-      // Prefer local file for instant display; fall back to server URL
-      final localAvatar = await _storage.read(key: 'local_avatar_path');
-      if (localAvatar != null && await File(localAvatar).exists()) {
-        state = state.copyWith(avatarUrl: localAvatar);
-      } else if (profile.avatarUrl == null || profile.avatarUrl!.isEmpty) {
-        // No local, no server — no avatar
+      // Cache avatar locally for offline display
+      if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
+        final cached = await ref.read(avatarCacheServiceProvider).cacheAvatar(profile.avatarUrl!);
+        if (cached != null) {
+          await _storage.write(key: 'local_avatar_path', value: cached);
+          state = state.copyWith(avatarUrl: cached);
+        }
+      } else {
+        // Prefer local file for instant display
+        final localAvatar = await _storage.read(key: 'local_avatar_path');
+        if (localAvatar != null && await File(localAvatar).exists()) {
+          state = state.copyWith(avatarUrl: localAvatar);
+        }
       }
-      // else: server URL already set above in copyWith
     } on ApiException catch (e) {
       debugPrint('[UserState] Profile fetch failed: ${e.statusCode} ${e.message}');
       // 401/403 are handled by the Dio AuthInterceptor (refresh + retry + FSM logout)
@@ -299,9 +306,13 @@ class UserStateMachine extends Notifier<UserState> {
   Future<void> logout() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _phoneKey);
+    await _storage.delete(key: 'local_avatar_path');
 
     // Clear local cache
     await ref.read(localSyncServiceProvider).clearOnLogout();
+
+    // Clear avatar cache
+    ref.read(avatarCacheServiceProvider).clearCache();
 
     // Reset all state machines
     ref.read(walletStateMachineProvider.notifier).reset();

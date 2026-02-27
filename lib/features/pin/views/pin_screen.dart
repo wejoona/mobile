@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/transaction_state_machine.dart';
 
 /// Where the PIN screen was opened from — determines what happens on success.
 enum PinContext {
@@ -84,6 +86,13 @@ class _PinScreenState extends ConsumerState<PinScreen> {
         // Unlock session, show brief transition, return to previous screen
         try { ref.read(authProvider.notifier).unlock(); } catch (_) {}
         try { ref.read(sessionServiceProvider.notifier).unlockSession(); } catch (_) {}
+        // Trigger background refresh of wallet and transactions after unlock
+        Future.microtask(() {
+          try {
+            ref.read(walletStateMachineProvider.notifier).refresh();
+            ref.read(transactionStateMachineProvider.notifier).refresh();
+          } catch (_) {}
+        });
         if (mounted) {
           _transitionThen(() {
             if (widget.successRoute != null) {

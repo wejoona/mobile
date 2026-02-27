@@ -15,6 +15,7 @@ import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
 import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
+import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 void main() async {
@@ -116,6 +117,9 @@ class KoridoApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize app lifecycle observer for auto-lock on background
     ref.read(appLifecycleObserverProvider);
+
+    // Load cached data into state on app start
+    ref.read(localSyncServiceProvider).onAppStart();
 
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);
