@@ -86,7 +86,7 @@ dependencies:
   # Firebase Crashlytics
   firebase_crashlytics: ^4.1.6
   # Device info for push notification registration
-  device_info_plus: ^11.2.0
+  device_info_plus: ^12.3.0
   # Local notifications for foreground display
   flutter_local_notifications: ^18.0.1
   # Package info for app version
