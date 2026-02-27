@@ -190,10 +190,4 @@ class _DailySpendingChartState extends State<DailySpendingChart> {
     );
   }
 
-  String _formatAmount(double amount) {
-    if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(1)}k';
-    }
-    return amount.toStringAsFixed(0);
-  }
 }

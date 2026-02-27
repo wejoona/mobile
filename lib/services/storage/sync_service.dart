@@ -1,15 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
 import 'package:usdc_wallet/services/storage/pending_ops_processor.dart';
-import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
-import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Stale data thresholds

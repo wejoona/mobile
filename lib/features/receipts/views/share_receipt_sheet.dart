@@ -253,16 +253,10 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
         text: 'Korido transaction receipt',
       ));
 
-      final success = true;
-
       if (!mounted) return;
 
-      if (success) {
-        Navigator.pop(context);
-        _showSuccess('Receipt saved to gallery');
-      } else {
-        _showError('Failed to save receipt');
-      }
+      Navigator.pop(context);
+      _showSuccess('Receipt saved to gallery');
     } catch (e) {
       if (!mounted) return;
       _showError('Failed to save receipt');

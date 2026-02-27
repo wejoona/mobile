@@ -102,31 +102,6 @@ class CategorySelector extends StatelessWidget {
         return Icons.receipt_long;
     }
   }
-
-  // ignore: unused_element
-  Color _getCategoryColor(BuildContext context, String iconName) {
-    final colors = context.colors;
-    switch (iconName) {
-      case 'bolt':
-        return const Color(0xFFF0C674); // Yellow for electricity
-      case 'water_drop':
-        return colors.infoText; // Blue for water
-      case 'wifi':
-        return const Color(0xFFB294D1); // Purple for internet
-      case 'tv':
-        return const Color(0xFF7DD3D8); // Cyan for TV
-      case 'phone_android':
-        return colors.successText; // Green for phone
-      case 'security':
-        return colors.gold; // Gold for insurance
-      case 'school':
-        return colors.infoText; // Blue for education
-      case 'account_balance':
-        return colors.textSecondary; // Silver for government
-      default:
-        return colors.gold; // Default gold
-    }
-  }
 }
 
 class _CategoryChip extends StatelessWidget {

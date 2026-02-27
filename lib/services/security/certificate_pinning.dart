@@ -201,9 +201,7 @@ class CertificatePinning {
     final context = SecurityContext.defaultContext;
 
     try {
-      // Load custom CA certificate if bundled in assets
-      // final certData = await rootBundle.load('assets/certs/ca.pem');
-      // context.setTrustedCertificatesBytes(certData.buffer.asUint8List());
+      // Custom CA certificate loading will go here when certs are bundled in assets
     } catch (e) {
       _logger.error('Failed to load trusted certificates', e);
     }

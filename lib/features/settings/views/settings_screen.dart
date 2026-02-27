@@ -816,21 +816,6 @@ class _ProfileCard extends ConsumerWidget {
     );
   }
 
-  // ignore: unused_element
-  String _getInitials(UserState userState) {
-    final firstName = userState.firstName;
-    final lastName = userState.lastName;
-
-    if (firstName != null && firstName.isNotEmpty && lastName != null && lastName.isNotEmpty) {
-      return '${firstName[0]}${lastName[0]}'.toUpperCase();
-    } else if (firstName != null && firstName.isNotEmpty) {
-      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
-    } else if (userState.phone != null && userState.phone!.length >= 2) {
-      return userState.phone!.substring(userState.phone!.length - 2);
-    }
-    return 'U';
-  }
-
   String _formatPhone(String? phone) {
     if (phone == null || phone.isEmpty) return '';
     // Format: +225 XX XX XX XX

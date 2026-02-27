@@ -9,7 +9,6 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_status.dart';
-import 'package:usdc_wallet/services/kyc/kyc_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/kyc_fsm.dart' as fsm;
 
@@ -213,51 +212,6 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
       case KycStatus.additionalInfoNeeded:
         return l10n.kyc_status_additionalInfo_description;
     }
-  }
-
-  // ignore: unused_element
-  Widget _buildVerificationDetails(VerifyHqStatus verification, ThemeColors colors) {
-    return AppCard(
-      variant: AppCardVariant.elevated,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            'Détails de la vérification',
-            variant: AppTextVariant.titleMedium,
-            color: colors.gold,
-          ),
-          SizedBox(height: AppSpacing.lg),
-          if (verification.overallStatus != null)
-            _buildDetailRow('Overall', verification.overallStatus!, colors),
-          if (verification.livenessCheckId != null)
-            _buildDetailRow('Liveness', 'Completed', colors),
-          if (verification.documentVerificationId != null)
-            _buildDetailRow('Document', 'Submitted', colors),
-          if (verification.faceMatchScore != null)
-            _buildDetailRow(
-              'Correspondance faciale',
-              '${(verification.faceMatchScore! * 100).toStringAsFixed(0)}%',
-              colors,
-            ),
-          if (verification.tier != null)
-            _buildDetailRow('Tier', verification.tier!, colors),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, ThemeColors colors) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          AppText(label, variant: AppTextVariant.bodyMedium, color: colors.textSecondary),
-          AppText(value, variant: AppTextVariant.labelMedium),
-        ],
-      ),
-    );
   }
 
   Widget _buildInfoCards(AppLocalizations l10n) {

@@ -11,50 +11,21 @@ final firebasePerformanceServiceProvider = Provider<FirebasePerformanceService>(
 });
 
 /// Firebase Performance Monitoring integration
-/// Wraps Firebase Performance APIs with local PerformanceService
+/// Wraps Firebase Performance APIs with local PerformanceService.
+/// Firebase integration is stubbed until firebase_performance is added to pubspec.yaml.
 class FirebasePerformanceService {
   final PerformanceService _localPerformance;
-
-  // Firebase Performance is available but not yet configured
-  // Uncomment when firebase_performance is added to pubspec.yaml
-  // final FirebasePerformance? _firebasePerformance;
   final bool _isEnabled;
 
-  FirebasePerformanceService(this._localPerformance)
-      : _isEnabled = false; // Set to true when Firebase Performance is configured
-  // : _firebasePerformance = _initializeFirebase(),
-  //   _isEnabled = _initializeFirebase() != null;
-
-  // static FirebasePerformance? _initializeFirebase() {
-  //   try {
-  //     return FirebasePerformance.instance;
-  //   } catch (e) {
-  //     _logger.warn('Failed to initialize Firebase Performance', e);
-  //     return null;
-  //   }
-  // }
+  FirebasePerformanceService(this._localPerformance) : _isEnabled = false;
 
   /// Start a trace
   Future<FirebaseTrace> startTrace(String name) async {
-    // Start local trace
     final localTrace = _localPerformance.startTrace(name);
-
-    // Start Firebase trace
-    // Uncomment when firebase_performance is configured
-    // FirebaseTrace? firebaseTrace;
-    // if (_isEnabled) {
-    //   try {
-    //     firebaseTrace = await _firebasePerformance!.newTrace(name);
-    //     await firebaseTrace.start();
-    //   } catch (e) {
-    //     _logger.error('Failed to start Firebase trace', e);
-    //   }
-    // }
 
     return FirebaseTrace(
       name: name,
       localTrace: localTrace,
-      // firebaseTrace: firebaseTrace,
       localPerformance: _localPerformance,
     );
   }
@@ -68,55 +39,23 @@ class FirebasePerformanceService {
     required int responsePayloadBytes,
     required Duration duration,
   }) async {
-    // Track locally
     _localPerformance.trackApiCall(
       url,
       duration,
       statusCode: statusCode,
     );
 
-    // Track in Firebase
     if (!_isEnabled) return;
-
-    // Uncomment when firebase_performance is configured
-    // try {
-    //   final metric = await _firebasePerformance!.newHttpMetric(url, httpMethod);
-    //   metric.httpResponseCode = statusCode;
-    //   metric.requestPayloadSize = requestPayloadBytes;
-    //   metric.responsePayloadSize = responsePayloadBytes;
-    //   await metric.start();
-    //   await Future.delayed(duration); // Simulate the duration
-    //   await metric.stop();
-    // } catch (e) {
-    //   _logger.error('Failed to track HTTP metric', e);
-    // }
   }
 
   /// Set performance collection enabled
   Future<void> setPerformanceCollectionEnabled(bool enabled) async {
     if (!_isEnabled) return;
-
-    // Uncomment when firebase_performance is configured
-    // try {
-    //   await _firebasePerformance!.setPerformanceCollectionEnabled(enabled);
-    //   _logger.info('Performance collection ${enabled ? 'enabled' : 'disabled'}');
-    // } catch (e) {
-    //   _logger.error('Failed to set performance collection', e);
-    // }
   }
 
   /// Get performance data enabled status
   Future<bool> isPerformanceCollectionEnabled() async {
     if (!_isEnabled) return false;
-
-    // Uncomment when firebase_performance is configured
-    // try {
-    //   return await _firebasePerformance!.isPerformanceCollectionEnabled();
-    // } catch (e) {
-    //   _logger.error('Failed to check performance collection status', e);
-    //   return false;
-    // }
-
     return false;
   }
 }
@@ -125,7 +64,6 @@ class FirebasePerformanceService {
 class FirebaseTrace {
   final String name;
   final PerformanceTrace localTrace;
-  // final FirebaseTrace? firebaseTrace;
   final PerformanceService localPerformance;
 
   final Map<String, int> _metrics = {};
@@ -134,7 +72,6 @@ class FirebaseTrace {
   FirebaseTrace({
     required this.name,
     required this.localTrace,
-    // this.firebaseTrace,
     required this.localPerformance,
   });
 
@@ -142,9 +79,6 @@ class FirebaseTrace {
   void setMetric(String name, int value) {
     _metrics[name] = value;
     localTrace.putAttribute(name, value);
-
-    // Uncomment when firebase_performance is configured
-    // firebaseTrace?.setMetric(name, value);
   }
 
   /// Increment metric
@@ -160,17 +94,11 @@ class FirebaseTrace {
   void putAttribute(String name, String value) {
     _attributes[name] = value;
     localTrace.putAttribute(name, value);
-
-    // Uncomment when firebase_performance is configured
-    // firebaseTrace?.putAttribute(name, value);
   }
 
   /// Remove attribute
   void removeAttribute(String name) {
     _attributes.remove(name);
-
-    // Uncomment when firebase_performance is configured
-    // firebaseTrace?.removeAttribute(name);
   }
 
   /// Get attribute value
@@ -181,16 +109,7 @@ class FirebaseTrace {
 
   /// Stop trace
   Future<void> stop() async {
-    // Stop local trace
     localPerformance.stopTrace(name, additionalAttributes: _attributes);
-
-    // Stop Firebase trace
-    // Uncomment when firebase_performance is configured
-    // try {
-    //   await firebaseTrace?.stop();
-    // } catch (e) {
-    //   AppLogger('FirebaseTrace').error('Failed to stop Firebase trace', e);
-    // }
   }
 }
 

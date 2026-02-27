@@ -217,35 +217,6 @@ class _ScanViewState extends ConsumerState<ScanView>
     );
   }
 
-  // ignore: unused_element
-  Widget _buildWalletAddressFooter(String address) {
-    final truncated = address.length > 16
-        ? '${address.substring(0, 8)}...${address.substring(address.length - 6)}'
-        : address;
-
-    return Column(
-      children: [
-        Divider(color: context.colors.borderSubtle),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppText(
-              'Wallet: ',
-              variant: AppTextVariant.bodySmall,
-              color: context.colors.textTertiary,
-            ),
-            AppText(
-              truncated,
-              variant: AppTextVariant.bodySmall,
-              color: context.colors.textSecondary,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
   void _copyToClipboard(String text, AppLocalizations l10n) {
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(

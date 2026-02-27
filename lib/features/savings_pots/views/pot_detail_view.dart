@@ -1,4 +1,3 @@
-import 'package:usdc_wallet/utils/currency_formatter.dart';
 import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

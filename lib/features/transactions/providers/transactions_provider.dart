@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
 export 'package:usdc_wallet/domain/entities/transaction_filter.dart';
 
 /// Transaction filter state with convenience methods.
-final transactionFilterProvider = StateNotifierProvider<TransactionFilterNotifier, TransactionFilter>((ref) => TransactionFilterNotifier());
+final transactionFilterProvider = NotifierProvider<TransactionFilterNotifier, TransactionFilter>(TransactionFilterNotifier.new);
 
-class TransactionFilterNotifier extends StateNotifier<TransactionFilter> {
-  TransactionFilterNotifier() : super(const TransactionFilter());
+class TransactionFilterNotifier extends Notifier<TransactionFilter> {
+  @override
+  TransactionFilter build() => const TransactionFilter();
 
   void setType(String? type) => state = state.copyWith(type: type, clearType: type == null);
   void setStatus(String? status) => state = state.copyWith(status: status, clearStatus: status == null);

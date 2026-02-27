@@ -13,7 +13,7 @@ class BulkPayment {
     this.error,
   });
 
-  factory BulkPayment.fromCsvRow(List<String> row, int rowIndex) {
+  factory BulkPayment.fromCsvRow(List<String> row) {
     if (row.length < 3) {
       return BulkPayment(
         phone: row.isNotEmpty ? row[0].trim() : '',

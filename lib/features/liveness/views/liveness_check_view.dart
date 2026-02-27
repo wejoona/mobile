@@ -32,10 +32,6 @@ class _LivenessCheckViewState extends ConsumerState<LivenessCheckView> {
     }
   }
 
-  void _onError(String error) {
-    setState(() => _errorMessage = error);
-  }
-
   void _onCancel() {
     context.pop(false);
   }

@@ -88,13 +88,6 @@ class _NetworkLogTile extends StatelessWidget {
 
   const _NetworkLogTile({required this.log});
 
-  // ignore: unused_element
-  Color get _statusColor {
-    if (log.statusCode < 300) return AppColors.successBase;
-    if (log.statusCode < 400) return AppColors.warningBase;
-    return AppColors.errorBase;
-  }
-
   @override
   Widget build(BuildContext context) {
     return AppCard(

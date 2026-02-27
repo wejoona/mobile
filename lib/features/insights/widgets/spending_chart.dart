@@ -1,5 +1,7 @@
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
 
 /// Simple spending breakdown chart (horizontal bars).
@@ -20,7 +22,7 @@ class SpendingChart extends StatelessWidget {
       children: [
         for (final category in sorted.take(8)) ...[
           _CategoryBar(category: category, maxAmount: maxAmount, theme: theme),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
         ],
       ],
     );
@@ -37,7 +39,7 @@ class _CategoryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = maxAmount > 0 ? (category.totalAmount / maxAmount).clamp(0.0, 1.0) : 0.0;
-    final color = _categoryColor(category.category);
+    final color = _categoryColor(context, category.category);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +54,7 @@ class _CategoryBar extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         ClipRRect(
           borderRadius: BorderRadius.circular(3),
           child: SizedBox(
@@ -69,20 +71,21 @@ class _CategoryBar extends StatelessWidget {
     );
   }
 
-  Color _categoryColor(String category) {
+  Color _categoryColor(BuildContext context, String category) {
+    final colors = context.colors;
     switch (category) {
-      case 'transport': return Colors.blue;
-      case 'food': return Colors.orange;
-      case 'utilities': return Colors.teal;
-      case 'telecom': return Colors.purple;
-      case 'health': return Colors.red;
-      case 'education': return Colors.indigo;
-      case 'shopping': return Colors.pink;
-      case 'entertainment': return Colors.amber;
-      case 'transfers': return Colors.cyan;
-      case 'bills': return Colors.brown;
-      case 'savings': return Colors.green;
-      default: return Colors.grey;
+      case 'transport': return colors.info;
+      case 'food': return colors.warning;
+      case 'utilities': return colors.infoText;
+      case 'telecom': return AppColors.gold400;
+      case 'health': return colors.error;
+      case 'education': return AppColors.gold700;
+      case 'shopping': return colors.errorText;
+      case 'entertainment': return colors.gold;
+      case 'transfers': return colors.infoText;
+      case 'bills': return colors.warningText;
+      case 'savings': return colors.success;
+      default: return colors.textTertiary;
     }
   }
 }
@@ -98,22 +101,23 @@ class SpendingSummaryHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colors = context.colors;
     final netFlow = totalReceived - totalSpent;
     final isPositive = netFlow >= 0;
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _FlowItem(label: 'Spent', amount: totalSpent, color: Colors.red, currency: currency),
+            _FlowItem(label: 'Spent', amount: totalSpent, color: colors.error, currency: currency),
             Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
-            _FlowItem(label: 'Received', amount: totalReceived, color: Colors.green, currency: currency),
+            _FlowItem(label: 'Received', amount: totalReceived, color: colors.success, currency: currency),
             Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
-            _FlowItem(label: 'Net', amount: netFlow.abs(), color: isPositive ? Colors.green : Colors.red, currency: currency, prefix: isPositive ? '+' : '-'),
+            _FlowItem(label: 'Net', amount: netFlow.abs(), color: isPositive ? colors.success : colors.error, currency: currency, prefix: isPositive ? '+' : '-'),
           ],
         ),
       ),
@@ -136,7 +140,7 @@ class _FlowItem extends StatelessWidget {
     return Column(
       children: [
         Text(label, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-        const SizedBox(height: 4),
+        const SizedBox(height: AppSpacing.xs),
         Text('$prefix${formatXof(amount)}', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: color)),
       ],
     );

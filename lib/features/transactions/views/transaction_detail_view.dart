@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
@@ -350,49 +349,6 @@ class TransactionDetailView extends ConsumerWidget {
     );
   }
 
-  // ignore: unused_element
-  void _shareTransaction(BuildContext context) {
-    final dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(transaction.createdAt);
-    final amountStr = '\$${transaction.amount.abs().toStringAsFixed(2)}';
-    final typeStr = _getTransactionTypeLabel(transaction.type);
-    final statusStr = transaction.status.name.toUpperCase();
-
-    final receiptText = '''
-━━━━━━━━━━━━━━━━━━━━━━
-       REÇU KORIDO
-━━━━━━━━━━━━━━━━━━━━━━
-
-Réf. : ${transaction.id.substring(0, 8)}...
-Date : $dateStr
-Type : $typeStr
-Montant : $amountStr ${transaction.currency}
-Statut : $statusStr
-${transaction.recipientPhone != null ? 'Destinataire : ${transaction.recipientPhone}' : ''}
-${transaction.description != null ? 'Note : ${transaction.description}' : ''}
-
-━━━━━━━━━━━━━━━━━━━━━━
-    Merci d\'utiliser
-         Korido
-━━━━━━━━━━━━━━━━━━━━━━
-''';
-
-    SharePlus.instance.share(ShareParams(text: 
-      receiptText.trim(), title: 'Reçu Korido',
-    ));
-  }
-
-  String _getTransactionTypeLabel(TransactionType type) {
-    switch (type) {
-      case TransactionType.deposit:
-        return 'Dépôt';
-      case TransactionType.withdrawal:
-        return 'Retrait';
-      case TransactionType.transferInternal:
-        return 'Transfert reçu';
-      case TransactionType.transferExternal:
-        return 'Transfert envoyé';
-    }
-  }
 }
 
 class _DetailRow extends StatelessWidget {

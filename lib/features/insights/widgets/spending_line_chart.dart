@@ -231,13 +231,6 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
     return (widget.trends.length / 7).ceilToDouble();
   }
 
-  String _formatAmount(double amount) {
-    if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(1)}k';
-    }
-    return amount.toStringAsFixed(0);
-  }
-
   String _formatDate(DateTime date) {
     return DateFormat('MMM d').format(date);
   }

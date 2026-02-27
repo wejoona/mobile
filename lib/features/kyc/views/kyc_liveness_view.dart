@@ -55,15 +55,6 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
     }
   }
 
-  // ignore: unused_element
-  void _onLivenessError(String error) {
-    debugPrint('[KYC Liveness] Error: $error');
-    setState(() {
-      _hasFailed = true;
-      _errorMessage = error;
-    });
-  }
-
   void _onCancel() {
     // Go back to selfie capture
     context.pop();

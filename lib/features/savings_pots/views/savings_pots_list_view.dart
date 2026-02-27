@@ -1,21 +1,13 @@
-import 'package:usdc_wallet/utils/currency_utils.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/savings_pot_card.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/savings_pots/widgets/create_pot_sheet.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:go_router/go_router.dart';
 
 /// Savings pots list screen.
 class SavingsPotsListView extends ConsumerWidget {

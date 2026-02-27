@@ -9,7 +9,6 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/localization/language_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/services/currency/currency_provider.dart';
@@ -670,7 +669,6 @@ class _SettingsTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.subtitleColor,
-    this.trailing,
     required this.onTap,
   });
 
@@ -678,7 +676,6 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Color? subtitleColor;
-  final Widget? trailing;
   final VoidCallback onTap;
 
   @override
@@ -714,8 +711,7 @@ class _SettingsTile extends StatelessWidget {
                   variant: AppTextVariant.bodyMedium,
                   color: subtitleColor ?? colors.textTertiary,
                 ),
-              if (trailing != null) trailing!,
-              if (trailing == null && subtitle == null)
+              if (subtitle == null)
                 Icon(
                   Icons.chevron_right,
                   color: colors.textTertiary,
@@ -777,87 +773,6 @@ class _KycTile extends ConsumerWidget {
       subtitle: subtitle,
       subtitleColor: subtitleColor,
       onTap: onTap,
-    );
-  }
-}
-
-// ignore: unused_element
-class _BiometricTile extends ConsumerWidget {
-  const _BiometricTile();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final biometricType = ref.watch(primaryBiometricTypeProvider);
-    final biometricEnabled = ref.watch(biometricEnabledProvider);
-
-    return biometricType.when(
-      data: (type) {
-        if (type == BiometricType.none) {
-          return const SizedBox.shrink();
-        }
-
-        return biometricEnabled.when(
-          data: (enabled) => _SettingsTile(
-            icon: type == BiometricType.faceId ? Icons.face : Icons.fingerprint,
-            title: type == BiometricType.faceId ? 'Face ID' : 'Touch ID',
-            trailing: Switch(
-              value: enabled,
-              onChanged: (value) async {
-                // Haptic feedback on toggle
-                hapticService.toggle();
-
-                final service = ref.read(biometricServiceProvider);
-                if (value) {
-                  final authenticatedBio = await service.authenticate(
-                    localizedReason: 'Authentifiez-vous pour activer la connexion biométrique',
-                  );
-                  if (authenticatedBio.success) {
-                    await service.enableBiometric();
-                    ref.invalidate(biometricEnabledProvider);
-                  }
-                } else {
-                  await service.disableBiometric();
-                  ref.invalidate(biometricEnabledProvider);
-                }
-              },
-              activeColor: context.colors.gold,
-            ),
-            onTap: () {},
-          ),
-          loading: () => _SettingsTile(
-            icon: Icons.fingerprint,
-            title: 'Connexion biométrique',
-            trailing: const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            onTap: () {},
-          ),
-          error: (_, __) => _SettingsTile(
-            icon: Icons.fingerprint,
-            title: 'Connexion biométrique',
-            subtitle: 'Erreur',
-            onTap: () {},
-          ),
-        );
-      },
-      loading: () => _SettingsTile(
-        icon: Icons.fingerprint,
-        title: 'Connexion biométrique',
-        trailing: const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        onTap: () {},
-      ),
-      error: (_, __) => _SettingsTile(
-        icon: Icons.fingerprint,
-        title: 'Connexion biométrique',
-        subtitle: 'Erreur',
-        onTap: () {},
-      ),
     );
   }
 }
@@ -962,22 +877,6 @@ class _ProfileCard extends ConsumerWidget {
       ),
     );
   }
- // ignore: unused_element
-
-  String _getInitials(UserState userState) { // ignore: unused_element
-    final firstName = userState.firstName;
-    final lastName = userState.lastName;
-
-    if (firstName != null && firstName.isNotEmpty && lastName != null && lastName.isNotEmpty) {
-      return '${firstName[0]}${lastName[0]}'.toUpperCase();
-    } else if (firstName != null && firstName.isNotEmpty) {
-      return firstName.substring(0, firstName.length >= 2 ? 2 : 1).toUpperCase();
-    } else if (userState.phone != null && userState.phone!.length >= 2) {
-      return userState.phone!.substring(userState.phone!.length - 2);
-    }
-    return 'U';
-  }
-
   String _formatPhone(String? phone) {
     if (phone == null || phone.isEmpty) return '';
     // Format: +225 XX XX XX XX
