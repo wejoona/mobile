@@ -69,8 +69,7 @@ class _LoginViewState extends ConsumerState<LoginView>
     if (isEnabled && refreshToken != null && mounted) {
       setState(() => _mode = _LoginMode.biometric);
       _animationController.forward();
-      // Auto-prompt biometric
-      await _doBiometricAuth(refreshToken);
+      // Don't auto-prompt biometric on boot — let user tap the button
     } else {
       if (mounted) {
         setState(() => _mode = _LoginMode.phone);
