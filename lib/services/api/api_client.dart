@@ -272,15 +272,37 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
       } else {
-        // Refresh failed, clear tokens and force logout
+        // Refresh failed — but DON'T logout immediately.
+        // The token may have been refreshed by a concurrent request.
+        // Only clear tokens if we truly have no valid access token.
         final storage = _ref.read(secureStorageProvider);
-        await storage.delete(key: StorageKeys.accessToken);
-        await storage.delete(key: StorageKeys.refreshToken);
-        // Force FSM back to unauthenticated so user sees login screen
-        try {
-          _ref.read(appFsmProvider.notifier).logout();
-        } catch (_) {
-          // FSM might not be available in all contexts
+        final currentToken = await storage.read(key: StorageKeys.accessToken);
+        final originalToken = err.requestOptions.headers['Authorization']?.toString().replaceFirst('Bearer ', '');
+        
+        // Only logout if the current token is still the same failed one
+        // (meaning no concurrent refresh succeeded)
+        if (currentToken == null || currentToken == originalToken) {
+          await storage.delete(key: StorageKeys.accessToken);
+          await storage.delete(key: StorageKeys.refreshToken);
+          try {
+            _ref.read(appFsmProvider.notifier).logout();
+          } catch (_) {}
+        }
+        // Otherwise, retry with the new token from concurrent refresh
+        else {
+          try {
+            final options = err.requestOptions;
+            options.headers['Authorization'] = 'Bearer $currentToken';
+            final dio = Dio(BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            ));
+            final response = await dio.fetch(options);
+            return handler.resolve(response);
+          } catch (e) {
+            return handler.next(err);
+          }
         }
       }
     }

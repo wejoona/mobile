@@ -9,6 +9,7 @@ import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
 import 'package:usdc_wallet/services/avatar/avatar_cache_service.dart';
 
 /// User/Auth State Machine - manages user authentication globally
@@ -75,10 +76,11 @@ class UserStateMachine extends Notifier<UserState> {
         // Fetch user profile from server (will update with fresh data)
         _fetchUserProfile();
 
-        // Trigger wallet and transaction fetch after a small delay
+        // Trigger wallet, KYC, and transaction fetch after a small delay
         Future.delayed(const Duration(milliseconds: 100), () {
           try {
             ref.read(walletStateMachineProvider.notifier).fetch();
+            ref.read(kycStateMachineProvider.notifier).fetch();
             ref.read(transactionStateMachineProvider.notifier).fetch();
           } catch (e) {
             // Ignore if providers not ready

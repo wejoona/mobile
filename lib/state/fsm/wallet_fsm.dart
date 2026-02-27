@@ -423,6 +423,19 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
         effects: [const FetchEffect('wallet')],
       );
     }
+    // Allow direct WalletLoaded from cache restore (skips Loading state)
+    if (event is WalletLoaded) {
+      return TransitionSuccess(
+        WalletReady(
+          walletId: event.walletId,
+          walletAddress: event.walletAddress,
+          blockchain: event.blockchain,
+          usdcBalance: event.usdcBalance,
+          pendingBalance: event.pendingBalance,
+          lastUpdated: DateTime.now(),
+        ),
+      );
+    }
     return const TransitionNotApplicable();
   }
 
