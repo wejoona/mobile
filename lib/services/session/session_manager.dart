@@ -7,6 +7,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
@@ -139,13 +140,13 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   }
 
   void _handleSessionExpired() {
-    // Navigate to login - delay to ensure GoRouter is ready
+    // Use FSM logout instead of context.go to avoid GoRouter context issues
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           try {
+            ref.read(userStateMachineProvider.notifier).logout();
             final colors = context.colors;
-            context.go('/login');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: const Text('Session expired. Please log in again.'),
@@ -153,8 +154,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
               ),
             );
           } catch (e) {
-            // GoRouter not ready yet, ignore - user will be redirected on next navigation
-            AppLogger('SessionManager').warn('Could not navigate on session expiry', e);
+            AppLogger('SessionManager').warn('Could not handle session expiry', e);
           }
         }
       });

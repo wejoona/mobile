@@ -4,8 +4,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Secure storage service for sensitive data (tokens, PIN hash, etc.)
 class SecureStorageService {
   static const _pinHashKey = 'korido_pin_hash';
-  static const _authTokenKey = 'korido_auth_token';
-  static const _refreshTokenKey = 'korido_refresh_token';
   static const _biometricEnabledKey = 'korido_biometric_enabled';
   static const _deviceIdKey = 'korido_device_id';
 
@@ -20,23 +18,6 @@ class SecureStorageService {
 
   Future<void> clearPinHash() async {
     await _delete(_pinHashKey);
-  }
-
-  // Auth tokens
-  Future<void> saveAuthToken(String token) async {
-    await _write(_authTokenKey, token);
-  }
-
-  Future<String?> getAuthToken() async {
-    return _read(_authTokenKey);
-  }
-
-  Future<void> saveRefreshToken(String token) async {
-    await _write(_refreshTokenKey, token);
-  }
-
-  Future<String?> getRefreshToken() async {
-    return _read(_refreshTokenKey);
   }
 
   // Biometric preference
@@ -59,17 +40,14 @@ class SecureStorageService {
   }
 
   // Clear all secure data on logout
+  // Note: auth tokens are managed by UserStateMachine via StorageKeys, not here
   Future<void> clearAll() async {
-    await _delete(_authTokenKey);
-    await _delete(_refreshTokenKey);
     // Keep PIN hash and device ID across logouts
   }
 
   // Clear everything including PIN (for account deletion)
   Future<void> wipeAll() async {
     await _delete(_pinHashKey);
-    await _delete(_authTokenKey);
-    await _delete(_refreshTokenKey);
     await _delete(_biometricEnabledKey);
     await _delete(_deviceIdKey);
   }
