@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:safe_device/safe_device.dart';
 import 'package:usdc_wallet/services/security/device_security.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -39,12 +39,12 @@ class _SecurityGateState extends State<SecurityGate> {
     final security = DeviceSecurity();
     final result = await security.checkSecurity();
 
-    // Also check via flutter_jailbreak_detection for a second opinion
+    // Also check via safe_device for a second opinion
     bool jailbreakDetected = false;
     try {
-      jailbreakDetected = await FlutterJailbreakDetection.jailbroken;
+      jailbreakDetected = await SafeDevice.isJailBroken;
     } catch (e) {
-      AppLogger('Debug').debug('flutter_jailbreak_detection check failed: $e');
+      AppLogger('Debug').debug('safe_device jailbreak check failed: $e');
     }
 
     final combinedSecure = result.isSecure && !jailbreakDetected;
@@ -52,7 +52,7 @@ class _SecurityGateState extends State<SecurityGate> {
       isSecure: combinedSecure,
       threats: [
         ...result.threats,
-        if (jailbreakDetected) 'Root/jailbreak detected (flutter_jailbreak_detection)',
+        if (jailbreakDetected) 'Root/jailbreak detected (safe_device)',
       ],
       message: combinedSecure
           ? result.message

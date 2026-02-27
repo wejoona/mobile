@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_jailbreak_detection/flutter_jailbreak_detection.dart';
+import 'package:safe_device/safe_device.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Service that detects rooted/jailbroken devices using
-/// [flutter_jailbreak_detection] and blocks app usage when compromised.
+/// [safe_device] and blocks app usage when compromised.
 ///
 /// Unlike [DeviceIntegrityService] which warns, this service **blocks**
 /// access entirely — no dismiss, no workaround.
@@ -27,8 +27,8 @@ class TamperDetectionService {
     }
 
     try {
-      final jailbroken = await FlutterJailbreakDetection.jailbroken;
-      final developerMode = await FlutterJailbreakDetection.developerMode;
+      final jailbroken = await SafeDevice.isJailBroken;
+      final developerMode = await SafeDevice.isDevelopmentModeEnable;
 
       _isCompromised = jailbroken;
 
