@@ -354,7 +354,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Lock screen guard — user has token but needs PIN/biometric
       // Must be checked BEFORE FSM redirect to avoid redirect loops
-      final isLockedState = authState.isLocked;
+      const skipLock = String.fromEnvironment('DEBUG_SKIP_PIN');
+      final isLockedState = skipLock.isNotEmpty ? false : authState.isLocked;
       if (isLockedState && location != '/session-locked' && location != '/pin/reset') {
         return '/session-locked';
       }

@@ -39,7 +39,7 @@ class FilteredPaginatedTransactionsNotifier extends StateNotifier<FilteredPagina
       final dio = _ref.read(dioProvider);
       final params = <String, dynamic>{
         ...filter.toQueryParams(),
-        'page': 1,
+        'offset': 0,
         'limit': 20,
       };
       final response = await dio.get('/wallet/transactions', queryParameters: params);
@@ -68,7 +68,7 @@ class FilteredPaginatedTransactionsNotifier extends StateNotifier<FilteredPagina
       final dio = _ref.read(dioProvider);
       final params = <String, dynamic>{
         ...filter.toQueryParams(),
-        'page': nextPage,
+        'offset': (nextPage - 1) * 20,
         'limit': 20,
       };
       final response = await dio.get('/wallet/transactions', queryParameters: params);

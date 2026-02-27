@@ -39,6 +39,17 @@ class UserStateMachine extends Notifier<UserState> {
     }
 
     try {
+      // Debug auto-login: if a token is passed via --dart-define, use it
+      const debugToken = String.fromEnvironment('DEBUG_TOKEN');
+      const debugPhone = String.fromEnvironment('DEBUG_PHONE');
+      if (debugToken.isNotEmpty) {
+        await _storage.write(key: _tokenKey, value: debugToken);
+        if (debugPhone.isNotEmpty) {
+          await _storage.write(key: _phoneKey, value: debugPhone);
+        }
+        debugPrint('[DEBUG] Auto-login token injected');
+      }
+
       final token = await _storage.read(key: _tokenKey);
       final phone = await _storage.read(key: _phoneKey);
 
