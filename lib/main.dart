@@ -34,7 +34,11 @@ void main() async {
 
   // Initialize Hive for local persistence (before anything else)
   final localCache = LocalCacheService();
-  await localCache.initialize();
+  try {
+    await localCache.initialize();
+  } catch (e) {
+    debugPrint('Hive initialization failed: $e');
+  }
 
   // Initialize SharedPreferences for feature flags cache
   final sharedPreferences = await SharedPreferences.getInstance();

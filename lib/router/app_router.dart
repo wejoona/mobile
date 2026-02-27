@@ -13,6 +13,8 @@ import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
+import 'package:usdc_wallet/features/onboarding/views/profile_complete_view.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/features/splash/views/splash_view.dart';
 import 'package:usdc_wallet/router/route_guards.dart';
 import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
@@ -264,6 +266,10 @@ class RouterRefreshNotifier extends ChangeNotifier {
     ref.listen(authProvider, (_, __) => notifyListeners());
     // Listen to wallet state changes (for onboarding redirect)
     ref.listen(walletStateMachineProvider, (_, __) => notifyListeners());
+    // Listen to user state changes (for profile completion redirect)
+    ref.listen(userStateMachineProvider, (previous, next) {
+      if (previous?.firstName != next.firstName) notifyListeners();
+    });
     // Listen to FSM state changes for navigation
     ref.listen(appFsmProvider, (previous, next) {
       // Only notify if the target screen changed
@@ -378,6 +384,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/home';
       }
 
+      // Profile completion route is available at /profile-complete
+      // but we don't force-redirect — user can access it from settings
+      // or we can enable this guard later when onboarding flow is ready
+
       // Feature flag guards - redirect to home if feature disabled
       // Phase 1 MVP routes (always enabled, no guard needed)
       // /deposit, /send, /receive, /transactions, /settings/kyc
@@ -438,6 +448,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => AppPageTransitions.none(
           state: state,
           child: const SplashView(),
+        ),
+      ),
+
+      // Profile completion (post-login name capture)
+      GoRoute(
+        path: '/profile-complete',
+        pageBuilder: (context, state) => AppPageTransitions.fade(
+          state: state,
+          child: const ProfileCompleteView(),
         ),
       ),
 

@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_formatter.dart';
 import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,6 +34,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
         final colors = context.colors;
+    final currencyFormat = NumberFormat.currency(symbol: r"$", decimalDigits: 2);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -63,6 +65,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
 
   Widget _buildEmptyState(AppLocalizations l10n) {
     final colors = context.colors;
+    final currencyFormat = NumberFormat.currency(symbol: r"$", decimalDigits: 2);
 
     return Center(
       child: Padding(
@@ -101,6 +104,7 @@ class _PotsListViewState extends ConsumerState<PotsListView> {
     AppLocalizations l10n,
   ) {
     final colors = context.colors;
+    final currencyFormat = NumberFormat.currency(symbol: r"$", decimalDigits: 2);
 
     return ListView(
       padding: EdgeInsets.all(AppSpacing.md),

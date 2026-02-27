@@ -23,7 +23,6 @@ class ReceiptWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),
@@ -44,7 +43,7 @@ class ReceiptWidget extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Amount Section
-          _buildAmountSection(currencyFormatter),
+          _buildAmountSection(),
           const SizedBox(height: 24),
 
           // Divider
@@ -140,19 +139,19 @@ class ReceiptWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildAmountSection(NumberFormat formatter) {
+  Widget _buildAmountSection() {
     return Column(
       children: [
         _buildRow(
           'Amount:',
-          formatter.format(receiptData.amount),
+          formatCurrency(receiptData.amount, receiptData.currency),
           isBold: true,
         ),
         if (receiptData.fee > 0) ...[
           const SizedBox(height: 12),
           _buildRow(
             'Fee:',
-            formatter.format(receiptData.fee),
+            formatCurrency(receiptData.fee, receiptData.currency),
           ),
         ],
         const SizedBox(height: 12),
@@ -164,7 +163,7 @@ class ReceiptWidget extends StatelessWidget {
           ),
           child: _buildRow(
             'Total:',
-            '${formatter.format(receiptData.total)} ${receiptData.currency}',
+            formatCurrency(receiptData.total, receiptData.currency),
             isBold: true,
             fontSize: 18,
           ),

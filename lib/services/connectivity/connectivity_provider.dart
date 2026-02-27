@@ -128,6 +128,8 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
             recipientPhone: transfer.recipientPhone,
             amount: transfer.amount,
             note: transfer.description,
+            pinToken: '',
+            idempotencyKey: transfer.id,
           );
 
           await _queue!.markCompleted(transfer.id);

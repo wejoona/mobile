@@ -42,7 +42,7 @@ final expensesProvider = FutureProvider<List<Expense>>((ref) async {
     }
 
     return categoryMap.entries
-        .map((e) => Expense(category: e.key, amount: e.value))
+        .map((e) => Expense(id: e.key, date: DateTime.now(), category: e.key, amount: e.value))
         .toList()
       ..sort((a, b) => b.amount.compareTo(a.amount));
   } catch (_) {

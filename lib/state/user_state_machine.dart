@@ -6,6 +6,7 @@ import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/services/storage/sync_service.dart';
+import 'package:usdc_wallet/services/storage/hive_models.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
@@ -57,7 +58,10 @@ class UserStateMachine extends Notifier<UserState> {
           avatarUrl: localAvatar,
         );
 
-        // Fetch user profile to populate all user data
+        // Immediately load cached profile so name/data show while network loads
+        _loadCachedProfile();
+
+        // Fetch user profile from server (will update with fresh data)
         _fetchUserProfile();
 
         // Trigger wallet and transaction fetch after a small delay
@@ -110,9 +114,38 @@ class UserStateMachine extends Notifier<UserState> {
         // No local, no server — no avatar
       }
       // else: server URL already set above in copyWith
+    } on ApiException catch (e) {
+      debugPrint('[UserState] Profile fetch failed: ${e.statusCode} ${e.message}');
+      // 401/403 are handled by the Dio AuthInterceptor (refresh + retry + FSM logout)
+      // Don't double-logout here — just fall back to cache for non-auth errors
+      if (e.statusCode != 401 && e.statusCode != 403) {
+        _loadCachedProfile();
+      }
+      // For 401/403: interceptor already triggered FSM logout, don't interfere
     } catch (e) {
-      // Profile fetch failed, but user is still authenticated
-      // Don't change auth status
+      debugPrint('[UserState] Profile fetch error: $e');
+      // Network/timeout errors: try loading from cache
+      _loadCachedProfile();
+    }
+  }
+
+  /// Load user profile from local Hive cache (offline fallback)
+  void _loadCachedProfile() {
+    try {
+      final sync = ref.read(localSyncServiceProvider);
+      final cached = sync.getCachedUserProfile();
+      if (cached != null) {
+        debugPrint('[UserState] Loaded cached profile: ${cached.firstName} ${cached.lastName}');
+        state = state.copyWith(
+          userId: cached.userId,
+          firstName: cached.firstName,
+          lastName: cached.lastName,
+          email: cached.email,
+          countryCode: cached.countryCode,
+        );
+      }
+    } catch (e) {
+      debugPrint('[UserState] Cache load failed: $e');
     }
   }
 

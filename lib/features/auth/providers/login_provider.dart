@@ -99,7 +99,8 @@ class LoginNotifier extends Notifier<LoginState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: 'Account not found. Please check your phone number or create a new account.',
+        // SECURITY: Generic error to prevent account enumeration attacks
+        error: 'Unable to log in. Please check your details and try again.',
       );
     }
   }
@@ -283,17 +284,38 @@ class LoginNotifier extends Notifier<LoginState> {
       );
 
       if (result.success) {
-        // Biometric passed — use stored tokens (session restore) or login flow tokens
+        // SECURITY: Biometric passed locally — verify server-side via token refresh
+        // Local biometric alone is insufficient; validate session with backend
+        final storedRefreshToken = state.refreshToken ??
+            await _storage.read(key: StorageKeys.refreshToken);
+
+        if (storedRefreshToken != null) {
+          try {
+            final authNotifier = ref.read(authProvider.notifier);
+            final refreshSuccess = await authNotifier.loginWithBiometric(storedRefreshToken);
+            if (!refreshSuccess) {
+              state = state.copyWith(
+                isLoading: false,
+                error: 'Session expired. Please log in with your PIN.',
+              );
+              return false;
+            }
+          } catch (_) {
+            state = state.copyWith(
+              isLoading: false,
+              error: 'Server verification failed. Please use your PIN.',
+            );
+            return false;
+          }
+        }
+
         final storedToken = state.sessionToken ??
             await _storage.read(key: StorageKeys.accessToken);
 
         if (storedToken != null) {
-          // Use session provider as single source of truth (no direct storage writes)
-          final refreshToken = state.refreshToken ??
-              await _storage.read(key: StorageKeys.refreshToken);
           await ref.read(sessionProvider.notifier).setTokens(
             accessToken: storedToken,
-            refreshToken: refreshToken ?? storedToken,
+            refreshToken: storedRefreshToken ?? storedToken,
           );
         }
 

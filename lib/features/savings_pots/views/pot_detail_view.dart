@@ -1,3 +1,4 @@
+import 'package:usdc_wallet/utils/currency_formatter.dart';
 import 'package:usdc_wallet/features/savings_pots/models/savings_pots_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,6 +61,8 @@ class _PotDetailViewState extends ConsumerState<PotDetailView> {
   }
 
   Widget _buildPotDetail(BuildContext context, WidgetRef ref, SavingsPot pot, SavingsPotsState state, AppLocalizations l10n) {
+
+    final currencyFormat = NumberFormat.currency(symbol: r'$', decimalDigits: 2);
 
     // Show confetti if goal reached
     if (pot.isGoalReached && !_confettiController.state.toString().contains('playing')) {

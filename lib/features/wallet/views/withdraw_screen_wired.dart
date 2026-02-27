@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/design/theme/spacing.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -138,7 +140,20 @@ class _WithdrawScreenWiredState extends ConsumerState<WithdrawScreenWired> {
                         if (!passed) return;
                       }
 
-                      notifier.submit();
+                      // Fix #1: Get stored PIN token for withdrawal headers
+                      final pinService = ref.read(pinServiceProvider);
+                      final pinToken = await pinService.getPinToken();
+                      if (pinToken == null) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please verify your PIN first')),
+                        );
+                        return;
+                      }
+                      notifier.submit(
+                        pinToken: pinToken,
+                        idempotencyKey: generateIdempotencyKey(),
+                      );
                     }
                   : null,
               child: state.isLoading

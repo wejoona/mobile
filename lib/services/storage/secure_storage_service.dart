@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Run 375: Secure storage service for sensitive data (tokens, PIN hash, etc.)
+/// Secure storage service for sensitive data (tokens, PIN hash, etc.)
 class SecureStorageService {
   static const _pinHashKey = 'korido_pin_hash';
   static const _authTokenKey = 'korido_auth_token';
@@ -74,16 +75,20 @@ class SecureStorageService {
   }
 
   // Platform-specific secure storage operations
+  static const FlutterSecureStorage _storage = FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
   Future<void> _write(String key, String value) async {
-    // flutter_secure_storage write
+    await _storage.write(key: key, value: value);
   }
 
   Future<String?> _read(String key) async {
-    // flutter_secure_storage read
-    return null;
+    return await _storage.read(key: key);
   }
 
   Future<void> _delete(String key) async {
-    // flutter_secure_storage delete
+    await _storage.delete(key: key);
   }
 }

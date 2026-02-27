@@ -14,6 +14,8 @@ class TransfersRepository {
   Future<dynamic> sendTransfer({
     required String recipientPhone,
     required double amount,
+    required String pinToken,
+    required String idempotencyKey,
     String currency = 'USDC',
     String? description,
   }) async {
@@ -21,6 +23,8 @@ class TransfersRepository {
       recipientPhone: recipientPhone,
       amount: amount,
       note: description,
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
     );
   }
 
@@ -31,7 +35,7 @@ class TransfersRepository {
     String? recipientType,
   }) async {
     try {
-      final response = await _dio.post('/transfers/estimate-fee', data: {
+      final response = await _dio.post('/fees/calculate', data: {
         'amount': amount,
         'currency': currency,
         if (recipientType != null) 'recipientType': recipientType,

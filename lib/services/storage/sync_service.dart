@@ -163,7 +163,12 @@ class SyncService {
   void _loadCachedUserProfile() {
     final cached = _cache.getCachedUserProfile();
     if (cached == null) return;
-    _log.debug('Cached user profile available');
+    _log.debug('Cached user profile available: ${cached.firstName} ${cached.lastName}');
+  }
+
+  /// Public accessor for cached user profile (used by UserStateMachine fallback)
+  CachedUserProfile? getCachedUserProfile() {
+    return _cache.getCachedUserProfile();
   }
 
   /// Convert cached transactions back to domain Transaction entities

@@ -229,10 +229,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   ) {
     final userState = ref.watch(userStateMachineProvider);
 
-    // Format display name - if it's a phone number, just show greeting
-    final isPhoneNumber = userName.startsWith('+') ||
-                          RegExp(r'^\d+$').hasMatch(userName);
-    final displayName = isPhoneNumber ? null : userName;
+    // Show name if available, otherwise show phone number
+    // Never hide the user's identity — phone is their identifier until they set a name
+    final displayName = userName.isNotEmpty && userName != 'User' ? userName : null;
     final greeting = _getGreeting(l10n);
 
     return Row(

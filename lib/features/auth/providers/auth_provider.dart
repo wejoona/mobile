@@ -5,6 +5,7 @@ import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/state/fsm/index.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
@@ -249,6 +250,15 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+      );
+
+      // Populate UserStateMachine with profile data from auth response
+      // Home screen reads displayName from userStateMachineProvider
+      ref.read(userStateMachineProvider.notifier).updateProfile(
+        firstName: response.user.firstName,
+        lastName: response.user.lastName,
+        email: response.user.email,
+        avatarUrl: response.user.avatarUrl,
       );
 
       // Analytics: login success

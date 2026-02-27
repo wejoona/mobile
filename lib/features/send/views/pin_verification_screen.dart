@@ -153,9 +153,9 @@ class _PinVerificationScreenState
     });
 
     try {
-      // Verify PIN
+      // SECURITY: Verify PIN with backend for financial transactions
       final pinService = ref.read(pinServiceProvider);
-      final result = await pinService.verifyPinLocally(pin);
+      final result = await pinService.verifyPinWithBackend(pin);
 
       if (!result.success) {
         setState(() {
@@ -206,6 +206,18 @@ class _PinVerificationScreenState
       if (!authenticatedBio.success) {
         setState(() {
           _error = l10n.error_biometricFailed;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // SECURITY: After local biometric success, verify server-side PIN token exists
+      // Biometric alone is insufficient for financial transactions
+      final pinService = ref.read(pinServiceProvider);
+      final hasValidToken = await pinService.hasValidPinToken();
+      if (!hasValidToken) {
+        setState(() {
+          _error = 'PIN is required';
           _isLoading = false;
         });
         return;

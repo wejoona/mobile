@@ -73,11 +73,23 @@ class DeepLinkHandler {
     // Extract query parameters
     final params = uri.queryParameters;
 
+    // SECURITY: Strip any auth tokens from deep link parameters
+    // Deep links should never carry authentication tokens as they can be
+    // intercepted, logged, or leaked via referrer headers
+    final sanitizedParams = Map<String, String>.from(params);
+    const sensitiveKeys = ['token', 'access_token', 'refresh_token', 'auth_token', 'session_token', 'api_key'];
+    for (final key in sensitiveKeys) {
+      if (sanitizedParams.containsKey(key)) {
+        debugPrint('SECURITY: Stripped sensitive parameter "$key" from deep link');
+        sanitizedParams.remove(key);
+      }
+    }
+
     // Route based on path
     try {
       await _routeToDestination(
         path,
-        params,
+        sanitizedParams,
         context,
         ref,
         isAuthenticated,

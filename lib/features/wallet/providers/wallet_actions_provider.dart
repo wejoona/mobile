@@ -14,15 +14,13 @@ class WalletActions {
     required double amount,
     required String provider, // orangeMoney, mtnMomo, wave, moovMoney
     required String phoneNumber,
-    String? pin,
   }) async {
     // ignore: avoid_dynamic_calls
-    final response = await _dio.post('/withdraw/request', data: {
+    final response = await _dio.post('/withdrawals', data: {
       'amount': amount,
       'provider': provider,
       'phoneNumber': phoneNumber,
       'currency': 'USDC',
-      if (pin != null) 'pin': pin,
     });
     _ref.invalidate(walletBalanceProvider);
     // ignore: avoid_dynamic_calls
@@ -43,7 +41,7 @@ class WalletActions {
     required String type, // internal, external, withdrawal
   }) async {
     // ignore: avoid_dynamic_calls
-    final response = await _dio.post('/transfers/estimate-fee', data: {
+    final response = await _dio.post('/fees/calculate', data: {
       'amount': amount,
       'type': type,
       'currency': 'USDC',

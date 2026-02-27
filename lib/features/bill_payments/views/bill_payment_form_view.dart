@@ -7,7 +7,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
-import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
@@ -154,7 +154,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
 
               // Balance Display
               walletAsync.when(
-                data: (wallet) => _buildBalanceDisplay(wallet.availableBalance, l10n),
+                data: (wallet) => _buildBalanceDisplay(wallet.available, l10n),
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
               ),

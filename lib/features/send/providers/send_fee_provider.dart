@@ -26,6 +26,6 @@ final sendFeeProvider = FutureProvider.family<FeeEstimate, double>((ref, amount)
     return FeeEstimate.fromAmount(amount, fee);
   } catch (_) {
     // Fallback to local fee calculation
-    return FeeEstimate.fromAmount(amount, amount * 0.001); // 0.1% default
+    return FeeEstimate.fromAmount(amount, 0.0); // Internal transfers are free by default
   }
 });

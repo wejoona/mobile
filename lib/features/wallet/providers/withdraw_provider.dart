@@ -1,5 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 
@@ -66,24 +69,50 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
   void selectMethod(WithdrawMethod method) => state = state.copyWith(method: method);
   void setPhoneNumber(String phone) => state = state.copyWith(phoneNumber: phone);
 
-  void setAmount(double amount) {
-    // Simple fee calculation (0.5% for mobile money, flat 2 USDC for bank)
-    final fee = state.method == WithdrawMethod.bankTransfer ? 2.0 : amount * 0.005;
-    state = state.copyWith(amount: amount, fee: fee);
+  /// Fix #9: Fetch real fees from /fees/calculate instead of hardcoding.
+  Future<void> setAmount(double amount) async {
+    state = state.copyWith(amount: amount, fee: 0);
+    try {
+      final dio = ref.read(dioProvider);
+      final response = await dio.post('/fees/calculate', data: {
+        'amount': toCents(amount),
+        'type': 'withdrawal',
+        'provider': state.method?.name ?? 'orangeMoney',
+        'currency': 'USDC',
+      });
+      final data = response.data as Map<String, dynamic>;
+      final fee = (data['fee'] as num?)?.toDouble() ?? 0.0;
+      state = state.copyWith(fee: fromCents(fee.round()));
+    } catch (_) {
+      // Fallback to local calculation if API unavailable
+      final fee = state.method == WithdrawMethod.bankTransfer ? 2.0 : amount * 0.005;
+      state = state.copyWith(fee: fee);
+    }
   }
 
-  Future<void> submit({String? pin}) async {
+  /// Fix #8: Wire to real /withdrawals endpoint.
+  /// Fix #1: PIN token in headers. Fix #2: Idempotency key in headers.
+  /// Fix #3: Amount converted to cents for backend.
+  Future<void> submit({required String pinToken, String? idempotencyKey}) async {
     if (state.method == null || state.amount == null) return;
     state = state.copyWith(isLoading: true);
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/withdraw/request', data: {
-        'amount': state.amount,
-        'provider': state.method!.name,
-        'phoneNumber': state.phoneNumber,
-        'currency': 'USDC',
-        if (pin != null) 'pin': pin,
-      });
+      final headers = transactionHeaders(
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      );
+
+      final response = await dio.post(
+        '/withdrawals',
+        data: {
+          'amount': toCents(state.amount!),
+          'provider': state.method!.name,
+          'phoneNumber': state.phoneNumber,
+          'currency': 'USDC',
+        },
+        options: Options(headers: headers),
+      );
       final result = WithdrawResult.fromJson(response.data as Map<String, dynamic>);
       state = state.copyWith(isLoading: false, result: result);
       ref.invalidate(walletBalanceProvider);
