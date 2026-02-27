@@ -20,6 +20,8 @@ class WalletState {
   final double pendingBalance;
   final String? error;
   final DateTime? lastUpdated;
+  /// Whether this state was loaded from local cache (not fresh from server)
+  final bool isCached;
 
   const WalletState({
     this.status = WalletStatus.initial,
@@ -31,6 +33,7 @@ class WalletState {
     this.pendingBalance = 0,
     this.error,
     this.lastUpdated,
+    this.isCached = false,
   });
 
   double get totalBalance => usdBalance + usdcBalance;
@@ -61,6 +64,7 @@ class WalletState {
     double? pendingBalance,
     String? error,
     DateTime? lastUpdated,
+    bool? isCached,
   }) {
     return WalletState(
       status: status ?? this.status,
@@ -72,6 +76,7 @@ class WalletState {
       pendingBalance: pendingBalance ?? this.pendingBalance,
       error: error,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      isCached: isCached ?? false, // Default to false (fresh from server)
     );
   }
 }
@@ -183,6 +188,8 @@ class TransactionListState {
   final int page;
   final bool hasMore;
   final String? error;
+  /// Whether this state was loaded from local cache
+  final bool isCached;
 
   const TransactionListState({
     this.status = TransactionListStatus.initial,
@@ -191,6 +198,7 @@ class TransactionListState {
     this.page = 1,
     this.hasMore = false,
     this.error,
+    this.isCached = false,
   });
 
   bool get isLoading =>
@@ -206,6 +214,7 @@ class TransactionListState {
     int? page,
     bool? hasMore,
     String? error,
+    bool? isCached,
   }) {
     return TransactionListState(
       status: status ?? this.status,
@@ -214,6 +223,7 @@ class TransactionListState {
       page: page ?? this.page,
       hasMore: hasMore ?? this.hasMore,
       error: error,
+      isCached: isCached ?? false,
     );
   }
 }

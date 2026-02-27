@@ -14,6 +14,7 @@ import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
 import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
+import 'package:usdc_wallet/services/storage/local_cache_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 void main() async {
@@ -30,6 +31,10 @@ void main() async {
   // Initialize Crashlytics for error reporting
   final crashReporting = CrashReportingService();
   await crashReporting.initialize();
+
+  // Initialize Hive for local persistence (before anything else)
+  final localCache = LocalCacheService();
+  await localCache.initialize();
 
   // Initialize SharedPreferences for feature flags cache
   final sharedPreferences = await SharedPreferences.getInstance();
@@ -91,6 +96,7 @@ void main() async {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(sharedPreferences),
+            localCacheServiceProvider.overrideWithValue(localCache),
           ],
           child: const KoridoApp(),
         ),

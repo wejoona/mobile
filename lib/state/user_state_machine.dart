@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
@@ -97,6 +98,9 @@ class UserStateMachine extends Notifier<UserState> {
 
       // Also update storage with the phone in case it wasn't stored
       await _storage.write(key: _phoneKey, value: profile.phone);
+
+      // Cache user profile locally
+      ref.read(localSyncServiceProvider).cacheUserFromState(state);
 
       // Prefer local file for instant display; fall back to server URL
       final localAvatar = await _storage.read(key: 'local_avatar_path');
@@ -251,6 +255,9 @@ class UserStateMachine extends Notifier<UserState> {
   Future<void> logout() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _phoneKey);
+
+    // Clear local cache
+    await ref.read(localSyncServiceProvider).clearOnLogout();
 
     // Reset all state machines
     ref.read(walletStateMachineProvider.notifier).reset();

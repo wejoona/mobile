@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/services/storage/local_cache_service.dart';
+import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
@@ -70,6 +72,9 @@ class WalletStateMachine extends Notifier<WalletState> {
         error: null,
       );
 
+      // Cache locally for offline access
+      ref.read(localSyncServiceProvider).cacheWalletFromState(state);
+
       // Sync with FSM: notify wallet loaded
       ref.read(appFsmProvider.notifier).onWalletLoaded(
         walletId: response.walletId,
@@ -104,6 +109,25 @@ class WalletStateMachine extends Notifier<WalletState> {
         ref.read(appFsmProvider.notifier).onWalletFailed(e.message);
       }
     } catch (e) {
+      // Try to return cached data on error
+      final cached = ref.read(localCacheServiceProvider).getCachedWallet();
+      if (cached != null) {
+        state = state.copyWith(
+          status: WalletStatus.loaded,
+          walletId: cached.walletId,
+          walletAddress: cached.address,
+          blockchain: cached.blockchain,
+          usdBalance: cached.usdBalance,
+          usdcBalance: cached.usdcBalance,
+          pendingBalance: cached.pendingBalance,
+          lastUpdated: cached.cachedAt,
+          isCached: true,
+          error: null,
+        );
+        debugPrint('[WalletState] Loaded from cache (${cached.cachedAt})');
+        return;
+      }
+
       state = state.copyWith(
         status: WalletStatus.error,
         error: e.toString(),

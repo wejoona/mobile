@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/services/index.dart';
+import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/state/app_state.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
@@ -44,12 +46,44 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
         hasMore: page.hasMore,
         error: null,
       );
+
+      // Cache locally for offline access
+      ref.read(localSyncServiceProvider).cacheTransactionsFromList(page.transactions);
     } on ApiException catch (e) {
+      // Try cached data on error
+      final cached = ref.read(localSyncServiceProvider).cachedTransactionsToDomain();
+      if (cached.isNotEmpty) {
+        state = state.copyWith(
+          status: TransactionListStatus.loaded,
+          transactions: cached,
+          total: cached.length,
+          page: 1,
+          hasMore: false,
+          isCached: true,
+          error: null,
+        );
+        debugPrint('[TransactionState] Loaded ${cached.length} from cache');
+        return;
+      }
       state = state.copyWith(
         status: TransactionListStatus.error,
         error: e.message,
       );
     } catch (e) {
+      final cached = ref.read(localSyncServiceProvider).cachedTransactionsToDomain();
+      if (cached.isNotEmpty) {
+        state = state.copyWith(
+          status: TransactionListStatus.loaded,
+          transactions: cached,
+          total: cached.length,
+          page: 1,
+          hasMore: false,
+          isCached: true,
+          error: null,
+        );
+        debugPrint('[TransactionState] Loaded ${cached.length} from cache');
+        return;
+      }
       state = state.copyWith(
         status: TransactionListStatus.error,
         error: e.toString(),

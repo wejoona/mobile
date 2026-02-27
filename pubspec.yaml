@@ -107,6 +107,9 @@ dependencies:
   in_app_review: ^2.0.9
   pointycastle: ^4.0.0
   flutter_jailbreak_detection: ^1.10.0
+  # Local persistence for offline cache
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
@@ -128,6 +131,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  # hive_generator and build_runner omitted — adapters are hand-written in hive_models.g.dart
   http: ^1.6.0
   test: ^1.26.3
 
