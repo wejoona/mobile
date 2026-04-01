@@ -6,7 +6,7 @@ workflows:
     instance_type: mac_mini_m2
 
     environment:
-      flutter: stable
+      flutter: 3.41.6
       xcode: latest
       groups:
         - google_play_credentials
