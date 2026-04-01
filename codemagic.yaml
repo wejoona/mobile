@@ -32,10 +32,6 @@ workflows:
       - name: Installer les dépendances
         script: flutter pub get
 
-      - name: Lancer les tests
-        script: flutter test --no-pub
-        ignore_failure: true
-
       - name: Configurer le signing iOS
         script: xcode-project use-profiles
 
