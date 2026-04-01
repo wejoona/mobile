@@ -43,13 +43,23 @@ workflows:
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
 
+      - name: Setup Android signing
+        script: |
+          echo "storePassword=$CM_KEYSTORE_PASSWORD" > "$CM_BUILD_DIR/android/key.properties"
+          echo "keyPassword=$CM_KEY_PASSWORD" >> "$CM_BUILD_DIR/android/key.properties"
+          echo "keyAlias=$CM_KEY_ALIAS" >> "$CM_BUILD_DIR/android/key.properties"
+          echo "storeFile=$CM_KEYSTORE_PATH" >> "$CM_BUILD_DIR/android/key.properties"
+
       - name: Build Android (AAB)
         script: |
           BUILD_NUMBER=$(($(google-play get-latest-build-number \
             --package-name "com.joonapay.usdc_wallet" \
             --tracks="internal" 2>/dev/null || echo 0) + 1))
           flutter build appbundle --release \
-            --build-number=$BUILD_NUMBER
+            --build-number=$BUILD_NUMBER 2>&1 || {
+            echo "Flutter CLI failed, falling back to Gradle directly..."
+            cd android && ./gradlew bundleRelease
+          }
 
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
