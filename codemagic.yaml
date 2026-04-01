@@ -36,16 +36,19 @@ workflows:
 
       - name: Build iOS (IPA)
         script: |
+          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number \
+            --bundle-id "com.joonapay.usdcWallet") + 1))
           flutter build ipa --release \
+            --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
 
       - name: Build Android (AAB)
         script: |
-          LATEST=$(google-play get-latest-build-number \
+          BUILD_NUMBER=$(($(google-play get-latest-build-number \
             --package-name "com.joonapay.usdc_wallet" \
-            --tracks="internal" 2>/dev/null || echo 0)
+            --tracks="internal" 2>/dev/null || echo 0) + 1))
           flutter build appbundle --release \
-            --build-number=$(($LATEST + 1))
+            --build-number=$BUILD_NUMBER
 
     artifacts:
       - build/**/outputs/**/release/*.aab
