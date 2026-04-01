@@ -1,3 +1,4 @@
+# Codemagic CI/CD pipeline for Korido
 workflows:
   korido-deploy:
     name: Korido - Build & Deploy
