@@ -41,13 +41,14 @@ workflows:
 
       - name: Build Android (AAB)
         script: |
+          LATEST=$(google-play get-latest-build-number \
+            --package-name "com.joonapay.usdc_wallet" \
+            --tracks="internal" 2>/dev/null || echo 0)
           flutter build appbundle --release \
-            --build-number=$(($(google-play get-latest-build-number \
-              --package-name "com.joonapay.usdc_wallet" \
-              --tracks="internal") + 1))
+            --build-number=$(($LATEST + 1))
 
     artifacts:
-      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/release/*.aab
       - build/ios/ipa/*.ipa
       - flutter_drive.log
 
