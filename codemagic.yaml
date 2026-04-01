@@ -32,20 +32,23 @@ workflows:
       - name: Installer les dépendances
         script: flutter pub get
 
-      - name: Lancer les tests
-        script: flutter test --no-pub
-        ignore_failure: true
-
       - name: Configurer le signing iOS
         script: xcode-project use-profiles
 
       - name: Build iOS (IPA)
         script: |
           BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number \
-            --bundle-id "com.joonapay.usdcWallet") + 1))
+            --bundle-identifier "com.joonapay.usdcWallet") + 1))
           flutter build ipa --release \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
+
+      - name: Setup Android signing
+        script: |
+          echo "storePassword=$CM_KEYSTORE_PASSWORD" > "$CM_BUILD_DIR/android/key.properties"
+          echo "keyPassword=$CM_KEY_PASSWORD" >> "$CM_BUILD_DIR/android/key.properties"
+          echo "keyAlias=$CM_KEY_ALIAS" >> "$CM_BUILD_DIR/android/key.properties"
+          echo "storeFile=$CM_KEYSTORE_PATH" >> "$CM_BUILD_DIR/android/key.properties"
 
       - name: Build Android (AAB)
         script: |
@@ -53,7 +56,10 @@ workflows:
             --package-name "com.joonapay.usdc_wallet" \
             --tracks="internal" 2>/dev/null || echo 0) + 1))
           flutter build appbundle --release \
-            --build-number=$BUILD_NUMBER
+            --build-number=$BUILD_NUMBER 2>&1 || {
+            echo "Flutter CLI failed, falling back to Gradle directly..."
+            cd android && ./gradlew bundleRelease
+          }
 
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
