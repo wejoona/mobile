@@ -1,0 +1,70 @@
+workflows:
+  korido-deploy:
+    name: Korido - Build & Deploy
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      flutter: stable
+      xcode: latest
+      groups:
+        - google_play_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.joonapay.usdcWallet
+      android_signing:
+        - korido_keystore
+
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+
+    scripts:
+      - name: Installer les dépendances
+        script: flutter pub get
+
+      - name: Lancer les tests
+        script: flutter test --no-pub
+        ignore_failure: true
+
+      - name: Configurer le signing iOS
+        script: xcode-project use-profiles
+
+      - name: Build iOS (IPA)
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+      - name: Build Android (AAB)
+        script: |
+          flutter build appbundle --release \
+            --build-number=$(($(google-play get-latest-build-number \
+              --package-name "com.joonapay.usdc_wallet" \
+              --tracks="internal") + 1))
+
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/ios/ipa/*.ipa
+      - flutter_drive.log
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - "Internal Testers"
+
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+      email:
+        recipients:
+          - augustin@joonapay.com
+        notify:
+          success: true
+          failure: true
