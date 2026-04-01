@@ -38,7 +38,7 @@ workflows:
       - name: Build iOS (IPA)
         script: |
           BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number \
-            --bundle-id "com.joonapay.usdcWallet") + 1))
+            --bundle-identifier "com.joonapay.usdcWallet") + 1))
           flutter build ipa --release \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
