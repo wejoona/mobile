@@ -14,8 +14,6 @@ workflows:
       groups:
         - google_play_credentials
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.joonapay.usdcWallet
         certificates:
           - certificate: korido_dist_cert
         provisioning_profiles:
