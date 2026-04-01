@@ -11,6 +11,8 @@ workflows:
     environment:
       flutter: 3.41.6
       xcode: latest
+      vars:
+        APP_APPLE_ID: "6761443157"
       groups:
         - google_play_credentials
       ios_signing:
@@ -35,14 +37,15 @@ workflows:
       - name: Configurer le signing iOS
         script: xcode-project use-profiles
 
+      - name: Set iOS build number
+        script: |
+          cd $CM_BUILD_DIR/ios
+          LATEST=$(app-store-connect get-latest-app-store-build-number "$APP_APPLE_ID")
+          agvtool new-version -all $(($LATEST + 1))
+
       - name: Build iOS (IPA)
         script: |
-          LATEST=$(app-store-connect get-latest-testflight-build-number \
-            --bundle-identifier "com.joonapay.usdcWallet" 2>/dev/null || echo 0)
-          BUILD_NUMBER=$(($LATEST + 1))
-          echo "iOS Build Number: $BUILD_NUMBER"
           flutter build ipa --release \
-            --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
 
       - name: Setup Android signing
