@@ -37,8 +37,10 @@ workflows:
 
       - name: Build iOS (IPA)
         script: |
-          BUILD_NUMBER=$(($(app-store-connect get-latest-testflight-build-number \
-            --bundle-identifier "com.joonapay.usdcWallet") + 1))
+          LATEST=$(app-store-connect get-latest-testflight-build-number \
+            --bundle-identifier "com.joonapay.usdcWallet" 2>/dev/null || echo 0)
+          BUILD_NUMBER=$(($LATEST + 1))
+          echo "iOS Build Number: $BUILD_NUMBER"
           flutter build ipa --release \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
@@ -76,6 +78,7 @@ workflows:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         track: internal
         submit_as_draft: true
+        changes_not_sent_for_review: true
 
       email:
         recipients:
