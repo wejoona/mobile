@@ -16,6 +16,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.joonapay.usdcWallet
+        certificates:
+          - certificate: korido_dist_cert
         provisioning_profiles:
           - profile: korido_appstore
       android_signing:
