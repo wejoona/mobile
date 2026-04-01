@@ -6,7 +6,7 @@ workflows:
     instance_type: mac_mini_m2
 
     integrations:
-      app_store_connect: Korido ASC Key
+      app_store_connect: Joonapay appstore
 
     environment:
       flutter: 3.41.6
