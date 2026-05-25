@@ -48,22 +48,42 @@ class DeviceFingerprint {
   });
 
   Map<String, dynamic> toJson() => {
-        'deviceId': deviceId,
-        'fingerprintHash': fingerprintHash,
-        'brand': brand,
-        'model': model,
-        'os': os,
-        'osVersion': osVersion,
-        'appVersion': appVersion,
-        'buildNumber': buildNumber,
-        'locale': locale,
-        'screenWidth': screenWidth,
-        'screenHeight': screenHeight,
-        'isPhysicalDevice': isPhysicalDevice,
-        'isCompromised': isCompromised,
-        'biometricsAvailable': biometricsAvailable,
-        'platform': platform,
-      };
+    'deviceId': deviceId,
+    'fingerprintHash': fingerprintHash,
+    'brand': brand,
+    'model': model,
+    'os': os,
+    'osVersion': osVersion,
+    'appVersion': appVersion,
+    'buildNumber': buildNumber,
+    'locale': locale,
+    'screenWidth': screenWidth,
+    'screenHeight': screenHeight,
+    'isPhysicalDevice': isPhysicalDevice,
+    'isCompromised': isCompromised,
+    'biometricsAvailable': biometricsAvailable,
+    'platform': platform,
+  };
+
+  Map<String, dynamic> toDeviceRegistrationJson() => {
+    'deviceIdentifier': deviceId,
+    'brand': brand,
+    'model': model,
+    'os': os,
+    'osVersion': osVersion,
+    'appVersion': appVersion,
+    'platform': platform,
+    'metadata': {
+      'fingerprintHash': fingerprintHash,
+      'buildNumber': buildNumber,
+      'locale': locale,
+      'screenWidth': screenWidth,
+      'screenHeight': screenHeight,
+      'isPhysicalDevice': isPhysicalDevice,
+      'isCompromised': isCompromised,
+      'biometricsAvailable': biometricsAvailable,
+    },
+  };
 }
 
 /// Service that collects device fingerprint data for security tracking.
@@ -74,7 +94,7 @@ class DeviceFingerprintService {
   final BiometricService _biometricService;
 
   DeviceFingerprintService({required BiometricService biometricService})
-      : _biometricService = biometricService;
+    : _biometricService = biometricService;
 
   DeviceFingerprint? _cached;
 
@@ -127,10 +147,12 @@ class DeviceFingerprintService {
     final biometricsAvailable = await _biometricService.isDeviceSupported();
 
     // Generate stable fingerprint hash from immutable device properties
-    final fingerprintSource = '$deviceId|$brand|$model|$os|'
+    final fingerprintSource =
+        '$deviceId|$brand|$model|$os|'
         '${screenWidth.toInt()}x${screenHeight.toInt()}';
-    final fingerprintHash =
-        sha256.convert(utf8.encode(fingerprintSource)).toString();
+    final fingerprintHash = sha256
+        .convert(utf8.encode(fingerprintSource))
+        .toString();
 
     _cached = DeviceFingerprint(
       deviceId: deviceId,
@@ -164,8 +186,9 @@ class DeviceFingerprintService {
 }
 
 /// Provider for DeviceFingerprintService
-final deviceFingerprintServiceProvider =
-    Provider<DeviceFingerprintService>((ref) {
+final deviceFingerprintServiceProvider = Provider<DeviceFingerprintService>((
+  ref,
+) {
   return DeviceFingerprintService(
     biometricService: ref.watch(biometricServiceProvider),
   );

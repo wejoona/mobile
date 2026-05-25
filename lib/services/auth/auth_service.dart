@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -18,10 +20,10 @@ class AuthService {
     required String countryCode,
   }) async {
     try {
-      final response = await _dio.post('/auth/register', data: {
-        'phone': phone,
-        'countryCode': countryCode,
-      });
+      final response = await _dio.post(
+        '/auth/register',
+        data: {'phone': phone, 'countryCode': countryCode},
+      );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -31,9 +33,7 @@ class AuthService {
   /// POST /auth/login
   Future<OtpResponse> login({required String phone}) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'phone': phone,
-      });
+      final response = await _dio.post('/auth/login', data: {'phone': phone});
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -46,14 +46,14 @@ class AuthService {
     required String otp,
   }) async {
     try {
-      final response = await _dio.post('/auth/verify-otp', data: {
-        'phone': phone,
-        'otp': otp,
-      });
+      final response = await _dio.post(
+        '/auth/verify-otp',
+        data: {'phone': phone, 'otp': otp},
+      );
       final authResponse = AuthResponse.fromJson(response.data);
 
       // Register device fingerprint after successful auth
-      _registerDeviceInBackground();
+      unawaited(_registerDeviceInBackground());
 
       return authResponse;
     } on DioException catch (e) {
@@ -62,14 +62,17 @@ class AuthService {
   }
 
   /// Register device fingerprint with backend (fire-and-forget).
-  void _registerDeviceInBackground() async {
+  Future<void> _registerDeviceInBackground() async {
     try {
       final fingerprint = await _fingerprintService.collect();
-      await _dio.post('/devices', data: fingerprint.toJson());
-      AppLogger('Auth').info('Device registered successfully');
-    } catch (e) {
+      await _dio.post(
+        '/devices/register',
+        data: fingerprint.toDeviceRegistrationJson(),
+      );
+      const AppLogger('Auth').info('Device registered successfully');
+    } on Object catch (e) {
       // Non-critical — don't block auth flow
-      AppLogger('Auth').error('Device registration failed', e);
+      const AppLogger('Auth').error('Device registration failed', e);
     }
   }
 
@@ -86,9 +89,10 @@ class AuthService {
   /// POST /auth/refresh - Refresh access token using refresh token
   Future<RefreshResponse> refreshToken({required String refreshToken}) async {
     try {
-      final response = await _dio.post('/auth/refresh', data: {
-        'refreshToken': refreshToken,
-      });
+      final response = await _dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
       return RefreshResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -123,7 +127,9 @@ class AuthResponse {
   final String? refreshToken;
   final User user;
   final bool walletCreated;
-  final String? kycStatus; // API returns: none, pending, documents_pending, verified, rejected
+
+  /// API returns: none, pending, documents_pending, verified, rejected.
+  final String? kycStatus;
   final int expiresIn; // Access token expiry in seconds
 
   const AuthResponse({
