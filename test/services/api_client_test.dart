@@ -134,6 +134,53 @@ void main() {
       expect(exception.message, equals('Server error'));
     });
 
+    test('should map Cloudflare origin failures to service unavailable', () {
+      // Arrange
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/login'),
+        response: Response(
+          statusCode: 521,
+          data: 'error code: 521',
+          requestOptions: RequestOptions(path: '/auth/login'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      // Act
+      final exception = ApiException.fromDioError(dioError);
+
+      // Assert
+      expect(exception.statusCode, equals(521));
+      expect(
+        exception.message,
+        equals(
+          'Korido is temporarily unavailable. Please try again in a few minutes.',
+        ),
+      );
+    });
+
+    test('should map rate limits to a retry later message', () {
+      // Arrange
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/auth/login'),
+        response: Response(
+          statusCode: 429,
+          requestOptions: RequestOptions(path: '/auth/login'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      // Act
+      final exception = ApiException.fromDioError(dioError);
+
+      // Assert
+      expect(exception.statusCode, equals(429));
+      expect(
+        exception.message,
+        equals('Too many attempts. Please wait a few minutes and try again.'),
+      );
+    });
+
     test('should extract message from response body', () {
       // Arrange
       final dioError = DioException(
@@ -227,10 +274,7 @@ void main() {
   group('ApiException', () {
     test('toString should return message', () {
       // Arrange
-      final exception = ApiException(
-        message: 'Test error',
-        statusCode: 400,
-      );
+      final exception = ApiException(message: 'Test error', statusCode: 400);
 
       // Act
       final result = exception.toString();

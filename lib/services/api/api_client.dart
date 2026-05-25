@@ -386,6 +386,8 @@ class ApiException implements Exception {
       final data = error.response?.data;
       if (data is Map && data['message'] != null) {
         message = data['message'].toString();
+      } else {
+        message = _getMessageFromStatusCode(statusCode);
       }
     } else {
       switch (error.type) {
@@ -424,8 +426,18 @@ class ApiException implements Exception {
         return 'Not found';
       case 422:
         return 'Validation failed';
+      case 429:
+        return 'Too many attempts. Please wait a few minutes and try again.';
       case 500:
         return 'Server error';
+      case 502:
+      case 503:
+      case 504:
+      case 521:
+      case 522:
+      case 523:
+      case 524:
+        return 'Korido is temporarily unavailable. Please try again in a few minutes.';
       default:
         return 'An unexpected error occurred';
     }
