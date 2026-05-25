@@ -3,23 +3,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/components/composed/index.dart';
-import 'package:usdc_wallet/design/utils/responsive_layout.dart';
+import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
+import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
+import 'package:usdc_wallet/design/components/composed/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/services/currency/currency_provider.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
-import 'package:usdc_wallet/design/components/primitives/offline_banner.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/animations/staggered_entrance.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
-import 'package:usdc_wallet/core/l10n/app_strings.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/currency/currency_provider.dart';
+import 'package:usdc_wallet/state/index.dart';
 
 /// Enhanced Wallet Home Screen
 ///
@@ -110,10 +109,13 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final isLandscape = OrientationHelper.isLandscape(context);
 
     // Trigger transaction fetch once wallet is loaded
-    if (walletState.status == WalletStatus.loaded && walletState.walletId.isNotEmpty) {
+    if (walletState.status == WalletStatus.loaded &&
+        walletState.walletId.isNotEmpty) {
       final txStatus = txState.status;
       if (txStatus == TransactionListStatus.initial) {
-        Future.microtask(() => ref.read(transactionStateMachineProvider.notifier).fetch());
+        Future.microtask(
+          () => ref.read(transactionStateMachineProvider.notifier).fetch(),
+        );
       }
     }
 
@@ -139,60 +141,90 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
           Expanded(
             child: SafeArea(
               child: AppRefreshIndicator(
-          onRefresh: () async {
-            await ref.read(walletStateMachineProvider.notifier).refresh();
-            await ref.read(transactionStateMachineProvider.notifier).refresh();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: ConstrainedContent(
-              child: Padding(
-                padding: OrientationHelper.padding(
-                  context,
-                  portrait: ResponsiveLayout.padding(
-                    context,
-                    mobile: const EdgeInsets.all(AppSpacing.screenPadding),
-                    tablet: const EdgeInsets.all(AppSpacing.xl),
-                  ),
-                  landscape: ResponsiveLayout.padding(
-                    context,
-                    mobile: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xl,
-                      vertical: AppSpacing.md,
-                    ),
-                    tablet: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.xxl,
-                      vertical: AppSpacing.lg,
+                onRefresh: () async {
+                  await ref.read(walletStateMachineProvider.notifier).refresh();
+                  await ref
+                      .read(transactionStateMachineProvider.notifier)
+                      .refresh();
+                },
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedContent(
+                    child: Padding(
+                      padding: OrientationHelper.padding(
+                        context,
+                        portrait: ResponsiveLayout.padding(
+                          context,
+                          mobile: const EdgeInsets.all(
+                            AppSpacing.screenPadding,
+                          ),
+                          tablet: const EdgeInsets.all(AppSpacing.xl),
+                        ),
+                        landscape: ResponsiveLayout.padding(
+                          context,
+                          mobile: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xl,
+                            vertical: AppSpacing.md,
+                          ),
+                          tablet: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.xxl,
+                            vertical: AppSpacing.lg,
+                          ),
+                        ),
+                      ),
+                      child: isLandscape
+                          ? _buildLandscapeLayout(
+                              context,
+                              ref,
+                              walletState,
+                              txState,
+                              userName,
+                              l10n,
+                              colors,
+                            )
+                          : ResponsiveBuilder(
+                              mobile: _buildMobileLayout(
+                                context,
+                                ref,
+                                walletState,
+                                txState,
+                                userName,
+                                l10n,
+                                colors,
+                              ),
+                              tablet: _buildTabletLayout(
+                                context,
+                                ref,
+                                walletState,
+                                txState,
+                                userName,
+                                l10n,
+                                colors,
+                              ),
+                            ),
                     ),
                   ),
                 ),
-                child: isLandscape
-                    ? _buildLandscapeLayout(context, ref, walletState, txState, userName, l10n, colors)
-                    : ResponsiveBuilder(
-                        mobile: _buildMobileLayout(context, ref, walletState, txState, userName, l10n, colors),
-                        tablet: _buildTabletLayout(context, ref, walletState, txState, userName, l10n, colors),
-                      ),
               ),
             ),
           ),
-        ),
-              ),
-            ),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationIcon(BuildContext context, WidgetRef ref, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildNotificationIcon(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
     return Stack(
       children: [
         IconButton(
           onPressed: () => context.push('/notifications'),
-          icon: Icon(
-            Icons.notifications_outlined,
-            color: colors.textSecondary,
-          ),
+          icon: Icon(Icons.notifications_outlined, color: colors.textSecondary),
           tooltip: l10n.settings_notifications,
         ),
         if (unreadCount > 0)
@@ -231,7 +263,9 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
     // Show name if available, otherwise show phone number
     // Never hide the user's identity — phone is their identifier until they set a name
-    final displayName = userName.isNotEmpty && userName != 'User' ? userName : null;
+    final displayName = userName.isNotEmpty && userName != 'User'
+        ? userName
+        : null;
     final greeting = _getGreeting(l10n);
 
     return Row(
@@ -282,10 +316,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             _buildNotificationIcon(context, ref, colors, l10n),
             IconButton(
               onPressed: () => context.go('/settings'),
-              icon: Icon(
-                Icons.settings_outlined,
-                color: colors.textSecondary,
-              ),
+              icon: Icon(Icons.settings_outlined, color: colors.textSecondary),
               tooltip: AppStrings.settings,
             ),
           ],
@@ -334,267 +365,255 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final currencyState = ref.watch(currencyProvider);
     String? referenceAmount;
     if (currencyState.shouldShowReference && !walletState.isLoading) {
-      referenceAmount = ref.read(currencyProvider.notifier).getFormattedReference(
-        primaryBalance,
-      );
+      referenceAmount = ref
+          .read(currencyProvider.notifier)
+          .getFormattedReference(primaryBalance);
     }
 
-    // Get theme-aware gradient
-    final cardGradient = context.colors.isDark
-        ? LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF2A2520), // Dark gold-brown
-              const Color(0xFF1F1D1A), // Darker gold-brown
-            ],
-          )
-        : LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFFFFF9E6), // Light cream-gold
-              const Color(0xFFFFF3D6), // Slightly darker cream-gold
-            ],
+    final surfaceStart = colors.isDark
+        ? Color.alphaBlend(colors.gold.withValues(alpha: 0.10), colors.surface)
+        : Colors.white;
+    final surfaceEnd = colors.isDark
+        ? colors.container
+        : Color.alphaBlend(
+            colors.gold.withValues(alpha: 0.05),
+            colors.container,
           );
 
-    // Get theme-aware shadow
-    final cardShadow = context.colors.isDark
-        ? [
-            BoxShadow(
-              color: colors.gold.withValues(alpha: 0.15),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ]
-        : [
-            BoxShadow(
-              color: colors.gold.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 6),
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
-            ),
-          ];
-
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
-        gradient: cardGradient,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: colors.borderGold.withValues(alpha: context.colors.isDark ? 0.4 : 0.5),
-          width: 1.5,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [surfaceStart, surfaceEnd],
         ),
-        boxShadow: cardShadow,
-      ),
-      child: Stack(
-        children: [
-          // Decorative pattern overlay (subtle)
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              child: CustomPaint(
-                painter: _CardPatternPainter(
-                  isDark: context.colors.isDark,
-                  color: colors.gold.withValues(alpha: context.colors.isDark ? 0.03 : 0.04),
-                ),
-              ),
-            ),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        border: Border.all(
+          color: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.28),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.gold.withValues(alpha: colors.isDark ? 0.10 : 0.14),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
           ),
-          // Main content
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-            child: Column(
+          BoxShadow(
+            color: Colors.black.withValues(alpha: colors.isDark ? 0.26 : 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        child: Stack(
           children: [
-            // Header with label and hide/show toggle
-            Row(
-              children: [
-                Icon(
-                  Icons.account_balance_wallet,
-                  color: colors.gold,
-                  size: 20,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                AppText(
-                  l10n.home_totalBalance,
-                  variant: AppTextVariant.bodyMedium,
-                  color: context.colors.isDark
-                      ? colors.textSecondary
-                      : colors.textSecondary.withValues(alpha: 0.9),
-                ),
-                const Spacer(),
-                // Hide/Show balance toggle
-                IconButton(
-                  onPressed: _toggleBalanceVisibility,
-                  icon: Icon(
-                    _isBalanceHidden
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                    color: context.colors.isDark
-                        ? colors.textTertiary
-                        : colors.textSecondary,
-                    size: 20,
-                  ),
-                  tooltip: _isBalanceHidden
-                      ? l10n.home_showBalance
-                      : l10n.home_hideBalance,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: AppSpacing.xs),
-                // Subtle USDC badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xxs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.colors.isDark
-                        ? colors.gold.withValues(alpha: 0.2)
-                        : colors.gold.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                  child: AppText(
-                    'USDC',
-                    variant: AppTextVariant.labelSmall,
-                    color: context.colors.isDark
-                        ? colors.gold
-                        : AppColorsLight.gold700,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
-
-            // Primary Balance - CENTERED, ANIMATED
-            if (walletState.isLoading)
-              const SizedBox(
-                height: 56,
-                child: Center(
-                  child: AppSkeleton(
-                    width: 200,
-                    height: 48,
-                  ),
-                ),
-              )
-            else ...[
-              Center(
-                child: _isBalanceHidden
-                    ? _buildHiddenBalance(context, colors)
-                    : AnimatedBuilder(
-                        animation: _balanceAnimation,
-                        builder: (context, child) {
-                          final animatedValue = primaryBalance * _balanceAnimation.value;
-                          final balanceText = '\$${_formatBalanceCompact(animatedValue)}';
-                          final isDark = context.colors.isDark;
-
-                          // Same widget for both modes, just different gradient colors
-                          final gradientColors = isDark
-                              ? [context.colors.goldLight, context.colors.gold, context.colors.goldLight]
-                              : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
-
-                          return FadeTransition(
-                            opacity: _balanceAnimation,
-                            child: ShaderMask(
-                              shaderCallback: (bounds) => LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: gradientColors,
-                              ).createShader(bounds),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: AppText(
-                                  balanceText,
-                                  variant: AppTextVariant.displayLarge,
-                                  color: context.colors.textPrimary, // Required for ShaderMask
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              // Reference currency (informative only)
-              if (!_isBalanceHidden &&
-                  referenceAmount != null &&
-                  referenceAmount.isNotEmpty) ...[
-                const SizedBox(height: AppSpacing.md),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: (context.colors.isDark
-                              ? colors.gold
-                              : AppColorsLight.gold600)
-                          .withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                      border: Border.all(
-                        color: (context.colors.isDark
-                                ? colors.gold
-                                : AppColorsLight.gold600)
-                            .withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.currency_exchange_rounded,
-                          size: 14,
-                          color: context.colors.isDark
-                              ? colors.gold.withValues(alpha: 0.7)
-                              : AppColorsLight.gold700,
-                        ),
-                        const SizedBox(width: AppSpacing.xs),
-                        AppText(
-                          '\u2248 $referenceAmount',
-                          variant: AppTextVariant.labelMedium,
-                          color: context.colors.isDark
-                              ? colors.textSecondary
-                              : colors.textPrimary.withValues(alpha: 0.8),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              // Pending balance indicator
-              if (!_isBalanceHidden && walletState.pendingBalance > 0) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.schedule,
-                        size: 14,
-                        color: colors.warningText,
-                      ),
-                      const SizedBox(width: AppSpacing.xxs),
-                      AppText(
-                        '+\$${_formatBalance(walletState.pendingBalance)} pending',
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.warningText,
-                      ),
+            Positioned(
+              top: 0,
+              left: AppSpacing.xxl,
+              right: AppSpacing.xxl,
+              child: Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      colors.gold.withValues(alpha: 0.55),
+                      Colors.transparent,
                     ],
                   ),
                 ),
-              ],
-            ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xxl,
+                AppSpacing.xl,
+                AppSpacing.xxl,
+                AppSpacing.xxl,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: colors.gold.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: colors.gold.withValues(alpha: 0.20),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: colors.gold,
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: AppText(
+                          l10n.home_totalBalance,
+                          variant: AppTextVariant.labelLarge,
+                          color: colors.textSecondary,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Color.alphaBlend(
+                            colors.gold.withValues(
+                              alpha: colors.isDark ? 0.12 : 0.08,
+                            ),
+                            colors.surface,
+                          ),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: Border.all(
+                            color: colors.gold.withValues(alpha: 0.18),
+                          ),
+                        ),
+                        child: IconButton(
+                          onPressed: _toggleBalanceVisibility,
+                          icon: Icon(
+                            _isBalanceHidden
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                            color: colors.textSecondary.withValues(alpha: 0.82),
+                            size: 18,
+                          ),
+                          tooltip: _isBalanceHidden
+                              ? l10n.home_showBalance
+                              : l10n.home_hideBalance,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.expand(),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.gold.withValues(alpha: 0.13),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: Border.all(
+                            color: colors.gold.withValues(alpha: 0.18),
+                          ),
+                        ),
+                        child: AppText(
+                          'USDC',
+                          variant: AppTextVariant.labelSmall,
+                          color: colors.gold,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  SizedBox(
+                    height: 70,
+                    child: Center(
+                      child: walletState.isLoading
+                          ? const AppSkeleton(width: 200, height: 48)
+                          : _isBalanceHidden
+                          ? _buildHiddenBalance(context, colors)
+                          : AnimatedBuilder(
+                              animation: _balanceAnimation,
+                              builder: (context, child) {
+                                final animatedValue =
+                                    primaryBalance * _balanceAnimation.value;
+                                final balanceText =
+                                    '\$${_formatBalanceCompact(animatedValue)}';
+                                return FadeTransition(
+                                  opacity: _balanceAnimation,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: AppText(
+                                      balanceText,
+                                      style: AppTypography.displayMedium,
+                                      color: colors.gold,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ),
+                  if (!walletState.isLoading && !_isBalanceHidden) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: AppSpacing.sm,
+                      runSpacing: AppSpacing.sm,
+                      children: [
+                        if (referenceAmount != null &&
+                            referenceAmount.isNotEmpty)
+                          _buildBalanceInfoPill(
+                            context,
+                            colors,
+                            icon: Icons.currency_exchange_rounded,
+                            label: '≈ $referenceAmount',
+                            color: colors.gold,
+                          ),
+                        if (walletState.pendingBalance > 0)
+                          _buildBalanceInfoPill(
+                            context,
+                            colors,
+                            icon: Icons.schedule_rounded,
+                            label:
+                                '+\$${_formatBalance(walletState.pendingBalance)} pending',
+                            color: colors.warningText,
+                          ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBalanceInfoPill(
+    BuildContext context,
+    ThemeColors colors, {
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color.withValues(alpha: 0.82)),
+          const SizedBox(width: AppSpacing.xs),
+          AppText(
+            label,
+            variant: AppTextVariant.labelMedium,
+            color: colors.isDark
+                ? colors.textSecondary
+                : colors.textPrimary.withValues(alpha: 0.78),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -613,20 +632,35 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        StaggeredEntrance(index: 0, child: _buildHeader(context, l10n, userName, colors)),
+        StaggeredEntrance(
+          index: 0,
+          child: _buildHeader(context, l10n, userName, colors),
+        ),
         const SizedBox(height: AppSpacing.xxl),
-        StaggeredEntrance(index: 1, child: _buildBalanceCard(context, ref, walletState, l10n, colors)),
+        StaggeredEntrance(
+          index: 1,
+          child: _buildBalanceCard(context, ref, walletState, l10n, colors),
+        ),
         if (walletState.isCached && walletState.lastUpdated != null)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.sm),
             child: _CachedDataChip(lastUpdated: walletState.lastUpdated!),
           ),
         const SizedBox(height: AppSpacing.xxl),
-        StaggeredEntrance(index: 2, child: _buildQuickActions(context, l10n, colors)),
+        StaggeredEntrance(
+          index: 2,
+          child: _buildQuickActions(context, l10n, colors),
+        ),
         const SizedBox(height: AppSpacing.xxl),
-        StaggeredEntrance(index: 3, child: _buildKycBanner(context, ref, l10n, colors)),
+        StaggeredEntrance(
+          index: 3,
+          child: _buildKycBanner(context, ref, l10n, colors),
+        ),
         _buildLimitsWarningBanner(context, ref, l10n),
-        StaggeredEntrance(index: 4, child: _buildTransactionList(context, txState, l10n, colors)),
+        StaggeredEntrance(
+          index: 4,
+          child: _buildTransactionList(context, txState, l10n, colors),
+        ),
         const SizedBox(height: AppSpacing.xxl),
       ],
     );
@@ -659,9 +693,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             Expanded(
               flex: 2,
               child: Column(
-                children: [
-                  _buildQuickActionsGrid(context, l10n, colors),
-                ],
+                children: [_buildQuickActionsGrid(context, l10n, colors)],
               ),
             ),
           ],
@@ -776,9 +808,21 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
   ) {
     final actions = [
       _QuickActionData(Icons.send_rounded, l10n.home_quickAction_send, '/send'),
-      _QuickActionData(Icons.qr_code_2_rounded, l10n.home_quickAction_receive, '/receive'),
-      _QuickActionData(Icons.add_circle_outline_rounded, l10n.home_quickAction_deposit, '/deposit'),
-      _QuickActionData(Icons.history_rounded, l10n.home_quickAction_history, '/transactions'),
+      _QuickActionData(
+        Icons.qr_code_2_rounded,
+        l10n.home_quickAction_receive,
+        '/receive',
+      ),
+      _QuickActionData(
+        Icons.add_circle_outline_rounded,
+        l10n.home_quickAction_deposit,
+        '/deposit',
+      ),
+      _QuickActionData(
+        Icons.history_rounded,
+        l10n.home_quickAction_history,
+        '/transactions',
+      ),
     ];
 
     return Column(
@@ -915,8 +959,10 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final limits = limitsState.limits!;
 
     // Only show if approaching or at limit
-    if (!limits.isDailyNearLimit && !limits.isDailyAtLimit &&
-        !limits.isMonthlyNearLimit && !limits.isMonthlyAtLimit) {
+    if (!limits.isDailyNearLimit &&
+        !limits.isDailyAtLimit &&
+        !limits.isMonthlyNearLimit &&
+        !limits.isMonthlyAtLimit) {
       return const SizedBox.shrink();
     }
 
@@ -942,10 +988,7 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     }
 
     if (txState.isLoading && txState.transactions.isEmpty) {
-      return const TransactionList(
-        transactions: [],
-        isLoading: true,
-      );
+      return const TransactionList(transactions: [], isLoading: true);
     }
 
     if (txState.transactions.isEmpty) {
@@ -974,15 +1017,12 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     AppLocalizations l10n,
     ThemeColors colors,
   ) {
-    return SizedBox(
-      width: double.infinity,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        decoration: BoxDecoration(
-          color: colors.container,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: colors.borderSubtle),
-        ),
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: SizedBox(
+        width: double.infinity,
         child: Column(
           children: [
             Container(
@@ -1023,14 +1063,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     ThemeColors colors,
   ) {
     return AppCard(
-      variant: AppCardVariant.elevated,
+      variant: AppCardVariant.flat,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: colors.gold,
-            strokeWidth: 2,
-          ),
+          CircularProgressIndicator(color: colors.gold, strokeWidth: 2),
           const SizedBox(height: AppSpacing.md),
           AppText(
             l10n.wallet_loadingWallet,
@@ -1106,15 +1143,11 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     VoidCallback? onRetry,
   }) {
     return AppCard(
-      variant: AppCardVariant.elevated,
+      variant: AppCardVariant.flat,
       child: Center(
         child: Column(
           children: [
-            Icon(
-              Icons.error_outline,
-              color: colors.error,
-              size: 48,
-            ),
+            Icon(Icons.error_outline, color: colors.error, size: 48),
             const SizedBox(height: AppSpacing.md),
             AppText(
               error,
@@ -1156,38 +1189,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
 
   /// Build stylish hidden balance indicator - same size as balance text
   Widget _buildHiddenBalance(BuildContext context, ThemeColors colors) {
-    final isDark = context.colors.isDark;
-
-    // Use same gradient as the balance for consistency
-    final gradientColors = isDark
-        ? [context.colors.goldLight, context.colors.gold, context.colors.goldLight]
-        : [AppColorsLight.gold600, AppColorsLight.gold700, AppColorsLight.gold600];
-
     // Compact hidden indicator
-    return ShaderMask(
-      shaderCallback: (bounds) => LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: gradientColors,
-      ).createShader(bounds),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.visibility_off_rounded,
-            size: 40,
-            color: context.colors.textPrimary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          AppText(
-            '******',
-            variant: AppTextVariant.displayLarge,
-            color: context.colors.textPrimary,
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.visibility_off_rounded, size: 32, color: colors.gold),
+        const SizedBox(width: AppSpacing.md),
+        AppText('******', variant: AppTextVariant.balance, color: colors.gold),
+      ],
     );
   }
 
@@ -1262,70 +1273,30 @@ class _QuickActionButton extends StatelessWidget {
     final colors = context.colors;
     final isDark = context.colors.isDark;
 
-    return GestureDetector(
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
       onTap: () {
         HapticFeedback.lightImpact();
         onTap();
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.lg,
-          horizontal: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: colors.container,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(
-            color: isDark
-                ? colors.borderSubtle
-                : AppColorsLight.gold600.withValues(alpha: 0.2),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.1)
-                  : AppColorsLight.gold700.withValues(alpha: 0.08),
-              blurRadius: isDark ? 10 : 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.lg,
+        horizontal: AppSpacing.xs,
+      ),
+      child: SizedBox(
+        height: 84,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 48,
-              height: 48,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [
-                          colors.gold.withValues(alpha: 0.25),
-                          colors.gold.withValues(alpha: 0.15),
-                        ]
-                      : [
-                          colors.gold.withValues(alpha: 0.15),
-                          colors.gold.withValues(alpha: 0.08),
-                        ],
-                ),
+                color: colors.gold.withValues(alpha: isDark ? 0.18 : 0.12),
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                boxShadow: isDark
-                    ? [
-                        BoxShadow(
-                          color: colors.gold.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ]
-                    : null,
               ),
-              child: Icon(
-                icon,
-                color: isDark ? colors.gold : AppColorsLight.gold700,
-                size: 24,
-              ),
+              child: Icon(icon, color: colors.gold, size: 24),
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
@@ -1340,82 +1311,6 @@ class _QuickActionButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Custom painter for the decorative pattern on the balance card
-class _CardPatternPainter extends CustomPainter {
-  final bool isDark;
-  final Color color;
-
-  _CardPatternPainter({
-    required this.isDark,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Draw subtle geometric pattern
-    final spacing = 40.0;
-    final offset = isDark ? 20.0 : 15.0;
-
-    // Diagonal lines from top-right
-    for (double i = -size.height; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        paint,
-      );
-    }
-
-    // Add circular elements in corners
-    final circlePaint = Paint()
-      ..color = color.withValues(alpha: color.a * 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // Top-right corner circles
-    canvas.drawCircle(
-      Offset(size.width - offset, offset),
-      30,
-      circlePaint,
-    );
-    canvas.drawCircle(
-      Offset(size.width - offset, offset),
-      50,
-      circlePaint.copyWith(alpha: color.a * 0.3),
-    );
-
-    // Bottom-left corner circles
-    canvas.drawCircle(
-      Offset(offset, size.height - offset),
-      25,
-      circlePaint,
-    );
-    canvas.drawCircle(
-      Offset(offset, size.height - offset),
-      45,
-      circlePaint.copyWith(alpha: color.a * 0.3),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CardPatternPainter oldDelegate) {
-    return oldDelegate.isDark != isDark || oldDelegate.color != color;
-  }
-}
-
-extension _PaintCopyWith on Paint {
-  Paint copyWith({double? alpha}) {
-    return Paint()
-      ..color = alpha != null ? color.withValues(alpha: alpha) : color
-      ..style = style
-      ..strokeWidth = strokeWidth;
   }
 }
 
