@@ -112,10 +112,7 @@ class UserAvatar extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: widget,
-      );
+      return GestureDetector(onTap: onTap, child: widget);
     }
 
     return widget;
@@ -141,10 +138,10 @@ class UserAvatar extends StatelessWidget {
       child: ClipOval(
         child: imageUrl != null && imageUrl!.isNotEmpty
             ? (_isLocalFilePath(imageUrl!)
-                ? _buildLocalImage()
-                : imageUrl!.startsWith('data:')
-                    ? _buildBase64Image(context)
-                    : _buildNetworkImage())
+                  ? _buildLocalImage()
+                  : imageUrl!.startsWith('data:')
+                  ? _buildBase64Image(context)
+                  : _buildNetworkImage())
             : _buildInitialsFallback(context),
       ),
     );
@@ -213,7 +210,7 @@ class UserAvatar extends StatelessWidget {
   Widget _buildInitialsFallback(BuildContext context) {
     final initials = _getInitials();
     final hasInitials = initials.isNotEmpty;
-    final gradientColors = _getGradientColors();
+    final gradientColors = _getGradientColors(context);
 
     return Container(
       width: size,
@@ -230,7 +227,7 @@ class UserAvatar extends StatelessWidget {
             ? Text(
                 initials,
                 style: TextStyle(
-                  color: context.colors.textPrimary,
+                  color: _getInitialsColor(context),
                   fontSize: _getInitialsFontSize(),
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.5,
@@ -255,7 +252,9 @@ class UserAvatar extends StatelessWidget {
         width: indicatorSize,
         height: indicatorSize,
         decoration: BoxDecoration(
-          color: isOnline ? context.colors.success : context.colors.textDisabled,
+          color: isOnline
+              ? context.colors.success
+              : context.colors.textDisabled,
           shape: BoxShape.circle,
           border: Border.all(
             color: context.colors.canvas,
@@ -301,25 +300,44 @@ class UserAvatar extends StatelessWidget {
     return 18;
   }
 
-  /// Generate gradient colors based on name hash for consistent colors
-  List<Color> _getGradientColors() {
+  /// Generate fallback colors based on context and name hash.
+  List<Color> _getGradientColors(BuildContext context) {
+    if (showBorder || borderColor != null) {
+      final accent = borderColor ?? context.colors.gold;
+      return [
+        Color.alphaBlend(
+          accent.withValues(alpha: context.colors.isDark ? 0.22 : 0.16),
+          context.colors.surface,
+        ),
+        Color.alphaBlend(
+          accent.withValues(alpha: context.colors.isDark ? 0.12 : 0.07),
+          context.colors.container,
+        ),
+      ];
+    }
+
     final nameHash = _hashName();
 
-    // Predefined gradient pairs that work well with dark theme
+    // Muted identity accents, kept softer than the brand gold surfaces.
     final gradients = [
-      [const Color(0xFF4A5568), const Color(0xFF2D3748)], // Cool Gray
-      [const Color(0xFF4C51BF), const Color(0xFF2D3748)], // Indigo
-      [const Color(0xFF38B2AC), const Color(0xFF2D3748)], // Teal
-      [const Color(0xFFED8936), const Color(0xFF744210)], // Orange
-      [const Color(0xFF9F7AEA), const Color(0xFF553C9A)], // Purple
-      [const Color(0xFFE53E3E), const Color(0xFF742A2A)], // Red
-      [const Color(0xFF48BB78), const Color(0xFF22543D)], // Green
-      [const Color(0xFF4299E1), const Color(0xFF2C5282)], // Blue
-      [AppColors.gold600, AppColors.gold800], // Gold
-      [const Color(0xFFED64A6), const Color(0xFF702459)], // Pink
+      [const Color(0xFFF3E7CF), const Color(0xFFE6D3AC)], // Champagne
+      [const Color(0xFFDCE9E5), const Color(0xFFB8D3CC)], // Sage
+      [const Color(0xFFE7E4F1), const Color(0xFFCFC6E3)], // Soft indigo
+      [const Color(0xFFF0DED5), const Color(0xFFDAB9A6)], // Clay
+      [AppColors.gold100, AppColors.gold300], // Gold
     ];
 
     return gradients[nameHash % gradients.length];
+  }
+
+  Color _getInitialsColor(BuildContext context) {
+    if (showBorder || borderColor != null) {
+      return context.colors.textPrimary;
+    }
+
+    return context.colors.isDark
+        ? AppColors.textInverse
+        : AppColors.textPrimary;
   }
 
   int _hashName() {
@@ -400,10 +418,7 @@ class UserAvatarGroup extends StatelessWidget {
     );
 
     if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: widget,
-      );
+      return GestureDetector(onTap: onTap, child: widget);
     }
 
     return widget;
@@ -417,10 +432,7 @@ class UserAvatarGroup extends StatelessWidget {
         shape: BoxShape.circle,
         color: context.colors.container,
         border: showBorder
-            ? Border.all(
-                color: context.colors.canvas,
-                width: 2,
-              )
+            ? Border.all(color: context.colors.canvas, width: 2)
             : null,
       ),
       child: Center(
@@ -439,11 +451,7 @@ class UserAvatarGroup extends StatelessWidget {
 
 /// Data class for UserAvatarGroup
 class UserAvatarData {
-  const UserAvatarData({
-    this.imageUrl,
-    this.firstName,
-    this.lastName,
-  });
+  const UserAvatarData({this.imageUrl, this.firstName, this.lastName});
 
   final String? imageUrl;
   final String? firstName;
