@@ -32,7 +32,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
     // ignore: unused_local_variable
-    
+
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
@@ -43,14 +43,15 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
         backgroundColor: Colors.transparent,
       ),
       body: RefreshIndicator(
-        onRefresh: () => ref.read(subBusinessProvider.notifier).loadSubBusinesses(),
+        onRefresh: () =>
+            ref.read(subBusinessProvider.notifier).loadSubBusinesses(),
         color: context.colors.gold,
         backgroundColor: context.colors.container,
         child: state.isLoading && state.subBusinesses.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : state.subBusinesses.isEmpty
-                ? _buildEmptyState(l10n)
-                : _buildSubBusinessesList(state, l10n),
+            ? _buildEmptyState(l10n)
+            : _buildSubBusinessesList(state, l10n),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/sub-businesses/create'),
@@ -105,7 +106,7 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
       0.0,
       (sum, sb) => sum + sb.balance,
     );
-    
+
     return ListView(
       padding: EdgeInsets.all(AppSpacing.md),
       children: [
@@ -161,17 +162,12 @@ class _SubBusinessesViewState extends ConsumerState<SubBusinessesView> {
             padding: EdgeInsets.only(bottom: AppSpacing.md),
             child: SubBusinessCard(
               subBusiness: subBusiness,
-              onTap: () => context.push('/sub-businesses/detail/${subBusiness.id}'),
-              onTransfer: () => _showTransferDialog(subBusiness),
+              onTap: () =>
+                  context.push('/sub-businesses/detail/${subBusiness.id}'),
             ),
           );
         }),
       ],
     );
-  }
-
-  Future<void> _showTransferDialog(dynamic subBusiness) async {
-    // ignore: avoid_dynamic_calls
-    context.push('/sub-businesses/transfer/${subBusiness.id}');
   }
 }

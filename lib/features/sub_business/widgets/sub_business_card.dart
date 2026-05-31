@@ -21,7 +21,6 @@ class SubBusinessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -120,11 +119,10 @@ class SubBusinessCard extends StatelessWidget {
               ],
             ),
 
-            // Quick actions
-            if (onTransfer != null) ...[
-              SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
+            SizedBox(height: AppSpacing.md),
+            Row(
+              children: [
+                if (onTransfer != null) ...[
                   Expanded(
                     child: AppButton(
                       label: AppLocalizations.of(context)!.subBusiness_transfer,
@@ -135,18 +133,18 @@ class SubBusinessCard extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: AppButton(
-                      label: AppLocalizations.of(context)!.subBusiness_view,
-                      onPressed: onTap,
-                      icon: Icons.visibility_outlined,
-                      variant: AppButtonVariant.secondary,
-                      size: AppButtonSize.small,
-                    ),
-                  ),
                 ],
-              ),
-            ],
+                Expanded(
+                  child: AppButton(
+                    label: AppLocalizations.of(context)!.subBusiness_view,
+                    onPressed: onTap,
+                    icon: Icons.visibility_outlined,
+                    variant: AppButtonVariant.secondary,
+                    size: AppButtonSize.small,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

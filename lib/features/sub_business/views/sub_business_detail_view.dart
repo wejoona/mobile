@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/features/sub_business/providers/sub_business_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Screen showing details of a single sub-business
 class SubBusinessDetailView extends ConsumerStatefulWidget {
-  const SubBusinessDetailView({
-    super.key,
-    required this.subBusinessId,
-  });
+  const SubBusinessDetailView({super.key, required this.subBusinessId});
 
   final String subBusinessId;
 
@@ -24,15 +21,6 @@ class SubBusinessDetailView extends ConsumerStatefulWidget {
 }
 
 class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
-  @override
-  void initState() {
-    super.initState();
-    // Load staff members on mount
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(subBusinessProvider.notifier).loadStaff(widget.subBusinessId);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -45,10 +33,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText(
-          subBusiness.name,
-          variant: AppTextVariant.headlineSmall,
-        ),
+        title: AppText(subBusiness.name, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
@@ -102,7 +87,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                   label: l10n.subBusiness_transfer,
                   icon: Icons.swap_horiz,
                   variant: AppButtonVariant.secondary,
-                  onPressed: () => context.push('/sub-businesses/transfer/${widget.subBusinessId}'),
+                  onPressed: null,
                 ),
               ),
               SizedBox(width: AppSpacing.sm),
@@ -111,7 +96,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                   label: l10n.subBusiness_transactions,
                   icon: Icons.receipt_long,
                   variant: AppButtonVariant.secondary,
-                  onPressed: () => _showTransactions(context),
+                  onPressed: null,
                 ),
               ),
             ],
@@ -135,7 +120,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                 icon: Icons.people,
                 variant: AppButtonVariant.ghost,
                 size: AppButtonSize.small,
-                onPressed: () => context.push('/sub-businesses/${widget.subBusinessId}/staff'),
+                onPressed: null,
               ),
             ],
           ),
@@ -157,7 +142,9 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                     children: [
                       UserAvatar(
                         firstName: member.name.split(' ').first,
-                        lastName: member.name.split(' ').length > 1 ? member.name.split(' ').last : null,
+                        lastName: member.name.split(' ').length > 1
+                            ? member.name.split(' ').last
+                            : null,
                         size: 40,
                       ),
                       SizedBox(width: AppSpacing.md),
@@ -188,7 +175,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             SizedBox(height: AppSpacing.sm),
             AppButton(
               label: l10n.subBusiness_viewAllStaff,
-              onPressed: () => context.push('/sub-businesses/${widget.subBusinessId}/staff'),
+              onPressed: null,
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -197,7 +184,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
     );
   }
 
-  Widget _buildInfoSection(l10n, subBusiness) {
+  Widget _buildInfoSection(AppLocalizations l10n, SubBusiness subBusiness) {
     return Container(
       decoration: BoxDecoration(
         color: context.colors.container,
@@ -208,24 +195,24 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            // ignore: avoid_dynamic_calls
             l10n.subBusiness_information,
             variant: AppTextVariant.headlineSmall,
           ),
           SizedBox(height: AppSpacing.md),
-          // ignore: avoid_dynamic_calls
-          _buildInfoRow(l10n.subBusiness_type, _getTypeLabel(subBusiness.type, l10n)),
-          // ignore: avoid_dynamic_calls
+          _buildInfoRow(
+            l10n.subBusiness_type,
+            _getTypeLabel(subBusiness.type, l10n),
+          ),
           if (subBusiness.description != null) ...[
             SizedBox(height: AppSpacing.sm),
-            // ignore: avoid_dynamic_calls
-            _buildInfoRow(l10n.subBusiness_description, subBusiness.description!),
+            _buildInfoRow(
+              l10n.subBusiness_description,
+              subBusiness.description!,
+            ),
           ],
           SizedBox(height: AppSpacing.sm),
           _buildInfoRow(
-            // ignore: avoid_dynamic_calls
             l10n.subBusiness_created,
-            // ignore: avoid_dynamic_calls
             DateFormat.yMMMd().format(subBusiness.createdAt),
           ),
         ],
@@ -245,12 +232,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             color: context.colors.textSecondary,
           ),
         ),
-        Expanded(
-          child: AppText(
-            value,
-            variant: AppTextVariant.bodyMedium,
-          ),
-        ),
+        Expanded(child: AppText(value, variant: AppTextVariant.bodyMedium)),
       ],
     );
   }
@@ -278,8 +260,8 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           ),
           SizedBox(height: AppSpacing.md),
           AppButton(
-            label: l10n.subBusiness_addFirstStaff,
-            onPressed: () => context.push('/sub-businesses/${widget.subBusinessId}/staff'),
+            label: l10n.common_comingSoon,
+            onPressed: null,
             variant: AppButtonVariant.secondary,
             size: AppButtonSize.small,
           ),
@@ -288,31 +270,27 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
     );
   }
 
-  String _getTypeLabel(type, AppLocalizations l10n) {
-    switch (type.toString().split('.').last) {
-      case 'department':
+  String _getTypeLabel(SubBusinessType type, AppLocalizations l10n) {
+    switch (type) {
+      case SubBusinessType.department:
         return l10n.subBusiness_typeDepartment;
-      case 'branch':
+      case SubBusinessType.branch:
         return l10n.subBusiness_typeBranch;
-      case 'subsidiary':
+      case SubBusinessType.subsidiary:
         return l10n.subBusiness_typeSubsidiary;
-      case 'team':
+      case SubBusinessType.team:
         return l10n.subBusiness_typeTeam;
-      default:
-        return type.toString();
     }
   }
 
-  String _getRoleLabel(role, AppLocalizations l10n) {
-    switch (role.toString().split('.').last) {
-      case 'owner':
+  String _getRoleLabel(StaffRole role, AppLocalizations l10n) {
+    switch (role) {
+      case StaffRole.owner:
         return l10n.subBusiness_roleOwner;
-      case 'admin':
+      case StaffRole.admin:
         return l10n.subBusiness_roleAdmin;
-      case 'viewer':
+      case StaffRole.viewer:
         return l10n.subBusiness_roleViewer;
-      default:
-        return role.toString();
     }
   }
 
@@ -334,18 +312,12 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
             ListTile(
               leading: const Icon(Icons.people),
               title: Text(l10n.subBusiness_manageStaff),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/sub-businesses/${widget.subBusinessId}/staff');
-              },
+              subtitle: Text(l10n.common_comingSoon),
+              enabled: false,
             ),
           ],
         ),
       ),
     );
-  }
-
-  void _showTransactions(BuildContext context) {
-    context.push('/sub-businesses/${widget.subBusinessId}/transactions');
   }
 }

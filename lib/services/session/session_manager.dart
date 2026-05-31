@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
@@ -50,8 +51,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
         break;
       case AppLifecycleState.resumed:
         sessionService.onAppForeground();
-        // Refresh feature flags on app resume
-        ref.read(featureFlagsProvider.notifier).loadFlags();
+        if (ref.read(authProvider).isAuthenticated) {
+          ref.read(featureFlagsProvider.notifier).loadFlags();
+        }
         break;
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
@@ -301,4 +303,3 @@ class _SessionExpiringOverlay extends StatelessWidget {
     );
   }
 }
-

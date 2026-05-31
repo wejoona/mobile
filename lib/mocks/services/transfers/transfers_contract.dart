@@ -4,7 +4,7 @@
 /// This serves as the specification for backend implementation.
 ///
 /// IMPORTANT: Both internal and external transfers require PIN verification.
-/// The client must first call POST /wallet/pin/verify to get a PIN token,
+/// The client must first call POST /user/pin/verify to get a PIN token,
 /// then include it in the X-Pin-Token header for transfer requests.
 library;
 
@@ -143,7 +143,9 @@ class TransfersListResponse {
   factory TransfersListResponse.fromJson(Map<String, dynamic> json) {
     return TransfersListResponse(
       items: (json['items'] as List)
-          .map((item) => TransferResponse.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => TransferResponse.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       total: json['total'] as int,
       page: json['page'] as int,
@@ -206,9 +208,7 @@ class TransfersContract extends ApiContract {
       description: 'Get transfer details by ID',
       responseType: TransferResponse,
       requiresAuth: true,
-      pathParams: {
-        'id': 'Transfer ID',
-      },
+      pathParams: {'id': 'Transfer ID'},
     ),
   ];
 }
@@ -220,7 +220,7 @@ class TransfersContract extends ApiContract {
 /// Both POST /transfers/internal and POST /transfers/external require PIN verification.
 ///
 /// Flow:
-/// 1. Client calls POST /wallet/pin/verify with { pinHash: "..." }
+/// 1. Client calls POST /user/pin/verify with { pinHash: "..." }
 /// 2. Server responds with { verified: true, pinToken: "token", expiresIn: 300 }
 /// 3. Client includes PIN token in transfer requests:
 ///    Headers: { "X-Pin-Token": "token" }

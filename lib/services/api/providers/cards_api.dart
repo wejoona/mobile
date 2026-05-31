@@ -20,11 +20,11 @@ class CardsApi {
   /// DELETE /cards/:id
   Future<Response> delete(String id) => _dio.delete('/cards/$id');
 
-  /// POST /cards/:id/freeze
-  Future<Response> freeze(String id) => _dio.post('/cards/$id/freeze');
+  /// PUT /cards/:id/freeze
+  Future<Response> freeze(String id) => _dio.put('/cards/$id/freeze');
 
-  /// POST /cards/:id/unfreeze
-  Future<Response> unfreeze(String id) => _dio.post('/cards/$id/unfreeze');
+  /// PUT /cards/:id/unfreeze
+  Future<Response> unfreeze(String id) => _dio.put('/cards/$id/unfreeze');
 
   /// GET /cards/:id/transactions
   Future<Response> transactions(String id) =>

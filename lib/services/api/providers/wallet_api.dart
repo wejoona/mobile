@@ -21,7 +21,8 @@ class WalletApi {
   Future<Response> getDepositChannels() => _dio.get('/wallet/deposit/channels');
 
   /// GET /wallet/deposit/providers
-  Future<Response> getDepositProviders() => _dio.get('/wallet/deposit/providers');
+  Future<Response> getDepositProviders() =>
+      _dio.get('/wallet/deposit/providers');
 
   /// POST /wallet/deposit
   Future<Response> initiateDeposit(Map<String, dynamic> data) =>
@@ -45,11 +46,10 @@ class WalletApi {
   Future<Response> estimateExternalFee({
     required double amount,
     required String network,
-  }) =>
-      _dio.get('/wallet/transfer/external/estimate-fee', queryParameters: {
-        'amount': amount,
-        'network': network,
-      });
+  }) => _dio.get(
+    '/wallet/transfer/external/estimate-fee',
+    queryParameters: {'amount': amount, 'network': network},
+  );
 
   // ── Withdraw ──
 
@@ -73,16 +73,6 @@ class WalletApi {
   /// POST /wallet/kyc/submit
   Future<Response> submitKyc(Map<String, dynamic> data) =>
       _dio.post('/wallet/kyc/submit', data: data);
-
-  // ── PIN ──
-
-  /// POST /wallet/pin/set
-  Future<Response> setPin(String pin) =>
-      _dio.post('/wallet/pin/set', data: {'pin': pin});
-
-  /// POST /wallet/pin/verify
-  Future<Response> verifyPin(String pin) =>
-      _dio.post('/wallet/pin/verify', data: {'pin': pin});
 
   // ── Limits ──
 

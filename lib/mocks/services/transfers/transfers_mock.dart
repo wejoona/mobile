@@ -96,8 +96,8 @@ class TransfersMock {
     }
 
     // Get PIN token from header
-    final pinToken = options.headers['X-Pin-Token'] ??
-                     options.headers['x-pin-token'];
+    final pinToken =
+        options.headers['X-Pin-Token'] ?? options.headers['x-pin-token'];
 
     if (pinToken == null || (pinToken is String && pinToken.isEmpty)) {
       return MockResponse(
@@ -106,14 +106,16 @@ class TransfersMock {
         data: {
           'message': 'PIN verification required for this operation',
           'code': 'PIN_REQUIRED',
-          'hint': 'Call POST /wallet/pin/verify first, then include the returned token in X-Pin-Token header',
+          'hint':
+              'Call POST /user/pin/verify first, then include the returned token in X-Pin-Token header',
         },
       );
     }
 
     // Validate token format (should be a hex string from mock PIN verify)
     final tokenStr = pinToken.toString();
-    if (tokenStr.isEmpty || (!tokenStr.startsWith('mock_pin_token_') && tokenStr.length < 16)) {
+    if (tokenStr.isEmpty ||
+        (!tokenStr.startsWith('mock_pin_token_') && tokenStr.length < 16)) {
       return MockResponse(
         statusCode: 403,
         errorMessage: 'Invalid or expired PIN verification',
@@ -130,7 +132,9 @@ class TransfersMock {
   }
 
   /// Handle internal transfer
-  static Future<MockResponse> _handleInternalTransfer(RequestOptions options) async {
+  static Future<MockResponse> _handleInternalTransfer(
+    RequestOptions options,
+  ) async {
     // Check PIN verification first
     final pinCheckResult = _checkPinVerification(options);
     if (pinCheckResult != null) {
@@ -163,7 +167,9 @@ class TransfersMock {
   }
 
   /// Handle external transfer
-  static Future<MockResponse> _handleExternalTransfer(RequestOptions options) async {
+  static Future<MockResponse> _handleExternalTransfer(
+    RequestOptions options,
+  ) async {
     // Check PIN verification first
     final pinCheckResult = _checkPinVerification(options);
     if (pinCheckResult != null) {
@@ -208,7 +214,9 @@ class TransfersMock {
   }
 
   /// Handle get transfers
-  static Future<MockResponse> _handleGetTransfers(RequestOptions options) async {
+  static Future<MockResponse> _handleGetTransfers(
+    RequestOptions options,
+  ) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized('Not authenticated');
@@ -235,7 +243,9 @@ class TransfersMock {
   }
 
   /// Handle get transfer by ID
-  static Future<MockResponse> _handleGetTransferById(RequestOptions options) async {
+  static Future<MockResponse> _handleGetTransferById(
+    RequestOptions options,
+  ) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized('Not authenticated');

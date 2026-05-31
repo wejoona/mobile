@@ -299,7 +299,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       final container = ProviderScope.containerOf(context);
       final authState = container.read(authProvider);
       final walletState = container.read(walletStateMachineProvider);
-      final flags = container.read(featureFlagsProvider);
       final appFsmState = container.read(appFsmProvider);
 
       final isAuthenticated = authState.isAuthenticated;
@@ -386,6 +385,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/home';
       }
 
+      if (!isAuthenticated) {
+        return null;
+      }
+
       // Profile completion route is available at /profile-complete
       // but we don't force-redirect — user can access it from settings
       // or we can enable this guard later when onboarding flow is ready
@@ -393,6 +396,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Feature flag guards - redirect to home if feature disabled
       // Phase 1 MVP routes (always enabled, no guard needed)
       // /deposit, /send, /receive, /transactions, /settings/kyc
+      final flags = container.read(featureFlagsProvider);
 
       // Phase 2 routes
       if (location == '/withdraw' && !(flags[FeatureFlagKeys.withdraw] ?? false)) {
@@ -1601,9 +1605,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/sub-businesses/transfer/:id',
         pageBuilder: (context, state) {
-          // ignore: unused_local_variable
-          final __id = state.pathParameters['id'];
-          // TODO: Implement transfer between sub-businesses screen
           return AppPageTransitions.verticalSlide(
             state: state,
             child: const _PlaceholderPage(title: 'Transfer Between Sub-Businesses'),
