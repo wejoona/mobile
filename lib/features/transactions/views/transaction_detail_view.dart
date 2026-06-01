@@ -369,32 +369,45 @@ class _DetailRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          AppText(
-            label,
-            variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
+          Expanded(
+            flex: 2,
+            child: AppText(
+              label,
+              color: colors.textSecondary,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          Row(
-            children: [
-              AppText(
-                value,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textPrimary,
-              ),
-              if (onCopy != null) ...[
-                const SizedBox(width: AppSpacing.sm),
-                GestureDetector(
-                  onTap: onCopy,
-                  child: Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: colors.gold,
+          const SizedBox(width: AppSpacing.md),
+          Flexible(
+            flex: 3,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: AppText(
+                    value,
+                    color: colors.textPrimary,
+                    textAlign: TextAlign.end,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                if (onCopy != null) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  GestureDetector(
+                    onTap: onCopy,
+                    child: Icon(
+                      Icons.copy,
+                      size: 16,
+                      color: colors.gold,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ],
       ),
