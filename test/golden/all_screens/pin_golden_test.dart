@@ -1,7 +1,7 @@
 // Golden tests for PIN feature screens
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/features/pin/views/change_pin_view.dart';
+import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';

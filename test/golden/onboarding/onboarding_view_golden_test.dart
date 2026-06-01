@@ -5,6 +5,10 @@ import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 
 import '../helpers/golden_test_helper.dart';
 
+Future<void> _pumpGoldenFrame(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
 /// Golden tests for Onboarding View
 ///
 /// Status: ACTIVE (MVP Critical)
@@ -28,62 +32,59 @@ void main() {
     group('Light Mode', () {
       testWidgets('first page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page1_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page1_light.png',
+          ),
         );
       });
 
       testWidgets('second page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         // Swipe to second page
         await tester.drag(find.byType(PageView), const Offset(-400, 0));
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page2_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page2_light.png',
+          ),
         );
       });
 
       testWidgets('third page with CTA', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         // Swipe to third page
         await tester.drag(find.byType(PageView), const Offset(-400, 0));
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
         await tester.drag(find.byType(PageView), const Offset(-400, 0));
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page3_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page3_light.png',
+          ),
         );
       });
     });
@@ -91,41 +92,39 @@ void main() {
     group('Dark Mode', () {
       testWidgets('first page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OnboardingView()),
         );
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page1_dark.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page1_dark.png',
+          ),
         );
       });
 
       testWidgets('third page with CTA', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OnboardingView()),
         );
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         // Swipe to third page
         await tester.drag(find.byType(PageView), const Offset(-400, 0));
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
         await tester.drag(find.byType(PageView), const Offset(-400, 0));
-        await tester.pumpAndSettle();
+        await _pumpGoldenFrame(tester);
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page3_dark.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page3_dark.png',
+          ),
         );
       });
     });

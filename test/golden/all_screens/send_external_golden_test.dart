@@ -41,6 +41,9 @@ class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
   Future<bool> executeTransfer() async => true;
 
   @override
+  Future<bool> verifyPin(String pin) async => true;
+
+  @override
   void reset() {}
 
   @override

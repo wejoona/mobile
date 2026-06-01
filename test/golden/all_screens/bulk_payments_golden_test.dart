@@ -17,10 +17,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BulkPaymentsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BulkPaymentsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -33,10 +30,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BulkPaymentsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BulkPaymentsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -51,10 +45,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BulkUploadView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BulkUploadView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -67,10 +58,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BulkUploadView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BulkUploadView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -85,10 +73,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BulkPreviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BulkPreviewView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -101,10 +86,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BulkPreviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BulkPreviewView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -121,7 +103,7 @@ void main() {
       await tester.pumpWidget(
         GoldenTestWrapper(
           isDarkMode: false,
-          child: BulkStatusView(batchId: 'batch_001'),
+          child: BulkStatusView(batchId: 'batch_1'),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
@@ -137,7 +119,7 @@ void main() {
       await tester.pumpWidget(
         GoldenTestWrapper(
           isDarkMode: true,
-          child: BulkStatusView(batchId: 'batch_001'),
+          child: BulkStatusView(batchId: 'batch_1'),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
