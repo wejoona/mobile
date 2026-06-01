@@ -4,6 +4,14 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
+
+/// Live E2E tests are opt-in because they call real backend services.
+final bool runLiveE2E = Platform.environment['RUN_LIVE_E2E'] == 'true' ||
+    const bool.fromEnvironment('RUN_LIVE_E2E');
+
+const String liveE2ESkipReason =
+    'Set RUN_LIVE_E2E=true and API_URL/AUTH_TOKEN as needed to run live backend E2E tests.';
 
 /// API base URL — override via env: API_URL=...
 final String _envApiUrl = Platform.environment['API_URL'] ??
@@ -23,9 +31,16 @@ const String _testBypassSecret = 'korido-e2e-test-2026';
 
 /// Lightweight HTTP wrapper for E2E tests.
 class E2EClient {
-  E2EClient({String? baseUrl}) : baseUrl = baseUrl ?? _envApiUrl;
+  E2EClient({String? baseUrl})
+      : baseUrl = baseUrl ?? _envApiUrl,
+        _client = IOClient(
+          HttpClient()
+            ..connectionTimeout = const Duration(seconds: 15)
+            ..badCertificateCallback = (cert, host, port) => true,
+        );
 
   final String baseUrl;
+  final http.Client _client;
   String? _accessToken;
   String? _refreshToken;
 
@@ -51,12 +66,12 @@ class E2EClient {
   // ── HTTP verbs ──
 
   Future<E2EResponse> get(String path) async {
-    final res = await http.get(Uri.parse('$baseUrl$path'), headers: _headers);
+    final res = await _client.get(Uri.parse('$baseUrl$path'), headers: _headers);
     return E2EResponse(res);
   }
 
   Future<E2EResponse> post(String path, [Map<String, dynamic>? body]) async {
-    final res = await http.post(
+    final res = await _client.post(
       Uri.parse('$baseUrl$path'),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
@@ -65,7 +80,7 @@ class E2EClient {
   }
 
   Future<E2EResponse> put(String path, [Map<String, dynamic>? body]) async {
-    final res = await http.put(
+    final res = await _client.put(
       Uri.parse('$baseUrl$path'),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
@@ -75,12 +90,12 @@ class E2EClient {
 
   Future<E2EResponse> delete(String path) async {
     final res =
-        await http.delete(Uri.parse('$baseUrl$path'), headers: _headers);
+        await _client.delete(Uri.parse('$baseUrl$path'), headers: _headers);
     return E2EResponse(res);
   }
 
   Future<E2EResponse> patch(String path, [Map<String, dynamic>? body]) async {
-    final res = await http.patch(
+    final res = await _client.patch(
       Uri.parse('$baseUrl$path'),
       headers: _headers,
       body: body != null ? jsonEncode(body) : null,
@@ -137,6 +152,8 @@ class E2EClient {
     }
     return false;
   }
+
+  void close() => _client.close();
 }
 
 /// Thin wrapper around http.Response with JSON parsing.

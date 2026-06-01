@@ -9,6 +9,11 @@ void main() {
   const testPhone = '+2250700000000';
   String? createdPotId;
 
+  if (!runLiveE2E) {
+    test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
+    return;
+  }
+
   setUpAll(() async {
     client = E2EClient();
     await client.loginFlow(testPhone);

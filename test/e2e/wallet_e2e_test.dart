@@ -8,6 +8,11 @@ void main() {
   late E2EClient client;
   const testPhone = '+2250700000000';
 
+  if (!runLiveE2E) {
+    test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
+    return;
+  }
+
   setUpAll(() async {
     client = E2EClient();
     await client.loginFlow(testPhone);
