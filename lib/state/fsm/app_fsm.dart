@@ -72,24 +72,29 @@ class AppState extends FsmState {
   });
 
   const AppState.initial()
-      : auth = const AuthUnauthenticated(),
-        wallet = const WalletNone(),
-        kyc = const KycInitial(),
-        session = const SessionNone();
+    : auth = const AuthUnauthenticated(),
+      wallet = const WalletNone(),
+      kyc = const KycInitial(),
+      session = const SessionNone();
 
   @override
-  String get name => 'App(${auth.name}, ${wallet.name}, ${kyc.name}, ${session.name})';
+  String get name =>
+      'App(${auth.name}, ${wallet.name}, ${kyc.name}, ${session.name})';
 
   // ─────────────────────────────────────────────────────────────────
   // Derived properties
   // ─────────────────────────────────────────────────────────────────
 
   /// Is user authenticated?
-  bool get isAuthenticated => auth is AuthAuthenticated || auth is AuthTokenRefreshing;
+  bool get isAuthenticated =>
+      auth is AuthAuthenticated || auth is AuthTokenRefreshing;
 
   /// Is any FSM in a loading/transitioning state?
   bool get isLoading =>
-      auth.isTransitioning || wallet.isTransitioning || kyc.isTransitioning || session.isTransitioning;
+      auth.isTransitioning ||
+      wallet.isTransitioning ||
+      kyc.isTransitioning ||
+      session.isTransitioning;
 
   /// Has any FSM encountered an error?
   bool get hasError => auth.isError || wallet.isError || kyc.isError;
@@ -134,7 +139,8 @@ class AppState extends FsmState {
   bool get isAuthBlocked => auth is AuthLocked || auth is AuthSuspended;
 
   /// Is wallet blocked (frozen/under review)?
-  bool get isWalletBlocked => wallet is WalletFrozen || wallet is WalletUnderReview;
+  bool get isWalletBlocked =>
+      wallet is WalletFrozen || wallet is WalletUnderReview;
 
   /// Is wallet limited?
   bool get isWalletLimited => wallet is WalletLimited;
@@ -164,6 +170,12 @@ class AppState extends FsmState {
     // OTP expired - show OTP expired screen
     if (auth is AuthOtpExpired) {
       return AppScreen.otpExpired;
+    }
+
+    if (auth case AuthError(
+      previousState: final previous,
+    ) when previous is AuthOtpSent || previous is AuthVerifying) {
+      return AppScreen.otp;
     }
 
     // Session locked - show unlock screen
@@ -198,8 +210,11 @@ class AppState extends FsmState {
     }
 
     // Authenticated but wallet or KYC loading/error - show loading
-    if (wallet is WalletLoading || wallet is WalletNone || wallet is WalletError ||
-        kyc is KycInitial || kyc is KycLoading) {
+    if (wallet is WalletLoading ||
+        wallet is WalletNone ||
+        wallet is WalletError ||
+        kyc is KycInitial ||
+        kyc is KycLoading) {
       return AppScreen.loading;
     }
 
@@ -499,7 +514,10 @@ class AppFsm extends FsmDefinition<AppState, AppEvent> {
       if (result.newState is AuthAuthenticated &&
           state.auth is! AuthAuthenticated) {
         // Reset wallet and KYC to trigger fresh fetch
-        final resetWallet = _walletFsm.process(state.wallet, const ResetEvent());
+        final resetWallet = _walletFsm.process(
+          state.wallet,
+          const ResetEvent(),
+        );
         final resetKyc = _kycFsm.process(state.kyc, const ResetEvent());
 
         // Start new session
@@ -512,7 +530,8 @@ class AppFsm extends FsmDefinition<AppState, AppEvent> {
           newState.copyWith(
             wallet: (resetWallet as TransitionSuccess<WalletState>).newState,
             kyc: (resetKyc as TransitionSuccess<KycState>).newState,
-            session: (sessionResult as TransitionSuccess<SessionState>).newState,
+            session:
+                (sessionResult as TransitionSuccess<SessionState>).newState,
           ),
           effects: [
             ...effects,
@@ -633,10 +652,7 @@ class AppFsm extends FsmDefinition<AppState, AppEvent> {
 
         if (walletResult is TransitionSuccess<WalletState>) {
           return TransitionSuccess(
-            state.copyWith(
-              kyc: result.newState,
-              wallet: walletResult.newState,
-            ),
+            state.copyWith(kyc: result.newState, wallet: walletResult.newState),
             effects: [...?result.effects, ...?walletResult.effects],
           );
         }
@@ -668,14 +684,8 @@ class AppFsm extends FsmDefinition<AppState, AppEvent> {
 
         if (authResult is TransitionSuccess<AuthState>) {
           return TransitionSuccess(
-            state.copyWith(
-              session: result.newState,
-              auth: authResult.newState,
-            ),
-            effects: [
-              ...?result.effects,
-              ...?authResult.effects,
-            ],
+            state.copyWith(session: result.newState, auth: authResult.newState),
+            effects: [...?result.effects, ...?authResult.effects],
           );
         }
       }

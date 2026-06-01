@@ -67,6 +67,26 @@ void main() {
       expect(screen.route, equals('/otp-expired'));
     });
 
+    test('OTP verification error should remain on OTP screen', () {
+      // Arrange
+      const appState = AppState(
+        auth: AuthError(
+          errorMessage: 'Invalid or expired OTP',
+          previousState: AuthOtpSent(phone: '+22512345678'),
+        ),
+        wallet: WalletNone(),
+        kyc: KycInitial(),
+        session: SessionNone(),
+      );
+
+      // Act
+      final screen = appState.currentScreen;
+
+      // Assert
+      expect(screen, equals(AppScreen.otp));
+      expect(screen.route, equals('/otp'));
+    });
+
     test('Session locked state should navigate to SessionLocked screen', () {
       // Arrange
       final appState = AppState(
@@ -144,84 +164,90 @@ void main() {
       expect(screen.route, equals('/kyc-expired'));
     });
 
-    test('Screen precedence - Auth locked takes priority over wallet frozen',
-        () {
-      // Arrange - Multiple blocking states
-      final appState = AppState(
-        auth: AuthLocked(
-          phone: '+22512345678',
-          lockedAt: DateTime.now(),
-          lockDuration: const Duration(minutes: 15),
-          reason: 'Too many failed attempts',
-        ),
-        wallet: WalletFrozen(
-          walletId: 'wallet123',
-          frozenAt: DateTime.now(),
-          reason: 'Suspicious activity',
-        ),
-        kyc: const KycInitial(),
-        session: const SessionNone(),
-      );
+    test(
+      'Screen precedence - Auth locked takes priority over wallet frozen',
+      () {
+        // Arrange - Multiple blocking states
+        final appState = AppState(
+          auth: AuthLocked(
+            phone: '+22512345678',
+            lockedAt: DateTime.now(),
+            lockDuration: const Duration(minutes: 15),
+            reason: 'Too many failed attempts',
+          ),
+          wallet: WalletFrozen(
+            walletId: 'wallet123',
+            frozenAt: DateTime.now(),
+            reason: 'Suspicious activity',
+          ),
+          kyc: const KycInitial(),
+          session: const SessionNone(),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - AuthLocked should take precedence
-      expect(screen, equals(AppScreen.authLocked));
-    });
+        // Assert - AuthLocked should take precedence
+        expect(screen, equals(AppScreen.authLocked));
+      },
+    );
 
-    test('Screen precedence - Session locked takes priority over wallet frozen',
-        () {
-      // Arrange
-      final appState = AppState(
-        auth: const AuthAuthenticated(
-          userId: 'user123',
-          phone: '+22512345678',
-          accessToken: 'token123',
-        ),
-        wallet: WalletFrozen(
-          walletId: 'wallet123',
-          frozenAt: DateTime.now(),
-          reason: 'Suspicious activity',
-        ),
-        kyc: const KycInitial(),
-        session: SessionLocked(
-          lockedAt: DateTime.now(),
-          reason: 'Session timeout',
-        ),
-      );
+    test(
+      'Screen precedence - Session locked takes priority over wallet frozen',
+      () {
+        // Arrange
+        final appState = AppState(
+          auth: const AuthAuthenticated(
+            userId: 'user123',
+            phone: '+22512345678',
+            accessToken: 'token123',
+          ),
+          wallet: WalletFrozen(
+            walletId: 'wallet123',
+            frozenAt: DateTime.now(),
+            reason: 'Suspicious activity',
+          ),
+          kyc: const KycInitial(),
+          session: SessionLocked(
+            lockedAt: DateTime.now(),
+            reason: 'Session timeout',
+          ),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - SessionLocked should take precedence
-      expect(screen, equals(AppScreen.sessionLocked));
-    });
+        // Assert - SessionLocked should take precedence
+        expect(screen, equals(AppScreen.sessionLocked));
+      },
+    );
 
-    test('Screen precedence - Auth states take priority over session states',
-        () {
-      // Arrange
-      final appState = AppState(
-        auth: AuthSuspended(
-          userId: 'user123',
-          phone: '+22512345678',
-          reason: 'Account suspended',
-          suspendedAt: DateTime.now(),
-        ),
-        wallet: const WalletNone(),
-        kyc: const KycInitial(),
-        session: SessionLocked(
-          lockedAt: DateTime.now(),
-          reason: 'Session locked',
-        ),
-      );
+    test(
+      'Screen precedence - Auth states take priority over session states',
+      () {
+        // Arrange
+        final appState = AppState(
+          auth: AuthSuspended(
+            userId: 'user123',
+            phone: '+22512345678',
+            reason: 'Account suspended',
+            suspendedAt: DateTime.now(),
+          ),
+          wallet: const WalletNone(),
+          kyc: const KycInitial(),
+          session: SessionLocked(
+            lockedAt: DateTime.now(),
+            reason: 'Session locked',
+          ),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - AuthSuspended should take precedence over SessionLocked
-      expect(screen, equals(AppScreen.authSuspended));
-    });
+        // Assert - AuthSuspended should take precedence over SessionLocked
+        expect(screen, equals(AppScreen.authSuspended));
+      },
+    );
 
     test('AppState correctly reports derived properties', () {
       // Arrange - Various states
@@ -308,10 +334,7 @@ void main() {
           usdcBalance: 100.0,
           lastUpdated: DateTime.now(),
         ),
-        kyc: KycExpired(
-          previousTier: KycTier.tier1,
-          expiredAt: DateTime.now(),
-        ),
+        kyc: KycExpired(previousTier: KycTier.tier1, expiredAt: DateTime.now()),
         session: const SessionNone(),
       );
       expect(kycExpiredState.isKycExpired, isTrue);
