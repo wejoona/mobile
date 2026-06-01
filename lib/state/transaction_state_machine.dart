@@ -14,16 +14,14 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
 
   @override
   TransactionListState build() {
-    _autoFetch();
+    // Fetches are triggered explicitly after auth/unlock or by transaction views.
+    // Auto-fetching on provider construction causes unauthenticated/background
+    // network calls when the provider is created only to reset state on logout.
     return const TransactionListState();
   }
 
   TransactionsService get _service => ref.read(transactionsServiceProvider);
   TransactionFilter get _filter => const TransactionFilter();
-
-  void _autoFetch() {
-    Future.microtask(() => fetch());
-  }
 
   /// Fetch initial transactions
   Future<void> fetch() async {

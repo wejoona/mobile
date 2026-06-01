@@ -61,7 +61,11 @@ class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
     // Restore session from secure storage on startup
-    Future.microtask(() => checkAuth());
+    Future.microtask(() {
+      if (ref.mounted) {
+        checkAuth(startupOnly: true);
+      }
+    });
     return const AuthState();
   }
 
@@ -70,11 +74,23 @@ class AuthNotifier extends Notifier<AuthState> {
   AnalyticsService get _analytics => ref.read(analyticsServiceProvider);
 
   /// Check if user is already authenticated
-  Future<void> checkAuth() async {
+  Future<void> checkAuth({bool startupOnly = false}) async {
+    if (startupOnly && state.status != AuthStatus.initial) {
+      return;
+    }
+
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
       final token = await _storage.read(key: StorageKeys.accessToken);
+
+      if (!ref.mounted) {
+        return;
+      }
+
+      if (startupOnly && (state.phone != null || state.status != AuthStatus.loading)) {
+        return;
+      }
 
       if (token != null) {
         // Token exists — go to locked state (require PIN/biometric to unlock)

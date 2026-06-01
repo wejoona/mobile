@@ -36,7 +36,7 @@ class MockKycStateMachine extends KycStateMachine {
   }
 
   @override
-  Future<void> fetch() async {
+  Future<void> fetch({bool force = false}) async {
     // No-op
   }
 }
@@ -47,7 +47,7 @@ class MockWalletStateMachine extends WalletStateMachine {
   WalletState build() => const WalletState();
 
   @override
-  Future<void> fetch() async {
+  Future<void> fetch({bool force = false}) async {
     // No-op
   }
 
@@ -117,6 +117,8 @@ void main() {
   setUp(() {
     mockAuthService = MockAuthService();
     mockStorage = MockSecureStorage();
+
+    when(() => mockAuthService.logout()).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -409,7 +411,7 @@ void main() {
   });
 
   group('Check stored auth restores session', () {
-    test('should transition to authenticated when token exists', () async {
+    test('should transition to locked when token exists', () async {
       // Arrange
       await mockStorage.write(key: StorageKeys.accessToken, value: 'existing.token');
 
@@ -420,7 +422,7 @@ void main() {
 
       // Assert
       final state = container.read(authProvider);
-      expect(state.status, equals(AuthStatus.authenticated));
+      expect(state.status, equals(AuthStatus.locked));
     });
 
     test('should transition to unauthenticated when no token', () async {

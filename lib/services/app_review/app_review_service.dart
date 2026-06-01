@@ -147,8 +147,8 @@ class AppReviewService {
 
       // Track analytics
       _analytics.setUserProperty(
-        'review_prompt_shown',
-        'true',
+        name: 'review_prompt_shown',
+        value: 'true',
       );
 
       _logger.info('App review prompt shown');
@@ -218,8 +218,8 @@ class AppReviewService {
 
       // Track analytics
       _analytics.setUserProperty(
-        'user_reviewed',
-        'true',
+        name: 'user_reviewed',
+        value: 'true',
       );
 
       _logger.info('User marked as reviewed');
@@ -236,8 +236,8 @@ class AppReviewService {
 
       // Track analytics
       _analytics.setUserProperty(
-        'manual_review_opened',
-        'true',
+        name: 'manual_review_opened',
+        value: 'true',
       );
 
       _logger.info('App store opened for review');

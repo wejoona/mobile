@@ -56,6 +56,24 @@ class AnalyticsService {
     ));
   }
 
+  Future<void> logLoginSuccess({
+    required String method,
+    String? userId,
+  }) async {
+    trackLogin(method: method);
+    if (userId != null) await setUserId(userId);
+  }
+
+  Future<void> logLoginFailed({
+    required String method,
+    required String reason,
+  }) async {
+    trackAction('login_failed', properties: {
+      'method': method,
+      'reason_hash': reason.hashCode.toString(),
+    });
+  }
+
   void trackRegistration({required String country}) {
     _track(AnalyticsEvent(
       name: 'registration',
@@ -135,6 +153,47 @@ class AnalyticsService {
     ));
   }
 
+  Future<void> logTransferInitiated({
+    required String transferType,
+    required double amount,
+    required String currency,
+  }) async {
+    trackSend(
+      amount: amount,
+      currency: currency,
+      recipientType: transferType,
+      success: false,
+    );
+  }
+
+  Future<void> logTransferCompleted({
+    required String transferType,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    trackSend(
+      amount: amount,
+      currency: currency,
+      recipientType: transferType,
+      success: true,
+    );
+  }
+
+  Future<void> logTransferFailed({
+    required String transferType,
+    required double amount,
+    required String currency,
+    required String reason,
+  }) async {
+    trackAction('transfer_failed', properties: {
+      'transfer_type': transferType,
+      'amount_range': _amountRange(amount),
+      'currency': currency,
+      'reason_hash': reason.hashCode.toString(),
+    });
+  }
+
   void trackDeposit2({
     required String method,
     required double amount,
@@ -148,6 +207,71 @@ class AnalyticsService {
         'success': success,
       },
     ));
+  }
+
+  Future<void> logKycStarted({String? tier}) async {
+    trackAction('kyc_started', properties: {
+      if (tier != null) 'tier': tier,
+    });
+  }
+
+  Future<void> logKycCompleted({
+    String? tier,
+    String? status,
+  }) async {
+    trackAction('kyc_completed', properties: {
+      if (tier != null) 'tier': tier,
+      if (status != null) 'status': status,
+    });
+  }
+
+  Future<void> logDepositInitiated({
+    required String method,
+    required double amount,
+    required String currency,
+  }) async {
+    trackAction('deposit_initiated', properties: {
+      'method': method,
+      'amount_range': _amountRange(amount),
+      'currency': currency,
+    });
+  }
+
+  Future<void> logDepositCompleted({
+    required String method,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    trackAction('deposit_completed', properties: {
+      'method': method,
+      'amount_range': _amountRange(amount),
+      'currency': currency,
+    });
+  }
+
+  Future<void> logBillPaymentCompleted({
+    required String billerName,
+    required String category,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    trackAction('bill_payment_completed', properties: {
+      'biller_hash': billerName.hashCode.toString(),
+      'category': category,
+      'amount_range': _amountRange(amount),
+      'currency': currency,
+    });
+  }
+
+  Future<void> logScreenView({
+    required String screenName,
+    String? screenClass,
+  }) async {
+    trackScreen(screenName, properties: {
+      if (screenClass != null) 'screen_class': screenClass,
+    });
   }
 
   void trackKycStep(String step, {bool completed = false}) {
@@ -171,20 +295,32 @@ class AnalyticsService {
     ));
   }
 
-  void setUserProperties({
+  Future<void> setUserProperties({
     String? userId,
     String? kycStatus,
     String? country,
     String? locale,
-  }) {
-    if (userId != null) _firebase?.setUserId(id: userId);
-    if (kycStatus != null) _firebase?.setUserProperty(name: 'kyc_status', value: kycStatus);
-    if (country != null) _firebase?.setUserProperty(name: 'country', value: country);
-    if (locale != null) _firebase?.setUserProperty(name: 'locale', value: locale);
+  }) async {
+    if (userId != null) await _firebase?.setUserId(id: userId);
+    if (kycStatus != null) await _firebase?.setUserProperty(name: 'kyc_status', value: kycStatus);
+    if (country != null) await _firebase?.setUserProperty(name: 'country', value: country);
+    if (locale != null) await _firebase?.setUserProperty(name: 'locale', value: locale);
   }
 
-  void setUserProperty(String name, dynamic value) {
-    _firebase?.setUserProperty(name: name, value: value?.toString());
+  Future<void> setUserId(String? userId) async {
+    await _firebase?.setUserId(id: userId);
+  }
+
+  Future<void> setUserProperty({
+    required String name,
+    required dynamic value,
+  }) async {
+    await _firebase?.setUserProperty(name: name, value: value?.toString());
+  }
+
+  Future<void> reset() async {
+    await _firebase?.setUserId(id: null);
+    _pendingEvents.clear();
   }
 
   // ============================================================

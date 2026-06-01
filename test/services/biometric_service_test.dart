@@ -119,9 +119,9 @@ void main() {
   group('Authenticate with fingerprint/face', () {
     test('should return true on successful authentication', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -130,14 +130,14 @@ void main() {
       final result = await biometricService.authenticate();
 
       // Assert
-      expect(result, isTrue);
+      expect(result.success, isTrue);
     });
 
     test('should return false when authentication fails', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenAnswer((_) async => false);
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -146,14 +146,14 @@ void main() {
       final result = await biometricService.authenticate();
 
       // Assert
-      expect(result, isFalse);
+      expect(result.success, isFalse);
     });
 
     test('should use custom reason when provided', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -164,7 +164,6 @@ void main() {
       // Assert
       verify(() => mockAuth.authenticate(
             localizedReason: 'Custom reason',
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).called(1);
     });
@@ -173,9 +172,9 @@ void main() {
   group('Handle authentication failure', () {
     test('should handle PlatformException', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenThrow(PlatformException(code: 'NotEnrolled'));
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -184,14 +183,14 @@ void main() {
       final result = await biometricService.authenticate();
 
       // Assert
-      expect(result, isFalse);
+      expect(result.success, isFalse);
     });
 
     test('should handle NotAvailable exception', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenThrow(PlatformException(code: 'NotAvailable'));
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -200,7 +199,7 @@ void main() {
       final result = await biometricService.authenticate();
 
       // Assert
-      expect(result, isFalse);
+      expect(result.success, isFalse);
     });
   });
 
@@ -369,9 +368,9 @@ void main() {
   group('Authenticate sensitive', () {
     test('should call authenticate with sensitive reason', () async {
       // Arrange
+      when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
       when(() => mockAuth.authenticate(
             localizedReason: any(named: 'localizedReason'),
-            authMessages: any(named: 'authMessages'),
             options: any(named: 'options'),
           )).thenAnswer((_) async => true);
       final biometricService = BiometricService(mockAuth, mockStorage);
@@ -380,10 +379,9 @@ void main() {
       final result = await biometricService.authenticateSensitive();
 
       // Assert
-      expect(result, isTrue);
+      expect(result.success, isTrue);
       verify(() => mockAuth.authenticate(
-            localizedReason: 'Confirm your identity to proceed',
-            authMessages: any(named: 'authMessages'),
+            localizedReason: 'Vérification de sécurité requise',
             options: any(named: 'options'),
           )).called(1);
     });

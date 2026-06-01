@@ -36,8 +36,14 @@ enum BiometricFailureReason {
 }
 
 class BiometricService {
-  static const _storage = FlutterSecureStorage();
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final FlutterSecureStorage _storage;
+  final LocalAuthentication _localAuth;
+
+  BiometricService([
+    LocalAuthentication? localAuth,
+    FlutterSecureStorage? storage,
+  ])  : _localAuth = localAuth ?? LocalAuthentication(),
+        _storage = storage ?? const FlutterSecureStorage();
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
@@ -83,6 +89,7 @@ class BiometricService {
   /// The OS decides which biometric to use — we just request authentication.
   Future<BiometricResult> authenticate({
     String localizedReason = 'Authentifiez-vous pour continuer',
+    String? reason,
     bool stickyAuth = true,
   }) async {
     try {
@@ -95,7 +102,7 @@ class BiometricService {
       }
 
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason: localizedReason,
+        localizedReason: reason ?? localizedReason,
         options: AuthenticationOptions(
           stickyAuth: stickyAuth,
           biometricOnly: true,
@@ -149,13 +156,49 @@ class BiometricService {
   Future<bool> isBiometricEnabled() async => isEnrolled();
 
   Future<List<BiometricType>> getAvailableBiometrics() async {
-    final type = await getAvailableType();
-    if (type == BiometricType.none) return [];
-    return [type];
+    try {
+      final biometrics = await _localAuth.getAvailableBiometrics();
+      final mapped = <BiometricType>[];
+
+      for (final biometric in biometrics) {
+        switch (biometric) {
+          case platform.BiometricType.face:
+            mapped.add(BiometricType.faceId);
+            break;
+          case platform.BiometricType.fingerprint:
+            mapped.add(BiometricType.fingerprint);
+            break;
+          case platform.BiometricType.iris:
+            mapped.add(BiometricType.iris);
+            break;
+          case platform.BiometricType.strong:
+          case platform.BiometricType.weak:
+            mapped.add(BiometricType.fingerprint);
+            break;
+        }
+      }
+
+      return mapped.toSet().toList();
+    } catch (_) {
+      return [];
+    }
   }
 
-  Future<bool> isDeviceSupported() async => isAvailable();
-  Future<bool> canCheckBiometrics() async => isAvailable();
+  Future<bool> isDeviceSupported() async {
+    try {
+      return await _localAuth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> canCheckBiometrics() async {
+    try {
+      return await _localAuth.canCheckBiometrics;
+    } catch (_) {
+      return false;
+    }
+  }
   Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 
   Future<void> enableBiometric() async {
