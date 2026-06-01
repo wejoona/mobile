@@ -7,16 +7,10 @@ import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 
 /// Payment method universe/category
-enum PaymentUniverse {
-  mobileMoney,
-  bankTransfer,
-  card,
-  crypto,
-}
+enum PaymentUniverse { mobileMoney, bankTransfer, card, crypto }
 
 extension PaymentUniverseExt on PaymentUniverse {
   String get label {
@@ -91,9 +85,6 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
     ref.listen(depositProvider, (prev, next) {
       if (next.response != null) {
-        // Refresh wallet and transactions via FSM after deposit initiated
-        ref.read(walletStateMachineProvider.notifier).refresh();
-        ref.read(transactionStateMachineProvider.notifier).refresh();
         context.push('/deposit/instructions', extra: next.response);
       } else if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -307,7 +298,10 @@ class _DepositViewState extends ConsumerState<DepositView> {
     );
   }
 
-  Widget _buildGroupedChannels(List<DepositChannel> channels, ThemeColors colors) {
+  Widget _buildGroupedChannels(
+    List<DepositChannel> channels,
+    ThemeColors colors,
+  ) {
     // Group channels by type/universe
     final grouped = <PaymentUniverse, List<DepositChannel>>{};
 
@@ -413,7 +407,9 @@ class _DepositViewState extends ConsumerState<DepositView> {
 
   void _submit() {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    ref.read(depositProvider.notifier).initiateDeposit(
+    ref
+        .read(depositProvider.notifier)
+        .initiateDeposit(
           amount: amount,
           sourceCurrency: _selectedCurrency,
           channelId: _selectedChannelId!,
@@ -433,7 +429,9 @@ class _DepositViewState extends ConsumerState<DepositView> {
       context: context,
       backgroundColor: colors.container,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       builder: (context) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -448,45 +446,44 @@ class _DepositViewState extends ConsumerState<DepositView> {
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
-            'Select Currency',
-            variant: AppTextVariant.titleMedium,
-          ),
+          const AppText('Select Currency', variant: AppTextVariant.titleMedium),
           const SizedBox(height: AppSpacing.lg),
-          ...currencies.map((c) => ListTile(
-                leading: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colors.elevated,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: Center(
-                    child: AppText(
-                      c.$1.substring(0, 2),
-                      variant: AppTextVariant.labelMedium,
-                      color: colors.gold,
-                    ),
+          ...currencies.map(
+            (c) => ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.elevated,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Center(
+                  child: AppText(
+                    c.$1.substring(0, 2),
+                    variant: AppTextVariant.labelMedium,
+                    color: colors.gold,
                   ),
                 ),
-                title: AppText(c.$2, variant: AppTextVariant.bodyLarge),
-                subtitle: AppText(
-                  c.$3,
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textTertiary,
-                ),
-                trailing: _selectedCurrency == c.$1
-                    ? Icon(Icons.check, color: colors.gold)
-                    : null,
-                onTap: () {
-                  setState(() {
-                    _selectedCurrency = c.$1;
-                    _selectedChannelId = null;
-                    _updateLimitsForCurrency(c.$1);
-                  });
-                  Navigator.pop(context);
-                },
-              )),
+              ),
+              title: AppText(c.$2, variant: AppTextVariant.bodyLarge),
+              subtitle: AppText(
+                c.$3,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textTertiary,
+              ),
+              trailing: _selectedCurrency == c.$1
+                  ? Icon(Icons.check, color: colors.gold)
+                  : null,
+              onTap: () {
+                setState(() {
+                  _selectedCurrency = c.$1;
+                  _selectedChannelId = null;
+                  _updateLimitsForCurrency(c.$1);
+                });
+                Navigator.pop(context);
+              },
+            ),
+          ),
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
@@ -578,8 +575,9 @@ class _PaymentUniverseSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasSelectedInUniverse =
-        channels.any((c) => c.id == selectedChannelId);
+    final hasSelectedInUniverse = channels.any(
+      (c) => c.id == selectedChannelId,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -587,9 +585,7 @@ class _PaymentUniverseSection extends StatelessWidget {
         color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: hasSelectedInUniverse
-              ? colors.gold
-              : colors.borderSubtle,
+          color: hasSelectedInUniverse ? colors.gold : colors.borderSubtle,
           width: hasSelectedInUniverse ? 2 : 1,
         ),
       ),
@@ -610,11 +606,7 @@ class _PaymentUniverseSection extends StatelessWidget {
                       color: universe.color.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: Icon(
-                      universe.icon,
-                      color: universe.color,
-                      size: 24,
-                    ),
+                    child: Icon(universe.icon, color: universe.color, size: 24),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -654,12 +646,14 @@ class _PaymentUniverseSection extends StatelessWidget {
                   ? _buildMockChannels()
                   : Column(
                       children: channels
-                          .map((channel) => _ChannelOption(
-                                channel: channel,
-                                isSelected: selectedChannelId == channel.id,
-                                onTap: () => onChannelSelected(channel.id),
-                                colors: colors,
-                              ))
+                          .map(
+                            (channel) => _ChannelOption(
+                              channel: channel,
+                              isSelected: selectedChannelId == channel.id,
+                              onTap: () => onChannelSelected(channel.id),
+                              colors: colors,
+                            ),
+                          )
                           .toList(),
                     ),
             ),
@@ -716,14 +710,16 @@ class _PaymentUniverseSection extends StatelessWidget {
 
     return Column(
       children: mockChannels
-          .map((m) => _MockChannelOption(
-                id: m['id'] as String,
-                name: m['name'] as String,
-                fee: m['fee'] as String,
-                isSelected: selectedChannelId == m['id'],
-                onTap: () => onChannelSelected(m['id'] as String),
-                colors: colors,
-              ))
+          .map(
+            (m) => _MockChannelOption(
+              id: m['id'] as String,
+              name: m['name'] as String,
+              fee: m['fee'] as String,
+              isSelected: selectedChannelId == m['id'],
+              onTap: () => onChannelSelected(m['id'] as String),
+              colors: colors,
+            ),
+          )
           .toList(),
     );
   }
@@ -750,7 +746,9 @@ class _ChannelOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.elevated,
+          color: isSelected
+              ? colors.gold.withValues(alpha: 0.1)
+              : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected ? colors.gold : Colors.transparent,
@@ -806,7 +804,9 @@ class _MockChannelOption extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: AppSpacing.sm),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? colors.gold.withValues(alpha: 0.1) : colors.elevated,
+          color: isSelected
+              ? colors.gold.withValues(alpha: 0.1)
+              : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isSelected ? colors.gold : Colors.transparent,

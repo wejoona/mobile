@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 
 /// Mock mode configuration
 ///
@@ -18,7 +19,7 @@ import 'package:flutter/foundation.dart';
 class MockConfig {
   /// Master switch - when true, all mocks are enabled
   /// Set to false to connect to real backend
-  static bool useMocks = false; // Disabled - using real API
+  static bool useMocks = EnvironmentConfig.useMocks;
 
   /// Per-service mock toggles (only apply when useMocks is true)
   static bool mockAuth = true;

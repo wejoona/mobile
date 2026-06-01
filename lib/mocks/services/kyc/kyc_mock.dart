@@ -88,14 +88,21 @@ class KycMock {
   static Future<MockResponse> _handleGetStatus(RequestOptions options) async {
     return MockResponse.success({
       'status': KycMockState.kycStatus,
-      'score': KycMockState.kycStatus == 'auto_approved' ||
-               KycMockState.kycStatus == 'approved' ? 92 : null,
-      'submittedAt': KycMockState.kycStatus != 'none' &&
-                     KycMockState.kycStatus != 'documents_pending'
-          ? DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String()
+      'score':
+          KycMockState.kycStatus == 'auto_approved' ||
+              KycMockState.kycStatus == 'approved'
+          ? 92
           : null,
-      'approvedAt': KycMockState.kycStatus == 'auto_approved' ||
-                    KycMockState.kycStatus == 'approved'
+      'submittedAt':
+          KycMockState.kycStatus != 'none' &&
+              KycMockState.kycStatus != 'documents_pending'
+          ? DateTime.now()
+                .subtract(const Duration(minutes: 5))
+                .toIso8601String()
+          : null,
+      'approvedAt':
+          KycMockState.kycStatus == 'auto_approved' ||
+              KycMockState.kycStatus == 'approved'
           ? DateTime.now().toIso8601String()
           : null,
       'rejectedAt': KycMockState.kycStatus == 'rejected'
@@ -115,7 +122,9 @@ class KycMock {
       'email': 'amadou@example.com',
       'kycStatus': KycMockState.kycStatus,
       'kycRejectionReason': KycMockState.rejectionReason,
-      'createdAt': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
+      'createdAt': DateTime.now()
+          .subtract(const Duration(days: 30))
+          .toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
     });
   }
@@ -131,11 +140,16 @@ class KycMockState {
   // - 'approved': Manually approved by admin
   // - 'manual_review': Requires manual review
   // - 'rejected': KYC rejected
-  static String kycStatus = 'none';
+  static const String initialStatus = String.fromEnvironment(
+    'MOCK_KYC_STATUS',
+    defaultValue: 'none',
+  );
+
+  static String kycStatus = _normalizeStatus(initialStatus);
   static String? rejectionReason;
 
   static void reset() {
-    kycStatus = 'none';
+    kycStatus = _normalizeStatus(initialStatus);
     rejectionReason = null;
   }
 
@@ -179,10 +193,13 @@ class KycMockState {
   /// Valid values: 'none', 'documents_pending', 'pending_verification',
   ///               'auto_approved', 'approved', 'verified', 'manual_review', 'rejected'
   static void setStatus(String status) {
-    // Map 'verified' to 'approved' for backward compatibility
-    kycStatus = status == 'verified' ? 'approved' : status;
+    kycStatus = _normalizeStatus(status);
     if (status != 'rejected') {
       rejectionReason = null;
     }
+  }
+
+  static String _normalizeStatus(String status) {
+    return status == 'verified' ? 'approved' : status;
   }
 }
