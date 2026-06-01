@@ -51,9 +51,11 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   Widget _buildContent(
     BuildContext context,
     AppLocalizations l10n,
-    dynamic state,
+    KycFlowState state,
   ) {
     final colors = context.colors;
+    final status = state.verificationStatus ?? KycStatus.none;
+    final canStartVerification = status.canSubmit;
     return Padding(
       padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -64,47 +66,41 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
               child: Column(
                 children: [
                   SizedBox(height: AppSpacing.xxl),
-                  // ignore: avoid_dynamic_calls
-                  _buildStatusIcon(context, state.status),
+                  _buildStatusIcon(context, status),
                   SizedBox(height: AppSpacing.xxl),
                   AppText(
-                    // ignore: avoid_dynamic_calls
-                    _getStatusTitle(l10n, state.status),
+                    _getStatusTitle(l10n, status),
                     variant: AppTextVariant.headlineMedium,
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: AppSpacing.lg),
                   AppText(
-                    // ignore: avoid_dynamic_calls
-                    _getStatusDescription(l10n, state.status),
+                    _getStatusDescription(l10n, status),
                     variant: AppTextVariant.bodyLarge,
                     color: colors.textSecondary,
                     textAlign: TextAlign.center,
                   ),
-                  // ignore: avoid_dynamic_calls
-                  if (state.status.isRejected && state.rejectionReason != null)
-                    ...[
-                      SizedBox(height: AppSpacing.xxl),
-                      AppCard(
-                        variant: AppCardVariant.elevated,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText(
-                              l10n.kyc_rejectionReason,
-                              variant: AppTextVariant.labelMedium,
-                              color: colors.errorText,
-                            ),
-                            SizedBox(height: AppSpacing.sm),
-                            AppText(
-                              // ignore: avoid_dynamic_calls
-                              state.rejectionReason!,
-                              variant: AppTextVariant.bodyMedium,
-                            ),
-                          ],
-                        ),
+                  if (status.isRejected && state.rejectionReason != null) ...[
+                    SizedBox(height: AppSpacing.xxl),
+                    AppCard(
+                      variant: AppCardVariant.elevated,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            l10n.kyc_rejectionReason,
+                            variant: AppTextVariant.labelMedium,
+                            color: colors.errorText,
+                          ),
+                          SizedBox(height: AppSpacing.sm),
+                          AppText(
+                            state.rejectionReason!,
+                            variant: AppTextVariant.bodyMedium,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ],
                   // Verification details placeholder
                   SizedBox(height: AppSpacing.xxl),
                   _buildInfoCards(l10n),
@@ -112,20 +108,17 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
               ),
             ),
           ),
-          // ignore: avoid_dynamic_calls
-          if (state.canStartVerification) ...[
+          if (canStartVerification) ...[
             SizedBox(height: AppSpacing.lg),
             AppButton(
-              // ignore: avoid_dynamic_calls
-              label: state.status.isRejected
+              label: status.isRejected
                   ? l10n.kyc_tryAgain
                   : l10n.kyc_startVerification,
               onPressed: () => _handleStartVerification(context),
               isFullWidth: true,
             ),
           ],
-          // ignore: avoid_dynamic_calls
-          if (state.status == KycStatus.submitted) ...[
+          if (status == KycStatus.submitted) ...[
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.common_continue,
@@ -172,11 +165,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
         shape: BoxShape.circle,
         color: color.withValues(alpha: 0.1),
       ),
-      child: Icon(
-        icon,
-        size: 64,
-        color: color,
-      ),
+      child: Icon(icon, size: 64, color: color),
     );
   }
 
@@ -258,10 +247,7 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  title,
-                  variant: AppTextVariant.labelLarge,
-                ),
+                AppText(title, variant: AppTextVariant.labelLarge),
                 SizedBox(height: AppSpacing.xs),
                 AppText(
                   description,
@@ -287,10 +273,9 @@ class _KycStatusViewState extends ConsumerState<KycStatusView> {
   void _handleContinueToHome(BuildContext context) {
     // Sync FSM state to allow navigation to home
     // KYC is submitted (pending review), so user can proceed
-    ref.read(appFsmProvider.notifier).onKycStatusLoaded(
-      tier: fsm.KycTier.none,
-      status: 'pending',
-    );
+    ref
+        .read(appFsmProvider.notifier)
+        .onKycStatusLoaded(tier: fsm.KycTier.none, status: 'pending');
     context.go('/home');
   }
 }

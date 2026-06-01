@@ -13,7 +13,8 @@ class BulkPaymentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final pendingCount = payment.totalCount - payment.successCount - payment.failedCount;
+    final pendingCount =
+        payment.totalCount - payment.successCount - payment.failedCount;
     final progress = payment.totalCount > 0
         ? (payment.successCount + payment.failedCount) / payment.totalCount
         : 0.0;
@@ -31,17 +32,39 @@ class BulkPaymentCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 40, height: 40,
-                    decoration: BoxDecoration(color: theme.colorScheme.tertiaryContainer, borderRadius: BorderRadius.circular(10)),
-                    child: Icon(Icons.groups_rounded, color: theme.colorScheme.onTertiaryContainer, size: 22),
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.groups_rounded,
+                      color: theme.colorScheme.onTertiaryContainer,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(payment.name, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                        Text('${payment.totalCount} destinataires • ${formatXof(payment.totalAmount)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                        Text(
+                          payment.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '${payment.totalCount} destinataires • ${formatXof(payment.totalAmount)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -50,12 +73,25 @@ class BulkPaymentCard extends StatelessWidget {
               const SizedBox(height: 12),
               ProgressBar(value: progress, height: 4),
               const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                spacing: 10,
+                runSpacing: 6,
                 children: [
-                  _StatusChip(count: payment.successCount, label: 'Réussi', color: Colors.green),
-                  _StatusChip(count: payment.failedCount, label: 'Échoué', color: Colors.red),
-                  _StatusChip(count: pendingCount, label: 'En attente', color: Colors.orange),
+                  _StatusChip(
+                    count: payment.successCount,
+                    label: 'Réussi',
+                    color: Colors.green,
+                  ),
+                  _StatusChip(
+                    count: payment.failedCount,
+                    label: 'Échoué',
+                    color: Colors.red,
+                  ),
+                  _StatusChip(
+                    count: pendingCount,
+                    label: 'En attente',
+                    color: Colors.orange,
+                  ),
                 ],
               ),
             ],
@@ -71,14 +107,22 @@ class _StatusChip extends StatelessWidget {
   final String label;
   final Color color;
 
-  const _StatusChip({required this.count, required this.label, required this.color});
+  const _StatusChip({
+    required this.count,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 4),
         Text('$count $label', style: Theme.of(context).textTheme.labelSmall),
       ],

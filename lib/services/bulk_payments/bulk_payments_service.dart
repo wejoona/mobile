@@ -18,7 +18,10 @@ class BulkPaymentsService {
     } else {
       items = [];
     }
-    return items.map((json) => BulkBatch.fromJson(json as Map<String, dynamic>)).toList();
+    return items
+        .whereType<Map>()
+        .map((json) => BulkBatch.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
   }
 
   Future<BulkBatch> submitBatch(BulkBatch batch) async {
@@ -29,25 +32,34 @@ class BulkPaymentsService {
         'payments': batch.validPayments.map((p) => p.toJson()).toList(),
       },
     );
-    return BulkBatch.fromJson(response.data);
+    return BulkBatch.fromJson(_batchPayload(response.data));
   }
 
   Future<BulkBatch> getBatchStatus(String batchId) async {
     final response = await _dio.get('/bulk-payments/batches/$batchId');
-    return BulkBatch.fromJson(response.data);
+    return BulkBatch.fromJson(_batchPayload(response.data));
   }
 
   Future<String> downloadFailedPayments(String batchId) async {
-    final response =
-        await _dio.get('/bulk-payments/batches/$batchId/failed-report');
+    final response = await _dio.get(
+      '/bulk-payments/batches/$batchId/failed-report',
+    );
     final data = response.data;
     if (data is Map) return data['csv'] as String? ?? '';
     return data?.toString() ?? '';
   }
 
-
   // === Stub methods ===
   Future<List<dynamic>> getBulkPayments() async => [];
   Future<List<Map<String, dynamic>>> parseCsvFile(String path) async => [];
 
+  Map<String, dynamic> _batchPayload(dynamic data) {
+    if (data is Map && data['data'] is Map) {
+      return Map<String, dynamic>.from(data['data'] as Map);
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return <String, dynamic>{};
+  }
 }

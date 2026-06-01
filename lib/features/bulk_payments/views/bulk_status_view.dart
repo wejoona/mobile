@@ -14,10 +14,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 class BulkStatusView extends ConsumerStatefulWidget {
   final String batchId;
 
-  const BulkStatusView({
-    super.key,
-    required this.batchId,
-  });
+  const BulkStatusView({super.key, required this.batchId});
 
   @override
   ConsumerState<BulkStatusView> createState() => _BulkStatusViewState();
@@ -31,9 +28,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
   }
 
   Future<void> _loadBatchStatus() async {
-    await ref
-        .read(bulkPaymentActionsProvider)
-        .getBatchStatus(widget.batchId);
+    await ref.read(bulkPaymentActionsProvider).getBatchStatus(widget.batchId);
   }
 
   @override
@@ -107,21 +102,14 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
                   color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                child: Icon(
-                  statusIcon,
-                  color: statusColor,
-                  size: 32,
-                ),
+                child: Icon(statusIcon, color: statusColor, size: 32),
               ),
               SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      batch.name,
-                      variant: AppTextVariant.titleMedium,
-                    ),
+                    AppText(batch.name, variant: AppTextVariant.titleMedium),
                     SizedBox(height: AppSpacing.xs),
                     AppText(
                       _getStatusText(l10n, batch.status),
@@ -190,11 +178,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
   Widget _buildProgressStat(String label, int count, Color color) {
     return Column(
       children: [
-        AppText(
-          '$count',
-          variant: AppTextVariant.headlineMedium,
-          color: color,
-        ),
+        AppText('$count', variant: AppTextVariant.headlineMedium, color: color),
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
@@ -244,14 +228,24 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        AppText(
-          label,
-          variant: AppTextVariant.bodyMedium,
-          color: context.colors.textSecondary,
+        Expanded(
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodyMedium,
+            color: context.colors.textSecondary,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-        AppText(
-          value,
-          variant: AppTextVariant.bodyMedium,
+        SizedBox(width: AppSpacing.md),
+        Flexible(
+          child: AppText(
+            value,
+            variant: AppTextVariant.bodyMedium,
+            textAlign: TextAlign.end,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -292,11 +286,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: context.colors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: context.colors.error),
             SizedBox(height: AppSpacing.md),
             AppText(
               error,
@@ -305,10 +295,7 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
               color: context.colors.error,
             ),
             SizedBox(height: AppSpacing.lg),
-            AppButton(
-              label: l10n.action_retry,
-              onPressed: _loadBatchStatus,
-            ),
+            AppButton(label: l10n.action_retry, onPressed: _loadBatchStatus),
           ],
         ),
       ),
@@ -323,7 +310,8 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
           .read(bulkPaymentActionsProvider)
           .downloadFailedPayments(batch.id);
 
-      if (csvContent == null || !mounted) return; // ignore: unnecessary_null_comparison
+      if (csvContent == null || !mounted)
+        return; // ignore: unnecessary_null_comparison
 
       // Save to temporary file
       final directory = await getTemporaryDirectory();
@@ -331,8 +319,12 @@ class _BulkStatusViewState extends ConsumerState<BulkStatusView> {
       await file.writeAsString(csvContent);
 
       // Share the file
-      await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], title: l10n.bulkPayments_failedReportTitle,
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          title: l10n.bulkPayments_failedReportTitle,
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
