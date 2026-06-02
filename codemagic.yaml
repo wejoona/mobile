@@ -9,7 +9,7 @@ workflows:
       app_store_connect: Joonapay appstore
 
     environment:
-      flutter: 3.41.6
+      flutter: 3.44.1
       xcode: latest
       vars:
         APP_APPLE_ID: "6761443157"
