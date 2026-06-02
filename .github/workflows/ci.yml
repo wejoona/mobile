@@ -219,9 +219,18 @@ jobs:
             echo "::warning::ANDROID_KEYSTORE_BASE64 is not configured; building a verification bundle without production GitHub signing."
           fi
 
+      - name: Configure Android local properties
+        run: |
+          {
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "flutter.sdk=$FLUTTER_ROOT"
+            echo "flutter.buildMode=release"
+          } > android/local.properties
+
       - name: Build App Bundle
         run: |
           cd android
+          chmod +x ./gradlew
           ./gradlew bundleRelease --no-daemon
 
       - name: Upload AAB artifact
