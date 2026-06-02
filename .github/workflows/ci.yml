@@ -83,7 +83,14 @@ jobs:
         run: flutter pub get
 
       - name: Run tests with coverage
-        run: flutter test --coverage
+        run: |
+          find test -name '*_test.dart' \
+            ! -path 'test/golden/*' \
+            ! -path 'test/screens/golden/*' \
+            ! -path 'test/snapshots/*' \
+            ! -path 'test/widgets/golden/*' \
+            > test_manifest.txt
+          flutter test --coverage $(cat test_manifest.txt)
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
