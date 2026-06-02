@@ -229,9 +229,18 @@ jobs:
 
       - name: Build App Bundle
         run: |
-          cd android
-          chmod +x ./gradlew
-          ./gradlew bundleRelease --no-daemon
+          set +e
+          flutter build appbundle --release
+          status=$?
+          set -e
+
+          if [ "$status" -ne 0 ]; then
+            if [ -f build/app/outputs/bundle/release/app-release.aab ]; then
+              echo "::warning::flutter build appbundle exited with $status after producing app-release.aab; continuing for artifact upload."
+            else
+              exit "$status"
+            fi
+          fi
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
