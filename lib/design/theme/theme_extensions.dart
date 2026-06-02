@@ -448,18 +448,18 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
   static const light = AppGradientsExtension(
     goldGradient: LinearGradient(
       colors: [
+        AppColorsLight.gold200,
         AppColorsLight.gold300,
         AppColorsLight.gold500,
-        AppColorsLight.gold700,
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldGradientVertical: LinearGradient(
       colors: [
+        AppColorsLight.gold200,
         AppColorsLight.gold300,
         AppColorsLight.gold500,
-        AppColorsLight.gold700,
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
@@ -477,9 +477,9 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
     ),
     goldRadialGradient: RadialGradient(
       colors: [
+        AppColorsLight.gold200,
         AppColorsLight.gold300,
         AppColorsLight.gold500,
-        AppColorsLight.gold700,
       ],
       stops: [0.0, 0.5, 1.0],
     ),

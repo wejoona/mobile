@@ -10,30 +10,53 @@ class KoridoMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final isLight = !colors.isDark;
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: colors.goldGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isLight ? AppColorsLight.gold300 : null,
+        gradient: isLight
+            ? null
+            : LinearGradient(
+                colors: colors.goldGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
         borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: AppShadows.goldGlow,
+        border: isLight
+            ? Border.all(color: AppColorsLight.gold600.withValues(alpha: 0.18))
+            : null,
+        boxShadow: isLight ? AppShadows.lightGoldGlow : AppShadows.goldGlow,
       ),
-      child: Center(
-        child: AppText(
-          'K',
-          variant: AppTextVariant.headlineLarge,
-          color: colors.textInverse,
-          style: AppTypography.headlineLarge.copyWith(
-            fontSize: size * 0.5,
-            fontWeight: FontWeight.w700,
-            height: 1,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (isLight)
+            Positioned(
+              top: size * 0.14,
+              left: size * 0.2,
+              right: size * 0.2,
+              height: size * 0.035,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.34),
+                  borderRadius: BorderRadius.circular(size),
+                ),
+              ),
+            ),
+          AppText(
+            'K',
+            variant: AppTextVariant.headlineLarge,
+            color: colors.onGold,
+            style: AppTypography.headlineLarge.copyWith(
+              fontSize: size * 0.5,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

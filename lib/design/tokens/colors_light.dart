@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Comprehensive Light Theme Color Palette for Korido
-/// Brand: Gold primary (#B8943D), Obsidian accents
+/// Brand: Gold primary (#C08A25), Obsidian accents
 /// WCAG AA compliant (4.5:1 for normal text, 3:1 for large text)
 class LightColors {
   LightColors._();
@@ -10,14 +10,14 @@ class LightColors {
   // BRAND COLORS
   // ===========================================================================
 
-  /// Primary brand color - Gold (darker for light mode contrast)
-  static const Color primary = Color(0xFFB8943D); // Gold - WCAG AA on white
+  /// Primary brand color - brighter gold for light mode surfaces and CTAs
+  static const Color primary = Color(0xFFC08A25);
 
   /// Lighter gold variant for hover/pressed states
-  static const Color primaryLight = Color(0xFFD4AF56);
+  static const Color primaryLight = Color(0xFFF0CD68);
 
   /// Darker gold for active states and borders
-  static const Color primaryDark = Color(0xFF8A6E2B);
+  static const Color primaryDark = Color(0xFF7E5515);
 
   /// Text on primary color surfaces
   static const Color onPrimary = Color(0xFF1A1A1F); // Near black on gold
@@ -36,34 +36,34 @@ class LightColors {
   // ===========================================================================
 
   /// Main canvas background - warm white for premium feel
-  static const Color background = Color(0xFFFAFAF8);
+  static const Color background = Color(0xFFF5F0E6);
 
   /// Secondary background for sections
-  static const Color backgroundSecondary = Color(0xFFF5F5F2);
+  static const Color backgroundSecondary = Color(0xFFEFE4D3);
 
   /// Text on background
   static const Color onBackground = Color(0xFF1A1A1F);
 
   /// Default surface color (cards, dialogs)
-  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surface = Color(0xFFFFFDF8);
 
   /// Elevated surfaces (FAB, app bar when elevated)
-  static const Color surfaceElevated = Color(0xFFFFFFFF);
+  static const Color surfaceElevated = Color(0xFFE8DBC5);
 
   /// Surface variant for subtle differentiation
-  static const Color surfaceVariant = Color(0xFFEDEDEB);
+  static const Color surfaceVariant = Color(0xFFEFE4D3);
 
   /// Tinted surface for special content areas
-  static const Color surfaceTinted = Color(0xFFF9F7F0); // Slight gold tint
+  static const Color surfaceTinted = Color(0xFFF9F1DE); // Slight gold tint
 
   /// Text on surface colors
   static const Color onSurface = Color(0xFF1A1A1F);
 
   /// Text on surface variant
-  static const Color onSurfaceVariant = Color(0xFF5A5A5E);
+  static const Color onSurfaceVariant = Color(0xFF5E564A);
 
   /// Glassmorphic overlay (90% opacity white)
-  static const Color glass = Color(0xE6FFFFFF);
+  static const Color glass = Color(0xE6FFFDF8);
 
   // ===========================================================================
   // TEXT HIERARCHY
@@ -73,13 +73,13 @@ class LightColors {
   static const Color textPrimary = Color(0xFF1A1A1F); // Near black
 
   /// Medium emphasis text (labels, secondary content)
-  static const Color textSecondary = Color(0xFF5A5A5E); // Gray-600
+  static const Color textSecondary = Color(0xFF5E564A);
 
   /// Low emphasis text (hints, captions)
-  static const Color textTertiary = Color(0xFF8A8A8E); // Gray-400
+  static const Color textTertiary = Color(0xFF7D7364);
 
   /// Disabled state text
-  static const Color textDisabled = Color(0xFFAAAAAE); // Gray-300
+  static const Color textDisabled = Color(0xFFAFA797);
 
   /// Inverted text for dark backgrounds (gold, obsidian)
   static const Color textInverse = Color(0xFFFAFAF8);
@@ -166,7 +166,7 @@ class LightColors {
   static const Color borderStrong = Color(0x26000000);
 
   /// Focused border (gold)
-  static const Color borderFocused = Color(0xFFB8943D);
+  static const Color borderFocused = Color(0xFFC08A25);
 
   /// Error border
   static const Color borderError = Color(0xFFB83A4F);
@@ -175,10 +175,10 @@ class LightColors {
   static const Color borderSuccess = Color(0xFF1E7D52);
 
   /// Gold accent border (30% opacity)
-  static const Color borderGold = Color(0x4DB8943D);
+  static const Color borderGold = Color(0x4DC08A25);
 
   /// Strong gold border (50% opacity)
-  static const Color borderGoldStrong = Color(0x80B8943D);
+  static const Color borderGoldStrong = Color(0x80C08A25);
 
   /// Divider color
   static const Color divider = Color(0x1A000000);
@@ -191,19 +191,19 @@ class LightColors {
   // ===========================================================================
 
   /// Standard card background
-  static const Color card = Color(0xFFFFFFFF);
+  static const Color card = Color(0xFFFFFDF8);
 
   /// Elevated card with shadow
-  static const Color cardElevated = Color(0xFFFFFFFF);
+  static const Color cardElevated = Color(0xFFFFFDF8);
 
   /// Outlined card (no fill)
   static const Color cardOutlined = Color(0x00000000); // Transparent
 
   /// Card hover state
-  static const Color cardHover = Color(0xFFF9F9F7);
+  static const Color cardHover = Color(0xFFFAF4E8);
 
   /// Card pressed state
-  static const Color cardPressed = Color(0xFFF2F2F0);
+  static const Color cardPressed = Color(0xFFEFE4D3);
 
   // ===========================================================================
   // TRANSACTION-SPECIFIC COLORS
@@ -278,41 +278,41 @@ class LightColors {
   // ===========================================================================
 
   /// Input background (default state)
-  static const Color inputBackground = Color(0xFFFFFFFF);
+  static const Color inputBackground = Color(0xFFFFFDF8);
 
   /// Input background (focused state)
-  static const Color inputBackgroundFocused = Color(0xFFFAFAF8);
+  static const Color inputBackgroundFocused = Color(0xFFFFFDF8);
 
   /// Input background (disabled state)
-  static const Color inputBackgroundDisabled = Color(0xFFF2F2F0);
+  static const Color inputBackgroundDisabled = Color(0xFFE8DBC5);
 
   /// Input border (default)
   static const Color inputBorder = Color(0x1A000000);
 
   /// Input border (focused)
-  static const Color inputBorderFocused = Color(0xFFB8943D);
+  static const Color inputBorderFocused = Color(0xFFC08A25);
 
   /// Input border (error)
   static const Color inputBorderError = Color(0xFFB83A4F);
 
   /// Placeholder text
-  static const Color inputPlaceholder = Color(0xFF8A8A8E);
+  static const Color inputPlaceholder = Color(0xFF7D7364);
 
   // ===========================================================================
   // BUTTON COLORS
   // ===========================================================================
 
   /// Primary button background
-  static const Color buttonPrimary = Color(0xFFB8943D); // Gold
+  static const Color buttonPrimary = Color(0xFFC08A25); // Gold
 
   /// Primary button hover
-  static const Color buttonPrimaryHover = Color(0xFFA68535);
+  static const Color buttonPrimaryHover = Color(0xFFA9751C);
 
   /// Primary button pressed
-  static const Color buttonPrimaryPressed = Color(0xFF8A6E2B);
+  static const Color buttonPrimaryPressed = Color(0xFF7E5515);
 
   /// Primary button disabled
-  static const Color buttonPrimaryDisabled = Color(0xFFD9D9D6);
+  static const Color buttonPrimaryDisabled = Color(0xFFE8DBC5);
 
   /// Secondary button background
   static const Color buttonSecondary = Color(0x1A1A1A1F); // 10% obsidian
@@ -324,18 +324,18 @@ class LightColors {
   static const Color buttonSecondaryPressed = Color(0x331A1A1F); // 20% obsidian
 
   /// Text button color
-  static const Color buttonText = Color(0xFFB8943D); // Gold
+  static const Color buttonText = Color(0xFFC08A25); // Gold
 
   /// Text button hover
-  static const Color buttonTextHover = Color(0xFF8A6E2B);
+  static const Color buttonTextHover = Color(0xFF7E5515);
 
   // ===========================================================================
   // BADGE & CHIP COLORS
   // ===========================================================================
 
   /// Neutral badge
-  static const Color badgeNeutral = Color(0xFFEDEDEB);
-  static const Color badgeNeutralText = Color(0xFF5A5A5E);
+  static const Color badgeNeutral = Color(0xFFEFE4D3);
+  static const Color badgeNeutralText = Color(0xFF5E564A);
 
   /// Success badge
   static const Color badgeSuccess = Color(0xFFE8F5ED);
@@ -358,39 +358,39 @@ class LightColors {
   // ===========================================================================
 
   /// App bar background
-  static const Color appBarBackground = Color(0xFFFFFFFF);
+  static const Color appBarBackground = Color(0xFFF5F0E6);
 
   /// App bar text
   static const Color appBarText = Color(0xFF1A1A1F);
 
   /// App bar icon
-  static const Color appBarIcon = Color(0xFF5A5A5E);
+  static const Color appBarIcon = Color(0xFF5E564A);
 
   /// Bottom navigation background
-  static const Color bottomNavBackground = Color(0xFFFFFFFF);
+  static const Color bottomNavBackground = Color(0xFFFFFDF8);
 
   /// Bottom nav selected item
-  static const Color bottomNavSelected = Color(0xFFB8943D);
+  static const Color bottomNavSelected = Color(0xFFC08A25);
 
   /// Bottom nav unselected item
-  static const Color bottomNavUnselected = Color(0xFF8A8A8E);
+  static const Color bottomNavUnselected = Color(0xFF7D7364);
 
   /// Tab indicator
-  static const Color tabIndicator = Color(0xFFB8943D);
+  static const Color tabIndicator = Color(0xFFC08A25);
 
   /// Tab selected text
   static const Color tabSelectedText = Color(0xFF1A1A1F);
 
   /// Tab unselected text
-  static const Color tabUnselectedText = Color(0xFF8A8A8E);
+  static const Color tabUnselectedText = Color(0xFF7D7364);
 
   // ===========================================================================
   // SPECIAL PURPOSE COLORS
   // ===========================================================================
 
   /// Skeleton loader shimmer
-  static const Color skeleton = Color(0xFFEDEDEB);
-  static const Color skeletonShimmer = Color(0xFFF5F5F2);
+  static const Color skeleton = Color(0xFFEFE4D3);
+  static const Color skeletonShimmer = Color(0xFFF8EEDB);
 
   /// Tooltip background
   static const Color tooltip = Color(0xFF2D2D33);
@@ -410,7 +410,7 @@ class LightColors {
 
   /// QR code colors
   static const Color qrForeground = Color(0xFF1A1A1F);
-  static const Color qrBackground = Color(0xFFFFFFFF);
+  static const Color qrBackground = Color(0xFFFFFDF8);
 
   // ===========================================================================
   // GRADIENTS
@@ -418,9 +418,9 @@ class LightColors {
 
   /// Gold gradient for premium elements
   static const List<Color> goldGradient = [
-    Color(0xFFB8943D),
-    Color(0xFFD4AF56),
-    Color(0xFFB8943D),
+    Color(0xFFF4DA88),
+    Color(0xFFF0CD68),
+    Color(0xFFC08A25),
   ];
 
   /// Success gradient
@@ -431,8 +431,8 @@ class LightColors {
 
   /// Background gradient (subtle)
   static const List<Color> backgroundGradient = [
-    Color(0xFFFAFAF8),
-    Color(0xFFF5F5F2),
+    Color(0xFFF5F0E6),
+    Color(0xFFEFE4D3),
   ];
 }
 
@@ -440,7 +440,11 @@ class LightColors {
 class LightColorsAccessibility {
   /// Check if text color has sufficient contrast on background
   /// WCAG AA requires 4.5:1 for normal text, 3:1 for large text
-  static bool hasValidContrast(Color text, Color background, {bool isLargeText = false}) {
+  static bool hasValidContrast(
+    Color text,
+    Color background, {
+    bool isLargeText = false,
+  }) {
     final double ratio = _contrastRatio(text, background);
     final double requiredRatio = isLargeText ? 3.0 : 4.5;
     return ratio >= requiredRatio;

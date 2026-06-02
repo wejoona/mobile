@@ -210,10 +210,10 @@ class AppShadows {
 
   static List<BoxShadow> get lightGoldGlow => [
     BoxShadow(
-      color: const Color(0x45B8862D),
-      blurRadius: 22,
-      offset: const Offset(0, 8),
-      spreadRadius: -8,
+      color: const Color(0x55E3B748),
+      blurRadius: 26,
+      offset: const Offset(0, 10),
+      spreadRadius: -7,
     ),
   ];
 }

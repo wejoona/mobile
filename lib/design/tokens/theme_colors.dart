@@ -94,9 +94,9 @@ class ThemeColors {
   List<Color> get goldGradient => isDark
       ? AppColors.goldGradient
       : const [
+          AppColorsLight.gold200,
           AppColorsLight.gold300,
           AppColorsLight.gold500,
-          AppColorsLight.gold700,
         ];
 
   // ════════════════════════════════════════════════════════════════════════════
