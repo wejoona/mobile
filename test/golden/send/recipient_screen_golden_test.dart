@@ -17,6 +17,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/send/recipient_screen_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -25,12 +27,9 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: RecipientScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: RecipientScreen()),
         );
         await tester.pump(const Duration(milliseconds: 500));
 
@@ -44,12 +43,9 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: RecipientScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: RecipientScreen()),
         );
         await tester.pump(const Duration(milliseconds: 500));
 

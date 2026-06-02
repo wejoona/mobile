@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
 
@@ -44,14 +49,17 @@ void main() {
       expect(res.statusCode, 400);
     });
 
-    test('POST /bill-payments/pay — invalid provider returns 400/404', () async {
-      final res = await client.post('/bill-payments/pay', {
-        'providerId': 'nonexistent',
-        'reference': 'REF-12345',
-        'amount': 5000,
-      });
-      expect(res.statusCode, anyOf(400, 404));
-    });
+    test(
+      'POST /bill-payments/pay — invalid provider returns 400/404',
+      () async {
+        final res = await client.post('/bill-payments/pay', {
+          'providerId': 'nonexistent',
+          'reference': 'REF-12345',
+          'amount': 5000,
+        });
+        expect(res.statusCode, anyOf(400, 404));
+      },
+    );
 
     test('GET /bill-payments/providers — no auth returns 401', () async {
       final noAuth = E2EClient();

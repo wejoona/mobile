@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:local_auth_platform_interface/types/biometric_type.dart' as platform;
+import 'package:local_auth_platform_interface/types/biometric_type.dart'
+    as platform;
 
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
@@ -23,8 +24,10 @@ class BiometricResult {
   });
 
   const BiometricResult.success() : this(success: true);
-  const BiometricResult.failure(String message, {BiometricFailureReason? reason})
-      : this(success: false, errorMessage: message, failureReason: reason);
+  const BiometricResult.failure(
+    String message, {
+    BiometricFailureReason? reason,
+  }) : this(success: false, errorMessage: message, failureReason: reason);
 }
 
 enum BiometricFailureReason {
@@ -36,16 +39,29 @@ enum BiometricFailureReason {
 }
 
 class BiometricService {
-  static const _storage = FlutterSecureStorage();
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final FlutterSecureStorage _storage;
+  final LocalAuthentication _localAuth;
+
+  BiometricService([
+    LocalAuthentication? localAuth,
+    FlutterSecureStorage? storage,
+  ]) : _localAuth = localAuth ?? LocalAuthentication(),
+       _storage = storage ?? const FlutterSecureStorage();
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
+    var canCheckBiometrics = false;
+    var isDeviceSupported = false;
+
     try {
-      return await _localAuth.canCheckBiometrics || await _localAuth.isDeviceSupported();
-    } catch (_) {
-      return false;
-    }
+      canCheckBiometrics = await _localAuth.canCheckBiometrics;
+    } catch (_) {}
+
+    try {
+      isDeviceSupported = await _localAuth.isDeviceSupported();
+    } catch (_) {}
+
+    return canCheckBiometrics || isDeviceSupported;
   }
 
   /// Determine which biometric type is available (Face ID, Touch ID, etc.)
@@ -149,13 +165,47 @@ class BiometricService {
   Future<bool> isBiometricEnabled() async => isEnrolled();
 
   Future<List<BiometricType>> getAvailableBiometrics() async {
-    final type = await getAvailableType();
-    if (type == BiometricType.none) return [];
-    return [type];
+    try {
+      final biometrics = await _localAuth.getAvailableBiometrics();
+      final mapped = <BiometricType>{};
+
+      if (biometrics.contains(platform.BiometricType.face)) {
+        mapped.add(BiometricType.faceId);
+      }
+      if (biometrics.contains(platform.BiometricType.fingerprint)) {
+        mapped.add(BiometricType.fingerprint);
+      }
+      if (biometrics.contains(platform.BiometricType.iris)) {
+        mapped.add(BiometricType.iris);
+      }
+      if (mapped.isEmpty &&
+          (biometrics.contains(platform.BiometricType.strong) ||
+              biometrics.contains(platform.BiometricType.weak))) {
+        mapped.add(BiometricType.fingerprint);
+      }
+
+      return mapped.toList(growable: false);
+    } catch (_) {
+      return [];
+    }
   }
 
-  Future<bool> isDeviceSupported() async => isAvailable();
-  Future<bool> canCheckBiometrics() async => isAvailable();
+  Future<bool> isDeviceSupported() async {
+    try {
+      return _localAuth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> canCheckBiometrics() async {
+    try {
+      return _localAuth.canCheckBiometrics;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 
   Future<void> enableBiometric() async {
@@ -172,6 +222,7 @@ class BiometricService {
     return authenticate(localizedReason: localizedReason);
   }
 
-  Future<BiometricResult> guardPinChange() async =>
-      authenticate(localizedReason: 'Vérifiez votre identité pour changer le PIN');
+  Future<BiometricResult> guardPinChange() async => authenticate(
+    localizedReason: 'Vérifiez votre identité pour changer le PIN',
+  );
 }

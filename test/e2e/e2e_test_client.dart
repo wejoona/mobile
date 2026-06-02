@@ -4,19 +4,57 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:test/test.dart';
+import 'package:usdc_wallet/utils/phone_normalizer.dart';
+
+/// E2E tests are real backend tests and are opt-in so default unit/widget
+/// suites do not depend on network, environment data, or live credentials.
+final bool e2eEnabled =
+    Platform.environment['RUN_E2E'] == 'true' ||
+    const bool.fromEnvironment('RUN_E2E');
+
+void skipE2ESuite() {
+  group('E2E suite disabled', () {
+    test(
+      'set RUN_E2E=true and API_URL to run real backend checks',
+      () {},
+      skip: 'E2E tests call a real backend and are opt-in.',
+    );
+  });
+}
 
 /// API base URL — override via env: API_URL=...
-final String _envApiUrl = Platform.environment['API_URL'] ??
-    const String.fromEnvironment('API_URL',
-        defaultValue: 'https://dev-api.joonapay.com/api/v1');
+final String _envApiUrl =
+    Platform.environment['API_URL'] ??
+    const String.fromEnvironment(
+      'API_URL',
+      defaultValue: 'https://api.joonapay.com/api/v1',
+    );
 
 /// Pre-configured auth token for prod testing (no /dev/otp in prod)
-final String _envAuthToken = Platform.environment['AUTH_TOKEN'] ??
+final String _envAuthToken =
+    Platform.environment['AUTH_TOKEN'] ??
     const String.fromEnvironment('AUTH_TOKEN', defaultValue: '');
 
+/// Default OTP used by the test stack when the dev OTP endpoint is unavailable.
+final String defaultTestOtp =
+    Platform.environment['DEFAULT_OTP'] ??
+    const String.fromEnvironment('DEFAULT_OTP', defaultValue: '123456');
+
 /// Test phone
-final String testPhone = Platform.environment['TEST_PHONE'] ??
+final String _rawTestPhone =
+    Platform.environment['TEST_PHONE'] ??
     const String.fromEnvironment('TEST_PHONE', defaultValue: '+2250700000000');
+
+/// Test country for local phone normalization
+final String testCountryCode =
+    Platform.environment['TEST_COUNTRY'] ??
+    const String.fromEnvironment('TEST_COUNTRY', defaultValue: 'CI');
+
+final String testPhone = PhoneNormalizer.toE164(
+  _rawTestPhone,
+  countryCode: testCountryCode,
+);
 
 /// E2E test bypass secret — skips rate limiting in dev mode
 const String _testBypassSecret = 'korido-e2e-test-2026';
@@ -33,10 +71,10 @@ class E2EClient {
   String? get refreshToken => _refreshToken;
 
   Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'X-Test-Bypass': _testBypassSecret,
-        if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
-      };
+    'Content-Type': 'application/json',
+    'X-Test-Bypass': _testBypassSecret,
+    if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
+  };
 
   void setTokens({required String access, required String refresh}) {
     _accessToken = access;
@@ -74,8 +112,10 @@ class E2EClient {
   }
 
   Future<E2EResponse> delete(String path) async {
-    final res =
-        await http.delete(Uri.parse('$baseUrl$path'), headers: _headers);
+    final res = await http.delete(
+      Uri.parse('$baseUrl$path'),
+      headers: _headers,
+    );
     return E2EResponse(res);
   }
 
@@ -99,18 +139,14 @@ class E2EClient {
       return;
     }
     // Step 1: Register (idempotent) then login
-    await post('/auth/register', {'phone': phone, 'countryCode': 'CI'});
+    await post('/auth/register', {
+      'phone': phone,
+      'countryCode': testCountryCode,
+    });
     await post('/auth/login', {'phone': phone});
 
     // Step 2: Get OTP from dev endpoint
-    final otpRes = await get('/dev/otp/${Uri.encodeComponent(phone)}');
-    String otp;
-    if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
-      otp = otpRes.data!['data']['otp'].toString();
-    } else {
-      // Fall back to default dev OTP
-      otp = '123456';
-    }
+    final otp = await resolveOtp(phone);
 
     // Step 3: Verify OTP → get tokens
     final verifyRes = await post('/auth/verify-otp', {
@@ -125,6 +161,15 @@ class E2EClient {
     }
   }
 
+  Future<String> resolveOtp(String phone) async {
+    final otpRes = await get('/dev/otp/${Uri.encodeComponent(phone)}');
+    if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
+      return otpRes.data!['data']['otp'].toString();
+    }
+
+    return defaultTestOtp;
+  }
+
   /// Refresh the access token
   Future<bool> refreshAccessToken() async {
     if (_refreshToken == null) return false;
@@ -132,7 +177,8 @@ class E2EClient {
     if (res.statusCode == 200 || res.statusCode == 201) {
       final data = res.data?['data'] ?? res.data;
       _accessToken = data?['accessToken'] ?? data?['access_token'];
-      _refreshToken = data?['refreshToken'] ?? data?['refresh_token'] ?? _refreshToken;
+      _refreshToken =
+          data?['refreshToken'] ?? data?['refresh_token'] ?? _refreshToken;
       return true;
     }
     return false;
@@ -169,10 +215,13 @@ class E2EResponse {
   /// Assert 2xx
   void expectOk() {
     if (!isOk) {
-      throw AssertionError('Expected 2xx but got $statusCode\nBody: ${_raw.body}');
+      throw AssertionError(
+        'Expected 2xx but got $statusCode\nBody: ${_raw.body}',
+      );
     }
   }
 
   @override
-  String toString() => 'E2EResponse($statusCode, ${_raw.body.length > 200 ? '${_raw.body.substring(0, 200)}...' : _raw.body})';
+  String toString() =>
+      'E2EResponse($statusCode, ${_raw.body.length > 200 ? '${_raw.body.substring(0, 200)}...' : _raw.body})';
 }

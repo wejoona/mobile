@@ -10,6 +10,7 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
 import '../../../helpers/test_utils.dart';
@@ -22,6 +23,15 @@ class MockAppFsmNotifier extends AppFsmNotifier {
   @override
   void handleEffects(List<FsmEffect> effects) {
     // No-op: prevent async side effects in tests
+  }
+
+  @override
+  void restoreSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+  }) {
+    // No-op: prevent wallet/KYC fetch microtasks in tests
   }
 }
 
@@ -47,7 +57,7 @@ class MockWalletStateMachine extends WalletStateMachine {
   WalletState build() => const WalletState();
 
   @override
-  Future<void> fetch() async {
+  Future<void> fetch({bool force = false}) async {
     // No-op
   }
 
@@ -57,8 +67,20 @@ class MockWalletStateMachine extends WalletStateMachine {
   }
 }
 
+/// Mock UserStateMachine that avoids delayed profile/transaction side effects
+class MockUserStateMachine extends UserStateMachine {
+  @override
+  UserState build() => const UserState();
+
+  @override
+  Future<void> logout() async {
+    state = const UserState();
+  }
+}
+
 /// Mock SessionService for testing
-class MockSessionNotifier extends Notifier<SessionState> implements SessionService {
+class MockSessionNotifier extends Notifier<SessionState>
+    implements SessionService {
   @override
   SessionState build() => const SessionState();
 
@@ -114,9 +136,10 @@ void main() {
     registerFallbackValues();
   });
 
-  setUp(() {
+  setUp(() async {
     mockAuthService = MockAuthService();
     mockStorage = MockSecureStorage();
+    when(() => mockAuthService.logout()).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -125,9 +148,13 @@ void main() {
         sessionServiceProvider.overrideWith(() => MockSessionNotifier()),
         appFsmProvider.overrideWith(() => MockAppFsmNotifier()),
         kycStateMachineProvider.overrideWith(() => MockKycStateMachine()),
+        userStateMachineProvider.overrideWith(() => MockUserStateMachine()),
         walletStateMachineProvider.overrideWith(() => MockWalletStateMachine()),
       ],
     );
+
+    container.read(authProvider);
+    await pumpEventQueue(times: 3);
   });
 
   tearDown(() {
@@ -141,7 +168,7 @@ void main() {
       final state = container.read(authProvider);
 
       // Assert
-      expect(state.status, equals(AuthStatus.initial));
+      expect(state.status, equals(AuthStatus.unauthenticated));
       expect(state.user, isNull);
       expect(state.phone, isNull);
       expect(state.error, isNull);
@@ -149,37 +176,44 @@ void main() {
   });
 
   group('Register flow -> OTP sent state', () {
-    test('should transition to loading then otpSent on successful register', () async {
-      // Arrange
-      final otpResponse = OtpResponse(
-        success: true,
-        message: 'OTP sent',
-        expiresIn: 300,
-      );
-      when(() => mockAuthService.register(
+    test(
+      'should transition to loading then otpSent on successful register',
+      () async {
+        // Arrange
+        final otpResponse = OtpResponse(
+          success: true,
+          message: 'OTP sent',
+          expiresIn: 300,
+        );
+        when(
+          () => mockAuthService.register(
             phone: any(named: 'phone'),
             countryCode: any(named: 'countryCode'),
-          )).thenAnswer((_) async => otpResponse);
+          ),
+        ).thenAnswer((_) async => otpResponse);
 
-      // Get notifier
-      final notifier = container.read(authProvider.notifier);
+        // Get notifier
+        final notifier = container.read(authProvider.notifier);
 
-      // Act
-      await notifier.register('+2250123456789', 'CI');
+        // Act
+        await notifier.register('+2250123456789', 'CI');
 
-      // Assert
-      final state = container.read(authProvider);
-      expect(state.status, equals(AuthStatus.otpSent));
-      expect(state.phone, equals('+2250123456789'));
-      expect(state.otpExpiresIn, equals(300));
-    });
+        // Assert
+        final state = container.read(authProvider);
+        expect(state.status, equals(AuthStatus.otpSent));
+        expect(state.phone, equals('+2250123456789'));
+        expect(state.otpExpiresIn, equals(300));
+      },
+    );
 
     test('should transition to error on failed register', () async {
       // Arrange
-      when(() => mockAuthService.register(
-            phone: any(named: 'phone'),
-            countryCode: any(named: 'countryCode'),
-          )).thenThrow(ApiException(message: 'User already exists'));
+      when(
+        () => mockAuthService.register(
+          phone: any(named: 'phone'),
+          countryCode: any(named: 'countryCode'),
+        ),
+      ).thenThrow(ApiException(message: 'User already exists'));
 
       final notifier = container.read(authProvider.notifier);
 
@@ -201,8 +235,9 @@ void main() {
         message: 'OTP sent',
         expiresIn: 300,
       );
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async => otpResponse);
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenAnswer((_) async => otpResponse);
 
       final notifier = container.read(authProvider.notifier);
 
@@ -217,8 +252,9 @@ void main() {
 
     test('should transition to error on failed login', () async {
       // Arrange
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenThrow(ApiException(message: 'User not found'));
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenThrow(ApiException(message: 'User not found'));
 
       final notifier = container.read(authProvider.notifier);
 
@@ -233,41 +269,47 @@ void main() {
   });
 
   group('OTP verification -> authenticated state', () {
-    test('should transition to authenticated on successful OTP verification', () async {
-      // Arrange
-      final otpResponse = OtpResponse(
-        success: true,
-        message: 'OTP sent',
-        expiresIn: 300,
-      );
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async => otpResponse);
+    test(
+      'should transition to authenticated on successful OTP verification',
+      () async {
+        // Arrange
+        final otpResponse = OtpResponse(
+          success: true,
+          message: 'OTP sent',
+          expiresIn: 300,
+        );
+        when(
+          () => mockAuthService.login(phone: any(named: 'phone')),
+        ).thenAnswer((_) async => otpResponse);
 
-      final authResponse = AuthResponse(
-        accessToken: 'test.access.token',
-        user: createTestUser(),
-        walletCreated: true,
-        expiresIn: 900,
-      );
-      when(() => mockAuthService.verifyOtp(
+        final authResponse = AuthResponse(
+          accessToken: 'test.access.token',
+          user: createTestUser(),
+          walletCreated: true,
+          expiresIn: 900,
+        );
+        when(
+          () => mockAuthService.verifyOtp(
             phone: any(named: 'phone'),
             otp: any(named: 'otp'),
-          )).thenAnswer((_) async => authResponse);
+          ),
+        ).thenAnswer((_) async => authResponse);
 
-      final notifier = container.read(authProvider.notifier);
+        final notifier = container.read(authProvider.notifier);
 
-      // Login first to set phone
-      await notifier.login('+2250123456789');
+        // Login first to set phone
+        await notifier.login('+2250123456789');
 
-      // Act
-      final result = await notifier.verifyOtp('123456');
+        // Act
+        final result = await notifier.verifyOtp('123456');
 
-      // Assert
-      expect(result, isTrue);
-      final state = container.read(authProvider);
-      expect(state.status, equals(AuthStatus.authenticated));
-      expect(state.user, isNotNull);
-    });
+        // Assert
+        expect(result, isTrue);
+        final state = container.read(authProvider);
+        expect(state.status, equals(AuthStatus.authenticated));
+        expect(state.user, isNotNull);
+      },
+    );
 
     test('should store access token on successful verification', () async {
       // Arrange
@@ -276,8 +318,9 @@ void main() {
         message: 'OTP sent',
         expiresIn: 300,
       );
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async => otpResponse);
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenAnswer((_) async => otpResponse);
 
       final authResponse = AuthResponse(
         accessToken: 'test.access.token',
@@ -285,10 +328,12 @@ void main() {
         walletCreated: true,
         expiresIn: 900,
       );
-      when(() => mockAuthService.verifyOtp(
-            phone: any(named: 'phone'),
-            otp: any(named: 'otp'),
-          )).thenAnswer((_) async => authResponse);
+      when(
+        () => mockAuthService.verifyOtp(
+          phone: any(named: 'phone'),
+          otp: any(named: 'otp'),
+        ),
+      ).thenAnswer((_) async => authResponse);
 
       final notifier = container.read(authProvider.notifier);
       await notifier.login('+2250123456789');
@@ -297,7 +342,10 @@ void main() {
       await notifier.verifyOtp('123456');
 
       // Assert
-      expect(mockStorage.storage[StorageKeys.accessToken], equals('test.access.token'));
+      expect(
+        mockStorage.storage[StorageKeys.accessToken],
+        equals('test.access.token'),
+      );
     });
 
     test('should return false on OTP verification failure', () async {
@@ -307,13 +355,16 @@ void main() {
         message: 'OTP sent',
         expiresIn: 300,
       );
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async => otpResponse);
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenAnswer((_) async => otpResponse);
 
-      when(() => mockAuthService.verifyOtp(
-            phone: any(named: 'phone'),
-            otp: any(named: 'otp'),
-          )).thenThrow(ApiException(message: 'Invalid OTP'));
+      when(
+        () => mockAuthService.verifyOtp(
+          phone: any(named: 'phone'),
+          otp: any(named: 'otp'),
+        ),
+      ).thenThrow(ApiException(message: 'Invalid OTP'));
 
       final notifier = container.read(authProvider.notifier);
       await notifier.login('+2250123456789');
@@ -345,8 +396,9 @@ void main() {
   group('Handle API errors -> error state', () {
     test('should capture error message from ApiException', () async {
       // Arrange
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenThrow(ApiException(message: 'Network error'));
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenThrow(ApiException(message: 'Network error'));
 
       final notifier = container.read(authProvider.notifier);
 
@@ -361,8 +413,9 @@ void main() {
 
     test('should clear error with clearError', () async {
       // Arrange
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenThrow(ApiException(message: 'Error'));
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenThrow(ApiException(message: 'Error'));
 
       final notifier = container.read(authProvider.notifier);
       await notifier.login('+2250123456789');
@@ -409,9 +462,12 @@ void main() {
   });
 
   group('Check stored auth restores session', () {
-    test('should transition to authenticated when token exists', () async {
+    test('should transition to locked when token exists', () async {
       // Arrange
-      await mockStorage.write(key: StorageKeys.accessToken, value: 'existing.token');
+      await mockStorage.write(
+        key: StorageKeys.accessToken,
+        value: 'existing.token',
+      );
 
       final notifier = container.read(authProvider.notifier);
 
@@ -420,7 +476,7 @@ void main() {
 
       // Assert
       final state = container.read(authProvider);
-      expect(state.status, equals(AuthStatus.authenticated));
+      expect(state.status, equals(AuthStatus.locked));
     });
 
     test('should transition to unauthenticated when no token', () async {
@@ -445,8 +501,9 @@ void main() {
         message: 'OTP sent',
         expiresIn: 300,
       );
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async => otpResponse);
+      when(
+        () => mockAuthService.login(phone: any(named: 'phone')),
+      ).thenAnswer((_) async => otpResponse);
 
       final authResponse = AuthResponse(
         accessToken: 'token',
@@ -454,10 +511,12 @@ void main() {
         walletCreated: true,
         expiresIn: 900,
       );
-      when(() => mockAuthService.verifyOtp(
-            phone: any(named: 'phone'),
-            otp: any(named: 'otp'),
-          )).thenAnswer((_) async => authResponse);
+      when(
+        () => mockAuthService.verifyOtp(
+          phone: any(named: 'phone'),
+          otp: any(named: 'otp'),
+        ),
+      ).thenAnswer((_) async => authResponse);
 
       final notifier = container.read(authProvider.notifier);
       await notifier.login('+2250123456789');
@@ -469,8 +528,9 @@ void main() {
 
     test('isLoading should return true during async operations', () async {
       // Arrange
-      when(() => mockAuthService.login(phone: any(named: 'phone')))
-          .thenAnswer((_) async {
+      when(() => mockAuthService.login(phone: any(named: 'phone'))).thenAnswer((
+        _,
+      ) async {
         // Simulate delay
         await Future.delayed(const Duration(milliseconds: 100));
         return OtpResponse(success: true, message: 'OTP sent', expiresIn: 300);
@@ -507,10 +567,7 @@ void main() {
 
     test('should allow clearing error by passing null', () {
       // Arrange
-      const state = AuthState(
-        status: AuthStatus.error,
-        error: 'Some error',
-      );
+      const state = AuthState(status: AuthStatus.error, error: 'Some error');
 
       // Act
       final newState = state.copyWith(status: AuthStatus.loading);

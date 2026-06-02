@@ -4,13 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for AppInput component
 /// Ensures visual consistency across all variants and states
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_input_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  if (skipVisualSuiteIfDisabled()) return;
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('AppInput Snapshot Tests', () {
     group('Variants', () {
       testWidgets('standard variant - idle', (tester) async {
@@ -403,7 +408,8 @@ void main() {
 
       testWidgets('multiline with content', (tester) async {
         final controller = TextEditingController(
-          text: 'This is a longer description\nthat spans multiple lines\nto test multiline input',
+          text:
+              'This is a longer description\nthat spans multiple lines\nto test multiline input',
         );
 
         await tester.pumpWidget(
@@ -529,10 +535,7 @@ void main() {
           TestWrapper(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppInput(
-                hint: 'Search...',
-                prefixIcon: Icons.search,
-              ),
+              child: AppInput(hint: 'Search...', prefixIcon: Icons.search),
             ),
           ),
         );

@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
 
@@ -55,7 +60,8 @@ void main() {
     test('POST /user/pin/set — set PIN', () async {
       // API expects pinHash (SHA256), not plaintext pin
       final res = await client.post('/user/pin/set', {
-        'pinHash': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+        'pinHash':
+            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
       });
       // 200 = set, 409/400 = already set
       expect(res.statusCode, anyOf(200, 201, 400, 409));
@@ -63,7 +69,8 @@ void main() {
 
     test('POST /user/pin/verify — correct PIN', () async {
       final res = await client.post('/user/pin/verify', {
-        'pinHash': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+        'pinHash':
+            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
       });
       // May fail if PIN wasn't set (new test user)
       expect(res.statusCode, anyOf(200, 400));
@@ -71,7 +78,8 @@ void main() {
 
     test('POST /user/pin/verify — wrong PIN returns 400/401', () async {
       final res = await client.post('/user/pin/verify', {
-        'pinHash': '0000000000000000000000000000000000000000000000000000000000000000',
+        'pinHash':
+            '0000000000000000000000000000000000000000000000000000000000000000',
       });
       expect(res.statusCode, anyOf(400, 401));
     });
@@ -83,8 +91,10 @@ void main() {
 
     test('POST /user/pin/change — change PIN', () async {
       final res = await client.post('/user/pin/change', {
-        'oldPinHash': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
-        'newPinHash': 'c59253af4e276b7857c7c0e427dd2a7fe60fb9e0bc56aec40e64d3e42449ac41',
+        'oldPinHash':
+            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+        'newPinHash':
+            'c59253af4e276b7857c7c0e427dd2a7fe60fb9e0bc56aec40e64d3e42449ac41',
       });
       // May succeed or fail if PIN wasn't set
       expect(res.statusCode, anyOf(200, 201, 400));

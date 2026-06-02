@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
   String? createdPotId;
@@ -62,9 +67,7 @@ void main() {
     });
 
     test('POST /savings-pots — missing name returns 400', () async {
-      final res = await client.post('/savings-pots', {
-        'targetAmount': 10000,
-      });
+      final res = await client.post('/savings-pots', {'targetAmount': 10000});
       expect(res.statusCode, 400);
     });
 

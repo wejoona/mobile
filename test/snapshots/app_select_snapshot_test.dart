@@ -4,26 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for AppSelect component
 /// Ensures visual consistency across all states
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_select_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  if (skipVisualSuiteIfDisabled()) return;
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   final testItems = [
-    const AppSelectItem(
-      value: 'option1',
-      label: 'Option 1',
-    ),
-    const AppSelectItem(
-      value: 'option2',
-      label: 'Option 2',
-    ),
-    const AppSelectItem(
-      value: 'option3',
-      label: 'Option 3',
-    ),
+    const AppSelectItem(value: 'option1', label: 'Option 1'),
+    const AppSelectItem(value: 'option2', label: 'Option 2'),
+    const AppSelectItem(value: 'option3', label: 'Option 3'),
   ];
 
   group('AppSelect Snapshot Tests', () {

@@ -4,13 +4,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/composed/balance_card.dart';
 
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for BalanceCard component
 /// Ensures visual consistency for wallet balance display
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/balance_card_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  if (skipVisualSuiteIfDisabled()) return;
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('BalanceCard Snapshot Tests', () {
     group('Basic States', () {
       testWidgets('default balance card', (tester) async {
@@ -38,11 +43,7 @@ void main() {
           const TestWrapper(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: BalanceCard(
-                balance: 0,
-                currency: 'USD',
-                isLoading: true,
-              ),
+              child: BalanceCard(balance: 0, currency: 'USD', isLoading: true),
             ),
           ),
         );
@@ -340,10 +341,7 @@ void main() {
           const TestWrapper(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: BalanceCard(
-                balance: 1234.56,
-                currency: 'USD',
-              ),
+              child: BalanceCard(balance: 1234.56, currency: 'USD'),
             ),
           ),
         );

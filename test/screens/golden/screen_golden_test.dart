@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 import '../../helpers/test_wrapper.dart';
+import '../../helpers/golden_helpers.dart';
 
 /// Component Golden Tests for Design Validation
 ///
@@ -19,6 +20,8 @@ import '../../helpers/test_wrapper.dart';
 /// async loading timers. The goldens are still generated. Run tests
 /// twice if needed - failures on second run indicate real issues.
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
@@ -54,7 +57,9 @@ void main() {
 
         await expectLater(
           find.byType(AppButton),
-          matchesGoldenFile('goldens/components/button_primary_${entry.key}.png'),
+          matchesGoldenFile(
+            'goldens/components/button_primary_${entry.key}.png',
+          ),
         );
       });
 
@@ -83,7 +88,9 @@ void main() {
 
         await expectLater(
           find.byType(AppButton),
-          matchesGoldenFile('goldens/components/button_secondary_${entry.key}.png'),
+          matchesGoldenFile(
+            'goldens/components/button_secondary_${entry.key}.png',
+          ),
         );
       });
     }
@@ -169,7 +176,13 @@ void main() {
                       children: [
                         Text('Balance', style: TextStyle(fontSize: 12)),
                         const SizedBox(height: 8),
-                        Text('\$1,234.56', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(
+                          '\$1,234.56',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -196,10 +209,7 @@ void main() {
           child: Center(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: AppButton(
-                label: 'Disabled',
-                onPressed: null,
-              ),
+              child: AppButton(label: 'Disabled', onPressed: null),
             ),
           ),
         ),
@@ -342,10 +352,7 @@ void main() {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppButton(
-                label: 'Light Theme',
-                onPressed: () {},
-              ),
+              child: AppButton(label: 'Light Theme', onPressed: () {}),
             ),
           ),
         ),
@@ -366,10 +373,7 @@ void main() {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppInput(
-                label: 'Email',
-                hint: 'example@email.com',
-              ),
+              child: AppInput(label: 'Email', hint: 'example@email.com'),
             ),
           ),
         ),

@@ -1,7 +1,7 @@
 // Golden tests for PIN feature screens
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/features/pin/views/change_pin_view.dart';
+import 'package:usdc_wallet/features/settings/views/change_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
@@ -11,6 +11,8 @@ import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -20,10 +22,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ChangePinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ChangePinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -37,10 +36,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ChangePinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ChangePinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -128,10 +124,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: PinLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: PinLockedView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -145,10 +138,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: PinLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: PinLockedView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -164,10 +154,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ResetPinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ResetPinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -181,10 +168,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ResetPinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ResetPinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -200,10 +184,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SetPinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SetPinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -217,10 +198,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SetPinView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SetPinView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 

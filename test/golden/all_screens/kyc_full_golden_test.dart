@@ -18,6 +18,8 @@ import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -27,10 +29,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: DocumentTypeView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: DocumentTypeView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -44,10 +43,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: DocumentTypeView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: DocumentTypeView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -63,10 +59,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: DocumentCaptureView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: DocumentCaptureView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -80,10 +73,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: DocumentCaptureView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: DocumentCaptureView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -99,10 +89,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycPersonalInfoView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycPersonalInfoView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -116,10 +103,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycPersonalInfoView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycPersonalInfoView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -135,10 +119,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycAddressView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycAddressView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -152,10 +133,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycAddressView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycAddressView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -171,10 +149,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SelfieView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SelfieView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -188,10 +163,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SelfieView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SelfieView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -207,10 +179,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycLivenessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycLivenessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -224,10 +193,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycLivenessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycLivenessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -243,10 +209,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycVideoView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycVideoView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -260,10 +223,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycVideoView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycVideoView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -279,10 +239,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycAdditionalDocsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycAdditionalDocsView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -296,10 +253,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycAdditionalDocsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycAdditionalDocsView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -315,10 +269,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ReviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ReviewView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -332,10 +283,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ReviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ReviewView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -351,10 +299,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SubmittedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SubmittedView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -368,10 +313,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SubmittedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SubmittedView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -389,7 +331,10 @@ void main() {
         tester,
         GoldenTestWrapper(
           isDarkMode: false,
-          child: KycUpgradeView(currentTier: KycTier.tier1, targetTier: KycTier.tier2),
+          child: KycUpgradeView(
+            currentTier: KycTier.tier1,
+            targetTier: KycTier.tier2,
+          ),
         ),
         pumpDuration: const Duration(milliseconds: 100),
       );
@@ -406,7 +351,10 @@ void main() {
         tester,
         GoldenTestWrapper(
           isDarkMode: true,
-          child: KycUpgradeView(currentTier: KycTier.tier1, targetTier: KycTier.tier2),
+          child: KycUpgradeView(
+            currentTier: KycTier.tier1,
+            targetTier: KycTier.tier2,
+          ),
         ),
         pumpDuration: const Duration(milliseconds: 100),
       );

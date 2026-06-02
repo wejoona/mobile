@@ -6,13 +6,18 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for Transaction List Item component
 /// Ensures visual consistency for transaction display
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/transaction_item_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  if (skipVisualSuiteIfDisabled()) return;
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('Transaction Item Snapshot Tests', () {
     Widget buildTransactionItem({
       required String title,
@@ -93,7 +98,8 @@ void main() {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: (statusColor ?? AppColors.textTertiary).withOpacity(0.15),
+                          color: (statusColor ?? AppColors.textTertiary)
+                              .withOpacity(0.15),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
@@ -347,7 +353,8 @@ void main() {
           TestWrapper(
             child: buildTransactionItem(
               title: 'Bill Payment',
-              subtitle: 'This is a very long description that should truncate properly',
+              subtitle:
+                  'This is a very long description that should truncate properly',
               amount: '-\$35.00',
               icon: Icons.receipt_long,
               iconColor: AppColors.warningText,

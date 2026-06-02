@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/savings_pots/views/pot_detail_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -18,10 +20,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: PotsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: PotsListView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -35,10 +34,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: PotsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: PotsListView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -54,10 +50,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: CreatePotView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: CreatePotView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -71,10 +64,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: CreatePotView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: CreatePotView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 

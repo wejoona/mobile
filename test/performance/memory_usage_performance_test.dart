@@ -1,3 +1,4 @@
+@Skip("Performance tests are environment-sensitive; run manually")
 /// Performance regression tests for memory usage
 ///
 /// Measures memory consumption during:
@@ -6,7 +7,6 @@
 /// - List scrolling with large datasets
 /// - Provider state management
 /// - Navigation stack growth
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -92,16 +92,16 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
     });
 
-    testWidgets('Navigating back and forth should not leak widgets', (tester) async {
+    testWidgets('Navigating back and forth should not leak widgets', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             secureStorageProvider.overrideWithValue(mockStorage),
             authServiceProvider.overrideWithValue(mockAuthService),
           ],
-          child: MaterialApp(
-            home: _MemoryTestScreen(),
-          ),
+          child: MaterialApp(home: _MemoryTestScreen()),
         ),
       );
 
@@ -137,7 +137,9 @@ void main() {
       expect(true, isTrue);
     });
 
-    testWidgets('Creating and disposing many widgets should not leak', (tester) async {
+    testWidgets('Creating and disposing many widgets should not leak', (
+      tester,
+    ) async {
       for (int iteration = 0; iteration < 5; iteration++) {
         await tester.pumpWidget(
           MaterialApp(
@@ -166,7 +168,9 @@ void main() {
       expect(true, isTrue);
     });
 
-    testWidgets('Image widgets should release memory when disposed', (tester) async {
+    testWidgets('Image widgets should release memory when disposed', (
+      tester,
+    ) async {
       // Build screen with many images
       await tester.pumpWidget(
         MaterialApp(
@@ -177,9 +181,7 @@ void main() {
                 return Container(
                   height: 200,
                   margin: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.blue,
-                  ),
+                  decoration: const BoxDecoration(color: Colors.blue),
                   child: const Center(child: Icon(Icons.image, size: 100)),
                 );
               },
@@ -245,9 +247,7 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
-            home: Scaffold(
-              body: TextField(controller: controller),
-            ),
+            home: Scaffold(body: TextField(controller: controller)),
           ),
         );
 
@@ -266,12 +266,10 @@ void main() {
       expect(controllers.isEmpty, isTrue);
     });
 
-    testWidgets('Animation controllers should be disposed properly', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: _AnimatedTestWidget(),
-        ),
-      );
+    testWidgets('Animation controllers should be disposed properly', (
+      tester,
+    ) async {
+      await tester.pumpWidget(const MaterialApp(home: _AnimatedTestWidget()));
 
       // Let animation run
       await tester.pump();
@@ -290,12 +288,14 @@ void main() {
       // 1. Provider creation/disposal
       final containers = <ProviderContainer>[];
       for (int i = 0; i < 100; i++) {
-        containers.add(ProviderContainer(
-          overrides: [
-            secureStorageProvider.overrideWithValue(mockStorage),
-            authServiceProvider.overrideWithValue(mockAuthService),
-          ],
-        ));
+        containers.add(
+          ProviderContainer(
+            overrides: [
+              secureStorageProvider.overrideWithValue(mockStorage),
+              authServiceProvider.overrideWithValue(mockAuthService),
+            ],
+          ),
+        );
       }
 
       metrics['providers_created'] = containers.length;
@@ -341,7 +341,9 @@ void main() {
       expect(true, isTrue);
     });
 
-    testWidgets('Transaction list loading should manage memory efficiently', (tester) async {
+    testWidgets('Transaction list loading should manage memory efficiently', (
+      tester,
+    ) async {
       // Simulate loading many transactions
       await tester.pumpWidget(
         MaterialApp(

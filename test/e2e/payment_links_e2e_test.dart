@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
   String? createdLinkId;
@@ -39,7 +44,9 @@ void main() {
     });
 
     test('GET /payment-links/nonexistent — returns 404', () async {
-      final res = await client.get('/payment-links/00000000-0000-0000-0000-000000000000');
+      final res = await client.get(
+        '/payment-links/00000000-0000-0000-0000-000000000000',
+      );
       expect(res.statusCode, anyOf(404, 400));
     });
 

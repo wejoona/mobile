@@ -7,34 +7,44 @@ These tests run against the **real backend API** (no mocks).
 ### Option 1: Local backend (recommended — has /dev/otp for auto-login)
 ```bash
 # Start backend locally first, then:
-dart test test/e2e/ -r expanded --dart-define=API_URL=http://localhost:3000/api/v1
+RUN_E2E=true dart test test/e2e/ -r expanded --dart-define=API_URL=http://localhost:3000/api/v1
 ```
 
 ### Option 2: Production with pre-auth token
 ```bash
 # Get a token first (login via mobile app, then extract from secure storage)
-dart test test/e2e/ -r expanded \
+RUN_E2E=true dart test test/e2e/ -r expanded \
   --dart-define=API_URL=https://api.joonapay.com/api/v1 \
   --dart-define=AUTH_TOKEN=eyJhbGci...
 ```
 
-### Option 3: Specific test file
+### Option 3: Production auth smoke with default OTP
 ```bash
-dart test test/e2e/auth_e2e_test.dart -r expanded \
+RUN_E2E=true DEFAULT_OTP=123456 TEST_PHONE=0700000000 TEST_COUNTRY=CI \
+  dart test test/e2e/auth_e2e_test.dart -r expanded \
+  --dart-define=API_URL=https://api.joonapay.com/api/v1
+```
+
+### Option 4: Specific test file
+```bash
+RUN_E2E=true dart test test/e2e/auth_e2e_test.dart -r expanded \
   --dart-define=API_URL=http://localhost:3000/api/v1
 ```
 
-## Configuration (--dart-define)
+## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `RUN_E2E` | `false` | Must be `true` to run these real-backend tests |
 | `API_URL` | `https://api.joonapay.com/api/v1` | Backend base URL |
 | `AUTH_TOKEN` | (empty) | Pre-configured JWT token (skips login flow) |
+| `DEFAULT_OTP` | `123456` | OTP fallback when `/dev/otp` is unavailable |
 | `TEST_PHONE` | `+2250700000000` | Phone number for test user |
+| `TEST_COUNTRY` | `CI` | Country used to normalize local-format `TEST_PHONE` values |
 
 ## Notes
 
-- **Production** runs `NODE_ENV=production` — `/dev/otp` is disabled, so you MUST provide `AUTH_TOKEN`
+- **Production** runs `NODE_ENV=production` — `/dev/otp` may be disabled; provide `AUTH_TOKEN` for authenticated feature suites or `DEFAULT_OTP` for an auth smoke
 - **Local/dev** runs `NODE_ENV=development` — auto-login works via `/dev/otp/:phone`
 - Rate limiting: prod has throttle guards, tests may hit 429 if run too fast
 - Tests are independent per file but share the `loginFlow()` setup

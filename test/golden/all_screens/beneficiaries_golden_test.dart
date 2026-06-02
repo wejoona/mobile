@@ -8,6 +8,8 @@ import 'package:usdc_wallet/features/beneficiaries/views/beneficiary_detail_view
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -17,10 +19,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BeneficiariesScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BeneficiariesScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -34,10 +33,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BeneficiariesScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BeneficiariesScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -53,10 +49,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AddBeneficiaryScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AddBeneficiaryScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -70,10 +63,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AddBeneficiaryScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AddBeneficiaryScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 

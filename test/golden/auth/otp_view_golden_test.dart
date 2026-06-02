@@ -24,6 +24,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/auth/otp_view_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -32,12 +34,9 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial empty state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OtpView()),
         );
         await tester.pumpAndSettle();
 
@@ -49,12 +48,9 @@ void main() {
 
       testWidgets('with countdown timer showing', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OtpView()),
         );
         // Let countdown start but capture immediately to show timer
         await tester.pump(const Duration(seconds: 1));
@@ -69,12 +65,9 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial empty state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OtpView()),
         );
         await tester.pumpAndSettle();
 

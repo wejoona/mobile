@@ -13,8 +13,7 @@ import 'package:usdc_wallet/features/send_external/models/external_transfer_requ
 import '../helpers/golden_test_helper.dart';
 
 /// Mock notifier for ExternalTransferState with pre-set data
-class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
-    implements ExternalTransferNotifier {
+class MockExternalTransferNotifier extends ExternalTransferNotifier {
   final ExternalTransferState initialState;
 
   MockExternalTransferNotifier(this.initialState);
@@ -38,6 +37,9 @@ class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
   Future<void> setNetwork(NetworkOption network) async {}
 
   @override
+  Future<bool> verifyPin(String pin) async => true;
+
+  @override
   Future<bool> executeTransfer() async => true;
 
   @override
@@ -48,6 +50,8 @@ class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
 }
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -56,32 +60,30 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AddressInputScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AddressInputScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/send_external/address_input/default_light.png'),
+        matchesGoldenFile(
+          'goldens/send_external/address_input/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AddressInputScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AddressInputScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/send_external/address_input/default_dark.png'),
+        matchesGoldenFile(
+          'goldens/send_external/address_input/default_dark.png',
+        ),
       );
     });
   });
@@ -212,7 +214,8 @@ void main() {
       estimatedFee: 0.01,
       result: ExternalTransferResult(
         transactionId: 'tx_12345',
-        txHash: '0xabc123def456789012345678901234567890abcdef1234567890abcdef12345678',
+        txHash:
+            '0xabc123def456789012345678901234567890abcdef1234567890abcdef12345678',
         status: 'pending',
         fee: 0.01,
         network: NetworkOption.polygon,
@@ -271,10 +274,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ScanAddressQrScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ScanAddressQrScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -287,10 +287,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ScanAddressQrScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ScanAddressQrScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

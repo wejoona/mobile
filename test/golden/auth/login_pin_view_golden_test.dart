@@ -23,6 +23,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/auth/login_pin_view_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -31,12 +33,9 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 
@@ -48,12 +47,9 @@ void main() {
 
       testWidgets('partial PIN entered', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 
@@ -69,7 +65,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/auth/login_pin_view/partial_pin_light.png'),
+          matchesGoldenFile(
+            'goldens/auth/login_pin_view/partial_pin_light.png',
+          ),
         );
       });
     });
@@ -77,12 +75,9 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 

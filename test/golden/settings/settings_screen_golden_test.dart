@@ -17,6 +17,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/settings/settings_screen_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -25,18 +27,17 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: SettingsScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: SettingsScreen()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/settings/settings_screen/initial_light.png'),
+          matchesGoldenFile(
+            'goldens/settings/settings_screen/initial_light.png',
+          ),
         );
       });
     });
@@ -44,18 +45,17 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: SettingsScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: SettingsScreen()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/settings/settings_screen/initial_dark.png'),
+          matchesGoldenFile(
+            'goldens/settings/settings_screen/initial_dark.png',
+          ),
         );
       });
     });

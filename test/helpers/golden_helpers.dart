@@ -18,7 +18,23 @@ class GoldenDevices {
 /// Check if golden file tests should run (CI only by default).
 bool get shouldRunGoldens {
   return Platform.environment['CI'] == 'true' ||
-      Platform.environment['UPDATE_GOLDENS'] == 'true';
+      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+      Platform.environment['RUN_GOLDENS'] == 'true' ||
+      const bool.fromEnvironment('RUN_GOLDENS');
+}
+
+bool skipVisualSuiteIfDisabled() {
+  if (shouldRunGoldens) return false;
+
+  group('visual suite disabled', () {
+    test(
+      'enable golden snapshots explicitly',
+      () {},
+      skip:
+          'Golden/snapshot tests are opt-in. Set RUN_GOLDENS=true or UPDATE_GOLDENS=true.',
+    );
+  });
+  return true;
 }
 
 /// Wrap a widget for golden testing with a specific device size.

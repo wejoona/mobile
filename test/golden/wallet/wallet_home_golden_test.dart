@@ -17,6 +17,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/wallet/wallet_home_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -25,12 +27,9 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: WalletHomeScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: WalletHomeScreen()),
         );
         // Use pump with duration instead of pumpAndSettle (screen has ongoing timers)
         await tester.pump(const Duration(milliseconds: 500));
@@ -45,12 +44,9 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: WalletHomeScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: WalletHomeScreen()),
         );
         // Use pump with duration instead of pumpAndSettle (screen has ongoing timers)
         await tester.pump(const Duration(milliseconds: 500));

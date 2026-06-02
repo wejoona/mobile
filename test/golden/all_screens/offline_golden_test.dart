@@ -6,6 +6,8 @@ import 'package:usdc_wallet/features/offline/views/pending_transfers_screen.dart
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -14,26 +16,22 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: PendingTransfersScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: PendingTransfersScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/offline/pending_transfers/default_light.png'),
+        matchesGoldenFile(
+          'goldens/offline/pending_transfers/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: PendingTransfersScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: PendingTransfersScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

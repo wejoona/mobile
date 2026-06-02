@@ -10,6 +10,99 @@ class MockDeviceFingerprintService extends Mock
 
 void main() {
   group('AuthService', () {
+    test('login normalizes local Ivory Coast phone to E.164', () async {
+      final dio = MockDio();
+      final fingerprintService = MockDeviceFingerprintService();
+      final authService = AuthService(dio, fingerprintService);
+
+      dio.queueResponse({
+        'success': true,
+        'message': 'OTP sent',
+        'expiresIn': 300,
+      });
+
+      await authService.login(phone: '07 00 00 00 00');
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/auth/login');
+      expect(request.data, {'phone': '+2250700000000'});
+    });
+
+    test('register maps dial-code country input to ISO code', () async {
+      final dio = MockDio();
+      final fingerprintService = MockDeviceFingerprintService();
+      final authService = AuthService(dio, fingerprintService);
+
+      dio.queueResponse({
+        'success': true,
+        'message': 'OTP sent',
+        'expiresIn': 300,
+      });
+
+      await authService.register(phone: '0700000000', countryCode: '+225');
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/auth/register');
+      expect(request.data, {'phone': '+2250700000000', 'countryCode': 'CI'});
+    });
+
+    test(
+      'verifyOtp normalizes remembered local phone before submission',
+      () async {
+        final dio = MockDio();
+        final fingerprintService = MockDeviceFingerprintService();
+        final authService = AuthService(dio, fingerprintService);
+
+        when(fingerprintService.collect).thenAnswer(
+          (_) async => const DeviceFingerprint(
+            deviceId: 'ios-vendor-id',
+            fingerprintHash: 'fingerprint-hash',
+            brand: 'Apple',
+            model: 'iPhone17,2',
+            os: 'iOS',
+            osVersion: '18.5',
+            appVersion: '1.0.0',
+            buildNumber: '42',
+            locale: 'fr_CI',
+            screenWidth: 430,
+            screenHeight: 932,
+            isPhysicalDevice: true,
+            isCompromised: false,
+            biometricsAvailable: true,
+            platform: 'ios',
+          ),
+        );
+
+        dio
+          ..queueResponse({
+            'accessToken': 'access-token',
+            'refreshToken': 'refresh-token',
+            'walletCreated': true,
+            'expiresIn': 900,
+            'user': {
+              'id': 'user-1',
+              'phone': '+2250700000000',
+              'countryCode': 'CI',
+              'phoneVerified': true,
+              'role': 'user',
+              'status': 'active',
+              'createdAt': '2026-05-25T00:00:00.000Z',
+              'updatedAt': '2026-05-25T00:00:00.000Z',
+            },
+          })
+          ..queueResponse({'id': 'device-1'});
+
+        await authService.verifyOtp(phone: '0700000000', otp: '123456');
+
+        final request = dio.requestHistory.first;
+        expect(request.method, 'POST');
+        expect(request.path, '/auth/verify-otp');
+        expect(request.data, {'phone': '+2250700000000', 'otp': '123456'});
+      },
+    );
+
     test(
       'verifyOtp registers the authenticated device through /devices/register',
       () async {

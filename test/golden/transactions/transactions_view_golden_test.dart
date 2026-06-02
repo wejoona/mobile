@@ -17,6 +17,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/transactions/transactions_view_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -25,19 +27,18 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: TransactionsView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: TransactionsView()),
           pumpDuration: const Duration(milliseconds: 500),
         );
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transactions_view/initial_light.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transactions_view/initial_light.png',
+          ),
         );
       });
     });
@@ -45,19 +46,18 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: TransactionsView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: TransactionsView()),
           pumpDuration: const Duration(milliseconds: 500),
         );
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transactions_view/initial_dark.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transactions_view/initial_dark.png',
+          ),
         );
       });
     });

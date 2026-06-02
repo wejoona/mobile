@@ -4,23 +4,25 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for AppButton component
 /// Ensures visual consistency across all variants, sizes, and states
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_button_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  if (skipVisualSuiteIfDisabled()) return;
+
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   group('AppButton Snapshot Tests', () {
     group('Variants', () {
       testWidgets('primary variant - default state', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
             child: Center(
-              child: AppButton(
-                label: 'Primary Button',
-                onPressed: () {},
-              ),
+              child: AppButton(label: 'Primary Button', onPressed: () {}),
             ),
           ),
         );
@@ -172,10 +174,7 @@ void main() {
         await tester.pumpWidget(
           const TestWrapper(
             child: Center(
-              child: AppButton(
-                label: 'Disabled Button',
-                onPressed: null,
-              ),
+              child: AppButton(label: 'Disabled Button', onPressed: null),
             ),
           ),
         );
@@ -382,7 +381,8 @@ void main() {
               child: SizedBox(
                 width: 200,
                 child: AppButton(
-                  label: 'This is a very long button label that should truncate',
+                  label:
+                      'This is a very long button label that should truncate',
                   onPressed: () {},
                 ),
               ),

@@ -39,10 +39,12 @@ class AnalyticsService {
 
   void trackScreen(String screenName, {Map<String, dynamic>? properties}) {
     _firebase?.logScreenView(screenName: screenName);
-    _track(AnalyticsEvent(
-      name: 'screen_view',
-      properties: {'screen_name': screenName, ...?properties},
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'screen_view',
+        properties: {'screen_name': screenName, ...?properties},
+      ),
+    );
   }
 
   // ============================================================
@@ -50,35 +52,57 @@ class AnalyticsService {
   // ============================================================
 
   void trackLogin({required String method}) {
-    _track(AnalyticsEvent(
-      name: 'login',
-      properties: {'method': method},
-    ));
+    _track(AnalyticsEvent(name: 'login', properties: {'method': method}));
+  }
+
+  Future<void> logLoginSuccess({required String method, String? userId}) async {
+    if (userId != null) {
+      await setUserId(userId);
+    }
+    _track(
+      AnalyticsEvent(name: 'login_success', properties: {'method': method}),
+    );
+  }
+
+  Future<void> logLoginFailed({
+    required String method,
+    required String reason,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'login_failed',
+        properties: {'method': method, 'reason_hash': _safeHash(reason)},
+      ),
+    );
   }
 
   void trackRegistration({required String country}) {
-    _track(AnalyticsEvent(
-      name: 'registration',
-      properties: {'country': country},
-    ));
+    _track(
+      AnalyticsEvent(name: 'registration', properties: {'country': country}),
+    );
   }
 
-  void trackSendMoney({required String currency, required String recipientType, required bool success}) {
-    _track(AnalyticsEvent(
-      name: 'send_money',
-      properties: {
-        'currency': currency,
-        'recipient_type': recipientType,
-        'success': success,
-      },
-    ));
+  void trackSendMoney({
+    required String currency,
+    required String recipientType,
+    required bool success,
+  }) {
+    _track(
+      AnalyticsEvent(
+        name: 'send_money',
+        properties: {
+          'currency': currency,
+          'recipient_type': recipientType,
+          'success': success,
+        },
+      ),
+    );
   }
 
   void trackReceiveMoney({required String currency}) {
-    _track(AnalyticsEvent(
-      name: 'receive_money',
-      properties: {'currency': currency},
-    ));
+    _track(
+      AnalyticsEvent(name: 'receive_money', properties: {'currency': currency}),
+    );
   }
 
   void trackKycStarted() {
@@ -86,24 +110,27 @@ class AnalyticsService {
   }
 
   void trackKycCompleted({required bool success}) {
-    _track(AnalyticsEvent(
-      name: 'kyc_completed',
-      properties: {'success': success},
-    ));
+    _track(
+      AnalyticsEvent(name: 'kyc_completed', properties: {'success': success}),
+    );
   }
 
   void trackDeposit({required String method, required bool success}) {
-    _track(AnalyticsEvent(
-      name: 'deposit',
-      properties: {'method': method, 'success': success},
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'deposit',
+        properties: {'method': method, 'success': success},
+      ),
+    );
   }
 
   void trackWithdraw({required String method, required bool success}) {
-    _track(AnalyticsEvent(
-      name: 'withdraw',
-      properties: {'method': method, 'success': success},
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'withdraw',
+        properties: {'method': method, 'success': success},
+      ),
+    );
   }
 
   // ============================================================
@@ -111,10 +138,7 @@ class AnalyticsService {
   // ============================================================
 
   void trackAction(String action, {Map<String, dynamic>? properties}) {
-    _track(AnalyticsEvent(
-      name: action,
-      properties: properties ?? {},
-    ));
+    _track(AnalyticsEvent(name: action, properties: properties ?? {}));
   }
 
   void trackSend({
@@ -124,15 +148,73 @@ class AnalyticsService {
     required bool success,
   }) {
     // Ne pas envoyer le montant exact — uniquement la tranche
-    _track(AnalyticsEvent(
-      name: 'transfer_initiated',
-      properties: {
-        'amount_range': _amountRange(amount),
-        'currency': currency,
-        'recipient_type': recipientType,
-        'success': success,
-      },
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'transfer_initiated',
+        properties: {
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+          'recipient_type': recipientType,
+          'success': success,
+        },
+      ),
+    );
+  }
+
+  Future<void> logTransferInitiated({
+    required String transferType,
+    required double amount,
+    required String currency,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'transfer_initiated',
+        properties: {
+          'transfer_type': transferType,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+        },
+      ),
+    );
+  }
+
+  Future<void> logTransferCompleted({
+    required String transferType,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'transfer_completed',
+        properties: {
+          'transfer_type': transferType,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+          if (transactionId != null)
+            'transaction_hash': _safeHash(transactionId),
+        },
+      ),
+    );
+  }
+
+  Future<void> logTransferFailed({
+    required String transferType,
+    required double amount,
+    required String currency,
+    required String reason,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'transfer_failed',
+        properties: {
+          'transfer_type': transferType,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+          'reason_hash': _safeHash(reason),
+        },
+      ),
+    );
   }
 
   void trackDeposit2({
@@ -140,35 +222,125 @@ class AnalyticsService {
     required double amount,
     required bool success,
   }) {
-    _track(AnalyticsEvent(
-      name: 'deposit_initiated',
-      properties: {
-        'method': method,
-        'amount_range': _amountRange(amount),
-        'success': success,
-      },
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'deposit_initiated',
+        properties: {
+          'method': method,
+          'amount_range': _amountRange(amount),
+          'success': success,
+        },
+      ),
+    );
+  }
+
+  Future<void> logKycStarted({String? tier}) async {
+    _track(
+      AnalyticsEvent(
+        name: 'kyc_started',
+        properties: {if (tier != null) 'tier': tier},
+      ),
+    );
+  }
+
+  Future<void> logKycCompleted({String? tier, required String status}) async {
+    _track(
+      AnalyticsEvent(
+        name: 'kyc_completed',
+        properties: {if (tier != null) 'tier': tier, 'status': status},
+      ),
+    );
+  }
+
+  Future<void> logDepositInitiated({
+    required String method,
+    required double amount,
+    required String currency,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'deposit_initiated',
+        properties: {
+          'method': method,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+        },
+      ),
+    );
+  }
+
+  Future<void> logDepositCompleted({
+    required String method,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'deposit_completed',
+        properties: {
+          'method': method,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+          if (transactionId != null)
+            'transaction_hash': _safeHash(transactionId),
+        },
+      ),
+    );
+  }
+
+  Future<void> logBillPaymentCompleted({
+    required String billerName,
+    required String category,
+    required double amount,
+    required String currency,
+    String? transactionId,
+  }) async {
+    _track(
+      AnalyticsEvent(
+        name: 'bill_payment_completed',
+        properties: {
+          'biller_hash': _safeHash(billerName),
+          'category': category,
+          'amount_range': _amountRange(amount),
+          'currency': currency,
+          if (transactionId != null)
+            'transaction_hash': _safeHash(transactionId),
+        },
+      ),
+    );
+  }
+
+  Future<void> logScreenView({
+    required String screenName,
+    String? screenClass,
+  }) async {
+    trackScreen(
+      screenName,
+      properties: {if (screenClass != null) 'screen_class': screenClass},
+    );
   }
 
   void trackKycStep(String step, {bool completed = false}) {
-    _track(AnalyticsEvent(
-      name: 'kyc_step',
-      properties: {
-        'step': step,
-        'completed': completed,
-      },
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'kyc_step',
+        properties: {'step': step, 'completed': completed},
+      ),
+    );
   }
 
   void trackError(String errorType, String message) {
-    _track(AnalyticsEvent(
-      name: 'error',
-      properties: {
-        'error_type': errorType,
-        // Ne pas envoyer le message complet — peut contenir des PII
-        'message_hash': message.hashCode.toString(),
-      },
-    ));
+    _track(
+      AnalyticsEvent(
+        name: 'error',
+        properties: {
+          'error_type': errorType,
+          // Ne pas envoyer le message complet — peut contenir des PII
+          'message_hash': message.hashCode.toString(),
+        },
+      ),
+    );
   }
 
   void setUserProperties({
@@ -178,13 +350,28 @@ class AnalyticsService {
     String? locale,
   }) {
     if (userId != null) _firebase?.setUserId(id: userId);
-    if (kycStatus != null) _firebase?.setUserProperty(name: 'kyc_status', value: kycStatus);
-    if (country != null) _firebase?.setUserProperty(name: 'country', value: country);
-    if (locale != null) _firebase?.setUserProperty(name: 'locale', value: locale);
+    if (kycStatus != null)
+      _firebase?.setUserProperty(name: 'kyc_status', value: kycStatus);
+    if (country != null)
+      _firebase?.setUserProperty(name: 'country', value: country);
+    if (locale != null)
+      _firebase?.setUserProperty(name: 'locale', value: locale);
   }
 
-  void setUserProperty(String name, dynamic value) {
-    _firebase?.setUserProperty(name: name, value: value?.toString());
+  Future<void> setUserId(String? userId) async {
+    await _firebase?.setUserId(id: userId);
+  }
+
+  Future<void> setUserProperty({String? name, dynamic value}) async {
+    if (name == null || name.isEmpty) return;
+
+    await _firebase?.setUserProperty(name: name, value: value?.toString());
+  }
+
+  Future<void> reset() async {
+    _pendingEvents.clear();
+    await _firebase?.setUserId(id: null);
+    await _firebase?.resetAnalyticsData();
   }
 
   // ============================================================
@@ -204,7 +391,10 @@ class AnalyticsService {
       // Filtrer les propriétés pour Firebase (seulement String/int/double/bool)
       final params = <String, Object>{};
       for (final entry in event.properties.entries) {
-        if (entry.value is String || entry.value is int || entry.value is double || entry.value is bool) {
+        if (entry.value is String ||
+            entry.value is int ||
+            entry.value is double ||
+            entry.value is bool) {
           params[entry.key] = entry.value as Object;
         }
       }
@@ -224,6 +414,8 @@ class AnalyticsService {
     if (amount < 1000) return '500_1000';
     return 'over_1000';
   }
+
+  String _safeHash(String value) => value.hashCode.toString();
 }
 
 class AnalyticsEvent {

@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
 
@@ -38,14 +43,16 @@ void main() {
 
     test('GET /wallet/exchange-rate — returns rate', () async {
       final res = await client.get(
-          '/wallet/exchange-rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000');
+        '/wallet/exchange-rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
+      );
       // May return 200 or 400 if FX not configured
       expect(res.statusCode, anyOf(200, 400, 404, 501));
     });
 
     test('GET /wallet/rate — returns rate', () async {
       final res = await client.get(
-          '/wallet/rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000');
+        '/wallet/rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
+      );
       expect(res.statusCode, anyOf(200, 400, 404, 501));
     });
 
@@ -64,21 +71,24 @@ void main() {
   group('Wallet PIN E2E', () {
     test('POST /wallet/pin/set — set wallet PIN', () async {
       final res = await client.post('/wallet/pin/set', {
-        'pinHash': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+        'pinHash':
+            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
       });
       expect(res.statusCode, anyOf(200, 201, 400, 409));
     });
 
     test('POST /wallet/pin/verify — verify correct PIN', () async {
       final res = await client.post('/wallet/pin/verify', {
-        'pinHash': '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
+        'pinHash':
+            '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92',
       });
       expect(res.statusCode, anyOf(200, 400));
     });
 
     test('POST /wallet/pin/verify — wrong PIN', () async {
       final res = await client.post('/wallet/pin/verify', {
-        'pinHash': '0000000000000000000000000000000000000000000000000000000000000000',
+        'pinHash':
+            '0000000000000000000000000000000000000000000000000000000000000000',
       });
       expect(res.statusCode, anyOf(400, 401));
     });
@@ -100,21 +110,32 @@ void main() {
   });
 
   group('Wallet Transfer E2E', () {
-    test('POST /wallet/transfer/internal — missing fields returns 400', () async {
-      final res = await client.post('/wallet/transfer/internal', {});
-      expect(res.statusCode, 400);
-    });
+    test(
+      'POST /wallet/transfer/internal — missing fields returns 400',
+      () async {
+        final res = await client.post('/wallet/transfer/internal', {});
+        expect(res.statusCode, 400);
+      },
+    );
 
-    test('POST /wallet/transfer/external — missing fields returns 400', () async {
-      final res = await client.post('/wallet/transfer/external', {});
-      expect(res.statusCode, 400);
-    });
+    test(
+      'POST /wallet/transfer/external — missing fields returns 400',
+      () async {
+        final res = await client.post('/wallet/transfer/external', {});
+        expect(res.statusCode, 400);
+      },
+    );
 
-    test('GET /wallet/transfer/external/estimate-fee — returns fee estimate', () async {
-      final res = await client.get('/wallet/transfer/external/estimate-fee?amount=100&network=stellar');
-      // May return 200 or 400 depending on query params validation
-      expect(res.statusCode, anyOf(200, 400));
-    });
+    test(
+      'GET /wallet/transfer/external/estimate-fee — returns fee estimate',
+      () async {
+        final res = await client.get(
+          '/wallet/transfer/external/estimate-fee?amount=100&network=stellar',
+        );
+        // May return 200 or 400 depending on query params validation
+        expect(res.statusCode, anyOf(200, 400));
+      },
+    );
   });
 
   group('Wallet Withdraw E2E', () {

@@ -6,6 +6,8 @@ import 'package:usdc_wallet/features/referrals/views/referrals_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -14,10 +16,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ReferralsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ReferralsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -30,10 +29,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ReferralsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ReferralsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

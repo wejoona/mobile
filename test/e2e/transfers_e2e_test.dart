@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
   const testPhone = '+2250700000000';
 
@@ -22,9 +27,7 @@ void main() {
     });
 
     test('POST /transfers/internal — missing recipient returns 400', () async {
-      final res = await client.post('/transfers/internal', {
-        'amount': 100,
-      });
+      final res = await client.post('/transfers/internal', {'amount': 100});
       expect(res.statusCode, 400);
     });
 

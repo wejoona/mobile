@@ -19,6 +19,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/splash/splash_view_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -27,13 +29,10 @@ void main() {
     group('Light Mode', () {
       testWidgets('initial animation frame', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: SplashView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: SplashView()),
           pumpDuration: const Duration(milliseconds: 200),
         );
 
@@ -48,13 +47,10 @@ void main() {
 
       testWidgets('animation complete', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: SplashView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: SplashView()),
           pumpDuration: const Duration(milliseconds: 800),
         );
 
@@ -70,13 +66,10 @@ void main() {
     group('Dark Mode', () {
       testWidgets('initial animation frame', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: SplashView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: SplashView()),
           pumpDuration: const Duration(milliseconds: 200),
         );
 
@@ -90,13 +83,10 @@ void main() {
 
       testWidgets('animation complete', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: SplashView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: SplashView()),
           pumpDuration: const Duration(milliseconds: 800),
         );
 

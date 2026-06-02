@@ -39,6 +39,27 @@ class GoldenTestConfig {
   static const String backendUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
 }
 
+bool get shouldRunGoldens {
+  return Platform.environment['CI'] == 'true' ||
+      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+      Platform.environment['RUN_GOLDENS'] == 'true' ||
+      const bool.fromEnvironment('RUN_GOLDENS');
+}
+
+bool skipVisualSuiteIfDisabled() {
+  if (shouldRunGoldens) return false;
+
+  group('visual suite disabled', () {
+    test(
+      'enable golden snapshots explicitly',
+      () {},
+      skip:
+          'Golden/snapshot tests are opt-in. Set RUN_GOLDENS=true or UPDATE_GOLDENS=true.',
+    );
+  });
+  return true;
+}
+
 /// Golden test utilities
 class GoldenTestUtils {
   GoldenTestUtils._();
@@ -46,24 +67,24 @@ class GoldenTestUtils {
   /// Initialize golden test environment
   static Future<void> init() async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Disable Google Fonts fetching - use fallback fonts
     GoogleFonts.config.allowRuntimeFetching = false;
-    
+
     // Enable mock mode for API calls
     MockConfig.enableAllMocks();
     MockConfig.networkDelayMs = 0; // No delays in tests
     MockRegistry.initialize();
-    
+
     // Disable haptics to avoid timer issues in tests
     HapticService().setEnabled(false);
-    
+
     // Set up SharedPreferences with empty initial values
     SharedPreferences.setMockInitialValues({});
-    
+
     // Set up HTTP overrides
     HttpOverrides.global = _GoldenTestHttpOverrides();
-    
+
     // Set up method channel mocks for platform plugins
     _setupMethodChannelMocks();
   }
@@ -71,11 +92,13 @@ class GoldenTestUtils {
   /// Set up method channel mocks for platform plugins
   static void _setupMethodChannelMocks() {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Mock shared_preferences
-    const sharedPrefsChannel = MethodChannel('plugins.flutter.io/shared_preferences');
+    const sharedPrefsChannel = MethodChannel(
+      'plugins.flutter.io/shared_preferences',
+    );
     final Map<String, Object?> sharedPrefsData = {};
-    
+
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       sharedPrefsChannel,
       (MethodCall methodCall) async {
@@ -106,11 +129,13 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock flutter_secure_storage
-    const secureStorageChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    const secureStorageChannel = MethodChannel(
+      'plugins.it_nomads.com/flutter_secure_storage',
+    );
     final Map<String, String> secureStorageData = {};
-    
+
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       secureStorageChannel,
       (MethodCall methodCall) async {
@@ -144,9 +169,11 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock path_provider
-    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       pathProviderChannel,
       (MethodCall methodCall) async {
@@ -166,9 +193,11 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock path_provider macOS channel
-    const pathProviderMacOSChannel = MethodChannel('plugins.flutter.io/path_provider_macos');
+    const pathProviderMacOSChannel = MethodChannel(
+      'plugins.flutter.io/path_provider_macos',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       pathProviderMacOSChannel,
       (MethodCall methodCall) async {
@@ -188,9 +217,11 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock connectivity_plus method channel
-    const connectivityChannel = MethodChannel('dev.fluttercommunity.plus/connectivity');
+    const connectivityChannel = MethodChannel(
+      'dev.fluttercommunity.plus/connectivity',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       connectivityChannel,
       (MethodCall methodCall) async {
@@ -201,9 +232,11 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock connectivity_plus event channel (status stream)
-    const connectivityStatusChannel = MethodChannel('dev.fluttercommunity.plus/connectivity_status');
+    const connectivityStatusChannel = MethodChannel(
+      'dev.fluttercommunity.plus/connectivity_status',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       connectivityStatusChannel,
       (MethodCall methodCall) async {
@@ -211,25 +244,24 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock local_auth
     const localAuthChannel = MethodChannel('plugins.flutter.io/local_auth');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      localAuthChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'getAvailableBiometrics':
-            return <String>[];
-          case 'isDeviceSupported':
-            return false;
-          case 'authenticate':
-            return false;
-          default:
-            return null;
-        }
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(localAuthChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'getAvailableBiometrics':
+          return <String>[];
+        case 'isDeviceSupported':
+          return false;
+        case 'authenticate':
+          return false;
+        default:
+          return null;
+      }
+    });
+
     // Mock sms_autofill
     const smsAutofillChannel = MethodChannel('sms_autofill');
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -238,45 +270,47 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock HapticFeedback
     const hapticChannel = MethodChannel('flutter/haptic_feedback');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      hapticChannel,
-      (MethodCall methodCall) async {
-        // Haptic feedback methods: vibrate, lightImpact, mediumImpact, heavyImpact, selectionClick
-        return null;
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(hapticChannel, (
+      MethodCall methodCall,
+    ) async {
+      // Haptic feedback methods: vibrate, lightImpact, mediumImpact, heavyImpact, selectionClick
+      return null;
+    });
+
     // Mock camera plugin
     const cameraChannel = MethodChannel('plugins.flutter.io/camera');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      cameraChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'availableCameras':
-            return <Map<String, dynamic>>[];
-          case 'create':
-            return {'cameraId': 0};
-          case 'initialize':
-            return {'previewWidth': 1920.0, 'previewHeight': 1080.0};
-          case 'dispose':
-            return null;
-          default:
-            return null;
-        }
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(cameraChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'availableCameras':
+          return <Map<String, dynamic>>[];
+        case 'create':
+          return {'cameraId': 0};
+        case 'initialize':
+          return {'previewWidth': 1920.0, 'previewHeight': 1080.0};
+        case 'dispose':
+          return null;
+        default:
+          return null;
+      }
+    });
+
     // Mock mobile_scanner method channel
-    const mobileScannerChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+    const mobileScannerChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/method',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerChannel,
       (MethodCall methodCall) async {
         switch (methodCall.method) {
           case 'start':
-            return {'size': {'width': 1920.0, 'height': 1080.0}};
+            return {
+              'size': {'width': 1920.0, 'height': 1080.0},
+            };
           case 'stop':
             return null;
           case 'toggleTorch':
@@ -288,51 +322,58 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock mobile_scanner event channels
-    const mobileScannerEventChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/event');
+    const mobileScannerEventChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/event',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerEventChannel,
       (MethodCall methodCall) async {
         return null;
       },
     );
-    
-    const mobileScannerOrientationChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/deviceOrientation');
+
+    const mobileScannerOrientationChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/deviceOrientation',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerOrientationChannel,
       (MethodCall methodCall) async {
         return null;
       },
     );
-    
+
     // Mock permission_handler
-    const permissionChannel = MethodChannel('flutter.baseflow.com/permissions/methods');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      permissionChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'requestPermissions':
-            // Return granted (1) for all permissions
-            final permissions = methodCall.arguments as List<dynamic>?;
-            if (permissions != null) {
-              return {for (var p in permissions) p: 1};
-            }
-            return <int, int>{};
-          case 'checkPermissionStatus':
-            return 1; // granted
-          case 'shouldShowRequestPermissionRationale':
-            return false;
-          case 'openAppSettings':
-            return true;
-          default:
-            return null;
-        }
-      },
+    const permissionChannel = MethodChannel(
+      'flutter.baseflow.com/permissions/methods',
     );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(permissionChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'requestPermissions':
+          // Return granted (1) for all permissions
+          final permissions = methodCall.arguments as List<dynamic>?;
+          if (permissions != null) {
+            return {for (var p in permissions) p: 1};
+          }
+          return <int, int>{};
+        case 'checkPermissionStatus':
+          return 1; // granted
+        case 'shouldShowRequestPermissionRationale':
+          return false;
+        case 'openAppSettings':
+          return true;
+        default:
+          return null;
+      }
+    });
+
     // Mock package_info_plus
-    const packageInfoChannel = MethodChannel('dev.fluttercommunity.plus/package_info');
+    const packageInfoChannel = MethodChannel(
+      'dev.fluttercommunity.plus/package_info',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       packageInfoChannel,
       (MethodCall methodCall) async {
@@ -347,26 +388,27 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock device_info_plus
-    const deviceInfoChannel = MethodChannel('dev.fluttercommunity.plus/device_info');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      deviceInfoChannel,
-      (MethodCall methodCall) async {
-        if (methodCall.method == 'getInfo') {
-          return {
-            'name': 'iPhone 14',
-            'systemName': 'iOS',
-            'systemVersion': '16.0',
-            'model': 'iPhone',
-            'localizedModel': 'iPhone',
-            'identifierForVendor': 'test-device-id',
-            'isPhysicalDevice': false,
-          };
-        }
-        return null;
-      },
+    const deviceInfoChannel = MethodChannel(
+      'dev.fluttercommunity.plus/device_info',
     );
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(deviceInfoChannel, (
+      MethodCall methodCall,
+    ) async {
+      if (methodCall.method == 'getInfo') {
+        return {
+          'name': 'iPhone 14',
+          'systemName': 'iOS',
+          'systemVersion': '16.0',
+          'model': 'iPhone',
+          'localizedModel': 'iPhone',
+          'identifierForVendor': 'test-device-id',
+          'isPhysicalDevice': false,
+        };
+      }
+      return null;
+    });
   }
 
   /// Generate golden file path
@@ -582,10 +624,7 @@ class _MockDio extends DioMixin implements Dio {
         'isRead': false,
         'actionRequired': false,
         'createdAt': DateTime.now().toIso8601String(),
-        'metadata': {
-          'transactionId': 'tx_123',
-          'amount': 1000.0,
-        },
+        'metadata': {'transactionId': 'tx_123', 'amount': 1000.0},
       };
     }
     if (path.contains('/alerts')) {
@@ -610,7 +649,9 @@ class _MockDio extends DioMixin implements Dio {
             'message': 'Login from a new device detected',
             'isRead': true,
             'actionRequired': false,
-            'createdAt': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+            'createdAt': DateTime.now()
+                .subtract(const Duration(hours: 2))
+                .toIso8601String(),
           },
         ],
         'page': 1,
@@ -652,7 +693,7 @@ class _NoopHttpClientAdapter implements HttpClientAdapter {
 }
 
 /// Helper to run golden tests tolerant of non-fatal rendering errors
-/// 
+///
 /// Many widgets throw during layout/paint (overflow, IntrinsicHeight issues,
 /// provider init errors) but still render a meaningful visual. This helper
 /// catches those errors so the golden snapshot can still be taken.
@@ -871,9 +912,7 @@ class GoldenScreenWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      overrides: [
-        dioProvider.overrideWithValue(_mockDio),
-      ],
+      overrides: [dioProvider.overrideWithValue(_mockDio)],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         locale: locale,
@@ -889,16 +928,8 @@ class GoldenScreenWrapper extends StatelessWidget {
 /// Extension for easier golden test writing
 extension GoldenWidgetTesterExtension on WidgetTester {
   /// Pump widget with golden test wrapper
-  Future<void> pumpGolden(
-    Widget child, {
-    bool isDarkMode = false,
-  }) async {
-    await pumpWidget(
-      GoldenTestWrapper(
-        isDarkMode: isDarkMode,
-        child: child,
-      ),
-    );
+  Future<void> pumpGolden(Widget child, {bool isDarkMode = false}) async {
+    await pumpWidget(GoldenTestWrapper(isDarkMode: isDarkMode, child: child));
     await pumpAndSettle();
   }
 

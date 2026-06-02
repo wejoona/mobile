@@ -6,6 +6,7 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
+import 'package:usdc_wallet/utils/phone_normalizer.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {
@@ -20,9 +21,19 @@ class AuthService {
     required String countryCode,
   }) async {
     try {
+      final normalizedPhone = PhoneNormalizer.toE164(
+        phone,
+        countryCode: countryCode,
+      );
       final response = await _dio.post(
         '/auth/register',
-        data: {'phone': phone, 'countryCode': countryCode},
+        data: {
+          'phone': normalizedPhone,
+          'countryCode': PhoneNormalizer.toIsoCountryCode(
+            countryCode,
+            normalizedPhone,
+          ),
+        },
       );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
@@ -33,7 +44,10 @@ class AuthService {
   /// POST /auth/login
   Future<OtpResponse> login({required String phone}) async {
     try {
-      final response = await _dio.post('/auth/login', data: {'phone': phone});
+      final response = await _dio.post(
+        '/auth/login',
+        data: {'phone': PhoneNormalizer.toE164(phone)},
+      );
       return OtpResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -48,7 +62,7 @@ class AuthService {
     try {
       final response = await _dio.post(
         '/auth/verify-otp',
-        data: {'phone': phone, 'otp': otp},
+        data: {'phone': PhoneNormalizer.toE164(phone), 'otp': otp},
       );
       final authResponse = AuthResponse.fromJson(response.data);
 

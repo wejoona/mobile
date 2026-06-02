@@ -8,6 +8,8 @@ import 'package:usdc_wallet/features/alerts/views/alerts_list_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -16,10 +18,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AlertsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AlertsListView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -32,10 +31,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AlertsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AlertsListView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -50,10 +46,7 @@ void main() {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AlertPreferencesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AlertPreferencesView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -66,10 +59,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AlertPreferencesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AlertPreferencesView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/sub_business/views/sub_business_staff_view.
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -18,10 +20,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SubBusinessesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SubBusinessesView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -35,10 +34,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SubBusinessesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SubBusinessesView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -54,10 +50,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: CreateSubBusinessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: CreateSubBusinessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -71,10 +64,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: CreateSubBusinessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: CreateSubBusinessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 

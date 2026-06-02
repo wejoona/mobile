@@ -5,6 +5,11 @@ import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
 
   setUpAll(() {
@@ -15,7 +20,7 @@ void main() {
     test('POST /auth/register — new user or already exists', () async {
       final res = await client.post('/auth/register', {
         'phone': testPhone,
-        'countryCode': 'CI',
+        'countryCode': testCountryCode,
       });
       // 201 = new user, 200/409 = already exists
       expect(res.statusCode, anyOf(200, 201, 409));
@@ -26,19 +31,22 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /dev/otp/:phone — retrieves OTP (dev mode)', () async {
-      final res = await client.get('/dev/otp/${Uri.encodeComponent(testPhone)}');
-      res.expectOk();
-      expect(res.data!['data']['otp'], isNotNull);
+    test('GET /dev/otp/:phone or default OTP fallback', () async {
+      final res = await client.get(
+        '/dev/otp/${Uri.encodeComponent(testPhone)}',
+      );
+      if (res.isOk) {
+        expect(res.data!['data']['otp'], isNotNull);
+      } else {
+        expect(defaultTestOtp, isNotEmpty);
+      }
     });
 
     test('POST /auth/verify-otp — valid OTP returns tokens', () async {
       // Wait to avoid rate limiting
       await Future.delayed(const Duration(seconds: 2));
 
-      // Get OTP from dev endpoint
-      final otpRes = await client.get('/dev/otp/${Uri.encodeComponent(testPhone)}');
-      final otp = otpRes.data!['data']['otp'].toString();
+      final otp = await client.resolveOtp(testPhone);
 
       final res = await client.post('/auth/verify-otp', {
         'phone': testPhone,

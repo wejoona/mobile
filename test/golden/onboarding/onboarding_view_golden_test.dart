@@ -20,6 +20,8 @@ import '../helpers/golden_test_helper.dart';
 /// To update goldens:
 /// flutter test --update-goldens test/golden/onboarding/onboarding_view_golden_test.dart
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
@@ -28,29 +30,25 @@ void main() {
     group('Light Mode', () {
       testWidgets('first page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page1_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page1_light.png',
+          ),
         );
       });
 
       testWidgets('second page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
         await tester.pumpAndSettle();
 
@@ -60,18 +58,17 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page2_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page2_light.png',
+          ),
         );
       });
 
       testWidgets('third page with CTA', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OnboardingView()),
         );
         await tester.pumpAndSettle();
 
@@ -83,7 +80,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page3_light.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page3_light.png',
+          ),
         );
       });
     });
@@ -91,29 +90,25 @@ void main() {
     group('Dark Mode', () {
       testWidgets('first page', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OnboardingView()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page1_dark.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page1_dark.png',
+          ),
         );
       });
 
       testWidgets('third page with CTA', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OnboardingView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OnboardingView()),
         );
         await tester.pumpAndSettle();
 
@@ -125,7 +120,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/onboarding/onboarding_view/page3_dark.png'),
+          matchesGoldenFile(
+            'goldens/onboarding/onboarding_view/page3_dark.png',
+          ),
         );
       });
     });
