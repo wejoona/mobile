@@ -416,11 +416,11 @@ class LightColors {
   // GRADIENTS
   // ===========================================================================
 
-  /// Gold gradient for premium elements
+  /// Quiet gold fill for ordinary premium elements.
+  /// Identity surfaces such as the Korido mark use their own calculated ramp.
   static const List<Color> goldGradient = [
-    Color(0xFFF4DA88),
-    Color(0xFFF0CD68),
-    Color(0xFFC08A25),
+    Color(0xFFC1A44A),
+    Color(0xFFC1A44A),
   ];
 
   /// Success gradient

@@ -151,7 +151,7 @@ class AppButton extends StatelessWidget {
             boxShadow: AppShadows.goldGlow,
           );
         } else {
-          // Light mode: Antique gold gradient with warm ambient shadow
+          // Light mode: calm gold fill with warm ambient shadow.
           return BoxDecoration(
             gradient: LinearGradient(
               colors: colors.goldGradient,

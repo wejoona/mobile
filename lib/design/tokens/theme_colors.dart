@@ -93,11 +93,7 @@ class ThemeColors {
   /// Gold gradient for decorative elements
   List<Color> get goldGradient => isDark
       ? AppColors.goldGradient
-      : const [
-          AppColorsLight.gold200,
-          AppColorsLight.gold300,
-          AppColorsLight.gold500,
-        ];
+      : [AppColorsLight.logoGold, AppColorsLight.logoGold];
 
   // ════════════════════════════════════════════════════════════════════════════
   // SEMANTIC

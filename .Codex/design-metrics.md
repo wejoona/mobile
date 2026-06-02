@@ -45,3 +45,29 @@ After the 2026-06-02 light-theme tuning:
 - Overall transfer score: `93.2`
 
 The previous light score was `80.9`, mainly because foundation depth was only `0.065`.
+
+## Logo Gold Calculation
+
+Do not tune the light logo gold by eye.
+
+Use `BrandColorCalculator.deriveLightIdentityGold`:
+
+- source color: dark identity gold (`AppColors.gold500`)
+- dark background: `AppColors.obsidian`
+- light background: `AppColorsLight.canvas`
+- method: preserve OKLCH hue/chroma from dark gold, then compress the dark contrast by square root for light mode
+- material effect: use `BrandColorCalculator.deriveLightIdentityGoldRamp` for the logo gradient, producing `#CAB351`, `#C1A44A`, `#AD9635`
+
+This avoids both failed manual extremes:
+
+- `AppColorsLight.gold300` / `#F0CD68`: too yellow
+- `AppColorsLight.gold500` / `#C08A25`: too dark and orange
+
+## Light Gradient Restraint
+
+Ordinary light-theme gold gradients should render as a calm solid fill.
+
+- use `context.colors.goldGradient` / `context.appGradients.goldGradient` for buttons and common icon fills
+- these common tokens intentionally resolve to `#C1A44A` twice in light mode
+- keep visible material gradients for identity or hero-grade surfaces only, such as the Korido mark
+- avoid left-to-right or obvious diagonal bands on repeated cards, buttons, list items, and child-screen icons

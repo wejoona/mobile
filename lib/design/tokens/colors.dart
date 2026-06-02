@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/brand_color_calculator.dart';
 
 /// Luxury Wallet Color System
 /// Based on psychology: Dark = Premium, Gold = Achievement, Low Saturation = Sophistication
@@ -175,6 +176,13 @@ class AppColorsLight {
   static const Color gold700 = Color(0xFF7E5515);
   static const Color gold800 = Color(0xFF5D3B0E);
   static const Color gold900 = Color(0xFF3F2808);
+  static final Color logoGold = BrandColorCalculator.deriveLightIdentityGold(
+    darkIdentityGold: AppColors.gold500,
+    darkCanvas: AppColors.obsidian,
+    lightCanvas: canvas,
+  );
+  static final List<Color> logoGoldGradient =
+      BrandColorCalculator.deriveLightIdentityGoldRamp(baseGold: logoGold);
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SEMANTIC COLORS (adjusted for light mode)
