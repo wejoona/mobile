@@ -23,6 +23,26 @@ class KycService {
     required String country,
     String? idNumber,
   }) async {
+    final trimmedIdNumber = idNumber?.trim() ?? '';
+    if (firstName.trim().isEmpty || lastName.trim().isEmpty) {
+      throw ArgumentError('firstName and lastName are required');
+    }
+    if (country.trim().isEmpty) {
+      throw ArgumentError('country is required');
+    }
+    if (documentType.trim().isEmpty) {
+      throw ArgumentError('documentType is required');
+    }
+    if (trimmedIdNumber.isEmpty) {
+      throw ArgumentError('documentNumber is required');
+    }
+    if (documentPaths.isEmpty) {
+      throw ArgumentError('At least one ID document image is required');
+    }
+    if (selfiePath.trim().isEmpty) {
+      throw ArgumentError('selfie is required');
+    }
+
     // Step 1: Upload documents to /kyc/documents
     debugPrint('[KycService] Step 1: Uploading documents...');
     final documentKeys = await _uploadDocuments(
@@ -38,7 +58,7 @@ class KycService {
       dateOfBirth: dateOfBirth,
       country: country,
       idType: documentType,
-      idNumber: idNumber ?? 'PENDING',
+      idNumber: trimmedIdNumber,
       idFrontKey: documentKeys['idFront']!,
       idBackKey: documentKeys['idBack']!,
       selfieKey: documentKeys['selfie']!,
@@ -58,52 +78,79 @@ class KycService {
     // Add ID front (first document, compressed)
     if (documentPaths.isNotEmpty) {
       try {
-        final compressedBytes = await ImageQualityChecker.compressImage(documentPaths[0]);
-        debugPrint('[KycService] idFront compressed: ${compressedBytes.length} bytes');
-        formData.files.add(MapEntry(
-          'idFront',
-          MultipartFile.fromBytes(compressedBytes, filename: 'id_front.jpg'),
-        ));
+        final compressedBytes = await ImageQualityChecker.compressImage(
+          documentPaths[0],
+        );
+        debugPrint(
+          '[KycService] idFront compressed: ${compressedBytes.length} bytes',
+        );
+        formData.files.add(
+          MapEntry(
+            'idFront',
+            MultipartFile.fromBytes(compressedBytes, filename: 'id_front.jpg'),
+          ),
+        );
       } catch (e) {
         debugPrint('[KycService] idFront compression failed: $e');
-        formData.files.add(MapEntry(
-          'idFront',
-          await MultipartFile.fromFile(documentPaths[0], filename: 'id_front.jpg'),
-        ));
+        formData.files.add(
+          MapEntry(
+            'idFront',
+            await MultipartFile.fromFile(
+              documentPaths[0],
+              filename: 'id_front.jpg',
+            ),
+          ),
+        );
       }
     }
 
     // Add ID back (second document or same as front if only one)
-    final backPath = documentPaths.length > 1 ? documentPaths[1] : documentPaths[0];
+    final backPath = documentPaths.length > 1
+        ? documentPaths[1]
+        : documentPaths[0];
     try {
       final compressedBytes = await ImageQualityChecker.compressImage(backPath);
-      debugPrint('[KycService] idBack compressed: ${compressedBytes.length} bytes');
-      formData.files.add(MapEntry(
-        'idBack',
-        MultipartFile.fromBytes(compressedBytes, filename: 'id_back.jpg'),
-      ));
+      debugPrint(
+        '[KycService] idBack compressed: ${compressedBytes.length} bytes',
+      );
+      formData.files.add(
+        MapEntry(
+          'idBack',
+          MultipartFile.fromBytes(compressedBytes, filename: 'id_back.jpg'),
+        ),
+      );
     } catch (e) {
       debugPrint('[KycService] idBack compression failed: $e');
-      formData.files.add(MapEntry(
-        'idBack',
-        await MultipartFile.fromFile(backPath, filename: 'id_back.jpg'),
-      ));
+      formData.files.add(
+        MapEntry(
+          'idBack',
+          await MultipartFile.fromFile(backPath, filename: 'id_back.jpg'),
+        ),
+      );
     }
 
     // Add selfie (compressed)
     try {
-      final compressedSelfie = await ImageQualityChecker.compressImage(selfiePath);
-      debugPrint('[KycService] selfie compressed: ${compressedSelfie.length} bytes');
-      formData.files.add(MapEntry(
-        'selfie',
-        MultipartFile.fromBytes(compressedSelfie, filename: 'selfie.jpg'),
-      ));
+      final compressedSelfie = await ImageQualityChecker.compressImage(
+        selfiePath,
+      );
+      debugPrint(
+        '[KycService] selfie compressed: ${compressedSelfie.length} bytes',
+      );
+      formData.files.add(
+        MapEntry(
+          'selfie',
+          MultipartFile.fromBytes(compressedSelfie, filename: 'selfie.jpg'),
+        ),
+      );
     } catch (e) {
       debugPrint('[KycService] selfie compression failed: $e');
-      formData.files.add(MapEntry(
-        'selfie',
-        await MultipartFile.fromFile(selfiePath, filename: 'selfie.jpg'),
-      ));
+      formData.files.add(
+        MapEntry(
+          'selfie',
+          await MultipartFile.fromFile(selfiePath, filename: 'selfie.jpg'),
+        ),
+      );
     }
 
     // Upload to /kyc/documents
@@ -137,18 +184,21 @@ class KycService {
   }) async {
     final dateFormat = DateFormat('yyyy-MM-dd');
 
-    await _dio.post('/kyc/submit', data: {
-      'firstName': firstName,
-      'lastName': lastName,
-      'dateOfBirth': dateFormat.format(dateOfBirth),
-      'country': country,
-      'idType': idType,
-      'idNumber': idNumber,
-      'idFrontKey': idFrontKey,
-      'idBackKey': idBackKey,
-      'selfieKey': selfieKey,
-      if (idExpiryDate != null) 'idExpiryDate': idExpiryDate,
-    });
+    await _dio.post(
+      '/kyc/submit',
+      data: {
+        'firstName': firstName,
+        'lastName': lastName,
+        'dateOfBirth': dateFormat.format(dateOfBirth),
+        'country': country,
+        'idType': idType,
+        'idNumber': idNumber,
+        'idFrontKey': idFrontKey,
+        'idBackKey': idBackKey,
+        'selfieKey': selfieKey,
+        if (idExpiryDate != null) 'idExpiryDate': idExpiryDate,
+      },
+    );
   }
 
   Future<KycStatusResponse> getKycStatus() async {
@@ -174,42 +224,25 @@ class KycService {
     required String documentType,
     required String documentPath,
   }) async {
-    final formData = FormData();
-
-    // Add address fields
-    formData.fields.addAll([
-      MapEntry('addressLine1', addressLine1),
-      MapEntry('addressLine2', addressLine2),
-      MapEntry('city', city),
-      MapEntry('state', state),
-      MapEntry('postalCode', postalCode),
-      MapEntry('country', country),
-      MapEntry('documentType', documentType),
-    ]);
-
-    // Add document
-    final file = File(documentPath);
-    formData.files.add(MapEntry(
-      'document',
-      await MultipartFile.fromFile(file.path, filename: 'address_proof.jpg'),
-    ));
-
-    await _dio.post('/kyc/address', data: formData);
+    await uploadDocument(type: 'idBack', filePath: documentPath);
   }
 
-  Future<void> submitVideoVerification({
-    required String videoPath,
-  }) async {
+  Future<void> submitVideoVerification({required String videoPath}) async {
     final formData = FormData();
 
     // Add video file
     final file = File(videoPath);
-    formData.files.add(MapEntry(
-      'video',
-      await MultipartFile.fromFile(file.path, filename: 'verification_video.mp4'),
-    ));
+    formData.files.add(
+      MapEntry(
+        'video',
+        await MultipartFile.fromFile(
+          file.path,
+          filename: 'verification_video.mp4',
+        ),
+      ),
+    );
 
-    await _dio.post('/kyc/video', data: formData);
+    await _dio.post('/kyc/documents', data: formData);
   }
 
   // ==========================================
@@ -220,7 +253,9 @@ class KycService {
   /// Returns sessionToken + challenge info
   Future<LivenessSessionResponse> createLivenessSession() async {
     final response = await _dio.post('/kyc/liveness/session');
-    return LivenessSessionResponse.fromJson(response.data as Map<String, dynamic>);
+    return LivenessSessionResponse.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   /// Submit liveness check with video + selfie S3 keys
@@ -229,12 +264,10 @@ class KycService {
     required String videoKey,
     required String selfieKey,
   }) async {
-    final response = await _dio.post('/kyc/liveness/submit', data: {
-      'sessionToken': sessionToken,
-      'videoKey': videoKey,
-      'selfieKey': selfieKey,
-    });
-    return LivenessSubmitResponse.fromJson(response.data as Map<String, dynamic>);
+    throw UnsupportedError(
+      'Use the challenge-based liveness flow: createLivenessSession, '
+      'submit each challenge to /kyc/liveness/challenge, then check status.',
+    );
   }
 
   /// Get liveness verification status for current user
@@ -251,43 +284,66 @@ class KycService {
     required String frontImageKey,
     String? backImageKey,
   }) async {
-    final response = await _dio.post('/kyc/document/submit', data: {
-      'docType': docType,
-      'frontImageKey': frontImageKey,
-      if (backImageKey != null) 'backImageKey': backImageKey,
-    });
-    return DocumentSubmitResponse.fromJson(response.data as Map<String, dynamic>);
+    final response = await _dio.post(
+      '/kyc/document/submit',
+      data: {
+        'docType': docType,
+        'frontImageKey': frontImageKey,
+        if (backImageKey != null) 'backImageKey': backImageKey,
+      },
+    );
+    return DocumentSubmitResponse.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   /// Get full KYC verification status (doc + liveness + overall)
   Future<FullVerificationStatus> getVerificationStatus() async {
     final response = await _dio.get('/kyc/verification/status');
-    return FullVerificationStatus.fromJson(response.data as Map<String, dynamic>);
+    return FullVerificationStatus.fromJson(
+      response.data as Map<String, dynamic>,
+    );
   }
 
   /// Upload a file and return its S3 key
   /// Uses the existing /kyc/documents endpoint with a single file
-  Future<String> uploadFileForVerification(String filePath, String fieldName) async {
+  Future<String> uploadFileForVerification(
+    String filePath,
+    String fieldName,
+  ) async {
+    final documentField = _documentFieldForType(fieldName);
     final formData = FormData();
     try {
       final compressedBytes = await ImageQualityChecker.compressImage(filePath);
-      debugPrint('[KycService] $fieldName compressed: ${compressedBytes.length} bytes');
-      formData.files.add(MapEntry(
-        fieldName,
-        MultipartFile.fromBytes(compressedBytes, filename: '$fieldName.jpg'),
-      ));
+      debugPrint(
+        '[KycService] $documentField compressed: ${compressedBytes.length} bytes',
+      );
+      formData.files.add(
+        MapEntry(
+          documentField,
+          MultipartFile.fromBytes(
+            compressedBytes,
+            filename: '$documentField.jpg',
+          ),
+        ),
+      );
     } catch (e) {
-      debugPrint('[KycService] $fieldName compression failed: $e');
-      formData.files.add(MapEntry(
-        fieldName,
-        await MultipartFile.fromFile(filePath, filename: '$fieldName.jpg'),
-      ));
+      debugPrint('[KycService] $documentField compression failed: $e');
+      formData.files.add(
+        MapEntry(
+          documentField,
+          await MultipartFile.fromFile(
+            filePath,
+            filename: '$documentField.jpg',
+          ),
+        ),
+      );
     }
 
     final response = await _dio.post('/kyc/documents', data: formData);
     final responseData = response.data as Map<String, dynamic>;
     final documents = responseData['documents'] as Map<String, dynamic>;
-    final fieldData = documents[fieldName] as Map<String, dynamic>;
+    final fieldData = documents[documentField] as Map<String, dynamic>;
     return fieldData['key'] as String;
   }
 
@@ -299,28 +355,9 @@ class KycService {
     required String sourceDetails,
     required List<String> supportingDocuments,
   }) async {
-    final formData = FormData();
-
-    // Add form fields
-    formData.fields.addAll([
-      MapEntry('occupation', occupation),
-      MapEntry('employer', employer),
-      MapEntry('monthlyIncome', monthlyIncome),
-      MapEntry('sourceOfFunds', sourceOfFunds),
-      MapEntry('sourceDetails', sourceDetails),
-    ]);
-
-    // Add supporting documents
-    for (int i = 0; i < supportingDocuments.length; i++) {
-      final file = File(supportingDocuments[i]);
-      final fileName = 'document_${i + 1}.jpg';
-      formData.files.add(MapEntry(
-        'supportingDocuments',
-        await MultipartFile.fromFile(file.path, filename: fileName),
-      ));
+    for (final path in supportingDocuments) {
+      await uploadDocument(type: 'idBack', filePath: path);
     }
-
-    await _dio.post('/kyc/additional-documents', data: formData);
   }
 
   /// Submit KYC from collected form data map.
@@ -331,6 +368,7 @@ class KycService {
     final country = data['country'] as String? ?? '';
     final dobStr = data['dateOfBirth'] as String? ?? '';
     final documentType = data['documentType'] as String? ?? '';
+    final idNumber = data['documentNumber'] as String? ?? '';
     final documentPaths = (data['documentPaths'] as List<String>?) ?? [];
     final selfiePath = data['selfiePath'] as String? ?? '';
 
@@ -347,6 +385,9 @@ class KycService {
     if (documentType.isEmpty) {
       throw ArgumentError('documentType is required');
     }
+    if (idNumber.isEmpty) {
+      throw ArgumentError('documentNumber is required');
+    }
 
     await submitKyc(
       firstName: firstName,
@@ -356,7 +397,7 @@ class KycService {
       documentType: documentType,
       documentPaths: documentPaths,
       selfiePath: selfiePath,
-      idNumber: data['idNumber'] as String?,
+      idNumber: idNumber,
     );
   }
 
@@ -365,12 +406,29 @@ class KycService {
     required String type,
     required String filePath,
   }) async {
+    final documentField = _documentFieldForType(type);
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath),
-      'type': type,
+      documentField: await MultipartFile.fromFile(filePath),
     });
     final response = await _dio.post('/kyc/documents', data: formData);
     return response.data as Map<String, dynamic>;
+  }
+
+  String _documentFieldForType(String type) {
+    switch (type.replaceAll('_', '').replaceAll('-', '').toLowerCase()) {
+      case 'idfront':
+      case 'front':
+        return 'idFront';
+      case 'idback':
+      case 'back':
+        return 'idBack';
+      case 'selfie':
+        return 'selfie';
+      case 'video':
+        return 'video';
+      default:
+        throw ArgumentError('Unsupported KYC document type: $type');
+    }
   }
 
   /// Submit collected documents (used by repository).
@@ -382,6 +440,7 @@ class KycService {
     required String documentType,
     required List<String> documentPaths,
     required String selfiePath,
+    String? idNumber,
   }) async {
     await submitKyc(
       firstName: firstName,
@@ -391,6 +450,7 @@ class KycService {
       documentType: documentType,
       documentPaths: documentPaths,
       selfiePath: selfiePath,
+      idNumber: idNumber,
     );
     return getKycStatus();
   }
@@ -400,10 +460,7 @@ class KycStatusResponse {
   final KycStatus status;
   final String? rejectionReason;
 
-  const KycStatusResponse({
-    required this.status,
-    this.rejectionReason,
-  });
+  const KycStatusResponse({required this.status, this.rejectionReason});
 }
 
 // ==========================================
@@ -477,10 +534,7 @@ class FullVerificationStatus {
   final KycStatusResponse kyc;
   final VerifyHqStatus? verification;
 
-  const FullVerificationStatus({
-    required this.kyc,
-    this.verification,
-  });
+  const FullVerificationStatus({required this.kyc, this.verification});
 
   factory FullVerificationStatus.fromJson(Map<String, dynamic> json) {
     final kycData = json['kyc'] as Map<String, dynamic>? ?? {};
@@ -522,5 +576,4 @@ class VerifyHqStatus {
       tier: json['tier'] as String?,
     );
   }
-
 }

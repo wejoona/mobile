@@ -1,13 +1,10 @@
-import 'package:usdc_wallet/utils/currency_utils.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/providers/missing_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/colors.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/providers/missing_providers.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class SpendingSummaryCard extends ConsumerWidget {
   const SpendingSummaryCard({super.key});
@@ -19,35 +16,33 @@ class SpendingSummaryCard extends ConsumerWidget {
 
     return summaryAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.insights_error(e.toString()))),
+      error: (e, _) => Center(
+        child: AppText(
+          AppLocalizations.of(context)!.insights_error(e.toString()),
+          textAlign: TextAlign.center,
+        ),
+      ),
       data: (summary) => _buildCard(context, l10n, summary),
     );
   }
 
-  Widget _buildCard(BuildContext context, AppLocalizations l10n, Map<String, dynamic> summary) {
-    final percentageChange = (summary['percentageChange'] as num?)?.toDouble() ?? 0.0;
+  Widget _buildCard(
+    BuildContext context,
+    AppLocalizations l10n,
+    Map<String, dynamic> summary,
+  ) {
+    final colors = context.colors;
+    final percentageChange =
+        (summary['percentageChange'] as num?)?.toDouble() ?? 0.0;
     final isIncrease = (summary['isIncrease'] as bool?) ?? false;
     final totalSpent = (summary['totalSpent'] as num?)?.toDouble() ?? 0.0;
     final totalReceived = (summary['totalReceived'] as num?)?.toDouble() ?? 0.0;
     final netFlow = (summary['netFlow'] as num?)?.toDouble() ?? 0.0;
 
-    return Container(
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderColor: colors.borderGold,
       padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.colors.container,
-            context.colors.surface,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(
-          color: context.colors.borderGold,
-          width: 1,
-        ),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -61,40 +56,13 @@ class SpendingSummaryCard extends ConsumerWidget {
                 color: context.colors.textPrimary,
               ),
               if (percentageChange > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isIncrease
-                        ? context.colors.error.withValues(alpha: 0.2)
-                        : context.colors.success.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isIncrease
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        size: 12,
-                        color: isIncrease
-                            ? context.colors.errorText
-                            : context.colors.successText,
-                      ),
-                      const SizedBox(width: 4),
-                      AppText(
-                        '${percentageChange.toStringAsFixed(1)}%',
-                        variant: AppTextVariant.bodySmall,
-                        color: isIncrease
-                            ? context.colors.errorText
-                            : context.colors.successText,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ],
-                  ),
+                StatusPill(
+                  label: '${percentageChange.toStringAsFixed(1)}%',
+                  tone: isIncrease ? StatusTone.danger : StatusTone.success,
+                  icon: isIncrease
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded,
+                  compact: true,
                 ),
             ],
           ),
@@ -105,7 +73,8 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_total_spent,
             formatXof(totalSpent),
-            context.colors.errorText,
+            colors.errorText,
+            colors,
           ),
 
           const SizedBox(height: AppSpacing.lg),
@@ -114,16 +83,14 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_total_received,
             formatXof(totalReceived),
-            context.colors.successText,
+            colors.successText,
+            colors,
           ),
 
           const SizedBox(height: AppSpacing.lg),
 
           // Divider
-          Container(
-            height: 1,
-            color: context.colors.borderSubtle,
-          ),
+          Container(height: 1, color: colors.borderSubtle),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -131,7 +98,8 @@ class SpendingSummaryCard extends ConsumerWidget {
           _buildStatItem(
             l10n.insights_net_flow,
             '${netFlow >= 0 ? '+' : '-'}${formatXof(netFlow.abs())}',
-            netFlow >= 0 ? context.colors.successText : context.colors.errorText,
+            netFlow >= 0 ? colors.successText : colors.errorText,
+            colors,
             isLarge: true,
           ),
         ],
@@ -142,7 +110,8 @@ class SpendingSummaryCard extends ConsumerWidget {
   Widget _buildStatItem(
     String label,
     String value,
-    Color valueColor, {
+    Color valueColor,
+    ThemeColors colors, {
     bool isLarge = false,
   }) {
     return Row(
@@ -152,18 +121,17 @@ class SpendingSummaryCard extends ConsumerWidget {
           child: AppText(
             label,
             variant: AppTextVariant.bodyMedium,
-            color: AppColors.textSecondary,
+            color: colors.textSecondary,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
         Flexible(
-          child: AppText(
+          child: AmountText.fromText(
             value,
-            variant: isLarge ? AppTextVariant.headlineSmall : AppTextVariant.titleMedium,
+            size: isLarge ? AmountTextSize.medium : AmountTextSize.small,
             color: valueColor,
-            fontWeight: FontWeight.bold,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,

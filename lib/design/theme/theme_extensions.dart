@@ -199,16 +199,16 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     infoLight: AppColorsLight.infoLight,
     infoDark: AppColors.infoDark, // Not defined in light, use dark
     infoText: AppColorsLight.infoText,
-    gold50: AppColors.gold50,
-    gold100: AppColors.gold100,
-    gold200: AppColors.gold200,
-    gold300: AppColors.gold300,
-    gold400: AppColors.gold400,
+    gold50: AppColorsLight.gold50,
+    gold100: AppColorsLight.gold100,
+    gold200: AppColorsLight.gold200,
+    gold300: AppColorsLight.gold300,
+    gold400: AppColorsLight.gold400,
     gold500: AppColorsLight.gold500,
     gold600: AppColorsLight.gold600,
     gold700: AppColorsLight.gold700,
-    gold800: AppColors.gold800,
-    gold900: AppColors.gold900,
+    gold800: AppColorsLight.gold800,
+    gold900: AppColorsLight.gold900,
   );
 
   @override
@@ -314,10 +314,26 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     if (other is! AppColorsExtension) return this;
 
     return AppColorsExtension(
-      backgroundPrimary: Color.lerp(backgroundPrimary, other.backgroundPrimary, t)!,
-      backgroundSecondary: Color.lerp(backgroundSecondary, other.backgroundSecondary, t)!,
-      backgroundTertiary: Color.lerp(backgroundTertiary, other.backgroundTertiary, t)!,
-      backgroundElevated: Color.lerp(backgroundElevated, other.backgroundElevated, t)!,
+      backgroundPrimary: Color.lerp(
+        backgroundPrimary,
+        other.backgroundPrimary,
+        t,
+      )!,
+      backgroundSecondary: Color.lerp(
+        backgroundSecondary,
+        other.backgroundSecondary,
+        t,
+      )!,
+      backgroundTertiary: Color.lerp(
+        backgroundTertiary,
+        other.backgroundTertiary,
+        t,
+      )!,
+      backgroundElevated: Color.lerp(
+        backgroundElevated,
+        other.backgroundElevated,
+        t,
+      )!,
       textPrimary: Color.lerp(textPrimary, other.textPrimary, t)!,
       textSecondary: Color.lerp(textSecondary, other.textSecondary, t)!,
       textTertiary: Color.lerp(textTertiary, other.textTertiary, t)!,
@@ -327,7 +343,11 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       borderDefault: Color.lerp(borderDefault, other.borderDefault, t)!,
       borderStrong: Color.lerp(borderStrong, other.borderStrong, t)!,
       borderGold: Color.lerp(borderGold, other.borderGold, t)!,
-      borderGoldStrong: Color.lerp(borderGoldStrong, other.borderGoldStrong, t)!,
+      borderGoldStrong: Color.lerp(
+        borderGoldStrong,
+        other.borderGoldStrong,
+        t,
+      )!,
       overlayLight: Color.lerp(overlayLight, other.overlayLight, t)!,
       overlayMedium: Color.lerp(overlayMedium, other.overlayMedium, t)!,
       overlayDark: Color.lerp(overlayDark, other.overlayDark, t)!,
@@ -388,47 +408,28 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
   /// Dark theme gradients
   static const dark = AppGradientsExtension(
     goldGradient: LinearGradient(
-      colors: [
-        AppColors.gold600,
-        AppColors.gold500,
-        AppColors.gold400,
-      ],
+      colors: [AppColors.gold600, AppColors.gold500, AppColors.gold400],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldGradientVertical: LinearGradient(
-      colors: [
-        AppColors.gold600,
-        AppColors.gold500,
-        AppColors.gold400,
-      ],
+      colors: [AppColors.gold600, AppColors.gold500, AppColors.gold400],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),
     shimmerGradient: LinearGradient(
-      colors: [
-        Color(0x00FFFFFF),
-        Color(0x1AFFFFFF),
-        Color(0x00FFFFFF),
-      ],
+      colors: [Color(0x00FFFFFF), Color(0x1AFFFFFF), Color(0x00FFFFFF)],
       stops: [0.0, 0.5, 1.0],
       begin: Alignment(-1.0, -0.3),
       end: Alignment(1.0, 0.3),
     ),
     glassGradient: LinearGradient(
-      colors: [
-        Color(0x1AFFFFFF),
-        Color(0x0DFFFFFF),
-      ],
+      colors: [Color(0x1AFFFFFF), Color(0x0DFFFFFF)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldRadialGradient: RadialGradient(
-      colors: [
-        AppColors.gold300,
-        AppColors.gold500,
-        AppColors.gold700,
-      ],
+      colors: [AppColors.gold300, AppColors.gold500, AppColors.gold700],
       stops: [0.0, 0.5, 1.0],
     ),
     goldSweepGradient: SweepGradient(
@@ -447,43 +448,36 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
   static const light = AppGradientsExtension(
     goldGradient: LinearGradient(
       colors: [
-        AppColorsLight.gold600,
+        AppColorsLight.gold300,
         AppColorsLight.gold500,
-        AppColors.gold400,
+        AppColorsLight.gold700,
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldGradientVertical: LinearGradient(
       colors: [
-        AppColorsLight.gold600,
+        AppColorsLight.gold300,
         AppColorsLight.gold500,
-        AppColors.gold400,
+        AppColorsLight.gold700,
       ],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),
     shimmerGradient: LinearGradient(
-      colors: [
-        Color(0x00000000),
-        Color(0x1A000000),
-        Color(0x00000000),
-      ],
+      colors: [Color(0x00000000), Color(0x1A000000), Color(0x00000000)],
       stops: [0.0, 0.5, 1.0],
       begin: Alignment(-1.0, -0.3),
       end: Alignment(1.0, 0.3),
     ),
     glassGradient: LinearGradient(
-      colors: [
-        Color(0x1AFFFFFF),
-        Color(0x0DFFFFFF),
-      ],
+      colors: [Color(0x1AFFFFFF), Color(0x0DFFFFFF)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldRadialGradient: RadialGradient(
       colors: [
-        AppColors.gold300,
+        AppColorsLight.gold300,
         AppColorsLight.gold500,
         AppColorsLight.gold700,
       ],
@@ -492,9 +486,9 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
     goldSweepGradient: SweepGradient(
       colors: [
         AppColorsLight.gold600,
-        AppColors.gold400,
-        AppColors.gold300,
-        AppColors.gold400,
+        AppColorsLight.gold400,
+        AppColorsLight.gold300,
+        AppColorsLight.gold400,
         AppColorsLight.gold600,
       ],
       stops: [0.0, 0.25, 0.5, 0.75, 1.0],
@@ -529,11 +523,31 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
 
     return AppGradientsExtension(
       goldGradient: LinearGradient.lerp(goldGradient, other.goldGradient, t)!,
-      goldGradientVertical: LinearGradient.lerp(goldGradientVertical, other.goldGradientVertical, t)!,
-      shimmerGradient: LinearGradient.lerp(shimmerGradient, other.shimmerGradient, t)!,
-      glassGradient: LinearGradient.lerp(glassGradient, other.glassGradient, t)!,
-      goldRadialGradient: RadialGradient.lerp(goldRadialGradient, other.goldRadialGradient, t)!,
-      goldSweepGradient: SweepGradient.lerp(goldSweepGradient, other.goldSweepGradient, t)!,
+      goldGradientVertical: LinearGradient.lerp(
+        goldGradientVertical,
+        other.goldGradientVertical,
+        t,
+      )!,
+      shimmerGradient: LinearGradient.lerp(
+        shimmerGradient,
+        other.shimmerGradient,
+        t,
+      )!,
+      glassGradient: LinearGradient.lerp(
+        glassGradient,
+        other.glassGradient,
+        t,
+      )!,
+      goldRadialGradient: RadialGradient.lerp(
+        goldRadialGradient,
+        other.goldRadialGradient,
+        t,
+      )!,
+      goldSweepGradient: SweepGradient.lerp(
+        goldSweepGradient,
+        other.goldSweepGradient,
+        t,
+      )!,
     );
   }
 }
@@ -631,8 +645,11 @@ class AppShadowsExtension extends ThemeExtension<AppShadowsExtension> {
       card: BoxShadow.lerpList(card, other.card, t) ?? card,
       cardHover: BoxShadow.lerpList(cardHover, other.cardHover, t) ?? cardHover,
       goldGlow: BoxShadow.lerpList(goldGlow, other.goldGlow, t) ?? goldGlow,
-      goldGlowStrong: BoxShadow.lerpList(goldGlowStrong, other.goldGlowStrong, t) ?? goldGlowStrong,
-      successGlow: BoxShadow.lerpList(successGlow, other.successGlow, t) ?? successGlow,
+      goldGlowStrong:
+          BoxShadow.lerpList(goldGlowStrong, other.goldGlowStrong, t) ??
+          goldGlowStrong,
+      successGlow:
+          BoxShadow.lerpList(successGlow, other.successGlow, t) ?? successGlow,
       errorGlow: BoxShadow.lerpList(errorGlow, other.errorGlow, t) ?? errorGlow,
     );
   }
@@ -646,19 +663,22 @@ extension ThemeExtensionsContext on BuildContext {
   /// Quick access to custom colors
   /// Usage: context.appColors.gold500
   AppColorsExtension get appColors {
-    return Theme.of(this).extension<AppColorsExtension>() ?? AppColorsExtension.dark;
+    return Theme.of(this).extension<AppColorsExtension>() ??
+        AppColorsExtension.dark;
   }
 
   /// Quick access to gradients
   /// Usage: context.appGradients.goldGradient
   AppGradientsExtension get appGradients {
-    return Theme.of(this).extension<AppGradientsExtension>() ?? AppGradientsExtension.dark;
+    return Theme.of(this).extension<AppGradientsExtension>() ??
+        AppGradientsExtension.dark;
   }
 
   /// Quick access to shadows
   /// Usage: context.appShadows.goldGlow
   AppShadowsExtension get appShadows {
-    return Theme.of(this).extension<AppShadowsExtension>() ?? AppShadowsExtension.shared;
+    return Theme.of(this).extension<AppShadowsExtension>() ??
+        AppShadowsExtension.shared;
   }
 
   /// Check if current theme is dark

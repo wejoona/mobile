@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 
 /// Run 361: Contact list item widget with Korido user indicator
 class ContactListItem extends StatelessWidget {
@@ -22,7 +22,8 @@ class ContactListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: '${contact.displayName}'
+      label:
+          '${contact.displayName}'
           '${contact.isKoridoUser ? ", utilisateur Korido" : ""}',
       button: onTap != null,
       child: Material(
@@ -87,10 +88,7 @@ class ContactListItem extends StatelessWidget {
                 ),
                 if (trailing != null) trailing!,
                 if (contact.isKoridoUser && trailing == null)
-                  PillBadge(
-                    label: 'Korido',
-                    backgroundColor: context.colors.gold,
-                  ),
+                  const KoridoAccountBadge(),
               ],
             ),
           ),

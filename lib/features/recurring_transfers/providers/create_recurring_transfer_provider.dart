@@ -2,11 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
 
-enum EndCondition {
-  never,
-  afterOccurrences,
-  untilDate,
-}
+enum EndCondition { never, afterOccurrences, untilDate }
 
 class CreateRecurringTransferFormState {
   final String recipientPhone;
@@ -82,6 +78,8 @@ class CreateRecurringTransferFormState {
   }
 
   CreateRecurringTransferRequest toRequest() {
+    final backendDayOfWeek = dayOfWeek == null ? null : dayOfWeek! % 7;
+
     return CreateRecurringTransferRequest(
       recipientPhone: recipientPhone,
       recipientName: recipientName,
@@ -90,11 +88,14 @@ class CreateRecurringTransferFormState {
       frequency: frequency,
       startDate: startDate,
       endDate: endCondition == EndCondition.untilDate ? endDate : null,
-      occurrences: endCondition == EndCondition.afterOccurrences ? occurrences : null,
+      occurrences: endCondition == EndCondition.afterOccurrences
+          ? occurrences
+          : null,
       note: note,
-      dayOfWeek: (frequency == TransferFrequency.weekly ||
+      dayOfWeek:
+          (frequency == TransferFrequency.weekly ||
               frequency == TransferFrequency.biweekly)
-          ? dayOfWeek
+          ? backendDayOfWeek
           : null,
       dayOfMonth: frequency == TransferFrequency.monthly ? dayOfMonth : null,
     );
@@ -160,8 +161,8 @@ class CreateRecurringTransferNotifier
   }
 }
 
-final createRecurringTransferProvider = NotifierProvider<
-    CreateRecurringTransferNotifier,
-    CreateRecurringTransferFormState>(
-  CreateRecurringTransferNotifier.new,
-);
+final createRecurringTransferProvider =
+    NotifierProvider<
+      CreateRecurringTransferNotifier,
+      CreateRecurringTransferFormState
+    >(CreateRecurringTransferNotifier.new);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -31,20 +33,30 @@ class FeatureFlagsNotifier extends Notifier<Map<String, bool>> {
 
   @override
   Map<String, bool> build() {
-    _init();
+    unawaited(_init());
     return {};
   }
 
   Future<void> _init() async {
     _service = ref.read(featureFlagsServiceProvider);
     await _service!.init();
+    if (!ref.mounted) {
+      return;
+    }
     state = _service!.getAll();
   }
 
   /// Load flags from API
   Future<void> loadFlags() async {
     _service ??= ref.read(featureFlagsServiceProvider);
+    if (!await _hasAuthToken()) {
+      state = _service!.getAll();
+      return;
+    }
     final flags = await _service!.fetchFlags();
+    if (!ref.mounted) {
+      return;
+    }
     state = flags;
   }
 
@@ -56,7 +68,14 @@ class FeatureFlagsNotifier extends Notifier<Map<String, bool>> {
   /// Refresh flags from server
   Future<void> refresh() async {
     _service ??= ref.read(featureFlagsServiceProvider);
+    if (!await _hasAuthToken()) {
+      state = _service!.getAll();
+      return;
+    }
     await _service!.refresh();
+    if (!ref.mounted) {
+      return;
+    }
     state = _service!.getAll();
   }
 
@@ -65,6 +84,12 @@ class FeatureFlagsNotifier extends Notifier<Map<String, bool>> {
     _service ??= ref.read(featureFlagsServiceProvider);
     await _service!.clearCache();
     state = {};
+  }
+
+  Future<bool> _hasAuthToken() async {
+    final storage = ref.read(secureStorageProvider);
+    final token = await storage.read(key: StorageKeys.accessToken);
+    return token != null && token.isNotEmpty;
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -17,8 +19,7 @@ class ContactsListScreen extends ConsumerStatefulWidget {
   const ContactsListScreen({super.key});
 
   @override
-  ConsumerState<ContactsListScreen> createState() =>
-      _ContactsListScreenState();
+  ConsumerState<ContactsListScreen> createState() => _ContactsListScreenState();
 }
 
 class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
@@ -28,7 +29,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadContacts();
+    unawaited(Future.microtask(_loadContacts));
   }
 
   @override
@@ -52,8 +53,9 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       filteredContacts = state.searchContacts(_searchQuery);
     }
 
-    final joonaPayUsers =
-        filteredContacts.where((c) => c.isKoridoUser).toList();
+    final joonaPayUsers = filteredContacts
+        .where((c) => c.isKoridoUser)
+        .toList();
     final nonUsers = filteredContacts.where((c) => !c.isKoridoUser).toList();
 
     return Scaffold(
@@ -105,7 +107,8 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                   ),
 
                   // Sync status banner
-                  if (state.lastSyncResult != null && state.lastSyncResult!.joonaPayUsersFound > 0)
+                  if (state.lastSyncResult != null &&
+                      state.lastSyncResult!.joonaPayUsersFound > 0)
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       padding: EdgeInsets.all(AppSpacing.md),
@@ -151,11 +154,13 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                             joonaPayUsers.length,
                           ),
                           SizedBox(height: AppSpacing.sm),
-                          ...joonaPayUsers.map((contact) => ContactCard(
-                                contact: contact,
-                                onTap: () => _handleContactTap(contact),
-                                onSend: () => _handleSend(contact),
-                              )),
+                          ...joonaPayUsers.map(
+                            (contact) => ContactCard(
+                              contact: contact,
+                              onTap: () => _handleContactTap(contact),
+                              onSend: () => _handleSend(contact),
+                            ),
+                          ),
                           SizedBox(height: AppSpacing.xl),
                         ],
 
@@ -166,11 +171,13 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                             nonUsers.length,
                           ),
                           SizedBox(height: AppSpacing.sm),
-                          ...nonUsers.map((contact) => ContactCard(
-                                contact: contact,
-                                onTap: () => _handleContactTap(contact),
-                                onInvite: () => _handleInvite(contact),
-                              )),
+                          ...nonUsers.map(
+                            (contact) => ContactCard(
+                              contact: contact,
+                              onTap: () => _handleContactTap(contact),
+                              onInvite: () => _handleInvite(contact),
+                            ),
+                          ),
                         ],
 
                         // Empty state
@@ -240,22 +247,30 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
   void _handleContactTap(SyncedContact contact) {
     if (contact.isKoridoUser) {
       // Navigate to send screen with pre-filled recipient
-      context.push('/send', extra: {'recipientId': contact.joonaPayUserId});
+      unawaited(context.push('/send', extra: _sendExtra(contact)));
     } else {
       _handleInvite(contact);
     }
   }
 
   void _handleSend(SyncedContact contact) {
-    context.push('/send', extra: {'recipientId': contact.joonaPayUserId});
+    unawaited(context.push('/send', extra: _sendExtra(contact)));
   }
 
+  Map<String, String?> _sendExtra(SyncedContact contact) => {
+    'recipientId': contact.joonaPayUserId,
+    'recipientPhone': contact.phone,
+    'recipientName': contact.name,
+  };
+
   void _handleInvite(SyncedContact contact) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => InviteSheet(contact: contact),
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (context) => InviteSheet(contact: contact),
+      ),
     );
   }
 

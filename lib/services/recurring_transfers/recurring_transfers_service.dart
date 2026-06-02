@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/update_recurring_transfer_request.dart';
@@ -34,11 +35,19 @@ class RecurringTransfersService {
 
   /// Create a new recurring transfer
   Future<RecurringTransfer> createRecurringTransfer(
-    CreateRecurringTransferRequest request,
-  ) async {
+    CreateRecurringTransferRequest request, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
     final response = await _dio.post(
       '/recurring-transfers',
       data: request.toJson(),
+      options: Options(
+        headers: transactionHeaders(
+          pinToken: pinToken,
+          idempotencyKey: idempotencyKey,
+        ),
+      ),
     );
     return RecurringTransfer.fromJson(response.data);
   }
@@ -91,7 +100,10 @@ class RecurringTransfersService {
   }
 
   /// Get next 3 scheduled dates for a specific recurring transfer
-  Future<List<DateTime>> getNextExecutionDates(String id, {int count = 3}) async {
+  Future<List<DateTime>> getNextExecutionDates(
+    String id, {
+    int count = 3,
+  }) async {
     final response = await _dio.get(
       '/recurring-transfers/$id/next-dates',
       queryParameters: {'count': count},

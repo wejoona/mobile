@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
-import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Request Card View
@@ -32,7 +33,8 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final userState = ref.read(userStateMachineProvider);
       if (userState.firstName != null) {
-        _nameController.text = '${userState.firstName} ${userState.lastName ?? ''}'.trim();
+        _nameController.text =
+            '${userState.firstName} ${userState.lastName ?? ''}'.trim();
       }
     });
   }
@@ -49,9 +51,12 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
     final userState = ref.watch(userStateMachineProvider);
+    final kycState = ref.watch(kycStateMachineProvider);
 
     // Check KYC level (tier 2+ = verified or higher)
-    final canRequestCard = userState.kycStatus == KycStatus.verified;
+    final canRequestCard =
+        userState.kycStatus == KycStatus.verified ||
+        kycState.status == KycStatus.verified;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -72,29 +77,10 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Info card
-                    Container(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      decoration: BoxDecoration(
-                        color: colors.elevated,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: colors.gold,
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: AppText(
-                              l10n.cards_requestInfo,
-                              variant: AppTextVariant.bodySmall,
-                              color: colors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
+                    InfoCallout(
+                      icon: Icons.info_outline,
+                      title: l10n.cards_requestCard,
+                      body: l10n.cards_requestInfo,
                     ),
 
                     const SizedBox(height: AppSpacing.xxl),
@@ -155,11 +141,13 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
                       spacing: AppSpacing.sm,
                       runSpacing: AppSpacing.sm,
                       children: [100, 500, 1000, 5000]
-                          .map((amount) => _buildLimitChip(
-                                context,
-                                amount,
-                                () => _limitController.text = amount.toString(),
-                              ))
+                          .map(
+                            (amount) => _buildLimitChip(
+                              context,
+                              amount,
+                              () => _limitController.text = amount.toString(),
+                            ),
+                          )
                           .toList(),
                     ),
 
@@ -218,43 +206,40 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
     BuildContext context,
     AppLocalizations l10n,
     ThemeColors colors,
-  ) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.verified_user_outlined,
-              size: 80,
-              color: colors.textTertiary,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppText(
-              l10n.cards_kycRequired,
-              variant: AppTextVariant.headlineSmall,
-              color: colors.textPrimary,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppText(
-              l10n.cards_kycRequiredDescription,
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xxl),
-            AppButton(
-              label: l10n.cards_completeKYC,
-              onPressed: () => context.push('/kyc'),
-              icon: Icons.arrow_forward,
-            ),
-          ],
-        ),
+  ) => Center(
+    child: Padding(
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.verified_user_outlined,
+            size: 80,
+            color: colors.textTertiary,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.cards_kycRequired,
+            variant: AppTextVariant.headlineSmall,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.cards_kycRequiredDescription,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          AppButton(
+            label: l10n.cards_completeKYC,
+            onPressed: () => context.push('/kyc'),
+            icon: Icons.arrow_forward,
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildLimitChip(
     BuildContext context,
@@ -294,19 +279,15 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       children: [
         Icon(icon, color: colors.gold, size: 20),
         const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: AppText(
-            text,
-            variant: AppTextVariant.bodyMedium,
-            color: colors.textSecondary,
-          ),
-        ),
+        Expanded(child: AppText(text, color: colors.textSecondary)),
       ],
     );
   }
 
   Future<void> _handleSubmit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
@@ -314,28 +295,34 @@ class _RequestCardViewState extends ConsumerState<RequestCardView> {
       final name = _nameController.text.trim();
       final limit = double.tryParse(_limitController.text);
       if (limit == null || limit <= 0) {
-        if (mounted) setState(() => _isSubmitting = false);
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+        }
         return;
       }
 
       await ref.read(cardActionsProvider).requestCard({
-            'cardholderName': name,
-            'spendingLimit': limit,
-          });
+        'cardholderName': name,
+        'spendingLimit': limit,
+      });
+      ref.invalidate(cardsProvider);
+      await ref.read(cardsProvider.future);
 
-      if (!mounted) return;
-
-      {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.cards_requestSuccess),
-            backgroundColor: context.colors.success,
-          ),
-        );
-        context.pop();
+      if (!mounted) {
+        return;
       }
-    } catch (e) {
-      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.cards_requestSuccess),
+          backgroundColor: context.colors.success,
+        ),
+      );
+      context.pop();
+    } on Object {
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.cards_createError),

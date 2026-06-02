@@ -1,0 +1,58 @@
+import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
+import 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
+import 'package:usdc_wallet/features/services/views/services_view.dart';
+import 'package:usdc_wallet/features/settings/views/settings_screen.dart';
+import 'package:usdc_wallet/features/transactions/views/transactions_view.dart';
+import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
+import 'package:usdc_wallet/router/page_transitions.dart';
+import 'package:usdc_wallet/router/widgets/navigation_shell.dart';
+
+List<RouteBase> primaryShellRoutes() => [
+  // Main App Routes (with bottom nav - no animation for tab switching)
+  ShellRoute(
+    builder: (context, state, child) => AuthGatedShell(child: child),
+    routes: [
+      GoRoute(
+        path: '/home',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const WalletHomeScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/cards',
+        pageBuilder: (context, state) =>
+            NoTransitionPage(key: state.pageKey, child: const CardsListView()),
+      ),
+      GoRoute(
+        path: '/transactions',
+        pageBuilder: (context, state) => NoTransitionPage(
+          key: state.pageKey,
+          child: const TransactionsView(),
+        ),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) =>
+            NoTransitionPage(key: state.pageKey, child: const SettingsScreen()),
+      ),
+    ],
+  ),
+
+  // Legacy Services route (kept for backward compatibility)
+  GoRoute(
+    path: '/services',
+    pageBuilder: (context, state) =>
+        AppPageTransitions.fade(state: state, child: const ServicesView()),
+  ),
+
+  // Full-screen routes (no bottom nav - vertical slide for modals)
+  GoRoute(
+    path: '/deposit',
+    pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
+      state: state,
+      child: const DepositAmountScreen(),
+    ),
+  ),
+];

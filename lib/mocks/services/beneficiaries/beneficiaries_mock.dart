@@ -14,7 +14,7 @@ class BeneficiariesMockState {
       id: 'ben-1',
       walletId: 'wallet-1',
       name: 'Amadou Diallo',
-      phoneE164: '+225 07 12 34 56',
+      phoneE164: '+2250712345678',
       accountType: AccountType.joonapayUser,
       beneficiaryUserId: 'user-amadou',
       isFavorite: true,
@@ -29,7 +29,7 @@ class BeneficiariesMockState {
       id: 'ben-2',
       walletId: 'wallet-1',
       name: 'Fatou Touré',
-      phoneE164: '+225 05 87 65 43',
+      phoneE164: '+2250587654321',
       accountType: AccountType.joonapayUser,
       beneficiaryUserId: 'user-fatou',
       isFavorite: true,
@@ -44,7 +44,7 @@ class BeneficiariesMockState {
       id: 'ben-3',
       walletId: 'wallet-1',
       name: 'Kouassi N\'Guessan',
-      phoneE164: '+225 01 23 45 67',
+      phoneE164: '+2250123456789',
       accountType: AccountType.mobileMoney,
       mobileMoneyProvider: 'Orange Money',
       isFavorite: false,
@@ -73,7 +73,7 @@ class BeneficiariesMockState {
       id: 'ben-5',
       walletId: 'wallet-1',
       name: 'Awa Traoré',
-      phoneE164: '+225 07 99 88 77',
+      phoneE164: '+2250799887766',
       accountType: AccountType.joonapayUser,
       beneficiaryUserId: 'user-awa',
       isFavorite: false,
@@ -88,7 +88,7 @@ class BeneficiariesMockState {
       id: 'ben-6',
       walletId: 'wallet-1',
       name: 'Banque Atlantique',
-      phoneE164: '+225 05 44 33 22',
+      phoneE164: '+2250544332211',
       accountType: AccountType.bankAccount,
       bankCode: 'ATLA',
       bankAccountNumber: 'CI123456789012345',
@@ -101,7 +101,8 @@ class BeneficiariesMockState {
     ),
   ];
 
-  static List<Beneficiary> get beneficiaries => List.unmodifiable(_beneficiaries);
+  static List<Beneficiary> get beneficiaries =>
+      List.unmodifiable(_beneficiaries);
 
   static void reset() {
     // Reset to default state if needed
@@ -333,7 +334,9 @@ class BeneficiariesMock {
   /// Handle POST /api/v1/beneficiaries/:id/favorite
   static Future<MockResponse> _handleToggleFavorite(options) async {
     // ignore: avoid_dynamic_calls
-    final params = options.extractPathParams('/api/v1/beneficiaries/:id/favorite');
+    final params = options.extractPathParams(
+      '/api/v1/beneficiaries/:id/favorite',
+    );
     // ignore: avoid_dynamic_calls
     final id = params['id'];
 

@@ -43,10 +43,7 @@ class _SlideRevealState extends State<SlideReveal>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
     _slideAnimation = _createSlideAnimation();
 
@@ -83,12 +80,7 @@ class _SlideRevealState extends State<SlideReveal>
     return Tween<Offset>(
       begin: begin,
       end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: widget.curve,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: widget.curve));
   }
 
   @override
@@ -111,19 +103,11 @@ class _SlideRevealState extends State<SlideReveal>
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _slideAnimation,
-      child: widget.child,
-    );
+    return SlideTransition(position: _slideAnimation, child: widget.child);
   }
 }
 
-enum RevealDirection {
-  fromLeft,
-  fromRight,
-  fromTop,
-  fromBottom,
-}
+enum RevealDirection { fromLeft, fromRight, fromTop, fromBottom }
 
 /// Expandable content with smooth height animation
 class ExpandableContent extends StatefulWidget {
@@ -152,15 +136,9 @@ class _ExpandableContentState extends State<ExpandableContent>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: widget.curve,
-    );
+    _animation = CurvedAnimation(parent: _controller, curve: widget.curve);
 
     if (widget.isExpanded) {
       _controller.value = 1.0;
@@ -189,7 +167,7 @@ class _ExpandableContentState extends State<ExpandableContent>
   Widget build(BuildContext context) {
     return SizeTransition(
       sizeFactor: _animation,
-      axisAlignment: -1.0,
+      alignment: const Alignment(-1.0, -1.0),
       child: widget.child,
     );
   }
@@ -223,30 +201,17 @@ class _RotatingRevealState extends State<RotatingReveal>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
     _rotationAnimation = Tween<double>(
       begin: widget.turns,
       end: 0.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
 
     if (widget.isRevealed) {
       _controller.value = 1.0;
@@ -275,10 +240,7 @@ class _RotatingRevealState extends State<RotatingReveal>
   Widget build(BuildContext context) {
     return FadeTransition(
       opacity: _fadeAnimation,
-      child: RotationTransition(
-        turns: _rotationAnimation,
-        child: widget.child,
-      ),
+      child: RotationTransition(turns: _rotationAnimation, child: widget.child),
     );
   }
 }
@@ -308,20 +270,12 @@ class _PageCurlRevealState extends State<PageCurlReveal>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
     _animation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeInOut,
-      ),
-    );
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     if (widget.isRevealed) {
       _controller.value = 1.0;

@@ -13,7 +13,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Notifications E2E', () {
+  e2eGroup('Notifications E2E', () {
     test('GET /notifications — list notifications', () async {
       final res = await client.get('/notifications');
       res.expectOk();

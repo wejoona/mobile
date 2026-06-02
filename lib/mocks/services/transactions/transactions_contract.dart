@@ -7,8 +7,11 @@ import 'package:usdc_wallet/mocks/base/api_contract.dart';
 
 // ==================== REQUEST/RESPONSE TYPES ====================
 
-/// Transaction type enum
-enum TransactionType { deposit, withdrawal, transferIn, transferOut }
+/// Transaction type enum.
+///
+/// Keep string payloads aligned with the mobile domain parser:
+/// deposit, withdrawal, transfer_internal, transfer_external.
+enum TransactionType { deposit, withdrawal, transferInternal, transferExternal }
 
 /// Transaction status enum
 enum TransactionStatus { pending, processing, completed, failed, cancelled }
@@ -50,15 +53,21 @@ class TransactionResponse {
   Map<String, dynamic> toJson() => {
     'id': id,
     'userId': userId,
+    'walletId': userId,
     'type': type,
     'status': status,
     'amount': amount,
     'fee': fee,
     'currency': currency,
     'recipient': recipient,
+    'recipientPhone': recipient?.startsWith('0x') == true ? null : recipient,
+    'recipientAddress': recipient?.startsWith('0x') == true ? recipient : null,
     'sender': sender,
+    'senderPhone': sender,
     'note': note,
+    'description': note,
     'reference': reference,
+    'externalReference': reference,
     'metadata': metadata,
     'createdAt': createdAt.toIso8601String(),
     'completedAt': completedAt?.toIso8601String(),
@@ -148,7 +157,8 @@ class TransactionsContract extends ApiContract {
     queryParams: {
       'page': 'Page number (default: 1)',
       'limit': 'Items per page (default: 20)',
-      'type': 'Filter by type (deposit, withdrawal, transfer_in, transfer_out)',
+      'type':
+          'Filter by type (deposit, withdrawal, transfer_internal, transfer_external)',
       'status': 'Filter by status',
       'startDate': 'Filter from date (ISO 8601)',
       'endDate': 'Filter to date (ISO 8601)',

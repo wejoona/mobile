@@ -4,19 +4,15 @@
 /// simulator vs physical device and only enables mocks on simulator.
 library;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/utils/logger.dart';
 
 /// Mock configuration state
 class MockConfigState {
-  final bool isSimulator;
-  final bool useMocks;
-  final bool mockCamera;
-  final bool mockApi;
-  final int networkDelayMs;
-
   const MockConfigState({
     required this.isSimulator,
     required this.useMocks,
@@ -27,27 +23,33 @@ class MockConfigState {
 
   /// Default state before device detection
   factory MockConfigState.initial() => const MockConfigState(
-        isSimulator: false,
-        useMocks: false,
-        mockCamera: false,
-        mockApi: false,
-      );
-
-  /// State for simulator
-  factory MockConfigState.simulator() => const MockConfigState(
-        isSimulator: true,
-        useMocks: true,
-        mockCamera: true,
-        mockApi: true,
-      );
+    isSimulator: false,
+    useMocks: false,
+    mockCamera: false,
+    mockApi: false,
+  );
 
   /// State for physical device
   factory MockConfigState.physicalDevice() => const MockConfigState(
-        isSimulator: false,
-        useMocks: false,
-        mockCamera: false,
-        mockApi: false,
-      );
+    isSimulator: false,
+    useMocks: false,
+    mockCamera: false,
+    mockApi: false,
+  );
+
+  /// State for simulator
+  factory MockConfigState.simulator() => const MockConfigState(
+    isSimulator: true,
+    useMocks: true,
+    mockCamera: true,
+    mockApi: true,
+  );
+
+  final bool isSimulator;
+  final bool useMocks;
+  final bool mockCamera;
+  final bool mockApi;
+  final int networkDelayMs;
 
   MockConfigState copyWith({
     bool? isSimulator,
@@ -55,23 +57,23 @@ class MockConfigState {
     bool? mockCamera,
     bool? mockApi,
     int? networkDelayMs,
-  }) {
-    return MockConfigState(
-      isSimulator: isSimulator ?? this.isSimulator,
-      useMocks: useMocks ?? this.useMocks,
-      mockCamera: mockCamera ?? this.mockCamera,
-      mockApi: mockApi ?? this.mockApi,
-      networkDelayMs: networkDelayMs ?? this.networkDelayMs,
-    );
-  }
+  }) => MockConfigState(
+    isSimulator: isSimulator ?? this.isSimulator,
+    useMocks: useMocks ?? this.useMocks,
+    mockCamera: mockCamera ?? this.mockCamera,
+    mockApi: mockApi ?? this.mockApi,
+    networkDelayMs: networkDelayMs ?? this.networkDelayMs,
+  );
 }
 
 /// Mock configuration notifier
 class MockConfigNotifier extends Notifier<MockConfigState> {
+  static const _logger = AppLogger('MockConfig');
+
   @override
   MockConfigState build() {
     // Start with initial state, then detect device
-    _detectDevice();
+    unawaited(_detectDevice());
     return MockConfigState.initial();
   }
 
@@ -79,10 +81,10 @@ class MockConfigNotifier extends Notifier<MockConfigState> {
     final isSimulator = await _isRunningOnSimulator();
 
     if (isSimulator) {
-      debugPrint('[MockConfig] Running on SIMULATOR - mocks enabled');
+      _logger.debug('Running on simulator - mocks enabled');
       state = MockConfigState.simulator();
     } else {
-      debugPrint('[MockConfig] Running on PHYSICAL DEVICE - mocks disabled');
+      _logger.debug('Running on physical device - mocks disabled');
       state = MockConfigState.physicalDevice();
     }
   }
@@ -100,18 +102,18 @@ class MockConfigNotifier extends Notifier<MockConfigState> {
       if (Platform.isIOS) {
         final iosInfo = await deviceInfo.iosInfo;
         final isPhysical = iosInfo.isPhysicalDevice;
-        debugPrint('[MockConfig] iOS isPhysicalDevice: $isPhysical');
+        _logger.debug('iOS isPhysicalDevice: $isPhysical');
         return !isPhysical;
       } else if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
         final isPhysical = androidInfo.isPhysicalDevice;
-        debugPrint('[MockConfig] Android isPhysicalDevice: $isPhysical');
+        _logger.debug('Android isPhysicalDevice: $isPhysical');
         return !isPhysical;
       }
 
       return false;
-    } catch (e) {
-      debugPrint('[MockConfig] Error detecting device type: $e');
+    } on Object catch (error) {
+      _logger.warn('Error detecting device type', error);
       // On error, assume physical device (safer)
       return false;
     }
@@ -123,15 +125,15 @@ class MockConfigNotifier extends Notifier<MockConfigState> {
   }
 
   /// Manually override mock settings (for debugging)
-  void setMockCamera(bool enabled) {
+  void setMockCamera({required bool enabled}) {
     state = state.copyWith(mockCamera: enabled);
   }
 
-  void setMockApi(bool enabled) {
+  void setMockApi({required bool enabled}) {
     state = state.copyWith(mockApi: enabled);
   }
 
-  void setUseMocks(bool enabled) {
+  void setUseMocks({required bool enabled}) {
     state = state.copyWith(
       useMocks: enabled,
       mockCamera: enabled,
@@ -142,17 +144,19 @@ class MockConfigNotifier extends Notifier<MockConfigState> {
 
 /// Provider for mock configuration
 final mockConfigProvider =
-    NotifierProvider<MockConfigNotifier, MockConfigState>(MockConfigNotifier.new);
+    NotifierProvider<MockConfigNotifier, MockConfigState>(
+      MockConfigNotifier.new,
+    );
 
 /// Convenience providers for specific mock settings
-final isSimulatorProvider = Provider<bool>((ref) {
-  return ref.watch(mockConfigProvider).isSimulator;
-});
+final isSimulatorProvider = Provider<bool>(
+  (ref) => ref.watch(mockConfigProvider).isSimulator,
+);
 
-final mockCameraProvider = Provider<bool>((ref) {
-  return ref.watch(mockConfigProvider).mockCamera;
-});
+final mockCameraProvider = Provider<bool>(
+  (ref) => ref.watch(mockConfigProvider).mockCamera,
+);
 
-final mockApiProvider = Provider<bool>((ref) {
-  return ref.watch(mockConfigProvider).mockApi;
-});
+final mockApiProvider = Provider<bool>(
+  (ref) => ref.watch(mockConfigProvider).mockApi,
+);

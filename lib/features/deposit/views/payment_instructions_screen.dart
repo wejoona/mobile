@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -34,14 +36,7 @@ class _PaymentInstructionsScreenState
   @override
   void initState() {
     super.initState();
-    // Start polling for push and QR flows
-    final state = ref.read(depositProvider);
-    // ignore: avoid_dynamic_calls
-    if (state.response?['paymentMethodType'].isAsyncConfirmation == true ||
-        // ignore: avoid_dynamic_calls
-        state.response?['paymentMethodType'].hasQrOrLink == true) {
-      // Polling is already started in the provider
-    }
+    // Polling starts in DepositNotifier after /deposits/initiate or /confirm.
   }
 
   @override
@@ -57,17 +52,18 @@ class _PaymentInstructionsScreenState
     final state = ref.watch(depositProvider);
     final response = state.response;
 
-    // Error handling
-    if (state.error != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _showErrorDialog(context, state.error!, colors, l10n);
-      });
-    }
+    ref.listen<DepositState>(depositProvider, (previous, current) {
+      final isNewError =
+          current.error != null && current.error != previous?.error;
+      if (isNewError && current.step != DepositFlowStep.failed) {
+        _showErrorDialog(context, current.error!, colors, l10n);
+      }
 
-    // Auto-navigate on completion/failure
-    ref.listen(depositProvider, (previous, current) {
-      if (current.step == DepositFlowStep.completed ||
-          current.step == DepositFlowStep.failed) {
+      final didReachTerminalStep =
+          current.step != previous?.step &&
+          (current.step == DepositFlowStep.completed ||
+              current.step == DepositFlowStep.failed);
+      if (didReachTerminalStep) {
         context.push('/deposit/status');
       }
     });
@@ -100,49 +96,55 @@ class _PaymentInstructionsScreenState
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Amount Summary Card
-              _buildAmountCard(state, colors, l10n),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Instructions
-              if (((response['instructions'] as String?) ?? '').isNotEmpty) ...[
-                AppCard(
-                  variant: AppCardVariant.flat,
-                  child: Row(
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: colors.gold,
-                        size: 24,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: AppText(
-                          ((response['instructions'] as String?) ?? ''),
-                          variant: AppTextVariant.bodyMedium,
-                          color: colors.textPrimary,
+                      _buildAmountCard(state, colors, l10n),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      if (response.instructions.isNotEmpty) ...[
+                        AppCard(
+                          variant: AppCardVariant.flat,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.info_outline,
+                                color: colors.gold,
+                                size: 24,
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: AppText(
+                                  response.instructions,
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+
+                      _buildPaymentReferenceCard(response, colors),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      _buildTypeSpecificContent(state, response, colors, l10n),
                     ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-
-              // Type-specific content
-              Expanded(
-                child: _buildTypeSpecificContent(state, response, colors, l10n),
               ),
-              
+
               const SizedBox(height: AppSpacing.md),
 
               // Action button (only for OTP flow)
-              // ignore: avoid_dynamic_calls
-              if (response['paymentMethodType'].requiresOtp) 
+              if (response.paymentMethodType.requiresOtp)
                 _buildActionButton(state, colors, l10n),
             ],
           ),
@@ -151,49 +153,80 @@ class _PaymentInstructionsScreenState
     );
   }
 
+  Widget _buildPaymentReferenceCard(
+    DepositResponse response,
+    ThemeColors colors,
+  ) {
+    final rows = <Widget>[
+      if (response.token.isNotEmpty)
+        _ReferenceRow(
+          label: 'Reference',
+          value: response.token,
+          copyValue: response.token,
+          colors: colors,
+        ),
+      _ReferenceRow(
+        label: 'Expires',
+        value: Formatters.formatDateTime(response.expiresAt),
+        colors: colors,
+      ),
+      if (response.providerCode.isNotEmpty)
+        _ReferenceRow(
+          label: 'Provider',
+          value: response.providerCode,
+          colors: colors,
+        ),
+    ];
+
+    return AppCard(
+      key: const ValueKey('deposit_reference_card'),
+      variant: AppCardVariant.flat,
+      child: Column(
+        children: [
+          for (var index = 0; index < rows.length; index++) ...[
+            rows[index],
+            if (index < rows.length - 1)
+              Divider(
+                height: AppSpacing.xl,
+                color: colors.border.withValues(alpha: 0.45),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildAmountCard(
-    DepositState state, 
-    ThemeColors colors, 
+    DepositState state,
+    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     return AppCard(
-      variant: AppCardVariant.elevated,
+      variant: AppCardVariant.flat,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                l10n.deposit_youPay,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
-              ),
-              AppText(
-                '${(state.amountXOF ?? 0).toStringAsFixed(0)} XOF',
-                variant: AppTextVariant.headlineSmall,
-                color: colors.textPrimary,
-              ),
-            ],
+          Expanded(
+            child: _AmountSummaryColumn(
+              label: l10n.deposit_youPay,
+              value: formatXof(state.amountXOF ?? state.response?.amount ?? 0),
+              valueColor: colors.textPrimary,
+              alignEnd: false,
+              colors: colors,
+            ),
           ),
-          Icon(
-            Icons.arrow_forward,
-            color: colors.textTertiary,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              AppText(
-                l10n.deposit_youReceive,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
+          const SizedBox(width: AppSpacing.sm),
+          Icon(Icons.arrow_forward, color: colors.textTertiary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: _AmountSummaryColumn(
+              label: l10n.deposit_youReceive,
+              value: formatUsdc(
+                state.amountUSD ?? state.response?.convertedAmount ?? 0,
               ),
-              AppText(
-                formatXof(state.amountUSD ?? 0),
-                variant: AppTextVariant.headlineSmall,
-                color: colors.gold,
-              ),
-            ],
+              valueColor: colors.gold,
+              alignEnd: true,
+              colors: colors,
+            ),
           ),
         ],
       ),
@@ -202,11 +235,11 @@ class _PaymentInstructionsScreenState
 
   Widget _buildTypeSpecificContent(
     DepositState state,
-    Map<String, dynamic> response,
+    DepositResponse response,
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
-    switch (response['paymentMethodType']) {
+    switch (response.paymentMethodType) {
       case PaymentMethodType.otp:
         return _buildOtpContent(state, colors, l10n);
       case PaymentMethodType.push:
@@ -214,31 +247,43 @@ class _PaymentInstructionsScreenState
       case PaymentMethodType.qrLink:
         return _buildQrLinkContent(state, response, colors, l10n);
       case PaymentMethodType.card:
-        return _buildCardContent(colors, l10n);
-      default:
-        return const SizedBox.shrink();
+        return _buildStaticInstructionContent(
+          colors,
+          Icons.credit_card,
+          l10n.deposit_cardPayment,
+          response.instructions,
+        );
+      case PaymentMethodType.bankTransfer:
+        return _buildStaticInstructionContent(
+          colors,
+          Icons.account_balance,
+          l10n.deposit_bankTransfer,
+          response.instructions,
+        );
+      case PaymentMethodType.crypto:
+        return _buildStaticInstructionContent(
+          colors,
+          Icons.account_balance_wallet,
+          l10n.deposit_cryptoTransfer,
+          response.instructions,
+        );
     }
   }
 
   /// OTP flow: Shows "Dial #144*82# on your phone" + OTP input field + Confirm button
   Widget _buildOtpContent(
-    DepositState state, 
-    ThemeColors colors, 
+    DepositState state,
+    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         // Dial instruction
         AppCard(
-          variant: AppCardVariant.elevated,
+          variant: AppCardVariant.flat,
           child: Column(
             children: [
-              Icon(
-                Icons.dialpad,
-                size: 48,
-                color: colors.gold,
-              ),
+              Icon(Icons.dialpad, size: 48, color: colors.gold),
               const SizedBox(height: AppSpacing.md),
               AppText(
                 l10n.deposit_dialUSSD,
@@ -275,32 +320,15 @@ class _PaymentInstructionsScreenState
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.lg),
-        TextField(
+        AppInput(
+          key: const ValueKey('deposit_otp_input'),
           controller: _otpController,
+          label: l10n.deposit_enterOTP,
+          hint: '------',
+          variant: AppInputVariant.pin,
           keyboardType: TextInputType.number,
-          textAlign: TextAlign.center,
           maxLength: 8,
-          style: AppTypography.headlineSmall.copyWith(
-            color: colors.textPrimary,
-            letterSpacing: 8,
-            fontWeight: FontWeight.bold,
-          ),
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            hintText: '------',
-            hintStyle: AppTypography.headlineSmall.copyWith(
-              color: colors.textTertiary,
-            ),
-            counterText: '',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: BorderSide(color: colors.borderSubtle),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: BorderSide(color: colors.gold),
-            ),
-          ),
           onChanged: (value) {
             ref.read(depositProvider.notifier).setOtp(value);
           },
@@ -312,15 +340,14 @@ class _PaymentInstructionsScreenState
   /// PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
   Widget _buildPushContent(
     DepositState state,
-    Map<String, dynamic> response, 
-    ThemeColors colors, 
+    DepositResponse response,
+    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         AppCard(
-          variant: AppCardVariant.elevated,
+          variant: AppCardVariant.flat,
           child: Column(
             children: [
               SizedBox(
@@ -349,12 +376,11 @@ class _PaymentInstructionsScreenState
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-        
+
         // Countdown timer
-        // ignore: avoid_dynamic_calls
-        if (response['expiresAt'].isAfter(DateTime.now()))
+        if (response.expiresAt.isAfter(DateTime.now()))
           _CountdownTimer(
-            expiresAt: response['expiresAt'],
+            expiresAt: response.expiresAt,
             colors: colors,
             l10n: l10n,
           ),
@@ -362,113 +388,118 @@ class _PaymentInstructionsScreenState
     );
   }
 
-  /// QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
+  /// QR_LINK flow: Shows QR code + provider deep link button + auto-polls status
   Widget _buildQrLinkContent(
     DepositState state,
-    Map<String, dynamic> response, 
-    ThemeColors colors, 
+    DepositResponse response,
+    ThemeColors colors,
     AppLocalizations l10n,
   ) {
-    return SingleChildScrollView(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // QR Code
-          // ignore: avoid_dynamic_calls
-          if (response['qrCodeData']?.isNotEmpty == true) ...[
-            AppCard(
-              variant: AppCardVariant.elevated,
-              child: Column(
-                children: [
-                  AppText(
-                    l10n.deposit_scanQRCode,
-                    variant: AppTextVariant.titleMedium,
-                    color: colors.textPrimary,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: colors.canvas,
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                    ),
-                    child: QrImageView(
-                      data: response['qrCodeData']!,
-                      version: QrVersions.auto,
-                      size: 200.0,
-                      foregroundColor: colors.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-          ],
-
-          // Deep link button
-          // ignore: avoid_dynamic_calls
-          if (response['deepLinkUrl']?.isNotEmpty == true) ...[
-            AppButton(
-              label: l10n.deposit_openInWave,
-              icon: Icons.open_in_new,
-              onPressed: () => _openDeepLink(response['deepLinkUrl']!),
-              isFullWidth: true,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            AppText(
-              l10n.deposit_orScanQR,
-              variant: AppTextVariant.bodySmall,
-              color: colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-          ],
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Status polling indicator
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.textSecondary,
+    return Column(
+      children: [
+        // QR Code
+        if (response.qrCodeData?.isNotEmpty == true) ...[
+          AppCard(
+            variant: AppCardVariant.flat,
+            child: Column(
+              children: [
+                AppText(
+                  l10n.deposit_scanQRCode,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              AppText(
-                l10n.deposit_waitingForPayment,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
-              ),
-            ],
+                const SizedBox(height: AppSpacing.lg),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: colors.canvas,
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                  ),
+                  child: QrImageView(
+                    data: response.qrCodeData!,
+                    version: QrVersions.auto,
+                    size: 200.0,
+                    foregroundColor: colors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+
+        // Deep link button
+        if (response.deepLinkUrl?.isNotEmpty == true) ...[
+          AppButton(
+            label: l10n.deposit_openPaymentApp,
+            icon: Icons.open_in_new,
+            onPressed: () => _openDeepLink(response.deepLinkUrl!),
+            isFullWidth: true,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            l10n.deposit_orScanQR,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
           ),
         ],
-      ),
+
+        const SizedBox(height: AppSpacing.xl),
+
+        // Status polling indicator
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            AppText(
+              l10n.deposit_waitingForPayment,
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  /// Card flow: Placeholder for card payments
-  Widget _buildCardContent(ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildStaticInstructionContent(
+    ThemeColors colors,
+    IconData icon,
+    String title,
+    String instructions,
+  ) {
     return Center(
       child: AppCard(
         variant: AppCardVariant.flat,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.credit_card,
-              size: 64,
-              color: colors.textTertiary,
-            ),
+            Icon(icon, size: 64, color: colors.textTertiary),
             const SizedBox(height: AppSpacing.lg),
             AppText(
-              l10n.deposit_cardPaymentComingSoon,
+              title,
               variant: AppTextVariant.titleMedium,
               color: colors.textPrimary,
+              textAlign: TextAlign.center,
             ),
+            if (instructions.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.md),
+              AppText(
+                instructions,
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+            ],
           ],
         ),
       ),
@@ -476,8 +507,8 @@ class _PaymentInstructionsScreenState
   }
 
   Widget _buildActionButton(
-    DepositState state, 
-    ThemeColors colors, 
+    DepositState state,
+    ThemeColors colors,
     AppLocalizations l10n,
   ) {
     final canSubmit = (state.otpInput?.length ?? 0) >= 4;
@@ -498,7 +529,7 @@ class _PaymentInstructionsScreenState
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: AppText(
@@ -513,7 +544,10 @@ class _PaymentInstructionsScreenState
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () {
+              ref.read(depositProvider.notifier).clearError();
+              Navigator.of(context).pop();
+            },
             child: AppText(
               l10n.action_ok,
               variant: AppTextVariant.labelMedium,
@@ -522,7 +556,12 @@ class _PaymentInstructionsScreenState
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      if (!mounted) return;
+      if (ref.read(depositProvider).error == error) {
+        ref.read(depositProvider.notifier).clearError();
+      }
+    });
   }
 
   Future<void> _openDeepLink(String url) async {
@@ -540,6 +579,104 @@ class _PaymentInstructionsScreenState
     // Stop polling and go back
     ref.read(depositProvider.notifier).goBack();
     context.pop();
+  }
+}
+
+class _ReferenceRow extends StatelessWidget {
+  const _ReferenceRow({
+    required this.label,
+    required this.value,
+    required this.colors,
+    this.copyValue,
+  });
+
+  final String label;
+  final String value;
+  final String? copyValue;
+  final ThemeColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textSecondary,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          flex: 3,
+          child: AppText(
+            value,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textPrimary,
+            fontWeight: FontWeight.w600,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.right,
+          ),
+        ),
+        if (copyValue != null) ...[
+          const SizedBox(width: AppSpacing.xs),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.copy_rounded, color: colors.gold, size: 18),
+            onPressed: () => Clipboard.setData(ClipboardData(text: copyValue!)),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _AmountSummaryColumn extends StatelessWidget {
+  const _AmountSummaryColumn({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    required this.alignEnd,
+    required this.colors,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+  final bool alignEnd;
+  final ThemeColors colors;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        AppText(
+          label,
+          variant: AppTextVariant.bodySmall,
+          color: colors.textSecondary,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: AppSpacing.xxs),
+        Align(
+          alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
+            child: AppText(
+              value,
+              variant: AppTextVariant.headlineSmall,
+              color: valueColor,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -591,11 +728,12 @@ class _CountdownTimerState extends State<_CountdownTimer> {
         color: widget.colors.error,
       );
     }
-    
+
     final minutes = _remaining.inMinutes;
     final seconds = _remaining.inSeconds % 60;
-    final timeString = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    
+    final timeString =
+        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+
     return AppText(
       widget.l10n.deposit_expiresIn(timeString),
       variant: AppTextVariant.bodyMedium,

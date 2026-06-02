@@ -29,7 +29,7 @@ class ReceiptService {
     final pdf = pw.Document();
 
     final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
-    
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -44,17 +44,17 @@ class ReceiptService {
                   child: pw.Column(
                     children: [
                       pw.Container(
-                        width: 80,
-                        height: 80,
+                        width: 56,
+                        height: 56,
                         decoration: pw.BoxDecoration(
                           color: PdfColor.fromHex('#D4AF37'),
                           borderRadius: pw.BorderRadius.circular(16),
                         ),
                         child: pw.Center(
                           child: pw.Text(
-                            'JP',
+                            'K',
                             style: pw.TextStyle(
-                              fontSize: 32,
+                              fontSize: 24,
                               fontWeight: pw.FontWeight.bold,
                               color: PdfColors.white,
                             ),
@@ -63,10 +63,18 @@ class ReceiptService {
                       ),
                       pw.SizedBox(height: 16),
                       pw.Text(
-                        'TRANSACTION RECEIPT',
+                        'Korido',
                         style: pw.TextStyle(
                           fontSize: 24,
                           fontWeight: pw.FontWeight.bold,
+                        ),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(
+                        'Transaction receipt',
+                        style: const pw.TextStyle(
+                          fontSize: 12,
+                          color: PdfColors.grey600,
                         ),
                       ),
                     ],
@@ -77,7 +85,10 @@ class ReceiptService {
                 // Status
                 pw.Center(
                   child: pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
                     decoration: pw.BoxDecoration(
                       border: pw.Border.all(
                         color: _getPdfStatusColor(receiptData),
@@ -102,10 +113,16 @@ class ReceiptService {
                 pw.SizedBox(height: 24),
 
                 // Amount Section
-                _buildPdfRow('Amount', formatXof(receiptData.amount)),
+                _buildPdfRow(
+                  'Amount',
+                  formatCurrency(receiptData.amount, receiptData.currency),
+                ),
                 if (receiptData.fee > 0) ...[
                   pw.SizedBox(height: 12),
-                  _buildPdfRow('Fee', formatXof(receiptData.fee)),
+                  _buildPdfRow(
+                    'Fee',
+                    formatCurrency(receiptData.fee, receiptData.currency),
+                  ),
                 ],
                 pw.SizedBox(height: 12),
                 pw.Container(
@@ -116,7 +133,7 @@ class ReceiptService {
                   ),
                   child: _buildPdfRow(
                     'Total',
-                    '${formatXof(receiptData.total)} ${receiptData.currency}',
+                    formatCurrency(receiptData.total, receiptData.currency),
                     isBold: true,
                   ),
                 ),
@@ -127,7 +144,8 @@ class ReceiptService {
                 pw.SizedBox(height: 24),
 
                 // Recipient (if applicable)
-                if (receiptData.recipientPhone != null || receiptData.recipientAddress != null) ...[
+                if (receiptData.recipientPhone != null ||
+                    receiptData.recipientAddress != null) ...[
                   pw.Text(
                     'Recipient',
                     style: pw.TextStyle(
@@ -250,10 +268,14 @@ class ReceiptService {
     final file = File('${tempDir.path}/$fileName.$extension');
     await file.writeAsBytes(pdfBytes);
 
-    await SharePlus.instance.share(ShareParams(
-      files: [XFile(file.path)],
-      text: customMessage ?? 'Payment receipt from Korido\n\nRef: ${receiptData.referenceNumber}',
-    ));
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text:
+            customMessage ??
+            'Payment receipt from Korido\n\nRef: ${receiptData.referenceNumber}',
+      ),
+    );
   }
 
   /// Share receipt via WhatsApp
@@ -264,12 +286,13 @@ class ReceiptService {
     try {
       final receiptData = ReceiptData.fromTransaction(transaction);
       final dateStr = DateFormat('MMM dd, yyyy').format(receiptData.date);
-      final amountStr = formatXof(receiptData.total);
+      final amountStr = formatCurrency(receiptData.total, receiptData.currency);
 
-      final message = '''
+      final message =
+          '''
 Payment receipt from Korido
 
-Amount: $amountStr ${receiptData.currency}
+Amount: $amountStr
 Date: $dateStr
 Reference: ${receiptData.referenceNumber}
 Status: ${receiptData.getStatusLabel()}
@@ -288,7 +311,9 @@ Thank you for using Korido!
       }
       return false;
     } catch (e) {
-      AppLogger('Error sharing via WhatsApp').error('Error sharing via WhatsApp', e);
+      AppLogger(
+        'Error sharing via WhatsApp',
+      ).error('Error sharing via WhatsApp', e);
       return false;
     }
   }
@@ -300,10 +325,14 @@ Thank you for using Korido!
   }) async {
     try {
       final receiptData = ReceiptData.fromTransaction(transaction);
-      final dateStr = DateFormat('MMM dd, yyyy • HH:mm').format(receiptData.date);
-      final amountStr = formatXof(receiptData.total);
+      final dateStr = DateFormat(
+        'MMM dd, yyyy • HH:mm',
+      ).format(receiptData.date);
+      final amountStr = formatCurrency(receiptData.total, receiptData.currency);
 
-      final subject = Uri.encodeComponent('Korido Transaction Receipt - ${receiptData.referenceNumber}');
+      final subject = Uri.encodeComponent(
+        'Korido Transaction Receipt - ${receiptData.referenceNumber}',
+      );
       final body = Uri.encodeComponent('''
 Dear Customer,
 
@@ -313,7 +342,7 @@ Transaction ID: ${receiptData.transactionId}
 Reference: ${receiptData.referenceNumber}
 Date: $dateStr
 Type: ${receiptData.getTypeLabel()}
-Amount: $amountStr ${receiptData.currency}
+Amount: $amountStr
 Status: ${receiptData.getStatusLabel()}
 
 ${receiptData.description != null ? 'Note: ${receiptData.description}\n\n' : ''}
@@ -323,7 +352,9 @@ Best regards,
 The Korido Team
 ''');
 
-      final uri = Uri.parse('mailto:$recipientEmail?subject=$subject&body=$body');
+      final uri = Uri.parse(
+        'mailto:$recipientEmail?subject=$subject&body=$body',
+      );
       if (await canLaunchUrl(uri)) {
         return await launchUrl(uri);
       }

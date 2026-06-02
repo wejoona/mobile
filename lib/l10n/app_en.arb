@@ -338,9 +338,25 @@
   "@wallet_availableBalance": {
     "description": "Available balance label"
   },
+  "wallet_availableToSend": "Available to send",
+  "@wallet_availableToSend": {
+    "description": "Label for funds that can be sent immediately"
+  },
+  "wallet_pendingBalance": "Pending",
+  "@wallet_pendingBalance": {
+    "description": "Short pending balance label"
+  },
   "wallet_totalBalance": "Total Balance",
   "@wallet_totalBalance": {
     "description": "Total balance label"
+  },
+  "wallet_securedWallet": "Secured wallet",
+  "@wallet_securedWallet": {
+    "description": "Wallet security status label"
+  },
+  "wallet_balanceHidden": "Balance hidden",
+  "@wallet_balanceHidden": {
+    "description": "Label shown when the user hides wallet balances"
   },
   "wallet_usdBalance": "USD",
   "@wallet_usdBalance": {
@@ -981,6 +997,156 @@
   "settings_noDevicesDescription": "You don't have any registered devices yet.",
   "@settings_noDevicesDescription": {
     "description": "Empty state description"
+  },
+  "settings_connectedDevices": "Connected devices",
+  "@settings_connectedDevices": {
+    "description": "Devices summary heading"
+  },
+  "settings_oneDeviceAccess": "1 device can access your account",
+  "@settings_oneDeviceAccess": {
+    "description": "Devices summary for one device"
+  },
+  "settings_multipleDevicesAccess": "{count} devices can access your account",
+  "@settings_multipleDevicesAccess": {
+    "description": "Devices summary for multiple devices",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "settings_otherDevices": "Other devices",
+  "@settings_otherDevices": {
+    "description": "Other devices section title"
+  },
+  "settings_activeNow": "Active now",
+  "@settings_activeNow": {
+    "description": "Current active device badge"
+  },
+  "settings_trusted": "Trusted",
+  "@settings_trusted": {
+    "description": "Trusted device badge"
+  },
+  "settings_notTrusted": "Not trusted",
+  "@settings_notTrusted": {
+    "description": "Untrusted device badge"
+  },
+  "settings_neverActive": "Never",
+  "@settings_neverActive": {
+    "description": "Never active relative time"
+  },
+  "settings_justNow": "Just now",
+  "@settings_justNow": {
+    "description": "Just now relative time"
+  },
+  "settings_minutesAgo": "{minutes}m ago",
+  "@settings_minutesAgo": {
+    "description": "Minutes ago relative time",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "12"
+      }
+    }
+  },
+  "settings_hoursAgo": "{hours}h ago",
+  "@settings_hoursAgo": {
+    "description": "Hours ago relative time",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "settings_daysAgo": "{days}d ago",
+  "@settings_daysAgo": {
+    "description": "Days ago relative time",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "settings_loginCountValue": "{count} logins",
+  "@settings_loginCountValue": {
+    "description": "Login count badge",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "7"
+      }
+    }
+  },
+  "settings_revokeDeviceTitle": "Remove device",
+  "@settings_revokeDeviceTitle": {
+    "description": "Remove device confirmation title"
+  },
+  "settings_revokeDeviceMessage": "This device will be signed out and will need to authenticate again.",
+  "@settings_revokeDeviceMessage": {
+    "description": "Remove device confirmation message"
+  },
+  "settings_untrustDevice": "Remove trust",
+  "@settings_untrustDevice": {
+    "description": "Untrust device menu item"
+  },
+  "settings_deviceUntrustedSuccess": "Device trust removed",
+  "@settings_deviceUntrustedSuccess": {
+    "description": "Device untrusted success message"
+  },
+  "settings_deviceUntrustError": "Failed to remove device trust",
+  "@settings_deviceUntrustError": {
+    "description": "Device untrust error message"
+  },
+  "settings_renameDevice": "Rename device",
+  "@settings_renameDevice": {
+    "description": "Rename device menu item"
+  },
+  "settings_deviceName": "Device name",
+  "@settings_deviceName": {
+    "description": "Device name field label"
+  },
+  "settings_deviceRenamedSuccess": "Device renamed",
+  "@settings_deviceRenamedSuccess": {
+    "description": "Device renamed success message"
+  },
+  "settings_deviceRenameError": "Failed to rename device",
+  "@settings_deviceRenameError": {
+    "description": "Device rename error message"
+  },
+  "settings_signOutOtherDevices": "Sign out other devices",
+  "@settings_signOutOtherDevices": {
+    "description": "Sign out other devices button"
+  },
+  "settings_signOutOtherDevicesTitle": "Sign out other devices?",
+  "@settings_signOutOtherDevicesTitle": {
+    "description": "Sign out other devices dialog title"
+  },
+  "settings_signOutOtherDevicesMessage": "Every other device will be signed out. This device will stay active.",
+  "@settings_signOutOtherDevicesMessage": {
+    "description": "Sign out other devices dialog message"
+  },
+  "settings_signOutOtherDevicesSuccess": "Other devices signed out",
+  "@settings_signOutOtherDevicesSuccess": {
+    "description": "Sign out other devices success message"
+  },
+  "settings_signOutOtherDevicesError": "Failed to sign out other devices",
+  "@settings_signOutOtherDevicesError": {
+    "description": "Sign out other devices error message"
+  },
+  "settings_devicesLoadErrorTitle": "Unable to load devices",
+  "@settings_devicesLoadErrorTitle": {
+    "description": "Devices loading error title"
+  },
+  "settings_devicesLoadErrorDescription": "Check your connection and try again.",
+  "@settings_devicesLoadErrorDescription": {
+    "description": "Devices loading error description"
+  },
+  "settings_noOtherDevices": "Only this device has access right now.",
+  "@settings_noOtherDevices": {
+    "description": "No other devices message"
   },
   "kyc_verified": "Verified",
   "@kyc_verified": {
@@ -4528,7 +4694,7 @@
   "@referrals_codeCopied": {
     "description": "Code copied message"
   },
-  "referrals_shareMessage": "Join Korido and get $5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download",
+  "referrals_shareMessage": "Join Korido and get $5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://korido.app/download",
   "@referrals_shareMessage": {
     "description": "Share message template",
     "placeholders": {
@@ -7419,7 +7585,7 @@
   "@onboarding_page1_title": {
     "description": "Onboarding page 1 title"
   },
-  "onboarding_page1_description": "Store, send, and receive USDC securely. Your digital wallet built for West Africa.",
+  "onboarding_page1_description": "Store, send, and receive USDC securely. Your digital wallet adapts to your country.",
   "@onboarding_page1_description": {
     "description": "Onboarding page 1 description"
   },
@@ -7447,7 +7613,7 @@
   "@onboarding_page2_feature1": {
     "description": "Onboarding page 2 feature 1"
   },
-  "onboarding_page2_feature2": "Send to any mobile money account",
+  "onboarding_page2_feature2": "Send to local accounts where available",
   "@onboarding_page2_feature2": {
     "description": "Onboarding page 2 feature 2"
   },
@@ -7459,11 +7625,11 @@
   "@onboarding_page3_title": {
     "description": "Onboarding page 3 title"
   },
-  "onboarding_page3_description": "Add money via Mobile Money. Cash out to your local account anytime.",
+  "onboarding_page3_description": "Add funds with the payment methods available in your country. Cash out when supported.",
   "@onboarding_page3_description": {
     "description": "Onboarding page 3 description"
   },
-  "onboarding_page3_feature1": "Deposit with Orange Money, MTN, Wave",
+  "onboarding_page3_feature1": "Payment methods adapt to your country",
   "@onboarding_page3_feature1": {
     "description": "Onboarding page 3 feature 1"
   },
@@ -8238,6 +8404,9 @@
   "deposit_approveOnPhone": "Approve the payment on your phone by entering your PIN",
   "deposit_balanceUpdated": "Your balance has been updated",
   "deposit_cardPaymentComingSoon": "Card payment coming soon",
+  "deposit_cardPayment": "Pay securely by card",
+  "deposit_bankTransfer": "Transfer from a linked bank account",
+  "deposit_cryptoTransfer": "Send USDC from an external wallet",
   "deposit_choosePaymentMethod": "Choose Payment Method",
   "deposit_dialUSSD": "Dial the USSD code below to get your OTP",
   "deposit_enterOTP": "Enter OTP",
@@ -8255,6 +8424,7 @@
   "deposit_noProvidersAvailable": "No Providers Available",
   "deposit_noProvidersAvailableDesc": "No deposit providers are currently available. Please try again later.",
   "deposit_openInWave": "Open in Wave",
+  "deposit_openPaymentApp": "Open payment app",
   "deposit_orScanQR": "Or scan the QR code below",
   "deposit_payment": "Payment",
   "deposit_processingDesc": "We are processing your deposit. This may take a moment.",
@@ -8400,6 +8570,7 @@
   "settings_chooseFromGallery": "Choose from gallery",
   "settings_connectingToSupport": "Connecting to support agent...",
   "settings_copiedToClipboard": "Copied to clipboard",
+  "settings_failedToRemovePhoto": "Could not remove profile photo",
   "settings_failedToUpdateProfile": "Failed to update profile",
   "settings_improveAnswer": "We'll improve this answer",
   "settings_openingLiveChat": "Opening live chat...",
@@ -8407,7 +8578,9 @@
   "settings_openingWhatsApp": "Opening WhatsApp...",
   "settings_performanceMonitor": "Performance Monitor",
   "settings_problemReported": "Problem reported. We'll get back to you soon.",
+  "settings_photoRemoved": "Profile photo removed",
   "settings_profileUpdated": "Profile updated successfully",
+  "settings_removePhoto": "Remove photo",
   "settings_takePhoto": "Take a photo",
   "settings_thanksFeedback": "Thanks for your feedback!",
   "settings_verificationFailed": "Verification failed. Please try again.",
@@ -8457,5 +8630,33 @@
   "delete_consequenceKyc": "KYC data erased within 30 days",
   "delete_contactSupportTitle": "Contact Support",
   "delete_contactSupportDescription": "To delete your account, please contact our support team. They will guide you through the process.",
-  "delete_contactSupportButton": "Contact Support"
+  "delete_contactSupportButton": "Contact Support",
+  "splash_tagline": "Money without borders",
+  "@splash_tagline": {
+    "description": "Splash screen tagline"
+  },
+  "splash_poweredBy": "Powered by JoonaPay",
+  "@splash_poweredBy": {
+    "description": "Splash screen partner footer"
+  },
+  "auth_authenticating": "Authenticating...",
+  "@auth_authenticating": {
+    "description": "Biometric login in-progress label"
+  },
+  "auth_tapToUnlock": "Tap to unlock",
+  "@auth_tapToUnlock": {
+    "description": "Biometric login prompt label"
+  },
+  "auth_usePhoneInstead": "Use phone number instead",
+  "@auth_usePhoneInstead": {
+    "description": "Switch from biometric login to phone login"
+  },
+  "wallet_settingUp": "Setting up your wallet...",
+  "@wallet_settingUp": {
+    "description": "Wallet auto-creation loading title"
+  },
+  "wallet_setupMoment": "This will only take a moment",
+  "@wallet_setupMoment": {
+    "description": "Wallet auto-creation loading subtitle"
+  }
 }

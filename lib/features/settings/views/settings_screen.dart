@@ -13,7 +13,6 @@ import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Comprehensive Settings Screen
 /// Integrates profile, security, preferences, devices, sessions, and support
@@ -72,8 +71,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.edit_outlined,
-              title: 'Modifier le profil',
-              subtitle: 'Mettre à jour vos informations personnelles',
+              title: l10n.settings_profile,
+              subtitle: l10n.settings_profileDescription,
               onTap: () => context.push('/settings/profile/edit'),
             ),
             _KycTile(onTap: () => context.push('/settings/kyc')),
@@ -85,21 +84,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.lock_outline,
-              title: 'Changer le PIN',
-              subtitle: 'Modifier votre code PIN à 6 chiffres',
+              title: l10n.pin_changeTitle,
+              subtitle: l10n.settings_securityDescription,
               onTap: () => context.push('/settings/pin'),
             ),
             const _BiometricTile(),
             _SettingsTile(
               icon: Icons.devices,
               title: l10n.settings_devices,
-              subtitle: 'Gérer les appareils de confiance',
+              subtitle: l10n.settings_devicesDescription,
               onTap: () => context.push('/settings/devices'),
             ),
             _SettingsTile(
               icon: Icons.history,
-              title: 'Sessions actives',
-              subtitle: 'Voir et gérer les sessions actives',
+              title: l10n.settings_activeSessions,
+              subtitle: l10n.security_activeSessionsSubtitle,
               onTap: () => context.push('/settings/sessions'),
             ),
             _SettingsTile(
@@ -126,14 +125,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsTile(
               icon: Icons.notifications_outlined,
               title: l10n.settings_notifications,
-              subtitle: 'Gérer les préférences de notification',
+              subtitle: l10n.notifications_transactionsDescription,
               onTap: () => context.push('/settings/notifications'),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // ABOUT SECTION
-            _SectionHeader('À propos'),
+            _SectionHeader(l10n.settings_about),
             const SizedBox(height: AppSpacing.md),
             _SettingsTile(
               icon: Icons.help_outline,
@@ -143,14 +142,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             _SettingsTile(
               icon: Icons.description_outlined,
-              title: "Conditions d'utilisation",
-              subtitle: 'Voir nos conditions',
+              title: l10n.settings_termsOfService,
               onTap: () => _openExternalLink('https://joonapay.com/terms'),
             ),
             _SettingsTile(
               icon: Icons.privacy_tip_outlined,
-              title: 'Politique de confidentialité',
-              subtitle: 'How we handle your data',
+              title: l10n.settings_privacyPolicy,
               onTap: () => _openExternalLink('https://joonapay.com/privacy'),
             ),
 
@@ -169,10 +166,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       color: colors.gold.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: Icon(
-                      Icons.card_giftcard,
-                      color: colors.gold,
-                    ),
+                    child: Icon(Icons.card_giftcard, color: colors.gold),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -193,10 +187,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.chevron_right,
-                    color: colors.gold,
-                  ),
+                  Icon(Icons.chevron_right, color: colors.gold),
                 ],
               ),
             ),
@@ -206,7 +197,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // ACCOUNT ACTIONS
             // Logout Button
             AppButton(
-              label: 'Logout',
+              label: l10n.common_logout,
               onPressed: () => _showLogoutDialog(context, ref, l10n),
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
@@ -219,7 +210,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               child: GestureDetector(
                 onTap: _handleVersionTap,
                 child: AppText(
-                  'Version $_appVersion',
+                  l10n.settings_version(_appVersion),
                   variant: AppTextVariant.labelSmall,
                   color: colors.textTertiary,
                 ),
@@ -296,13 +287,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     // In production, use url_launcher package
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText(AppLocalizations.of(context)!.settings_openingUrl(url)),
+        content: AppText(
+          AppLocalizations.of(context)!.settings_openingUrl(url),
+        ),
         backgroundColor: context.colors.info,
       ),
     );
   }
 
-  void _showLogoutDialog(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
+  void _showLogoutDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -310,12 +307,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return AlertDialog(
           backgroundColor: dialogColors.container,
           title: AppText(
-            'Logout',
+            l10n.common_logout,
             variant: AppTextVariant.titleMedium,
             color: dialogColors.textPrimary,
           ),
           content: AppText(
-            'Are you sure you want to logout?',
+            l10n.auth_logoutConfirm,
             variant: AppTextVariant.bodyMedium,
             color: dialogColors.textSecondary,
           ),
@@ -327,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               size: AppButtonSize.small,
             ),
             AppButton(
-              label: 'Logout',
+              label: l10n.common_logout,
               onPressed: () {
                 Navigator.pop(dialogContext);
                 ref.read(authProvider.notifier).logout();
@@ -387,50 +384,45 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        borderRadius: AppRadius.lg,
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.md,
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: colors.textSecondary, size: 22),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+        child: Row(
+          children: [
+            Icon(icon, color: colors.gold, size: 22),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    variant: AppTextVariant.bodyLarge,
+                    color: colors.textPrimary,
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: AppSpacing.xxs),
                     AppText(
-                      title,
-                      variant: AppTextVariant.bodyLarge,
-                      color: colors.textPrimary,
+                      subtitle!,
+                      variant: AppTextVariant.bodySmall,
+                      color: subtitleColor ?? colors.textTertiary,
                     ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: AppSpacing.xxs),
-                      AppText(
-                        subtitle!,
-                        variant: AppTextVariant.bodySmall,
-                        color: subtitleColor ?? colors.textTertiary,
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              if (trailing != null)
-                trailing!
-              else
-                Icon(
-                  Icons.chevron_right,
-                  color: colors.textTertiary,
-                  size: 20,
-                ),
-            ],
-          ),
+            ),
+            if (trailing != null)
+              trailing!
+            else
+              Icon(Icons.chevron_right, color: colors.textTertiary, size: 20),
+          ],
         ),
       ),
     );
@@ -449,6 +441,7 @@ class _KycTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kycStatus = ref.watch(kycStatusProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     String subtitle;
     Color subtitleColor;
@@ -456,35 +449,35 @@ class _KycTile extends ConsumerWidget {
 
     switch (kycStatus) {
       case KycStatus.verified:
-        subtitle = 'Verified';
+        subtitle = l10n.kyc_verified;
         subtitleColor = context.colors.successText;
         icon = Icons.verified_user;
       case KycStatus.submitted:
-        subtitle = 'Under Review';
+        subtitle = l10n.kyc_status_submitted_title;
         subtitleColor = context.colors.warning;
         icon = Icons.hourglass_top;
       case KycStatus.pending:
       case KycStatus.documentsPending:
-        subtitle = 'Documents Pending';
+        subtitle = l10n.kyc_pending;
         subtitleColor = context.colors.warning;
         icon = Icons.upload_file;
       case KycStatus.rejected:
-        subtitle = 'Rejected - Retry';
+        subtitle = l10n.kyc_rejected;
         subtitleColor = context.colors.errorText;
         icon = Icons.error_outline;
       case KycStatus.additionalInfoNeeded:
-        subtitle = 'More Info Required';
+        subtitle = l10n.kyc_status_additionalInfo_title;
         subtitleColor = context.colors.warning;
         icon = Icons.info_outline;
       case KycStatus.none:
-        subtitle = 'Not Started';
+        subtitle = l10n.kyc_notStarted;
         subtitleColor = context.colors.textTertiary;
         icon = Icons.verified_user_outlined;
     }
 
     return _SettingsTile(
       icon: icon,
-      title: 'KYC Verification',
+      title: l10n.settings_kycVerification,
       subtitle: subtitle,
       subtitleColor: subtitleColor,
       onTap: onTap,
@@ -503,6 +496,7 @@ class _BiometricTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final biometricType = ref.watch(primaryBiometricTypeProvider);
     final biometricEnabled = ref.watch(biometricEnabledProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return biometricType.when(
       data: (type) {
@@ -513,15 +507,20 @@ class _BiometricTile extends ConsumerWidget {
         return biometricEnabled.when(
           data: (enabled) => _SettingsTile(
             icon: type == BiometricType.faceId ? Icons.face : Icons.fingerprint,
-            title: type == BiometricType.faceId ? 'Face ID' : 'Touch ID',
-            subtitle: enabled ? 'Enabled for login' : 'Tap to enable',
+            title: type == BiometricType.faceId
+                ? l10n.biometric_type_face_id
+                : l10n.biometric_type_fingerprint,
+            subtitle: enabled
+                ? l10n.biometric_settings_enabled_subtitle
+                : l10n.biometric_settings_disabled_subtitle,
             trailing: Switch(
               value: enabled,
               onChanged: (value) async {
                 final service = ref.read(biometricServiceProvider);
                 if (value) {
                   final authenticatedBio = await service.authenticate(
-                    localizedReason: 'Authenticate to enable biometric login',
+                    localizedReason:
+                        l10n.biometric_enrollment_authenticate_reason,
                   );
                   if (authenticatedBio.success) {
                     await service.enableBiometric();
@@ -538,8 +537,8 @@ class _BiometricTile extends ConsumerWidget {
           ),
           loading: () => _SettingsTile(
             icon: Icons.fingerprint,
-            title: 'Biometric Login',
-            subtitle: 'Loading...',
+            title: l10n.security_biometricLogin,
+            subtitle: l10n.common_loading,
             trailing: const SizedBox(
               width: 20,
               height: 20,
@@ -564,13 +563,14 @@ class _LanguageTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final localeState = ref.watch(localeProvider);
+    final l10n = AppLocalizations.of(context)!;
     final currentLanguageName = ref
         .read(localeProvider.notifier)
         .getLanguageName(localeState.locale.languageCode);
 
     return _SettingsTile(
       icon: Icons.language,
-      title: 'Language',
+      title: l10n.settings_language,
       subtitle: currentLanguageName,
       onTap: () => context.push('/settings/language'),
     );
@@ -587,6 +587,7 @@ class _CurrencyTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currencyState = ref.watch(currencyProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     String subtitle = 'USDC';
     if (currencyState.shouldShowReference) {
@@ -595,7 +596,7 @@ class _CurrencyTile extends ConsumerWidget {
 
     return _SettingsTile(
       icon: Icons.attach_money,
-      title: 'Currency Display',
+      title: l10n.settings_defaultCurrency,
       subtitle: subtitle,
       onTap: () => context.push('/settings/currency'),
     );
@@ -612,73 +613,93 @@ class _ThemeTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     String getThemeLabel(AppThemeMode mode) {
       switch (mode) {
         case AppThemeMode.light:
-          return 'Light';
+          return l10n.settings_themeLight;
         case AppThemeMode.dark:
-          return 'Dark';
+          return l10n.settings_themeDark;
         case AppThemeMode.system:
-          return 'System';
+          return l10n.settings_themeSystem;
       }
     }
 
     return _SettingsTile(
       icon: Icons.brightness_6,
-      title: 'Theme',
+      title: l10n.settings_theme,
       subtitle: getThemeLabel(themeState.mode),
       onTap: () => _showThemeDialog(context, ref, themeState.mode),
     );
   }
 
-  void _showThemeDialog(BuildContext context, WidgetRef ref, AppThemeMode currentMode) {
+  void _showThemeDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AppThemeMode currentMode,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: dialogContext.colors.container,
-        title: AppText(
-          'Select Theme',
-          variant: AppTextVariant.titleMedium,
-          color: dialogContext.colors.textPrimary,
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ThemeOption(
-              mode: AppThemeMode.light,
-              currentMode: currentMode,
-              icon: Icons.light_mode,
-              label: 'Light',
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
-              },
-            ),
-            _ThemeOption(
-              mode: AppThemeMode.dark,
-              currentMode: currentMode,
-              icon: Icons.dark_mode,
-              label: 'Dark',
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
-              },
-            ),
-            _ThemeOption(
-              mode: AppThemeMode.system,
-              currentMode: currentMode,
-              icon: Icons.brightness_auto,
-              label: 'System',
-              onTap: () {
-                Navigator.pop(dialogContext);
-                ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
-              },
-            ),
-          ],
-        ),
-      ),
+      builder: (dialogContext) {
+        final dialogColors = dialogContext.colors;
+        return AlertDialog(
+          backgroundColor: dialogColors.surface,
+          title: AppText(
+            l10n.settings_selectTheme,
+            variant: AppTextVariant.titleMedium,
+            color: dialogColors.textPrimary,
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.sm,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ThemeOption(
+                mode: AppThemeMode.light,
+                currentMode: currentMode,
+                icon: Icons.light_mode,
+                label: l10n.settings_themeLight,
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.light);
+                },
+              ),
+              _ThemeOption(
+                mode: AppThemeMode.dark,
+                currentMode: currentMode,
+                icon: Icons.dark_mode,
+                label: l10n.settings_themeDark,
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.dark);
+                },
+              ),
+              _ThemeOption(
+                mode: AppThemeMode.system,
+                currentMode: currentMode,
+                icon: Icons.brightness_auto,
+                label: l10n.settings_themeSystem,
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.system);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -703,38 +724,34 @@ class _ThemeOption extends StatelessWidget {
     final colors = context.colors;
     final isSelected = mode == currentMode;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.md,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.md,
+        ),
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? colors.gold : colors.textSecondary,
-                size: 24,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? colors.gold : colors.textSecondary,
+              size: 22,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                label,
+                variant: AppTextVariant.bodyLarge,
+                color: isSelected ? colors.gold : colors.textPrimary,
               ),
-              const SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: AppText(
-                  label,
-                  variant: AppTextVariant.bodyLarge,
-                  color: isSelected ? colors.gold : colors.textPrimary,
-                ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: colors.gold,
-                  size: 20,
-                ),
-            ],
-          ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: colors.gold, size: 20),
+          ],
         ),
       ),
     );
@@ -807,10 +824,7 @@ class _ProfileCard extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: colors.textTertiary,
-          ),
+          Icon(Icons.chevron_right, color: colors.textTertiary),
         ],
       ),
     );

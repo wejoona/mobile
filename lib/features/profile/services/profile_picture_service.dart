@@ -1,8 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Profile Picture Service
@@ -59,9 +61,9 @@ class ProfilePictureService {
     }
   }
 
-  /// Upload avatar to backend
-  /// Returns the avatar as base64 string (stocké en DB, pas dans le bucket S3)
-  Future<String> uploadAvatar(File imageFile, {
+  /// Upload avatar to backend.
+  Future<AvatarUploadResult> uploadAvatar(
+    File imageFile, {
     required void Function(double) onProgress,
   }) async {
     try {
@@ -81,27 +83,15 @@ class ProfilePictureService {
         onSendProgress: (sent, total) {
           final progress = sent / total;
           onProgress(progress);
-          _logger.debug('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
+          _logger.debug(
+            'Upload progress: ${(progress * 100).toStringAsFixed(1)}%',
+          );
         },
       );
 
-      // Le backend retourne avatarBase64 (stocké en DB) ou avatarUrl (legacy)
       final data = response.data as Map<String, dynamic>;
-      if (data.containsKey('avatarBase64')) {
-        final avatarBase64 = data['avatarBase64'] as String;
-        _logger.info('Avatar uploaded successfully (base64 from DB)');
-        return avatarBase64;
-      }
-
-      // Fallback: si le backend retourne encore une URL, convertir localement en base64
-      if (data.containsKey('avatarUrl')) {
-        _logger.warn('Backend returned avatarUrl instead of avatarBase64, converting locally');
-        final bytes = await imageFile.readAsBytes();
-        final base64String = base64Encode(bytes);
-        return base64String;
-      }
-
-      throw Exception('No avatar data in response');
+      _logger.info('Avatar uploaded successfully');
+      return AvatarUploadResult.fromJson(data);
     } catch (e) {
       _logger.error('Error uploading avatar: $e');
       rethrow;
@@ -131,7 +121,9 @@ class ProfilePictureService {
       return file;
     }
 
-    _logger.info('Compressing image: $fileSize bytes -> target $maxSizeBytes bytes');
+    _logger.info(
+      'Compressing image: $fileSize bytes -> target $maxSizeBytes bytes',
+    );
 
     try {
       final result = await FlutterImageCompress.compressWithFile(
@@ -158,14 +150,16 @@ class ProfilePictureService {
           format: CompressFormat.jpeg,
         );
         if (retry != null && retry.length < result.length) {
-          final outPath = '${file.parent.path}/compressed_${file.path.split('/').last}';
+          final outPath =
+              '${file.parent.path}/compressed_${file.path.split('/').last}';
           final outFile = File(outPath)..writeAsBytesSync(retry);
           _logger.info('Compressed to ${retry.length} bytes');
           return outFile;
         }
       }
 
-      final outPath = '${file.parent.path}/compressed_${file.path.split('/').last}';
+      final outPath =
+          '${file.parent.path}/compressed_${file.path.split('/').last}';
       final outFile = File(outPath)..writeAsBytesSync(result);
       _logger.info('Compressed to ${result.length} bytes');
       return outFile;
@@ -175,3 +169,7 @@ class ProfilePictureService {
     }
   }
 }
+
+final profilePictureServiceProvider = Provider<ProfilePictureService>((ref) {
+  return ProfilePictureService(ref.watch(dioProvider));
+});

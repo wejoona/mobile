@@ -13,7 +13,8 @@ import 'package:usdc_wallet/design/utils/responsive_layout.dart';
 import 'package:usdc_wallet/core/orientation/orientation_helper.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart' hide TransactionFilter;
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart'
+    hide TransactionFilter;
 import 'package:usdc_wallet/features/transactions/widgets/filter_bottom_sheet.dart';
 
 class TransactionsView extends ConsumerStatefulWidget {
@@ -105,7 +106,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               IconButton(
                 icon: const Icon(Icons.filter_list),
                 onPressed: _showFilterSheet,
-                tooltip: 'Filter',
+                tooltip: l10n.filters_title,
               ),
               if (activeFilterCount > 0)
                 Positioned(
@@ -138,14 +139,15 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           IconButton(
             icon: const Icon(Icons.download_outlined),
             onPressed: () => context.push('/transactions/export'),
-            tooltip: 'Export',
+            tooltip: l10n.transactions_export,
           ),
         ],
       ),
       body: Column(
         children: [
           // Active filters indicator
-          if (filter.hasActiveFilters) _buildActiveFiltersBar(filter, colors, l10n),
+          if (filter.hasActiveFilters)
+            _buildActiveFiltersBar(filter, colors, l10n),
 
           // Transactions list
           Expanded(
@@ -160,17 +162,17 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               child: state.isLoading && state.transactions.isEmpty
                   ? _buildLoadingState(colors)
                   : state.error != null
-                      ? _buildErrorState(state.error!, colors, l10n)
-                      : state.transactions.isEmpty
-                          ? _buildEmptyState(filter, colors, l10n)
-                          : _buildTransactionsList(
-                              context,
-                              state.transactions,
-                              state,
-                              ref,
-                              colors,
-                              l10n,
-                            ),
+                  ? _buildErrorState(state.error!, colors, l10n)
+                  : state.transactions.isEmpty
+                  ? _buildEmptyState(filter, colors, l10n)
+                  : _buildTransactionsList(
+                      context,
+                      state.transactions,
+                      state,
+                      ref,
+                      colors,
+                      l10n,
+                    ),
             ),
           ),
         ],
@@ -204,56 +206,76 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildActiveFiltersBar(TransactionFilter filter, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildActiveFiltersBar(
+    TransactionFilter filter,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     final chips = <Widget>[];
 
     if (filter.type != null) {
-      chips.add(_buildFilterChip(
-        label: _getTypeName(filter.type!, l10n),
-        onRemove: () => ref.read(transactionFilterProvider.notifier).setType(null),
-        colors: colors,
-      ));
+      chips.add(
+        _buildFilterChip(
+          label: _getTypeName(filter.type!, l10n),
+          onRemove: () =>
+              ref.read(transactionFilterProvider.notifier).setType(null),
+          colors: colors,
+        ),
+      );
     }
 
     if (filter.status != null) {
-      chips.add(_buildFilterChip(
-        label: _capitalize(filter.status!),
-        onRemove: () => ref.read(transactionFilterProvider.notifier).setStatus(null),
-        colors: colors,
-      ));
+      chips.add(
+        _buildFilterChip(
+          label: _capitalize(filter.status!),
+          onRemove: () =>
+              ref.read(transactionFilterProvider.notifier).setStatus(null),
+          colors: colors,
+        ),
+      );
     }
 
     if (filter.startDate != null || filter.endDate != null) {
       final dateFormat = DateFormat('MMM d');
       String label;
       if (filter.startDate != null && filter.endDate != null) {
-        label = '${dateFormat.format(filter.startDate!)} - ${dateFormat.format(filter.endDate!)}';
+        label =
+            '${dateFormat.format(filter.startDate!)} - ${dateFormat.format(filter.endDate!)}';
       } else if (filter.startDate != null) {
-        label = 'From ${dateFormat.format(filter.startDate!)}';
+        label = '${l10n.filters_from} ${dateFormat.format(filter.startDate!)}';
       } else {
-        label = 'Until ${dateFormat.format(filter.endDate!)}';
+        label = '${l10n.filters_to} ${dateFormat.format(filter.endDate!)}';
       }
-      chips.add(_buildFilterChip(
-        label: label,
-        onRemove: () => ref.read(transactionFilterProvider.notifier).setDateRange(null, null),
-        colors: colors,
-      ));
+      chips.add(
+        _buildFilterChip(
+          label: label,
+          onRemove: () => ref
+              .read(transactionFilterProvider.notifier)
+              .setDateRange(null, null),
+          colors: colors,
+        ),
+      );
     }
 
     if (filter.minAmount != null || filter.maxAmount != null) {
       String label;
       if (filter.minAmount != null && filter.maxAmount != null) {
-        label = '\$${filter.minAmount!.toInt()} - \$${filter.maxAmount!.toInt()}';
+        label =
+            '\$${filter.minAmount!.toInt()} - \$${filter.maxAmount!.toInt()}';
       } else if (filter.minAmount != null) {
         label = '>\$${filter.minAmount!.toInt()}';
       } else {
         label = '<\$${filter.maxAmount!.toInt()}';
       }
-      chips.add(_buildFilterChip(
-        label: label,
-        onRemove: () => ref.read(transactionFilterProvider.notifier).setAmountRange(null, null),
-        colors: colors,
-      ));
+      chips.add(
+        _buildFilterChip(
+          label: label,
+          onRemove: () => ref
+              .read(transactionFilterProvider.notifier)
+              .setAmountRange(null, null),
+          colors: colors,
+        ),
+      );
     }
 
     return Container(
@@ -266,9 +288,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Row(
-                children: chips,
-              ),
+              child: Row(children: chips),
             ),
           ),
           TextButton(
@@ -277,10 +297,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
             },
             child: Text(
               l10n.action_clearAll,
-              style: TextStyle(
-                color: colors.gold,
-                fontSize: 12,
-              ),
+              style: TextStyle(color: colors.gold, fontSize: 12),
             ),
           ),
         ],
@@ -298,16 +315,9 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       child: Chip(
         label: Text(
           label,
-          style: TextStyle(
-            color: colors.textPrimary,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: colors.textPrimary, fontSize: 12),
         ),
-        deleteIcon: Icon(
-          Icons.close,
-          size: 16,
-          color: colors.textSecondary,
-        ),
+        deleteIcon: Icon(Icons.close, size: 16, color: colors.textSecondary),
         onDeleted: onRemove,
         backgroundColor: colors.elevated,
         side: BorderSide(color: colors.borderSubtle),
@@ -325,9 +335,9 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       case 'withdrawal':
         return l10n.transactions_withdrawals;
       case 'transfer_internal':
-        return 'Received';
+        return l10n.transactions_receivedFilter;
       case 'transfer_external':
-        return 'Sent';
+        return l10n.transactions_sentFilter;
       default:
         return type;
     }
@@ -348,7 +358,11 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildEmptyState(TransactionFilter filter, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildEmptyState(
+    TransactionFilter filter,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     final hasFilters = filter.hasActiveFilters || filter.hasSearchQuery;
 
     return Center(
@@ -359,66 +373,33 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const SizedBox(height: AppSpacing.xxxl),
-            // Illustration container with gradient background
             Container(
-              width: 120,
-              height: 120,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1),
-                    colors.gold.withValues(alpha: colors.isDark ? 0.05 : 0.03),
-                  ],
+                color: colors.gold.withValues(
+                  alpha: colors.isDark ? 0.14 : 0.1,
                 ),
-                borderRadius: BorderRadius.circular(AppRadius.xxxl),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 border: Border.all(
                   color: colors.gold.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Background decoration circles
-                  Positioned(
-                    top: 15,
-                    right: 15,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: colors.gold.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    left: 20,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: colors.gold.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  // Main icon
-                  Icon(
-                    hasFilters ? Icons.search_off_rounded : Icons.receipt_long_rounded,
-                    color: colors.gold,
-                    size: 48,
-                  ),
-                ],
+              child: Icon(
+                hasFilters
+                    ? Icons.search_off_rounded
+                    : Icons.receipt_long_rounded,
+                color: colors.gold,
+                size: 32,
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppText(
-              hasFilters ? l10n.transactions_noResultsFound : l10n.transactions_emptyStateTitle,
-              variant: AppTextVariant.headlineSmall,
+              hasFilters
+                  ? l10n.transactions_noResultsFound
+                  : l10n.transactions_emptyStateTitle,
+              variant: AppTextVariant.titleLarge,
               color: colors.textPrimary,
               textAlign: TextAlign.center,
             ),
@@ -458,16 +439,23 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Widget _buildErrorState(String error, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildErrorState(
+    String error,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     // Determine error type for appropriate messaging
-    final isConnectionError = error.toLowerCase().contains('connection') ||
+    final isConnectionError =
+        error.toLowerCase().contains('connection') ||
         error.toLowerCase().contains('timeout') ||
         error.toLowerCase().contains('network') ||
         error.toLowerCase().contains('socket');
-    final isAuthError = error.toLowerCase().contains('unauthorized') ||
+    final isAuthError =
+        error.toLowerCase().contains('unauthorized') ||
         error.toLowerCase().contains('401') ||
         error.toLowerCase().contains('authentication');
-    final isNoAccountError = error.toLowerCase().contains('wallet not found') ||
+    final isNoAccountError =
+        error.toLowerCase().contains('wallet not found') ||
         error.toLowerCase().contains('no wallet') ||
         error.toLowerCase().contains('account not found');
 
@@ -486,7 +474,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
       bgColor = colors.gold.withValues(alpha: colors.isDark ? 0.15 : 0.1);
       title = l10n.transactions_noAccountTitle;
       message = l10n.transactions_noAccountMessage;
-      buttonLabel = 'Create Wallet';
+      buttonLabel = l10n.wallet_createWallet;
       buttonAction = () => context.go('/onboarding');
     } else if (isConnectionError) {
       icon = Icons.wifi_off_rounded;
@@ -530,11 +518,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
                   width: 1,
                 ),
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 48,
-              ),
+              child: Icon(icon, color: iconColor, size: 48),
             ),
             const SizedBox(height: AppSpacing.xxl),
             AppText(
@@ -566,7 +550,7 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
               TextButton(
                 onPressed: () => context.pop(),
                 child: AppText(
-                  'Go Back',
+                  l10n.action_back,
                   variant: AppTextVariant.labelLarge,
                   color: colors.textSecondary,
                 ),
@@ -651,7 +635,10 @@ class _TransactionsViewState extends ConsumerState<TransactionsView> {
     );
   }
 
-  Map<String, List<Transaction>> _groupByDate(List<dynamic> transactions, AppLocalizations l10n) {
+  Map<String, List<Transaction>> _groupByDate(
+    List<dynamic> transactions,
+    AppLocalizations l10n,
+  ) {
     final grouped = <String, List<Transaction>>{};
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -722,7 +709,9 @@ class _TransactionGroup extends StatelessWidget {
           ),
           child: AppText(
             date,
-            variant: (isTablet || isLandscape) ? AppTextVariant.titleSmall : AppTextVariant.labelMedium,
+            variant: (isTablet || isLandscape)
+                ? AppTextVariant.titleSmall
+                : AppTextVariant.labelMedium,
             color: colors.textTertiary,
           ),
         ),
@@ -732,19 +721,24 @@ class _TransactionGroup extends StatelessWidget {
             tabletColumns: gridColumns,
             spacing: AppSpacing.md,
             runSpacing: AppSpacing.md,
-            children: transactions.map((tx) => _buildTransactionCard(tx, colors)).toList(),
+            children: transactions
+                .map((tx) => _buildTransactionCard(tx, colors))
+                .toList(),
           )
         else
-          ...transactions.map((tx) => TransactionRow(
-                key: ValueKey(tx.id),
-                title: _getTransactionTitle(tx.type, tx.description),
-                subtitle: tx.description ?? _getTransactionSubtitle(tx.type),
-                amount: tx.amount,
-                date: tx.createdAt,
-                type: _mapTransactionType(tx.type),
-                status: tx.status,
-                onTap: () => onTransactionTap(tx),
-              )),
+          ...transactions.map(
+            (tx) => TransactionRow(
+              key: ValueKey(tx.id),
+              title: _getTransactionTitle(tx),
+              subtitle: tx.description ?? _getTransactionSubtitle(tx),
+              amount: tx.amount,
+              currencyCode: tx.currency,
+              date: tx.createdAt,
+              type: _mapTransactionType(tx),
+              status: tx.status,
+              onTap: () => onTransactionTap(tx),
+            ),
+          ),
       ],
     );
   }
@@ -758,14 +752,14 @@ class _TransactionGroup extends StatelessWidget {
         children: [
           Row(
             children: [
-              _buildTransactionIcon(_mapTransactionType(tx.type), colors),
+              _buildTransactionIcon(_mapTransactionType(tx), colors),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      _getTransactionTitle(tx.type, tx.description),
+                      _getTransactionTitle(tx),
                       variant: AppTextVariant.labelLarge,
                       color: colors.textPrimary,
                       maxLines: 1,
@@ -773,7 +767,7 @@ class _TransactionGroup extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     AppText(
-                      tx.description ?? _getTransactionSubtitle(tx.type),
+                      tx.description ?? _getTransactionSubtitle(tx),
                       variant: AppTextVariant.bodySmall,
                       color: colors.textSecondary,
                       maxLines: 1,
@@ -789,9 +783,9 @@ class _TransactionGroup extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               AppText(
-                _formatAmount(tx.amount, _mapTransactionType(tx.type)),
+                _formatAmount(tx.amount, _mapTransactionType(tx)),
                 variant: AppTextVariant.titleMedium,
-                color: _getAmountColor(_mapTransactionType(tx.type), colors),
+                color: _getAmountColor(_mapTransactionType(tx), colors),
               ),
               if (tx.status != null) // ignore: unnecessary_null_comparison
                 _buildStatusBadge(tx.status.name, colors),
@@ -802,7 +796,10 @@ class _TransactionGroup extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionIcon(TransactionDisplayType type, ThemeColors colors) {
+  Widget _buildTransactionIcon(
+    TransactionDisplayType type,
+    ThemeColors colors,
+  ) {
     IconData icon;
     Color iconColor;
 
@@ -845,17 +842,19 @@ class _TransactionGroup extends StatelessWidget {
       case 'processing':
         backgroundColor = colors.warningBg;
         textColor = colors.warningText;
-        label = status == 'pending' ? 'Pending' : 'Processing';
+        label = status == 'pending'
+            ? l10n.paymentLinks_filterPending
+            : l10n.deposit_processing;
       case 'completed':
       case 'success':
         backgroundColor = colors.successBg;
         textColor = colors.successText;
-        label = 'Completed';
+        label = l10n.transactions_completed;
       case 'failed':
       case 'error':
         backgroundColor = colors.errorBg;
         textColor = colors.errorText;
-        label = 'Failed';
+        label = l10n.transaction_failed;
       default:
         backgroundColor = colors.elevated;
         textColor = colors.textSecondary;
@@ -880,7 +879,8 @@ class _TransactionGroup extends StatelessWidget {
   }
 
   String _formatAmount(double amount, TransactionDisplayType type) {
-    final isPositive = type == TransactionDisplayType.deposit ||
+    final isPositive =
+        type == TransactionDisplayType.deposit ||
         type == TransactionDisplayType.transferIn ||
         type == TransactionDisplayType.reward;
     final sign = isPositive ? '+' : '-';
@@ -901,43 +901,50 @@ class _TransactionGroup extends StatelessWidget {
     }
   }
 
-  String _getTransactionTitle(TransactionType type, String? description) {
-    if (description != null && description.isNotEmpty) {
-      return description;
+  String _getTransactionTitle(Transaction tx) {
+    if (tx.description != null && tx.description!.isNotEmpty) {
+      return tx.description!;
     }
-    switch (type) {
+    switch (tx.type) {
       case TransactionType.deposit:
         return l10n.transactions_deposit;
       case TransactionType.withdrawal:
         return l10n.transactions_withdrawal;
       case TransactionType.transferInternal:
-        return l10n.transactions_transferReceived;
+        return tx.isDebit
+            ? l10n.transactions_transferSent
+            : l10n.transactions_transferReceived;
       case TransactionType.transferExternal:
         return l10n.transactions_transferSent;
     }
   }
 
-  String _getTransactionSubtitle(TransactionType type) {
-    switch (type) {
+  String _getTransactionSubtitle(Transaction tx) {
+    switch (tx.type) {
       case TransactionType.deposit:
         return l10n.transactions_mobileMoneyDeposit;
       case TransactionType.withdrawal:
         return l10n.transactions_mobileMoneyWithdrawal;
       case TransactionType.transferInternal:
+        if (tx.isDebit && tx.recipientPhone != null) {
+          return tx.recipientPhone!;
+        }
         return l10n.transactions_fromKoridoUser;
       case TransactionType.transferExternal:
         return l10n.transactions_externalWallet;
     }
   }
 
-  TransactionDisplayType _mapTransactionType(TransactionType type) {
-    switch (type) {
+  TransactionDisplayType _mapTransactionType(Transaction tx) {
+    switch (tx.type) {
       case TransactionType.deposit:
         return TransactionDisplayType.deposit;
       case TransactionType.withdrawal:
         return TransactionDisplayType.withdrawal;
       case TransactionType.transferInternal:
-        return TransactionDisplayType.transferIn;
+        return tx.isDebit
+            ? TransactionDisplayType.transferOut
+            : TransactionDisplayType.transferIn;
       case TransactionType.transferExternal:
         return TransactionDisplayType.transferOut;
     }

@@ -1,10 +1,12 @@
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
 
 /// Helper function to format currency
@@ -21,7 +23,9 @@ class PendingTransfersScreen extends ConsumerWidget {
     final offlineState = ref.watch(offlineProvider);
     final colors = context.colors;
 
-    final pendingTransfers = ref.read(offlineProvider.notifier).getPendingTransfers();
+    final pendingTransfers = ref
+        .read(offlineProvider.notifier)
+        .getPendingTransfers();
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -55,7 +59,8 @@ class PendingTransfersScreen extends ConsumerWidget {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   itemCount: pendingTransfers.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: AppSpacing.md),
                   itemBuilder: (context, index) {
                     final transfer = pendingTransfers[index];
                     return _buildTransferCard(
@@ -147,8 +152,14 @@ class PendingTransfersScreen extends ConsumerWidget {
           Row(
             children: [
               UserAvatar(
-                firstName: (transfer.recipientName ?? transfer.recipientPhone).split(' ').first,
-                lastName: transfer.recipientName != null && transfer.recipientName!.split(' ').length > 1 ? transfer.recipientName!.split(' ').last : null,
+                firstName: (transfer.recipientName ?? transfer.recipientPhone)
+                    .split(' ')
+                    .first,
+                lastName:
+                    transfer.recipientName != null &&
+                        transfer.recipientName!.split(' ').length > 1
+                    ? transfer.recipientName!.split(' ').last
+                    : null,
                 size: 40,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -193,7 +204,8 @@ class PendingTransfersScreen extends ConsumerWidget {
           ),
 
           // Description
-          if (transfer.description != null && transfer.description!.isNotEmpty) ...[
+          if (transfer.description != null &&
+              transfer.description!.isNotEmpty) ...[
             const SizedBox(height: AppSpacing.sm),
             AppText(
               transfer.description!,
@@ -214,11 +226,7 @@ class PendingTransfersScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: colors.error,
-                    size: 16,
-                  ),
+                  Icon(Icons.error_outline, color: colors.error, size: 16),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
@@ -234,7 +242,8 @@ class PendingTransfersScreen extends ConsumerWidget {
 
           // Actions
           if (transfer.status == TransferStatus.failed ||
-              transfer.status == TransferStatus.pending) ...[
+              transfer.status == TransferStatus.pending ||
+              transfer.status == TransferStatus.needsAuthorization) ...[
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
@@ -247,9 +256,20 @@ class PendingTransfersScreen extends ConsumerWidget {
                       size: AppButtonSize.small,
                     ),
                   ),
+                if (transfer.status == TransferStatus.needsAuthorization)
+                  Expanded(
+                    child: AppButton(
+                      label: l10n.send_confirmAndSend,
+                      onPressed: () => _resumeTransfer(context, ref, transfer),
+                      variant: AppButtonVariant.secondary,
+                      size: AppButtonSize.small,
+                    ),
+                  ),
                 if (transfer.status == TransferStatus.pending ||
-                    transfer.status == TransferStatus.failed) ...[
-                  if (transfer.status == TransferStatus.failed && isOnline)
+                    transfer.status == TransferStatus.failed ||
+                    transfer.status == TransferStatus.needsAuthorization) ...[
+                  if ((transfer.status == TransferStatus.failed && isOnline) ||
+                      transfer.status == TransferStatus.needsAuthorization)
                     const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppButton(
@@ -300,6 +320,12 @@ class PendingTransfersScreen extends ConsumerWidget {
         label = 'Failed';
         icon = Icons.error_outline;
         break;
+      case TransferStatus.needsAuthorization:
+        backgroundColor = colors.warningBase.withValues(alpha: 0.15);
+        textColor = colors.warningText;
+        label = 'Needs PIN';
+        icon = Icons.lock_outline;
+        break;
     }
 
     return Container(
@@ -316,11 +342,7 @@ class PendingTransfersScreen extends ConsumerWidget {
         children: [
           Icon(icon, size: 14, color: textColor),
           const SizedBox(width: AppSpacing.xs),
-          AppText(
-            label,
-            variant: AppTextVariant.labelSmall,
-            color: textColor,
-          ),
+          AppText(label, variant: AppTextVariant.labelSmall, color: textColor),
         ],
       ),
     );
@@ -343,6 +365,27 @@ class PendingTransfersScreen extends ConsumerWidget {
 
   Future<void> _retryTransfer(WidgetRef ref, String transferId) async {
     await ref.read(offlineProvider.notifier).retryFailedTransfer(transferId);
+  }
+
+  Future<void> _resumeTransfer(
+    BuildContext context,
+    WidgetRef ref,
+    PendingTransfer transfer,
+  ) async {
+    await ref
+        .read(sendMoneyProvider.notifier)
+        .resumePendingTransfer(
+          transferId: transfer.id,
+          recipientPhone: transfer.recipientPhone,
+          recipientName: transfer.recipientName,
+          amount: transfer.amount,
+          note: transfer.description,
+        );
+
+    if (!context.mounted) {
+      return;
+    }
+    await context.push('/send/confirm');
   }
 
   Future<void> _cancelTransfer(
@@ -379,7 +422,9 @@ class PendingTransfersScreen extends ConsumerWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      await ref.read(offlineProvider.notifier).cancelPendingTransfer(transfer.id);
+      await ref
+          .read(offlineProvider.notifier)
+          .cancelPendingTransfer(transfer.id);
     }
   }
 

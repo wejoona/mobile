@@ -82,10 +82,11 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
 
   /// Check if any connectivity result indicates connection
   bool _isConnected(List<ConnectivityResult> results) {
-    return results.any((result) =>
-      result == ConnectivityResult.wifi ||
-      result == ConnectivityResult.mobile ||
-      result == ConnectivityResult.ethernet
+    return results.any(
+      (result) =>
+          result == ConnectivityResult.wifi ||
+          result == ConnectivityResult.mobile ||
+          result == ConnectivityResult.ethernet,
     );
   }
 
@@ -124,14 +125,25 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
         try {
           await _queue!.markProcessing(transfer.id);
 
+          if (transfer.pinToken == null ||
+              transfer.pinToken!.isEmpty ||
+              transfer.idempotencyKey == null ||
+              transfer.idempotencyKey!.isEmpty) {
+            await _queue!.markFailed(
+              transfer.id,
+              'PIN verification is required before this transfer can retry.',
+            );
+            continue;
+          }
+
           // Process transfer via TransfersService
           final transfersService = ref.read(transfersServiceProvider);
           await transfersService.createInternalTransfer(
             recipientPhone: transfer.recipientPhone,
             amount: transfer.amount,
             note: transfer.description,
-            pinToken: '',
-            idempotencyKey: transfer.id,
+            pinToken: transfer.pinToken!,
+            idempotencyKey: transfer.idempotencyKey!,
           );
 
           await _queue!.markCompleted(transfer.id);
@@ -144,9 +156,7 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
       await _loadPendingCount();
 
       // Update last sync time
-      state = state.copyWith(
-        lastSync: DateTime.now(),
-      );
+      state = state.copyWith(lastSync: DateTime.now());
     } finally {
       state = state.copyWith(isProcessingQueue: false);
     }
@@ -165,9 +175,10 @@ class ConnectivityNotifier extends Notifier<ConnectivityState> {
 }
 
 /// Connectivity Provider
-final connectivityProvider = NotifierProvider<ConnectivityNotifier, ConnectivityState>(
-  ConnectivityNotifier.new,
-);
+final connectivityProvider =
+    NotifierProvider<ConnectivityNotifier, ConnectivityState>(
+      ConnectivityNotifier.new,
+    );
 
 /// Convenience provider for online status
 final isOnlineProvider = Provider<bool>((ref) {

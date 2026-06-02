@@ -1,14 +1,14 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
@@ -26,6 +26,7 @@ class SendMoneyState {
   final double fee;
   final String? pinToken;
   final String? idempotencyKey;
+  final String? pendingTransferId;
   final bool isSubmitting;
 
   const SendMoneyState({
@@ -40,6 +41,7 @@ class SendMoneyState {
     this.fee = 0.0,
     this.pinToken,
     this.idempotencyKey,
+    this.pendingTransferId,
     this.isSubmitting = false,
   });
 
@@ -61,6 +63,7 @@ class SendMoneyState {
     double? fee,
     String? pinToken,
     String? idempotencyKey,
+    String? pendingTransferId,
     bool? isSubmitting,
   }) {
     return SendMoneyState(
@@ -75,6 +78,7 @@ class SendMoneyState {
       fee: fee ?? this.fee,
       pinToken: pinToken ?? this.pinToken,
       idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      pendingTransferId: pendingTransferId ?? this.pendingTransferId,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
@@ -119,6 +123,8 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
               ? DateTime.parse(c['lastTransferDate'] as String)
               : DateTime.now(),
           lastAmount: (c['lastAmount'] as num?)?.toDouble() ?? 0.0,
+          isKoridoUser:
+              (c['isKoridoUser'] ?? c['isJoonaPayUser']) as bool? ?? false,
         );
       }).toList();
 
@@ -137,14 +143,15 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final dio = ref.read(dioProvider);
+      final contactsService = ref.read(contactsServiceProvider);
+      final phoneHash = contactsService.hashPhone(phoneNumber);
 
-      // Normalize phone to E.164 and hash for privacy
-      final normalized = phoneNumber.startsWith('+') ? phoneNumber : '+$phoneNumber';
-      final phoneHash = sha256.convert(utf8.encode(normalized)).toString();
-
-      final response = await dio.post('/contacts/sync', data: {
-        'phoneHashes': [phoneHash],
-      });
+      final response = await dio.post(
+        '/contacts/sync',
+        data: {
+          'phoneHashes': [phoneHash],
+        },
+      );
 
       final syncData = response.data as Map<String, dynamic>;
       final matches = (syncData['matches'] as List?) ?? [];
@@ -155,7 +162,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       if (isKoridoUser) {
         final match = matches.first as Map<String, dynamic>;
         userId = match['userId'] as String?;
-        displayName = displayName ?? match['name'] as String?;
+        displayName =
+            displayName ??
+            (match['displayName'] as String?) ??
+            (match['name'] as String?);
       }
 
       final recipient = RecipientInfo(
@@ -191,6 +201,28 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     state = state.copyWith(note: note);
   }
 
+  /// Restore a queued offline transfer as a draft that requires fresh PIN auth.
+  Future<void> resumePendingTransfer({
+    required String transferId,
+    required String recipientPhone,
+    required double amount,
+    String? recipientName,
+    String? note,
+  }) async {
+    state = SendMoneyState(
+      recipient: RecipientInfo(
+        phoneNumber: recipientPhone,
+        name: recipientName,
+        isKoridoUser: true,
+      ),
+      amount: amount,
+      note: note,
+      pendingTransferId: transferId,
+    );
+
+    await loadBalance();
+  }
+
   /// Verify PIN and store token for subsequent transfer execution.
   /// Must be called before executeTransfer().
   Future<bool> verifyPin(String pin) async {
@@ -216,6 +248,23 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
+  }
+
+  /// Reuse a still-valid backend PIN token, usually after biometric auth.
+  Future<bool> useExistingPinToken() async {
+    final pinService = ref.read(pinServiceProvider);
+    final pinToken = await pinService.getPinToken();
+    if (pinToken == null) {
+      state = state.copyWith(error: 'PIN is required');
+      return false;
+    }
+
+    state = state.copyWith(
+      pinToken: pinToken,
+      idempotencyKey: generateIdempotencyKey(),
+      error: null,
+    );
+    return true;
   }
 
   /// Execute transfer. Requires verifyPin() to have been called first.
@@ -255,7 +304,11 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
         idempotencyKey: state.idempotencyKey!,
       );
 
-      state = state.copyWith(isLoading: false, isSubmitting: false, result: result);
+      state = state.copyWith(
+        isLoading: false,
+        isSubmitting: false,
+        result: result,
+      );
 
       // Immediately refresh balance + transactions
       ref.read(realtimeServiceProvider).refreshAfterTransaction();
@@ -264,19 +317,31 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       await hapticService.paymentConfirmed();
 
       // Analytics: send_money
-      ref.read(analyticsServiceProvider).trackSendMoney(
-        currency: 'USDC',
-        recipientType: 'internal',
-        success: true,
-      );
+      ref
+          .read(analyticsServiceProvider)
+          .trackSendMoney(
+            currency: 'USDC',
+            recipientType: 'internal',
+            success: true,
+          );
 
       // Track successful transaction for app review prompt
       final appReviewService = ref.read(appReviewServiceProvider);
       await appReviewService.trackSuccessfulTransaction();
 
+      if (state.pendingTransferId != null) {
+        await ref
+            .read(offlineProvider.notifier)
+            .cancelPendingTransfer(state.pendingTransferId!);
+      }
+
       return true;
     } catch (e) {
-      state = state.copyWith(isLoading: false, isSubmitting: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isSubmitting: false,
+        error: e.toString(),
+      );
       await hapticService.error();
       return false;
     }

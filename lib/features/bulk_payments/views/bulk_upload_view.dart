@@ -61,11 +61,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
         children: [
           Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: context.colors.gold,
-                size: 24,
-              ),
+              Icon(Icons.info_outline, color: context.colors.gold, size: 24),
               SizedBox(width: AppSpacing.sm),
               AppText(
                 l10n.bulkPayments_instructions,
@@ -109,11 +105,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
             ),
             child: Column(
               children: [
-                Icon(
-                  Icons.cloud_upload,
-                  size: 48,
-                  color: context.colors.gold,
-                ),
+                Icon(Icons.cloud_upload, size: 48, color: context.colors.gold),
                 SizedBox(height: AppSpacing.md),
                 AppText(
                   _fileName ?? l10n.bulkPayments_selectFile,
@@ -157,15 +149,9 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
             ),
           ),
           SizedBox(height: AppSpacing.md),
-          _buildFormatRule(
-            l10n.bulkPayments_phoneFormat,
-            Icons.phone,
-          ),
+          _buildFormatRule(l10n.bulkPayments_phoneFormat, Icons.phone),
           SizedBox(height: AppSpacing.sm),
-          _buildFormatRule(
-            l10n.bulkPayments_amountFormat,
-            Icons.attach_money,
-          ),
+          _buildFormatRule(l10n.bulkPayments_amountFormat, Icons.attach_money),
           SizedBox(height: AppSpacing.sm),
           _buildFormatRule(
             l10n.bulkPayments_descriptionFormat,
@@ -179,11 +165,7 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
   Widget _buildFormatRule(String text, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: context.colors.textSecondary,
-        ),
+        Icon(icon, size: 16, color: context.colors.textSecondary),
         SizedBox(width: AppSpacing.sm),
         Expanded(
           child: AppText(
@@ -244,8 +226,9 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
           final batch = await ref
               .read(bulkPaymentActionsProvider)
               .parseCsvFile(csvContent);
+          ref.read(draftBatchProvider.notifier).state = batch;
 
-          if (batch != null && mounted) { // ignore: unnecessary_null_comparison
+          if (mounted) {
             context.push('/bulk-payments/preview');
           }
         }
@@ -254,7 +237,9 @@ class _BulkUploadViewState extends ConsumerState<BulkUploadView> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.bulkPayments_fileLoadError),
+            content: Text(
+              AppLocalizations.of(context)!.bulkPayments_fileLoadError,
+            ),
             backgroundColor: context.colors.error,
           ),
         );

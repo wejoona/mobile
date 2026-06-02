@@ -105,17 +105,26 @@ class DepositChannel {
   });
 
   factory DepositChannel.fromJson(Map<String, dynamic> json) {
+    final supportedCurrencies = json['supportedCurrencies'];
+    final currency =
+        supportedCurrencies is List && supportedCurrencies.isNotEmpty
+        ? supportedCurrencies.first as String
+        : json['currency'] as String? ?? 'XOF';
+
     return DepositChannel(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? json['code'] as String? ?? '',
       name: json['name'] as String,
-      type: json['type'] as String,
-      provider: json['provider'] as String,
-      country: json['country'] as String,
-      minAmount: (json['minAmount'] as num).toDouble(),
-      maxAmount: (json['maxAmount'] as num).toDouble(),
-      fee: (json['fee'] as num).toDouble(),
-      feeType: json['feeType'] as String,
-      currency: json['currency'] as String,
+      type:
+          json['type'] as String? ??
+          json['paymentMethodType'] as String? ??
+          'mobile_money',
+      provider: json['provider'] as String? ?? json['code'] as String? ?? '',
+      country: json['country'] as String? ?? 'CI',
+      minAmount: (json['minAmount'] as num?)?.toDouble() ?? 100,
+      maxAmount: (json['maxAmount'] as num?)?.toDouble() ?? 1000000,
+      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      feeType: json['feeType'] as String? ?? 'fixed',
+      currency: currency,
     );
   }
 }

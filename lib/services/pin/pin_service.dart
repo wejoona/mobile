@@ -30,7 +30,7 @@ class PinService {
 
   /// Set a new PIN
   /// SECURITY: PIN is hashed with a unique salt before storage
-  Future<bool> setPin(String pin) async {
+  Future<bool> setPin(String pin, {bool requireBackendSync = false}) async {
     if (pin.length != 6 || !RegExp(r'^\d{6}$').hasMatch(pin)) {
       return false;
     }
@@ -55,8 +55,11 @@ class PinService {
       final hashedPin = _hashPinForTransmission(pin);
       await _dio.post('/user/pin/set', data: {'pinHash': hashedPin});
     } catch (e) {
-      // Backend call failed, but local PIN is set
-      // This will be synced later
+      if (requireBackendSync) {
+        await clearPin();
+        return false;
+      }
+      // Backend call failed, but local PIN is set. This will be synced later.
     }
 
     return true;
@@ -75,7 +78,8 @@ class PinService {
           success: false,
           isLocked: true,
           lockRemainingSeconds: remaining.inSeconds,
-          message: 'Too many failed attempts. Try again in ${remaining.inMinutes} minutes.',
+          message:
+              'Too many failed attempts. Try again in ${remaining.inMinutes} minutes.',
         );
       } else {
         // Lock expired, reset
@@ -88,10 +92,7 @@ class PinService {
     final salt = await _storage.read(key: _pinSaltKey);
 
     if (storedHash == null || salt == null) {
-      return PinVerificationResult(
-        success: false,
-        message: 'PIN not set',
-      );
+      return PinVerificationResult(success: false, message: 'PIN not set');
     }
 
     final inputHash = _hashPin(pin, salt);
@@ -110,13 +111,17 @@ class PinService {
     if (attempts >= maxAttempts) {
       // Lock the PIN
       final lockUntil = DateTime.now().add(lockoutDuration);
-      await _storage.write(key: _pinLockedUntilKey, value: lockUntil.toIso8601String());
+      await _storage.write(
+        key: _pinLockedUntilKey,
+        value: lockUntil.toIso8601String(),
+      );
 
       return PinVerificationResult(
         success: false,
         isLocked: true,
         lockRemainingSeconds: lockoutDuration.inSeconds,
-        message: 'Too many failed attempts. PIN locked for ${lockoutDuration.inMinutes} minutes.',
+        message:
+            'Too many failed attempts. PIN locked for ${lockoutDuration.inMinutes} minutes.',
       );
     }
 
@@ -139,22 +144,28 @@ class PinService {
     try {
       // SECURITY: Hash PIN before transmission to prevent plaintext exposure
       final hashedPin = _hashPinForTransmission(pin);
-      final response = await _dio.post('/user/pin/verify', data: {'pinHash': hashedPin});
+      final response = await _dio.post(
+        '/user/pin/verify',
+        data: {'pinHash': hashedPin},
+      );
 
       if (response.statusCode == 200) {
-        final data = response.data;
+        final data = response.data as Map<String, dynamic>;
         // ignore: avoid_dynamic_calls
-        if (data['valid'] == true) {
+        if (data['valid'] == true || data['verified'] == true) {
           // Store the PIN token for subsequent transfer operations
-          // ignore: avoid_dynamic_calls
-          final pinToken = data['pinToken'] as String?;
+          final pinToken =
+              data['pinToken'] as String? ?? data['token'] as String?;
           // ignore: avoid_dynamic_calls
           final expiresIn = data['expiresIn'] as int? ?? 300;
 
           if (pinToken != null) {
             await _storage.write(key: _pinTokenKey, value: pinToken);
             final expiry = DateTime.now().add(Duration(seconds: expiresIn));
-            await _storage.write(key: _pinTokenExpiryKey, value: expiry.toIso8601String());
+            await _storage.write(
+              key: _pinTokenExpiryKey,
+              value: expiry.toIso8601String(),
+            );
           }
 
           return PinVerificationResult(
@@ -166,7 +177,7 @@ class PinService {
       }
 
       // Handle backend response
-      final data = response.data;
+      final data = response.data as Map<String, dynamic>;
       return PinVerificationResult(
         success: false,
         // ignore: avoid_dynamic_calls
@@ -180,10 +191,7 @@ class PinService {
       );
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        return PinVerificationResult(
-          success: false,
-          message: 'Incorrect PIN',
-        );
+        return PinVerificationResult(success: false, message: 'Incorrect PIN');
       }
       if (e.response?.statusCode == 429) {
         return PinVerificationResult(
@@ -252,7 +260,12 @@ class PinService {
 
   /// PBKDF2 key derivation function
   /// SECURITY: Implements RFC 2898 PBKDF2 with HMAC-SHA256
-  List<int> _pbkdf2(List<int> password, List<int> salt, int iterations, int keyLength) {
+  List<int> _pbkdf2(
+    List<int> password,
+    List<int> salt,
+    int iterations,
+    int keyLength,
+  ) {
     final hmac = Hmac(sha256, password);
     final numBlocks = (keyLength + 31) ~/ 32; // SHA256 produces 32 bytes
     final derivedKey = <int>[];
@@ -362,7 +375,8 @@ class PinService {
 
       // Check for double-digit pairs (112233)
       if (pin.length == 6) {
-        final isDoubleDigitPairs = pin[0] == pin[1] && pin[2] == pin[3] && pin[4] == pin[5];
+        final isDoubleDigitPairs =
+            pin[0] == pin[1] && pin[2] == pin[3] && pin[4] == pin[5];
         if (isDoubleDigitPairs) return true;
       }
 
@@ -372,11 +386,31 @@ class PinService {
 
     // Common PINs blocklist
     const commonPins = {
-      '000000', '111111', '222222', '333333', '444444',
-      '555555', '666666', '777777', '888888', '999999',
-      '123456', '654321', '123123', '112233', '121212',
-      '696969', '131313', '420420', '000001', '100000',
-      '111222', '222111', '123321', '102030', '010203',
+      '000000',
+      '111111',
+      '222222',
+      '333333',
+      '444444',
+      '555555',
+      '666666',
+      '777777',
+      '888888',
+      '999999',
+      '123456',
+      '654321',
+      '123123',
+      '112233',
+      '121212',
+      '696969',
+      '131313',
+      '420420',
+      '000001',
+      '100000',
+      '111222',
+      '222111',
+      '123321',
+      '102030',
+      '010203',
     };
     if (commonPins.contains(pin)) return true;
 

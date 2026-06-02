@@ -28,16 +28,13 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('OTPView Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('OTPView Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial empty state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OtpView()),
         );
         await tester.pumpAndSettle();
 
@@ -49,12 +46,9 @@ void main() {
 
       testWidgets('with countdown timer showing', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: OtpView()),
         );
         // Let countdown start but capture immediately to show timer
         await tester.pump(const Duration(seconds: 1));
@@ -66,15 +60,12 @@ void main() {
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial empty state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: OtpView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: OtpView()),
         );
         await tester.pumpAndSettle();
 

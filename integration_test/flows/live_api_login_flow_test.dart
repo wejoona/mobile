@@ -1,0 +1,131 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+
+import '../helpers/korido_flow_driver.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() async {
+    await KoridoFlowDriver.clearPersistentState();
+  });
+
+  testWidgets(
+    'registers a fresh user against the live local API and reaches home',
+    (tester) async {
+      final driver = KoridoFlowDriver(tester);
+      await driver.launchApp();
+      await driver.startRegistrationFromIntro();
+      await driver.submitPhone(_uniqueIvorianPhone());
+      await driver.enterOtp('123456');
+
+      await driver.pumpUntil(
+        () => driver.hasAnyText([
+          'Tell us about yourself',
+          'Parlez-nous de vous',
+        ]),
+        reason: 'profile setup screen',
+        timeout: const Duration(seconds: 25),
+      );
+
+      await driver.submitProfile();
+
+      await driver.pumpUntil(
+        () => driver.hasAnyText(['Create your PIN', 'Créez votre PIN']),
+        reason: 'PIN setup screen',
+        timeout: const Duration(seconds: 25),
+      );
+      await driver.enterPinTwice(KoridoFlowDriver.defaultPin);
+
+      await driver.pumpUntil(
+        () => driver.hasAnyText([
+          'Verify your identity',
+          'Vérifiez votre identité',
+        ]),
+        reason: 'KYC prompt screen',
+        timeout: const Duration(seconds: 25),
+      );
+      await driver.tapText(['Maybe Later', 'Peut-être plus tard']);
+
+      await driver.pumpUntil(
+        () =>
+            driver.hasAnyText(['Welcome to Korido!', 'Bienvenue sur Korido!']),
+        reason: 'onboarding success screen',
+        timeout: const Duration(seconds: 25),
+      );
+      await driver.tapText([
+        'Start Using Korido',
+        'Commencer à utiliser Korido',
+      ]);
+      await driver.waitForHome();
+      await _openLiveSecondarySurfaces(driver);
+    },
+  );
+}
+
+String _uniqueIvorianPhone() {
+  final seed = DateTime.now().millisecondsSinceEpoch.toString();
+  return '07${seed.substring(seed.length - 8)}';
+}
+
+Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
+  await driver.goToRoute('/transactions');
+  await driver.pumpUntil(
+    () =>
+        driver.hasAnyText(['Transactions']) &&
+        driver.hasAnyText([
+          'No Transactions Yet',
+          'No Transactions',
+          'Aucune Transaction',
+          'Aucune transaction pour le moment',
+        ]),
+    reason: 'live transactions screen without mock data',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+
+  await driver.goToRoute('/notifications');
+  await driver.pumpUntil(
+    () =>
+        driver.hasAnyText(['Notifications']) &&
+        driver.hasAnyText(['PIN Changed', 'Aucune notification']),
+    reason: 'live notifications screen',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+
+  await driver.goToRoute('/settings/devices');
+  await driver.pumpUntil(
+    () =>
+        driver.hasAnyText(['Devices', 'Appareils']) &&
+        driver.hasAnyText(['This device', 'Cet appareil', 'Apple', 'iPhone']),
+    reason: 'live devices screen',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+
+  await driver.goToRoute('/settings/sessions');
+  await driver.pumpUntil(
+    () =>
+        driver.hasAnyText(['Active Sessions', 'Sessions actives']) &&
+        driver.hasAnyText([
+          'Current session',
+          'Session actuelle',
+          'No Active Sessions',
+          'No active sessions',
+          'Aucune session active',
+          "You don't have any active sessions",
+          'Unknown Device',
+        ]),
+    reason: 'live active sessions screen',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+}
+
+void _expectNoAuthError(KoridoFlowDriver driver) {
+  final visible = driver.visibleTextSnapshot().toLowerCase();
+  expect(visible.contains('401'), isFalse);
+  expect(visible.contains('unauthorized'), isFalse);
+  expect(visible.contains('non autorisé'), isFalse);
+}

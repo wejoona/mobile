@@ -5,6 +5,7 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 
 /// Set PIN View
 /// Used during onboarding to create initial PIN
@@ -26,41 +27,35 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        title: AppText(
-          l10n.pin_createTitle,
-          variant: AppTextVariant.headlineSmall,
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
-                        SizedBox(height: AppSpacing.lg),
-                        AppText(
-                          l10n.pin_enterNewPin,
-                          variant: AppTextVariant.bodyLarge,
-                          color: context.colors.textSecondary,
-                          textAlign: TextAlign.center,
+                        const SizedBox(height: AppSpacing.lg),
+                        AuthTopBar(onBack: () => context.pop()),
+                        const SizedBox(height: AppSpacing.xl),
+                        AuthScreenHeader(
+                          appName: l10n.appName,
+                          title: l10n.pin_createTitle,
+                          subtitle: l10n.pin_enterNewPin,
                         ),
-                        SizedBox(height: AppSpacing.xxl),
-                        PinDots(length: 6,
+                        const SizedBox(height: AppSpacing.xxxl),
+                        PinDots(
+                          length: 6,
                           filled: _pin.length,
                           error: _showError,
                         ),
                         if (_errorMessage != null) ...[
-                          SizedBox(height: AppSpacing.md),
+                          const SizedBox(height: AppSpacing.md),
                           AppText(
                             _errorMessage!,
                             variant: AppTextVariant.bodyMedium,
@@ -68,14 +63,15 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
                             textAlign: TextAlign.center,
                           ),
                         ],
-                        SizedBox(height: AppSpacing.xl),
+                        const SizedBox(height: AppSpacing.xl),
                         _buildValidationRules(l10n),
                         const Spacer(),
                         PinPad(
                           onDigitPressed: _handleNumberPressed,
                           onDeletePressed: _handleBackspace,
+                          showBiometric: false,
                         ),
-                        SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.xl),
                       ],
                     ),
                   ),
@@ -121,14 +117,18 @@ class _SetPinViewState extends ConsumerState<SetPinView> {
           Icon(
             satisfied ? Icons.check_circle : Icons.circle_outlined,
             size: 16,
-            color: satisfied ? context.colors.successText : context.colors.textTertiary,
+            color: satisfied
+                ? context.colors.successText
+                : context.colors.textTertiary,
           ),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
               text,
               variant: AppTextVariant.bodySmall,
-              color: satisfied ? context.colors.textPrimary : context.colors.textTertiary,
+              color: satisfied
+                  ? context.colors.textPrimary
+                  : context.colors.textTertiary,
             ),
           ),
         ],

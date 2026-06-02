@@ -61,7 +61,7 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
       'timestamp': _timestamp,
       'nonce': _nonce,
     };
-    return 'joonapay://pay?data=${base64Url.encode(utf8.encode(jsonEncode(data)))}';
+    return 'korido://pay?data=${base64Url.encode(utf8.encode(jsonEncode(data)))}';
   }
 
   @override
@@ -177,7 +177,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                       label: l10n.action_copy,
                       icon: Icons.copy,
                       variant: AppButtonVariant.secondary,
-                      onPressed: () => _copyAddress(context, l10n, walletState.walletAddress!),
+                      onPressed: () => _copyAddress(
+                        context,
+                        l10n,
+                        walletState.walletAddress!,
+                      ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -186,7 +190,8 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
                       label: l10n.action_share,
                       icon: Icons.share,
                       variant: AppButtonVariant.secondary,
-                      onPressed: () => _shareAddress(l10n, walletState.walletAddress!),
+                      onPressed: () =>
+                          _shareAddress(l10n, walletState.walletAddress!),
                     ),
                   ),
                 ],
@@ -237,7 +242,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
     );
   }
 
-  void _copyAddress(BuildContext context, AppLocalizations l10n, String address) {
+  void _copyAddress(
+    BuildContext context,
+    AppLocalizations l10n,
+    String address,
+  ) {
     Clipboard.setData(ClipboardData(text: address));
 
     // SECURITY: Auto-clear clipboard after 60 seconds
@@ -255,8 +264,11 @@ class _ReceiveViewState extends ConsumerState<ReceiveView> {
   }
 
   void _shareAddress(AppLocalizations l10n, String address) {
-    SharePlus.instance.share(ShareParams(text: 
-      l10n.receive_shareMessage(address), title: l10n.receive_shareSubject,
-    ));
+    SharePlus.instance.share(
+      ShareParams(
+        text: l10n.receive_shareMessage(address),
+        title: l10n.receive_shareSubject,
+      ),
+    );
   }
 }

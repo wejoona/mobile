@@ -12,10 +12,10 @@ class DeepLinkQrGenerator {
     String? note,
   }) {
     final uri = Uri(
-      scheme: 'joonapay',
-      path: 'send',
+      scheme: 'korido',
+      host: 'send',
       queryParameters: {
-        'to': phoneNumber,
+        'phone': phoneNumber,
         if (amount != null) 'amount': amount.toString(),
         if (note != null) 'note': note,
       },
@@ -29,10 +29,10 @@ class DeepLinkQrGenerator {
     double? requestedAmount,
   }) {
     final uri = Uri(
-      scheme: 'joonapay',
-      path: 'send',
+      scheme: 'korido',
+      host: 'send',
       queryParameters: {
-        'to': userPhoneNumber,
+        'phone': userPhoneNumber,
         if (requestedAmount != null) 'amount': requestedAmount.toString(),
       },
     );
@@ -45,9 +45,9 @@ class DeepLinkQrGenerator {
     bool useUniversalLink = true,
   }) {
     if (useUniversalLink) {
-      return 'https://app.joonapay.com/pay/$linkCode';
+      return 'https://app.korido.co/pay/$linkCode';
     }
-    return 'joonapay://pay/$linkCode';
+    return 'korido://pay/$linkCode';
   }
 
   /// Generate transaction share QR code data
@@ -56,9 +56,9 @@ class DeepLinkQrGenerator {
     bool useUniversalLink = true,
   }) {
     if (useUniversalLink) {
-      return 'https://app.joonapay.com/transaction/$transactionId';
+      return 'https://app.korido.co/transaction/$transactionId';
     }
-    return 'joonapay://transaction/$transactionId';
+    return 'korido://transaction/$transactionId';
   }
 
   /// Generate referral QR code data
@@ -67,9 +67,9 @@ class DeepLinkQrGenerator {
     bool useUniversalLink = true,
   }) {
     if (useUniversalLink) {
-      return 'https://app.joonapay.com/referrals?code=$referralCode';
+      return 'https://app.korido.co/referral/$referralCode';
     }
-    return 'joonapay://referrals?code=$referralCode';
+    return 'korido://referral/$referralCode';
   }
 }
 
@@ -106,13 +106,9 @@ class DeepLinkQrCode extends StatelessWidget {
         dataModuleShape: QrDataModuleShape.square,
         color: foregroundColor ?? AppColors.obsidian,
       ),
-      embeddedImage: showLogo
-          ? const AssetImage('assets/logo_qr.png')
-          : null,
+      embeddedImage: showLogo ? const AssetImage('assets/logo_qr.png') : null,
       embeddedImageStyle: showLogo
-          ? const QrEmbeddedImageStyle(
-              size: Size(60, 60),
-            )
+          ? const QrEmbeddedImageStyle(size: Size(60, 60))
           : null,
     );
   }
@@ -141,10 +137,7 @@ class PaymentRequestQrCode extends StatelessWidget {
       note: note,
     );
 
-    return DeepLinkQrCode(
-      data: qrData,
-      size: size,
-    );
+    return DeepLinkQrCode(data: qrData, size: size);
   }
 }
 
@@ -168,10 +161,7 @@ class ReceiveMoneyQrCode extends StatelessWidget {
       requestedAmount: requestedAmount,
     );
 
-    return DeepLinkQrCode(
-      data: qrData,
-      size: size,
-    );
+    return DeepLinkQrCode(data: qrData, size: size);
   }
 }
 
@@ -195,10 +185,7 @@ class PaymentLinkQrCode extends StatelessWidget {
       useUniversalLink: useUniversalLink,
     );
 
-    return DeepLinkQrCode(
-      data: qrData,
-      size: size,
-    );
+    return DeepLinkQrCode(data: qrData, size: size);
   }
 }
 
@@ -224,10 +211,7 @@ class BrandedDeepLinkQrCode extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.charcoal,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.gold500,
-          width: 2,
-        ),
+        border: Border.all(color: AppColors.gold500, width: 2),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -247,10 +231,7 @@ class BrandedDeepLinkQrCode extends StatelessWidget {
           if (subtitle != null) ...[
             Text(
               subtitle!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.silver,
-              ),
+              style: const TextStyle(fontSize: 14, color: AppColors.silver),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -272,18 +253,11 @@ class BrandedDeepLinkQrCode extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.qr_code_scanner,
-                size: 16,
-                color: AppColors.silver,
-              ),
+              Icon(Icons.qr_code_scanner, size: 16, color: AppColors.silver),
               const SizedBox(width: 8),
               Text(
                 'Scan with Korido',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.silver,
-                ),
+                style: TextStyle(fontSize: 12, color: AppColors.silver),
               ),
             ],
           ),
@@ -308,11 +282,7 @@ class DeepLinkQrCodeExamples extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
-        Center(
-          child: ReceiveMoneyQrCode(
-            userPhoneNumber: '+2250701234567',
-          ),
-        ),
+        Center(child: ReceiveMoneyQrCode(userPhoneNumber: '+2250701234567')),
         const SizedBox(height: 32),
 
         // Example 2: Payment request with amount
@@ -338,9 +308,7 @@ class DeepLinkQrCodeExamples extends StatelessWidget {
         const SizedBox(height: 16),
         Center(
           child: BrandedDeepLinkQrCode(
-            data: DeepLinkQrGenerator.generatePaymentLink(
-              linkCode: 'ABCD1234',
-            ),
+            data: DeepLinkQrGenerator.generatePaymentLink(linkCode: 'ABCD1234'),
             title: 'Invoice #123',
             subtitle: 'Scan to pay 50.00 USDC',
           ),

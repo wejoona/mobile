@@ -40,11 +40,11 @@ class ExternalTransferRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'address': address,
-        'amount': amount,
-        'network': network.value,
-        if (note != null) 'note': note,
-      };
+    'recipientAddress': address,
+    'amount': amount,
+    'network': network.value,
+    if (note != null) 'note': note,
+  };
 
   ExternalTransferRequest copyWith({
     String? address,
@@ -82,24 +82,31 @@ class ExternalTransferResult {
   factory ExternalTransferResult.fromJson(Map<String, dynamic> json) {
     return ExternalTransferResult(
       transactionId: json['transactionId'] as String? ?? json['id'] as String,
-      txHash: json['txHash'] as String,
+      txHash:
+          json['txHash'] as String? ?? json['transactionHash'] as String? ?? '',
       status: json['status'] as String,
-      fee: (json['fee'] as num).toDouble(),
-      network: NetworkOption.fromString(json['network'] as String? ?? 'polygon'),
+      fee: (json['fee'] as num?)?.toDouble() ?? 0,
+      network: NetworkOption.fromString(
+        json['network'] as String? ??
+            json['recipientBlockchain'] as String? ??
+            'polygon',
+      ),
       timestamp: DateTime.parse(
-        json['timestamp'] as String? ?? json['createdAt'] as String,
+        json['timestamp'] as String? ??
+            json['createdAt'] as String? ??
+            DateTime.now().toIso8601String(),
       ),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'transactionId': transactionId,
-        'txHash': txHash,
-        'status': status,
-        'fee': fee,
-        'network': network.value,
-        'timestamp': timestamp.toIso8601String(),
-      };
+    'transactionId': transactionId,
+    'txHash': txHash,
+    'status': status,
+    'fee': fee,
+    'network': network.value,
+    'timestamp': timestamp.toIso8601String(),
+  };
 }
 
 /// Address Validation Result
@@ -107,12 +114,10 @@ class AddressValidationResult {
   final bool isValid;
   final String? error;
 
-  const AddressValidationResult({
-    required this.isValid,
-    this.error,
-  });
+  const AddressValidationResult({required this.isValid, this.error});
 
-  factory AddressValidationResult.valid() => const AddressValidationResult(isValid: true);
+  factory AddressValidationResult.valid() =>
+      const AddressValidationResult(isValid: true);
 
   factory AddressValidationResult.invalid(String error) =>
       AddressValidationResult(isValid: false, error: error);

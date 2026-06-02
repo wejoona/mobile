@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// Onboarding state.
 class OnboardingState {
@@ -10,6 +13,7 @@ class OnboardingState {
   final String? error;
   final String? phoneNumber;
   final String? countryCode;
+  final String? dialCode;
   final String? otp;
   final String? pin;
   final String? firstName;
@@ -25,6 +29,7 @@ class OnboardingState {
     this.error,
     this.phoneNumber,
     this.countryCode,
+    this.dialCode,
     this.otp,
     this.pin,
     this.firstName,
@@ -41,6 +46,7 @@ class OnboardingState {
     String? error,
     String? phoneNumber,
     String? countryCode,
+    String? dialCode,
     String? otp,
     String? pin,
     String? firstName,
@@ -56,6 +62,7 @@ class OnboardingState {
     error: clearError ? null : (error ?? this.error),
     phoneNumber: phoneNumber ?? this.phoneNumber,
     countryCode: countryCode ?? this.countryCode,
+    dialCode: dialCode ?? this.dialCode,
     otp: otp ?? this.otp,
     pin: pin ?? this.pin,
     firstName: firstName ?? this.firstName,
@@ -68,7 +75,7 @@ class OnboardingState {
 
 /// Onboarding notifier.
 class OnboardingNotifier extends Notifier<OnboardingState> {
-  static const _key = 'korido_onboarding_complete';
+  static const _key = 'onboarding_completed';
 
   @override
   OnboardingState build() {
@@ -108,69 +115,211 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     state = const OnboardingState(isLoading: false);
   }
 
-  // === Stub methods for view compatibility ===
   Future<void> submitPhoneNumber([String? phone]) async {
-    if (phone != null) state = state.copyWith(phoneNumber: phone);
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/auth/register', data: {
-        'phone': state.phoneNumber,
-        if (state.countryCode != null) 'countryCode': state.countryCode,
-      });
-      state = state.copyWith(isLoading: false);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-  Future<void> verifyOtp([String? otp]) async {
-    if (otp != null) state = state.copyWith(otp: otp);
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/auth/verify-otp', data: {
-        'phone': state.phoneNumber,
-        'otp': state.otp,
-      });
-      state = state.copyWith(isLoading: false);
-    } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
-    }
-  }
-  void updateOtp(String otp) => state = state.copyWith(otp: otp);
-  void updatePhoneNumber(String phone, [String? countryCode]) => state = state.copyWith(phoneNumber: phone, countryCode: countryCode);
-  Future<void> submitPin(String pin) async => state = state.copyWith(pin: pin);
-  Future<void> submitProfile([Map<String, dynamic>? data, String? firstName, String? lastName, String? email]) async {
-    final fn = firstName ?? data?['firstName'] as String?;
-    final ln = lastName ?? data?['lastName'] as String?;
-    final em = email ?? data?['email'] as String?;
-    state = state.copyWith(firstName: fn, lastName: ln, email: em);
-  }
-  Future<void> updateProfile({Map<String, dynamic>? data, String? firstName, String? lastName, String? email}) async {
-    await submitProfile(data, firstName, lastName, email);
-  }
-  Future<void> resendOtp() async {
-    state = state.copyWith(otpResendCountdown: 60);
-  }
-  void startKyc() {}
+    final phoneNumber = _normalizePhone(phone ?? state.phoneNumber);
+    final countryCode = state.countryCode ?? 'CI';
 
-  /// Skip KYC — notify backend so it records the user's choice,
-  /// then mark onboarding complete locally.
-  Future<void> skipKyc() async {
-    state = state.copyWith(isLoading: true);
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/user/kyc/skip');
-    } catch (_) {
-      // Non-blocking — still complete onboarding even if backend call fails
+    if (phoneNumber == null) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Phone number is required',
+      );
+      return;
     }
+
+    state = state.copyWith(
+      phoneNumber: phoneNumber,
+      countryCode: countryCode,
+      isLoading: true,
+      clearError: true,
+    );
+
+    try {
+      await ref
+          .read(auth.authProvider.notifier)
+          .register(phoneNumber, countryCode);
+      final authState = ref.read(auth.authProvider);
+      if (authState.status == auth.AuthStatus.otpSent) {
+        state = state.copyWith(isLoading: false, clearError: true);
+      } else {
+        state = state.copyWith(
+          isLoading: false,
+          error: authState.error ?? 'Unable to send verification code',
+        );
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _messageFrom(e));
+    }
+  }
+
+  Future<void> verifyOtp([String? otp]) async {
+    final code = otp ?? state.otp;
+    if (code == null || code.length != 6) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Enter the 6-digit verification code',
+      );
+      return;
+    }
+
+    state = state.copyWith(otp: code, isLoading: true, clearError: true);
+
+    try {
+      final verified = await ref
+          .read(auth.authProvider.notifier)
+          .verifyOtp(code);
+      final authState = ref.read(auth.authProvider);
+      state = state.copyWith(
+        isLoading: false,
+        error: verified ? null : authState.error ?? 'Unable to verify code',
+        clearError: verified,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _messageFrom(e));
+    }
+  }
+
+  void updateOtp(String otp) => state = state.copyWith(otp: otp);
+
+  void updatePhoneNumber(
+    String phone, [
+    String? countryCode,
+    String? dialCode,
+  ]) {
+    state = state.copyWith(
+      phoneNumber: _normalizePhone(phone),
+      countryCode: countryCode,
+      dialCode: dialCode,
+      clearError: true,
+    );
+  }
+
+  Future<void> submitPin(String pin) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final success = await ref
+          .read(pinServiceProvider)
+          .setPin(pin, requireBackendSync: true);
+      state = state.copyWith(
+        pin: success ? pin : state.pin,
+        isLoading: false,
+        error: success ? null : 'Unable to set PIN',
+        clearError: success,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _messageFrom(e));
+    }
+  }
+
+  Future<void> submitProfile({
+    Map<String, dynamic>? data,
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    final fn = firstName ?? data?['firstName'] as String? ?? state.firstName;
+    final ln = lastName ?? data?['lastName'] as String? ?? state.lastName;
+    final em = email ?? data?['email'] as String? ?? state.email;
+
+    if (fn == null || fn.trim().isEmpty || ln == null || ln.trim().isEmpty) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'First name and last name are required',
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final trimmedEmail = em?.trim();
+      final profile = await ref
+          .read(userServiceProvider)
+          .updateProfile(
+            firstName: fn.trim(),
+            lastName: ln.trim(),
+            email: trimmedEmail == null || trimmedEmail.isEmpty
+                ? null
+                : trimmedEmail,
+          );
+
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            email: profile.email,
+            avatarUrl: profile.avatarUrl,
+            avatarThumb: profile.avatarThumb,
+          );
+
+      state = state.copyWith(
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        email: profile.email,
+        isLoading: false,
+        clearError: true,
+      );
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: _messageFrom(e));
+    }
+  }
+
+  void updateProfile({
+    Map<String, dynamic>? data,
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) {
+    state = state.copyWith(
+      firstName: firstName ?? data?['firstName'] as String?,
+      lastName: lastName ?? data?['lastName'] as String?,
+      email: email ?? data?['email'] as String?,
+      clearError: true,
+    );
+  }
+
+  Future<void> resendOtp() async {
+    await submitPhoneNumber();
+    if (state.error == null) {
+      state = state.copyWith(otpResendCountdown: 60);
+    }
+  }
+
+  void startKyc() {
+    state = state.copyWith(clearError: true);
+  }
+
+  /// Skip KYC for now and mark onboarding complete locally.
+  Future<void> skipKyc() async {
+    state = state.copyWith(isLoading: true, clearError: true);
     await completeOnboarding();
     state = state.copyWith(isLoading: false);
   }
 
+  String? _normalizePhone(String? phone) {
+    final raw = phone?.replaceAll(RegExp(r'\s+'), '');
+    if (raw == null || raw.isEmpty) return null;
+    if (raw.startsWith('+')) return raw;
+    final dialCode = state.dialCode;
+    if (dialCode != null && dialCode.isNotEmpty) {
+      return '$dialCode$raw';
+    }
+    return raw;
+  }
+
+  String _messageFrom(Object error) {
+    final message = error.toString();
+    return message.startsWith('Exception: ')
+        ? message.substring('Exception: '.length)
+        : message;
+  }
 }
 
-final onboardingProvider = NotifierProvider<OnboardingNotifier, OnboardingState>(OnboardingNotifier.new);
+final onboardingProvider =
+    NotifierProvider<OnboardingNotifier, OnboardingState>(
+      OnboardingNotifier.new,
+    );
 
 /// Whether to show onboarding.
 final shouldShowOnboardingProvider = Provider<bool>((ref) {

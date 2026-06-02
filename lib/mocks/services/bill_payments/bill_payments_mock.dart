@@ -79,7 +79,9 @@ class BillPaymentsMock {
   }
 
   /// Handle GET /bill-payments/providers
-  static Future<MockResponse> _handleGetProviders(RequestOptions options) async {
+  static Future<MockResponse> _handleGetProviders(
+    RequestOptions options,
+  ) async {
     final providers = _getIvorianProviders();
     final category = options.queryParameters['category'] as String?;
 
@@ -100,7 +102,9 @@ class BillPaymentsMock {
   }
 
   /// Handle GET /bill-payments/categories
-  static Future<MockResponse> _handleGetCategories(RequestOptions options) async {
+  static Future<MockResponse> _handleGetCategories(
+    RequestOptions options,
+  ) async {
     final categories = [
       {
         'category': 'electricity',
@@ -143,9 +147,17 @@ class BillPaymentsMock {
   }
 
   /// Handle POST /bill-payments/validate
-  static Future<MockResponse> _handleValidateAccount(RequestOptions options) async {
+  static Future<MockResponse> _handleValidateAccount(
+    RequestOptions options,
+  ) async {
     final data = options.data as Map<String, dynamic>;
+    final providerId = data['providerId'] as String?;
     final accountNumber = data['accountNumber'] as String;
+    final provider = _findProvider(providerId);
+
+    if (provider == null) {
+      return MockResponse.badRequest('Provider not found');
+    }
 
     // Simulate validation
     final isValid = accountNumber.isNotEmpty && accountNumber.length >= 5;
@@ -155,8 +167,12 @@ class BillPaymentsMock {
       'accountNumber': accountNumber,
       'customerName': isValid ? _generateCustomerName() : null,
       'accountType': isValid ? 'Prepaid' : null,
-      'outstandingBalance': isValid ? MockDataGenerator.amount(min: 0, max: 50000) : null,
-      'message': isValid ? 'Account verified successfully' : 'Invalid account number',
+      'outstandingBalance': isValid
+          ? MockDataGenerator.amount(min: 0, max: 50000)
+          : null,
+      'message': isValid
+          ? 'Account verified successfully'
+          : 'Invalid account number',
     });
   }
 
@@ -166,10 +182,10 @@ class BillPaymentsMock {
     final amount = (data['amount'] as num).toDouble();
     final providerId = data['providerId'] as String;
 
-    final provider = _getIvorianProviders().firstWhere(
-      (p) => p['id'] == providerId,
-      orElse: () => _getIvorianProviders().first,
-    );
+    final provider = _findProvider(providerId);
+    if (provider == null) {
+      return MockResponse.badRequest('Provider not found');
+    }
 
     final fee = (provider['processingFee'] as num).toDouble();
     final paymentId = MockDataGenerator.uuid();
@@ -178,8 +194,10 @@ class BillPaymentsMock {
       'paymentId': paymentId,
       'transactionId': MockDataGenerator.transactionRef(),
       'status': 'completed',
-      'receiptNumber': 'RCP${MockDataGenerator.integer(min: 100000000, max: 999999999)}',
-      'providerReference': 'PRV${MockDataGenerator.integer(min: 100000000, max: 999999999)}',
+      'receiptNumber':
+          'RCP${MockDataGenerator.integer(min: 100000000, max: 999999999)}',
+      'providerReference':
+          'PRV${MockDataGenerator.integer(min: 100000000, max: 999999999)}',
       'tokenNumber': provider['category'] == 'electricity'
           ? _generateToken()
           : null,
@@ -195,6 +213,7 @@ class BillPaymentsMock {
     };
 
     BillPaymentsMockState.addPayment({
+      'id': paymentId,
       ...payment,
       'providerId': providerId,
       'providerName': provider['name'],
@@ -211,8 +230,11 @@ class BillPaymentsMock {
 
   /// Handle GET /bill-payments/history
   static Future<MockResponse> _handleGetHistory(RequestOptions options) async {
-    final page = int.tryParse(options.queryParameters['page']?.toString() ?? '1') ?? 1;
-    final limit = int.tryParse(options.queryParameters['limit']?.toString() ?? '20') ?? 20;
+    final page =
+        int.tryParse(options.queryParameters['page']?.toString() ?? '1') ?? 1;
+    final limit =
+        int.tryParse(options.queryParameters['limit']?.toString() ?? '20') ??
+        20;
     final category = options.queryParameters['category'] as String?;
 
     var items = List<Map<String, dynamic>>.from(BillPaymentsMockState.payments);
@@ -227,10 +249,7 @@ class BillPaymentsMock {
     final totalPages = (total / limit).ceil();
     final start = (page - 1) * limit;
     final end = start + limit;
-    final paginatedItems = items.sublist(
-      start,
-      end > total ? total : end,
-    );
+    final paginatedItems = items.sublist(start, end > total ? total : end);
 
     return MockResponse.success({
       'items': paginatedItems,
@@ -260,6 +279,14 @@ class BillPaymentsMock {
     }
 
     return MockResponse.success(payment);
+  }
+
+  static Map<String, dynamic>? _findProvider(String? providerId) {
+    if (providerId == null || providerId.isEmpty) return null;
+    return _getIvorianProviders().cast<Map<String, dynamic>?>().firstWhere(
+      (provider) => provider?['id'] == providerId,
+      orElse: () => null,
+    );
   }
 
   /// Get Ivorian bill providers
@@ -485,8 +512,26 @@ class BillPaymentsMock {
 
   /// Generate a random customer name
   static String _generateCustomerName() {
-    final firstNames = ['Amadou', 'Fatou', 'Kofi', 'Aya', 'Ibrahim', 'Aissata', 'Yao', 'Mariam'];
-    final lastNames = ['Diallo', 'Traore', 'Kone', 'Kouassi', 'N\'Guessan', 'Ouattara', 'Toure', 'Bamba'];
+    final firstNames = [
+      'Amadou',
+      'Fatou',
+      'Kofi',
+      'Aya',
+      'Ibrahim',
+      'Aissata',
+      'Yao',
+      'Mariam',
+    ];
+    final lastNames = [
+      'Diallo',
+      'Traore',
+      'Kone',
+      'Kouassi',
+      'N\'Guessan',
+      'Ouattara',
+      'Toure',
+      'Bamba',
+    ];
 
     return '${(firstNames..shuffle()).first} ${(lastNames..shuffle()).first}';
   }

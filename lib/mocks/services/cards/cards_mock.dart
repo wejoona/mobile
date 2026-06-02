@@ -37,16 +37,22 @@ class CardsMockState {
     final card = {
       'id': MockDataGenerator.uuid(),
       'userId': userId,
+      'walletId': 'mock-wallet-$userId',
       'cardNumber': cardNumber,
+      'maskedCardNumber':
+          '**** **** **** ${cardNumber.substring(cardNumber.length - 4)}',
       'cvv': _generateCVV(),
       'expiryMonth': '12',
       'expiryYear': expiryYear,
       'cardholderName': cardholderName,
+      'cardType': 'virtual',
       'status': 'active',
       'spendingLimit': spendingLimit,
       'spentAmount': 0.0,
+      'remainingLimit': spendingLimit,
       'currency': 'USD',
       'createdAt': now.toIso8601String(),
+      'updatedAt': now.toIso8601String(),
       'frozenAt': null,
     };
 
@@ -75,7 +81,9 @@ class CardsMockState {
         'amount': 45.99,
         'currency': 'USD',
         'status': 'completed',
-        'createdAt': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+        'createdAt': DateTime.now()
+            .subtract(const Duration(hours: 2))
+            .toIso8601String(),
       },
       {
         'id': MockDataGenerator.uuid(),
@@ -85,7 +93,9 @@ class CardsMockState {
         'amount': 15.99,
         'currency': 'USD',
         'status': 'completed',
-        'createdAt': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+        'createdAt': DateTime.now()
+            .subtract(const Duration(days: 1))
+            .toIso8601String(),
       },
       {
         'id': MockDataGenerator.uuid(),
@@ -95,7 +105,9 @@ class CardsMockState {
         'amount': 12.50,
         'currency': 'USD',
         'status': 'completed',
-        'createdAt': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+        'createdAt': DateTime.now()
+            .subtract(const Duration(days: 2))
+            .toIso8601String(),
       },
     ];
 
@@ -158,6 +170,13 @@ class CardsMock {
       method: 'PUT',
       path: r'/cards/[\w-]+/limit',
       handler: _handleUpdateLimit,
+    );
+
+    // DELETE /cards/:id
+    interceptor.register(
+      method: 'DELETE',
+      path: r'/cards/[\w-]+',
+      handler: _handleCancelCard,
     );
 
     // GET /cards/:id/transactions
@@ -255,6 +274,7 @@ class CardsMock {
 
     cards[cardIndex]['status'] = 'frozen';
     cards[cardIndex]['frozenAt'] = DateTime.now().toIso8601String();
+    cards[cardIndex]['updatedAt'] = DateTime.now().toIso8601String();
 
     return MockResponse.success(cards[cardIndex]);
   }
@@ -277,6 +297,7 @@ class CardsMock {
 
     cards[cardIndex]['status'] = 'active';
     cards[cardIndex]['frozenAt'] = null;
+    cards[cardIndex]['updatedAt'] = DateTime.now().toIso8601String();
 
     return MockResponse.success(cards[cardIndex]);
   }
@@ -296,7 +317,9 @@ class CardsMock {
     }
 
     final data = options.data as Map<String, dynamic>?;
-    final newLimit = (data?['spendingLimit'] as num?)?.toDouble();
+    final newLimit =
+        (data?['spendingLimit'] as num?)?.toDouble() ??
+        (data?['dailyLimit'] as num?)?.toDouble();
 
     if (newLimit == null || newLimit <= 0) {
       return MockResponse.badRequest('Invalid spending limit');
@@ -311,8 +334,31 @@ class CardsMock {
     }
 
     cards[cardIndex]['spendingLimit'] = newLimit;
+    cards[cardIndex]['remainingLimit'] =
+        newLimit - ((cards[cardIndex]['spentAmount'] as num?)?.toDouble() ?? 0);
+    cards[cardIndex]['updatedAt'] = DateTime.now().toIso8601String();
 
     return MockResponse.success(cards[cardIndex]);
+  }
+
+  static Future<MockResponse> _handleCancelCard(RequestOptions options) async {
+    final userId = AuthMockState.currentUserId;
+    if (userId == null) {
+      return MockResponse.unauthorized();
+    }
+
+    final cardId = options.path.split('/')[2];
+    final cards = CardsMockState.getCards(userId);
+    final cardIndex = cards.indexWhere((c) => c['id'] == cardId);
+
+    if (cardIndex == -1) {
+      return MockResponse.notFound('Card not found');
+    }
+
+    final card = cards.removeAt(cardIndex);
+    CardsMockState.cardTransactions.remove(card['id']);
+
+    return MockResponse.noContent();
   }
 
   static Future<MockResponse> _handleGetTransactions(

@@ -22,14 +22,18 @@ class DeepLinkHandler {
     final path = uri.path;
     final host = uri.host;
 
-    // korido:// scheme
-    if (uri.scheme == 'korido') {
+    // korido:// scheme. Legacy joonapay:// links remain supported.
+    if (uri.scheme == 'korido' || uri.scheme == 'joonapay') {
       _handleKoridoScheme(host, uri);
       return;
     }
 
-    // https://korido.app universal links
-    if (host == 'korido.app' || host == 'www.korido.app') {
+    // Korido universal links. Legacy JoonaPay domains remain accepted.
+    if (host == 'korido.app' ||
+        host == 'www.korido.app' ||
+        host == 'app.korido.co' ||
+        host == 'joonapay.com' ||
+        host == 'www.joonapay.com') {
       _handleUniversalLink(path, uri);
       return;
     }
@@ -39,23 +43,35 @@ class DeepLinkHandler {
 
   void _handleKoridoScheme(String host, Uri uri) {
     switch (host) {
+      case 'home':
+        _router.go('/home');
+        break;
       case 'pay':
         final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : null;
-        if (id != null) _router.go('/payment-link/$id');
+        if (id != null) {
+          _router.go('/pay/$id');
+        } else {
+          _goToSend(uri);
+        }
         break;
       case 'send':
-        final phone = uri.queryParameters['phone'];
-        if (phone != null) {
-          _router.go('/send?phone=$phone');
-        } else {
-          _router.go('/send');
-        }
+        _goToSend(uri);
         break;
       case 'receive':
         _router.go('/receive');
         break;
       case 'deposit':
         _router.go('/deposit');
+        break;
+      case 'referral':
+      case 'referrals':
+        _goToReferrals(uri);
+        break;
+      case 'transaction':
+      case 'transactions':
+        if (uri.pathSegments.isNotEmpty) {
+          _router.go('/transactions/${uri.pathSegments.first}');
+        }
         break;
       default:
         if (kDebugMode) debugPrint('[DeepLink] Unknown korido:// host: $host');
@@ -65,14 +81,57 @@ class DeepLinkHandler {
   void _handleUniversalLink(String path, Uri uri) {
     if (path.startsWith('/pay/')) {
       final id = path.substring(5);
-      _router.go('/payment-link/$id');
+      _router.go('/pay/$id');
+    } else if (path == '/send') {
+      _goToSend(uri);
     } else if (path.startsWith('/referral/')) {
-      final code = path.substring(10);
-      _router.go('/referral?code=$code');
+      final code = path.substring('/referral/'.length);
+      _goToReferrals(uri, code: code);
+    } else if (path == '/referrals') {
+      _goToReferrals(uri);
+    } else if (path.startsWith('/transactions/')) {
+      final id = path.substring('/transactions/'.length);
+      _router.go('/transactions/$id');
     } else if (path == '/download') {
       // Ignore — this is for non-users
     } else {
       if (kDebugMode) debugPrint('[DeepLink] Unknown universal link: $path');
     }
+  }
+
+  void _goToSend(Uri uri) {
+    final phone = uri.queryParameters['phone'] ?? uri.queryParameters['to'];
+    if (phone == null || phone.trim().isEmpty) {
+      _router.go('/send');
+      return;
+    }
+
+    _router.go(
+      Uri(
+        path: '/send',
+        queryParameters: {
+          'phone': phone,
+          if (uri.queryParameters['name'] != null)
+            'name': uri.queryParameters['name']!,
+          if (uri.queryParameters['amount'] != null)
+            'amount': uri.queryParameters['amount']!,
+          if (uri.queryParameters['note'] != null)
+            'note': uri.queryParameters['note']!,
+        },
+      ).toString(),
+    );
+  }
+
+  void _goToReferrals(Uri uri, {String? code}) {
+    final referralCode = code ?? uri.queryParameters['code'];
+    _router.go(
+      Uri(
+        path: '/referrals',
+        queryParameters: {
+          if (referralCode != null && referralCode.trim().isNotEmpty)
+            'code': referralCode,
+        },
+      ).toString(),
+    );
   }
 }

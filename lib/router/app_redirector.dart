@@ -1,0 +1,333 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/router/route_guards.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_extensions.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/state/fsm/index.dart';
+import 'package:usdc_wallet/state/kyc_state_machine.dart' as kyc_machine;
+import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/utils/logger.dart';
+
+const _routerLogger = AppLogger('Router');
+
+/// Triggers GoRouter refreshes when auth, onboarding, KYC, or FSM state changes.
+class RouterRefreshNotifier extends ChangeNotifier {
+  RouterRefreshNotifier(Ref ref) {
+    ref
+      // Listen to auth state changes.
+      ..listen(authProvider, (_, _) => notifyListeners())
+      // Listen to wallet state changes for onboarding redirect.
+      ..listen(walletStateMachineProvider, (_, _) => notifyListeners())
+      // Listen to user state changes for profile completion redirect.
+      ..listen(userStateMachineProvider, (previous, next) {
+        if (previous?.firstName != next.firstName) {
+          notifyListeners();
+        }
+      })
+      // Listen to FSM state changes for navigation.
+      ..listen(appFsmProvider, (previous, next) {
+        if (previous?.currentScreen != next.currentScreen) {
+          notifyListeners();
+        }
+      })
+      ..listen(
+        kyc_machine.kycStateMachineProvider,
+        (_, _) => notifyListeners(),
+      );
+  }
+}
+
+final routerRefreshProvider = Provider<RouterRefreshNotifier>(
+  RouterRefreshNotifier.new,
+);
+
+String? appRedirect(BuildContext context, GoRouterState state) {
+  final container = ProviderScope.containerOf(context);
+  final authState = container.read(authProvider);
+  final userState = container.read(userStateMachineProvider);
+  final flags = container.read(featureFlagsProvider);
+  final appFsmState = container.read(appFsmProvider);
+  final kycState = container.read(kyc_machine.kycStateMachineProvider);
+
+  final isAuthenticated = authState.isAuthenticated;
+  final location = state.matchedLocation;
+  final fsmTargetRoute = appFsmState.currentRoute;
+
+  _routerLogger.debug(
+    'Redirect check: location=$location, fsmTarget=$fsmTargetRoute',
+  );
+
+  final loadingRedirect = _loadingWalletRedirect(location, fsmTargetRoute);
+  if (loadingRedirect != null) {
+    return loadingRedirect;
+  }
+
+  final isWithinSameFlow = _isWithinSameFlow(location, fsmTargetRoute);
+  final isOnboardingRoute = _isOnboardingRoute(location);
+  final isFsmRoute = _isFsmRoute(location);
+
+  if (location == '/') {
+    return null;
+  }
+
+  final isLockedState = !EnvironmentConfig.debugSkipPin && authState.isLocked;
+  final lockRedirect = _lockRedirect(location, isLockedState);
+  if (lockRedirect != null) {
+    return lockRedirect;
+  }
+
+  final fsmRedirect = _fsmRedirect(
+    location: location,
+    fsmTargetRoute: fsmTargetRoute,
+    isLockedState: isLockedState,
+    isFsmRoute: isFsmRoute,
+    isOnboardingRoute: isOnboardingRoute,
+    isWithinSameFlow: isWithinSameFlow,
+  );
+  if (fsmRedirect != null) {
+    return fsmRedirect;
+  }
+
+  if (!isAuthenticated && !isLockedState && !_isPublicRoute(location)) {
+    return '/login';
+  }
+
+  final profileRedirect = _profileRedirect(
+    location: location,
+    isAuthenticated: isAuthenticated,
+    isOnboardingRoute: isOnboardingRoute,
+    authFirstName: authState.user?.firstName,
+    stateFirstName: userState.firstName,
+    profileKnown: authState.user != null || userState.userId != null,
+  );
+  if (profileRedirect != null) {
+    return profileRedirect;
+  }
+
+  if (isAuthenticated && _isAuthRoute(location)) {
+    return '/home';
+  }
+
+  if (isAuthenticated &&
+      _requiresVerifiedKycPath(location) &&
+      kycState.status.name != 'verified') {
+    return '/kyc';
+  }
+
+  return _featureFlagRedirect(location, flags);
+}
+
+String? _loadingWalletRedirect(String location, String fsmTargetRoute) {
+  if ((location == '/loading' || location == '/create-wallet') &&
+      fsmTargetRoute == '/home') {
+    return '/home';
+  }
+  return null;
+}
+
+bool _isWithinSameFlow(String location, String fsmTargetRoute) {
+  final locationBase = _routeBase(location);
+  final fsmBase = _routeBase(fsmTargetRoute);
+  final isWithinSameFlow = locationBase == fsmBase;
+
+  _routerLogger.debug(
+    'Flow check: locationBase=$locationBase, fsmBase=$fsmBase, isWithinSameFlow=$isWithinSameFlow',
+  );
+
+  return isWithinSameFlow;
+}
+
+String? _lockRedirect(String location, bool isLockedState) {
+  if (isLockedState &&
+      location != '/session-locked' &&
+      location != '/pin/reset') {
+    return '/session-locked';
+  }
+  return null;
+}
+
+String? _fsmRedirect({
+  required String location,
+  required String fsmTargetRoute,
+  required bool isLockedState,
+  required bool isFsmRoute,
+  required bool isOnboardingRoute,
+  required bool isWithinSameFlow,
+}) {
+  if (!isLockedState &&
+      !isFsmRoute &&
+      !isOnboardingRoute &&
+      fsmTargetRoute != location &&
+      fsmTargetRoute != '/home' &&
+      !isWithinSameFlow) {
+    _routerLogger.debug('Redirecting to FSM target: $fsmTargetRoute');
+    return fsmTargetRoute;
+  }
+  return null;
+}
+
+String? _profileRedirect({
+  required String location,
+  required bool isAuthenticated,
+  required bool isOnboardingRoute,
+  required String? authFirstName,
+  required String? stateFirstName,
+  required bool profileKnown,
+}) {
+  final hasProfileName =
+      (authFirstName != null && authFirstName.trim().isNotEmpty) ||
+      (stateFirstName?.trim().isNotEmpty ?? false);
+  final isProfileCaptureRoute =
+      location == '/profile-complete' || location == '/onboarding/profile';
+
+  if (isAuthenticated &&
+      profileKnown &&
+      !hasProfileName &&
+      location.startsWith('/onboarding/') &&
+      !isProfileCaptureRoute &&
+      location != '/onboarding/phone' &&
+      location != '/onboarding/otp') {
+    return '/onboarding/profile';
+  }
+
+  if (isAuthenticated &&
+      profileKnown &&
+      !hasProfileName &&
+      !isOnboardingRoute &&
+      !isProfileCaptureRoute) {
+    return '/profile-complete';
+  }
+
+  return null;
+}
+
+String? _featureFlagRedirect(String location, Map<String, bool> flags) {
+  if (flags.isEmpty) {
+    return null;
+  }
+
+  if (location == '/withdraw' &&
+      !flags.canWithdraw &&
+      !flags.canUseMobileMoneyWithdrawals) {
+    return '/home';
+  }
+  if (location.startsWith('/send-external') && !flags.canUseExternalTransfers) {
+    return '/home';
+  }
+
+  if (location == '/airtime' && !flags.canBuyAirtime) {
+    return '/home';
+  }
+  if ((location == '/bills' || location.startsWith('/bill-payments')) &&
+      !flags.canPayBills &&
+      !flags.canUseBillPayments) {
+    return '/home';
+  }
+
+  if (location == '/savings' && !flags.canSetSavingsGoals) {
+    return '/home';
+  }
+  if (location.startsWith('/savings-pots') && !flags.canUseSavingsPots) {
+    return '/home';
+  }
+  if ((location == '/card' || location.startsWith('/cards/')) &&
+      !flags.canUseVirtualCards) {
+    return '/home';
+  }
+  if (location == '/split' && !flags.canSplitBills) {
+    return '/home';
+  }
+  if (location == '/budget' && !flags.canUseBudget) {
+    return '/home';
+  }
+  if ((location == '/scheduled' ||
+          location.startsWith('/recurring-transfers')) &&
+      !flags.canScheduleTransfers) {
+    return '/home';
+  }
+
+  if (location == '/analytics' && !flags.canViewAnalytics) {
+    return '/home';
+  }
+  if (location == '/converter' && !flags.canUseCurrencyConverter) {
+    return '/home';
+  }
+  if (location == '/request' &&
+      !flags.canRequestMoney &&
+      !flags.canUsePaymentLinks) {
+    return '/home';
+  }
+  if (location == '/recipients' && !flags.canUseSavedRecipients) {
+    return '/home';
+  }
+  if (location.startsWith('/payment-links') && !flags.canUsePaymentLinks) {
+    return '/home';
+  }
+  if (location == '/referrals' &&
+      !flags.canReferFriends &&
+      !flags.canUseReferralProgram) {
+    return '/home';
+  }
+  if (_isMerchantQrPath(location) && !flags.canUseMerchantQr) {
+    return '/home';
+  }
+
+  return null;
+}
+
+bool _isPublicRoute(String location) =>
+    isPublicPath(location) ||
+    location.startsWith('/pin/reset') ||
+    location.startsWith('/session-locked');
+
+bool _isOnboardingRoute(String location) =>
+    location.startsWith('/onboarding') ||
+    location == '/profile-complete' ||
+    location.startsWith('/settings/kyc') ||
+    location.startsWith('/settings/profile');
+
+bool _isFsmRoute(String location) {
+  const fsmRoutes = [
+    '/otp-expired',
+    '/auth-locked',
+    '/auth-suspended',
+    '/session-locked',
+    '/biometric-prompt',
+    '/device-verification',
+    '/session-conflict',
+    '/wallet-frozen',
+    '/wallet-under-review',
+    '/kyc-expired',
+  ];
+  return fsmRoutes.any(location.startsWith);
+}
+
+bool _isAuthRoute(String location) =>
+    location.startsWith('/login') || location == '/otp';
+
+bool _isMerchantQrPath(String location) =>
+    location == '/scan-to-pay' ||
+    location == '/merchant-dashboard' ||
+    location == '/merchant-qr' ||
+    location == '/create-payment-request' ||
+    location == '/merchant-transactions';
+
+bool _requiresVerifiedKycPath(String location) {
+  const regulatedPrefixes = [
+    '/send',
+    '/send-external',
+    '/deposit',
+    '/withdraw',
+    '/cards/request',
+    '/bulk-payments',
+    '/payment-links/create',
+  ];
+  return regulatedPrefixes.any(location.startsWith);
+}
+
+String _routeBase(String location) =>
+    '/${location.split('/').where((segment) => segment.isNotEmpty).take(1).join('/')}';

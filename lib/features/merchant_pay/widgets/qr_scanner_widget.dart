@@ -54,8 +54,8 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
 
     final List<Barcode> barcodes = capture.barcodes;
     for (final barcode in barcodes) {
-      final rawValue = barcode.rawValue;
-      if (rawValue != null && rawValue.startsWith('joonapay://')) {
+      final rawValue = barcode.rawValue?.trim();
+      if (rawValue != null && rawValue.isNotEmpty) {
         _isProcessing = true;
         widget.onScan(rawValue);
         break;
@@ -103,10 +103,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.arrow_back, color: Colors.white),
                 ),
               ),
               // Torch button
@@ -213,11 +210,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.white,
-              size: 64,
-            ),
+            const Icon(Icons.error_outline, color: Colors.white, size: 64),
             const SizedBox(height: AppSpacing.lg),
             Text(
               errorMessage,
@@ -261,16 +254,8 @@ class ScanAreaBorderPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     // Top-left corner
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(cornerLength, 0),
-      paint,
-    );
-    canvas.drawLine(
-      const Offset(0, 0),
-      Offset(0, cornerLength),
-      paint,
-    );
+    canvas.drawLine(const Offset(0, 0), Offset(cornerLength, 0), paint);
+    canvas.drawLine(const Offset(0, 0), Offset(0, cornerLength), paint);
 
     // Top-right corner
     canvas.drawLine(

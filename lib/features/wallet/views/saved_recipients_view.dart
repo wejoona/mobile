@@ -6,6 +6,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -78,7 +79,8 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             ),
             Tab(
               text: favoritesAsync.maybeWhen(
-                data: (favorites) => 'Favorites (${_filterContacts(favorites).length})',
+                data: (favorites) =>
+                    'Favorites (${_filterContacts(favorites).length})',
                 orElse: () => 'Favorites',
               ),
             ),
@@ -95,8 +97,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
               decoration: InputDecoration(
                 hintText: 'Search recipients...',
                 hintStyle: TextStyle(color: colors.textTertiary),
-                prefixIcon:
-                    Icon(Icons.search, color: colors.textTertiary),
+                prefixIcon: Icon(Icons.search, color: colors.textTertiary),
                 filled: true,
                 fillColor: context.colors.elevated,
                 border: OutlineInputBorder(
@@ -134,8 +135,12 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
     return contacts.where((c) {
       return c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           (c.phone?.contains(_searchQuery) ?? false) ||
-          (c.username?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-          (c.walletAddress?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+          (c.username?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+              false) ||
+          (c.walletAddress?.toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ) ??
+              false);
     }).toList();
   }
 
@@ -148,11 +153,7 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.search_off,
-                  size: 64,
-                  color: colors.textTertiary,
-                ),
+                Icon(Icons.search_off, size: 64, color: colors.textTertiary),
                 const SizedBox(height: AppSpacing.lg),
                 AppText(
                   AppStrings.noResultsFound,
@@ -178,18 +179,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           },
         );
       },
-      loading: () => Center(
-        child: CircularProgressIndicator(color: context.colors.gold),
-      ),
+      loading: () =>
+          Center(child: CircularProgressIndicator(color: context.colors.gold)),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: context.colors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: context.colors.error),
             const SizedBox(height: AppSpacing.lg),
             AppText(
               'Error: ${error.toString()}',
@@ -266,18 +262,13 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
           ),
         );
       },
-      loading: () => Center(
-        child: CircularProgressIndicator(color: context.colors.gold),
-      ),
+      loading: () =>
+          Center(child: CircularProgressIndicator(color: context.colors.gold)),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: context.colors.error,
-            ),
+            Icon(Icons.error_outline, size: 64, color: context.colors.error),
             const SizedBox(height: AppSpacing.lg),
             AppText(
               AppStrings.failedToLoadContacts,
@@ -320,7 +311,12 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         final error = ref.read(contactProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToUpdateFavorite),
+            content: Text(
+              error ??
+                  AppLocalizations.of(
+                    context,
+                  )!.beneficiaries_failedToUpdateFavorite,
+            ),
             backgroundColor: context.colors.error,
           ),
         );
@@ -334,7 +330,10 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.elevated,
-        title: Text(AppLocalizations.of(context)!.beneficiaries_deleteConfirm, style: TextStyle(color: colors.textPrimary)),
+        title: Text(
+          AppLocalizations.of(context)!.beneficiaries_deleteConfirm,
+          style: TextStyle(color: colors.textPrimary),
+        ),
         content: Text(
           'Remove ${contact.name} from your saved recipients?',
           style: TextStyle(color: colors.textSecondary),
@@ -342,19 +341,28 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.action_cancel, style: TextStyle(color: colors.textSecondary)),
+            child: Text(
+              AppLocalizations.of(context)!.action_cancel,
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
 
-              final success = await ref.read(contactProvider.notifier).deleteContact(contact.id);
+              final success = await ref
+                  .read(contactProvider.notifier)
+                  .deleteContact(contact.id);
 
               if (mounted) {
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(AppLocalizations.of(context)!.beneficiaries_recipientRemoved),
+                      content: Text(
+                        AppLocalizations.of(
+                          context,
+                        )!.beneficiaries_recipientRemoved,
+                      ),
                       backgroundColor: context.colors.success,
                     ),
                   );
@@ -362,14 +370,22 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
                   final error = ref.read(contactProvider).error;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToDelete),
+                      content: Text(
+                        error ??
+                            AppLocalizations.of(
+                              context,
+                            )!.beneficiaries_failedToDelete,
+                      ),
                       backgroundColor: context.colors.error,
                     ),
                   );
                 }
               }
             },
-            child: Text(AppLocalizations.of(context)!.common_delete, style: TextStyle(color: context.colors.error)),
+            child: Text(
+              AppLocalizations.of(context)!.common_delete,
+              style: TextStyle(color: context.colors.error),
+            ),
           ),
         ],
       ),
@@ -384,7 +400,9 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
       backgroundColor: context.colors.elevated,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
@@ -395,7 +413,9 @@ class _SavedRecipientsViewState extends ConsumerState<SavedRecipientsView>
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(AppLocalizations.of(context)!.beneficiaries_recipientAdded),
+                content: Text(
+                  AppLocalizations.of(context)!.beneficiaries_recipientAdded,
+                ),
                 backgroundColor: context.colors.success,
               ),
             );
@@ -428,29 +448,39 @@ class _RecipientCard extends StatelessWidget {
       confirmDismiss: (_) async {
         // Show confirmation dialog
         return await showDialog<bool>(
-          context: context,
-          builder: (context) {
-            final dialogColors = context.colors;
-            return AlertDialog(
-              backgroundColor: dialogColors.container,
-              title: Text(AppLocalizations.of(context)!.beneficiaries_deleteConfirm, style: TextStyle(color: dialogColors.textPrimary)),
-              content: Text(
-                'Remove ${contact.name} from your saved recipients?',
-                style: TextStyle(color: dialogColors.textSecondary),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(AppLocalizations.of(context)!.action_cancel, style: TextStyle(color: dialogColors.textSecondary)),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(AppLocalizations.of(context)!.common_delete, style: TextStyle(color: context.colors.error)),
-                ),
-              ],
-            );
-          },
-        ) ?? false;
+              context: context,
+              builder: (context) {
+                final dialogColors = context.colors;
+                return AlertDialog(
+                  backgroundColor: dialogColors.container,
+                  title: Text(
+                    AppLocalizations.of(context)!.beneficiaries_deleteConfirm,
+                    style: TextStyle(color: dialogColors.textPrimary),
+                  ),
+                  content: Text(
+                    'Remove ${contact.name} from your saved recipients?',
+                    style: TextStyle(color: dialogColors.textSecondary),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(
+                        AppLocalizations.of(context)!.action_cancel,
+                        style: TextStyle(color: dialogColors.textSecondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: Text(
+                        AppLocalizations.of(context)!.common_delete,
+                        style: TextStyle(color: context.colors.error),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ) ??
+            false;
       },
       onDismissed: (_) => onDelete(),
       background: Container(
@@ -474,29 +504,44 @@ class _RecipientCard extends StatelessWidget {
           child: Row(
             children: [
               // Avatar
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: contact.isKoridoUser
-                      ? context.colors.gold.withValues(alpha: 0.2)
-                      : context.colors.elevated,
-                  shape: BoxShape.circle,
-                ),
-                child: contact.walletAddress != null && contact.phone == null
-                    ? Icon(
-                        Icons.account_balance_wallet,
-                        color: colors.textSecondary,
-                      )
-                    : Center(
-                        child: AppText(
-                          _getInitials(contact.name),
-                          variant: AppTextVariant.titleMedium,
-                          color: contact.isKoridoUser
-                              ? context.colors.gold
-                              : colors.textSecondary,
-                        ),
-                      ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: contact.isKoridoUser
+                          ? context.colors.gold.withValues(alpha: 0.2)
+                          : context.colors.elevated,
+                      shape: BoxShape.circle,
+                      border: contact.isKoridoUser
+                          ? Border.all(color: context.colors.gold)
+                          : null,
+                    ),
+                    child:
+                        contact.walletAddress != null && contact.phone == null
+                        ? Icon(
+                            Icons.account_balance_wallet,
+                            color: colors.textSecondary,
+                          )
+                        : Center(
+                            child: AppText(
+                              _getInitials(contact.name),
+                              variant: AppTextVariant.titleMedium,
+                              color: contact.isKoridoUser
+                                  ? context.colors.gold
+                                  : colors.textSecondary,
+                            ),
+                          ),
+                  ),
+                  if (contact.isKoridoUser)
+                    const Positioned(
+                      right: -2,
+                      bottom: -2,
+                      child: KoridoAccountBadge(compact: true),
+                    ),
+                ],
               ),
               const SizedBox(width: AppSpacing.md),
 
@@ -516,11 +561,7 @@ class _RecipientCard extends StatelessWidget {
                         ),
                         if (contact.isKoridoUser) ...[
                           const SizedBox(width: AppSpacing.xs),
-                          Icon(
-                            Icons.verified,
-                            color: context.colors.gold,
-                            size: 16,
-                          ),
+                          const KoridoAccountBadge(compact: true),
                         ],
                       ],
                     ),
@@ -634,10 +675,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          const AppText(
-            'Add Recipient',
-            variant: AppTextVariant.titleMedium,
-          ),
+          const AppText('Add Recipient', variant: AppTextVariant.titleMedium),
           const SizedBox(height: AppSpacing.xxl),
 
           // Type Toggle
@@ -681,10 +719,7 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
             color: colors.textSecondary,
           ),
           const SizedBox(height: AppSpacing.sm),
-          AppInput(
-            controller: _nameController,
-            hint: 'Enter name',
-          ),
+          AppInput(controller: _nameController, hint: 'Enter name'),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -778,7 +813,9 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
         break;
     }
 
-    final success = await ref.read(contactProvider.notifier).createContact(
+    final success = await ref
+        .read(contactProvider.notifier)
+        .createContact(
           name: _nameController.text,
           phone: phone,
           username: username,
@@ -794,7 +831,9 @@ class _AddRecipientSheetState extends ConsumerState<_AddRecipientSheet> {
         final error = ref.read(contactProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? AppLocalizations.of(context)!.beneficiaries_failedToAdd),
+            content: Text(
+              error ?? AppLocalizations.of(context)!.beneficiaries_failedToAdd,
+            ),
             backgroundColor: context.colors.error,
           ),
         );

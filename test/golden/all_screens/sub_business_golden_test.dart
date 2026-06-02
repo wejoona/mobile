@@ -13,15 +13,12 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('SubBusinessesView Golden Tests', () {
+  goldenGroup('SubBusinessesView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SubBusinessesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SubBusinessesView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -35,10 +32,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SubBusinessesView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SubBusinessesView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -49,15 +43,12 @@ void main() {
     });
   });
 
-  group('CreateSubBusinessView Golden Tests', () {
+  goldenGroup('CreateSubBusinessView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: CreateSubBusinessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: CreateSubBusinessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -71,10 +62,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: CreateSubBusinessView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: CreateSubBusinessView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -85,7 +73,7 @@ void main() {
     });
   });
 
-  group('SubBusinessDetailView Golden Tests', () {
+  goldenGroup('SubBusinessDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
@@ -121,7 +109,7 @@ void main() {
     });
   });
 
-  group('SubBusinessStaffView Golden Tests', () {
+  goldenGroup('SubBusinessStaffView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(

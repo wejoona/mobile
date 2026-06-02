@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,15 +11,13 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart'
+    as withdraw_api;
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 
 /// Withdrawal method type
-enum WithdrawMethod {
-  mobileMoney,
-  bankTransfer,
-  crypto,
-}
+enum WithdrawMethod { mobileMoney, bankTransfer, crypto }
 
 extension WithdrawMethodExt on WithdrawMethod {
   String label(AppLocalizations l10n) {
@@ -130,28 +130,39 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (_isSubmitting) return;
 
     final amount = double.tryParse(_amountController.text) ?? 0;
+    if (_selectedMethod != WithdrawMethod.mobileMoney) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.withdraw_comingSoon),
+          backgroundColor: context.colors.error,
+        ),
+      );
+      return;
+    }
+
+    final digitsOnly = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     String destination = '';
     String recipientDisplay = '';
-    String method = '';
 
     // Build destination and display based on method
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
-        destination = '$_countryCode${_phoneController.text}';
+        destination = '$_countryCode$digitsOnly';
         recipientDisplay = destination;
-        method = 'mobile_money';
         break;
       case WithdrawMethod.bankTransfer:
         destination = _accountNumberController.text;
-        recipientDisplay = '${_bankNameController.text} - ${_accountNumberController.text}';
-        method = 'bank_transfer';
+        recipientDisplay =
+            '${_bankNameController.text} - ${_accountNumberController.text}';
         break;
       case WithdrawMethod.crypto:
         destination = _walletAddressController.text;
-        recipientDisplay = '${destination.substring(0, 6)}...${destination.substring(destination.length - 4)}';
-        method = 'crypto';
+        recipientDisplay =
+            '${destination.substring(0, 6)}...${destination.substring(destination.length - 4)}';
         break;
     }
+
+    String? pinToken;
 
     // Show PIN confirmation
     final result = await PinConfirmationSheet.show(
@@ -164,44 +175,60 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         // Verify PIN with backend for financial transactions
         final pinService = ref.read(pinServiceProvider);
         final verification = await pinService.verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+        }
         return verification.success;
       },
     );
 
     if (result == PinConfirmationResult.success) {
+      if (pinToken == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppStrings.enterPinToWithdraw),
+              backgroundColor: context.colors.error,
+            ),
+          );
+        }
+        return;
+      }
+
       setState(() => _isSubmitting = true);
 
       // Call withdrawal service
-      final success = await ref.read(withdrawProvider.notifier).withdraw(
-            amount: amount,
-            destinationAddress: destination,
-            network: _selectedMethod == WithdrawMethod.crypto ? 'polygon' : null,
-            method: method,
-          );
+      final success = await _submitMobileMoneyWithdrawal(
+        amount: amount,
+        destination: destination,
+        pinToken: pinToken!,
+      );
+
+      if (!mounted) return;
 
       setState(() => _isSubmitting = false);
 
       if (success) {
         // Refresh wallet and transactions via FSM
-        ref.read(walletStateMachineProvider.notifier).refresh();
-        ref.read(transactionStateMachineProvider.notifier).refresh();
+        unawaited(ref.read(walletStateMachineProvider.notifier).refresh());
+        unawaited(ref.read(transactionStateMachineProvider.notifier).refresh());
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.withdrawalSubmitted),
-              backgroundColor: context.colors.success,
-            ),
-          );
-          context.pop();
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.withdrawalSubmitted),
+            backgroundColor: context.colors.success,
+          ),
+        );
+        context.pop();
       } else {
         // Error is handled by listener
         if (mounted) {
-          final error = ref.read(withdrawProvider).error;
+          final error = ref.read(withdraw_api.withdrawProvider).error;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error ?? AppLocalizations.of(context)!.withdraw_failed),
+              content: Text(
+                error ?? AppLocalizations.of(context)!.withdraw_failed,
+              ),
               backgroundColor: context.colors.error,
             ),
           );
@@ -219,15 +246,32 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     }
   }
 
+  Future<bool> _submitMobileMoneyWithdrawal({
+    required double amount,
+    required String destination,
+    required String pinToken,
+  }) async {
+    final notifier = ref.read(withdraw_api.withdrawProvider.notifier)
+      ..selectMethod(withdraw_api.WithdrawMethod.orangeMoney)
+      ..setPhoneNumber(destination);
+    await notifier.setAmount(amount);
+    await notifier.submit(
+      pinToken: pinToken,
+      idempotencyKey: generateIdempotencyKey(),
+    );
+
+    return ref.read(withdraw_api.withdrawProvider).result != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
-    final withdrawState = ref.watch(withdrawProvider);
+    final withdrawState = ref.watch(withdraw_api.withdrawProvider);
 
-    // Get balance from FSM
-    _availableBalance = walletState.availableBalance;
+    // Withdrawals are submitted in USDC, so validate against USDC balance.
+    _availableBalance = walletState.usdcBalance;
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -270,7 +314,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
                           ),
                         )
                       : AppText(
-                          '\$${walletState.availableBalance.toStringAsFixed(2)}',
+                          '${walletState.usdcBalance.toStringAsFixed(2)} USDC',
                           variant: AppTextVariant.titleMedium,
                           color: context.colors.gold,
                         ),
@@ -293,16 +337,18 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             ),
             const SizedBox(height: AppSpacing.md),
 
-            ...WithdrawMethod.values.map((method) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: _MethodCard(
-                    method: method,
-                    isSelected: _selectedMethod == method,
-                    onTap: () => setState(() => _selectedMethod = method),
-                    colors: colors,
-                    l10n: l10n,
-                  ),
-                )),
+            ...WithdrawMethod.values.map(
+              (method) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: _MethodCard(
+                  method: method,
+                  isSelected: _selectedMethod == method,
+                  onTap: () => setState(() => _selectedMethod = method),
+                  colors: colors,
+                  l10n: l10n,
+                ),
+              ),
+            ),
 
             const SizedBox(height: AppSpacing.xxl),
 
@@ -327,7 +373,11 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               variant: AppCardVariant.subtle,
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, color: context.colors.gold, size: 20),
+                  Icon(
+                    Icons.info_outline,
+                    color: context.colors.gold,
+                    size: 20,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
@@ -409,8 +459,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               _QuickAmountButton(
                 label: '25%',
                 onTap: () {
-                  _amountController.text =
-                      (_availableBalance * 0.25).toStringAsFixed(2);
+                  _amountController.text = (_availableBalance * 0.25)
+                      .toStringAsFixed(2);
                   _validateAmount();
                 },
                 colors: colors,
@@ -419,8 +469,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               _QuickAmountButton(
                 label: '50%',
                 onTap: () {
-                  _amountController.text =
-                      (_availableBalance * 0.5).toStringAsFixed(2);
+                  _amountController.text = (_availableBalance * 0.5)
+                      .toStringAsFixed(2);
                   _validateAmount();
                 },
                 colors: colors,
@@ -429,8 +479,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               _QuickAmountButton(
                 label: '75%',
                 onTap: () {
-                  _amountController.text =
-                      (_availableBalance * 0.75).toStringAsFixed(2);
+                  _amountController.text = (_availableBalance * 0.75)
+                      .toStringAsFixed(2);
                   _validateAmount();
                 },
                 colors: colors,
@@ -439,8 +489,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
               _QuickAmountButton(
                 label: 'MAX',
                 onTap: () {
-                  _amountController.text =
-                      _availableBalance.toStringAsFixed(2);
+                  _amountController.text = _availableBalance.toStringAsFixed(2);
                   _validateAmount();
                 },
                 colors: colors,
@@ -479,7 +528,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             children: [
               GestureDetector(
                 onTap: () {
-                  // TODO: Show country picker
+                  // Follow-up: Show country picker.
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -637,7 +686,9 @@ class _MethodCard extends StatelessWidget {
                   AppText(
                     method.label(l10n),
                     variant: AppTextVariant.titleSmall,
-                    color: isSelected ? context.colors.gold : colors.textPrimary,
+                    color: isSelected
+                        ? context.colors.gold
+                        : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.xxs),
                   AppText(
@@ -649,10 +700,7 @@ class _MethodCard extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: context.colors.gold,
-              ),
+              Icon(Icons.check_circle, color: context.colors.gold),
           ],
         ),
       ),

@@ -9,13 +9,18 @@ class PotActionState {
   final String? error;
   final bool isComplete;
 
-  const PotActionState({this.isLoading = false, this.error, this.isComplete = false});
+  const PotActionState({
+    this.isLoading = false,
+    this.error,
+    this.isComplete = false,
+  });
 
-  PotActionState copyWith({bool? isLoading, String? error, bool? isComplete}) => PotActionState(
-    isLoading: isLoading ?? this.isLoading,
-    error: error,
-    isComplete: isComplete ?? this.isComplete,
-  );
+  PotActionState copyWith({bool? isLoading, String? error, bool? isComplete}) =>
+      PotActionState(
+        isLoading: isLoading ?? this.isLoading,
+        error: error,
+        isComplete: isComplete ?? this.isComplete,
+      );
 }
 
 /// Pot actions notifier (deposit/withdraw/delete for a specific pot).
@@ -23,11 +28,21 @@ class PotActionsNotifier extends Notifier<PotActionState> {
   @override
   PotActionState build() => const PotActionState();
 
-  Future<void> deposit(String potId, double amount) async {
+  Future<void> deposit(
+    String potId,
+    double amount, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(savingsPotsServiceProvider);
-      await service.deposit(potId, amount);
+      await service.deposit(
+        potId,
+        amount,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(savingsPotsProvider);
       ref.invalidate(walletBalanceProvider);
@@ -36,11 +51,21 @@ class PotActionsNotifier extends Notifier<PotActionState> {
     }
   }
 
-  Future<void> withdraw(String potId, double amount) async {
+  Future<void> withdraw(
+    String potId,
+    double amount, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(savingsPotsServiceProvider);
-      await service.withdraw(potId, amount);
+      await service.withdraw(
+        potId,
+        amount,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(savingsPotsProvider);
       ref.invalidate(walletBalanceProvider);
@@ -49,11 +74,19 @@ class PotActionsNotifier extends Notifier<PotActionState> {
     }
   }
 
-  Future<void> withdrawAll(String potId) async {
+  Future<void> withdrawAll(
+    String potId, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(savingsPotsServiceProvider);
-      await service.withdrawAll(potId);
+      await service.withdrawAll(
+        potId,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(savingsPotsProvider);
       ref.invalidate(walletBalanceProvider);
@@ -77,4 +110,6 @@ class PotActionsNotifier extends Notifier<PotActionState> {
   void reset() => state = const PotActionState();
 }
 
-final potActionsProvider = NotifierProvider<PotActionsNotifier, PotActionState>(PotActionsNotifier.new);
+final potActionsProvider = NotifierProvider<PotActionsNotifier, PotActionState>(
+  PotActionsNotifier.new,
+);

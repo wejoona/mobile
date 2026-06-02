@@ -6,8 +6,16 @@ class DepositRepository {
   DepositRepository(this._service);
 
   Future<dynamic> getDepositMethods() => _service.getDepositChannels();
-  Future<dynamic> initiateMobileMoneyDeposit({String? amount, String? provider, String? mobileNumber}) =>
-    _service.initiateDeposit(amount: double.tryParse(amount ?? '0') ?? 0, sourceCurrency: 'XOF', channelId: provider ?? 'orange_money');
+  Future<dynamic> initiateMobileMoneyDeposit({
+    String? amount,
+    String? provider,
+    String? mobileNumber,
+  }) => _service.initiateDeposit(
+    amount: double.tryParse(amount ?? '0') ?? 0,
+    sourceCurrency: 'XOF',
+    channelId: provider ?? 'orange_money',
+    phoneNumber: mobileNumber ?? '',
+  );
 }
 
 final depositRepositoryProvider = Provider<DepositRepository>((ref) {

@@ -27,16 +27,13 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('LoginView Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('LoginView Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('default login state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -48,12 +45,9 @@ void main() {
 
       testWidgets('register mode', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -72,12 +66,9 @@ void main() {
 
       testWidgets('with valid phone number entered', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -94,12 +85,9 @@ void main() {
 
       testWidgets('with invalid phone number entered', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -115,15 +103,12 @@ void main() {
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('default login state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -135,12 +120,9 @@ void main() {
 
       testWidgets('register mode', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -159,12 +141,9 @@ void main() {
 
       testWidgets('with valid phone number entered', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: LoginView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: LoginView()),
         );
         await tester.pumpAndSettle();
 
@@ -180,10 +159,12 @@ void main() {
       });
     });
 
-    group('Responsive - Tablet', () {
+    goldenGroup('Responsive - Tablet', () {
       testWidgets('tablet layout light mode', (tester) async {
-        await tester.binding.setSurfaceSize(GoldenTestConfig.devices['ipad_mini']!);
-        
+        await tester.binding.setSurfaceSize(
+          GoldenTestConfig.devices['ipad_mini']!,
+        );
+
         await tester.pumpWidget(
           GoldenTestWrapper(
             isDarkMode: false,

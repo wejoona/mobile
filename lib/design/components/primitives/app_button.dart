@@ -25,11 +25,7 @@ enum AppButtonVariant {
 }
 
 /// Button Sizes
-enum AppButtonSize {
-  small,
-  medium,
-  large,
-}
+enum AppButtonSize { small, medium, large }
 
 /// Luxury Wallet Button Component
 /// Enhanced with proper text alignment, overflow handling, and accessibility
@@ -56,8 +52,10 @@ class AppButton extends StatelessWidget {
   final bool isFullWidth;
   final IconData? icon;
   final IconPosition iconPosition;
+
   /// Optional semantic label for screen readers (defaults to label)
   final String? semanticLabel;
+
   /// Enable haptic feedback on tap (default: true)
   final bool enableHaptics;
 
@@ -95,8 +93,8 @@ class AppButton extends StatelessWidget {
     final String semanticHint = isLoading
         ? 'Loading, please wait'
         : isDisabled
-            ? 'Button disabled'
-            : 'Double tap to activate';
+        ? 'Button disabled'
+        : 'Double tap to activate';
 
     return Semantics(
       label: effectiveLabel,
@@ -121,9 +119,7 @@ class AppButton extends StatelessWidget {
             hoverColor: _getHoverColor(colors),
             child: Padding(
               padding: _getPadding(),
-              child: Center(
-                child: _buildContent(colors),
-              ),
+              child: Center(child: _buildContent(colors)),
             ),
           ),
         ),
@@ -138,6 +134,7 @@ class AppButton extends StatelessWidget {
           return BoxDecoration(
             color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: colors.borderSubtle),
           );
         }
 
@@ -154,17 +151,18 @@ class AppButton extends StatelessWidget {
             boxShadow: AppShadows.goldGlow,
           );
         } else {
-          // Light mode: Solid gold background with subtle shadow
+          // Light mode: Antique gold gradient with warm ambient shadow
           return BoxDecoration(
-            color: colors.gold,
+            gradient: LinearGradient(
+              colors: colors.goldGradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(AppRadius.md),
-            boxShadow: [
-              BoxShadow(
-                color: colors.gold.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            border: Border.all(
+              color: AppColorsLight.gold700.withValues(alpha: 0.18),
+            ),
+            boxShadow: AppShadows.lightGoldGlow,
           );
         }
 
@@ -294,8 +292,8 @@ class AppButton extends StatelessWidget {
 
     switch (variant) {
       case AppButtonVariant.primary:
-        // Inverse text on gold background (dark on light, light on dark)
-        return colors.textInverse;
+        // Gold needs dark ink in both themes for contrast and brand polish.
+        return colors.onGold;
 
       case AppButtonVariant.secondary:
         // Primary text color for outlined buttons
@@ -366,6 +364,7 @@ class AppButton extends StatelessWidget {
     }
 
     // Text widget
+    final allowsWrappedLabel = isFullWidth && size != AppButtonSize.small;
     final textChild = Text(
       label,
       style: AppTypography.button.copyWith(
@@ -373,8 +372,9 @@ class AppButton extends StatelessWidget {
         fontSize: _getFontSize(),
       ),
       textAlign: TextAlign.center,
+      softWrap: allowsWrappedLabel,
       overflow: TextOverflow.ellipsis,
-      maxLines: 1,
+      maxLines: allowsWrappedLabel ? 2 : 1,
     );
 
     if (icon == null) {
@@ -385,27 +385,15 @@ class AppButton extends StatelessWidget {
     // Flexible wrapper for use inside Row
     final textWidget = Flexible(child: textChild);
 
-    final iconWidget = Icon(
-      icon,
-      size: _getFontSize() + 4,
-      color: textColor,
-    );
+    final iconWidget = Icon(icon, size: _getFontSize() + 4, color: textColor);
 
     // With icon - ensure proper spacing and alignment
     return Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: iconPosition == IconPosition.left
-          ? [
-              iconWidget,
-              const SizedBox(width: AppSpacing.sm),
-              textWidget,
-            ]
-          : [
-              textWidget,
-              const SizedBox(width: AppSpacing.sm),
-              iconWidget,
-            ],
+          ? [iconWidget, const SizedBox(width: AppSpacing.sm), textWidget]
+          : [textWidget, const SizedBox(width: AppSpacing.sm), iconWidget],
     );
   }
 }

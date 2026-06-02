@@ -10,6 +10,7 @@ import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
@@ -67,7 +68,9 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
       await SmsAutoFill().listenForCode();
       setState(() => _isListeningForSms = true);
     } catch (e) {
-      AppLogger('SMS autofill not available').error('SMS autofill not available', e);
+      AppLogger(
+        'SMS autofill not available',
+      ).error('SMS autofill not available', e);
     }
   }
 
@@ -87,12 +90,15 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     // Biometric quick-login: show fingerprint button if both available and enabled
-    final biometricAvailable = ref.watch(biometricAvailableProvider).value ?? false;
+    final biometricAvailable =
+        ref.watch(biometricAvailableProvider).value ?? false;
     final biometricEnabled = ref.watch(biometricEnabledProvider).value ?? false;
     final showBiometricOption = biometricAvailable && biometricEnabled;
 
     ref.listen<AuthState>(authProvider, (prev, next) {
-      AppLogger('Debug').debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
+      AppLogger(
+        'Debug',
+      ).debug('OTP AuthState changed: ${prev?.status} -> ${next.status}');
       if (next.status == AuthStatus.authenticated) {
         AppLogger('Debug').debug('Authentication successful! Checking PIN...');
         // Check if user has PIN set — if not, go to PIN setup
@@ -122,61 +128,28 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
           child: LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
-                        const Spacer(flex: 1),
-
-                        // Shield Icon
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: colors.container,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: colors.border),
+                        const SizedBox(height: AppSpacing.lg),
+                        AuthTopBar(onBack: () => context.pop()),
+                        const SizedBox(height: AppSpacing.xl),
+                        AuthScreenHeader(
+                          appName: l10n.appName,
+                          title: l10n.auth_secureLogin,
+                          subtitle: l10n.auth_otpMessage(
+                            authState.phone ?? "your phone",
                           ),
-                          child: Icon(
-                            Icons.security,
-                            color: colors.gold,
-                            size: 40,
-                          ),
-                        ),
-
-                        const SizedBox(height: AppSpacing.xxl),
-
-                        // Title
-                        AppText(
-                          l10n.auth_secureLogin,
-                          variant: AppTextVariant.headlineMedium,
-                          color: colors.textPrimary,
-                        ),
-
-                        const SizedBox(height: AppSpacing.sm),
-
-                        // Subtitle
-                        AppText(
-                          l10n.auth_otpMessage(authState.phone ?? "your phone"),
-                          variant: AppTextVariant.bodyMedium,
-                          color: colors.textSecondary,
-                          textAlign: TextAlign.center,
                         ),
 
                         // SMS autofill indicator
@@ -228,7 +201,9 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                         if (showBiometricOption) ...[
                           const SizedBox(height: AppSpacing.lg),
                           TextButton.icon(
-                            onPressed: authState.isLoading ? null : _authenticateWithBiometric,
+                            onPressed: authState.isLoading
+                                ? null
+                                : _authenticateWithBiometric,
                             icon: Icon(Icons.fingerprint, color: colors.gold),
                             label: AppText(
                               l10n.auth_useBiometric,
@@ -251,7 +226,11 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     );
   }
 
-  Widget _buildResendButton(ThemeColors colors, AuthState authState, AppLocalizations l10n) {
+  Widget _buildResendButton(
+    ThemeColors colors,
+    AuthState authState,
+    AppLocalizations l10n,
+  ) {
     final isDisabled = !_canResend || authState.isLoading;
 
     return AnimatedContainer(
@@ -336,7 +315,9 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
     if (authenticatedBio.success) {
       // Use AuthNotifier to handle biometric login (syncs with FSM)
-      final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
+      final success = await ref
+          .read(authProvider.notifier)
+          .loginWithBiometric(refreshToken);
       if (!success) {
         _showBiometricError();
       }

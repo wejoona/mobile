@@ -108,11 +108,15 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
                         backgroundColor: Colors.white,
                         eyeStyle: const QrEyeStyle(
                           eyeShape: QrEyeShape.square,
-                          color: Color(0xFF1A1A1F), // Always dark for visibility
+                          color: Color(
+                            0xFF1A1A1F,
+                          ), // Always dark for visibility
                         ),
                         dataModuleStyle: const QrDataModuleStyle(
                           dataModuleShape: QrDataModuleShape.square,
-                          color: Color(0xFF1A1A1F), // Always dark for visibility
+                          color: Color(
+                            0xFF1A1A1F,
+                          ), // Always dark for visibility
                         ),
                       ),
                     ),
@@ -209,7 +213,9 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
         color: context.colors.elevated,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         border: Border.all(
-          color: _amountError != null ? context.colors.error : context.colors.borderSubtle,
+          color: _amountError != null
+              ? context.colors.error
+              : context.colors.borderSubtle,
         ),
       ),
       child: Row(
@@ -225,7 +231,9 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
               controller: _amountController,
               variant: AppInputVariant.amount,
               hint: '0.00',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
               ],
@@ -260,7 +268,11 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
           ),
           const SizedBox(height: AppSpacing.md),
           _buildInfoStep('1', 'Generate a payment request with amount', colors),
-          _buildInfoStep('2', 'Share the QR code or link with the payer', colors),
+          _buildInfoStep(
+            '2',
+            'Share the QR code or link with the payer',
+            colors,
+          ),
           _buildInfoStep('3', 'They scan/click to pay you directly', colors),
         ],
       ),
@@ -332,8 +344,16 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
     final note = _noteController.text;
     final phone = userState.phone ?? '';
 
-    // Generate a payment deep link
-    return 'joonapay://pay?to=$phone&amount=$amount&note=${Uri.encodeComponent(note)}';
+    // Generate a payment request deep link; legacy joonapay:// links are still accepted by the parser.
+    return Uri(
+      scheme: 'korido',
+      host: 'pay',
+      queryParameters: {
+        'phone': phone,
+        'amount': amount,
+        if (note.isNotEmpty) 'note': note,
+      },
+    ).toString();
   }
 
   void _copyLink() {
@@ -350,11 +370,17 @@ class _RequestMoneyViewState extends ConsumerState<RequestMoneyView> {
 
   void _shareRequest() {
     final amount = _amountController.text;
-    final note = _noteController.text.isNotEmpty ? ' for "${_noteController.text}"' : '';
+    final note = _noteController.text.isNotEmpty
+        ? ' for "${_noteController.text}"'
+        : '';
 
-    SharePlus.instance.share(ShareParams(text: 
-      'Hey! Please send me \$$amount$note on Korido.\n\n${_generatePaymentLink()}', title: 'Payment Request - \$$amount',
-    ));
+    SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Hey! Please send me \$$amount$note on Korido.\n\n${_generatePaymentLink()}',
+        title: 'Payment Request - \$$amount',
+      ),
+    );
   }
 
   void _sendSms() {

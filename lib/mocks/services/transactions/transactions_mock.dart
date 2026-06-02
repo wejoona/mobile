@@ -62,13 +62,24 @@ class TransactionsMockState {
 
   /// Generate mock transactions for a user
   static List<TransactionResponse> _generateMockTransactions(String userId) {
-    final types = ['deposit', 'withdrawal', 'transfer_in', 'transfer_out'];
-    final statuses = ['completed', 'completed', 'completed', 'pending', 'failed'];
+    final types = [
+      'deposit',
+      'withdrawal',
+      'transfer_internal',
+      'transfer_external',
+    ];
+    final statuses = [
+      'completed',
+      'completed',
+      'completed',
+      'pending',
+      'failed',
+    ];
 
     return List.generate(25, (index) {
       final type = MockDataGenerator.pick(types);
       final status = MockDataGenerator.pick(statuses);
-      final isIncoming = type == 'deposit' || type == 'transfer_in';
+      final isIncoming = type == 'deposit' || type == 'transfer_internal';
 
       return TransactionResponse(
         id: MockDataGenerator.uuid(),
@@ -76,19 +87,22 @@ class TransactionsMockState {
         type: type,
         status: status,
         amount: MockDataGenerator.roundedAmount(min: 5, max: 500),
-        fee: type == 'withdrawal' ? MockDataGenerator.roundedAmount(min: 0.5, max: 5) : null,
+        fee: type == 'withdrawal'
+            ? MockDataGenerator.roundedAmount(min: 0.5, max: 5)
+            : null,
         currency: 'USDC',
         recipient: isIncoming ? null : MockDataGenerator.phoneNumber(),
         sender: isIncoming ? MockDataGenerator.phoneNumber() : null,
-        note: MockDataGenerator.boolean() ? MockDataGenerator.transactionDescription() : null,
+        note: MockDataGenerator.boolean()
+            ? MockDataGenerator.transactionDescription()
+            : null,
         reference: MockDataGenerator.transactionRef(),
         createdAt: MockDataGenerator.pastDate(maxDaysAgo: 60),
         completedAt: status == 'completed'
             ? MockDataGenerator.pastDate(maxDaysAgo: 60)
             : null,
       );
-    })
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    })..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }
 }
 
@@ -140,8 +154,11 @@ class TransactionsMock {
       return MockResponse.unauthorized();
     }
 
-    final page = int.tryParse(options.queryParameters['page']?.toString() ?? '1') ?? 1;
-    final limit = int.tryParse(options.queryParameters['limit']?.toString() ?? '20') ?? 20;
+    final page =
+        int.tryParse(options.queryParameters['page']?.toString() ?? '1') ?? 1;
+    final limit =
+        int.tryParse(options.queryParameters['limit']?.toString() ?? '20') ??
+        20;
     final type = options.queryParameters['type'] as String?;
     final status = options.queryParameters['status'] as String?;
 
@@ -149,7 +166,9 @@ class TransactionsMock {
 
     // Apply filters
     if (type != null) {
-      transactions = transactions.where((t) => t.type == type).toList();
+      transactions = transactions
+          .where((t) => t.type == _canonicalType(type))
+          .toList();
     }
     if (status != null) {
       transactions = transactions.where((t) => t.status == status).toList();
@@ -161,13 +180,15 @@ class TransactionsMock {
     final end = start + limit;
     final paged = transactions.skip(start).take(limit).toList();
 
-    return MockResponse.success(TransactionListResponse(
-      transactions: paged,
-      total: total,
-      page: page,
-      limit: limit,
-      hasMore: end < total,
-    ).toJson());
+    return MockResponse.success(
+      TransactionListResponse(
+        transactions: paged,
+        total: total,
+        page: page,
+        limit: limit,
+        hasMore: end < total,
+      ).toJson(),
+    );
   }
 
   static Future<MockResponse> _handleGetTransaction(
@@ -225,7 +246,7 @@ class TransactionsMock {
     // Create transaction
     final tx = TransactionsMockState.addTransaction(
       userId,
-      type: 'transfer_out',
+      type: 'transfer_external',
       amount: amount,
       recipient: recipientPhone,
       note: note,
@@ -264,7 +285,9 @@ class TransactionsMock {
     final totalCost = amount + networkFee;
 
     if (totalCost > wallet.balanceUsdc) {
-      return MockResponse.badRequest('Insufficient balance (including network fee)');
+      return MockResponse.badRequest(
+        'Insufficient balance (including network fee)',
+      );
     }
 
     // Deduct from sender (amount + fee)
@@ -273,7 +296,7 @@ class TransactionsMock {
     // Create transaction
     final tx = TransactionsMockState.addTransaction(
       userId,
-      type: 'transfer_out',
+      type: 'transfer_external',
       amount: amount,
       fee: networkFee,
       recipient: walletAddress,
@@ -294,8 +317,22 @@ class TransactionsMock {
 
     // In a real implementation, this would generate a file
     return MockResponse.success({
-      'downloadUrl': 'https://api.joonapay.com/wallet/transactions/export/${MockDataGenerator.uuid()}.$format',
+      'downloadUrl':
+          'https://api.joonapay.com/wallet/transactions/export/${MockDataGenerator.uuid()}.$format',
       'expiresIn': 3600,
     });
+  }
+
+  static String _canonicalType(String type) {
+    switch (type) {
+      case 'transfer_in':
+      case 'received':
+        return 'transfer_internal';
+      case 'transfer_out':
+      case 'sent':
+        return 'transfer_external';
+      default:
+        return type;
+    }
   }
 }

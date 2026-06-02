@@ -1,13 +1,11 @@
-import 'package:usdc_wallet/utils/currency_utils.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/insights/models/spending_trend.dart';
 import 'package:usdc_wallet/features/insights/providers/insights_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class SpendingLineChart extends StatefulWidget {
   final List<SpendingTrend> trends;
@@ -23,7 +21,8 @@ class SpendingLineChart extends StatefulWidget {
   State<SpendingLineChart> createState() => _SpendingLineChartState();
 }
 
-class _SpendingLineChartState extends State<SpendingLineChart> with SingleTickerProviderStateMixin {
+class _SpendingLineChartState extends State<SpendingLineChart>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
 
@@ -53,7 +52,9 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
       return const SizedBox.shrink();
     }
 
-    final maxY = widget.trends.map((t) => t.amount).reduce((a, b) => a > b ? a : b);
+    final maxY = widget.trends
+        .map((t) => t.amount)
+        .reduce((a, b) => a > b ? a : b);
     final minY = 0.0;
 
     return AspectRatio(
@@ -65,116 +66,117 @@ class _SpendingLineChartState extends State<SpendingLineChart> with SingleTicker
           builder: (context, child) {
             return LineChart(
               LineChartData(
-            gridData: FlGridData(
-              show: true,
-              drawVerticalLine: false,
-              horizontalInterval: maxY / 4,
-              getDrawingHorizontalLine: (value) {
-                return FlLine(
-                  color: context.colors.borderSubtle,
-                  strokeWidth: 1,
-                );
-              },
-            ),
-            titlesData: FlTitlesData(
-              show: true,
-              rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false),
-              ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 30,
-                  interval: _getBottomInterval(),
-                  getTitlesWidget: _buildBottomTitle,
-                ),
-              ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  interval: maxY / 4,
-                  reservedSize: 42,
-                  getTitlesWidget: _buildLeftTitle,
-                ),
-              ),
-            ),
-            borderData: FlBorderData(
-              show: true,
-              border: Border(
-                bottom: BorderSide(color: context.colors.border),
-                left: BorderSide(color: context.colors.border),
-              ),
-            ),
-            minX: 0,
-            maxX: widget.trends.length.toDouble() - 1,
-            minY: minY,
-            maxY: maxY * 1.2,
-            lineBarsData: [
-              LineChartBarData(
-                spots: widget.trends
-                    .asMap()
-                    .entries
-                    .map((e) => FlSpot(e.key.toDouble(), e.value.amount * _animation.value))
-                    .toList(),
-                isCurved: true,
-                curveSmoothness: 0.35,
-                color: context.colors.gold,
-                barWidth: 4,
-                isStrokeCapRound: true,
-                dotData: FlDotData(
+                gridData: FlGridData(
                   show: true,
-                  getDotPainter: (spot, percent, barData, index) {
-                    return FlDotCirclePainter(
-                      radius: 5,
-                      color: context.colors.gold,
-                      strokeWidth: 3,
-                      strokeColor: context.colors.canvas,
+                  drawVerticalLine: false,
+                  horizontalInterval: maxY / 4,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: context.colors.borderSubtle,
+                      strokeWidth: 1,
                     );
                   },
                 ),
-                belowBarData: BarAreaData(
+                titlesData: FlTitlesData(
                   show: true,
-                  gradient: LinearGradient(
-                    colors: [
-                      context.colors.gold.withValues(alpha: 0.2),
-                      context.colors.gold.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                  rightTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: _getBottomInterval(),
+                      getTitlesWidget: _buildBottomTitle,
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: maxY / 4,
+                      reservedSize: 42,
+                      getTitlesWidget: _buildLeftTitle,
+                    ),
                   ),
                 ),
-                shadow: Shadow(
-                  color: context.colors.gold.withValues(alpha: 0.3),
-                  blurRadius: 8,
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    bottom: BorderSide(color: context.colors.border),
+                    left: BorderSide(color: context.colors.border),
+                  ),
                 ),
-              ),
-            ],
-            lineTouchData: LineTouchData(
-              touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (touchedSpot) => context.colors.container,
-                tooltipRoundedRadius: 8,
-                tooltipPadding: const EdgeInsets.all(8),
-                tooltipBorder: BorderSide(
-                  color: context.colors.gold.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-                getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                  return touchedBarSpots.map((barSpot) {
-                    final trend = widget.trends[barSpot.x.toInt()];
-                    return LineTooltipItem(
-                      '${formatXof(trend.amount)}\n${_formatDate(trend.date)}',
-                      AppTypography.bodySmall.copyWith(
-                        color: context.colors.textPrimary,
-                        fontWeight: FontWeight.bold,
+                minX: 0,
+                maxX: widget.trends.length.toDouble() - 1,
+                minY: minY,
+                maxY: maxY * 1.2,
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: widget.trends
+                        .asMap()
+                        .entries
+                        .map(
+                          (e) => FlSpot(
+                            e.key.toDouble(),
+                            e.value.amount * _animation.value,
+                          ),
+                        )
+                        .toList(),
+                    isCurved: true,
+                    curveSmoothness: 0.35,
+                    color: context.colors.gold,
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: context.colors.gold,
+                          strokeWidth: 2,
+                          strokeColor: context.colors.canvas,
+                        );
+                      },
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          context.colors.gold.withValues(alpha: 0.12),
+                          context.colors.gold.withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
-                    );
-                  }).toList();
-                },
-              ),
-            ),
+                    ),
+                  ),
+                ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) => context.colors.container,
+                    tooltipRoundedRadius: 8,
+                    tooltipPadding: const EdgeInsets.all(8),
+                    tooltipBorder: BorderSide(
+                      color: context.colors.gold.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                    getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                      return touchedBarSpots.map((barSpot) {
+                        final trend = widget.trends[barSpot.x.toInt()];
+                        return LineTooltipItem(
+                          '${formatXof(trend.amount)}\n${_formatDate(trend.date)}',
+                          AppTypography.bodySmall.copyWith(
+                            color: context.colors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
               ),
             );
           },

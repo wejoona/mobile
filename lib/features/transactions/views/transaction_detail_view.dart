@@ -10,6 +10,72 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/views/share_receipt_sheet.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/transactions/transactions_service.dart';
+
+final transactionByIdProvider = FutureProvider.family<Transaction, String>((
+  ref,
+  transactionId,
+) async {
+  final service = ref.watch(transactionsServiceProvider);
+  return service.getTransaction(transactionId);
+});
+
+class TransactionDetailRouteView extends ConsumerWidget {
+  const TransactionDetailRouteView({
+    super.key,
+    required this.transactionId,
+    this.initialTransaction,
+  });
+
+  final String transactionId;
+  final Transaction? initialTransaction;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (initialTransaction != null) {
+      return TransactionDetailView(transaction: initialTransaction!);
+    }
+
+    final transactionAsync = ref.watch(transactionByIdProvider(transactionId));
+    final colors = context.colors;
+
+    return transactionAsync.when(
+      data: (transaction) => TransactionDetailView(transaction: transaction),
+      loading: () => Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: AppText(
+            AppLocalizations.of(context)!.transactionDetails_title,
+            variant: AppTextVariant.titleLarge,
+          ),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Scaffold(
+        backgroundColor: colors.canvas,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: AppText(
+            AppLocalizations.of(context)!.transactionDetails_title,
+            variant: AppTextVariant.titleLarge,
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Center(
+            child: AppText(
+              error.toString(),
+              variant: AppTextVariant.bodyMedium,
+              color: colors.error,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class TransactionDetailView extends ConsumerWidget {
   const TransactionDetailView({super.key, required this.transaction});
@@ -20,7 +86,7 @@ class TransactionDetailView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final isPositive = transaction.amount >= 0;
+    final isCredit = transaction.isCredit;
     final statusColor = _getStatusColor(transaction.status);
 
     return Scaffold(
@@ -69,10 +135,11 @@ class TransactionDetailView extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.lg),
 
                   // Amount
-                  AppText(
-                    '${isPositive ? '+' : ''}\$${transaction.amount.abs().toStringAsFixed(2)}',
-                    variant: AppTextVariant.displayMedium,
-                    color: isPositive ? colors.successText : colors.textPrimary,
+                  AmountText.fromText(
+                    '${isCredit ? '+' : '-'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                    currencyCode: transaction.currency,
+                    size: AmountTextSize.large,
+                    color: isCredit ? colors.successText : colors.textPrimary,
                   ),
                   const SizedBox(height: AppSpacing.sm),
 
@@ -83,11 +150,14 @@ class TransactionDetailView extends ConsumerWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(transaction.type, colors).withValues(alpha: 0.1),
+                      color: _getTypeColor(
+                        transaction.type,
+                        colors,
+                      ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: AppText(
-                      transaction.type.name.toUpperCase(),
+                      _getTypeLabel(l10n, transaction),
                       variant: AppTextVariant.labelSmall,
                       color: _getTypeColor(transaction.type, colors),
                     ),
@@ -134,7 +204,10 @@ class TransactionDetailView extends ConsumerWidget {
                   Divider(color: colors.borderSubtle),
                   _DetailRow(
                     label: l10n.transactionDetails_date,
-                    value: DateFormat('dd MMM yyyy • HH:mm', 'fr').format(transaction.createdAt),
+                    value: DateFormat(
+                      'dd MMM yyyy • HH:mm',
+                      'fr',
+                    ).format(transaction.createdAt),
                     colors: colors,
                   ),
                   Divider(color: colors.borderSubtle),
@@ -156,7 +229,10 @@ class TransactionDetailView extends ConsumerWidget {
                     _DetailRow(
                       label: l10n.transactionDetails_recipientAddress,
                       value: _truncateAddress(transaction.recipientAddress!),
-                      onCopy: () => _copyToClipboard(context, transaction.recipientAddress!),
+                      onCopy: () => _copyToClipboard(
+                        context,
+                        transaction.recipientAddress!,
+                      ),
                       colors: colors,
                     ),
                   ],
@@ -173,7 +249,8 @@ class TransactionDetailView extends ConsumerWidget {
             ),
 
             // Metadata (if deposit with source info)
-            if (transaction.metadata != null && transaction.metadata!.isNotEmpty) ...[
+            if (transaction.metadata != null &&
+                transaction.metadata!.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xxl),
               AppCard(
                 variant: AppCardVariant.subtle,
@@ -257,7 +334,7 @@ class TransactionDetailView extends ConsumerWidget {
             AppButton(
               label: l10n.help_needHelp,
               onPressed: () {
-                context.push('/help');
+                context.push('/settings/help');
               },
               variant: AppButtonVariant.secondary,
               isFullWidth: true,
@@ -324,15 +401,14 @@ class TransactionDetailView extends ConsumerWidget {
   String _formatMetadataKey(String key) {
     // Convert camelCase to Title Case
     return key
-        .replaceAllMapped(
-          RegExp(r'([A-Z])'),
-          (match) => ' ${match.group(1)}',
-        )
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(1)}')
         .trim()
         .split(' ')
-        .map((word) => word.isNotEmpty
-            ? '${word[0].toUpperCase()}${word.substring(1)}'
-            : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
         .join(' ');
   }
 
@@ -349,6 +425,20 @@ class TransactionDetailView extends ConsumerWidget {
     );
   }
 
+  String _getTypeLabel(AppLocalizations l10n, Transaction transaction) {
+    switch (transaction.type) {
+      case TransactionType.deposit:
+        return l10n.transactions_deposit;
+      case TransactionType.withdrawal:
+        return l10n.transactions_withdrawal;
+      case TransactionType.transferInternal:
+        return transaction.isCredit
+            ? l10n.transactions_transferReceived
+            : l10n.transactions_transferSent;
+      case TransactionType.transferExternal:
+        return l10n.transactions_transferSent;
+    }
+  }
 }
 
 class _DetailRow extends StatelessWidget {
@@ -387,11 +477,7 @@ class _DetailRow extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 GestureDetector(
                   onTap: onCopy,
-                  child: Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: colors.gold,
-                  ),
+                  child: Icon(Icons.copy, size: 16, color: colors.gold),
                 ),
               ],
             ],

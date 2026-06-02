@@ -18,7 +18,8 @@ class MerchantDashboardView extends ConsumerStatefulWidget {
   static const String routeName = '/merchant-dashboard';
 
   @override
-  ConsumerState<MerchantDashboardView> createState() => _MerchantDashboardViewState();
+  ConsumerState<MerchantDashboardView> createState() =>
+      _MerchantDashboardViewState();
 }
 
 class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
@@ -32,11 +33,14 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     return Scaffold(
       backgroundColor: context.colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.merchant_dashboard, variant: AppTextVariant.titleMedium),
+        title: AppText(
+          l10n.merchant_dashboard,
+          variant: AppTextVariant.titleMedium,
+        ),
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
-            onPressed: () => context.push('/merchant-settings'),
+            onPressed: () => context.push('/settings/business-profile'),
             icon: Icon(Icons.settings, color: context.colors.gold),
           ),
         ],
@@ -49,7 +53,11 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.error_outline, size: 64, color: context.colors.textSecondary),
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: context.colors.textSecondary,
+              ),
               SizedBox(height: AppSpacing.md),
               AppText(
                 'Error loading merchant profile',
@@ -102,7 +110,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             SizedBox(height: AppSpacing.xl),
             AppButton(
               label: 'Register as Merchant',
-              onPressed: () => context.push('/merchant-register'),
+              onPressed: () => context.push('/settings/business-setup'),
               variant: AppButtonVariant.primary,
             ),
           ],
@@ -111,14 +119,22 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildDashboard(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
+  Widget _buildDashboard(
+    BuildContext context,
+    AppLocalizations l10n,
+    MerchantResponse merchant,
+  ) {
     return RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(merchantProfileProvider);
-        ref.invalidate(merchantAnalyticsProvider(MerchantAnalyticsParams(
-          merchantId: merchant.merchantId,
-          period: _selectedPeriod,
-        )));
+        ref.invalidate(
+          merchantAnalyticsProvider(
+            MerchantAnalyticsParams(
+              merchantId: merchant.merchantId,
+              period: _selectedPeriod,
+            ),
+          ),
+        );
       },
       color: context.colors.gold,
       child: SingleChildScrollView(
@@ -128,8 +144,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status banner
-            if (!merchant.isVerified)
-              _buildStatusBanner(merchant),
+            if (!merchant.isVerified) _buildStatusBanner(merchant),
 
             // Quick stats card
             _buildQuickStats(merchant),
@@ -187,16 +202,13 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         children: [
           Icon(icon, color: textColor),
           SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: AppText(message, color: textColor),
-          ),
+          Expanded(child: AppText(message, color: textColor)),
         ],
       ),
     );
   }
 
   Widget _buildQuickStats(MerchantResponse merchant) {
-    
     return AppCard(
       variant: AppCardVariant.goldAccent,
       padding: EdgeInsets.all(AppSpacing.lg),
@@ -218,12 +230,18 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                     if (merchant.isVerified)
                       Row(
                         children: [
-                          Icon(Icons.verified, color: context.colors.textPrimary, size: 16),
+                          Icon(
+                            Icons.verified,
+                            color: context.colors.textPrimary,
+                            size: 16,
+                          ),
                           SizedBox(width: AppSpacing.xs),
                           AppText(
                             'Verified',
                             variant: AppTextVariant.labelSmall,
-                            color: context.colors.textPrimary.withValues(alpha: 0.9),
+                            color: context.colors.textPrimary.withValues(
+                              alpha: 0.9,
+                            ),
                           ),
                         ],
                       ),
@@ -231,7 +249,10 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
                 decoration: BoxDecoration(
                   color: context.colors.textPrimary.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.full),
@@ -304,7 +325,11 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: context.colors.textPrimary.withValues(alpha: 0.7), size: 20),
+          Icon(
+            icon,
+            color: context.colors.textPrimary.withValues(alpha: 0.7),
+            size: 20,
+          ),
           SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Column(
@@ -328,7 +353,11 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
+  Widget _buildQuickActions(
+    BuildContext context,
+    AppLocalizations l10n,
+    MerchantResponse merchant,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -343,7 +372,8 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: _buildActionCard(
             icon: Icons.add_card,
             label: 'Request Payment',
-            onTap: () => context.push('/create-payment-request', extra: merchant),
+            onTap: () =>
+                context.push('/create-payment-request', extra: merchant),
           ),
         ),
         SizedBox(width: AppSpacing.sm),
@@ -351,7 +381,10 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           child: _buildActionCard(
             icon: Icons.history,
             label: l10n.navigation_transactions,
-            onTap: () => context.push('/merchant-transactions', extra: merchant.merchantId),
+            onTap: () => context.push(
+              '/merchant-transactions',
+              extra: merchant.merchantId,
+            ),
           ),
         ),
       ],
@@ -391,13 +424,19 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildAnalyticsSection(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
-    final analyticsAsync = ref.watch(merchantAnalyticsProvider(
-      MerchantAnalyticsParams(
-        merchantId: merchant.merchantId,
-        period: _selectedPeriod,
+  Widget _buildAnalyticsSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    MerchantResponse merchant,
+  ) {
+    final analyticsAsync = ref.watch(
+      merchantAnalyticsProvider(
+        MerchantAnalyticsParams(
+          merchantId: merchant.merchantId,
+          period: _selectedPeriod,
+        ),
       ),
-    ));
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,19 +444,32 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            AppText(
-              'Analytics',
-              variant: AppTextVariant.titleMedium,
-            ),
+            AppText('Analytics', variant: AppTextVariant.titleMedium),
             SizedBox(
               width: 140,
               child: AppSelect<String>(
                 value: _selectedPeriod,
                 items: const [
-                  AppSelectItem(value: 'day', label: 'Today', icon: Icons.today),
-                  AppSelectItem(value: 'week', label: 'This Week', icon: Icons.date_range),
-                  AppSelectItem(value: 'month', label: 'This Month', icon: Icons.calendar_month),
-                  AppSelectItem(value: 'year', label: 'This Year', icon: Icons.calendar_today),
+                  AppSelectItem(
+                    value: 'day',
+                    label: 'Today',
+                    icon: Icons.today,
+                  ),
+                  AppSelectItem(
+                    value: 'week',
+                    label: 'This Week',
+                    icon: Icons.date_range,
+                  ),
+                  AppSelectItem(
+                    value: 'month',
+                    label: 'This Month',
+                    icon: Icons.calendar_month,
+                  ),
+                  AppSelectItem(
+                    value: 'year',
+                    label: 'This Year',
+                    icon: Icons.calendar_today,
+                  ),
                 ],
                 onChanged: (value) {
                   if (value != null) {
@@ -440,7 +492,10 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText(AppLocalizations.of(context)!.analytics_failedToLoad, color: context.colors.error),
+            child: AppText(
+              AppLocalizations.of(context)!.analytics_failedToLoad,
+              color: context.colors.error,
+            ),
           ),
           data: (analytics) => _buildAnalyticsCards(analytics),
         ),
@@ -449,7 +504,6 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
   }
 
   Widget _buildAnalyticsCards(MerchantAnalyticsResponse analytics) {
-    
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -501,11 +555,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         children: [
           Icon(icon, color: color, size: 24),
           const Spacer(),
-          AppText(
-            value,
-            variant: AppTextVariant.titleLarge,
-            color: color,
-          ),
+          AppText(value, variant: AppTextVariant.titleLarge, color: color),
           AppText(
             label,
             variant: AppTextVariant.labelSmall,
@@ -516,13 +566,16 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
     );
   }
 
-  Widget _buildRecentTransactions(BuildContext context, AppLocalizations l10n, MerchantResponse merchant) {
-    final transactionsAsync = ref.watch(merchantTransactionsProvider(
-      MerchantTransactionsParams(
-        merchantId: merchant.merchantId,
-        limit: 5,
+  Widget _buildRecentTransactions(
+    BuildContext context,
+    AppLocalizations l10n,
+    MerchantResponse merchant,
+  ) {
+    final transactionsAsync = ref.watch(
+      merchantTransactionsProvider(
+        MerchantTransactionsParams(merchantId: merchant.merchantId, limit: 5),
       ),
-    ));
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,13 +583,16 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            AppText(
-              'Recent Transactions',
-              variant: AppTextVariant.titleMedium,
-            ),
+            AppText('Recent Transactions', variant: AppTextVariant.titleMedium),
             TextButton(
-              onPressed: () => context.push('/merchant-transactions', extra: merchant.merchantId),
-              child: AppText(AppLocalizations.of(context)!.common_seeAll, color: context.colors.gold),
+              onPressed: () => context.push(
+                '/merchant-transactions',
+                extra: merchant.merchantId,
+              ),
+              child: AppText(
+                AppLocalizations.of(context)!.common_seeAll,
+                color: context.colors.gold,
+              ),
             ),
           ],
         ),
@@ -551,7 +607,10 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
           error: (_, __) => AppCard(
             variant: AppCardVariant.subtle,
             padding: EdgeInsets.all(AppSpacing.md),
-            child: AppText(AppLocalizations.of(context)!.analytics_failedToLoad, color: context.colors.error),
+            child: AppText(
+              AppLocalizations.of(context)!.analytics_failedToLoad,
+              color: context.colors.error,
+            ),
           ),
           data: (response) {
             if (response.transactions.isEmpty) {
@@ -561,9 +620,18 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.receipt_long, size: 48, color: context.colors.textSecondary),
+                      Icon(
+                        Icons.receipt_long,
+                        size: 48,
+                        color: context.colors.textSecondary,
+                      ),
                       SizedBox(height: AppSpacing.sm),
-                      AppText(AppLocalizations.of(context)!.transactions_noTransactionsYet, color: context.colors.textSecondary),
+                      AppText(
+                        AppLocalizations.of(
+                          context,
+                        )!.transactions_noTransactionsYet,
+                        color: context.colors.textSecondary,
+                      ),
                     ],
                   ),
                 ),
@@ -604,10 +672,7 @@ class _MerchantDashboardViewState extends ConsumerState<MerchantDashboardView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  tx.reference,
-                  variant: AppTextVariant.bodyMedium,
-                ),
+                AppText(tx.reference, variant: AppTextVariant.bodyMedium),
                 AppText(
                   DateFormat('MMM dd, HH:mm').format(tx.createdAt),
                   variant: AppTextVariant.labelSmall,

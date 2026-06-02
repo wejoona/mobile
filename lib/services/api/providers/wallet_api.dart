@@ -2,6 +2,8 @@
 library;
 
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 class WalletApi {
   WalletApi(this._dio);
@@ -17,50 +19,81 @@ class WalletApi {
 
   // ── Deposit ──
 
-  /// GET /wallet/deposit/channels
-  Future<Response> getDepositChannels() => _dio.get('/wallet/deposit/channels');
+  /// GET /deposits/providers
+  Future<Response> getDepositChannels() => _dio.get('/deposits/providers');
 
-  /// GET /wallet/deposit/providers
-  Future<Response> getDepositProviders() => _dio.get('/wallet/deposit/providers');
+  /// GET /deposits/providers
+  Future<Response> getDepositProviders() => _dio.get('/deposits/providers');
 
-  /// POST /wallet/deposit
-  Future<Response> initiateDeposit(Map<String, dynamic> data) =>
-      _dio.post('/wallet/deposit', data: data);
+  /// POST /deposits/initiate
+  Future<Response> initiateDeposit(Map<String, dynamic> data) => _dio.post(
+    '/deposits/initiate',
+    data: _depositPayload(data),
+    options: Options(headers: {'X-Idempotency-Key': generateIdempotencyKey()}),
+  );
 
-  /// GET /wallet/deposit/:id
-  Future<Response> getDepositStatus(String id) =>
-      _dio.get('/wallet/deposit/$id');
+  /// GET /deposits/:id
+  Future<Response> getDepositStatus(String id) => _dio.get('/deposits/$id');
 
   // ── Transfer ──
 
-  /// POST /wallet/transfer/internal
-  Future<Response> transferInternal(Map<String, dynamic> data) =>
-      _dio.post('/wallet/transfer/internal', data: data);
+  /// POST /transfers/internal
+  Future<Response> transferInternal(
+    Map<String, dynamic> data, {
+    String? pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/transfers/internal',
+    data: data,
+    options: _moneyMovementOptions(
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
 
-  /// POST /wallet/transfer/external
-  Future<Response> transferExternal(Map<String, dynamic> data) =>
-      _dio.post('/wallet/transfer/external', data: data);
+  /// POST /transfers/external
+  Future<Response> transferExternal(
+    Map<String, dynamic> data, {
+    String? pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/transfers/external',
+    data: data,
+    options: _moneyMovementOptions(
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
 
   /// GET /wallet/transfer/external/estimate-fee
   Future<Response> estimateExternalFee({
     required double amount,
     required String network,
-  }) =>
-      _dio.get('/wallet/transfer/external/estimate-fee', queryParameters: {
-        'amount': amount,
-        'network': network,
-      });
+  }) => _dio.get(
+    '/wallet/transfer/external/estimate-fee',
+    queryParameters: {'amount': amount, 'network': network},
+  );
 
   // ── Withdraw ──
 
   /// POST /wallet/withdraw
-  Future<Response> withdraw(Map<String, dynamic> data) =>
-      _dio.post('/wallet/withdraw', data: data);
+  Future<Response> withdraw(
+    Map<String, dynamic> data, {
+    String? pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/wallet/withdraw',
+    data: data,
+    options: _moneyMovementOptions(
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+    ),
+  );
 
   // ── Exchange Rate ──
 
-  /// GET /wallet/exchange-rate
-  Future<Response> getExchangeRate() => _dio.get('/wallet/exchange-rate');
+  /// GET /wallet/rate
+  Future<Response> getExchangeRate() => _dio.get('/wallet/rate');
 
   /// GET /wallet/rate
   Future<Response> getRate() => _dio.get('/wallet/rate');
@@ -77,8 +110,10 @@ class WalletApi {
   // ── PIN ──
 
   /// POST /wallet/pin/set
-  Future<Response> setPin(String pin) =>
-      _dio.post('/wallet/pin/set', data: {'pin': pin});
+  Future<Response> setPin(String pin, {String? confirmPin}) => _dio.post(
+    '/wallet/pin/set',
+    data: {'pin': pin, 'confirmPin': confirmPin ?? pin},
+  );
 
   /// POST /wallet/pin/verify
   Future<Response> verifyPin(String pin) =>
@@ -88,4 +123,81 @@ class WalletApi {
 
   /// GET /wallet/limits
   Future<Response> getLimits() => _dio.get('/wallet/limits');
+
+  Options _moneyMovementOptions({String? pinToken, String? idempotencyKey}) {
+    if (pinToken == null || pinToken.isEmpty) {
+      return Options(
+        headers: {
+          'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+        },
+      );
+    }
+
+    return Options(
+      headers: transactionHeaders(
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      ),
+    );
+  }
+}
+
+Map<String, dynamic> _depositPayload(Map<String, dynamic> data) {
+  final payload = Map<String, dynamic>.from(data);
+  final providerCode =
+      payload.remove('providerCode') ?? payload.remove('provider');
+  if (providerCode != null) {
+    payload['providerCode'] = _mobileMoneyProviderCode(providerCode.toString());
+  }
+  payload.putIfAbsent(
+    'currency',
+    () => payload.remove('sourceCurrency') ?? 'XOF',
+  );
+  final phoneNumber = payload['phoneNumber'];
+  if (phoneNumber is String && phoneNumber.trim().isNotEmpty) {
+    payload['phoneNumber'] = _normalizePhoneNumber(
+      phoneNumber,
+      payload['currency'].toString(),
+    );
+  }
+  return payload;
+}
+
+String _mobileMoneyProviderCode(String value) {
+  switch (value.replaceAll('-', '_').toLowerCase()) {
+    case 'omci':
+    case 'orange':
+    case 'orange_money':
+    case 'mobile_money':
+      return 'OMCI';
+    case 'mtnci':
+    case 'mtn':
+    case 'mtn_momo':
+    case 'mtn_mobile_money':
+      return 'MTNCI';
+    case 'moovci':
+    case 'moov':
+    case 'moov_money':
+      return 'MOOVCI';
+    case 'waveci':
+    case 'wave':
+      return 'WAVECI';
+    default:
+      return value.toUpperCase();
+  }
+}
+
+String _normalizePhoneNumber(String value, String currency) {
+  var phone = value.replaceAll(RegExp(r'[\s\-().]'), '');
+  if (phone.startsWith('+')) return phone;
+
+  if (currency.toUpperCase() == 'XOF') {
+    if (phone.startsWith('225')) return '+$phone';
+    if (phone.length == 10) return '+225$phone';
+  }
+
+  if (phone.startsWith('1') && phone.length == 11) return '+$phone';
+  if (phone.length == 10) return '+1$phone';
+
+  return phone;
 }

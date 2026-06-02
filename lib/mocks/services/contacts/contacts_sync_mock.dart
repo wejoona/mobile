@@ -23,7 +23,9 @@ class ContactsSyncMock {
   }
 
   /// Handle POST /contacts/sync
-  static Future<MockResponse> _handleContactsSync(RequestOptions options) async {
+  static Future<MockResponse> _handleContactsSync(
+    RequestOptions options,
+  ) async {
     final data = options.data as Map<String, dynamic>;
     final phoneHashes = (data['phoneHashes'] as List).cast<String>();
 
@@ -38,7 +40,9 @@ class ContactsSyncMock {
   }
 
   /// Handle POST /contacts/invite
-  static Future<MockResponse> _handleContactsInvite(RequestOptions options) async {
+  static Future<MockResponse> _handleContactsInvite(
+    RequestOptions options,
+  ) async {
     return MockResponse.success({
       'success': true,
       'message': 'Invitation sent successfully',
@@ -49,30 +53,39 @@ class ContactsSyncMock {
   /// In production, these would be real users in the backend
   static final List<Map<String, dynamic>> _mockJoonaPayUsers = [
     {
-      'phone': '+2250701234567',
-      'userId': 'user_amadou_123',
+      'phone': '+2250708091011',
+      'userId': 'usr_amadou',
       'name': 'Amadou Diallo',
       'avatarUrl': 'https://i.pravatar.cc/150?img=12',
     },
     {
-      'phone': '+2250707654321',
-      'userId': 'user_fatou_456',
-      'name': 'Fatou Traoré',
+      'phone': '+2250506070809',
+      'userId': 'usr_fatou',
+      'name': 'Fatou Koné',
       'avatarUrl': 'https://i.pravatar.cc/150?img=5',
     },
     {
-      'phone': '+2250709876543',
-      'userId': 'user_koffi_789',
-      'name': 'Koffi Kouassi',
+      'phone': '+2250711223344',
+      'userId': 'usr_mariam',
+      'name': 'Mariam Bamba',
       'avatarUrl': null,
     },
   ];
 
   /// Hash phone number (matches ContactsService.hashPhone)
   static String _hashPhone(String phone) {
-    final bytes = utf8.encode(phone);
+    final normalized = _normalizePhoneE164(phone);
+    final bytes = utf8.encode(normalized);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  static String _normalizePhoneE164(String phone) {
+    var cleaned = phone.replaceAll(RegExp(r'\D'), '');
+    if (!cleaned.startsWith('225') && cleaned.length <= 10) {
+      cleaned = '225$cleaned';
+    }
+    return '+$cleaned';
   }
 
   /// Get matching users from hashes
@@ -87,6 +100,7 @@ class ContactsSyncMock {
         matches.add({
           'phoneHash': userHash,
           'userId': user['userId'],
+          'displayName': user['name'],
           'avatarUrl': user['avatarUrl'],
         });
       }
@@ -100,9 +114,9 @@ class ContactsSyncMock {
 class MockDeviceContacts {
   static final List<Map<String, String>> contacts = [
     // JoonaPay users (will match)
-    {'name': 'Amadou Diallo', 'phone': '+225 07 01 23 45 67'},
-    {'name': 'Fatou Traoré', 'phone': '+225 07 07 65 43 21'},
-    {'name': 'Koffi Kouassi', 'phone': '+225 07 09 87 65 43'},
+    {'name': 'Amadou Diallo', 'phone': '+225 07 08 09 10 11'},
+    {'name': 'Fatou Koné', 'phone': '+225 05 06 07 08 09'},
+    {'name': 'Mariam Bamba', 'phone': '+225 07 11 22 33 44'},
 
     // Non-JoonaPay users (won't match)
     {'name': 'Yao N\'Guessan', 'phone': '+225 07 11 11 11 11'},

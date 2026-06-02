@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for AppButton component
@@ -10,17 +11,16 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_button_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
-  group('AppButton Snapshot Tests', () {
-    group('Variants', () {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+  goldenGroup('AppButton Snapshot Tests', () {
+    goldenGroup('Variants', () {
       testWidgets('primary variant - default state', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
             child: Center(
-              child: AppButton(
-                label: 'Primary Button',
-                onPressed: () {},
-              ),
+              child: AppButton(label: 'Primary Button', onPressed: () {}),
             ),
           ),
         );
@@ -108,7 +108,7 @@ void main() {
       });
     });
 
-    group('Sizes', () {
+    goldenGroup('Sizes', () {
       testWidgets('small size', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -167,15 +167,12 @@ void main() {
       });
     });
 
-    group('States', () {
+    goldenGroup('States', () {
       testWidgets('disabled state', (tester) async {
         await tester.pumpWidget(
           const TestWrapper(
             child: Center(
-              child: AppButton(
-                label: 'Disabled Button',
-                onPressed: null,
-              ),
+              child: AppButton(label: 'Disabled Button', onPressed: null),
             ),
           ),
         );
@@ -226,7 +223,7 @@ void main() {
       });
     });
 
-    group('Icons', () {
+    goldenGroup('Icons', () {
       testWidgets('icon on left', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -288,7 +285,7 @@ void main() {
       });
     });
 
-    group('Width', () {
+    goldenGroup('Width', () {
       testWidgets('full width button', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -329,7 +326,7 @@ void main() {
       });
     });
 
-    group('Combined States', () {
+    goldenGroup('Combined States', () {
       testWidgets('small secondary button with icon', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -374,7 +371,7 @@ void main() {
       });
     });
 
-    group('Text Overflow', () {
+    goldenGroup('Text Overflow', () {
       testWidgets('long text button', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -382,7 +379,8 @@ void main() {
               child: SizedBox(
                 width: 200,
                 child: AppButton(
-                  label: 'This is a very long button label that should truncate',
+                  label:
+                      'This is a very long button label that should truncate',
                   onPressed: () {},
                 ),
               ),

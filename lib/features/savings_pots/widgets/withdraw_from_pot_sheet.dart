@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -14,7 +17,8 @@ class WithdrawFromPotSheet extends ConsumerStatefulWidget {
   final String potId;
 
   @override
-  ConsumerState<WithdrawFromPotSheet> createState() => _WithdrawFromPotSheetState();
+  ConsumerState<WithdrawFromPotSheet> createState() =>
+      _WithdrawFromPotSheetState();
 }
 
 class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
@@ -32,7 +36,7 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(savingsPotsStateProvider);
     final pot = state.pots.where((p) => p.id == widget.potId).firstOrNull;
-    
+
     if (pot == null) {
       return const SizedBox.shrink();
     }
@@ -167,11 +171,38 @@ class _WithdrawFromPotSheetState extends ConsumerState<WithdrawFromPotSheet> {
       return;
     }
 
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
+    final confirmation = await PinConfirmationSheet.show(
+      context: context,
+      title: l10n.savingsPots_withdraw,
+      subtitle: l10n.send_enterPinToConfirm,
+      amount: amount,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (confirmation != PinConfirmationResult.success || pinToken == null) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      await ref.read(savingsPotsActionsProvider).withdrawFromPot(
+      await ref
+          .read(savingsPotsActionsProvider)
+          .withdrawFromPot(
             widget.potId,
             amount,
+            pinToken: pinToken!,
+            idempotencyKey: idempotencyKey,
           );
 
       if (mounted) {

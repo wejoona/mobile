@@ -13,10 +13,10 @@ class TransferRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'recipientPhone': recipientPhone,
-        'amount': amount,
-        if (note != null) 'note': note,
-      };
+    'recipientPhone': recipientPhone,
+    'amount': amount,
+    if (note != null) 'note': note,
+  };
 
   TransferRequest copyWith({
     String? recipientPhone,
@@ -74,27 +74,32 @@ class RecentRecipient {
   final String name;
   final DateTime lastTransferDate;
   final double lastAmount;
+  final bool isKoridoUser;
 
   const RecentRecipient({
     required this.phoneNumber,
     required this.name,
     required this.lastTransferDate,
     required this.lastAmount,
+    this.isKoridoUser = false,
   });
 
   factory RecentRecipient.fromJson(Map<String, dynamic> json) {
     return RecentRecipient(
-      phoneNumber: json['phoneNumber'] as String,
+      phoneNumber: (json['phoneNumber'] ?? json['phone']) as String,
       name: json['name'] as String,
       lastTransferDate: DateTime.parse(json['lastTransferDate'] as String),
       lastAmount: (json['lastAmount'] as num).toDouble(),
+      isKoridoUser:
+          (json['isKoridoUser'] ?? json['isJoonaPayUser']) as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'phoneNumber': phoneNumber,
-        'name': name,
-        'lastTransferDate': lastTransferDate.toIso8601String(),
-        'lastAmount': lastAmount,
-      };
+    'phoneNumber': phoneNumber,
+    'name': name,
+    'lastTransferDate': lastTransferDate.toIso8601String(),
+    'lastAmount': lastAmount,
+    'isKoridoUser': isKoridoUser,
+  };
 }

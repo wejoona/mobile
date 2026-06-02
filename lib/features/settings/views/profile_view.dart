@@ -7,7 +7,6 @@ import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ProfileView extends ConsumerStatefulWidget {
   const ProfileView({super.key});
@@ -17,7 +16,6 @@ class ProfileView extends ConsumerStatefulWidget {
 }
 
 class _ProfileViewState extends ConsumerState<ProfileView> {
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -45,7 +43,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
             // Email verification banner
@@ -61,12 +59,17 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
                     decoration: BoxDecoration(
                       color: colors.warning.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: Border.all(color: colors.warning.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: colors.warning.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded,
-                            color: colors.warning, size: 22),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: colors.warning,
+                          size: 22,
+                        ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
@@ -141,7 +144,8 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
               value: userState.email ?? l10n.profile_notSet,
               icon: Icons.email,
               isVerified: userState.emailVerified,
-              trailing: userState.email != null &&
+              trailing:
+                  userState.email != null &&
                       userState.email!.isNotEmpty &&
                       !userState.emailVerified
                   ? TextButton(
@@ -201,7 +205,7 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
   }) {
     final colors = context.colors;
     return AppCard(
-      variant: AppCardVariant.subtle,
+      variant: AppCardVariant.flat,
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
@@ -299,5 +303,4 @@ class _ProfileViewState extends ConsumerState<ProfileView> {
         return countryCode;
     }
   }
-
 }

@@ -11,14 +11,11 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('BiometricEnrollmentView Golden Tests', () {
+  goldenGroup('BiometricEnrollmentView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BiometricEnrollmentView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BiometricEnrollmentView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -31,10 +28,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BiometricEnrollmentView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BiometricEnrollmentView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -45,14 +39,11 @@ void main() {
     });
   });
 
-  group('BiometricSettingsView Golden Tests', () {
+  goldenGroup('BiometricSettingsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BiometricSettingsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BiometricSettingsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -65,10 +56,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BiometricSettingsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BiometricSettingsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

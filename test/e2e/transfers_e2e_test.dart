@@ -13,7 +13,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Transfers E2E', () {
+  e2eGroup('Transfers E2E', () {
     test('GET /transfers — list transfers', () async {
       final res = await client.get('/transfers');
       res.expectOk();
@@ -22,9 +22,7 @@ void main() {
     });
 
     test('POST /transfers/internal — missing recipient returns 400', () async {
-      final res = await client.post('/transfers/internal', {
-        'amount': 100,
-      });
+      final res = await client.post('/transfers/internal', {'amount': 100});
       expect(res.statusCode, 400);
     });
 

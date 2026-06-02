@@ -10,26 +10,18 @@ class AuthApi {
   /// POST /auth/register
   Future<Response> register({
     required String phone,
-    required String firstName,
-    required String lastName,
-    String countryCode = '+225',
-  }) =>
-      _dio.post('/auth/register', data: {
-        'phone': phone,
-        'firstName': firstName,
-        'lastName': lastName,
-        'countryCode': countryCode,
-      });
+    String countryCode = 'CI',
+  }) => _dio.post(
+    '/auth/register',
+    data: {'phone': phone, 'countryCode': countryCode},
+  );
 
   /// POST /auth/login — sends OTP to phone
   Future<Response> login({required String phone}) =>
       _dio.post('/auth/login', data: {'phone': phone});
 
   /// POST /auth/verify-otp — returns access + refresh tokens
-  Future<Response> verifyOtp({
-    required String phone,
-    required String otp,
-  }) =>
+  Future<Response> verifyOtp({required String phone, required String otp}) =>
       _dio.post('/auth/verify-otp', data: {'phone': phone, 'otp': otp});
 
   /// POST /auth/refresh — refresh the access token

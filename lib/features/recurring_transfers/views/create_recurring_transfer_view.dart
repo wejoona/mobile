@@ -5,10 +5,13 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/create_recurring_transfer_provider.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/frequency_picker.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/end_condition_picker.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CreateRecurringTransferView extends ConsumerStatefulWidget {
@@ -47,7 +50,9 @@ class _CreateRecurringTransferViewState
         _amountController.text = widget.amount.toString();
       }
       Future.microtask(() {
-        ref.read(createRecurringTransferProvider.notifier).loadFromExisting(
+        ref
+            .read(createRecurringTransferProvider.notifier)
+            .loadFromExisting(
               widget.recipientPhone!,
               widget.recipientName!,
               amount: widget.amount,
@@ -96,9 +101,8 @@ class _CreateRecurringTransferViewState
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 prefixIcon: Icons.phone,
-                validator: (v) => v?.isEmpty == true
-                    ? l10n.validation_required
-                    : null,
+                validator: (v) =>
+                    v?.isEmpty == true ? l10n.validation_required : null,
                 onChanged: (v) => ref
                     .read(createRecurringTransferProvider.notifier)
                     .setRecipient(v, _nameController.text),
@@ -108,9 +112,8 @@ class _CreateRecurringTransferViewState
                 label: l10n.send_enterRecipientName,
                 controller: _nameController,
                 prefixIcon: Icons.person,
-                validator: (v) => v?.isEmpty == true
-                    ? l10n.validation_required
-                    : null,
+                validator: (v) =>
+                    v?.isEmpty == true ? l10n.validation_required : null,
                 onChanged: (v) => ref
                     .read(createRecurringTransferProvider.notifier)
                     .setRecipient(_phoneController.text, v),
@@ -131,9 +134,7 @@ class _CreateRecurringTransferViewState
                   variant: AppTextVariant.bodyMedium,
                   color: context.colors.textSecondary,
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (v) {
                   if (v?.isEmpty == true) return l10n.validation_required;
                   final amount = double.tryParse(v!);
@@ -279,37 +280,62 @@ class _CreateRecurringTransferViewState
   Future<void> _handleCreate() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context)!;
+    final formState = ref.read(createRecurringTransferProvider);
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
+    final confirmation = await PinConfirmationSheet.show(
+      context: context,
+      title: l10n.recurringTransfers_create,
+      subtitle: l10n.send_enterPinToConfirm,
+      amount: formState.amount,
+      recipient: formState.recipientName,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (confirmation != PinConfirmationResult.success || pinToken == null) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      final formState = ref.read(createRecurringTransferProvider);
       final request = formState.toRequest();
 
-      final transfer = await ref
+      await ref
           .read(recurringTransferActionsProvider)
-          .createRecurringTransfer(request);
+          .createRecurringTransfer(
+            request,
+            pinToken: pinToken!,
+            idempotencyKey: idempotencyKey,
+          );
 
       if (!mounted) return;
 
-      if (transfer != null) { // ignore: unnecessary_null_comparison
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.recurringTransfers_createSuccess),
-            backgroundColor: context.colors.success,
-          ),
-        );
-        ref.read(createRecurringTransferProvider.notifier).reset();
-        context.pop();
-      // ignore: dead_code
-      } else {
-        final l10n = AppLocalizations.of(context)!;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: AppText(l10n.recurringTransfers_createError),
-            backgroundColor: context.colors.error,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(l10n.recurringTransfers_createSuccess),
+          backgroundColor: context.colors.success,
+        ),
+      );
+      ref.read(createRecurringTransferProvider.notifier).reset();
+      context.pop();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: AppText(l10n.recurringTransfers_createError),
+          backgroundColor: context.colors.error,
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

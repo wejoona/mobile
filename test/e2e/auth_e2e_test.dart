@@ -11,7 +11,7 @@ void main() {
     client = E2EClient();
   });
 
-  group('Auth E2E', () {
+  e2eGroup('Auth E2E', () {
     test('POST /auth/register — new user or already exists', () async {
       final res = await client.post('/auth/register', {
         'phone': testPhone,
@@ -27,7 +27,9 @@ void main() {
     });
 
     test('GET /dev/otp/:phone — retrieves OTP (dev mode)', () async {
-      final res = await client.get('/dev/otp/${Uri.encodeComponent(testPhone)}');
+      final res = await client.get(
+        '/dev/otp/${Uri.encodeComponent(testPhone)}',
+      );
       res.expectOk();
       expect(res.data!['data']['otp'], isNotNull);
     });
@@ -37,7 +39,9 @@ void main() {
       await Future.delayed(const Duration(seconds: 2));
 
       // Get OTP from dev endpoint
-      final otpRes = await client.get('/dev/otp/${Uri.encodeComponent(testPhone)}');
+      final otpRes = await client.get(
+        '/dev/otp/${Uri.encodeComponent(testPhone)}',
+      );
       final otp = otpRes.data!['data']['otp'].toString();
 
       final res = await client.post('/auth/verify-otp', {

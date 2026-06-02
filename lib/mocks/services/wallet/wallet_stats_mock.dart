@@ -8,14 +8,17 @@ class WalletStatsMock {
       method: 'GET',
       path: '/wallet/balance',
       legacyHandler: (uri, headers, data) async {
-        return MockResponse(statusCode: 200, data: {
-          'balance': 2450.75,
-          'available': 2450.75,
-          'pending': 0.00,
-          'total': 2450.75,
-          'currency': 'USDC',
-          'updatedAt': DateTime.now().toIso8601String(),
-        });
+        return MockResponse(
+          statusCode: 200,
+          data: {
+            'balance': 2450.75,
+            'available': 2450.75,
+            'pending': 0.00,
+            'total': 2450.75,
+            'currency': 'USDC',
+            'updatedAt': DateTime.now().toIso8601String(),
+          },
+        );
       },
     );
 
@@ -24,58 +27,23 @@ class WalletStatsMock {
       method: 'GET',
       path: '/alerts',
       legacyHandler: (uri, headers, data) async {
-        return MockResponse(statusCode: 200, data: {
-          'data': [
-            {
-              'id': 'alert_001',
-              'title': 'Complétez votre KYC',
-              'message': 'Vérifiez votre identité pour augmenter vos limites de transaction.',
-              'type': 'info',
-              'isDismissible': true,
-              'actionUrl': '/kyc',
-              'createdAt': '2026-02-10T08:00:00Z',
-            },
-          ],
-        });
-      },
-    );
-
-    // GET /devices
-    interceptor.register(
-      method: 'GET',
-      path: '/devices',
-      legacyHandler: (uri, headers, data) async {
-        return MockResponse(statusCode: 200, data: {
-          'data': [
-            {
-              'id': 'dev_001',
-              'name': 'iPhone 16 Pro',
-              'platform': 'ios',
-              'lastActive': DateTime.now().toIso8601String(),
-              'isCurrent': true,
-              'fingerprint': 'abc123',
-              'createdAt': '2025-12-01T10:00:00Z',
-            },
-            {
-              'id': 'dev_002',
-              'name': 'iPad Air',
-              'platform': 'ios',
-              'lastActive': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
-              'isCurrent': false,
-              'fingerprint': 'def456',
-              'createdAt': '2026-01-15T14:00:00Z',
-            },
-          ],
-        });
-      },
-    );
-
-    // DELETE /devices/:id
-    interceptor.register(
-      method: 'DELETE',
-      path: '/devices/dev_002',
-      legacyHandler: (uri, headers, data) async {
-        return MockResponse(statusCode: 200, data: {'message': 'Device removed'});
+        return MockResponse(
+          statusCode: 200,
+          data: {
+            'data': [
+              {
+                'id': 'alert_001',
+                'title': 'Complétez votre KYC',
+                'message':
+                    'Vérifiez votre identité pour augmenter vos limites de transaction.',
+                'type': 'info',
+                'isDismissible': true,
+                'actionUrl': '/kyc',
+                'createdAt': '2026-02-10T08:00:00Z',
+              },
+            ],
+          },
+        );
       },
     );
 
@@ -84,13 +52,16 @@ class WalletStatsMock {
       method: 'GET',
       path: '/referrals/stats',
       legacyHandler: (uri, headers, data) async {
-        return MockResponse(statusCode: 200, data: {
-          'totalReferred': 5,
-          'activeReferred': 3,
-          'totalEarned': 15.00,
-          'pendingRewards': 10.00,
-          'referralCode': 'KORIDO-BEN2026',
-        });
+        return MockResponse(
+          statusCode: 200,
+          data: {
+            'totalReferred': 5,
+            'activeReferred': 3,
+            'totalEarned': 15.00,
+            'pendingRewards': 10.00,
+            'referralCode': 'KORIDO-BEN2026',
+          },
+        );
       },
     );
   }

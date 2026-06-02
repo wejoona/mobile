@@ -2,6 +2,7 @@ import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 
@@ -24,10 +25,25 @@ class RecentRecipientCard extends StatelessWidget {
       child: Row(
         children: [
           // Avatar
-          UserAvatar(
-            firstName: recipient.name.split(' ').first,
-            lastName: recipient.name.split(' ').length > 1 ? recipient.name.split(' ').last : null,
-            size: 40,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              UserAvatar(
+                firstName: recipient.name.split(' ').first,
+                lastName: recipient.name.split(' ').length > 1
+                    ? recipient.name.split(' ').last
+                    : null,
+                size: 40,
+                showBorder: recipient.isKoridoUser,
+                borderColor: colors.gold,
+              ),
+              if (recipient.isKoridoUser)
+                const Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: KoridoAccountBadge(compact: true),
+                ),
+            ],
           ),
           SizedBox(width: AppSpacing.md),
 
@@ -36,10 +52,21 @@ class RecentRecipientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  recipient.name,
-                  variant: AppTextVariant.bodyLarge,
-                  fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        recipient.name,
+                        variant: AppTextVariant.bodyLarge,
+                        fontWeight: FontWeight.w600,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (recipient.isKoridoUser) ...[
+                      SizedBox(width: AppSpacing.xs),
+                      const KoridoAccountBadge(),
+                    ],
+                  ],
                 ),
                 SizedBox(height: AppSpacing.xs),
                 AppText(

@@ -56,6 +56,28 @@ void main() {
       expect(ready.canTransact, isTrue);
     });
 
+    test(
+      'should transition from loading to ready when bootstrap creates wallet',
+      () {
+        const state = WalletLoading();
+        const event = WalletCreated(
+          walletId: 'wallet123',
+          walletAddress: null,
+          blockchain: 'polygon',
+        );
+
+        final result = fsm.handle(state, event);
+
+        expect(result, isA<TransitionSuccess<WalletState>>());
+        final success = result as TransitionSuccess<WalletState>;
+        expect(success.newState, isA<WalletReady>());
+        final ready = success.newState as WalletReady;
+        expect(ready.walletId, equals('wallet123'));
+        expect(ready.usdcBalance, equals(0));
+        expect(ready.pendingBalance, equals(0));
+      },
+    );
+
     test('should transition from loading to notCreated on not found', () {
       const state = WalletLoading();
       const event = WalletNotFound();
@@ -227,10 +249,7 @@ void main() {
         usdcBalance: 100.0,
         lastUpdated: DateTime.now(),
       );
-      const event = WalletBalanceUpdate(
-        subtractAmount: 25.0,
-        addPending: 5.0,
-      );
+      const event = WalletBalanceUpdate(subtractAmount: 25.0, addPending: 5.0);
 
       final result = fsm.handle(state, event);
 
@@ -492,29 +511,30 @@ void main() {
   });
 
   group('WalletFsm - Complex Flows', () {
-    test('should handle full lifecycle: none -> loading -> ready -> frozen -> unfrozen -> loading', () {
-      const state1 = WalletNone();
-      final result1 = fsm.handle(state1, const WalletFetch());
-      final state2 = (result1 as TransitionSuccess<WalletState>).newState;
+    test(
+      'should handle full lifecycle: none -> loading -> ready -> frozen -> unfrozen -> loading',
+      () {
+        const state1 = WalletNone();
+        final result1 = fsm.handle(state1, const WalletFetch());
+        final state2 = (result1 as TransitionSuccess<WalletState>).newState;
 
-      const event2 = WalletLoaded(
-        walletId: 'wallet123',
-        usdcBalance: 100.0,
-      );
-      final result2 = fsm.handle(state2, event2);
-      final state3 = (result2 as TransitionSuccess<WalletState>).newState as WalletReady;
+        const event2 = WalletLoaded(walletId: 'wallet123', usdcBalance: 100.0);
+        final result2 = fsm.handle(state2, event2);
+        final state3 =
+            (result2 as TransitionSuccess<WalletState>).newState as WalletReady;
 
-      const event3 = WalletFrozenEvent(reason: 'Suspicious');
-      final result3 = fsm.handle(state3, event3);
-      final state4 = (result3 as TransitionSuccess<WalletState>).newState;
+        const event3 = WalletFrozenEvent(reason: 'Suspicious');
+        final result3 = fsm.handle(state3, event3);
+        final state4 = (result3 as TransitionSuccess<WalletState>).newState;
 
-      expect(state4, isA<WalletFrozen>());
+        expect(state4, isA<WalletFrozen>());
 
-      const event4 = WalletUnfrozen();
-      final result4 = fsm.handle(state4, event4);
-      final state5 = (result4 as TransitionSuccess<WalletState>).newState;
+        const event4 = WalletUnfrozen();
+        final result4 = fsm.handle(state4, event4);
+        final state5 = (result4 as TransitionSuccess<WalletState>).newState;
 
-      expect(state5, isA<WalletLoading>());
-    });
+        expect(state5, isA<WalletLoading>());
+      },
+    );
   });
 }

@@ -15,7 +15,11 @@ void main() {
       () async {
         final dio = MockDio();
         final fingerprintService = MockDeviceFingerprintService();
-        final authService = AuthService(dio, fingerprintService);
+        final authService = AuthService(
+          dio,
+          fingerprintService,
+          MockSecureStorage(),
+        );
 
         when(fingerprintService.collect).thenAnswer(
           (_) async => const DeviceFingerprint(

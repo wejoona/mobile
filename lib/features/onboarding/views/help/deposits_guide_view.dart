@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Guide explaining how deposits work
 class DepositsGuideView extends ConsumerWidget {
@@ -89,10 +88,30 @@ class DepositsGuideView extends ConsumerWidget {
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.md),
-            _buildProvider('Orange Money', '🟠', colors),
-            _buildProvider('MTN Mobile Money', '🟡', colors),
-            _buildProvider('Wave', '🔵', colors),
-            _buildProvider('Moov Money', '🔴', colors),
+            _buildProvider(
+              'Orange Money',
+              Icons.radio_button_checked_rounded,
+              const Color(0xFFFF6600),
+              colors,
+            ),
+            _buildProvider(
+              'MTN Mobile Money',
+              Icons.radio_button_checked_rounded,
+              const Color(0xFFFFCC00),
+              colors,
+            ),
+            _buildProvider(
+              'Wave',
+              Icons.radio_button_checked_rounded,
+              const Color(0xFF1BA2DC),
+              colors,
+            ),
+            _buildProvider(
+              'Moov Money',
+              Icons.radio_button_checked_rounded,
+              const Color(0xFF00A651),
+              colors,
+            ),
             const SizedBox(height: AppSpacing.xxl),
 
             // Processing time
@@ -109,7 +128,9 @@ class DepositsGuideView extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: context.colors.goldGradient),
+                      gradient: LinearGradient(
+                        colors: context.colors.goldGradient,
+                      ),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
@@ -186,11 +207,11 @@ class DepositsGuideView extends ConsumerWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: AppColors.goldGradient),
+              gradient: LinearGradient(colors: colors.goldGradient),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.gold500.withValues(alpha: 0.3),
+                  color: colors.gold.withValues(alpha: 0.3),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),
@@ -236,7 +257,12 @@ class DepositsGuideView extends ConsumerWidget {
     );
   }
 
-  Widget _buildProvider(String name, String emoji, ThemeColors colors) {
+  Widget _buildProvider(
+    String name,
+    IconData icon,
+    Color providerColor,
+    ThemeColors colors,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Container(
@@ -248,7 +274,15 @@ class DepositsGuideView extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: providerColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Icon(icon, color: providerColor, size: 18),
+            ),
             const SizedBox(width: AppSpacing.md),
             AppText(
               name,

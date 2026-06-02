@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Provider for [SentryService].
@@ -17,9 +18,6 @@ final sentryServiceProvider = Provider<SentryService>((ref) {
 class SentryService {
   static final _logger = AppLogger('Sentry');
 
-  /// Korido mobile Sentry DSN (self-hosted).
-  static const _defaultDsn = 'https://d68989681327f488d5cb348626e66356@sentry.wejoona.com/3';
-
   /// Whether Sentry has been initialized.
   bool _initialized = false;
 
@@ -28,46 +26,39 @@ class SentryService {
   /// Initialize Sentry and run the app inside `SentryFlutter.init`.
   ///
   /// [appRunner] is the function that calls `runApp(...)`.
-  /// [dsn] overrides the default placeholder DSN.
+  /// [dsn] overrides the configured environment DSN.
   /// [environment] sets the Sentry environment tag (e.g. 'dev', 'prod').
   Future<void> initializeAndRunApp({
     required AppRunner appRunner,
     String? dsn,
     String environment = 'dev',
   }) async {
-    final sentryDsn = dsn ?? const String.fromEnvironment(
-      'SENTRY_DSN',
-      defaultValue: _defaultDsn,
-    );
+    final sentryDsn = dsn ?? EnvironmentConfig.sentryDsn;
 
-    // Skip initialization if DSN is empty or placeholder in debug mode
+    // Skip initialization when no DSN has been configured.
     if (sentryDsn.isEmpty) {
       _logger.debug('Sentry DSN is empty — skipping initialization');
       await appRunner();
       return;
     }
 
-    await SentryFlutter.init(
-      (options) {
-        options.dsn = sentryDsn;
-        options.tracesSampleRate = 0.2;
-        options.environment = environment;
-        options.debug = kDebugMode;
-        options.sendDefaultPii = false;
-        options.attachStacktrace = true;
+    await SentryFlutter.init((options) {
+      options.dsn = sentryDsn;
+      options.tracesSampleRate = 0.2;
+      options.environment = environment;
+      options.debug = kDebugMode;
+      options.sendDefaultPii = false;
+      options.attachStacktrace = true;
 
-        // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
-      },
-      appRunner: appRunner,
-    );
+      // Navigation breadcrumbs are added via SentryNavigatorObserver in the app's navigatorObservers
+    }, appRunner: appRunner);
 
     _initialized = true;
     _logger.debug('Sentry initialized (env: $environment)');
   }
 
   /// Returns a [NavigatorObserver] that records navigation breadcrumbs.
-  static NavigatorObserver get navigatorObserver =>
-      SentryNavigatorObserver();
+  static NavigatorObserver get navigatorObserver => SentryNavigatorObserver();
 
   /// Report an exception to Sentry.
   Future<void> captureException(
@@ -100,10 +91,7 @@ class SentryService {
       return;
     }
 
-    await Sentry.captureException(
-      details.exception,
-      stackTrace: details.stack,
-    );
+    await Sentry.captureException(details.exception, stackTrace: details.stack);
 
     if (kDebugMode) {
       FlutterError.presentError(details);
@@ -135,11 +123,7 @@ class SentryService {
 
     await Sentry.configureScope((scope) {
       if (id != null || email != null || username != null) {
-        scope.setUser(SentryUser(
-          id: id,
-          email: email,
-          username: username,
-        ));
+        scope.setUser(SentryUser(id: id, email: email, username: username));
       } else {
         scope.setUser(null);
       }

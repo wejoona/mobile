@@ -22,7 +22,9 @@ class KycRepository {
     String? selfiePath,
   }) {
     if (firstName.isEmpty || lastName.isEmpty) {
-      throw ArgumentError('firstName and lastName are required for KYC submission');
+      throw ArgumentError(
+        'firstName and lastName are required for KYC submission',
+      );
     }
     if (country.isEmpty) {
       throw ArgumentError('country is required for KYC submission');
@@ -30,13 +32,18 @@ class KycRepository {
     if (documentType.isEmpty) {
       throw ArgumentError('documentType is required for KYC submission');
     }
+    if (documentNumber == null || documentNumber.trim().isEmpty) {
+      throw ArgumentError('documentNumber is required for KYC submission');
+    }
     final parsedDob = DateTime.tryParse(dateOfBirth);
     if (parsedDob == null) {
       throw ArgumentError('Valid dateOfBirth is required for KYC submission');
     }
     final paths = documentPaths ?? (documentPath != null ? [documentPath] : []);
     if (paths.isEmpty) {
-      throw ArgumentError('At least one document path is required for KYC submission');
+      throw ArgumentError(
+        'At least one document path is required for KYC submission',
+      );
     }
 
     return _service.submitKyc(

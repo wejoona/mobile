@@ -1,9 +1,16 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/realtime/realtime_service.dart';
 import 'package:usdc_wallet/services/analytics/analytics_service.dart';
+import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
+import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
+import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 
 /// Steps in the deposit flow.
 enum DepositFlowStep {
@@ -24,13 +31,44 @@ class DepositState {
   final double? amountXOF;
   final double? amountUSD;
   final DepositResult? result;
-  final Map<String, dynamic>? response;
+  final DepositResponse? response;
+  final String? selectedProviderCode;
+  final String? selectedProviderMethodType;
+  final String? sourceCurrency;
   final String? otpInput;
   final DepositFlowStep step;
 
-  const DepositState({this.isLoading = false, this.error, this.selectedMethod, this.amount, this.amountXOF, this.amountUSD, this.result, this.response, this.otpInput, this.step = DepositFlowStep.selectProvider});
+  const DepositState({
+    this.isLoading = false,
+    this.error,
+    this.selectedMethod,
+    this.amount,
+    this.amountXOF,
+    this.amountUSD,
+    this.result,
+    this.response,
+    this.selectedProviderCode,
+    this.selectedProviderMethodType,
+    this.sourceCurrency,
+    this.otpInput,
+    this.step = DepositFlowStep.selectProvider,
+  });
 
-  DepositState copyWith({bool? isLoading, String? error, DepositMethod? selectedMethod, double? amount, double? amountXOF, double? amountUSD, DepositResult? result, Map<String, dynamic>? response, String? otpInput, DepositFlowStep? step}) => DepositState(
+  DepositState copyWith({
+    bool? isLoading,
+    String? error,
+    DepositMethod? selectedMethod,
+    double? amount,
+    double? amountXOF,
+    double? amountUSD,
+    DepositResult? result,
+    DepositResponse? response,
+    String? selectedProviderCode,
+    String? selectedProviderMethodType,
+    String? sourceCurrency,
+    String? otpInput,
+    DepositFlowStep? step,
+  }) => DepositState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     selectedMethod: selectedMethod ?? this.selectedMethod,
@@ -39,6 +77,10 @@ class DepositState {
     amountUSD: amountUSD ?? this.amountUSD,
     result: result ?? this.result,
     response: response ?? this.response,
+    selectedProviderCode: selectedProviderCode ?? this.selectedProviderCode,
+    selectedProviderMethodType:
+        selectedProviderMethodType ?? this.selectedProviderMethodType,
+    sourceCurrency: sourceCurrency ?? this.sourceCurrency,
     otpInput: otpInput ?? this.otpInput,
     step: step ?? this.step,
   );
@@ -67,7 +109,15 @@ class DepositResult {
   final String? token;
   final String? paymentMethodType;
 
-  const DepositResult({required this.id, required this.status, this.paymentUrl, this.instructions, this.reference, this.token, this.paymentMethodType});
+  const DepositResult({
+    required this.id,
+    required this.status,
+    this.paymentUrl,
+    this.instructions,
+    this.reference,
+    this.token,
+    this.paymentMethodType,
+  });
 
   factory DepositResult.fromJson(Map<String, dynamic> json) => DepositResult(
     // Backend returns { depositId, token, paymentMethodType, instructions, expiresAt }
@@ -78,6 +128,16 @@ class DepositResult {
     reference: json['reference'] as String?,
     token: json['token'] as String?,
     paymentMethodType: json['paymentMethodType'] as String?,
+  );
+
+  factory DepositResult.fromResponse(DepositResponse response) => DepositResult(
+    id: response.depositId,
+    status: response.status.value,
+    paymentUrl: response.deepLinkUrl,
+    instructions: response.instructions,
+    reference: response.token,
+    token: response.token,
+    paymentMethodType: response.paymentMethodType.value,
   );
 }
 
@@ -95,7 +155,10 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   void selectMethod(DepositMethod method) {
-    state = state.copyWith(selectedMethod: method, step: DepositFlowStep.enterAmount);
+    state = state.copyWith(
+      selectedMethod: method,
+      step: DepositFlowStep.enterAmount,
+    );
   }
 
   void setAmount(double amount) {
@@ -118,41 +181,99 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   Future<void> initiate() async {
-    if (state.selectedMethod == null || state.amount == null) return;
+    final sourceCurrency = state.sourceCurrency ?? 'XOF';
+    final sourceAmount = sourceCurrency == 'USD'
+        ? state.amountUSD
+        : state.amountXOF ?? state.amount;
+    final providerCode =
+        state.selectedProviderCode ??
+        (state.selectedMethod == null
+            ? null
+            : _methodToProviderCode(state.selectedMethod!));
+    final userState = ref.read(userStateMachineProvider);
+    final authState = ref.read(auth.authProvider);
+    final phoneNumber =
+        userState.phone ?? authState.phone ?? authState.user?.phone;
+
+    if (sourceAmount == null || providerCode == null) return;
+    final requiresPhone = _providerRequiresPhone(
+      providerCode,
+      state.selectedProviderMethodType,
+    );
+    if (requiresPhone && (phoneNumber == null || phoneNumber.isEmpty)) {
+      state = state.copyWith(
+        error: 'Phone number is required for mobile money deposit.',
+        step: DepositFlowStep.failed,
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true, step: DepositFlowStep.processing);
     try {
-      final dio = ref.read(dioProvider);
-      // Map mobile deposit method to backend provider codes
-      final providerCode = _methodToProviderCode(state.selectedMethod!);
-      final response = await dio.post('/deposits/initiate', data: {
-        'amount': state.amountXOF ?? state.amount,
-        'currency': 'XOF',
-        'providerCode': providerCode,
-      });
-      final result = DepositResult.fromJson(response.data as Map<String, dynamic>);
-      state = state.copyWith(isLoading: false, result: result, step: DepositFlowStep.processing);
-      ref.read(analyticsServiceProvider).trackDeposit(
-        method: state.selectedMethod!.name,
-        success: true,
+      final service = ref.read(depositServiceProvider);
+      final response = await service.initiateDeposit(
+        InitiateDepositRequest(
+          amount: sourceAmount.round(),
+          provider: providerCode,
+          phoneNumber: phoneNumber ?? '',
+          currency: sourceCurrency,
+        ),
       );
+      final result = DepositResult.fromResponse(response);
+      state = state.copyWith(
+        isLoading: false,
+        result: result,
+        response: response,
+        step: DepositFlowStep.processing,
+      );
+      ref
+          .read(analyticsServiceProvider)
+          .trackDeposit(method: providerCode, success: true);
       // Start polling for status updates
       _startPolling(result.id);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString(), step: DepositFlowStep.failed);
-      ref.read(analyticsServiceProvider).trackDeposit(
-        method: state.selectedMethod?.name ?? 'unknown',
-        success: false,
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+        step: DepositFlowStep.failed,
       );
+      ref
+          .read(analyticsServiceProvider)
+          .trackDeposit(
+            method: state.selectedMethod?.name ?? 'unknown',
+            success: false,
+          );
     }
   }
 
-  void setAmountXOF(double amount, [dynamic rate]) => state = state.copyWith(amountXOF: amount);
-  void setAmountUSD(double amount, [dynamic rate]) => state = state.copyWith(amountUSD: amount);
+  void setAmountXOF(double amount, [dynamic rate]) {
+    final converted = rate is ExchangeRate ? rate.convert(amount) : null;
+    state = state.copyWith(
+      amount: amount,
+      amountXOF: amount,
+      amountUSD: converted,
+      sourceCurrency: 'XOF',
+    );
+  }
+
+  void setAmountUSD(double amount, [dynamic rate]) {
+    final converted = rate is ExchangeRate ? rate.convertBack(amount) : null;
+    state = state.copyWith(
+      amount: converted ?? amount,
+      amountXOF: converted,
+      amountUSD: amount,
+      sourceCurrency: 'USD',
+    );
+  }
+
   /// Start polling for deposit status after initiation
   void _startPolling(String depositId) {
     _pollAttempts = 0;
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(_pollInterval, (_) => _pollStatus(depositId));
+    _pollingTimer = Timer.periodic(
+      _pollInterval,
+      (_) => _pollStatus(depositId),
+    );
   }
 
   /// Poll the backend for deposit status
@@ -161,34 +282,33 @@ class DepositNotifier extends Notifier<DepositState> {
     if (_pollAttempts > _maxPollAttempts) {
       _pollingTimer?.cancel();
       state = state.copyWith(
-        error: 'Deposit status check timed out. Please check your transaction history.',
+        error:
+            'Deposit status check timed out. Please check your transaction history.',
         step: DepositFlowStep.failed,
       );
       return;
     }
 
     try {
-      final dio = ref.read(dioProvider);
-      final response = await dio.get('/deposits/$depositId');
-      final data = response.data as Map<String, dynamic>;
-      final status = data['status'] as String?;
+      final service = ref.read(depositServiceProvider);
+      final response = await service.getDepositStatus(depositId);
+      final status = response.status;
 
-      if (status == 'completed' || status == 'settled') {
+      state = state.copyWith(response: response);
+
+      if (status == DepositStatus.completed) {
         _pollingTimer?.cancel();
         state = state.copyWith(
-          result: DepositResult(
-            id: depositId,
-            status: status!,
-            reference: data['reference'] as String?,
-          ),
+          result: DepositResult.fromResponse(response),
           step: DepositFlowStep.completed,
         );
         // Immediately refresh balance + transactions
         ref.read(realtimeServiceProvider).refreshAfterTransaction();
-      } else if (status == 'failed' || status == 'cancelled') {
+      } else if (status == DepositStatus.failed ||
+          status == DepositStatus.expired) {
         _pollingTimer?.cancel();
         state = state.copyWith(
-          error: data['message'] as String? ?? 'Deposit failed',
+          error: response.failureReason ?? 'Deposit failed',
           step: DepositFlowStep.failed,
         );
       }
@@ -204,15 +324,58 @@ class DepositNotifier extends Notifier<DepositState> {
     if (depositId == null) return;
     await _pollStatus(depositId);
   }
+
   void reset() {
     _pollingTimer?.cancel();
     state = const DepositState();
   }
 
+  void clearError() {
+    state = state.copyWith();
+  }
+
   // === Stub methods for views ===
-  Future<void> confirmDeposit() async => initiate();
+  Future<void> confirmDeposit() async {
+    final response = state.response;
+    if (response == null || response.token.isEmpty) {
+      state = state.copyWith(error: 'Missing deposit token.');
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final service = ref.read(depositServiceProvider);
+      final confirmed = await service.confirmDeposit(
+        ConfirmDepositRequest(token: response.token, otp: state.otpInput),
+      );
+      state = state.copyWith(
+        isLoading: false,
+        response: confirmed,
+        result: DepositResult.fromResponse(confirmed),
+        step: DepositFlowStep.processing,
+      );
+      _startPolling(confirmed.depositId);
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString(),
+        step: DepositFlowStep.failed,
+      );
+    }
+  }
+
   Future<void> initiateDeposit() async => initiate();
-  void selectProviderData(dynamic data) {}
+  void selectProviderData(dynamic data) {
+    final code = data is ProviderData ? data.id : data.toString();
+    state = state.copyWith(
+      selectedProviderCode: _normalizeProviderCode(code),
+      selectedProviderMethodType: data is ProviderData
+          ? data.paymentMethodType
+          : null,
+      selectedMethod: _providerCodeToMethod(code),
+    );
+  }
+
   void setOtp(String otp) => state = state.copyWith(otpInput: otp);
 
   /// Map mobile DepositMethod enum to backend provider codes.
@@ -230,6 +393,56 @@ class DepositNotifier extends Notifier<DepositState> {
         return 'BANK';
     }
   }
+
+  static DepositMethod? _providerCodeToMethod(String code) {
+    switch (_normalizeProviderCode(code)) {
+      case 'OMCI':
+        return DepositMethod.orangeMoney;
+      case 'MTNCI':
+        return DepositMethod.mtnMomo;
+      case 'MOOVCI':
+        return DepositMethod.moovMoney;
+      case 'WAVECI':
+        return DepositMethod.wave;
+      default:
+        return null;
+    }
+  }
+
+  static String _normalizeProviderCode(String value) {
+    switch (value.toUpperCase()) {
+      case 'ORANGE_MONEY':
+      case 'ORANGE':
+      case 'OMCI':
+        return 'OMCI';
+      case 'MTN_MOMO':
+      case 'MTN':
+      case 'MTNCI':
+        return 'MTNCI';
+      case 'MOOV_MONEY':
+      case 'MOOV':
+      case 'MOOVCI':
+        return 'MOOVCI';
+      case 'WAVE':
+      case 'WAVECI':
+        return 'WAVECI';
+      default:
+        return value.toUpperCase();
+    }
+  }
+
+  static bool _providerRequiresPhone(String providerCode, String? methodType) {
+    final method = methodType?.toUpperCase();
+    if (method == 'CARD' || method == 'BANK_TRANSFER' || method == 'ACH') {
+      return false;
+    }
+    return providerCode.endsWith('CI') ||
+        method == 'OTP' ||
+        method == 'PUSH' ||
+        method == 'QR_LINK';
+  }
 }
 
-final depositProvider = NotifierProvider<DepositNotifier, DepositState>(DepositNotifier.new);
+final depositProvider = NotifierProvider<DepositNotifier, DepositState>(
+  DepositNotifier.new,
+);

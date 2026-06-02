@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 
 class PaymentLinksService {
@@ -63,18 +64,42 @@ class PaymentLinksService {
   }
 
   /// Pay a payment link
-  Future<PaymentResponse> payLink(String shortCode) async {
-    final response = await _dio.post('/payment-links/code/$shortCode/pay');
+  Future<PaymentResponse> payLink(
+    String shortCode, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
+    final response = await _dio.post(
+      '/payment-links/code/$shortCode/pay',
+      options: Options(
+        headers: transactionHeaders(
+          pinToken: pinToken,
+          idempotencyKey: idempotencyKey,
+        ),
+      ),
+    );
     return PaymentResponse.fromJson(response.data);
   }
 
   // Aliases used by views
   Future<List<PaymentLink>> getPaymentLinks() => getLinks();
-  Future<PaymentLink> createPaymentLink({double? amount, String? currency, String? description, Map<String, dynamic>? data}) async {
-    final payload = data ?? {'amount': amount, 'currency': currency ?? 'USDC', 'description': description};
+  Future<PaymentLink> createPaymentLink({
+    double? amount,
+    String? currency,
+    String? description,
+    Map<String, dynamic>? data,
+  }) async {
+    final payload =
+        data ??
+        {
+          'amount': amount,
+          'currency': currency ?? 'USDC',
+          'description': description,
+        };
     final response = await _dio.post('/payment-links', data: payload);
     return PaymentLink.fromJson(response.data);
   }
+
   Future<PaymentLink> loadLink(String linkId) => getLink(linkId);
 }
 

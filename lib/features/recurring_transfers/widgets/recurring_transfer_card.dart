@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
-import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
+import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Card showing a recurring transfer summary.
 class RecurringTransferCard extends StatelessWidget {
@@ -12,64 +15,87 @@ class RecurringTransferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final statusColor = transfer.isActive
-        ? (isDark ? Colors.green.shade300 : Colors.green.shade700)
-        : (isDark ? Colors.orange.shade300 : Colors.orange.shade700);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              UserAvatar(
-                firstName: (transfer.recipientName ?? transfer.recipientPhone).split(' ').first,
-                lastName: (transfer.recipientName ?? '').split(' ').length > 1 ? (transfer.recipientName ?? '').split(' ').last : null,
-                size: 44,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      // ignore: dead_null_aware_expression
-                      transfer.recipientName ?? transfer.recipientPhone, // ignore: dead_code
-                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Container(
-                          width: 6, height: 6,
-                          decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          '${transfer.frequency.getDisplayName('fr')} • ${transfer.status.name}',
-                          style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
-                    ),
-                  ],
+    final colors = context.colors;
+    final locale = Localizations.localeOf(context).languageCode;
+
+    return AppCard(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: onTap,
+      child: Row(
+        children: [
+          UserAvatar(
+            firstName: transfer.recipientName.split(' ').first,
+            lastName: transfer.recipientName.split(' ').length > 1
+                ? transfer.recipientName.split(' ').last
+                : null,
+            size: 44,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  transfer.recipientName,
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  transfer.frequency.getDisplayName(locale),
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                StatusPill(
+                  label: transfer.status.getDisplayName(locale),
+                  tone: _statusTone,
+                  compact: true,
+                  emphasis: transfer.isActive,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              AmountText.fromText(
+                formatCurrency(transfer.amount, transfer.currency),
+                size: AmountTextSize.medium,
+                color: colors.textPrimary,
+                textAlign: TextAlign.right,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text('\$${transfer.amount.toStringAsFixed(2)}', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                  Text('${0} sent', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                ],
+              const SizedBox(height: AppSpacing.xxs),
+              AppText(
+                '${transfer.executedCount} sent',
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
+  }
+
+  StatusTone get _statusTone {
+    switch (transfer.status) {
+      case RecurringTransferStatus.active:
+        return StatusTone.success;
+      case RecurringTransferStatus.paused:
+        return StatusTone.warning;
+      case RecurringTransferStatus.completed:
+        return StatusTone.info;
+      case RecurringTransferStatus.cancelled:
+        return StatusTone.neutral;
+    }
   }
 }

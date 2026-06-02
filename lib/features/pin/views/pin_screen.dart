@@ -6,18 +6,22 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/state/transaction_state_machine.dart';
+import 'package:usdc_wallet/state/fsm/index.dart';
 
 /// Where the PIN screen was opened from — determines what happens on success.
 enum PinContext {
   /// Login flow: unlock app → go to /home
   login,
+
   /// Session lock: app was locked → return to previous screen
   sessionLock,
+
   /// Confirm action: verify before transfer/settings → pop with result
   confirmAction,
 }
@@ -78,14 +82,29 @@ class _PinScreenState extends ConsumerState<PinScreen> {
     switch (widget.pinContext) {
       case PinContext.login:
         // Unlock auth + session, show brief transition, navigate to home
-        try { ref.read(authProvider.notifier).unlock(); } catch (_) {}
-        try { ref.read(sessionServiceProvider.notifier).unlockSession(); } catch (_) {}
-        if (mounted) _transitionThen(() => context.go(widget.successRoute ?? '/home'));
+        try {
+          ref.read(authProvider.notifier).unlock();
+        } catch (_) {}
+        try {
+          ref.read(sessionServiceProvider.notifier).unlockSession();
+        } catch (_) {}
+        try {
+          ref.read(appFsmProvider.notifier).unlockSession();
+        } catch (_) {}
+        if (mounted)
+          _transitionThen(() => context.go(widget.successRoute ?? '/home'));
 
       case PinContext.sessionLock:
         // Unlock session, show brief transition, return to previous screen
-        try { ref.read(authProvider.notifier).unlock(); } catch (_) {}
-        try { ref.read(sessionServiceProvider.notifier).unlockSession(); } catch (_) {}
+        try {
+          ref.read(authProvider.notifier).unlock();
+        } catch (_) {}
+        try {
+          ref.read(sessionServiceProvider.notifier).unlockSession();
+        } catch (_) {}
+        try {
+          ref.read(appFsmProvider.notifier).unlockSession();
+        } catch (_) {}
         // Trigger background refresh of wallet and transactions after unlock
         Future.microtask(() {
           try {
@@ -119,7 +138,10 @@ class _PinScreenState extends ConsumerState<PinScreen> {
 
   Future<void> _verifyPin() async {
     if (_isVerifying) return;
-    setState(() { _isVerifying = true; _errorMessage = null; });
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
 
     final pinService = ref.read(pinServiceProvider);
     final result = await pinService.verifyPinLocally(_pin);
@@ -138,7 +160,11 @@ class _PinScreenState extends ConsumerState<PinScreen> {
         _errorMessage = result.message;
       });
       Future.delayed(const Duration(milliseconds: 800), () {
-        if (mounted) setState(() { _pin = ''; _hasError = false; });
+        if (mounted)
+          setState(() {
+            _pin = '';
+            _hasError = false;
+          });
       });
     }
   }
@@ -155,10 +181,29 @@ class _PinScreenState extends ConsumerState<PinScreen> {
     if (widget.title != null) return widget.title!;
     final l10n = AppLocalizations.of(context)!;
     switch (widget.pinContext) {
-      case PinContext.login: return l10n.login_enterPin;
-      case PinContext.sessionLock: return l10n.login_enterPin;
-      case PinContext.confirmAction: return l10n.login_enterPin;
+      case PinContext.login:
+        return l10n.login_enterPin;
+      case PinContext.sessionLock:
+        return l10n.session_enterPinToUnlock;
+      case PinContext.confirmAction:
+        return l10n.login_enterPin;
     }
+  }
+
+  String _subtitle(AppLocalizations l10n) {
+    if (widget.subtitle != null) return widget.subtitle!;
+    switch (widget.pinContext) {
+      case PinContext.sessionLock:
+        return l10n.session_lockedMessage;
+      case PinContext.login:
+      case PinContext.confirmAction:
+        return l10n.login_pinSubtitle;
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    await ref.read(authProvider.notifier).logout();
+    if (mounted) context.go('/login');
   }
 
   @override
@@ -202,15 +247,11 @@ class _PinScreenState extends ConsumerState<PinScreen> {
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        title: AppText(_title, variant: AppTextVariant.headlineSmall, color: colors.textPrimary),
-        backgroundColor: Colors.transparent, elevation: 0,
-        // Only show back button for confirmAction context
-        automaticallyImplyLeading: widget.pinContext == PinContext.confirmAction,
-      ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
               child: ConstrainedBox(
@@ -218,37 +259,55 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      const Spacer(flex: 1),
-                      Container(
-                        width: 80, height: 80,
-                        decoration: BoxDecoration(
-                          color: colors.container, shape: BoxShape.circle,
-                          border: Border.all(color: colors.border),
-                        ),
-                        child: Icon(Icons.lock_outline, color: colors.gold, size: 40),
+                      const SizedBox(height: AppSpacing.lg),
+                      _buildTopActionRow(colors, l10n),
+                      const SizedBox(height: AppSpacing.xl),
+                      _buildLogo(colors, size: 64),
+                      const SizedBox(height: AppSpacing.xl),
+                      AppText(
+                        l10n.appName,
+                        variant: AppTextVariant.headlineLarge,
+                        color: colors.textPrimary,
                       ),
-                      const SizedBox(height: AppSpacing.xxl),
-                      if (widget.subtitle != null) ...[
-                        AppText(widget.subtitle!, variant: AppTextVariant.bodyMedium,
-                          color: colors.textSecondary, textAlign: TextAlign.center),
-                        const SizedBox(height: AppSpacing.xxxl),
-                      ] else ...[
-                        AppText(l10n.login_pinSubtitle, variant: AppTextVariant.bodyMedium,
-                          color: colors.textSecondary, textAlign: TextAlign.center),
-                        const SizedBox(height: AppSpacing.xxxl),
-                      ],
+                      const SizedBox(height: AppSpacing.xs),
+                      AppText(
+                        _title,
+                        variant: AppTextVariant.titleLarge,
+                        color: colors.textPrimary,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                        ),
+                        child: AppText(
+                          _subtitle(l10n),
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xxxl),
 
                       PinDots(length: 6, filled: _pin.length, error: _hasError),
                       const SizedBox(height: AppSpacing.md),
 
                       if (_remainingAttempts < PinService.maxAttempts)
-                        AppText(l10n.login_attemptsRemaining(_remainingAttempts),
-                          variant: AppTextVariant.bodyMedium, color: colors.warningText),
+                        AppText(
+                          l10n.login_attemptsRemaining(_remainingAttempts),
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.warningText,
+                        ),
 
                       if (_errorMessage != null) ...[
                         const SizedBox(height: AppSpacing.md),
-                        AppText(_errorMessage!, variant: AppTextVariant.bodySmall,
-                          color: colors.errorText, textAlign: TextAlign.center),
+                        AppText(
+                          _errorMessage!,
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.errorText,
+                          textAlign: TextAlign.center,
+                        ),
                       ],
 
                       const Spacer(flex: 1),
@@ -256,22 +315,35 @@ class _PinScreenState extends ConsumerState<PinScreen> {
                       PinPad(
                         onDigitPressed: (digit) {
                           if (_pin.length >= 6) return;
-                          setState(() { _pin += digit.toString(); _hasError = false; _errorMessage = null; });
+                          setState(() {
+                            _pin += digit.toString();
+                            _hasError = false;
+                            _errorMessage = null;
+                          });
                           if (_pin.length == 6) _verifyPin();
                         },
                         onDeletePressed: () {
                           if (_pin.isNotEmpty) {
-                            setState(() { _pin = _pin.substring(0, _pin.length - 1); _hasError = false; });
+                            setState(() {
+                              _pin = _pin.substring(0, _pin.length - 1);
+                              _hasError = false;
+                            });
                           }
                         },
                         showBiometric: _biometricAvailable,
-                        onBiometricPressed: _biometricAvailable ? _handleBiometric : null,
+                        onBiometricPressed: _biometricAvailable
+                            ? _handleBiometric
+                            : null,
                       ),
 
                       const SizedBox(height: AppSpacing.xxl),
                       TextButton(
                         onPressed: () => context.push('/pin/reset'),
-                        child: AppText(l10n.login_forgotPin, variant: AppTextVariant.bodyMedium, color: colors.gold),
+                        child: AppText(
+                          l10n.login_forgotPin,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.gold,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                     ],
@@ -285,6 +357,35 @@ class _PinScreenState extends ConsumerState<PinScreen> {
     );
   }
 
+  Widget _buildTopActionRow(ThemeColors colors, AppLocalizations l10n) {
+    if (widget.pinContext == PinContext.confirmAction) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: () => context.pop(false),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
+        ),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: _handleLogout,
+        child: AppText(
+          l10n.common_logout,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogo(ThemeColors colors, {required double size}) {
+    return KoridoMark(size: size);
+  }
+
   Widget _buildLockedView(AppLocalizations l10n, ThemeColors colors) {
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -296,17 +397,36 @@ class _PinScreenState extends ConsumerState<PinScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 80, height: 80,
-                  decoration: BoxDecoration(color: colors.container, shape: BoxShape.circle, border: Border.all(color: colors.border)),
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: colors.container,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: colors.border),
+                  ),
                   child: Icon(Icons.lock_clock, color: colors.error, size: 40),
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                AppText(l10n.login_accountLocked, variant: AppTextVariant.headlineMedium, color: colors.textPrimary, textAlign: TextAlign.center),
+                AppText(
+                  l10n.login_accountLocked,
+                  variant: AppTextVariant.headlineMedium,
+                  color: colors.textPrimary,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: AppSpacing.md),
-                AppText('${l10n.login_lockedMessage}\n${_lockSeconds > 0 ? '${(_lockSeconds / 60).ceil()} min' : ''}',
-                  variant: AppTextVariant.bodyLarge, color: colors.textSecondary, textAlign: TextAlign.center),
+                AppText(
+                  '${l10n.login_lockedMessage}\n${_lockSeconds > 0 ? '${(_lockSeconds / 60).ceil()} min' : ''}',
+                  variant: AppTextVariant.bodyLarge,
+                  color: colors.textSecondary,
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: AppSpacing.xxl),
-                AppButton(label: l10n.common_ok, onPressed: () => context.go('/login'), variant: AppButtonVariant.primary, isFullWidth: true),
+                AppButton(
+                  label: l10n.common_ok,
+                  onPressed: () => context.go('/login'),
+                  variant: AppButtonVariant.primary,
+                  isFullWidth: true,
+                ),
               ],
             ),
           ),

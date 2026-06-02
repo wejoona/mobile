@@ -33,13 +33,13 @@ class ThemeColors {
   // BACKGROUNDS
   // ════════════════════════════════════════════════════════════════════════════
 
-  /// Main screen background (obsidian dark / white light)
+  /// Main screen background (obsidian dark / porcelain light)
   Color get canvas => isDark ? AppColors.obsidian : AppColorsLight.canvas;
 
-  /// Card/container background (slate dark / light container)
+  /// Card/container background (slate dark / ivory light)
   Color get container => isDark ? AppColors.slate : AppColorsLight.container;
 
-  /// Elevated surface (charcoal dark / light elevated)
+  /// Elevated surface (charcoal dark / champagne light)
   Color get elevated => isDark ? AppColors.elevated : AppColorsLight.elevated;
 
   /// Secondary surface (graphite dark / light surface)
@@ -50,19 +50,31 @@ class ThemeColors {
   // ════════════════════════════════════════════════════════════════════════════
 
   /// Primary text color
-  Color get textPrimary => isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
+  Color get textPrimary =>
+      isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
 
   /// Secondary text color
-  Color get textSecondary => isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+  Color get textSecondary =>
+      isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
 
   /// Tertiary/hint text color
-  Color get textTertiary => isDark ? AppColors.textTertiary : AppColorsLight.textTertiary;
+  Color get textTertiary =>
+      isDark ? AppColors.textTertiary : AppColorsLight.textTertiary;
 
   /// Disabled text color
-  Color get textDisabled => isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+  Color get textDisabled =>
+      isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
 
-  /// Inverse text (for buttons on gold background)
-  Color get textInverse => isDark ? AppColors.textInverse : AppColorsLight.textInverse;
+  /// Inverse text used by legacy brand surfaces. Kept dark for gold contrast.
+  Color get textInverse => AppColors.textInverse;
+
+  /// Text color for gold/champagne fills.
+  Color get onGold =>
+      isDark ? AppColors.textInverse : AppColorsLight.textOnGold;
+
+  /// Text color for deep ink/obsidian fills.
+  Color get onDark =>
+      isDark ? AppColors.textPrimary : AppColorsLight.textInverse;
 
   // ════════════════════════════════════════════════════════════════════════════
   // BRAND
@@ -72,54 +84,63 @@ class ThemeColors {
   Color get gold => isDark ? AppColors.gold500 : AppColorsLight.gold500;
   Color get primary => gold;
 
-  /// Gold for text/icons on dark backgrounds
-  Color get goldLight => AppColors.gold400;
+  /// Gold for text/icons on strong backgrounds
+  Color get goldLight => isDark ? AppColors.gold400 : AppColorsLight.gold400;
 
   /// Gold for backgrounds
-  Color get goldSubtle => isDark ? AppColors.gold900 : AppColors.gold100;
+  Color get goldSubtle => isDark ? AppColors.gold900 : AppColorsLight.gold100;
 
   /// Gold gradient for decorative elements
   List<Color> get goldGradient => isDark
-    ? AppColors.goldGradient
-    : [
-        AppColorsLight.gold500,
-        AppColorsLight.gold600,
-        AppColorsLight.gold500,
-      ];
+      ? AppColors.goldGradient
+      : const [
+          AppColorsLight.gold300,
+          AppColorsLight.gold500,
+          AppColorsLight.gold700,
+        ];
 
   // ════════════════════════════════════════════════════════════════════════════
   // SEMANTIC
   // ════════════════════════════════════════════════════════════════════════════
 
   /// Success color
-  Color get success => isDark ? AppColors.successBase : AppColorsLight.successBase;
+  Color get success =>
+      isDark ? AppColors.successBase : AppColorsLight.successBase;
 
   /// Success background
-  Color get successBg => isDark ? AppColors.successLight : AppColorsLight.successLight;
+  Color get successBg =>
+      isDark ? AppColors.successLight : AppColorsLight.successLight;
 
   /// Success text
-  Color get successText => isDark ? AppColors.successText : AppColorsLight.successText;
+  Color get successText =>
+      isDark ? AppColors.successText : AppColorsLight.successText;
 
   /// Error color
   Color get error => isDark ? AppColors.errorBase : AppColorsLight.errorBase;
 
   /// Error background
-  Color get errorBg => isDark ? AppColors.errorLight : AppColorsLight.errorLight;
+  Color get errorBg =>
+      isDark ? AppColors.errorLight : AppColorsLight.errorLight;
 
   /// Error text
-  Color get errorText => isDark ? AppColors.errorText : AppColorsLight.errorText;
+  Color get errorText =>
+      isDark ? AppColors.errorText : AppColorsLight.errorText;
 
   /// Warning color
-  Color get warning => isDark ? AppColors.warningBase : AppColorsLight.warningBase;
+  Color get warning =>
+      isDark ? AppColors.warningBase : AppColorsLight.warningBase;
 
   /// Warning base (alias for warning)
-  Color get warningBase => isDark ? AppColors.warningBase : AppColorsLight.warningBase;
+  Color get warningBase =>
+      isDark ? AppColors.warningBase : AppColorsLight.warningBase;
 
   /// Warning background
-  Color get warningBg => isDark ? AppColors.warningLight : AppColorsLight.warningLight;
+  Color get warningBg =>
+      isDark ? AppColors.warningLight : AppColorsLight.warningLight;
 
   /// Warning text
-  Color get warningText => isDark ? AppColors.warningText : AppColorsLight.warningText;
+  Color get warningText =>
+      isDark ? AppColors.warningText : AppColorsLight.warningText;
 
   /// Info color
   Color get info => isDark ? AppColors.infoBase : AppColorsLight.infoBase;
@@ -135,16 +156,20 @@ class ThemeColors {
   // ════════════════════════════════════════════════════════════════════════════
 
   /// Default border
-  Color get border => isDark ? AppColors.borderDefault : AppColorsLight.borderDefault;
+  Color get border =>
+      isDark ? AppColors.borderDefault : AppColorsLight.borderDefault;
 
   /// Subtle border
-  Color get borderSubtle => isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle;
+  Color get borderSubtle =>
+      isDark ? AppColors.borderSubtle : AppColorsLight.borderSubtle;
 
   /// Strong border (focused)
-  Color get borderStrong => isDark ? AppColors.borderStrong : AppColorsLight.borderStrong;
+  Color get borderStrong =>
+      isDark ? AppColors.borderStrong : AppColorsLight.borderStrong;
 
   /// Gold border
-  Color get borderGold => isDark ? AppColors.borderGold : AppColorsLight.borderGold;
+  Color get borderGold =>
+      isDark ? AppColors.borderGold : AppColorsLight.borderGold;
 
   // ════════════════════════════════════════════════════════════════════════════
   // ICONS
@@ -154,10 +179,12 @@ class ThemeColors {
   Color get icon => isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
 
   /// Secondary icon color
-  Color get iconSecondary => isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+  Color get iconSecondary =>
+      isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
 
   /// Disabled icon color
-  Color get iconDisabled => isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
+  Color get iconDisabled =>
+      isDark ? AppColors.textDisabled : AppColorsLight.textDisabled;
 
   // ════════════════════════════════════════════════════════════════════════════
   // OVERLAYS

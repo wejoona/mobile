@@ -1,23 +1,21 @@
-import 'package:usdc_wallet/utils/currency_utils.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
+import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/insights/models/spending_category.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class SpendingPieChart extends StatefulWidget {
   final List<SpendingCategory> categories;
 
-  const SpendingPieChart({
-    super.key,
-    required this.categories,
-  });
+  const SpendingPieChart({super.key, required this.categories});
 
   @override
   State<SpendingPieChart> createState() => _SpendingPieChartState();
 }
 
-class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerProviderStateMixin {
+class _SpendingPieChartState extends State<SpendingPieChart>
+    with SingleTickerProviderStateMixin {
   int _touchedIndex = -1;
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -68,15 +66,16 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
                           _touchedIndex = -1;
                           return;
                         }
-                        _touchedIndex =
-                            pieTouchResponse.touchedSection!.touchedSectionIndex;
+                        _touchedIndex = pieTouchResponse
+                            .touchedSection!
+                            .touchedSectionIndex;
                       });
                     },
                   ),
                   borderData: FlBorderData(show: false),
-                  sectionsSpace: 3,
+                  sectionsSpace: 2,
                   centerSpaceRadius: 65,
-                  sections: _buildSections(),
+                  sections: _buildSections(context),
                 ),
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOutCubic,
@@ -90,20 +89,19 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
+              AppText(
                 widget.categories[_touchedIndex].name,
-                style: AppTypography.bodySmall.copyWith(
-                  color: context.colors.textSecondary,
-                ),
+                variant: AppTextVariant.bodySmall,
+                color: context.colors.textSecondary,
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
-              Text(
+              const SizedBox(height: AppSpacing.xs),
+              AmountText.fromText(
                 formatXof(widget.categories[_touchedIndex].amount),
-                style: AppTypography.titleMedium.copyWith(
-                  color: context.colors.gold,
-                  fontWeight: FontWeight.bold,
-                ),
+                size: AmountTextSize.small,
+                color: context.colors.gold,
               ),
             ],
           ),
@@ -111,40 +109,19 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
     );
   }
 
-  List<PieChartSectionData> _buildSections() {
+  List<PieChartSectionData> _buildSections(BuildContext context) {
     return widget.categories.asMap().entries.map((entry) {
       final index = entry.key;
       final category = entry.value;
       final isTouched = index == _touchedIndex;
       final radius = isTouched ? 75.0 : 65.0;
-      final fontSize = isTouched ? 15.0 : 13.0;
+      final color = _chartColor(context, index);
 
       return PieChartSectionData(
-        color: category.color,
+        color: color.withValues(alpha: isTouched ? 1 : 0.86),
         value: category.percentage * _animation.value,
-        title: category.percentage >= 5 ? '${category.percentage.toStringAsFixed(1)}%' : '',
+        title: '',
         radius: radius,
-        titleStyle: AppTypography.bodyMedium.copyWith(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          shadows: [
-            Shadow(
-              color: Colors.black.withValues(alpha: 0.5),
-              blurRadius: 4,
-            ),
-          ],
-        ),
-        gradient: isTouched
-            ? LinearGradient(
-                colors: [
-                  category.color,
-                  category.color.withValues(alpha: 0.7),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              )
-            : null,
         borderSide: isTouched
             ? BorderSide(
                 color: context.colors.gold.withValues(alpha: 0.5),
@@ -153,5 +130,17 @@ class _SpendingPieChartState extends State<SpendingPieChart> with SingleTickerPr
             : BorderSide.none,
       );
     }).toList();
+  }
+
+  Color _chartColor(BuildContext context, int index) {
+    final colors = context.colors;
+    final palette = [
+      colors.gold,
+      colors.infoText,
+      colors.successText,
+      colors.warningText,
+      colors.textSecondary,
+    ];
+    return palette[index % palette.length];
   }
 }

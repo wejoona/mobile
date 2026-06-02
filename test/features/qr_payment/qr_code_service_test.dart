@@ -16,7 +16,7 @@ void main() {
 
         expect(qr, isNotEmpty);
         expect(qr, contains('+22507123456'));
-        expect(qr, contains('joonapay'));
+        expect(qr, contains('korido'));
       });
 
       test('should generate QR with amount', () {
@@ -48,7 +48,8 @@ void main() {
 
     group('parseQrData', () {
       test('should parse JSON format QR', () {
-        final qrString = '{"type":"joonapay","version":1,"phone":"+22507123456","amount":50.0,"currency":"USD"}';
+        final qrString =
+            '{"type":"joonapay","version":1,"phone":"+22507123456","amount":50.0,"currency":"USD"}';
         final data = service.parseQrData(qrString);
 
         expect(data, isNotNull);
@@ -82,7 +83,8 @@ void main() {
       });
 
       test('should parse URL with all parameters', () {
-        final qrString = 'joonapay://pay?phone=+22507123456&amount=100&currency=USD&name=John%20Doe&reference=INV-001';
+        final qrString =
+            'joonapay://pay?phone=+22507123456&amount=100&currency=USD&name=John%20Doe&reference=INV-001';
         final data = service.parseQrData(qrString);
 
         expect(data, isNotNull);
@@ -96,7 +98,8 @@ void main() {
 
     group('isValidQrData', () {
       test('should validate JSON format', () {
-        final qrString = '{"type":"joonapay","version":1,"phone":"+22507123456"}';
+        final qrString =
+            '{"type":"joonapay","version":1,"phone":"+22507123456"}';
         expect(service.isValidQrData(qrString), isTrue);
       });
 
@@ -191,7 +194,7 @@ void main() {
 
       final json = data.toJson();
 
-      expect(json['type'], 'joonapay');
+      expect(json['type'], 'korido');
       expect(json['version'], 1);
       expect(json['phone'], '+22507123456');
       expect(json['amount'], 50.0);
@@ -233,15 +236,12 @@ void main() {
     test('should use default values', () {
       final data = QrPaymentData(phone: '+22507123456');
 
-      expect(data.type, 'joonapay');
+      expect(data.type, 'korido');
       expect(data.version, 1);
     });
 
     test('should copy with changes', () {
-      final original = QrPaymentData(
-        phone: '+22507123456',
-        amount: 50.0,
-      );
+      final original = QrPaymentData(phone: '+22507123456', amount: 50.0);
 
       final copy = original.copyWith(amount: 100.0, currency: 'USD');
 

@@ -49,10 +49,13 @@ class BalanceCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              AppText(
-                'Total Balance',
-                variant: AppTextVariant.cardLabel,
-                color: colors.textSecondary,
+              const AppText('Total Balance', variant: AppTextVariant.cardLabel),
+              const Spacer(),
+              StatusPill(
+                label: currency,
+                tone: StatusTone.brand,
+                compact: true,
+                emphasis: true,
               ),
             ],
           ),
@@ -67,7 +70,8 @@ class BalanceCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
 
           // Change indicator
-          if (changePercent != null && !isLoading) _buildChangeIndicator(colors),
+          if (changePercent != null && !isLoading)
+            _buildChangeIndicator(colors),
 
           const SizedBox(height: AppSpacing.xl),
 
@@ -85,9 +89,11 @@ class BalanceCard extends StatelessWidget {
   }
 
   Widget _buildBalance(ThemeColors colors) {
-    return AppText(
-      _formatCurrency(balance, currency),
-      variant: AppTextVariant.balance,
+    return AmountText(
+      amount: balance,
+      currencyCode: currency,
+      showCurrencyCode: false,
+      size: AmountTextSize.large,
       color: colors.textPrimary,
     );
   }
@@ -128,16 +134,5 @@ class BalanceCard extends StatelessWidget {
         ],
       ],
     );
-  }
-
-  String _formatCurrency(double amount, String currency) {
-    // Simple formatting - in production use intl package
-    final formatted = amount.toStringAsFixed(2);
-    final parts = formatted.split('.');
-    final wholePart = parts[0].replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
-    return '\$$wholePart.${parts[1]}';
   }
 }

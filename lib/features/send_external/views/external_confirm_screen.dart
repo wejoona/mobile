@@ -7,15 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/send_external/providers/external_transfer_provider.dart';
-import 'package:usdc_wallet/services/pin/pin_service.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class ExternalConfirmScreen extends ConsumerStatefulWidget {
   const ExternalConfirmScreen({super.key});
 
   @override
-  ConsumerState<ExternalConfirmScreen> createState() => _ExternalConfirmScreenState();
+  ConsumerState<ExternalConfirmScreen> createState() =>
+      _ExternalConfirmScreenState();
 }
 
 class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
@@ -113,7 +112,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withValues(alpha: 0.2),
+                          color: context.colors.textSecondary.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
 
                         // Network
@@ -123,7 +124,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withValues(alpha: 0.2),
+                          color: context.colors.textSecondary.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
 
                         // Amount
@@ -134,7 +137,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withValues(alpha: 0.2),
+                          color: context.colors.textSecondary.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
 
                         // Network fee
@@ -144,7 +149,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
-                          color: context.colors.textSecondary.withValues(alpha: 0.2),
+                          color: context.colors.textSecondary.withValues(
+                            alpha: 0.2,
+                          ),
                         ),
 
                         // Total
@@ -256,7 +263,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
       children: [
         AppText(
           label,
-          variant: isLarge ? AppTextVariant.bodyLarge : AppTextVariant.bodyMedium,
+          variant: isLarge
+              ? AppTextVariant.bodyLarge
+              : AppTextVariant.bodyMedium,
           color: context.colors.textSecondary,
         ),
         SizedBox(width: AppSpacing.lg),
@@ -269,10 +278,18 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                 child: AppText(
                   value,
                   variant: isMonospace
-                      ? (isLarge ? AppTextVariant.monoLarge : AppTextVariant.monoMedium)
-                      : (isLarge ? AppTextVariant.bodyLarge : AppTextVariant.bodyMedium),
-                  fontWeight: isHighlighted || isLarge ? FontWeight.w600 : FontWeight.normal,
-                  color: isHighlighted ? context.colors.gold : context.colors.textPrimary,
+                      ? (isLarge
+                            ? AppTextVariant.monoLarge
+                            : AppTextVariant.monoMedium)
+                      : (isLarge
+                            ? AppTextVariant.bodyLarge
+                            : AppTextVariant.bodyMedium),
+                  fontWeight: isHighlighted || isLarge
+                      ? FontWeight.w600
+                      : FontWeight.normal,
+                  color: isHighlighted
+                      ? context.colors.gold
+                      : context.colors.textPrimary,
                   textAlign: TextAlign.right,
                 ),
               ),
@@ -280,11 +297,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                 SizedBox(width: AppSpacing.xs),
                 GestureDetector(
                   onTap: () => _copyToClipboard(value),
-                  child: Icon(
-                    Icons.copy,
-                    size: 16,
-                    color: context.colors.gold,
-                  ),
+                  child: Icon(Icons.copy, size: 16, color: context.colors.gold),
                 ),
               ],
             ],
@@ -312,7 +325,9 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final success = await ref.read(externalTransferProvider.notifier).executeTransfer();
+      final success = await ref
+          .read(externalTransferProvider.notifier)
+          .executeTransfer();
 
       if (mounted) {
         if (success) {
@@ -331,22 +346,6 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
 
   /// Verify user identity via PIN or biometric before executing external transfer
   Future<bool> _verifyIdentity() async {
-    final l10n = AppLocalizations.of(context)!;
-
-    // Try biometric first if available
-    final biometricService = ref.read(biometricServiceProvider);
-    final biometricAvailable = await biometricService.canCheckBiometrics();
-    final biometricEnabled = await biometricService.isBiometricEnabled();
-
-    if (biometricAvailable && biometricEnabled) {
-      final result = await biometricService.authenticate(
-        localizedReason: l10n.send_biometricReason,
-      );
-      if (result.success) return true;
-      // Fall through to PIN if biometric fails/cancelled
-    }
-
-    // Show PIN dialog
     if (!mounted) return false;
     final pinResult = await showDialog<bool>(
       context: context,
@@ -424,7 +423,10 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
             decoration: InputDecoration(
               counterText: '',
               hintText: '••••••',
-              hintStyle: TextStyle(color: colors.textTertiary, letterSpacing: 8),
+              hintStyle: TextStyle(
+                color: colors.textTertiary,
+                letterSpacing: 8,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: BorderSide(color: colors.border),
@@ -465,7 +467,10 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
             child: SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: colors.gold),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colors.gold,
+              ),
             ),
           ),
       ],
@@ -479,15 +484,17 @@ class _PinVerificationDialogState extends State<_PinVerificationDialog> {
     });
 
     try {
-      final pinService = widget.ref.read(pinServiceProvider);
-      final result = await pinService.verifyPinLocally(pin);
+      final verified = await widget.ref
+          .read(externalTransferProvider.notifier)
+          .verifyPin(pin);
 
       if (mounted) {
-        if (result.success) {
+        if (verified) {
           Navigator.pop(context, true);
         } else {
+          final state = widget.ref.read(externalTransferProvider);
           setState(() {
-            _error = result.message ?? 'PIN incorrect';
+            _error = state.error ?? 'PIN incorrect';
             _isVerifying = false;
             _pinController.clear();
           });

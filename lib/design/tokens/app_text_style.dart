@@ -1,61 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/typography.dart';
 
-/// Convenience text styles for use with AppText's `style` parameter.
-/// Maps semantic names to Material TextStyle definitions.
+/// Legacy convenience names for use with AppText's `style` parameter.
+///
+/// Prefer AppTextVariant or AppTypography in new code. These aliases stay
+/// token-backed so older screens do not drift into a separate type scale.
 class AppTextStyle {
   AppTextStyle._();
 
-  static const TextStyle headingLarge = TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    height: 1.3,
-  );
+  static const TextStyle headingLarge = AppTypography.headlineSmall;
 
-  static const TextStyle headingMedium = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    height: 1.3,
-  );
+  static const TextStyle headingMedium = AppTypography.titleLarge;
 
-  static const TextStyle headingSmall = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    height: 1.4,
-  );
+  static const TextStyle headingSmall = AppTypography.titleSmall;
 
-  static const TextStyle bodyLarge = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    height: 1.5,
-  );
+  static const TextStyle bodyLarge = AppTypography.bodyLarge;
 
-  static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.5,
-  );
+  static const TextStyle bodyMedium = AppTypography.bodyMedium;
 
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w400,
-    height: 1.4,
-  );
+  static const TextStyle bodySmall = AppTypography.bodySmall;
 
-  static const TextStyle labelLarge = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-    height: 1.4,
-  );
+  static const TextStyle labelLarge = AppTypography.labelLarge;
 
-  static const TextStyle labelMedium = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+  static const TextStyle labelMedium = AppTypography.labelMedium;
 
-  static const TextStyle labelSmall = TextStyle(
-    fontSize: 10,
-    fontWeight: FontWeight.w500,
-    height: 1.3,
-  );
+  static const TextStyle labelSmall = AppTypography.labelSmall;
 }

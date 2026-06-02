@@ -14,7 +14,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Savings Pots E2E', () {
+  e2eGroup('Savings Pots E2E', () {
     test('POST /savings-pots — create pot', () async {
       final res = await client.post('/savings-pots', {
         'name': 'E2E Test Pot',
@@ -62,9 +62,7 @@ void main() {
     });
 
     test('POST /savings-pots — missing name returns 400', () async {
-      final res = await client.post('/savings-pots', {
-        'targetAmount': 10000,
-      });
+      final res = await client.post('/savings-pots', {'targetAmount': 10000});
       expect(res.statusCode, 400);
     });
 

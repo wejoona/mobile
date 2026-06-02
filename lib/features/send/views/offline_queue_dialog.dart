@@ -37,11 +37,7 @@ class OfflineQueueDialog extends ConsumerWidget {
       ),
       title: Row(
         children: [
-          Icon(
-            Icons.cloud_off_outlined,
-            color: colors.warningBase,
-            size: 24,
-          ),
+          Icon(Icons.cloud_off_outlined, color: colors.warningBase, size: 24),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
@@ -84,11 +80,7 @@ class OfflineQueueDialog extends ConsumerWidget {
                 ),
                 if (description != null && description!.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
-                  _buildRow(
-                    l10n.send_note,
-                    description!,
-                    colors,
-                  ),
+                  _buildRow(l10n.send_note, description!, colors),
                 ],
               ],
             ),
@@ -133,7 +125,9 @@ class OfflineQueueDialog extends ConsumerWidget {
         ),
         AppText(
           value,
-          variant: isAmount ? AppTextVariant.titleMedium : AppTextVariant.bodyMedium,
+          variant: isAmount
+              ? AppTextVariant.titleMedium
+              : AppTextVariant.bodyMedium,
           color: isAmount ? colors.gold : colors.textPrimary,
           fontWeight: isAmount ? FontWeight.w700 : FontWeight.normal,
         ),

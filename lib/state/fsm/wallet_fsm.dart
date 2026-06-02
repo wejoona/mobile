@@ -333,10 +333,7 @@ class WalletBalanceUpdate extends WalletEvent {
 
 /// Wallet frozen by compliance
 class WalletFrozenEvent extends WalletEvent {
-  const WalletFrozenEvent({
-    required this.reason,
-    this.frozenUntil,
-  });
+  const WalletFrozenEvent({required this.reason, this.frozenUntil});
 
   final String reason;
   final DateTime? frozenUntil;
@@ -458,6 +455,18 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
     if (event is WalletNotFound) {
       return const TransitionSuccess(WalletNotCreated());
     }
+    if (event is WalletCreated) {
+      return TransitionSuccess(
+        WalletReady(
+          walletId: event.walletId,
+          walletAddress: event.walletAddress,
+          blockchain: event.blockchain,
+          usdcBalance: 0,
+          pendingBalance: 0,
+          lastUpdated: DateTime.now(),
+        ),
+      );
+    }
     if (event is WalletFailed) {
       return TransitionSuccess(
         WalletError(
@@ -498,7 +507,10 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
           lastUpdated: DateTime.now(),
         ),
         effects: [
-          const NotifyEffect('Wallet created successfully!', type: NotifyType.success),
+          const NotifyEffect(
+            'Wallet created successfully!',
+            type: NotifyType.success,
+          ),
         ],
       );
     }
@@ -538,7 +550,8 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
       // Optimistic update
       return TransitionSuccess(
         state.copyWith(
-          usdcBalance: state.usdcBalance +
+          usdcBalance:
+              state.usdcBalance +
               (event.addAmount ?? 0) -
               (event.subtractAmount ?? 0),
           pendingBalance: state.pendingBalance + (event.addPending ?? 0),
@@ -553,9 +566,7 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
           frozenAt: DateTime.now(),
           frozenUntil: event.frozenUntil,
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.error),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.error)],
       );
     }
     if (event is WalletUnderReviewEvent) {
@@ -565,9 +576,7 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
           reason: event.reason,
           reviewStartedAt: DateTime.now(),
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.warning),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.warning)],
       );
     }
     if (event is WalletLimitedEvent) {
@@ -583,9 +592,7 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
           maxTransactionAmount: event.maxTransactionAmount,
           dailyLimit: event.dailyLimit,
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.warning),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.warning)],
       );
     }
     return const TransitionNotApplicable();
@@ -669,9 +676,7 @@ class WalletFsm extends FsmDefinition<WalletState, WalletEvent> {
           frozenAt: DateTime.now(),
           frozenUntil: event.frozenUntil,
         ),
-        effects: [
-          NotifyEffect(event.reason, type: NotifyType.error),
-        ],
+        effects: [NotifyEffect(event.reason, type: NotifyType.error)],
       );
     }
     return const TransitionNotApplicable();

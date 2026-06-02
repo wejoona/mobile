@@ -2,6 +2,7 @@
 library;
 
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 class PaymentLinksApi {
   PaymentLinksApi(this._dio);
@@ -17,11 +18,33 @@ class PaymentLinksApi {
   /// GET /payment-links/:id
   Future<Response> getById(String id) => _dio.get('/payment-links/$id');
 
-  /// POST /payment-links/:id/pay
-  Future<Response> pay(String id, Map<String, dynamic> data) =>
-      _dio.post('/payment-links/$id/pay', data: data);
+  /// POST /payment-links/code/:code/pay
+  Future<Response> payByCode(
+    String code,
+    Map<String, dynamic> data, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/payment-links/code/$code/pay',
+    data: data,
+    options: Options(
+      headers: transactionHeaders(
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      ),
+    ),
+  );
 
-  /// POST /payment-links/:id/deactivate
+  /// POST /payment-links/code/:code/pay
+  Future<Response> pay(
+    String code,
+    Map<String, dynamic> data, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) =>
+      payByCode(code, data, pinToken: pinToken, idempotencyKey: idempotencyKey);
+
+  /// PATCH /payment-links/:id/cancel
   Future<Response> deactivate(String id) =>
-      _dio.post('/payment-links/$id/deactivate');
+      _dio.patch('/payment-links/$id/cancel');
 }

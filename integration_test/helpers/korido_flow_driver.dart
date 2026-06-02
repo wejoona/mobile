@@ -1,0 +1,496 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/main.dart' as app;
+import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/mocks/mock_registry.dart';
+import 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';
+import 'package:usdc_wallet/mocks/services/kyc/kyc_mock.dart';
+import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
+
+class KoridoFlowDriver {
+  KoridoFlowDriver(this.tester);
+
+  static const defaultPin = '739251';
+
+  final WidgetTester tester;
+
+  static Future<void> resetMocksAndStorage() async {
+    MockConfig.enableAllMocks();
+    MockConfig.networkDelayMs = 0;
+    MockRegistry.reset();
+    KycMockState.approve();
+    await clearPersistentState();
+  }
+
+  static Future<void> clearPersistentState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    const storage = FlutterSecureStorage();
+    try {
+      await storage.deleteAll();
+    } on Object catch (_) {
+      // Keychain-backed storage is not always available on every test host.
+    }
+  }
+
+  Future<void> launchApp() async {
+    final originalOnError = FlutterError.onError;
+    final originalErrorBuilder = ErrorWidget.builder;
+    addTearDown(() {
+      FlutterError.onError = originalOnError;
+      ErrorWidget.builder = originalErrorBuilder;
+    });
+
+    app.main();
+    await tester.pump(const Duration(milliseconds: 750));
+    FlutterError.onError = originalOnError;
+    ErrorWidget.builder = originalErrorBuilder;
+  }
+
+  Future<void> completeOnboarding({String pin = defaultPin}) async {
+    await startRegistrationFromIntro();
+    await submitPhone(_uniqueIvorianPhone());
+    await enterOtp('123456');
+
+    await pumpUntil(
+      () => hasAnyText(['Tell us about yourself', 'Parlez-nous de vous']),
+      reason: 'profile setup screen',
+    );
+    ensureMockWalletHasBalance(minUsdc: 100);
+
+    await submitProfile();
+
+    await pumpUntil(
+      () => hasAnyText(['Create your PIN', 'Créez votre PIN']),
+      reason: 'PIN setup screen',
+    );
+
+    await enterPinTwice(pin);
+
+    await pumpUntil(
+      () => hasAnyText(['Verify your identity', 'Vérifiez votre identité']),
+      reason: 'KYC prompt screen',
+    );
+
+    await tapText(['Maybe Later', 'Peut-être plus tard']);
+
+    await pumpUntil(
+      () => hasAnyText(['Welcome to Korido!', 'Bienvenue sur Korido!']),
+      reason: 'onboarding success screen',
+    );
+
+    await tapText(['Start Using Korido', 'Commencer à utiliser Korido']);
+    await waitForHome();
+  }
+
+  Future<void> startRegistrationFromIntro() async {
+    await pumpUntil(
+      () =>
+          hasAnyText(['Continue', 'Continuer']) ||
+          hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
+      reason: 'intro or phone screen',
+      timeout: const Duration(seconds: 12),
+    );
+
+    if (hasAnyText(['Enter your phone number', 'Entrez votre numéro'])) {
+      return;
+    }
+
+    for (var i = 0; i < 4; i++) {
+      if (hasAnyText(['Get Started', 'Commencer'])) {
+        await tapText(['Get Started', 'Commencer']);
+        break;
+      }
+
+      await tapText(['Continue', 'Continuer']);
+      await tester.pump(const Duration(milliseconds: 650));
+    }
+
+    await pumpUntil(
+      () => hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
+      reason: 'phone input screen',
+    );
+  }
+
+  Future<void> submitPhone(String phone) async {
+    await pumpUntil(
+      () => find.byType(TextFormField).evaluate().isNotEmpty,
+      reason: 'phone text field',
+    );
+
+    await tester.enterText(find.byType(TextFormField).first, phone);
+    await tester.pump();
+    await dismissKeyboard();
+    await tester.tap(find.byType(Checkbox).first);
+    await tester.pump();
+    await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () =>
+          find
+              .byKey(const ValueKey('security_code_input'))
+              .evaluate()
+              .isNotEmpty ||
+          hasAnyText(['Verify your number', 'Vérifiez votre numéro']),
+      reason: 'OTP input screen',
+    );
+  }
+
+  Future<void> enterOtp(String otp) async {
+    final unifiedCodeField = find.byKey(const ValueKey('security_code_input'));
+    if (unifiedCodeField.evaluate().isNotEmpty) {
+      await tester.tap(unifiedCodeField.first);
+      await tester.enterText(unifiedCodeField.first, otp);
+      await tester.pump(const Duration(milliseconds: 350));
+    } else {
+      final fields = find.byType(TextField);
+      for (var i = 0; i < otp.length; i++) {
+        await tester.tap(fields.at(i));
+        await tester.enterText(fields.at(i), otp[i]);
+        await tester.pump(const Duration(milliseconds: 120));
+      }
+    }
+    await dismissKeyboard();
+  }
+
+  Future<void> submitProfile() async {
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Awa');
+    await tester.enterText(fields.at(1), 'Kone');
+    await tester.enterText(fields.at(2), 'awa.kone@example.com');
+    await dismissKeyboard();
+
+    final listView = find.byType(ListView);
+    if (listView.evaluate().isNotEmpty) {
+      await tester.drag(listView.first, const Offset(0, -420));
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
+    await tapText(['Continue', 'Continuer']);
+  }
+
+  Future<void> enterPinTwice(String pin) async {
+    await enterPin(pin);
+    await pumpUntil(
+      () => hasAnyText(['Confirm your PIN', 'Confirmez votre PIN']),
+      reason: 'PIN confirmation screen',
+    );
+    await enterPin(pin);
+  }
+
+  Future<void> enterPin(String pin) async {
+    for (final digit in pin.split('')) {
+      await tester.tap(find.text(digit).last);
+      await tester.pump(const Duration(milliseconds: 90));
+    }
+  }
+
+  Future<void> waitForHome() async {
+    await pumpUntil(
+      () =>
+          hasAnyText(['Total Balance', 'Solde total']) &&
+          hasAnyText(['USDC']) &&
+          hasAnyText(['Send', 'Envoyer']) &&
+          hasAnyText(['Deposit', 'Dépôt']),
+      reason: 'home dashboard with balance and quick actions',
+    );
+  }
+
+  Future<void> goToRoute(String route) async {
+    await pumpUntil(
+      () => find.byType(Scaffold).evaluate().isNotEmpty,
+      reason: 'active route scaffold',
+    );
+
+    final context = tester.element(find.byType(Scaffold).last);
+    GoRouter.of(context).go(route);
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  Future<void> pushRoute(String route) async {
+    await pumpUntil(
+      () => find.byType(Scaffold).evaluate().isNotEmpty,
+      reason: 'active route scaffold',
+    );
+
+    final context = tester.element(find.byType(Scaffold).last);
+    unawaited(GoRouter.of(context).push(route));
+    await tester.pump(const Duration(milliseconds: 500));
+  }
+
+  Future<void> exerciseDepositFromHome() async {
+    await tapText(['Deposit', 'Dépôt']);
+
+    await pumpUntil(
+      () => hasAnyText(['Déposer des fonds', 'Deposit Funds']),
+      reason: 'deposit screen',
+    );
+
+    await enterFirstTextFormField('5000');
+    await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () => hasAnyText(['Orange Money']),
+      reason: 'deposit provider options',
+    );
+
+    final orangeProvider = find.byKey(const ValueKey('deposit_provider_OMCI'));
+    await tester.ensureVisible(orangeProvider);
+    await tester.tap(orangeProvider);
+    await tester.pump(const Duration(milliseconds: 350));
+
+    await pumpUntil(
+      () =>
+          hasAnyText(['Instructions de paiement', 'Payment Instructions']) ||
+          hasAnyText(['Enter OTP', 'Entrer OTP']) ||
+          hasAnyText(['Deposit Successful', 'Dépôt réussi']),
+      reason: 'deposit instructions, OTP prompt, or success status',
+    );
+
+    if (hasAnyText(['Enter OTP', 'Entrer OTP'])) {
+      await pumpUntil(
+        () => find.byType(TextField).evaluate().isNotEmpty,
+        reason: 'deposit OTP input field',
+      );
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.last, '123456');
+      await tester.pump(const Duration(milliseconds: 250));
+      await dismissKeyboard();
+      await tapText(['Submit OTP', 'Soumettre OTP']);
+
+      await pumpUntil(
+        () => hasAnyText(['Deposit Successful', 'Dépôt réussi']),
+        reason: 'deposit success status after OTP',
+      );
+    }
+  }
+
+  Future<void> returnHomeFromDeposit() async {
+    final doneButton = findText(['Done', 'Terminé']);
+    if (doneButton != null) {
+      await tester.ensureVisible(doneButton);
+      await tester.tap(doneButton);
+    } else {
+      final closeButton = find.byIcon(Icons.close);
+      if (closeButton.evaluate().isNotEmpty) {
+        await tester.tap(closeButton.first);
+      } else {
+        await tester.pageBack();
+      }
+    }
+    await tester.pump(const Duration(milliseconds: 350));
+    await waitForHome();
+  }
+
+  Future<void> exerciseTransferFromHome({String pin = defaultPin}) async {
+    await tapText(['Send', 'Envoyer']);
+
+    await pumpUntil(
+      () => hasAnyText(['Select Recipient', 'Sélectionner le destinataire']),
+      reason: 'send recipient screen',
+    );
+
+    await enterFirstTextFormField('0711223344');
+    await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () => hasAnyText(['Enter Amount', 'Entrer le montant']),
+      reason: 'send amount screen',
+    );
+
+    await enterFirstTextFormField('1');
+    await tapText(['Continue', 'Continuer']);
+
+    await pumpUntil(
+      () => hasAnyText(['Confirm Transfer', 'Confirmer le transfert']),
+      reason: 'send confirmation screen',
+    );
+
+    await tapText(['Confirm & Send', 'Confirmer & Envoyer']);
+
+    await pumpUntil(
+      () => hasAnyText(['Verify PIN', 'Vérifier le code PIN']),
+      reason: 'send PIN verification screen',
+    );
+
+    await enterPinTextFields(pin);
+
+    await pumpUntil(
+      () => hasAnyText(['Transfer Successful!', 'Transfert réussi!']),
+      reason: 'transfer success result',
+    );
+  }
+
+  Future<void> pullToRefreshHome() async {
+    final scrollable = find.byType(CustomScrollView).evaluate().isNotEmpty
+        ? find.byType(CustomScrollView).first
+        : find.byType(Scrollable).first;
+    await tester.fling(scrollable, const Offset(0, 300), 1000);
+    await tester.pump(const Duration(seconds: 1));
+    await waitForHome();
+  }
+
+  Future<void> enterFirstTextFormField(String value) async {
+    Finder fields() {
+      final formFields = find.byType(TextFormField);
+      return formFields.evaluate().isNotEmpty
+          ? formFields
+          : find.byType(TextField);
+    }
+
+    await pumpUntil(
+      () => fields().evaluate().isNotEmpty,
+      reason: 'text input field',
+    );
+    await tester.enterText(fields().first, value);
+    await tester.pump();
+    await dismissKeyboard();
+  }
+
+  Future<void> enterPinTextFields(String pin) async {
+    await pumpUntil(
+      () => find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty,
+      reason: 'PIN input fields',
+    );
+
+    for (var i = 0; i < pin.length; i++) {
+      final field = find.byKey(ValueKey('pin_digit_$i'));
+      await tester.ensureVisible(field);
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.tap(field);
+      await tester.enterText(field, pin[i]);
+      await tester.pump(const Duration(milliseconds: 90));
+    }
+    await dismissKeyboard();
+  }
+
+  Future<void> tapText(List<String> candidates) async {
+    final finder = findText(candidates);
+    if (finder == null) {
+      throw TestFailure('Could not find any text: ${candidates.join(', ')}');
+    }
+    await tester.ensureVisible(finder);
+    await tester.tap(finder);
+    await tester.pump(const Duration(milliseconds: 350));
+  }
+
+  Future<void> tapTextAfterScroll(
+    List<String> candidates, {
+    int maxScrolls = 10,
+  }) async {
+    await scrollUntilText(candidates, maxScrolls: maxScrolls);
+    await tapText(candidates);
+  }
+
+  Future<void> scrollUntilText(
+    List<String> candidates, {
+    int maxScrolls = 10,
+  }) async {
+    for (var i = 0; i <= maxScrolls; i++) {
+      if (findText(candidates) != null) {
+        return;
+      }
+
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isEmpty) {
+        break;
+      }
+
+      await tester.drag(scrollables.last, const Offset(0, -360));
+      await tester.pump(const Duration(milliseconds: 250));
+    }
+
+    throw TestFailure(
+      'Could not scroll to any text: ${candidates.join(', ')}. '
+      'Visible text: ${visibleTextSnapshot()}',
+    );
+  }
+
+  Finder? findText(List<String> candidates) {
+    for (final candidate in candidates) {
+      final exact = find.text(candidate);
+      if (exact.evaluate().isNotEmpty) {
+        return exact.first;
+      }
+
+      final containing = find.textContaining(candidate);
+      if (containing.evaluate().isNotEmpty) {
+        return containing.first;
+      }
+    }
+    return null;
+  }
+
+  bool hasAnyText(List<String> candidates) => findText(candidates) != null;
+
+  Future<void> pumpUntil(
+    bool Function() condition, {
+    required String reason,
+    Duration timeout = const Duration(seconds: 20),
+  }) async {
+    final deadline = DateTime.now().add(timeout);
+    while (DateTime.now().isBefore(deadline)) {
+      await tester.pump(const Duration(milliseconds: 250));
+      if (condition()) {
+        return;
+      }
+    }
+    throw TestFailure(
+      'Timed out waiting for $reason. Visible text: ${visibleTextSnapshot()}',
+    );
+  }
+
+  String visibleTextSnapshot() {
+    final texts = <String>[];
+    for (final element in find.byType(Text).evaluate()) {
+      final widget = element.widget as Text;
+      final value = widget.data ?? widget.textSpan?.toPlainText();
+      if (value == null || value.trim().isEmpty) {
+        continue;
+      }
+      texts.add(value.trim());
+      if (texts.length >= 30) {
+        break;
+      }
+    }
+    return texts.join(' | ');
+  }
+
+  Future<void> dismissKeyboard() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    try {
+      tester.testTextInput.hide();
+    } on Object catch (_) {
+      // Integration tests on a real simulator do not always register TestTextInput.
+    }
+    await tester.pump(const Duration(milliseconds: 250));
+  }
+
+  void ensureMockWalletHasBalance({required double minUsdc}) {
+    final userId = AuthMockState.currentUserId;
+    if (userId == null) {
+      return;
+    }
+
+    final wallet =
+        WalletMockState.getWallet(userId) ??
+        WalletMockState.createWallet(userId);
+    if (wallet.balanceUsdc >= minUsdc) {
+      return;
+    }
+
+    final delta = minUsdc - wallet.balanceUsdc;
+    WalletMockState.updateBalance(userId, delta, delta * 655.957);
+  }
+
+  String _uniqueIvorianPhone() {
+    final seed = DateTime.now().millisecondsSinceEpoch.toString();
+    return '07${seed.substring(seed.length - 8)}';
+  }
+}

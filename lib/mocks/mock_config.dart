@@ -3,12 +3,12 @@
 /// Global configuration for the mocking framework.
 /// Toggle between mock and real API at app level or per-service.
 ///
-/// NOTE: Prefer using [mockConfigProvider] from mock_config_provider.dart
+/// NOTE: Prefer using mock_config_provider.dart
 /// for reactive, provider-based mock configuration that auto-detects
 /// simulator vs physical device.
 library;
 
-import 'package:flutter/foundation.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 
 /// Mock mode configuration
 ///
@@ -16,9 +16,16 @@ import 'package:flutter/foundation.dart';
 /// These static values are kept for backwards compatibility but should not be
 /// used for camera mocking - the provider handles that automatically.
 class MockConfig {
+  static const int _defaultNetworkDelayMs = 120;
+
   /// Master switch - when true, all mocks are enabled
   /// Set to false to connect to real backend
-  static bool useMocks = false; // Disabled - using real API
+  static bool useMocks = EnvironmentConfig.useMocks;
+
+  /// When mock mode is active, unregistered API routes should not leak to the
+  /// real backend. This keeps simulator/TestFlight mock builds deterministic
+  /// while the production API is being repaired.
+  static bool blockUnmockedRequests = true;
 
   /// Per-service mock toggles (only apply when useMocks is true)
   static bool mockAuth = true;
@@ -37,15 +44,27 @@ class MockConfig {
   static bool mockCamera = false;
 
   /// Simulated network delay (ms)
-  static int networkDelayMs = 500;
+  static int networkDelayMs = _defaultNetworkDelayMs;
 
   /// Simulate random failures (for testing error handling)
   static bool simulateRandomFailures = false;
   static double failureRate = 0.1; // 10% failure rate
 
+  /// Apply compile-time configuration.
+  ///
+  /// Call during app startup so tests and release builds both obey the same
+  /// `--dart-define` switches.
+  static void configureFromEnvironment() {
+    useMocks = EnvironmentConfig.useMocks;
+    blockUnmockedRequests = true;
+    networkDelayMs = _defaultNetworkDelayMs;
+  }
+
   /// Check if a specific service should use mocks
   static bool shouldMock(String service) {
-    if (!useMocks) return false;
+    if (!useMocks) {
+      return false;
+    }
 
     switch (service) {
       case 'auth':
@@ -74,6 +93,7 @@ class MockConfig {
   /// Enable all mocks
   static void enableAllMocks() {
     useMocks = true;
+    blockUnmockedRequests = true;
     mockAuth = true;
     mockWallet = true;
     mockTransactions = true;
@@ -89,11 +109,13 @@ class MockConfig {
   /// Disable all mocks (use real API)
   static void disableAllMocks() {
     useMocks = false;
+    blockUnmockedRequests = false;
   }
 
   /// Reset to defaults
   static void reset() {
-    useMocks = kDebugMode;
+    useMocks = EnvironmentConfig.useMocks;
+    blockUnmockedRequests = true;
     mockAuth = true;
     mockWallet = true;
     mockTransactions = true;
@@ -104,7 +126,7 @@ class MockConfig {
     mockBillPayments = true;
     mockRates = true;
     mockCamera = true;
-    networkDelayMs = 500;
+    networkDelayMs = _defaultNetworkDelayMs;
     simulateRandomFailures = false;
     failureRate = 0.1;
   }

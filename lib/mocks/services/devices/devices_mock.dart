@@ -4,64 +4,16 @@
 library;
 
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Devices mock state
 class DevicesMockState {
-  static final List<Map<String, dynamic>> devices = [
-    {
-      'id': 'device-1',
-      'deviceIdentifier': 'iphone-15-pro-123',
-      'brand': 'Apple',
-      'model': 'iPhone 15 Pro',
-      'os': 'iOS',
-      'osVersion': '17.2',
-      'appVersion': '1.0.0',
-      'platform': 'ios',
-      'isTrusted': true,
-      'trustedAt': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
-      'isActive': true,
-      'lastLoginAt': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
-      'lastIpAddress': '102.176.45.123',
-      'loginCount': 45,
-    },
-    {
-      'id': 'device-2',
-      'deviceIdentifier': 'macbook-pro-456',
-      'brand': 'Apple',
-      'model': 'MacBook Pro',
-      'os': 'macOS',
-      'osVersion': '14.2',
-      'appVersion': '1.0.0',
-      'platform': 'web',
-      'isTrusted': true,
-      'trustedAt': DateTime.now().subtract(const Duration(days: 15)).toIso8601String(),
-      'isActive': true,
-      'lastLoginAt': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-      'lastIpAddress': '102.176.45.123',
-      'loginCount': 23,
-    },
-    {
-      'id': 'device-3',
-      'deviceIdentifier': 'samsung-s23-789',
-      'brand': 'Samsung',
-      'model': 'Galaxy S23',
-      'os': 'Android',
-      'osVersion': '14',
-      'appVersion': '1.0.0',
-      'platform': 'android',
-      'isTrusted': false,
-      'trustedAt': null,
-      'isActive': true,
-      'lastLoginAt': DateTime.now().subtract(const Duration(days: 3)).toIso8601String(),
-      'lastIpAddress': '41.85.162.74',
-      'loginCount': 8,
-    },
-  ];
+  static final List<Map<String, dynamic>> devices = _initialDevices();
 
   static void reset() {
-    // Reset to initial state if needed
+    devices
+      ..clear()
+      ..addAll(_initialDevices());
   }
 
   static Map<String, dynamic>? findDevice(String id) {
@@ -80,61 +32,227 @@ class DevicesMockState {
     final device = findDevice(id);
     if (device != null) {
       device['isTrusted'] = true;
+      device['is_trusted'] = true;
       device['trustedAt'] = DateTime.now().toIso8601String();
+      device['trusted_at'] = device['trustedAt'];
     }
+  }
+
+  static void untrustDevice(String id) {
+    final device = findDevice(id);
+    if (device != null) {
+      device['isTrusted'] = false;
+      device['is_trusted'] = false;
+      device['trustedAt'] = null;
+      device['trusted_at'] = null;
+    }
+  }
+
+  static void renameDevice(String id, String name) {
+    final device = findDevice(id);
+    if (device != null) {
+      device['displayName'] = name;
+      device['display_name'] = name;
+      device['deviceName'] = name;
+      device['device_name'] = name;
+    }
+  }
+
+  static List<Map<String, dynamic>> _initialDevices() {
+    return [
+      {
+        'id': 'device-1',
+        'userId': 'mock-user',
+        'deviceIdentifier': 'iphone-15-pro-123',
+        'displayName': 'Ben iPhone',
+        'brand': 'Apple',
+        'model': 'iPhone 15 Pro',
+        'os': 'iOS',
+        'osVersion': '17.2',
+        'appVersion': '1.0.0',
+        'platform': 'ios',
+        'isTrusted': true,
+        'isCurrent': true,
+        'trustedAt': DateTime.now()
+            .subtract(const Duration(days: 30))
+            .toIso8601String(),
+        'isActive': true,
+        'lastLoginAt': DateTime.now()
+            .subtract(const Duration(minutes: 5))
+            .toIso8601String(),
+        'lastIpAddress': '102.176.45.123',
+        'loginCount': 45,
+      },
+      {
+        'id': 'device-2',
+        'userId': 'mock-user',
+        'deviceIdentifier': 'macbook-pro-456',
+        'displayName': 'MacBook Pro',
+        'brand': 'Apple',
+        'model': 'MacBook Pro',
+        'os': 'macOS',
+        'osVersion': '14.2',
+        'appVersion': '1.0.0',
+        'platform': 'web',
+        'isTrusted': true,
+        'isCurrent': false,
+        'trustedAt': DateTime.now()
+            .subtract(const Duration(days: 15))
+            .toIso8601String(),
+        'isActive': true,
+        'lastLoginAt': DateTime.now()
+            .subtract(const Duration(hours: 2))
+            .toIso8601String(),
+        'lastIpAddress': '102.176.45.123',
+        'loginCount': 23,
+      },
+      {
+        'id': 'device-3',
+        'userId': 'mock-user',
+        'deviceIdentifier': 'samsung-s23-789',
+        'displayName': 'Galaxy S23',
+        'brand': 'Samsung',
+        'model': 'Galaxy S23',
+        'os': 'Android',
+        'osVersion': '14',
+        'appVersion': '1.0.0',
+        'platform': 'android',
+        'isTrusted': false,
+        'isCurrent': false,
+        'trustedAt': null,
+        'isActive': true,
+        'lastLoginAt': DateTime.now()
+            .subtract(const Duration(days: 3))
+            .toIso8601String(),
+        'lastIpAddress': '41.85.162.74',
+        'loginCount': 8,
+      },
+    ];
   }
 }
 
 /// Devices mock registration
 class DevicesMock {
   static void register(MockInterceptor interceptor) {
-    // POST /api/v1/devices - Register a device
-    interceptor.register(
-      method: 'POST',
-      path: '/api/v1/devices',
-      handler: _handleRegisterDevice,
-    );
+    for (final path in const [
+      '/devices',
+      '/devices/register',
+      '/api/v1/devices',
+      '/api/v1/devices/register',
+    ]) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleRegisterDevice,
+      );
+    }
 
-    // GET /api/v1/devices - Get all devices
-    interceptor.register(
-      method: 'GET',
-      path: '/api/v1/devices',
-      handler: _handleGetDevices,
-    );
+    for (final path in const ['/devices', '/api/v1/devices']) {
+      interceptor.register(
+        method: 'GET',
+        path: path,
+        handler: _handleGetDevices,
+      );
+    }
 
-    // POST /api/v1/devices/:id/trust - Trust a device
-    interceptor.register(
-      method: 'POST',
-      path: r'/api/v1/devices/[\w-]+/trust',
-      handler: _handleTrustDevice,
-    );
+    for (final path in const [
+      r'/devices/[\w-]+/trust',
+      r'/api/v1/devices/[\w-]+/trust',
+    ]) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleTrustDevice,
+      );
+    }
 
-    // DELETE /api/v1/devices/:id - Revoke/remove a device
-    interceptor.register(
-      method: 'DELETE',
-      path: r'/api/v1/devices/[\w-]+',
-      handler: _handleRemoveDevice,
-    );
+    for (final path in const [
+      r'/devices/[\w-]+/untrust',
+      r'/api/v1/devices/[\w-]+/untrust',
+    ]) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleUntrustDevice,
+      );
+    }
+
+    for (final path in const [
+      r'/devices/[\w-]+/rename',
+      r'/api/v1/devices/[\w-]+/rename',
+    ]) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleRenameDevice,
+      );
+    }
+
+    for (final path in const ['/devices', '/api/v1/devices']) {
+      interceptor.register(
+        method: 'DELETE',
+        path: path,
+        handler: _handleRemoveAllDevices,
+      );
+    }
+
+    for (final path in const [r'/devices/[\w-]+', r'/api/v1/devices/[\w-]+']) {
+      interceptor.register(
+        method: 'DELETE',
+        path: path,
+        handler: _handleRemoveDevice,
+      );
+    }
   }
 
   /// Handle register device
-  static Future<MockResponse> _handleRegisterDevice(RequestOptions options) async {
+  static Future<MockResponse> _handleRegisterDevice(
+    RequestOptions options,
+  ) async {
     final data = options.data as Map<String, dynamic>? ?? {};
+    final deviceIdentifier =
+        data['deviceIdentifier'] ?? data['deviceId'] ?? 'unknown';
+    for (final device in DevicesMockState.devices) {
+      device['isCurrent'] = false;
+      device['is_current'] = false;
+    }
+    final now = DateTime.now().toIso8601String();
     final newDevice = {
       'id': 'device-${DateTime.now().millisecondsSinceEpoch}',
-      'device_identifier': data['deviceId'] ?? 'unknown',
+      'userId': 'mock-user',
+      'deviceIdentifier': deviceIdentifier,
+      'device_identifier': deviceIdentifier,
+      'displayName': data['displayName'] ?? data['deviceName'] ?? data['model'],
+      'display_name':
+          data['displayName'] ?? data['deviceName'] ?? data['model'],
+      'deviceName': data['deviceName'] ?? data['displayName'] ?? data['model'],
+      'device_name': data['deviceName'] ?? data['displayName'] ?? data['model'],
       'brand': data['brand'],
       'model': data['model'],
-      'os': data['platform'] == 'ios' ? 'iOS' : 'Android',
+      'os': data['os'] ?? (data['platform'] == 'ios' ? 'iOS' : 'Android'),
+      'osVersion': data['osVersion'],
       'os_version': data['osVersion'],
+      'appVersion': data['appVersion'],
       'app_version': data['appVersion'],
       'platform': data['platform'],
+      'isTrusted': false,
       'is_trusted': false,
+      'trustedAt': null,
       'trusted_at': null,
+      'isActive': true,
       'is_active': true,
-      'last_login_at': DateTime.now().toIso8601String(),
+      'isCurrent': true,
+      'is_current': true,
+      'lastLoginAt': now,
+      'last_login_at': now,
+      'lastActiveAt': now,
+      'last_active_at': now,
+      'lastIpAddress': '127.0.0.1',
       'last_ip_address': '127.0.0.1',
+      'loginCount': 1,
       'login_count': 1,
+      'createdAt': now,
+      'created_at': now,
     };
     DevicesMockState.devices.add(newDevice);
     return MockResponse.success(newDevice);
@@ -142,14 +260,12 @@ class DevicesMock {
 
   /// Handle get all devices
   static Future<MockResponse> _handleGetDevices(RequestOptions options) async {
-    return MockResponse.success({
-      'devices': DevicesMockState.devices,
-    });
+    return MockResponse.success({'devices': DevicesMockState.devices});
   }
 
   /// Handle trust device
   static Future<MockResponse> _handleTrustDevice(RequestOptions options) async {
-    final deviceId = options.path.split('/')[4];
+    final deviceId = _deviceIdFromPath(options.path);
     final device = DevicesMockState.findDevice(deviceId);
 
     if (device == null) {
@@ -162,9 +278,62 @@ class DevicesMock {
     return MockResponse.success(updatedDevice);
   }
 
+  /// Handle untrust device
+  static Future<MockResponse> _handleUntrustDevice(
+    RequestOptions options,
+  ) async {
+    final deviceId = _deviceIdFromPath(options.path);
+    final device = DevicesMockState.findDevice(deviceId);
+
+    if (device == null) {
+      return MockResponse.notFound('Device not found');
+    }
+
+    DevicesMockState.untrustDevice(deviceId);
+    final updatedDevice = DevicesMockState.findDevice(deviceId);
+
+    return MockResponse.success(updatedDevice);
+  }
+
+  /// Handle rename device
+  static Future<MockResponse> _handleRenameDevice(
+    RequestOptions options,
+  ) async {
+    final deviceId = _deviceIdFromPath(options.path);
+    final device = DevicesMockState.findDevice(deviceId);
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final name = data['name'] as String?;
+
+    if (device == null) {
+      return MockResponse.notFound('Device not found');
+    }
+    if (name == null || name.trim().isEmpty) {
+      return MockResponse.badRequest('Device name is required');
+    }
+
+    DevicesMockState.renameDevice(deviceId, name.trim());
+    final updatedDevice = DevicesMockState.findDevice(deviceId);
+
+    return MockResponse.success(updatedDevice);
+  }
+
+  /// Handle remove all devices
+  static Future<MockResponse> _handleRemoveAllDevices(
+    RequestOptions options,
+  ) async {
+    DevicesMockState.devices.clear();
+
+    return MockResponse.success({
+      'success': true,
+      'message': 'All devices removed successfully',
+    });
+  }
+
   /// Handle remove device
-  static Future<MockResponse> _handleRemoveDevice(RequestOptions options) async {
-    final deviceId = options.path.split('/')[4];
+  static Future<MockResponse> _handleRemoveDevice(
+    RequestOptions options,
+  ) async {
+    final deviceId = _deviceIdFromPath(options.path);
     final device = DevicesMockState.findDevice(deviceId);
 
     if (device == null) {
@@ -177,5 +346,17 @@ class DevicesMock {
       'success': true,
       'message': 'Device removed successfully',
     });
+  }
+
+  static String _deviceIdFromPath(String path) {
+    final segments = path
+        .split('/')
+        .where((segment) => segment.isNotEmpty)
+        .toList();
+    final devicesIndex = segments.indexOf('devices');
+    if (devicesIndex == -1 || devicesIndex + 1 >= segments.length) {
+      return '';
+    }
+    return segments[devicesIndex + 1];
   }
 }

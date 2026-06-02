@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for AppSelect component
@@ -10,24 +11,17 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_select_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
   final testItems = [
-    const AppSelectItem(
-      value: 'option1',
-      label: 'Option 1',
-    ),
-    const AppSelectItem(
-      value: 'option2',
-      label: 'Option 2',
-    ),
-    const AppSelectItem(
-      value: 'option3',
-      label: 'Option 3',
-    ),
+    const AppSelectItem(value: 'option1', label: 'Option 1'),
+    const AppSelectItem(value: 'option2', label: 'Option 2'),
+    const AppSelectItem(value: 'option3', label: 'Option 3'),
   ];
 
-  group('AppSelect Snapshot Tests', () {
-    group('States', () {
+  goldenGroup('AppSelect Snapshot Tests', () {
+    goldenGroup('States', () {
       testWidgets('idle state - no selection', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -116,7 +110,7 @@ void main() {
       });
     });
 
-    group('Helper Text', () {
+    goldenGroup('Helper Text', () {
       testWidgets('with helper text', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -140,7 +134,7 @@ void main() {
       });
     });
 
-    group('Icons', () {
+    goldenGroup('Icons', () {
       testWidgets('with prefix icon', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -203,7 +197,7 @@ void main() {
       });
     });
 
-    group('Subtitles', () {
+    goldenGroup('Subtitles', () {
       testWidgets('items with subtitles', (tester) async {
         final itemsWithSubtitles = [
           const AppSelectItem(
@@ -247,7 +241,7 @@ void main() {
       });
     });
 
-    group('Disabled Items', () {
+    goldenGroup('Disabled Items', () {
       testWidgets('with disabled items', (tester) async {
         final itemsWithDisabled = [
           const AppSelectItem(
@@ -289,7 +283,7 @@ void main() {
       });
     });
 
-    group('No Label', () {
+    goldenGroup('No Label', () {
       testWidgets('select without label', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -312,7 +306,7 @@ void main() {
       });
     });
 
-    group('Currency Selection Example', () {
+    goldenGroup('Currency Selection Example', () {
       testWidgets('currency select', (tester) async {
         final currencies = [
           const AppSelectItem(
@@ -354,7 +348,7 @@ void main() {
       });
     });
 
-    group('Without Checkmark', () {
+    goldenGroup('Without Checkmark', () {
       testWidgets('select without checkmark', (tester) async {
         await tester.pumpWidget(
           TestWrapper(

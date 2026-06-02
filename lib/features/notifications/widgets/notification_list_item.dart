@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
@@ -19,39 +20,44 @@ class NotificationListItem extends StatelessWidget {
     final colors = context.colors;
     return ListTile(
       onTap: onTap,
+      minVerticalPadding: AppSpacing.md,
       tileColor: notification.isRead
           ? null
-          : colors.primary.withValues(alpha: 0.04),
-      leading: CircleAvatar(
-        backgroundColor: colors.primary.withValues(alpha: 0.1),
+          : colors.gold.withValues(alpha: 0.05),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.10),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: colors.gold.withValues(alpha: 0.18)),
+        ),
         child: Icon(
           _getIcon(notification.type.name),
-          color: colors.primary,
+          color: colors.gold,
           size: 20,
         ),
       ),
-      title: Text(
+      title: AppText(
         notification.title,
-        style: TextStyle(
-          fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w600,
-          color: colors.textPrimary,
-        ),
+        variant: AppTextVariant.bodyLarge,
+        color: colors.textPrimary,
+        fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text(
+      subtitle: AppText(
         notification.body,
-        style: TextStyle(
-          color: colors.textSecondary,
-          fontSize: 13,
-        ),
+        variant: AppTextVariant.bodySmall,
+        color: colors.textSecondary,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
-      trailing: Text(
+      trailing: AppText(
         formatRelativeTime(notification.createdAt),
-        style: TextStyle(
-          color: colors.textSecondary,
-          fontSize: 12,
-        ),
+        variant: AppTextVariant.labelSmall,
+        color: colors.textTertiary,
+        textAlign: TextAlign.end,
       ),
     );
   }

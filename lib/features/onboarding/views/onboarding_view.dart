@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Provider to track if onboarding has been completed
 final onboardingCompletedProvider = FutureProvider<bool>((ref) async {
@@ -37,38 +37,18 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
     _OnboardingPageData(
       illustrationType: _IllustrationType.wallet,
       accentColor: Color(0xFFD4AF37),
-      titleFr: 'Votre argent,\nsans limites',
-      titleEn: 'Your money,\nwithout limits',
-      subtitleFr: 'Un portefeuille USDC sécurisé pour envoyer et recevoir de l\'argent partout en Afrique de l\'Ouest.',
-      subtitleEn: 'A secure USDC wallet to send and receive money across West Africa.',
-      emoji: '💰',
     ),
     _OnboardingPageData(
       illustrationType: _IllustrationType.transfer,
       accentColor: Color(0xFF00C853),
-      titleFr: 'Envoyez en\n3 secondes',
-      titleEn: 'Send in\n3 seconds',
-      subtitleFr: 'Juste un numéro de téléphone. Pas de RIB, pas d\'IBAN, pas de complications.',
-      subtitleEn: 'Just a phone number. No routing numbers, no IBAN, no hassle.',
-      emoji: '⚡',
     ),
     _OnboardingPageData(
       illustrationType: _IllustrationType.mobile,
       accentColor: Color(0xFF448AFF),
-      titleFr: 'Orange, MTN,\nWave, Moov',
-      titleEn: 'Orange, MTN,\nWave, Moov',
-      subtitleFr: 'Déposez et retirez via Mobile Money. Tous vos opérateurs, un seul compte.',
-      subtitleEn: 'Deposit and withdraw via Mobile Money. All your providers, one account.',
-      emoji: '📱',
     ),
     _OnboardingPageData(
       illustrationType: _IllustrationType.shield,
       accentColor: Color(0xFFAA00FF),
-      titleFr: 'Protégé.\nToujours.',
-      titleEn: 'Protected.\nAlways.',
-      subtitleFr: 'Chiffrement de bout en bout, PIN, biométrie. Votre argent dort tranquille.',
-      subtitleEn: 'End-to-end encryption, PIN, biometrics. Your money sleeps safe.',
-      emoji: '🛡️',
     ),
   ];
 
@@ -105,7 +85,7 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final isFr = Localizations.localeOf(context).languageCode == 'fr';
+    final l10n = AppLocalizations.of(context)!;
     final isLastPage = _currentPage == _pages.length - 1;
 
     return Scaffold(
@@ -123,23 +103,11 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   if (!isLastPage)
-                    GestureDetector(
-                      onTap: _completeOnboarding,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: colors.container,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          isFr ? 'Passer' : 'Skip',
-                          style: TextStyle(
-                            color: colors.textSecondary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                    AppButton(
+                      label: l10n.action_skip,
+                      onPressed: _skipIntro,
+                      variant: AppButtonVariant.ghost,
+                      size: AppButtonSize.small,
                     ),
                 ],
               ),
@@ -155,8 +123,9 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
                   final page = _pages[index];
                   return _OnboardingPageContent(
                     page: page,
+                    title: _titleForPage(l10n, index),
+                    subtitle: _subtitleForPage(l10n, index),
                     colors: colors,
-                    isFr: isFr,
                     illustrationController: _illustrationController,
                     contentController: _contentController,
                     isActive: index == _currentPage,
@@ -197,44 +166,14 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
 
                   const SizedBox(height: 32),
 
-                  // CTA Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        gradient: isLastPage
-                            ? LinearGradient(
-                                colors: colors.goldGradient,
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                        color: isLastPage ? null : colors.container,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _onNextPressed,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Center(
-                            child: Text(
-                              isLastPage
-                                  ? (isFr ? 'Commencer 🚀' : 'Get Started 🚀')
-                                  : (isFr ? 'Continuer' : 'Continue'),
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                                color: isLastPage ? colors.canvas : colors.textPrimary,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                  AppButton(
+                    label: isLastPage
+                        ? l10n.onboarding_getStarted
+                        : l10n.action_continue,
+                    onPressed: _onNextPressed,
+                    variant: AppButtonVariant.primary,
+                    size: AppButtonSize.large,
+                    isFullWidth: true,
                   ),
 
                   const SizedBox(height: 8),
@@ -254,13 +193,48 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
         curve: Curves.easeInOut,
       );
     } else {
-      _completeOnboarding();
+      _startRegistration();
     }
   }
 
-  Future<void> _completeOnboarding() async {
+  String _titleForPage(AppLocalizations l10n, int index) {
+    switch (index) {
+      case 0:
+        return l10n.onboarding_page1_title;
+      case 1:
+        return l10n.onboarding_page2_title;
+      case 2:
+        return l10n.onboarding_page3_title;
+      case 3:
+        return l10n.onboarding_page4_title;
+      default:
+        return l10n.appName;
+    }
+  }
+
+  String _subtitleForPage(AppLocalizations l10n, int index) {
+    switch (index) {
+      case 0:
+        return l10n.onboarding_page1_description;
+      case 1:
+        return l10n.onboarding_page2_description;
+      case 2:
+        return l10n.onboarding_page3_description;
+      case 3:
+        return l10n.onboarding_page4_description;
+      default:
+        return '';
+    }
+  }
+
+  Future<void> _skipIntro() async {
     await completeOnboarding();
     if (mounted) context.go('/login');
+  }
+
+  Future<void> _startRegistration() async {
+    await completeOnboarding();
+    if (mounted) context.go('/onboarding/phone');
   }
 }
 
@@ -269,16 +243,18 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
 class _OnboardingPageContent extends StatelessWidget {
   const _OnboardingPageContent({
     required this.page,
+    required this.title,
+    required this.subtitle,
     required this.colors,
-    required this.isFr,
     required this.illustrationController,
     required this.contentController,
     required this.isActive,
   });
 
   final _OnboardingPageData page;
+  final String title;
+  final String subtitle;
   final ThemeColors colors;
-  final bool isFr;
   final AnimationController illustrationController;
   final AnimationController contentController;
   final bool isActive;
@@ -301,10 +277,7 @@ class _OnboardingPageContent extends StatelessWidget {
               ).value;
               return Transform.scale(
                 scale: 0.7 + 0.3 * t,
-                child: Opacity(
-                  opacity: t.clamp(0.0, 1.0),
-                  child: child,
-                ),
+                child: Opacity(opacity: t.clamp(0.0, 1.0), child: child),
               );
             },
             child: SizedBox(
@@ -335,16 +308,11 @@ class _OnboardingPageContent extends StatelessWidget {
             child: Column(
               children: [
                 // Title
-                Text(
-                  isFr ? page.titleFr : page.titleEn,
+                AppText(
+                  title,
+                  variant: AppTextVariant.headlineLarge,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: colors.textPrimary,
-                    height: 1.15,
-                    letterSpacing: -0.5,
-                  ),
+                  color: colors.textPrimary,
                 ),
 
                 const SizedBox(height: 16),
@@ -352,15 +320,11 @@ class _OnboardingPageContent extends StatelessWidget {
                 // Subtitle
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    isFr ? page.subtitleFr : page.subtitleEn,
+                  child: AppText(
+                    subtitle,
+                    variant: AppTextVariant.bodyLarge,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: colors.textSecondary,
-                      height: 1.5,
-                    ),
+                    color: colors.textSecondary,
                   ),
                 ),
               ],
@@ -390,7 +354,8 @@ class _OnboardingIllustration extends StatefulWidget {
   final ThemeColors colors;
 
   @override
-  State<_OnboardingIllustration> createState() => _OnboardingIllustrationState();
+  State<_OnboardingIllustration> createState() =>
+      _OnboardingIllustrationState();
 }
 
 class _OnboardingIllustrationState extends State<_OnboardingIllustration>
@@ -498,10 +463,7 @@ class _WalletIllustration extends StatelessWidget {
               color: colors.canvas,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                ),
+                BoxShadow(color: accent.withValues(alpha: 0.3), blurRadius: 20),
               ],
             ),
             child: Center(
@@ -584,27 +546,24 @@ class _TransferIllustration extends StatelessWidget {
           ),
         ),
         // Arrow dots
-        ...List.generate(3, (i) => Positioned(
-          left: 140.0 + i * 20,
-          child: Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: accent.withValues(alpha: 0.3 + i * 0.2),
+        ...List.generate(
+          3,
+          (i) => Positioned(
+            left: 140.0 + i * 20,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: accent.withValues(alpha: 0.3 + i * 0.2),
+              ),
             ),
           ),
-        )),
+        ),
         // Sender
-        Positioned(
-          left: 40,
-          child: _buildAvatar('A', accent, colors),
-        ),
+        Positioned(left: 40, child: _buildAvatar('A', accent, colors)),
         // Receiver
-        Positioned(
-          right: 40,
-          child: _buildAvatar('B', accent, colors),
-        ),
+        Positioned(right: 40, child: _buildAvatar('B', accent, colors)),
         // Center flash
         Container(
           width: 48,
@@ -637,10 +596,7 @@ class _TransferIllustration extends StatelessWidget {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.15),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 2,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
           ),
           child: Center(
             child: Text(
@@ -684,10 +640,7 @@ class _MobileIllustration extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: RadialGradient(
-              colors: [
-                accent.withValues(alpha: 0.1),
-                Colors.transparent,
-              ],
+              colors: [accent.withValues(alpha: 0.1), Colors.transparent],
             ),
           ),
         ),
@@ -734,12 +687,12 @@ class _MobileIllustration extends StatelessWidget {
         Positioned(
           top: 20,
           right: 60,
-          child: _buildBadge('Orange', const Color(0xFFFF6600), colors),
+          child: _buildBadge('USD', accent, colors),
         ),
         Positioned(
           bottom: 30,
           left: 50,
-          child: _buildBadge('Wave', const Color(0xFF1BA2DC), colors),
+          child: _buildBadge('XOF', const Color(0xFF2F6F5E), colors),
         ),
       ],
     );
@@ -747,10 +700,10 @@ class _MobileIllustration extends StatelessWidget {
 
   List<Widget> _buildOperatorRows(Color accent, ThemeColors colors) {
     final operators = [
-      ('OM', const Color(0xFFFF6600)),
-      ('MTN', const Color(0xFFFFCC00)),
-      ('Wave', const Color(0xFF1BA2DC)),
-      ('Moov', const Color(0xFF00A651)),
+      ('USDC', accent),
+      ('Bank', const Color(0xFF2F6F5E)),
+      ('Card', const Color(0xFF2563EB)),
+      ('Cash', const Color(0xFFB88A2C)),
     ];
 
     return [
@@ -871,11 +824,7 @@ class _ShieldIllustration extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Icon(
-              Icons.check_rounded,
-              color: Colors.white,
-              size: 48,
-            ),
+            child: Icon(Icons.check_rounded, color: Colors.white, size: 48),
           ),
         ),
         // Lock badge
@@ -889,17 +838,10 @@ class _ShieldIllustration extends StatelessWidget {
               color: colors.canvas,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                ),
+                BoxShadow(color: accent.withValues(alpha: 0.2), blurRadius: 10),
               ],
             ),
-            child: Icon(
-              Icons.fingerprint_rounded,
-              color: accent,
-              size: 22,
-            ),
+            child: Icon(Icons.fingerprint_rounded, color: accent, size: 22),
           ),
         ),
         // Key badge
@@ -913,17 +855,10 @@ class _ShieldIllustration extends StatelessWidget {
               color: colors.canvas,
               shape: BoxShape.circle,
               boxShadow: [
-                BoxShadow(
-                  color: accent.withValues(alpha: 0.2),
-                  blurRadius: 10,
-                ),
+                BoxShadow(color: accent.withValues(alpha: 0.2), blurRadius: 10),
               ],
             ),
-            child: Icon(
-              Icons.lock_rounded,
-              color: accent,
-              size: 18,
-            ),
+            child: Icon(Icons.lock_rounded, color: accent, size: 18),
           ),
         ),
       ],
@@ -937,18 +872,8 @@ class _OnboardingPageData {
   const _OnboardingPageData({
     required this.illustrationType,
     required this.accentColor,
-    required this.titleFr,
-    required this.titleEn,
-    required this.subtitleFr,
-    required this.subtitleEn,
-    required this.emoji,
   });
 
   final _IllustrationType illustrationType;
   final Color accentColor;
-  final String titleFr;
-  final String titleEn;
-  final String subtitleFr;
-  final String subtitleEn;
-  final String emoji;
 }

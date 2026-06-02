@@ -1,4 +1,5 @@
 export 'package:usdc_wallet/design/components/primitives/alert_banner.dart';
+export 'package:usdc_wallet/design/components/primitives/amount_text.dart';
 export 'package:usdc_wallet/design/components/primitives/app_button.dart';
 export 'package:usdc_wallet/design/components/primitives/app_card.dart';
 export 'package:usdc_wallet/design/components/primitives/app_text.dart';
@@ -8,6 +9,11 @@ export 'package:usdc_wallet/design/components/primitives/app_skeleton.dart';
 export 'package:usdc_wallet/design/components/primitives/app_refresh_indicator.dart';
 export 'package:usdc_wallet/design/components/primitives/app_toggle.dart';
 export 'package:usdc_wallet/design/components/primitives/user_avatar.dart';
+export 'package:usdc_wallet/design/components/primitives/identity_badge.dart';
+export 'package:usdc_wallet/design/components/primitives/info_callout.dart';
+export 'package:usdc_wallet/design/components/primitives/money_summary_card.dart';
 export 'package:usdc_wallet/design/components/primitives/pill_badge.dart';
+export 'package:usdc_wallet/design/components/primitives/security_code_input.dart';
+export 'package:usdc_wallet/design/components/primitives/status_pill.dart';
 export 'empty_state.dart';
 export 'status_badge.dart';

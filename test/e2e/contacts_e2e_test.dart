@@ -13,7 +13,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Contacts E2E', () {
+  e2eGroup('Contacts E2E', () {
     test('GET /contacts — list contacts', () async {
       final res = await client.get('/contacts');
       res.expectOk();
@@ -21,13 +21,11 @@ void main() {
 
     test('POST /contacts/sync — sync device contacts', () async {
       final res = await client.post('/contacts/sync', {
-        'contacts': [
-          {'name': 'Test Contact', 'phone': '+2250711111111'},
-          {'name': 'Another Contact', 'phone': '+2250722222222'},
+        'phoneHashes': [
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         ],
       });
-      // 200/201 for success, 400 if format wrong
-      expect(res.statusCode, anyOf(200, 201, 400));
+      res.expectOk();
     });
 
     test('GET /contacts — no auth returns 401', () async {

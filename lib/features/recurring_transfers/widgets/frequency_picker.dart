@@ -12,6 +12,13 @@ class FrequencyPicker extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const supportedFrequencies = [
+    TransferFrequency.daily,
+    TransferFrequency.weekly,
+    TransferFrequency.biweekly,
+    TransferFrequency.monthly,
+  ];
+
   final TransferFrequency selected;
   final ValueChanged<TransferFrequency> onChanged;
 
@@ -32,7 +39,7 @@ class FrequencyPicker extends StatelessWidget {
         Wrap(
           spacing: AppSpacing.sm,
           runSpacing: AppSpacing.sm,
-          children: TransferFrequency.values.map((frequency) {
+          children: supportedFrequencies.map((frequency) {
             final isSelected = selected == frequency;
             return GestureDetector(
               onTap: () => onChanged(frequency),
@@ -56,7 +63,9 @@ class FrequencyPicker extends StatelessWidget {
                 child: AppText(
                   frequency.getDisplayName(locale),
                   variant: AppTextVariant.bodyMedium,
-                  color: isSelected ? context.colors.canvas : context.colors.textPrimary,
+                  color: isSelected
+                      ? context.colors.canvas
+                      : context.colors.textPrimary,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),

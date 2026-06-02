@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/utils/formatters.dart';
 
@@ -43,12 +44,10 @@ class WalletBalanceCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              AppText(
                 'Available Balance',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                variant: AppTextVariant.labelLarge,
+                color: AppColors.textInverse.withValues(alpha: 0.72),
               ),
               GestureDetector(
                 onTap: onToggleVisibility,
@@ -63,24 +62,17 @@ class WalletBalanceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            isBalanceHidden
-                ? '****'
-                : formatCurrency(balance, currency),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
+          AmountText.fromText(
+            isBalanceHidden ? r'$••••••' : formatCurrency(balance, currency),
+            size: AmountTextSize.large,
+            color: AppColors.textInverse,
           ),
           if (pendingBalance != null && pendingBalance! > 0) ...[
             const SizedBox(height: 4),
-            Text(
+            AppText(
               'Pending: ${formatCurrency(pendingBalance!, currency)}',
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 12,
-              ),
+              variant: AppTextVariant.moneySmall,
+              color: AppColors.textInverse.withValues(alpha: 0.64),
             ),
           ],
           const SizedBox(height: 24),
@@ -110,11 +102,7 @@ class WalletBalanceCard extends StatelessWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    this.onTap,
-  });
+  const _ActionButton({required this.icon, required this.label, this.onTap});
 
   final IconData icon;
   final String label;

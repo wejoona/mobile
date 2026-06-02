@@ -28,10 +28,7 @@ class TopRecipientsSection extends ConsumerWidget {
           decoration: BoxDecoration(
             color: context.colors.container,
             borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(
-              color: context.colors.border,
-              width: 1,
-            ),
+            border: Border.all(color: context.colors.border, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,7 +42,7 @@ class TopRecipientsSection extends ConsumerWidget {
                     color: context.colors.textPrimary,
                   ),
                   TextButton(
-                    onPressed: () => context.push('/insights/recipients'),
+                    onPressed: () => context.push('/recipients'),
                     child: AppText(
                       'View All',
                       variant: AppTextVariant.bodySmall,

@@ -20,6 +20,10 @@ enum AppTextVariant {
   labelSmall,
   // Special variants
   balance,
+  moneyDisplay,
+  moneyLarge,
+  moneyMedium,
+  moneySmall,
   percentage,
   cardLabel,
   monoLarge,
@@ -108,16 +112,17 @@ class AppText extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final themeColors = ThemeColors.of(context);
 
-    // Determine final color
-    final Color? finalColor = color ?? _getSemanticColor(context, themeColors, colorScheme);
+    final Color? finalColor =
+        color ??
+        (semanticColor != null
+            ? _getSemanticColor(context, themeColors, colorScheme)
+            : style?.color ??
+                  _getSemanticColor(context, themeColors, colorScheme));
 
     final baseStyle = style ?? _getStyle(context);
     final textWidget = Text(
       text,
-      style: baseStyle.copyWith(
-        color: finalColor,
-        fontWeight: fontWeight,
-      ),
+      style: baseStyle.copyWith(color: finalColor, fontWeight: fontWeight),
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
@@ -141,7 +146,11 @@ class AppText extends StatelessWidget {
   }
 
   /// Get color based on semantic color type and theme
-  Color? _getSemanticColor(BuildContext context, ThemeColors themeColors, ColorScheme colorScheme) {
+  Color? _getSemanticColor(
+    BuildContext context,
+    ThemeColors themeColors,
+    ColorScheme colorScheme,
+  ) {
     if (semanticColor == null) {
       // Return default color for variant
       return _getDefaultColorForVariant(themeColors);
@@ -198,6 +207,10 @@ class AppText extends StatelessWidget {
       case AppTextVariant.monoLarge:
       case AppTextVariant.monoMedium:
       case AppTextVariant.balance:
+      case AppTextVariant.moneyDisplay:
+      case AppTextVariant.moneyLarge:
+      case AppTextVariant.moneyMedium:
+      case AppTextVariant.moneySmall:
         return themeColors.textPrimary;
 
       // Body medium, labels use secondary text
@@ -253,6 +266,14 @@ class AppText extends StatelessWidget {
         return AppTypography.labelSmall;
       case AppTextVariant.balance:
         return AppTypography.balanceDisplay;
+      case AppTextVariant.moneyDisplay:
+        return AppTypography.moneyDisplay;
+      case AppTextVariant.moneyLarge:
+        return AppTypography.moneyLarge;
+      case AppTextVariant.moneyMedium:
+        return AppTypography.moneyMedium;
+      case AppTextVariant.moneySmall:
+        return AppTypography.moneySmall;
       case AppTextVariant.percentage:
         return AppTypography.percentageChange;
       case AppTextVariant.cardLabel:

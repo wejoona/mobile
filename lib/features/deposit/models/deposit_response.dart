@@ -16,6 +16,7 @@ class DepositResponse {
   final String currency;
   final double? convertedAmount;
   final String? convertedCurrency;
+  final double? exchangeRate;
   final String providerCode;
   final String? failureReason;
 
@@ -32,6 +33,7 @@ class DepositResponse {
     this.currency = 'XOF',
     this.convertedAmount,
     this.convertedCurrency,
+    this.exchangeRate,
     this.providerCode = '',
     this.failureReason,
   });
@@ -53,12 +55,28 @@ class DepositResponse {
         json['status'] as String? ?? 'initiated',
       ),
       amount: (json['amount'] as num?)?.toDouble() ?? 0,
-      currency: json['currency'] as String? ?? 'XOF',
+      currency:
+          json['sourceCurrency'] as String? ??
+          json['currency'] as String? ??
+          'XOF',
       convertedAmount: json['convertedAmount'] != null
           ? (json['convertedAmount'] as num).toDouble()
+          : json['usdcAmount'] != null
+          ? (json['usdcAmount'] as num).toDouble()
+          : json['estimatedAmount'] != null
+          ? (json['estimatedAmount'] as num).toDouble()
           : null,
-      convertedCurrency: json['convertedCurrency'] as String?,
-      providerCode: json['providerCode'] as String? ?? '',
+      convertedCurrency:
+          json['convertedCurrency'] as String? ??
+          json['targetCurrency'] as String? ??
+          'USDC',
+      exchangeRate: json['exchangeRate'] != null
+          ? (json['exchangeRate'] as num).toDouble()
+          : json['rate'] != null
+          ? (json['rate'] as num).toDouble()
+          : null,
+      providerCode:
+          json['provider'] as String? ?? json['providerCode'] as String? ?? '',
       failureReason: json['failureReason'] as String?,
     );
   }
@@ -76,6 +94,7 @@ class DepositResponse {
     String? currency,
     double? convertedAmount,
     String? convertedCurrency,
+    double? exchangeRate,
     String? providerCode,
     String? failureReason,
   }) {
@@ -92,6 +111,7 @@ class DepositResponse {
       currency: currency ?? this.currency,
       convertedAmount: convertedAmount ?? this.convertedAmount,
       convertedCurrency: convertedCurrency ?? this.convertedCurrency,
+      exchangeRate: exchangeRate ?? this.exchangeRate,
       providerCode: providerCode ?? this.providerCode,
       failureReason: failureReason ?? this.failureReason,
     );
@@ -99,7 +119,8 @@ class DepositResponse {
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
   bool get isCompleted => status == DepositStatus.completed;
-  bool get isFailed => status == DepositStatus.failed || status == DepositStatus.expired;
+  bool get isFailed =>
+      status == DepositStatus.failed || status == DepositStatus.expired;
   bool get isPending =>
       status == DepositStatus.initiated ||
       status == DepositStatus.pendingOtp ||
@@ -153,7 +174,11 @@ extension DepositStatusExt on DepositStatus {
       case 'failed':
         return DepositStatus.failed;
       case 'expired':
+      case 'timeout':
+      case 'cancelled':
         return DepositStatus.expired;
+      case 'settled':
+        return DepositStatus.completed;
       default:
         return DepositStatus.initiated;
     }

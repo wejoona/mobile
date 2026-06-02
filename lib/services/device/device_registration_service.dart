@@ -4,18 +4,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/utils/device_names.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Service to collect device info and register with the backend
 class DeviceRegistrationService {
-  final DevicesRepository _devicesRepository;
-
   DeviceRegistrationService(this._devicesRepository);
+  final DevicesRepository _devicesRepository;
 
   /// Register the current device with the backend.
   /// Should be called after successful OTP verification / login.
   Future<void> registerCurrentDevice() async {
-    final logger = AppLogger('DeviceRegistration');
+    const logger = AppLogger('DeviceRegistration');
 
     try {
       final deviceInfo = DeviceInfoPlugin();
@@ -25,21 +26,27 @@ class DeviceRegistrationService {
       String platform;
       String? model;
       String? brand;
+      String? os;
       String? osVersion;
+      String? deviceName;
 
       if (Platform.isIOS) {
         final ios = await deviceInfo.iosInfo;
         deviceId = ios.identifierForVendor ?? 'unknown-ios';
         platform = 'ios';
-        model = ios.name; // e.g. "Ben's iPhone 16 Pro Max"
+        deviceName = ios.name; // e.g. "Ben's iPhone 16 Pro Max"
+        model = ios.utsname.machine;
         brand = 'Apple';
+        os = 'iOS';
         osVersion = ios.systemVersion;
       } else if (Platform.isAndroid) {
         final android = await deviceInfo.androidInfo;
         deviceId = android.id;
         platform = 'android';
-        model = android.model;
+        model = androidModelName(android.brand, android.model);
+        deviceName = model;
         brand = android.brand;
+        os = 'Android';
         osVersion = android.version.release;
       } else {
         logger.debug('Unsupported platform for device registration');
@@ -48,10 +55,12 @@ class DeviceRegistrationService {
 
       // Get FCM token (may be null if Firebase not configured)
       String? fcmToken;
-      try {
-        fcmToken = await FirebaseMessaging.instance.getToken();
-      } catch (e) {
-        logger.debug('Could not get FCM token: $e');
+      if (!MockConfig.useMocks) {
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken();
+        } on Object catch (error) {
+          logger.debug('Could not get FCM token: $error');
+        }
       }
 
       // Get locale
@@ -60,8 +69,10 @@ class DeviceRegistrationService {
       await _devicesRepository.registerDevice(
         deviceId: deviceId,
         platform: platform,
+        deviceName: deviceName,
         model: model,
         brand: brand,
+        os: os,
         osVersion: osVersion,
         appVersion: packageInfo.version,
         fcmToken: fcmToken,
@@ -69,15 +80,17 @@ class DeviceRegistrationService {
       );
 
       logger.info('Device registered successfully');
-    } catch (e) {
+    } on Object catch (error) {
       // Don't fail login if device registration fails
-      logger.error('Device registration failed', e);
+      logger.error('Device registration failed', error);
     }
   }
 }
 
 /// Provider for DeviceRegistrationService
-final deviceRegistrationServiceProvider = Provider<DeviceRegistrationService>((ref) {
+final deviceRegistrationServiceProvider = Provider<DeviceRegistrationService>((
+  ref,
+) {
   final devicesRepo = ref.watch(devicesRepositoryProvider);
   return DeviceRegistrationService(devicesRepo);
 });

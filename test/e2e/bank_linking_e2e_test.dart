@@ -14,7 +14,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Bank Linking E2E', () {
+  e2eGroup('Bank Linking E2E', () {
     test('GET /banks — list available banks', () async {
       final res = await client.get('/banks');
       // May be at /bank-accounts/banks or /banks

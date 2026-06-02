@@ -39,10 +39,12 @@ class QrCodeService {
   /// Parse legacy QR formats
   QrPaymentData? _parseLegacyFormat(String qrString) {
     try {
-      // Format: joonapay://pay?phone=+225xxx&amount=10
-      if (qrString.startsWith('joonapay://')) {
+      // Format: korido://pay?phone=+225xxx&amount=10
+      // Legacy joonapay:// links are still accepted for saved/shared QR codes.
+      if (qrString.startsWith('korido://') ||
+          qrString.startsWith('joonapay://')) {
         final uri = Uri.parse(qrString);
-        var phone = uri.queryParameters['phone'];
+        var phone = uri.queryParameters['phone'] ?? uri.queryParameters['to'];
 
         if (phone == null || phone.isEmpty) return null;
 

@@ -36,19 +36,37 @@ class PaymentLink {
   });
 
   factory PaymentLink.fromJson(Map<String, dynamic> json) {
+    final shortCode =
+        json['shortCode'] as String? ??
+        json['code'] as String? ??
+        json['id'] as String;
+    final expiresAt = json['expiresAt'] as String?;
+
     return PaymentLink(
       id: json['id'] as String,
-      shortCode: json['shortCode'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      currency: json['currency'] as String,
-      recipientName: json['recipientName'] as String,
+      shortCode: shortCode,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      currency: json['currency'] as String? ?? 'USDC',
+      recipientName:
+          json['recipientName'] as String? ??
+          json['creatorName'] as String? ??
+          json['ownerName'] as String? ??
+          'Korido user',
       description: json['description'] as String?,
-      status: PaymentLinkStatusExtension.fromJson(json['status'] as String),
-      url: json['url'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
+      status: PaymentLinkStatusExtension.fromJson(
+        json['status'] as String? ?? 'pending',
+      ),
+      url: json['url'] as String? ?? 'https://app.korido.co/pay/$shortCode',
+      createdAt:
+          DateTime.tryParse(json['createdAt'] as String? ?? '') ??
+          DateTime.now(),
+      expiresAt:
+          DateTime.tryParse(expiresAt ?? '') ??
+          DateTime.now().add(const Duration(days: 30)),
       viewCount: json['viewCount'] as int? ?? 0,
-      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt'] as String) : null,
+      paidAt: json['paidAt'] != null
+          ? DateTime.parse(json['paidAt'] as String)
+          : null,
       paidByPhone: json['paidByPhone'] as String?,
       paidByName: json['paidByName'] as String?,
       transactionId: json['transactionId'] as String?,
@@ -56,22 +74,22 @@ class PaymentLink {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'shortCode': shortCode,
-        'amount': amount,
-        'currency': currency,
-        'recipientName': recipientName,
-        'description': description,
-        'status': status.toJson(),
-        'url': url,
-        'createdAt': createdAt.toIso8601String(),
-        'expiresAt': expiresAt.toIso8601String(),
-        'viewCount': viewCount,
-        'paidAt': paidAt?.toIso8601String(),
-        'paidByPhone': paidByPhone,
-        'paidByName': paidByName,
-        'transactionId': transactionId,
-      };
+    'id': id,
+    'shortCode': shortCode,
+    'amount': amount,
+    'currency': currency,
+    'recipientName': recipientName,
+    'description': description,
+    'status': status.toJson(),
+    'url': url,
+    'createdAt': createdAt.toIso8601String(),
+    'expiresAt': expiresAt.toIso8601String(),
+    'viewCount': viewCount,
+    'paidAt': paidAt?.toIso8601String(),
+    'paidByPhone': paidByPhone,
+    'paidByName': paidByName,
+    'transactionId': transactionId,
+  };
 
   PaymentLink copyWith({
     String? id,

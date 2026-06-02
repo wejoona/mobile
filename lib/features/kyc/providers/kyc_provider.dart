@@ -15,7 +15,12 @@ final kycProfileProvider = FutureProvider<KycProfile>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   final data = await service.getKycStatus();
-  return KycProfile(userId: '', level: KycLevel.none, status: data.status, rejectionReason: data.rejectionReason);
+  return KycProfile(
+    userId: '',
+    level: KycLevel.none,
+    status: data.status,
+    rejectionReason: data.rejectionReason,
+  );
 });
 
 /// Whether KYC is verified.
@@ -57,13 +62,28 @@ class KycFlowState {
     this.personalInfo = const {},
   });
 
+  bool get hasRequiredPersonalInfo {
+    final requiredFields = [
+      'firstName',
+      'lastName',
+      'dateOfBirth',
+      'country',
+      'documentNumber',
+    ];
+    return requiredFields.every(
+      (field) => (personalInfo[field]?.trim().isNotEmpty ?? false),
+    );
+  }
+
   bool get canSubmit =>
       selectedDocumentType != null &&
       capturedDocuments.isNotEmpty &&
       selfiePath != null &&
-      personalInfo.isNotEmpty;
+      hasRequiredPersonalInfo;
 
-  bool get canStartVerification => capturedDocuments.isNotEmpty;
+  bool get canStartVerification => status.canSubmit;
+
+  KycStatus get status => verificationStatus ?? KycStatus.none;
 
   KycFlowState copyWith({
     bool? isLoading,
@@ -124,7 +144,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     try {
       final service = ref.read(kycServiceProvider);
       final data = await service.getKycStatus();
-      final profile = KycProfile.fromJson({'status': data.status.name, 'rejectionReason': data.rejectionReason});
+      final profile = KycProfile.fromJson({
+        'status': data.status.name,
+        'rejectionReason': data.rejectionReason,
+      });
       state = state.copyWith(
         isLoading: false,
         verificationStatus: _mapStatus(profile),
@@ -135,6 +158,14 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   }
 
   Future<void> submitKyc() async {
+    if (!state.canSubmit) {
+      state = state.copyWith(
+        error:
+            'Complete your personal information, ID document, and selfie before submitting.',
+      );
+      return;
+    }
+
     state = state.copyWith(isLoading: true);
     ref.read(analyticsServiceProvider).trackKycStarted();
     try {
@@ -148,8 +179,13 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         firstName: state.personalInfo['firstName'] ?? '',
         lastName: state.personalInfo['lastName'] ?? '',
         country: state.personalInfo['country'] ?? '',
-        dateOfBirth: DateTime.tryParse(state.personalInfo['dateOfBirth'] ?? '') ?? DateTime(2000, 1, 1),
-        documentType: state.selectedDocumentType?.toApiString() ?? state.personalInfo['documentType'] ?? '',
+        dateOfBirth:
+            DateTime.tryParse(state.personalInfo['dateOfBirth'] ?? '') ??
+            DateTime(2000, 1, 1),
+        documentType:
+            state.selectedDocumentType?.toApiString() ??
+            state.personalInfo['documentType'] ??
+            '',
         documentPaths: documentPaths,
         selfiePath: state.selfiePath ?? '',
         idNumber: state.personalInfo['documentNumber'],
@@ -166,7 +202,16 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKycFromData(data: address);
+      await service.submitAddressVerification(
+        addressLine1: address['addressLine1'] ?? '',
+        addressLine2: address['addressLine2'] ?? '',
+        city: address['city'] ?? '',
+        state: address['state'] ?? '',
+        postalCode: address['postalCode'] ?? '',
+        country: address['country'] ?? '',
+        documentType: address['documentType'] ?? '',
+        documentPath: address['documentPath'] ?? '',
+      );
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -177,7 +222,14 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(kycServiceProvider);
-      await service.submitKycFromData(data: {'additionalDocs': paths.join(',')});
+      await service.submitAdditionalDocuments(
+        occupation: '',
+        employer: '',
+        monthlyIncome: '',
+        sourceOfFunds: '',
+        sourceDetails: '',
+        supportingDocuments: paths,
+      );
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -198,13 +250,18 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
   KycStatus _mapStatus(KycProfile profile) {
     if (profile.isVerified) return KycStatus.verified;
     if (profile.isRejected) return KycStatus.rejected;
-    if (profile.isExpired) return KycStatus.none; // Expired → needs re-submission
+    if (profile.isExpired)
+      return KycStatus.none; // Expired → needs re-submission
     if (profile.status == KycStatus.submitted) return KycStatus.submitted;
-    if (profile.status == KycStatus.additionalInfoNeeded) return KycStatus.additionalInfoNeeded;
-    if (profile.status == KycStatus.documentsPending) return KycStatus.documentsPending;
+    if (profile.status == KycStatus.additionalInfoNeeded)
+      return KycStatus.additionalInfoNeeded;
+    if (profile.status == KycStatus.documentsPending)
+      return KycStatus.documentsPending;
     return profile.status;
   }
 }
 
 /// Main KYC flow provider.
-final kycProvider = NotifierProvider<KycFlowNotifier, KycFlowState>(KycFlowNotifier.new);
+final kycProvider = NotifierProvider<KycFlowNotifier, KycFlowState>(
+  KycFlowNotifier.new,
+);

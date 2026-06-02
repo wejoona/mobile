@@ -37,10 +37,12 @@ target 'Runner' do
 end
 
 post_install do |installer|
+  development_team = ENV['DEVELOPMENT_TEAM'] || 'NV4RJ48P6V'
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     target.build_configurations.each do |config|
-      config.build_settings['DEVELOPMENT_TEAM'] = 'NV4RJ48P6V'
+      config.build_settings['DEVELOPMENT_TEAM'] = development_team
     end
   end
 end

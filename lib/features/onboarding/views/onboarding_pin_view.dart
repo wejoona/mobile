@@ -4,8 +4,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_dots.dart';
-import 'package:usdc_wallet/features/pin/widgets/pin_pad.dart';
+import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
@@ -31,79 +31,76 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        title: AppText(
-          _confirmPin == null
-              ? l10n.onboarding_pin_title
-              : l10n.onboarding_pin_confirmTitle,
-          style: AppTypography.headlineSmall.copyWith(
-            color: colors.textPrimary,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () {
-            if (_confirmPin != null) {
-              setState(() {
-                _confirmPin = null;
-                _pin = '';
-                _errorMessage = null;
-                _showError = false;
-              });
-            } else {
-              context.pop();
-            }
-          },
-        ),
-      ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            children: [
-              // Progress indicator
-              const OnboardingProgress(currentStep: 4, totalSteps: 5),
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                _confirmPin == null
-                    ? l10n.onboarding_pin_enterPin
-                    : l10n.onboarding_pin_confirmPin,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: colors.textSecondary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.xxxl),
-              PinDots(
-                filledCount: _pin.length,
-                showError: _showError,
-              ),
-              if (_errorMessage != null) ...[
-                SizedBox(height: AppSpacing.md),
-                AppText(
-                  _errorMessage!,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: colors.errorText,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: AppSpacing.lg),
+                      AuthTopBar(onBack: _handleBack),
+                      const SizedBox(height: AppSpacing.lg),
+                      const OnboardingProgress(currentStep: 4, totalSteps: 5),
+                      const SizedBox(height: AppSpacing.xxl),
+                      AuthScreenHeader(
+                        appName: l10n.appName,
+                        title: _confirmPin == null
+                            ? l10n.onboarding_pin_title
+                            : l10n.onboarding_pin_confirmTitle,
+                        subtitle: _confirmPin == null
+                            ? l10n.onboarding_pin_enterPin
+                            : l10n.onboarding_pin_confirmPin,
+                      ),
+                      const SizedBox(height: AppSpacing.xxxl),
+                      PinDots(
+                        length: 6,
+                        filled: _pin.length,
+                        error: _showError,
+                      ),
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        AppText(
+                          _errorMessage!,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.errorText,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      if (state.error != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        AppText(
+                          state.error!,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.errorText,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.xxl),
+                      if (_confirmPin == null)
+                        _buildValidationRules(l10n, colors),
+                      const Spacer(),
+                      if (state.isLoading)
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation(colors.gold),
+                        )
+                      else
+                        PinPad(
+                          onDigitPressed: _handleNumberPressed,
+                          onDeletePressed: _handleBackspace,
+                          showBiometric: false,
+                        ),
+                      const SizedBox(height: AppSpacing.xl),
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
-              ],
-              SizedBox(height: AppSpacing.xxxl),
-              if (_confirmPin == null) _buildValidationRules(l10n, colors),
-              const Spacer(),
-              if (state.isLoading)
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation(colors.gold),
-                )
-              else
-                PinPad(
-                  onNumberPressed: _handleNumberPressed,
-                  onBackspace: _handleBackspace,
-                ),
-              SizedBox(height: AppSpacing.xl),
-            ],
+              ),
+            ),
           ),
         ),
       ),
@@ -160,10 +157,23 @@ class _OnboardingPinViewState extends ConsumerState<OnboardingPinView> {
     );
   }
 
-  void _handleNumberPressed(String number) {
+  void _handleBack() {
+    if (_confirmPin != null) {
+      setState(() {
+        _confirmPin = null;
+        _pin = '';
+        _errorMessage = null;
+        _showError = false;
+      });
+    } else {
+      context.pop();
+    }
+  }
+
+  void _handleNumberPressed(int number) {
     if (_pin.length < 6) {
       setState(() {
-        _pin += number;
+        _pin += number.toString();
         _showError = false;
         _errorMessage = null;
       });

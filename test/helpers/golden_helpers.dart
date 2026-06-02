@@ -18,7 +18,18 @@ class GoldenDevices {
 /// Check if golden file tests should run (CI only by default).
 bool get shouldRunGoldens {
   return Platform.environment['CI'] == 'true' ||
-      Platform.environment['UPDATE_GOLDENS'] == 'true';
+      Platform.environment['RUN_GOLDENS'] == 'true' ||
+      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+      const bool.fromEnvironment('RUN_GOLDENS') ||
+      const bool.fromEnvironment('UPDATE_GOLDENS');
+}
+
+String? get goldenSkipReason => shouldRunGoldens
+    ? null
+    : 'Set RUN_GOLDENS=true or UPDATE_GOLDENS=true to run golden tests';
+
+void goldenGroup(String description, void Function() body) {
+  group(description, body, skip: goldenSkipReason);
 }
 
 /// Wrap a widget for golden testing with a specific device size.

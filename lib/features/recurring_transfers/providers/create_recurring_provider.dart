@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/domain/entities/recurring_transfer.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/create_recurring_transfer_request.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequency.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
 import 'package:usdc_wallet/features/recurring_transfers/providers/recurring_transfers_provider.dart';
 
@@ -19,15 +21,29 @@ class CreateRecurringState {
   final bool isComplete;
 
   const CreateRecurringState({
-    this.isLoading = false, this.error, this.recipientPhone, this.recipientName,
-    this.amount, this.frequency = RecurringFrequency.monthly, this.startDate,
-    this.endDate, this.note, this.isComplete = false,
+    this.isLoading = false,
+    this.error,
+    this.recipientPhone,
+    this.recipientName,
+    this.amount,
+    this.frequency = RecurringFrequency.monthly,
+    this.startDate,
+    this.endDate,
+    this.note,
+    this.isComplete = false,
   });
 
   CreateRecurringState copyWith({
-    bool? isLoading, String? error, String? recipientPhone, String? recipientName,
-    double? amount, RecurringFrequency? frequency, DateTime? startDate,
-    DateTime? endDate, String? note, bool? isComplete,
+    bool? isLoading,
+    String? error,
+    String? recipientPhone,
+    String? recipientName,
+    double? amount,
+    RecurringFrequency? frequency,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? note,
+    bool? isComplete,
   }) => CreateRecurringState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
@@ -45,29 +61,54 @@ class CreateRecurringState {
 /// Create recurring transfer notifier.
 class CreateRecurringNotifier extends Notifier<CreateRecurringState> {
   @override
-  CreateRecurringState build() => CreateRecurringState(startDate: DateTime.now().add(const Duration(days: 1)));
+  CreateRecurringState build() => CreateRecurringState(
+    startDate: DateTime.now().add(const Duration(days: 1)),
+  );
 
-  void setRecipient(String phone, {String? name}) => state = state.copyWith(recipientPhone: phone, recipientName: name);
+  void setRecipient(String phone, {String? name}) =>
+      state = state.copyWith(recipientPhone: phone, recipientName: name);
   void setAmount(double amount) => state = state.copyWith(amount: amount);
-  void setFrequency(RecurringFrequency freq) => state = state.copyWith(frequency: freq);
+  void setFrequency(RecurringFrequency freq) =>
+      state = state.copyWith(frequency: freq);
   void setStartDate(DateTime date) => state = state.copyWith(startDate: date);
   void setEndDate(DateTime? date) => state = state.copyWith(endDate: date);
   void setNote(String note) => state = state.copyWith(note: note);
 
-  Future<void> create() async {
+  Future<void> create({String? pin}) async {
     if (state.recipientPhone == null || state.amount == null) return;
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(recurringTransfersServiceProvider);
+      final pinService = ref.read(pinServiceProvider);
+      String? pinToken;
+
+      if (pin != null && pin.isNotEmpty) {
+        final verification = await pinService.verifyPinWithBackend(pin);
+        if (verification.success) {
+          pinToken = verification.pinToken;
+        }
+      } else {
+        pinToken = await pinService.getPinToken();
+      }
+
+      if (pinToken == null || pinToken.isEmpty) {
+        throw Exception('PIN verification required');
+      }
+
       await service.createRecurringTransfer(
         CreateRecurringTransferRequest(
           recipientPhone: state.recipientPhone!,
           recipientName: state.recipientName ?? '',
           amount: state.amount!,
           currency: 'USDC',
-          frequency: TransferFrequency.values.firstWhere((f) => f.name == state.frequency.name, orElse: () => TransferFrequency.monthly),
+          frequency: TransferFrequency.values.firstWhere(
+            (f) => f.name == state.frequency.name,
+            orElse: () => TransferFrequency.monthly,
+          ),
           startDate: state.startDate ?? DateTime.now(),
         ),
+        pinToken: pinToken,
+        idempotencyKey: generateIdempotencyKey(),
       );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(recurringTransfersProvider);
@@ -76,7 +117,12 @@ class CreateRecurringNotifier extends Notifier<CreateRecurringState> {
     }
   }
 
-  void reset() => state = CreateRecurringState(startDate: DateTime.now().add(const Duration(days: 1)));
+  void reset() => state = CreateRecurringState(
+    startDate: DateTime.now().add(const Duration(days: 1)),
+  );
 }
 
-final createRecurringProvider = NotifierProvider<CreateRecurringNotifier, CreateRecurringState>(CreateRecurringNotifier.new);
+final createRecurringProvider =
+    NotifierProvider<CreateRecurringNotifier, CreateRecurringState>(
+      CreateRecurringNotifier.new,
+    );

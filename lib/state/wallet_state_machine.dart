@@ -43,26 +43,38 @@ class WalletStateMachine extends Notifier<WalletState> {
 
     // If already loaded with valid wallet data, don't refetch automatically
     // Use refresh() for manual refresh instead, or pass force: true
-    if (!force && state.status == WalletStatus.loaded && state.walletId.isNotEmpty) {
-      debugPrint('[WalletState] Skipping fetch - already loaded with walletId: ${state.walletId}');
-      // Still sync FSM in case it's out of sync (e.g., session restore)
-      ref.read(appFsmProvider.notifier).onWalletLoaded(
-        walletId: state.walletId,
-        walletAddress: state.walletAddress,
-        blockchain: state.blockchain,
-        usdcBalance: state.usdcBalance,
-        pendingBalance: state.pendingBalance,
+    if (!force &&
+        state.status == WalletStatus.loaded &&
+        state.walletId.isNotEmpty &&
+        !state.isCached) {
+      debugPrint(
+        '[WalletState] Skipping fetch - already loaded with walletId: ${state.walletId}',
       );
+      // Still sync FSM in case it's out of sync (e.g., session restore)
+      ref
+          .read(appFsmProvider.notifier)
+          .onWalletLoaded(
+            walletId: state.walletId,
+            walletAddress: state.walletAddress,
+            blockchain: state.blockchain,
+            usdcBalance: state.usdcBalance,
+            pendingBalance: state.pendingBalance,
+          );
       return;
     }
 
-    state = state.copyWith(status: WalletStatus.loading);
+    state = state.copyWith(
+      status: state.isCached ? WalletStatus.refreshing : WalletStatus.loading,
+      isCached: state.isCached,
+    );
 
     // Sync with FSM: notify fetch is starting
     ref.read(appFsmProvider.notifier).fetchWallet();
 
     try {
       final response = await _service.getBalance();
+
+      if (!ref.mounted) return;
 
       double usdBalance = 0;
       double usdcBalance = 0;
@@ -94,34 +106,24 @@ class WalletStateMachine extends Notifier<WalletState> {
       ref.read(localSyncServiceProvider).cacheWalletFromState(state);
 
       // Sync with FSM: notify wallet loaded
-      ref.read(appFsmProvider.notifier).onWalletLoaded(
-        walletId: response.walletId,
-        walletAddress: response.walletAddress,
-        blockchain: response.blockchain,
-        usdcBalance: usdcBalance,
-        pendingBalance: pending,
-      );
+      ref
+          .read(appFsmProvider.notifier)
+          .onWalletLoaded(
+            walletId: response.walletId,
+            walletAddress: response.walletAddress,
+            blockchain: response.blockchain,
+            usdcBalance: usdcBalance,
+            pendingBalance: pending,
+          );
     } on ApiException catch (e) {
-      // If 404 "Wallet not found", set loaded state with empty wallet
-      // This triggers the "Create Wallet" card in home view
+      // Fresh users should not be blocked by an internal wallet bootstrap step.
+      // If the API says no wallet exists, create the local USDC wallet and
+      // let the FSM continue to Home once creation succeeds.
       if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
-        state = state.copyWith(
-          status: WalletStatus.loaded,
-          walletId: '',
-          walletAddress: null,
-          usdBalance: 0,
-          usdcBalance: 0,
-          pendingBalance: 0,
-          error: null,
-        );
-
-        // Sync with FSM: notify wallet not found
-        ref.read(appFsmProvider.notifier).onWalletNotFound();
+        state = state.copyWith(status: WalletStatus.initial, error: null);
+        await createWallet();
       } else {
-        state = state.copyWith(
-          status: WalletStatus.error,
-          error: e.message,
-        );
+        state = state.copyWith(status: WalletStatus.error, error: e.message);
 
         // Sync with FSM: notify wallet failed
         ref.read(appFsmProvider.notifier).onWalletFailed(e.message);
@@ -146,10 +148,7 @@ class WalletStateMachine extends Notifier<WalletState> {
         return;
       }
 
-      state = state.copyWith(
-        status: WalletStatus.error,
-        error: e.toString(),
-      );
+      state = state.copyWith(status: WalletStatus.error, error: e.toString());
 
       // Sync with FSM: notify wallet failed
       ref.read(appFsmProvider.notifier).onWalletFailed(e.toString());
@@ -191,6 +190,8 @@ class WalletStateMachine extends Notifier<WalletState> {
         error: null,
       );
     } catch (e) {
+      if (!ref.mounted) return;
+
       // On refresh error, keep old data but update status
       state = state.copyWith(
         status: WalletStatus.loaded,
@@ -221,9 +222,13 @@ class WalletStateMachine extends Notifier<WalletState> {
       final response = await _service.createWallet();
 
       // Debug: log the response data
-      debugPrint('[WalletState] createWallet response - walletId: "${response.walletId}", walletAddress: "${response.walletAddress}", balances: ${response.balances.length}');
+      debugPrint(
+        '[WalletState] createWallet response - walletId: "${response.walletId}", walletAddress: "${response.walletAddress}", balances: ${response.balances.length}',
+      );
       for (final b in response.balances) {
-        debugPrint('[WalletState] Balance: ${b.currency} available=${b.available} pending=${b.pending}');
+        debugPrint(
+          '[WalletState] Balance: ${b.currency} available=${b.available} pending=${b.pending}',
+        );
       }
 
       double usdBalance = 0;
@@ -253,27 +258,25 @@ class WalletStateMachine extends Notifier<WalletState> {
       );
 
       // Debug: log the final state
-      debugPrint('[WalletState] State updated - walletId: "${state.walletId}", status: ${state.status}, usdcBalance: ${state.usdcBalance}');
+      debugPrint(
+        '[WalletState] State updated - walletId: "${state.walletId}", status: ${state.status}, usdcBalance: ${state.usdcBalance}',
+      );
 
       // Sync with FSM: notify wallet created
-      ref.read(appFsmProvider.notifier).onWalletCreated(
-        walletId: response.walletId,
-        walletAddress: response.walletAddress,
-        blockchain: response.blockchain,
-      );
+      ref
+          .read(appFsmProvider.notifier)
+          .onWalletCreated(
+            walletId: response.walletId,
+            walletAddress: response.walletAddress,
+            blockchain: response.blockchain,
+          );
     } on ApiException catch (e) {
-      state = state.copyWith(
-        status: WalletStatus.error,
-        error: e.message,
-      );
+      state = state.copyWith(status: WalletStatus.error, error: e.message);
 
       // Sync with FSM: notify wallet failed
       ref.read(appFsmProvider.notifier).onWalletFailed(e.message);
     } catch (e) {
-      state = state.copyWith(
-        status: WalletStatus.error,
-        error: e.toString(),
-      );
+      state = state.copyWith(status: WalletStatus.error, error: e.toString());
 
       // Sync with FSM: notify wallet failed
       ref.read(appFsmProvider.notifier).onWalletFailed(e.toString());
@@ -287,9 +290,7 @@ class WalletStateMachine extends Notifier<WalletState> {
 }
 
 final walletStateMachineProvider =
-    NotifierProvider<WalletStateMachine, WalletState>(
-  WalletStateMachine.new,
-);
+    NotifierProvider<WalletStateMachine, WalletState>(WalletStateMachine.new);
 
 /// Convenience providers for specific balance values
 final usdcBalanceProvider = Provider<double>((ref) {

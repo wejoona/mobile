@@ -14,7 +14,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Recurring Transfers E2E', () {
+  e2eGroup('Recurring Transfers E2E', () {
     test('POST /recurring-transfers — create recurring transfer', () async {
       final res = await client.post('/recurring-transfers', {
         'recipientPhone': '+2250711111111',

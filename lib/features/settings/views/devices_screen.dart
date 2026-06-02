@@ -1,35 +1,38 @@
-import 'package:usdc_wallet/features/settings/models/devices_state.dart';
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/dialogs/index.dart'
+    hide AlertDialog;
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/components/dialogs/index.dart';
-import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
-import 'package:usdc_wallet/domain/entities/device.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-
+import 'package:usdc_wallet/domain/entities/device.dart';
+import 'package:usdc_wallet/features/settings/models/devices_state.dart';
+import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/utils/device_names.dart';
 
-/// Local device info for display (cached).
-final _localDeviceInfoProvider = FutureProvider<Map<String, String>>((ref) async {
+final _localDeviceInfoProvider = FutureProvider<Map<String, String>>((
+  ref,
+) async {
   final info = DeviceInfoPlugin();
   if (Platform.isIOS) {
     final ios = await info.iosInfo;
-    final machine = ios.utsname.machine; // e.g. "iPhone17,2"
-    final marketingName = iosModelName(machine); // e.g. "iPhone 16 Pro Max"
+    final machine = ios.utsname.machine;
     return {
-      'name': ios.name,  // "Ben's iPhone 16 Pro Max"
-      'model': marketingName,
+      'name': ios.name,
+      'model': iosModelName(machine),
       'machine': machine,
       'os': 'iOS ${ios.systemVersion}',
       'platform': 'ios',
     };
-  } else if (Platform.isAndroid) {
+  }
+
+  if (Platform.isAndroid) {
     final android = await info.androidInfo;
     return {
       'name': androidModelName(android.brand, android.model),
@@ -38,7 +41,8 @@ final _localDeviceInfoProvider = FutureProvider<Map<String, String>>((ref) async
       'platform': 'android',
     };
   }
-  return {'name': 'Appareil', 'model': '', 'os': '', 'platform': ''};
+
+  return const {'name': 'This device', 'model': '', 'os': '', 'platform': ''};
 });
 
 class DevicesScreen extends ConsumerWidget {
@@ -47,8 +51,8 @@ class DevicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(devicesStateProvider);
     final colors = context.colors;
+    final state = ref.watch(devicesStateProvider);
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -87,419 +91,89 @@ class DevicesScreen extends ConsumerWidget {
     }
 
     if (state.error != null && state.devices.isEmpty) {
-      return _buildErrorState(context, ref, state.error!, l10n);
+      return _buildErrorState(context, ref, l10n);
     }
 
-    if (state.devices.isEmpty) {
-      return _buildEmptyState(context, l10n);
-    }
-
-    final devices = state.devices.cast<Device>();
+    final devices = state.devices;
     final localId = ref.watch(localDeviceIdProvider).value ?? '';
-    
-    bool isThisDevice(Device d) =>
-        d.isCurrent || (localId.isNotEmpty && d.deviceIdentifier == localId);
-    
-    final currentDevice = devices.where(isThisDevice).toList();
-    final otherDevices = devices.where((d) => !isThisDevice(d)).toList();
+    final currentDevice = _currentDevice(devices, localId);
+    final otherDevices = devices
+        .where((device) => !_isThisDevice(device, localId))
+        .toList(growable: false);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.md,
+      ),
       children: [
-        // Device count header
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: context.colors.goldGradient,
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.devices_rounded, color: Colors.black, size: 22),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      '${devices.length} appareil${devices.length > 1 ? 's' : ''} connecté${devices.length > 1 ? 's' : ''}',
-                      variant: AppTextVariant.titleSmall,
-                      color: context.colors.textPrimary,
-                    ),
-                    SizedBox(height: AppSpacing.xxs),
-                    AppText(
-                      'Gérez l\'accès à votre compte',
-                      variant: AppTextVariant.bodySmall,
-                      color: context.colors.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Current device section — always show, use local info
-        _buildSectionHeader(context, 'CET APPAREIL'),
-        const SizedBox(height: AppSpacing.sm),
-        _buildCurrentDeviceCard(
-          context, ref,
-          currentDevice.isNotEmpty ? currentDevice.first : null,
-          l10n,
-        ),
+        _DevicesSummary(count: devices.length),
         const SizedBox(height: AppSpacing.xl),
-
-        // Other devices section
+        _SectionHeader(title: l10n.settings_thisDevice),
+        const SizedBox(height: AppSpacing.sm),
+        _CurrentDeviceCard(device: currentDevice),
+        const SizedBox(height: AppSpacing.xl),
         if (otherDevices.isNotEmpty) ...[
-          _buildSectionHeader(context, 'AUTRES APPAREILS'),
+          _SectionHeader(title: l10n.settings_otherDevices),
           const SizedBox(height: AppSpacing.sm),
-          ...otherDevices.map((device) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: _buildOtherDeviceCard(context, ref, device, l10n),
-          )),
-        ],
-
-        // Logout all button
-        if (otherDevices.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.xl),
-          OutlinedButton.icon(
-            onPressed: () => _handleLogoutAll(context, ref, l10n),
-            icon: Icon(Icons.logout_rounded, size: 18, color: context.colors.error),
-            label: AppText(
-              'Déconnecter tous les autres appareils',
-              variant: AppTextVariant.labelMedium,
-              color: context.colors.error,
-            ),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              side: BorderSide(color: context.colors.error.withValues(alpha: 0.3)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
+          ...otherDevices.map(
+            (device) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: _OtherDeviceCard(device: device),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
+          AppButton(
+            label: l10n.settings_signOutOtherDevices,
+            onPressed: () =>
+                _handleLogoutOthers(context, ref, l10n, devices, localId),
+            variant: AppButtonVariant.danger,
+            isFullWidth: true,
+          ),
+        ] else if (devices.isNotEmpty) ...[
+          _NoOtherDevicesCard(l10n: l10n),
+        ] else ...[
+          _buildEmptyState(context, l10n),
         ],
-
         const SizedBox(height: AppSpacing.xxxl),
       ],
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: context.colors.textSecondary,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
+  Device? _currentDevice(List<Device> devices, String localId) {
+    for (final device in devices) {
+      if (_isThisDevice(device, localId)) return device;
+    }
+    return null;
   }
 
-  Widget _buildCurrentDeviceCard(
-    BuildContext context,
-    WidgetRef ref,
-    Device? device,
-    AppLocalizations l10n,
-  ) {
-    final colors = context.colors;
-    final localInfo = ref.watch(_localDeviceInfoProvider).value ?? {};
-    final modelName = localInfo['model'] ?? device?.displayLabel ?? 'iPhone';
-    final deviceName = localInfo['name'] ?? device?.deviceName ?? modelName;
-    final osInfo = localInfo['os'] ?? '${device?.platform ?? ""} ${device?.osVersion ?? ""}';
-    final platformStr = localInfo['platform'] ?? device?.platform ?? 'ios';
-    final appVer = device?.appVersion;
-    final lastActive = device?.lastActiveAt;
-    final isTrusted = device?.isTrusted ?? false;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            colors.gold.withValues(alpha: 0.08),
-            colors.gold.withValues(alpha: 0.03),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.gold.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              // Device icon with active pulse
-              Stack(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: colors.gold.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      _getPlatformIcon(platformStr),
-                      color: colors.gold,
-                      size: 26,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: colors.success,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: colors.canvas, width: 2),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: AppText(
-                            modelName,
-                            variant: AppTextVariant.titleSmall,
-                            color: colors.textPrimary,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: colors.success.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  color: colors.success,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.xs),
-                              AppText(
-                                'Actif',
-                                variant: AppTextVariant.labelSmall,
-                                color: colors.success,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: AppSpacing.xs),
-                    AppText(
-                      '$deviceName · $osInfo${appVer != null ? " · v$appVer" : ""}',
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-              if (isTrusted)
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: colors.success.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.verified_user_rounded, color: colors.success, size: 18),
-                ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          // Last active
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-            decoration: BoxDecoration(
-              color: colors.canvas.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.access_time_rounded, size: 14, color: colors.textSecondary),
-                const SizedBox(width: AppSpacing.sm),
-                AppText(
-                  'Dernière activité: ${_formatLastActive(lastActive)}',
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOtherDeviceCard(
-    BuildContext context,
-    WidgetRef ref,
-    Device device,
-    AppLocalizations l10n,
-  ) {
-    final colors = context.colors;
-    final isRecent = device.isRecentlyActive;
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
-      ),
-      child: Row(
-        children: [
-          // Device icon
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colors.elevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              _getPlatformIcon(device.platform),
-              color: isRecent ? colors.textPrimary : colors.textSecondary,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  device.displayLabel,
-                  variant: AppTextVariant.labelLarge,
-                  color: colors.textPrimary,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: AppSpacing.xxs),
-                AppText(
-                  '${device.platform} ${device.osVersion ?? ""} · ${_formatLastActive(device.lastActiveAt)}',
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textSecondary,
-                ),
-              ],
-            ),
-          ),
-          // Actions
-          PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert_rounded, color: colors.textSecondary, size: 20),
-            color: colors.container,
-            surfaceTintColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              side: BorderSide(color: colors.borderSubtle),
-            ),
-            onSelected: (action) {
-              switch (action) {
-                case 'trust':
-                  _handleTrustDevice(context, ref, device, l10n);
-                case 'revoke':
-                  _handleRevokeDevice(context, ref, device, l10n);
-              }
-            },
-            itemBuilder: (ctx) => [
-              if (!device.isTrusted)
-                PopupMenuItem(
-                  value: 'trust',
-                  child: Row(
-                    children: [
-                      Icon(Icons.verified_user_outlined, size: 18, color: colors.success),
-                      const SizedBox(width: 10),
-                      Text(AppLocalizations.of(context)!.settings_approve, style: TextStyle(color: colors.textPrimary)),
-                    ],
-                  ),
-                ),
-              PopupMenuItem(
-                value: 'revoke',
-                child: Row(
-                  children: [
-                    Icon(Icons.block_rounded, size: 18, color: colors.error),
-                    const SizedBox(width: 10),
-                    Text('Révoquer', style: TextStyle(color: colors.error)),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+  bool _isThisDevice(Device device, String localId) {
+    return device.isCurrent ||
+        (localId.isNotEmpty && device.deviceIdentifier == localId);
   }
 
   Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    colors.gold.withValues(alpha: 0.15),
-                    colors.gold.withValues(alpha: 0.05),
-                  ],
-                ),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.devices_rounded, size: 48, color: colors.gold),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppText(
-              l10n.settings_noDevices,
-              variant: AppTextVariant.titleMedium,
-              textAlign: TextAlign.center,
-              color: colors.textPrimary,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            AppText(
-              l10n.settings_noDevicesDescription,
-              variant: AppTextVariant.bodyMedium,
-              color: colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxxl),
+      child: Column(
+        children: [
+          Icon(Icons.devices_rounded, size: 48, color: colors.gold),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            l10n.settings_noDevices,
+            variant: AppTextVariant.titleMedium,
+            textAlign: TextAlign.center,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            l10n.settings_noDevicesDescription,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -507,7 +181,6 @@ class DevicesScreen extends ConsumerWidget {
   Widget _buildErrorState(
     BuildContext context,
     WidgetRef ref,
-    String error,
     AppLocalizations l10n,
   ) {
     final colors = context.colors;
@@ -517,25 +190,17 @@ class DevicesScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: colors.error.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.wifi_off_rounded, size: 40, color: colors.error),
-            ),
+            Icon(Icons.wifi_off_rounded, size: 44, color: colors.errorText),
             const SizedBox(height: AppSpacing.xl),
             AppText(
-              'Impossible de charger les appareils',
+              l10n.settings_devicesLoadErrorTitle,
               variant: AppTextVariant.titleMedium,
               textAlign: TextAlign.center,
               color: colors.textPrimary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'Vérifiez votre connexion et réessayez',
+              l10n.settings_devicesLoadErrorDescription,
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
@@ -552,34 +217,326 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  IconData _getPlatformIcon(String? platform) {
-    switch (platform?.toLowerCase()) {
-      case 'ios':
-        return Icons.phone_iphone_rounded;
-      case 'android':
-        return Icons.smartphone_rounded;
-      case 'web':
-        return Icons.language_rounded;
-      default:
-        return Icons.devices_rounded;
+  Future<void> _handleLogoutOthers(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    List<Device> devices,
+    String localId,
+  ) async {
+    final confirmed = await context.showDeleteConfirmation(
+      title: l10n.settings_signOutOtherDevicesTitle,
+      message: l10n.settings_signOutOtherDevicesMessage,
+      confirmText: l10n.settings_signOutOtherDevices,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await ref
+          .read(deviceActionsProvider)
+          .revokeOtherDevices(devices, localId);
+      if (context.mounted) {
+        await context.showSuccessAlert(
+          title: l10n.action_done,
+          message: l10n.settings_signOutOtherDevicesSuccess,
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        await context.showErrorAlert(
+          title: l10n.common_error,
+          message: l10n.settings_signOutOtherDevicesError,
+        );
+      }
     }
   }
+}
 
-  String _formatLastActive(DateTime? date) {
-    if (date == null) return 'Jamais';
+class _DevicesSummary extends StatelessWidget {
+  const _DevicesSummary({required this.count});
 
-    final now = DateTime.now();
-    final diff = now.difference(date);
+  final int count;
 
-    if (diff.inMinutes < 1) return 'À l\'instant';
-    if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes}min';
-    if (diff.inHours < 24) return 'Il y a ${diff.inHours}h';
-    if (diff.inDays < 7) return 'Il y a ${diff.inDays}j';
-    return DateFormat('d MMM yyyy', 'fr').format(date);
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: colors.gold.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Icon(Icons.devices_rounded, color: colors.gold, size: 22),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                l10n.settings_connectedDevices,
+                variant: AppTextVariant.titleSmall,
+                color: colors.textPrimary,
+              ),
+              const SizedBox(height: AppSpacing.xxs),
+              AppText(
+                count == 1
+                    ? l10n.settings_oneDeviceAccess
+                    : l10n.settings_multipleDevicesAccess(count),
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppText(
+      title.toUpperCase(),
+      variant: AppTextVariant.labelSmall,
+      color: context.colors.textSecondary,
+    );
+  }
+}
+
+class _CurrentDeviceCard extends ConsumerWidget {
+  const _CurrentDeviceCard({required this.device});
+
+  final Device? device;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+    final localInfo = ref.watch(_localDeviceInfoProvider).value ?? const {};
+    final modelName =
+        localInfo['model'] ?? device?.displayLabel ?? l10n.settings_thisDevice;
+    final deviceName = localInfo['name'] ?? device?.deviceName ?? modelName;
+    final osInfo = localInfo['os'] ?? device?.osDisplay ?? '';
+    final platform = localInfo['platform'] ?? device?.platform ?? '';
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      borderRadius: AppRadius.lg,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _DeviceIcon(platform: platform, isActive: true, isCurrent: true),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      modelName,
+                      variant: AppTextVariant.titleMedium,
+                      color: colors.textPrimary,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: AppSpacing.xxs),
+                    AppText(
+                      _joinDetails([
+                        deviceName == modelName ? null : deviceName,
+                        osInfo,
+                        device?.appVersion == null
+                            ? null
+                            : 'v${device!.appVersion}',
+                      ]),
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              _StatusBadge(
+                label: l10n.settings_activeNow,
+                color: colors.successText,
+                background: colors.successBg,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          _DeviceMetaWrap(
+            device: device,
+            fallbackLastActive: l10n.settings_justNow,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OtherDeviceCard extends ConsumerWidget {
+  const _OtherDeviceCard({required this.device});
+
+  final Device device;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
+      child: Row(
+        children: [
+          _DeviceIcon(
+            platform: device.platform,
+            isActive: device.isRecentlyActive,
+            isCurrent: false,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  device.displayLabel,
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textPrimary,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  _joinDetails([
+                    device.osDisplay,
+                    _formatLastActive(context, device.lastActiveAt),
+                  ]),
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.xs,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _StatusBadge(
+                      label: device.isTrusted
+                          ? l10n.settings_trusted
+                          : l10n.settings_notTrusted,
+                      color: device.isTrusted
+                          ? colors.successText
+                          : colors.warningText,
+                      background: device.isTrusted
+                          ? colors.successBg
+                          : colors.warningBg,
+                    ),
+                    if (device.loginCount != null)
+                      _StatusBadge(
+                        label: l10n.settings_loginCountValue(
+                          device.loginCount!,
+                        ),
+                        color: colors.textSecondary,
+                        background: colors.elevated,
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          _DeviceMenu(device: device),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeviceMenu extends ConsumerWidget {
+  const _DeviceMenu({required this.device});
+
+  final Device device;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
+    return PopupMenuButton<String>(
+      icon: Icon(
+        Icons.more_vert_rounded,
+        color: colors.textSecondary,
+        size: 20,
+      ),
+      color: colors.container,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        side: BorderSide(color: colors.borderSubtle),
+      ),
+      onSelected: (action) {
+        if (action == 'trust') {
+          _handleTrust(context, ref, l10n, device);
+        } else if (action == 'untrust') {
+          _handleUntrust(context, ref, l10n, device);
+        } else if (action == 'rename') {
+          _handleRename(context, ref, l10n, device);
+        } else if (action == 'remove') {
+          _handleRemove(context, ref, l10n, device);
+        }
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: device.isTrusted ? 'untrust' : 'trust',
+          child: _MenuRow(
+            icon: device.isTrusted
+                ? Icons.verified_user_outlined
+                : Icons.verified_user_rounded,
+            label: device.isTrusted
+                ? l10n.settings_untrustDevice
+                : l10n.settings_trustDevice,
+            color: colors.textPrimary,
+          ),
+        ),
+        PopupMenuItem(
+          value: 'rename',
+          child: _MenuRow(
+            icon: Icons.edit_outlined,
+            label: l10n.settings_renameDevice,
+            color: colors.textPrimary,
+          ),
+        ),
+        PopupMenuItem(
+          value: 'remove',
+          child: _MenuRow(
+            icon: Icons.logout_rounded,
+            label: l10n.settings_removeDevice,
+            color: colors.errorText,
+          ),
+        ),
+      ],
+    );
   }
 
-  Future<void> _handleTrustDevice(
-    BuildContext context, WidgetRef ref, Device device, AppLocalizations l10n,
+  Future<void> _handleTrust(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Device device,
   ) async {
     try {
       await ref.read(deviceActionsProvider).trustDevice(device.id);
@@ -589,7 +546,7 @@ class DevicesScreen extends ConsumerWidget {
           message: l10n.settings_deviceTrustedSuccess,
         );
       }
-    } catch (e) {
+    } catch (_) {
       if (context.mounted) {
         await context.showErrorAlert(
           title: l10n.common_error,
@@ -599,61 +556,375 @@ class DevicesScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _handleRevokeDevice(
-    BuildContext context, WidgetRef ref, Device device, AppLocalizations l10n,
+  Future<void> _handleUntrust(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Device device,
   ) async {
-    final confirmed = await context.showDeleteConfirmation(
-      title: 'Révoquer l\'appareil',
-      message: 'Cet appareil sera déconnecté et devra se reconnecter.',
-      confirmText: 'Révoquer',
-    );
-
-    if (confirmed) {
-      try {
-        await ref.read(deviceActionsProvider).revokeDevice(device.id);
-        if (context.mounted) {
-          await context.showSuccessAlert(
-            title: l10n.action_done,
-            message: l10n.settings_deviceRemovedSuccess,
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          await context.showErrorAlert(
-            title: l10n.common_error,
-            message: l10n.settings_deviceRemoveError,
-          );
-        }
+    try {
+      await ref.read(deviceActionsProvider).untrustDevice(device.id);
+      if (context.mounted) {
+        await context.showSuccessAlert(
+          title: l10n.action_done,
+          message: l10n.settings_deviceUntrustedSuccess,
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        await context.showErrorAlert(
+          title: l10n.common_error,
+          message: l10n.settings_deviceUntrustError,
+        );
       }
     }
   }
 
-  Future<void> _handleLogoutAll(
-    BuildContext context, WidgetRef ref, AppLocalizations l10n,
+  Future<void> _handleRename(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Device device,
   ) async {
-    final confirmed = await context.showDeleteConfirmation(
-      title: 'Déconnecter tous les appareils',
-      message: 'Tous les autres appareils seront déconnectés. Seul cet appareil restera actif.',
-      confirmText: 'Déconnecter tout',
+    final controller = TextEditingController(text: device.deviceName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.colors.container,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+        ),
+        title: AppText(
+          l10n.settings_renameDevice,
+          variant: AppTextVariant.titleMedium,
+        ),
+        content: AppInput(
+          label: l10n.settings_deviceName,
+          controller: controller,
+          textInputAction: TextInputAction.done,
+        ),
+        actions: [
+          AppButton(
+            label: l10n.action_cancel,
+            onPressed: () => Navigator.pop(dialogContext),
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
+          ),
+          AppButton(
+            label: l10n.action_save,
+            onPressed: () =>
+                Navigator.pop(dialogContext, controller.text.trim()),
+            variant: AppButtonVariant.primary,
+            size: AppButtonSize.small,
+          ),
+        ],
+      ),
     );
+    controller.dispose();
+    if (name == null || name.isEmpty) return;
 
-    if (confirmed) {
-      try {
-        await ref.read(deviceActionsProvider).revokeAllOtherDevices();
-        if (context.mounted) {
-          await context.showSuccessAlert(
-            title: l10n.action_done,
-            message: 'Tous les autres appareils ont été déconnectés.',
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          await context.showErrorAlert(
-            title: l10n.common_error,
-            message: 'Impossible de déconnecter les appareils.',
-          );
-        }
+    try {
+      await ref.read(deviceActionsProvider).renameDevice(device.id, name);
+      if (context.mounted) {
+        await context.showSuccessAlert(
+          title: l10n.action_done,
+          message: l10n.settings_deviceRenamedSuccess,
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        await context.showErrorAlert(
+          title: l10n.common_error,
+          message: l10n.settings_deviceRenameError,
+        );
       }
     }
   }
+
+  Future<void> _handleRemove(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Device device,
+  ) async {
+    final confirmed = await context.showDeleteConfirmation(
+      title: l10n.settings_revokeDeviceTitle,
+      message: l10n.settings_revokeDeviceMessage,
+      confirmText: l10n.settings_removeDevice,
+    );
+    if (!confirmed) return;
+
+    try {
+      await ref.read(deviceActionsProvider).revokeDevice(device.id);
+      if (context.mounted) {
+        await context.showSuccessAlert(
+          title: l10n.action_done,
+          message: l10n.settings_deviceRemovedSuccess,
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        await context.showErrorAlert(
+          title: l10n.common_error,
+          message: l10n.settings_deviceRemoveError,
+        );
+      }
+    }
+  }
+}
+
+class _NoOtherDevicesCard extends StatelessWidget {
+  const _NoOtherDevicesCard({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline_rounded, color: colors.successText),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: AppText(
+              l10n.settings_noOtherDevices,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeviceMetaWrap extends StatelessWidget {
+  const _DeviceMetaWrap({
+    required this.device,
+    required this.fallbackLastActive,
+  });
+
+  final Device? device;
+  final String fallbackLastActive;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+    final rows = [
+      _MetaItem(
+        icon: Icons.access_time_rounded,
+        label: l10n.settings_lastActive,
+        value: device == null
+            ? fallbackLastActive
+            : _formatLastActive(context, device!.lastActiveAt),
+      ),
+      if (device?.lastIpAddress != null)
+        _MetaItem(
+          icon: Icons.public_rounded,
+          label: l10n.settings_lastIp,
+          value: device!.lastIpAddress!,
+        ),
+      if (device?.loginCount != null)
+        _MetaItem(
+          icon: Icons.login_rounded,
+          label: l10n.settings_loginCount,
+          value: device!.loginCount.toString(),
+        ),
+    ];
+
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: rows
+          .map(
+            (item) => Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: colors.elevated,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(item.icon, size: 14, color: colors.textSecondary),
+                  const SizedBox(width: AppSpacing.xs),
+                  AppText(
+                    '${item.label}: ${item.value}',
+                    variant: AppTextVariant.bodySmall,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _MetaItem {
+  const _MetaItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+}
+
+class _DeviceIcon extends StatelessWidget {
+  const _DeviceIcon({
+    required this.platform,
+    required this.isActive,
+    required this.isCurrent,
+  });
+
+  final String? platform;
+  final bool isActive;
+  final bool isCurrent;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: isCurrent
+                ? colors.gold.withValues(alpha: 0.12)
+                : colors.elevated,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Icon(
+            _platformIcon(platform),
+            color: isCurrent ? colors.gold : colors.textSecondary,
+            size: 24,
+          ),
+        ),
+        if (isActive)
+          Positioned(
+            right: -1,
+            bottom: -1,
+            child: Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: colors.successText,
+                shape: BoxShape.circle,
+                border: Border.all(color: colors.container, width: 2),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatusBadge extends StatelessWidget {
+  const _StatusBadge({
+    required this.label,
+    required this.color,
+    required this.background,
+  });
+
+  final String label;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: AppText(
+        label,
+        variant: AppTextVariant.labelSmall,
+        color: color,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodyMedium,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+IconData _platformIcon(String? platform) {
+  switch (platform?.toLowerCase()) {
+    case 'ios':
+      return Icons.phone_iphone_rounded;
+    case 'android':
+      return Icons.smartphone_rounded;
+    case 'web':
+      return Icons.language_rounded;
+    default:
+      return Icons.devices_rounded;
+  }
+}
+
+String _joinDetails(List<String?> values) {
+  return values
+      .where((value) => value != null && value.trim().isNotEmpty)
+      .map((value) => value!.trim())
+      .join(' · ');
+}
+
+String _formatLastActive(BuildContext context, DateTime? date) {
+  final l10n = AppLocalizations.of(context)!;
+  if (date == null) return l10n.settings_neverActive;
+
+  final diff = DateTime.now().difference(date);
+  if (diff.inMinutes < 1) return l10n.settings_justNow;
+  if (diff.inMinutes < 60) return l10n.settings_minutesAgo(diff.inMinutes);
+  if (diff.inHours < 24) return l10n.settings_hoursAgo(diff.inHours);
+  if (diff.inDays < 7) return l10n.settings_daysAgo(diff.inDays);
+
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return DateFormat('MMM d, yyyy', locale).format(date);
 }

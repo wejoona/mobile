@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/index.dart';
@@ -60,8 +62,18 @@ class AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
+    ref.listen<int>(authSessionInvalidatedProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        unawaited(clearLocalSession());
+      }
+    });
+
     // Restore session from secure storage on startup
-    Future.microtask(() => checkAuth());
+    Future.microtask(() {
+      if (ref.mounted) {
+        return checkAuth();
+      }
+    });
     return const AuthState();
   }
 
@@ -71,10 +83,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Check if user is already authenticated
   Future<void> checkAuth() async {
+    if (!ref.mounted) return;
+    if (state.status != AuthStatus.initial) return;
+
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
       final token = await _storage.read(key: StorageKeys.accessToken);
+      if (!ref.mounted) return;
 
       if (token != null) {
         // Token exists — go to locked state (require PIN/biometric to unlock)
@@ -84,15 +100,19 @@ class AuthNotifier extends Notifier<AuthState> {
         // Sync FSM: restore auth state and trigger data fetches in background
         final userId = await _storage.read(key: 'user_id');
         final refreshToken = await _storage.read(key: 'refresh_token');
-        ref.read(appFsmProvider.notifier).restoreSession(
-          userId: userId ?? '',
-          accessToken: token,
-          refreshToken: refreshToken,
-        );
+        if (!ref.mounted) return;
+        ref
+            .read(appFsmProvider.notifier)
+            .restoreSession(
+              userId: userId ?? '',
+              accessToken: token,
+              refreshToken: refreshToken,
+            );
       } else {
         state = state.copyWith(status: AuthStatus.unauthenticated);
       }
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         status: AuthStatus.unauthenticated,
         error: e.toString(),
@@ -123,11 +143,19 @@ class AuthNotifier extends Notifier<AuthState> {
       final storedRefresh = await _storage.read(key: StorageKeys.refreshToken);
       if (storedRefresh == null) return;
 
-      final response = await _authService.refreshToken(refreshToken: storedRefresh);
+      final response = await _authService.refreshToken(
+        refreshToken: storedRefresh,
+      );
 
-      await _storage.write(key: StorageKeys.accessToken, value: response.accessToken);
+      await _storage.write(
+        key: StorageKeys.accessToken,
+        value: response.accessToken,
+      );
       if (response.refreshToken != null) {
-        await _storage.write(key: StorageKeys.refreshToken, value: response.refreshToken!);
+        await _storage.write(
+          key: StorageKeys.refreshToken,
+          value: response.refreshToken!,
+        );
       }
     } catch (_) {
       // Token refresh failed — the 401 interceptor will handle it on next API call
@@ -156,7 +184,9 @@ class AuthNotifier extends Notifier<AuthState> {
       _analytics.trackRegistration(country: countryCode);
 
       // Sync with FSM: notify that OTP was sent
-      ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
+      ref
+          .read(appFsmProvider.notifier)
+          .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
 
@@ -182,7 +212,9 @@ class AuthNotifier extends Notifier<AuthState> {
       );
 
       // Sync with FSM: notify that OTP was sent
-      ref.read(appFsmProvider.notifier).onOtpReceived(expiresIn: response.expiresIn);
+      ref
+          .read(appFsmProvider.notifier)
+          .onOtpReceived(expiresIn: response.expiresIn);
     } on ApiException catch (e) {
       state = state.copyWith(status: AuthStatus.error, error: e.message);
 
@@ -227,24 +259,30 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       // Start session with actual token validity from backend
-      await ref.read(sessionServiceProvider.notifier).startSession(
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-        tokenValidity: Duration(seconds: response.expiresIn),
-      );
+      await ref
+          .read(sessionServiceProvider.notifier)
+          .startSession(
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+            tokenValidity: Duration(seconds: response.expiresIn),
+          );
 
       // Sync with FSM: notify that auth verification succeeded
       // Do this BEFORE setting authenticated status to ensure wallet fetch is queued
-      ref.read(appFsmProvider.notifier).onAuthVerified(
-        userId: response.user.id,
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      );
+      ref
+          .read(appFsmProvider.notifier)
+          .onAuthVerified(
+            userId: response.user.id,
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          );
 
       // Also report KYC status from the auth response to avoid waiting for separate fetch
       // This ensures the FSM knows the KYC state immediately
       if (response.kycStatus != null) {
-        ref.read(kycStateMachineProvider.notifier).updateFromAuthResponse(response.kycStatus);
+        ref
+            .read(kycStateMachineProvider.notifier)
+            .updateFromAuthResponse(response.kycStatus);
       }
 
       state = state.copyWith(
@@ -254,12 +292,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
       // Populate UserStateMachine with profile data from auth response
       // Home screen reads displayName from userStateMachineProvider
-      ref.read(userStateMachineProvider.notifier).updateProfile(
-        firstName: response.user.firstName,
-        lastName: response.user.lastName,
-        email: response.user.email,
-        avatarUrl: response.user.avatarUrl,
-      );
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(
+            firstName: response.user.firstName,
+            lastName: response.user.lastName,
+            email: response.user.email,
+            avatarUrl: response.user.avatarUrl,
+            avatarThumb: response.user.avatarBase64,
+          );
 
       // Analytics: login success
       _analytics.trackLogin(method: 'otp');
@@ -289,7 +330,9 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
-      final response = await _authService.refreshToken(refreshToken: refreshToken);
+      final response = await _authService.refreshToken(
+        refreshToken: refreshToken,
+      );
 
       // Store new tokens
       await _storage.write(
@@ -304,17 +347,21 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       // Start session with actual token validity from backend
-      await ref.read(sessionServiceProvider.notifier).startSession(
-        accessToken: response.accessToken,
-        tokenValidity: Duration(seconds: response.expiresIn),
-      );
+      await ref
+          .read(sessionServiceProvider.notifier)
+          .startSession(
+            accessToken: response.accessToken,
+            tokenValidity: Duration(seconds: response.expiresIn),
+          );
 
       // Sync with FSM: notify that auth verification succeeded
-      ref.read(appFsmProvider.notifier).onAuthVerified(
-        userId: response.user?.id ?? '',
-        accessToken: response.accessToken,
-        refreshToken: response.refreshToken,
-      );
+      ref
+          .read(appFsmProvider.notifier)
+          .onAuthVerified(
+            userId: response.user?.id ?? '',
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
+          );
 
       state = state.copyWith(
         status: AuthStatus.authenticated,
@@ -335,11 +382,16 @@ class AuthNotifier extends Notifier<AuthState> {
 
   /// Logout
   Future<void> logout() async {
-    // Stop real-time sync
-    ref.read(realtimeServiceProvider).stop();
-
     // Notify backend first (while we still have the token)
     await _authService.logout();
+
+    await clearLocalSession();
+  }
+
+  /// Clear local auth/session state without calling the backend.
+  Future<void> clearLocalSession() async {
+    // Stop real-time sync
+    ref.read(realtimeServiceProvider).stop();
 
     // End session
     await ref.read(sessionServiceProvider.notifier).endSession();

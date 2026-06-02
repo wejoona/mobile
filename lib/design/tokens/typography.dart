@@ -1,408 +1,296 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Typography System
-/// Display: Playfair Display (headlines, amounts)
-/// Body: DM Sans (everything else)
+/// Display: Playfair Display (brand/editorial moments only)
+/// Body: DM Sans (product UI, money, controls)
 /// Mono: JetBrains Mono (numbers, codes)
 ///
-/// NOTE: Colors are NOT hardcoded here. They are inherited from Theme.of(context)
-/// or can be overridden in AppText component.
-///
-/// In test mode (when GoogleFonts.config.allowRuntimeFetching is false),
-/// system fonts are used instead to avoid network dependencies.
+/// Fonts are bundled in pubspec.yaml so production rendering never depends on
+/// runtime network font fetching.
 class AppTypography {
   AppTypography._();
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TEST MODE DETECTION
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const String displayFamily = 'PlayfairDisplay';
+  static const String bodyFamily = 'DMSans';
+  static const String monoFamily = 'JetBrainsMono';
 
-  /// Check if we're in test mode (runtime font fetching disabled)
-  static bool get _isTestMode => !GoogleFonts.config.allowRuntimeFetching;
+  static const List<String> _displayFallback = <String>[
+    'Apple Color Emoji',
+    'Noto Color Emoji',
+    'Georgia',
+    'Times New Roman',
+    '.SF Pro Display',
+  ];
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SYSTEM FONT FALLBACKS (for tests)
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const List<String> _bodyFallback = <String>[
+    'Apple Color Emoji',
+    'Noto Color Emoji',
+    '.SF Pro Text',
+    'Arial',
+    'sans-serif',
+  ];
 
-  static const String _systemDisplayFont = '.SF Pro Display';
-  static const String _systemBodyFont = '.SF Pro Text';
-  static const String _systemMonoFont = 'Menlo';
+  static const List<String> _monoFallback = <String>[
+    'Apple Color Emoji',
+    'Noto Color Emoji',
+    'Menlo',
+    'Monaco',
+    'monospace',
+  ];
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // FONT FAMILIES
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const List<FontFeature> _tabularFigures = <FontFeature>[
+    FontFeature.tabularFigures(),
+  ];
 
-  static String get displayFamily => _isTestMode
-      ? _systemDisplayFont
-      : GoogleFonts.playfairDisplay().fontFamily!;
-  static String get bodyFamily =>
-      _isTestMode ? _systemBodyFont : GoogleFonts.dmSans().fontFamily!;
-  static String get monoFamily =>
-      _isTestMode ? _systemMonoFont : GoogleFonts.jetBrainsMono().fontFamily!;
+  // Display styles
+  static const TextStyle displayLarge = TextStyle(
+    fontFamily: displayFamily,
+    fontFamilyFallback: _displayFallback,
+    fontSize: 72,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.1,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DISPLAY STYLES (Large headlines, balance amounts)
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle displayMedium = TextStyle(
+    fontFamily: displayFamily,
+    fontFamilyFallback: _displayFallback,
+    fontSize: 48,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.15,
+  );
 
-  static TextStyle get displayLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemDisplayFont,
-          fontSize: 72,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -2,
-          height: 1.1,
-        )
-      : GoogleFonts.playfairDisplay(
-          fontSize: 72,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -2,
-          height: 1.1,
-        );
+  static const TextStyle displaySmall = TextStyle(
+    fontFamily: displayFamily,
+    fontFamilyFallback: _displayFallback,
+    fontSize: 36,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.2,
+  );
 
-  static TextStyle get displayMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemDisplayFont,
-          fontSize: 48,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1.5,
-          height: 1.15,
-        )
-      : GoogleFonts.playfairDisplay(
-          fontSize: 48,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1.5,
-          height: 1.15,
-        );
+  // Headline styles
+  static const TextStyle headlineLarge = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 32,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.25,
+  );
 
-  static TextStyle get displaySmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemDisplayFont,
-          fontSize: 36,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -1,
-          height: 1.2,
-        )
-      : GoogleFonts.playfairDisplay(
-          fontSize: 36,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -1,
-          height: 1.2,
-        );
+  static const TextStyle headlineMedium = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 28,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.3,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // HEADLINE STYLES
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.35,
+  );
 
-  static TextStyle get headlineLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 32,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-          height: 1.25,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 32,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
-          height: 1.25,
-        );
+  // Title styles
+  static const TextStyle titleLarge = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
-  static TextStyle get headlineMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.25,
-          height: 1.3,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          letterSpacing: -0.25,
-          height: 1.3,
-        );
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 18,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.45,
+  );
 
-  static TextStyle get headlineSmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0,
-          height: 1.35,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0,
-          height: 1.35,
-        );
+  static const TextStyle titleSmall = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.5,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TITLE STYLES
-  // ═══════════════════════════════════════════════════════════════════════════
+  // Body styles
+  static const TextStyle bodyLarge = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.5,
+  );
 
-  static TextStyle get titleLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0,
-          height: 1.4,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 22,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0,
-          height: 1.4,
-        );
+  static const TextStyle bodyMedium = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.45,
+  );
 
-  static TextStyle get titleMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.15,
-          height: 1.45,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.15,
-          height: 1.45,
-        );
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
-  static TextStyle get titleSmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
-          height: 1.5,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
-          height: 1.5,
-        );
+  // Label styles
+  static const TextStyle labelLarge = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.45,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // BODY STYLES
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle labelMedium = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
-  static TextStyle get bodyLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.5,
-          height: 1.5,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.5,
-          height: 1.5,
-        );
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.35,
+  );
 
-  static TextStyle get bodyMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
-          height: 1.45,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.25,
-          height: 1.45,
-        );
+  // Mono styles
+  static const TextStyle monoLarge = TextStyle(
+    fontFamily: monoFamily,
+    fontFamilyFallback: _monoFallback,
+    fontSize: 24,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.3,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get bodySmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.4,
-          height: 1.4,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0.4,
-          height: 1.4,
-        );
+  static const TextStyle monoMedium = TextStyle(
+    fontFamily: monoFamily,
+    fontFamilyFallback: _monoFallback,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.4,
+    fontFeatures: _tabularFigures,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LABEL STYLES
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle monoSmall = TextStyle(
+    fontFamily: monoFamily,
+    fontFamilyFallback: _monoFallback,
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    height: 1.35,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get labelLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
-          height: 1.45,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.1,
-          height: 1.45,
-        );
+  // Special styles
+  static const TextStyle moneyDisplay = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 44,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.05,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get labelMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.4,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.4,
-        );
+  static const TextStyle moneyLarge = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 34,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.12,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get labelSmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.35,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.35,
-        );
+  static const TextStyle moneyMedium = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.2,
+    fontFeatures: _tabularFigures,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // MONO STYLES (Numbers, codes, amounts)
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle moneySmall = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 15,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.3,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get monoLarge => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemMonoFont,
-          fontSize: 24,
-          fontWeight: FontWeight.w500,
-          letterSpacing: -0.5,
-          height: 1.3,
-        )
-      : GoogleFonts.jetBrainsMono(
-          fontSize: 24,
-          fontWeight: FontWeight.w500,
-          letterSpacing: -0.5,
-          height: 1.3,
-        );
+  static const TextStyle balanceDisplay = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 42,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0,
+    height: 1.2,
+    fontFeatures: _tabularFigures,
+  );
 
-  static TextStyle get monoMedium => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemMonoFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.4,
-        )
-      : GoogleFonts.jetBrainsMono(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.4,
-        );
+  static const TextStyle percentageChange = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
-  static TextStyle get monoSmall => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemMonoFont,
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.35,
-        )
-      : GoogleFonts.jetBrainsMono(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          letterSpacing: 0,
-          height: 1.35,
-        );
+  static const TextStyle button = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0,
+    height: 1.2,
+  );
 
-  // ═══════════════════════════════════════════════════════════════════════════
-  // SPECIAL STYLES
-  // ═══════════════════════════════════════════════════════════════════════════
+  static const TextStyle cardLabel = TextStyle(
+    fontFamily: bodyFamily,
+    fontFamilyFallback: _bodyFallback,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.4,
+  );
 
-  /// Balance display - large number
-  static TextStyle get balanceDisplay => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemDisplayFont,
-          fontSize: 42,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1,
-          height: 1.2,
-        )
-      : GoogleFonts.playfairDisplay(
-          fontSize: 42,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -1,
-          height: 1.2,
-        );
-
-  /// Percentage change
-  static TextStyle get percentageChange => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0,
-          height: 1.4,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0,
-          height: 1.4,
-        );
-
-  /// Button text
-  static TextStyle get button => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-          height: 1.2,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-          height: 1.2,
-        );
-
-  /// Card label
-  static TextStyle get cardLabel => _isTestMode
-      ? const TextStyle(
-          fontFamily: _systemBodyFont,
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.4,
-        )
-      : GoogleFonts.dmSans(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 0.5,
-          height: 1.4,
-        );
-
-  /// Caption (alias for labelSmall for backwards compatibility)
-  static TextStyle get caption => labelSmall;
+  /// Caption (alias for labelSmall for backwards compatibility).
+  static const TextStyle caption = labelSmall;
 }

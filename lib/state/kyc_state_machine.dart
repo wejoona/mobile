@@ -74,7 +74,9 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
       case 'manual_review':
         return 'manual_review';
       default:
-        debugPrint('[KycStateMachine] Unknown status: $apiStatus, defaulting to none');
+        debugPrint(
+          '[KycStateMachine] Unknown status: $apiStatus, defaulting to none',
+        );
         return 'none';
     }
   }
@@ -96,32 +98,27 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
       );
 
       // Sync with FSM: notify KYC status loaded
-      final fsmStatus = _mapToFsmStatus(response.status.name);
-      ref.read(appFsmProvider.notifier).onKycStatusLoaded(
-        tier: _getTierFromStatus(response.status),
-        status: fsmStatus,
-        rejectionReason: response.rejectionReason,
-      );
+      final fsmStatus = _mapToFsmStatus(response.status.toApiString());
+      ref
+          .read(appFsmProvider.notifier)
+          .onKycStatusLoaded(
+            tier: _getTierFromStatus(response.status),
+            status: fsmStatus,
+            rejectionReason: response.rejectionReason,
+          );
     } on ApiException catch (e) {
       debugPrint('[KycStateMachine] API error: ${e.message}');
-      state = state.copyWith(
-        isLoading: false,
-        error: e.message,
-      );
+      state = state.copyWith(isLoading: false, error: e.message);
 
       // If 404 or similar, treat as "none" (no KYC submitted)
       if (e.statusCode == 404) {
-        ref.read(appFsmProvider.notifier).onKycStatusLoaded(
-          tier: KycTier.none,
-          status: 'none',
-        );
+        ref
+            .read(appFsmProvider.notifier)
+            .onKycStatusLoaded(tier: KycTier.none, status: 'none');
       }
     } catch (e) {
       debugPrint('[KycStateMachine] Error: $e');
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -132,17 +129,13 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
     debugPrint('[KycStateMachine] Updating from auth response: $kycStatus');
 
     final status = KycStatus.fromString(kycStatus);
-    state = state.copyWith(
-      status: status,
-      isLoading: false,
-    );
+    state = state.copyWith(status: status, isLoading: false);
 
     // Sync with FSM
     final fsmStatus = _mapToFsmStatus(kycStatus);
-    ref.read(appFsmProvider.notifier).onKycStatusLoaded(
-      tier: _getTierFromStatus(status),
-      status: fsmStatus,
-    );
+    ref
+        .read(appFsmProvider.notifier)
+        .onKycStatusLoaded(tier: _getTierFromStatus(status), status: fsmStatus);
   }
 
   /// Get KYC tier from status
@@ -163,8 +156,8 @@ class KycStateMachine extends Notifier<KycStateMachineState> {
 
 final kycStateMachineProvider =
     NotifierProvider<KycStateMachine, KycStateMachineState>(
-  KycStateMachine.new,
-);
+      KycStateMachine.new,
+    );
 
 /// Convenience providers
 final kycMachineStatusProvider = Provider<KycStatus>((ref) {

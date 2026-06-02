@@ -23,9 +23,12 @@ class SecurityHeadersInterceptor extends Interceptor {
   /// Paths that are considered sensitive and receive full headers.
   static const _sensitivePaths = [
     '/transfers/',
+    '/withdrawals/',
+    '/deposits/',
     '/step-up/',
     '/wallet/transfer',
     '/wallet/withdraw',
+    '/wallet/deposit',
     '/auth/login',
     '/auth/verify-otp',
     '/auth/register',
@@ -37,8 +40,8 @@ class SecurityHeadersInterceptor extends Interceptor {
   SecurityHeadersInterceptor({
     required DeviceFingerprintService fingerprintService,
     required ClientRiskScoreService riskScoreService,
-  })  : _fingerprintService = fingerprintService,
-        _riskScoreService = riskScoreService;
+  }) : _fingerprintService = fingerprintService,
+       _riskScoreService = riskScoreService;
 
   bool _collecting = false;
 
@@ -76,12 +79,16 @@ class SecurityHeadersInterceptor extends Interceptor {
       // Attach risk score only on sensitive endpoints to avoid overhead
       if (_isSensitive(options.path)) {
         final action = _inferAction(options.path);
-        final score = await _riskScoreService.calculateRiskScore(action: action);
+        final score = await _riskScoreService.calculateRiskScore(
+          action: action,
+        );
         options.headers['X-Risk-Score'] = score.toStringAsFixed(2);
       }
     } catch (e) {
       // Never block a request because of header enrichment failure
-      AppLogger('SecurityHeaders').error('Failed to attach security headers', e);
+      AppLogger(
+        'SecurityHeaders',
+      ).error('Failed to attach security headers', e);
     }
 
     handler.next(options);
@@ -92,7 +99,9 @@ class SecurityHeadersInterceptor extends Interceptor {
   }
 
   RiskAction _inferAction(String path) {
-    if (path.contains('login') || path.contains('register') || path.contains('verify-otp')) {
+    if (path.contains('login') ||
+        path.contains('register') ||
+        path.contains('verify-otp')) {
       return RiskAction.login;
     }
     if (path.contains('withdraw')) return RiskAction.withdrawal;
@@ -102,9 +111,11 @@ class SecurityHeadersInterceptor extends Interceptor {
 }
 
 /// Provider for SecurityHeadersInterceptor (singleton so token can be set)
-final securityHeadersInterceptorProvider = Provider<SecurityHeadersInterceptor>((ref) {
-  return SecurityHeadersInterceptor(
-    fingerprintService: ref.read(deviceFingerprintServiceProvider),
-    riskScoreService: ref.read(clientRiskScoreServiceProvider),
-  );
-});
+final securityHeadersInterceptorProvider = Provider<SecurityHeadersInterceptor>(
+  (ref) {
+    return SecurityHeadersInterceptor(
+      fingerprintService: ref.read(deviceFingerprintServiceProvider),
+      riskScoreService: ref.read(clientRiskScoreServiceProvider),
+    );
+  },
+);

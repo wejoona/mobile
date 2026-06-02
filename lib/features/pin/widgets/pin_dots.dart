@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 /// PIN Dots Widget
 /// Shows 6 dots representing PIN entry state
@@ -31,10 +31,7 @@ class _PinDotsState extends State<PinDots> with SingleTickerProviderStateMixin {
       vsync: this,
     );
     _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
-      CurvedAnimation(
-        parent: _shakeController,
-        curve: Curves.elasticIn,
-      ),
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
     );
   }
 
@@ -60,37 +57,15 @@ class _PinDotsState extends State<PinDots> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
     return AnimatedBuilder(
       animation: _shakeAnimation,
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(_shakeAnimation.value * (widget.showError ? 1 : 0), 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(widget.length, (index) {
-              final isFilled = index < widget.filledCount;
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isFilled
-                        ? (widget.showError ? colors.error : colors.gold)
-                        : Colors.transparent,
-                    border: Border.all(
-                      color: widget.showError
-                          ? colors.error
-                          : (isFilled ? colors.gold : colors.border),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              );
-            }),
+          child: SecurityCodeDots(
+            length: widget.length,
+            filled: widget.filledCount,
+            error: widget.showError,
           ),
         );
       },

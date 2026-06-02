@@ -3,9 +3,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application
-        android:label="usdc_wallet"
+        android:label="Korido"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config">
@@ -31,11 +32,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Deep Links: Custom scheme (joonapay://) -->
+            <!-- Deep Links: Custom schemes. Keep joonapay:// as a legacy alias. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="korido"/>
                 <data android:scheme="joonapay"/>
             </intent-filter>
 
@@ -44,6 +46,18 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="https"
+                    android:host="app.korido.co"
+                    android:pathPrefix="/"/>
+                <data
+                    android:scheme="https"
+                    android:host="korido.app"
+                    android:pathPrefix="/"/>
+                <data
+                    android:scheme="https"
+                    android:host="www.korido.app"
+                    android:pathPrefix="/"/>
                 <data
                     android:scheme="https"
                     android:host="app.joonapay.com"

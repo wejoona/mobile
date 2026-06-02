@@ -4,27 +4,15 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 
 /// Registered devices provider — wired to GET /devices.
 final devicesProvider = FutureProvider<List<Device>>((ref) async {
-  final dio = ref.watch(dioProvider);
+  final repository = ref.watch(devicesRepositoryProvider);
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 5), () => link.close());
   ref.onDispose(() => timer.cancel());
-
-  final response = await dio.get('/devices');
-  // Backend may return {data: [...]} or [...] directly
-  final raw = response.data;
-  final List items;
-  if (raw is Map<String, dynamic>) {
-    items = raw['data'] as List? ?? [];
-  } else if (raw is List) {
-    items = raw;
-  } else {
-    items = [];
-  }
-  return items.map((e) => Device.fromJson(e as Map<String, dynamic>)).toList();
+  return repository.getDevices();
 });
 
 /// Local device identifier (vendor ID on iOS, android.id on Android).
@@ -45,9 +33,10 @@ final currentDeviceProvider = Provider<Device?>((ref) {
   final devices = ref.watch(devicesProvider).value ?? [];
   final localId = ref.watch(localDeviceIdProvider).value ?? '';
   try {
-    return devices.firstWhere((d) =>
-        d.isCurrent ||
-        (localId.isNotEmpty && d.deviceIdentifier == localId));
+    return devices.firstWhere(
+      (d) =>
+          d.isCurrent || (localId.isNotEmpty && d.deviceIdentifier == localId),
+    );
   } catch (_) {
     return null;
   }
@@ -55,19 +44,17 @@ final currentDeviceProvider = Provider<Device?>((ref) {
 
 /// Device actions.
 class DeviceActions {
-  final dynamic _dio;
+  final DevicesRepository _repository;
   final Ref _ref;
-  DeviceActions(this._dio, this._ref);
+  DeviceActions(this._repository, this._ref);
 
   Future<void> revokeDevice(String deviceId) async {
-    // ignore: avoid_dynamic_calls
-    await _dio.delete('/devices/$deviceId');
+    await _repository.revokeDevice(deviceId);
     _ref.invalidate(devicesProvider);
   }
 
   Future<void> renameDevice(String deviceId, String name) async {
-    // ignore: avoid_dynamic_calls
-    await _dio.post('/devices/$deviceId/rename', data: {'name': name});
+    await _repository.renameDevice(deviceId, name);
     _ref.invalidate(devicesProvider);
   }
 
@@ -76,20 +63,30 @@ class DeviceActions {
   }
 
   Future<void> trustDevice(String deviceId) async {
-    // ignore: avoid_dynamic_calls
-    await _dio.post('/devices/$deviceId/trust');
+    await _repository.trustDevice(deviceId);
     _ref.invalidate(devicesProvider);
   }
 
-  Future<void> revokeAllOtherDevices() async {
-    // ignore: avoid_dynamic_calls
-    await _dio.post('/devices/revoke-others');
+  Future<void> untrustDevice(String deviceId) async {
+    await _repository.untrustDevice(deviceId);
+    _ref.invalidate(devicesProvider);
+  }
+
+  Future<void> revokeOtherDevices(List<Device> devices, String localId) async {
+    for (final device in devices) {
+      final isCurrent =
+          device.isCurrent ||
+          (localId.isNotEmpty && device.deviceIdentifier == localId);
+      if (!isCurrent) {
+        await _repository.revokeDevice(device.id);
+      }
+    }
     _ref.invalidate(devicesProvider);
   }
 }
 
 final deviceActionsProvider = Provider<DeviceActions>((ref) {
-  return DeviceActions(ref.watch(dioProvider), ref);
+  return DeviceActions(ref.watch(devicesRepositoryProvider), ref);
 });
 
 /// Adapter: wraps raw list into DevicesState for views.

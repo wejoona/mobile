@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/utils/debounce.dart';
 
 /// App-wide search bar with debounced input.
@@ -44,19 +45,32 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return TextField(
       controller: _controller,
       autofocus: widget.autofocus,
+      cursorColor: colors.gold,
+      style: AppTypography.bodyLarge.copyWith(color: colors.textPrimary),
       decoration: InputDecoration(
         hintText: widget.hintText,
-        prefixIcon: const Icon(Icons.search_rounded, size: 20),
+        hintStyle: AppTypography.bodyMedium.copyWith(
+          color: colors.textTertiary,
+        ),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          size: 20,
+          color: colors.textTertiary,
+        ),
         suffixIcon: ValueListenableBuilder<TextEditingValue>(
           valueListenable: _controller,
           builder: (_, value, __) {
             if (value.text.isEmpty) return const SizedBox.shrink();
             return IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18),
+              icon: Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: colors.textTertiary,
+              ),
               onPressed: () {
                 _controller.clear();
                 widget.onChanged('');
@@ -66,12 +80,23 @@ class _AppSearchBarState extends State<AppSearchBar> {
           },
         ),
         filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        fillColor: colors.isDark ? colors.elevated : colors.container,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.borderSubtle),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.borderSubtle),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.gold, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
       onChanged: (value) {
         _debouncer.run(() => widget.onChanged(value));

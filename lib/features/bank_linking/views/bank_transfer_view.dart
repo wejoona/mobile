@@ -1,18 +1,19 @@
 /// Bank Transfer View (Deposit/Withdraw)
 library;
-import 'package:usdc_wallet/design/tokens/index.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/bank_linking/providers/bank_linking_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/services/service_providers.dart';
 
 class BankTransferView extends ConsumerStatefulWidget {
   const BankTransferView({
@@ -276,10 +277,7 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border(
-          top: BorderSide(
-            color: context.colors.elevated,
-            width: 1,
-          ),
+          top: BorderSide(color: context.colors.elevated, width: 1),
         ),
       ),
       child: SafeArea(
@@ -301,6 +299,8 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     // Show confirmation dialog
     final confirmed = await showDialog<bool>(
       context: context,
@@ -314,10 +314,12 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
         ),
         content: AppText(
           isDeposit
-              ? AppLocalizations.of(context)!
-                  .bankLinking_depositConfirmation(_formatAmount(amount))
-              : AppLocalizations.of(context)!
-                  .bankLinking_withdrawConfirmation(_formatAmount(amount)),
+              ? AppLocalizations.of(
+                  context,
+                )!.bankLinking_depositConfirmation(_formatAmount(amount))
+              : AppLocalizations.of(
+                  context,
+                )!.bankLinking_withdrawConfirmation(_formatAmount(amount)),
           style: AppTypography.bodyMedium,
         ),
         actions: [
@@ -340,12 +342,52 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
     );
 
     if (confirmed != true) return;
+    if (!mounted) return;
+
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
+    final pinResult = await PinConfirmationSheet.show(
+      context: context,
+      title: isDeposit
+          ? l10n.bankLinking_confirmDeposit
+          : l10n.bankLinking_confirmWithdraw,
+      subtitle: l10n.send_enterPinToConfirm,
+      amount: amount,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (pinResult != PinConfirmationResult.success || pinToken == null) {
+      return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
-      // In real app, call SDK
-      await Future.delayed(const Duration(seconds: 2));
+      final service = ref.read(bankLinkingServiceProvider);
+      if (isDeposit) {
+        await service.depositFromBank(
+          accountId: widget.accountId,
+          amount: amount,
+          pinToken: pinToken!,
+          idempotencyKey: idempotencyKey,
+        );
+      } else {
+        await service.withdrawToBank(
+          accountId: widget.accountId,
+          amount: amount,
+          pinToken: pinToken!,
+          idempotencyKey: idempotencyKey,
+        );
+      }
 
       if (!mounted) return;
 
@@ -382,7 +424,9 @@ class _BankTransferViewState extends ConsumerState<BankTransferView> {
   }
 
   String _formatAmount(double amount) {
-    return amount.toStringAsFixed(0).replaceAllMapped(
+    return amount
+        .toStringAsFixed(0)
+        .replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]} ',
         );

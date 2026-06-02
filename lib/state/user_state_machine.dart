@@ -98,6 +98,10 @@ class UserStateMachine extends Notifier<UserState> {
   Future<void> _fetchUserProfile() async {
     try {
       final profile = await _userService.getProfile();
+      final hasServerAvatar =
+          profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty;
+      final hasAvatarThumb =
+          profile.avatarThumb != null && profile.avatarThumb!.isNotEmpty;
 
       // Update state with profile data
       state = state.copyWith(
@@ -109,8 +113,12 @@ class UserStateMachine extends Notifier<UserState> {
         emailVerified: profile.emailVerified,
         avatarUrl: profile.avatarUrl,
         avatarThumb: profile.avatarThumb,
+        clearAvatarUrl: !hasServerAvatar,
+        clearAvatarThumb: !hasServerAvatar || !hasAvatarThumb,
         countryCode: profile.countryCode,
         kycStatus: _parseKycStatus(profile.kycStatus),
+        canTransact: profile.canTransact,
+        canWithdraw: profile.canWithdraw,
       );
 
       // Also update storage with the phone in case it wasn't stored
@@ -120,21 +128,21 @@ class UserStateMachine extends Notifier<UserState> {
       ref.read(localSyncServiceProvider).cacheUserFromState(state);
 
       // Cache avatar locally for offline display
-      if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
-        final cached = await ref.read(avatarCacheServiceProvider).cacheAvatar(profile.avatarUrl!);
+      if (hasServerAvatar) {
+        final cached = await ref
+            .read(avatarCacheServiceProvider)
+            .cacheAvatar(profile.avatarUrl!);
         if (cached != null) {
           await _storage.write(key: 'local_avatar_path', value: cached);
           state = state.copyWith(avatarUrl: cached);
         }
       } else {
-        // Prefer local file for instant display
-        final localAvatar = await _storage.read(key: 'local_avatar_path');
-        if (localAvatar != null && await File(localAvatar).exists()) {
-          state = state.copyWith(avatarUrl: localAvatar);
-        }
+        await clearAvatar();
       }
     } on ApiException catch (e) {
-      debugPrint('[UserState] Profile fetch failed: ${e.statusCode} ${e.message}');
+      debugPrint(
+        '[UserState] Profile fetch failed: ${e.statusCode} ${e.message}',
+      );
       // 401/403 are handled by the Dio AuthInterceptor (refresh + retry + FSM logout)
       // Don't double-logout here — just fall back to cache for non-auth errors
       if (e.statusCode != 401 && e.statusCode != 403) {
@@ -154,12 +162,18 @@ class UserStateMachine extends Notifier<UserState> {
       final sync = ref.read(localSyncServiceProvider);
       final cached = sync.getCachedUserProfile();
       if (cached != null) {
-        debugPrint('[UserState] Loaded cached profile: ${cached.firstName} ${cached.lastName}');
+        debugPrint(
+          '[UserState] Loaded cached profile: ${cached.firstName} ${cached.lastName}',
+        );
         state = state.copyWith(
           userId: cached.userId,
           firstName: cached.firstName,
           lastName: cached.lastName,
           email: cached.email,
+          avatarUrl: cached.avatarUrl,
+          clearAvatarUrl: cached.avatarUrl == null || cached.avatarUrl!.isEmpty,
+          clearAvatarThumb:
+              cached.avatarUrl == null || cached.avatarUrl!.isEmpty,
           countryCode: cached.countryCode,
         );
       }
@@ -201,16 +215,10 @@ class UserStateMachine extends Notifier<UserState> {
       state = state.copyWith(status: AuthStatus.otpSent);
       return true;
     } on ApiException catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.message,
-      );
+      state = state.copyWith(status: AuthStatus.error, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.toString(),
-      );
+      state = state.copyWith(status: AuthStatus.error, error: e.toString());
       return false;
     }
   }
@@ -251,6 +259,7 @@ class UserStateMachine extends Notifier<UserState> {
         lastName: response.user.lastName,
         email: response.user.email,
         avatarUrl: response.user.avatarUrl,
+        avatarThumb: response.user.avatarBase64,
         countryCode: response.user.countryCode,
         accessToken: response.accessToken,
         error: null,
@@ -262,16 +271,10 @@ class UserStateMachine extends Notifier<UserState> {
 
       return true;
     } on ApiException catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.message,
-      );
+      state = state.copyWith(status: AuthStatus.error, error: e.message);
       return false;
     } catch (e) {
-      state = state.copyWith(
-        status: AuthStatus.error,
-        error: e.toString(),
-      );
+      state = state.copyWith(status: AuthStatus.error, error: e.toString());
       return false;
     }
   }
@@ -283,7 +286,10 @@ class UserStateMachine extends Notifier<UserState> {
     String? email,
     bool? emailVerified,
     String? avatarUrl,
+    String? avatarThumb,
     KycStatus? kycStatus,
+    bool clearAvatarUrl = false,
+    bool clearAvatarThumb = false,
   }) {
     state = state.copyWith(
       firstName: firstName ?? state.firstName,
@@ -291,17 +297,37 @@ class UserStateMachine extends Notifier<UserState> {
       email: email ?? state.email,
       emailVerified: emailVerified ?? state.emailVerified,
       avatarUrl: avatarUrl ?? state.avatarUrl,
+      avatarThumb: avatarThumb ?? state.avatarThumb,
+      clearAvatarUrl: clearAvatarUrl,
+      clearAvatarThumb: clearAvatarThumb,
       kycStatus: kycStatus ?? state.kycStatus,
     );
+    ref.read(localSyncServiceProvider).cacheUserFromState(state);
+  }
+
+  /// Clear all avatar references after the backend confirms removal.
+  Future<void> clearAvatar() async {
+    final localAvatar = await _storage.read(key: 'local_avatar_path');
+    if (localAvatar != null) {
+      final file = File(localAvatar);
+      if (await file.exists()) {
+        try {
+          await file.delete();
+        } catch (_) {}
+      }
+    }
+
+    await _storage.delete(key: 'local_avatar_path');
+    await ref.read(avatarCacheServiceProvider).clearCache();
+
+    state = state.copyWith(clearAvatarUrl: true, clearAvatarThumb: true);
+    ref.read(localSyncServiceProvider).cacheUserFromState(state);
   }
 
   /// Logout
   /// Update user's name (e.g. after KYC submission)
   void updateName({required String firstName, required String lastName}) {
-    state = state.copyWith(
-      firstName: firstName,
-      lastName: lastName,
-    );
+    state = state.copyWith(firstName: firstName, lastName: lastName);
   }
 
   Future<void> logout() async {
@@ -333,8 +359,7 @@ class UserStateMachine extends Notifier<UserState> {
   }
 }
 
-final userStateMachineProvider =
-    NotifierProvider<UserStateMachine, UserState>(
+final userStateMachineProvider = NotifierProvider<UserStateMachine, UserState>(
   UserStateMachine.new,
 );
 

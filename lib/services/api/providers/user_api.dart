@@ -28,7 +28,7 @@ class UserApi {
   /// POST /user/avatar — upload avatar image
   Future<Response> uploadAvatar(File file) async {
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(file.path),
+      'avatar': await MultipartFile.fromFile(file.path),
     });
     return _dio.post('/user/avatar', data: formData);
   }
@@ -54,25 +54,30 @@ class UserApi {
   // ── PIN ──
 
   /// POST /user/pin/set
-  Future<Response> setPin(String pin) =>
-      _dio.post('/user/pin/set', data: {'pin': pin});
+  Future<Response> setPin(String pinHash) =>
+      _dio.post('/user/pin/set', data: {'pinHash': pinHash});
 
   /// POST /user/pin/verify
-  Future<Response> verifyPin(String pin) =>
-      _dio.post('/user/pin/verify', data: {'pin': pin});
+  Future<Response> verifyPin(String pinHash) =>
+      _dio.post('/user/pin/verify', data: {'pinHash': pinHash});
 
   /// POST /user/pin/change
   Future<Response> changePin({
-    required String currentPin,
-    required String newPin,
-  }) =>
-      _dio.post('/user/pin/change', data: {
-        'currentPin': currentPin,
-        'newPin': newPin,
-      });
+    required String oldPinHash,
+    required String newPinHash,
+  }) => _dio.post(
+    '/user/pin/change',
+    data: {'oldPinHash': oldPinHash, 'newPinHash': newPinHash},
+  );
 
   /// POST /user/pin/reset
-  Future<Response> resetPin() => _dio.post('/user/pin/reset');
+  Future<Response> resetPin({
+    required String otp,
+    required String newPinHash,
+  }) => _dio.post(
+    '/user/pin/reset',
+    data: {'otp': otp, 'newPinHash': newPinHash},
+  );
 
   // ── Search ──
 

@@ -45,7 +45,9 @@ class _ConfirmationButtonState extends State<ConfirmationButton> {
     final bgColor = _isConfirming
         ? (widget.isDestructive ? colors.error : colors.primary)
         : colors.surface;
-    final textColor = _isConfirming ? colors.textInverse : colors.textPrimary;
+    final textColor = _isConfirming
+        ? (widget.isDestructive ? colors.onDark : colors.onGold)
+        : colors.textPrimary;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),

@@ -12,15 +12,12 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('BeneficiariesScreen Golden Tests', () {
+  goldenGroup('BeneficiariesScreen Golden Tests', () {
     testWidgets('light mode - empty', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BeneficiariesScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BeneficiariesScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -34,10 +31,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BeneficiariesScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BeneficiariesScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -48,15 +42,12 @@ void main() {
     });
   });
 
-  group('AddBeneficiaryScreen Golden Tests', () {
+  goldenGroup('AddBeneficiaryScreen Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AddBeneficiaryScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AddBeneficiaryScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -70,10 +61,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AddBeneficiaryScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AddBeneficiaryScreen()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -84,7 +72,7 @@ void main() {
     });
   });
 
-  group('BeneficiaryDetailView Golden Tests', () {
+  goldenGroup('BeneficiaryDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(

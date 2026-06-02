@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class SplashView extends ConsumerStatefulWidget {
   const SplashView({super.key});
@@ -105,7 +108,9 @@ class _SplashViewState extends ConsumerState<SplashView>
 
     if (!mounted || _hasNavigated) return;
 
-    if (!onboardingCompleted && !currentState.isAuthenticated && !currentState.isLocked) {
+    if (!onboardingCompleted &&
+        !currentState.isAuthenticated &&
+        !currentState.isLocked) {
       _hasNavigated = true;
       context.go('/onboarding');
       return;
@@ -152,6 +157,7 @@ class _SplashViewState extends ConsumerState<SplashView>
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -175,17 +181,24 @@ class _SplashViewState extends ConsumerState<SplashView>
           ),
 
           // Floating particles
-          ...List.generate(6, (i) => _FloatingParticle(
-            colors: colors,
-            index: i,
-            screenSize: size,
-            pulseController: _pulseController,
-          )),
+          ...List.generate(
+            6,
+            (i) => _FloatingParticle(
+              colors: colors,
+              index: i,
+              screenSize: size,
+              pulseController: _pulseController,
+            ),
+          ),
 
           // Main content
           Center(
             child: AnimatedBuilder(
-              animation: Listenable.merge([_logoController, _pulseController, _shimmerController]),
+              animation: Listenable.merge([
+                _logoController,
+                _pulseController,
+                _shimmerController,
+              ]),
               builder: (context, _) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -199,36 +212,25 @@ class _SplashViewState extends ConsumerState<SplashView>
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: colors.goldGradient,
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(34),
                             boxShadow: [
                               BoxShadow(
-                                color: colors.gold.withValues(alpha: _pulseAnimation.value),
+                                color: colors.gold.withValues(
+                                  alpha: _pulseAnimation.value,
+                                ),
                                 blurRadius: 40,
                                 spreadRadius: 8,
                               ),
                               BoxShadow(
-                                color: colors.gold.withValues(alpha: _pulseAnimation.value * 0.5),
+                                color: colors.gold.withValues(
+                                  alpha: _pulseAnimation.value * 0.5,
+                                ),
                                 blurRadius: 80,
                                 spreadRadius: 20,
                               ),
                             ],
                           ),
-                          child: Center(
-                            child: Text(
-                              'K',
-                              style: TextStyle(
-                                color: colors.canvas,
-                                fontSize: 60,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -2,
-                              ),
-                            ),
-                          ),
+                          child: const KoridoMark(size: 120),
                         ),
                       ),
                     ),
@@ -253,14 +255,11 @@ class _SplashViewState extends ConsumerState<SplashView>
                             end: Alignment(_shimmerAnimation.value, 0),
                           ).createShader(bounds);
                         },
-                        child: Text(
+                        child: const AppText(
                           'Korido',
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 1.5,
-                          ),
+                          variant: AppTextVariant.headlineLarge,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -270,14 +269,11 @@ class _SplashViewState extends ConsumerState<SplashView>
                     // Tagline
                     Opacity(
                       opacity: _taglineFade.value,
-                      child: Text(
-                        'L\'argent sans frontières',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: colors.textSecondary.withValues(alpha: 0.8),
-                          letterSpacing: 0.5,
-                        ),
+                      child: AppText(
+                        l10n.splash_tagline,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textSecondary.withValues(alpha: 0.8),
+                        textAlign: TextAlign.center,
                       ),
                     ),
 
@@ -303,14 +299,11 @@ class _SplashViewState extends ConsumerState<SplashView>
               animation: _taglineFade,
               builder: (context, _) => Opacity(
                 opacity: _taglineFade.value * 0.5,
-                child: Text(
-                  'Powered by JoonaPay',
+                child: AppText(
+                  l10n.splash_poweredBy,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colors.textTertiary,
-                    letterSpacing: 1,
-                  ),
+                  variant: AppTextVariant.labelMedium,
+                  color: colors.textTertiary,
                 ),
               ),
             ),

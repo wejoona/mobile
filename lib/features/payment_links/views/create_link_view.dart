@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class CreateLinkView extends ConsumerStatefulWidget {
   const CreateLinkView({super.key});
@@ -47,7 +46,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             children: [
               // Header
               AppText(
@@ -55,7 +54,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                 variant: AppTextVariant.bodyLarge,
                 color: context.colors.textSecondary,
               ),
-              SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
 
               // Amount Input
               AppInput(
@@ -77,7 +76,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                   return null;
                 },
               ),
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
 
               // Description Input
               AppInput(
@@ -86,20 +85,20 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                 maxLines: 3,
                 hint: l10n.paymentLinks_descriptionHint,
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
 
               // Expiry Selection
               AppText(
                 l10n.paymentLinks_expiresIn,
                 variant: AppTextVariant.labelLarge,
               ),
-              SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.sm),
               _buildExpiryOptions(l10n),
-              SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
 
               // Info Card
               Container(
-                padding: EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: context.colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -114,7 +113,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                       color: context.colors.gold,
                       size: 24,
                     ),
-                    SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: AppText(
                         l10n.paymentLinks_info,
@@ -125,7 +124,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                   ],
                 ),
               ),
-              SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.xl),
 
               // Create Button
               AppButton(
@@ -160,12 +159,14 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
         return GestureDetector(
           onTap: () => setState(() => _expiryHours = hours),
           child: Container(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? context.colors.gold : context.colors.container,
+              color: isSelected
+                  ? context.colors.gold
+                  : context.colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
               border: Border.all(
                 color: isSelected
@@ -175,8 +176,9 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
             ),
             child: AppText(
               label,
-              variant: AppTextVariant.bodyMedium,
-              color: isSelected ? context.colors.canvas : context.colors.textPrimary,
+              color: isSelected
+                  ? context.colors.canvas
+                  : context.colors.textPrimary,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -186,13 +188,17 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
   }
 
   Future<void> _handleCreate() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
       final amount = double.tryParse(_amountController.text);
       if (amount == null || amount <= 0) {
-        if (mounted) setState(() => _isLoading = false);
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
         return;
       }
       final description = _descriptionController.text.trim();
@@ -204,18 +210,21 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
         expiryHours: _expiryHours,
       );
 
-      final link = await ref.read(paymentLinkActionsProvider).createLink(request);
+      final link = await ref
+          .read(paymentLinkActionsProvider)
+          .createLink(request);
 
-      if (mounted && link != null) { // ignore: unnecessary_null_comparison
-        context.go('/payment-links/created/${link.id}');
+      if (!mounted) {
+        return;
       }
-    } catch (e) {
+
+      ref.invalidate(paymentLinksProvider);
+      context.go('/payment-links/created/${link.id}');
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: AppText(
-              AppLocalizations.of(context)!.common_error,
-            ),
+            content: AppText(AppLocalizations.of(context)!.common_error),
             backgroundColor: context.colors.error,
           ),
         );

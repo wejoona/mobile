@@ -4,7 +4,6 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/risk_based_security_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Transfers Service - mirrors backend TransfersController
@@ -19,7 +18,7 @@ class TransfersService {
   /// Internal transfers between Korido users - typically low risk
   /// [pinToken] — required by backend PinVerificationGuard (X-Pin-Token header)
   /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
-  /// [amount] — in user-facing units (dollars). Converted to cents before sending.
+  /// [amount] — in user-facing USDC units. Backend transfer use cases expect major units.
   Future<TransferResult> createInternalTransfer({
     required String recipientPhone,
     required double amount,
@@ -37,7 +36,9 @@ class TransfersService {
         recipientType: 'internal',
       );
 
-      AppLogger('Debug').debug('${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}');
+      AppLogger('Debug').debug(
+        '${decision.flowEmoji} Internal transfer \$$amount: ${decision.stepUpType.name}',
+      );
 
       if (decision.stepUpRequired) {
         final verified = await _riskSecurity.executeStepUp(decision);
@@ -63,7 +64,7 @@ class TransfersService {
         '/transfers/internal',
         data: {
           'recipientPhone': recipientPhone,
-          'amount': toCents(amount),
+          'amount': amount,
           if (note != null) 'note': note,
         },
         options: Options(
@@ -88,7 +89,7 @@ class TransfersService {
   /// 🔴 RED (high risk): Liveness required
   /// [pinToken] — required by backend PinVerificationGuard (X-Pin-Token header)
   /// [idempotencyKey] — required by backend IdempotencyGuard (X-Idempotency-Key header)
-  /// [amount] — in user-facing units (dollars). Converted to cents before sending.
+  /// [amount] — in user-facing USDC units. Backend transfer use cases expect major units.
   Future<TransferResult> createExternalTransfer({
     required String recipientAddress,
     required double amount,
@@ -122,7 +123,9 @@ class TransfersService {
         isFirstTransaction: isFirstTransactionToRecipient,
       );
 
-      AppLogger('Debug').debug('${result.decision.flowEmoji} External transfer \$$amount: ${result.decision.stepUpType.name} (score: ${result.decision.riskScore})');
+      AppLogger('Debug').debug(
+        '${result.decision.flowEmoji} External transfer \$$amount: ${result.decision.stepUpType.name} (score: ${result.decision.riskScore})',
+      );
 
       if (!result.approved) {
         // Liveness required - throw to let UI handle
@@ -151,10 +154,9 @@ class TransfersService {
         '/transfers/external',
         data: {
           'recipientAddress': recipientAddress,
-          'amount': toCents(amount),
-          if (blockchain != null) 'blockchain': blockchain,
+          'amount': amount,
+          if (blockchain != null) 'network': blockchain,
           if (note != null) 'note': note,
-          if (challengeToken != null) 'challengeToken': challengeToken,
         },
         options: Options(
           headers: transactionHeaders(
@@ -201,8 +203,8 @@ class TransfersService {
       final response = await _dio.get(
         '/transfers',
         queryParameters: {
-          'page': page,
-          'pageSize': pageSize,
+          'limit': pageSize,
+          'offset': (page - 1).clamp(0, 1 << 31) * pageSize,
           if (type != null) 'type': type,
           if (status != null) 'status': status,
         },
@@ -286,15 +288,24 @@ class TransferPage {
   });
 
   factory TransferPage.fromJson(Map<String, dynamic> json) {
-    final List<dynamic> itemsData = json['items'] ?? json['data'] ?? [];
+    final List<dynamic> itemsData =
+        json['items'] ?? json['data'] ?? json['transfers'] ?? [];
+    final pageSize =
+        json['pageSize'] as int? ?? json['limit'] as int? ?? itemsData.length;
+    final offset = json['offset'] as int? ?? 0;
+    final total = json['total'] as int? ?? 0;
+    final page =
+        json['page'] as int? ?? (pageSize > 0 ? (offset ~/ pageSize) + 1 : 1);
     return TransferPage(
       items: itemsData
           .map((e) => Transfer.fromJson(e as Map<String, dynamic>))
           .toList(),
-      total: json['total'] as int? ?? 0,
-      page: json['page'] as int? ?? 1,
-      pageSize: json['pageSize'] as int? ?? 20,
-      totalPages: json['totalPages'] as int? ?? 1,
+      total: total,
+      page: page,
+      pageSize: pageSize,
+      totalPages:
+          json['totalPages'] as int? ??
+          (pageSize > 0 ? (total / pageSize).ceil().clamp(1, 1 << 31) : 1),
     );
   }
 }

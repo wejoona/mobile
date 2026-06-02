@@ -4,6 +4,14 @@ import 'package:flutter/foundation.dart';
 class DeepLinkService {
   static const String scheme = 'korido';
   static const String host = 'app.korido.co';
+  static const Set<String> hosts = {
+    host,
+    'korido.app',
+    'www.korido.app',
+    'app.joonapay.com',
+    'joonapay.com',
+    'www.joonapay.com',
+  };
 
   /// Parse a deep link URI into a route action.
   static DeepLinkAction? parse(Uri uri) {
@@ -12,11 +20,13 @@ class DeepLinkService {
     // korido://pay/PLK_xxxxx
     // korido://request?amount=50
 
-    final path = uri.host == host ? uri.path : '/${uri.host}${uri.path}';
+    final path = hosts.contains(uri.host)
+        ? uri.path
+        : '/${uri.host}${uri.path}';
 
     if (path.startsWith('/send')) {
       return DeepLinkAction.send(
-        phone: uri.queryParameters['phone'],
+        phone: uri.queryParameters['phone'] ?? uri.queryParameters['to'],
         amount: double.tryParse(uri.queryParameters['amount'] ?? ''),
         note: uri.queryParameters['note'],
       );
@@ -25,6 +35,16 @@ class DeepLinkService {
     if (path.startsWith('/pay/')) {
       final linkId = path.replaceFirst('/pay/', '');
       return DeepLinkAction.payLink(linkId: linkId);
+    }
+
+    if (path.startsWith('/transaction/')) {
+      final transactionId = path.replaceFirst('/transaction/', '');
+      return DeepLinkAction.transaction(transactionId: transactionId);
+    }
+
+    if (path.startsWith('/transactions/')) {
+      final transactionId = path.replaceFirst('/transactions/', '');
+      return DeepLinkAction.transaction(transactionId: transactionId);
     }
 
     if (path.startsWith('/request')) {
@@ -48,11 +68,7 @@ class DeepLinkService {
   }
 
   /// Generate a send money deep link.
-  static Uri sendLink({
-    required String phone,
-    double? amount,
-    String? note,
-  }) {
+  static Uri sendLink({required String phone, double? amount, String? note}) {
     return Uri(
       scheme: 'https',
       host: host,
@@ -87,6 +103,8 @@ sealed class DeepLinkAction {
       RequestAction;
   factory DeepLinkAction.deposit() = DepositAction;
   factory DeepLinkAction.referral({required String code}) = ReferralAction;
+  factory DeepLinkAction.transaction({required String transactionId}) =
+      TransactionAction;
 }
 
 class SendAction extends DeepLinkAction {
@@ -114,4 +132,9 @@ class DepositAction extends DeepLinkAction {
 class ReferralAction extends DeepLinkAction {
   final String code;
   const ReferralAction({required this.code});
+}
+
+class TransactionAction extends DeepLinkAction {
+  final String transactionId;
+  const TransactionAction({required this.transactionId});
 }

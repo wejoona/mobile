@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// Bank Linking Service
 ///
@@ -12,9 +13,7 @@ class BankLinkingService {
   Future<Map<String, dynamic>> getBanks({String? country}) async {
     final response = await _dio.get(
       '/banks',
-      queryParameters: {
-        if (country != null) 'country': country,
-      },
+      queryParameters: {if (country != null) 'country': country},
     );
     return response.data as Map<String, dynamic>;
   }
@@ -78,7 +77,9 @@ class BankLinkingService {
   Future<Map<String, dynamic>> depositFromBank({
     required String accountId,
     required double amount,
+    required String pinToken,
     String? description,
+    String? idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/bank-accounts/$accountId/deposit',
@@ -86,6 +87,12 @@ class BankLinkingService {
         'amount': amount,
         if (description != null) 'description': description,
       },
+      options: Options(
+        headers: transactionHeaders(
+          pinToken: pinToken,
+          idempotencyKey: idempotencyKey,
+        ),
+      ),
     );
     return response.data as Map<String, dynamic>;
   }
@@ -94,7 +101,9 @@ class BankLinkingService {
   Future<Map<String, dynamic>> withdrawToBank({
     required String accountId,
     required double amount,
+    required String pinToken,
     String? description,
+    String? idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/bank-accounts/$accountId/withdraw',
@@ -102,6 +111,12 @@ class BankLinkingService {
         'amount': amount,
         if (description != null) 'description': description,
       },
+      options: Options(
+        headers: transactionHeaders(
+          pinToken: pinToken,
+          idempotencyKey: idempotencyKey,
+        ),
+      ),
     );
     return response.data as Map<String, dynamic>;
   }
@@ -112,10 +127,10 @@ class BankLinkingService {
     return response.data as Map<String, dynamic>;
   }
 
-
   // === Stub aliases ===
-  Future<List<dynamic>> getBankAccounts() async => (await getLinkedAccounts())['accounts'] as List<dynamic>? ?? [];
+  Future<List<dynamic>> getBankAccounts() async =>
+      (await getLinkedAccounts())['accounts'] as List<dynamic>? ?? [];
   Future<void> remove(String accountId) async => unlinkAccount(accountId);
-  Future<void> unlinkBankAccount(String accountId) async => unlinkAccount(accountId);
-
+  Future<void> unlinkBankAccount(String accountId) async =>
+      unlinkAccount(accountId);
 }

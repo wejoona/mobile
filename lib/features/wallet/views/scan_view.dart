@@ -75,10 +75,7 @@ class _ScanViewState extends ConsumerState<ScanView>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildScannerTab(l10n),
-          _buildMyQrTab(l10n),
-        ],
+        children: [_buildScannerTab(l10n), _buildMyQrTab(l10n)],
       ),
     );
   }
@@ -93,7 +90,8 @@ class _ScanViewState extends ConsumerState<ScanView>
 
   void _handleScannedData(String qrData) {
     // Parse and navigate
-    if (qrData.startsWith('joonapay://pay')) {
+    if (qrData.startsWith('korido://pay') ||
+        qrData.startsWith('joonapay://pay')) {
       final uri = Uri.parse(qrData);
       final phone = uri.queryParameters['phone'];
       final address = uri.queryParameters['address'];
@@ -126,7 +124,8 @@ class _ScanViewState extends ConsumerState<ScanView>
 
     final phone = authState.phone ?? authState.user?.phone ?? '';
     final walletAddress = walletState.walletAddress ?? '';
-    final qrData = 'joonapay://pay?phone=$phone${walletAddress.isNotEmpty ? '&address=$walletAddress' : ''}';
+    final qrData =
+        'korido://pay?phone=$phone${walletAddress.isNotEmpty ? '&address=$walletAddress' : ''}';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -192,7 +191,11 @@ class _ScanViewState extends ConsumerState<ScanView>
               children: [
                 Row(
                   children: [
-                    Icon(Icons.info_outline, color: context.colors.gold, size: 20),
+                    Icon(
+                      Icons.info_outline,
+                      color: context.colors.gold,
+                      size: 20,
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppText(
@@ -257,7 +260,9 @@ class _ScanViewState extends ConsumerState<ScanView>
             content: Text(
               success ? 'QR code saved to gallery' : 'Failed to save QR code',
             ),
-            backgroundColor: success ? context.colors.success : context.colors.error,
+            backgroundColor: success
+                ? context.colors.success
+                : context.colors.error,
           ),
         );
       }
@@ -265,7 +270,9 @@ class _ScanViewState extends ConsumerState<ScanView>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+            ),
             backgroundColor: context.colors.error,
           ),
         );
@@ -296,16 +303,21 @@ class _ScanViewState extends ConsumerState<ScanView>
       final file = File('${tempDir.path}/korido_qr_$phone.png');
       await file.writeAsBytes(imageBytes);
 
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'Scan this QR code to send me money on Korido!\n\nPhone: $phone',
-        title: 'Korido Payment QR Code',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text:
+              'Scan this QR code to send me money on Korido!\n\nPhone: $phone',
+          title: 'Korido Payment QR Code',
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+            ),
             backgroundColor: context.colors.error,
           ),
         );

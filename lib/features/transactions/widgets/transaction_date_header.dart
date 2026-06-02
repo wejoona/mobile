@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Date section header for grouped transaction lists.
@@ -20,23 +21,17 @@ class TransactionDateHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
+          AppText(
             date,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: colors.textSecondary,
-              letterSpacing: 0.5,
-            ),
+            variant: AppTextVariant.labelMedium,
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w600,
           ),
           if (totalAmount != null)
-            Text(
-              totalAmount!,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colors.textSecondary,
-              ),
+            AmountText.fromText(
+              totalAmount,
+              size: AmountTextSize.small,
+              color: colors.textSecondary,
             ),
         ],
       ),

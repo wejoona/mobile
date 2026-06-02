@@ -52,7 +52,11 @@ export 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 // Service contracts (API interfaces)
 export 'package:usdc_wallet/mocks/services/auth/auth_contract.dart';
 export 'package:usdc_wallet/mocks/services/wallet/wallet_contract.dart';
-export 'package:usdc_wallet/mocks/services/transactions/transactions_contract.dart';
+export 'package:usdc_wallet/mocks/services/deposit/deposit_contract.dart';
+export 'package:usdc_wallet/mocks/services/transfers/transfers_contract.dart';
+export 'package:usdc_wallet/mocks/services/withdrawals/withdrawals_contract.dart';
+export 'package:usdc_wallet/mocks/services/transactions/transactions_contract.dart'
+    hide ExternalTransferRequest;
 
 // Service mocks (implementations)
 export 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';

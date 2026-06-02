@@ -13,6 +13,15 @@ final paymentLinksProvider = FutureProvider<List<PaymentLink>>((ref) async {
   return await service.getPaymentLinks();
 });
 
+/// ID-scoped detail provider for direct links, notifications, and refreshes.
+final paymentLinkByIdProvider = FutureProvider.family<PaymentLink, String>((
+  ref,
+  linkId,
+) async {
+  final service = ref.watch(paymentLinksServiceProvider);
+  return service.getLink(linkId);
+});
+
 /// Active payment links only.
 final activePaymentLinksProvider = Provider<List<PaymentLink>>((ref) {
   final links = ref.watch(paymentLinksProvider).value ?? [];
@@ -20,7 +29,9 @@ final activePaymentLinksProvider = Provider<List<PaymentLink>>((ref) {
 });
 
 /// Payment link actions delegate.
-final paymentLinkActionsProvider = Provider((ref) => ref.watch(paymentLinksServiceProvider));
+final paymentLinkActionsProvider = Provider(
+  (ref) => ref.watch(paymentLinksServiceProvider),
+);
 
 /// Adapter: wraps raw list for views needing .links / .currentLink.
 class PaymentLinksState {
@@ -28,7 +39,11 @@ class PaymentLinksState {
   final String? error;
   final List<PaymentLink> links;
   PaymentLink? get currentLink => links.isNotEmpty ? links.first : null;
-  const PaymentLinksState({this.isLoading = false, this.error, this.links = const []});
+  const PaymentLinksState({
+    this.isLoading = false,
+    this.error,
+    this.links = const [],
+  });
 }
 
 final paymentLinksStateProvider = Provider<PaymentLinksState>((ref) {

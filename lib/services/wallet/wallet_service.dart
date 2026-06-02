@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/amount_conversion.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/features/limits/models/transaction_limits.dart';
@@ -30,73 +32,112 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/deposit/channels
+  /// GET /deposits/providers
   Future<List<DepositChannel>> getDepositChannels({String? currency}) async {
     try {
-      final response = await _dio.get(
-        '/wallet/deposit/channels',
-        queryParameters: currency != null ? {'currency': currency} : null,
-      );
-      // ignore: avoid_dynamic_calls
-      final List<dynamic> channels = response.data['channels'] ?? [];
+      final response = await _dio.get('/deposits/providers');
+      final data = response.data;
+      final List<dynamic> channels = data is List
+          ? data
+          // ignore: avoid_dynamic_calls
+          : data['providers'] as List<dynamic>? ??
+                // ignore: avoid_dynamic_calls
+                data['channels'] as List<dynamic>? ??
+                [];
       return channels
           .map((e) => DepositChannel.fromJson(e as Map<String, dynamic>))
+          .where((e) => currency == null || e.currency == currency)
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /wallet/deposit
+  /// POST /deposits/initiate
   Future<DepositResponse> initiateDeposit({
     required double amount,
     required String sourceCurrency,
     required String channelId,
+    required String phoneNumber,
   }) async {
     try {
-      final response = await _dio.post('/wallet/deposit', data: {
-        'amount': amount,
-        'sourceCurrency': sourceCurrency,
-        'channelId': channelId,
-      });
+      final response = await _dio.post(
+        '/deposits/initiate',
+        data: {
+          'amount': amount.round(),
+          'currency': sourceCurrency,
+          'providerCode': _mobileMoneyProviderCode(channelId),
+          if (phoneNumber.trim().isNotEmpty)
+            'phoneNumber': _normalizePhoneNumber(phoneNumber, sourceCurrency),
+        },
+        options: Options(
+          headers: {'X-Idempotency-Key': generateIdempotencyKey()},
+        ),
+      );
       return DepositResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /wallet/transfer/internal
+  /// POST /transfers/internal
   Future<TransferResponse> internalTransfer({
     required String toPhone,
     required double amount,
     required String currency,
+    String? note,
+    String? pinToken,
+    String? idempotencyKey,
   }) async {
     try {
-      final response = await _dio.post('/wallet/transfer/internal', data: {
-        'toPhone': toPhone,
-        'amount': amount,
-        'currency': currency,
-      });
+      final response = await _dio.post(
+        '/transfers/internal',
+        data: {
+          'recipientPhone': toPhone,
+          'amount': amount,
+          'currency': currency,
+          if (note != null) 'note': note,
+        },
+        options: Options(
+          headers: _transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return TransferResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /wallet/transfer/external
+  /// POST /transfers/external
   Future<TransferResponse> externalTransfer({
     required String toAddress,
     required double amount,
     required String currency,
     String? network,
+    String? note,
+    String? pinToken,
+    String? idempotencyKey,
   }) async {
     try {
-      final response = await _dio.post('/wallet/transfer/external', data: {
-        'toAddress': toAddress,
-        'amount': amount,
-        'currency': currency,
-        if (network != null) 'network': network,
-      });
+      final response = await _dio.post(
+        '/transfers/external',
+        data: {
+          'recipientAddress': toAddress,
+          'amount': amount,
+          'currency': currency,
+          if (network != null) 'network': network,
+          if (note != null) 'note': note,
+        },
+        options: Options(
+          headers: _transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return TransferResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -111,12 +152,15 @@ class WalletService {
     String direction = 'deposit',
   }) async {
     try {
-      final response = await _dio.get('/wallet/rate', queryParameters: {
-        'sourceCurrency': sourceCurrency,
-        'targetCurrency': targetCurrency,
-        'amount': amount,
-        'direction': direction,
-      });
+      final response = await _dio.get(
+        '/wallet/rate',
+        queryParameters: {
+          'sourceCurrency': sourceCurrency,
+          'targetCurrency': targetCurrency,
+          'amount': amount,
+          'direction': direction,
+        },
+      );
       return ExchangeRate.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -129,14 +173,25 @@ class WalletService {
     required String destinationAddress,
     String? network,
     String? method,
+    String? pinToken,
+    String? idempotencyKey,
   }) async {
     try {
-      final response = await _dio.post('/wallet/withdraw', data: {
-        'amount': amount,
-        'destinationAddress': destinationAddress,
-        'network': network ?? 'polygon',
-        if (method != null) 'method': method,
-      });
+      final response = await _dio.post(
+        '/wallet/withdraw',
+        data: {
+          'amount': amount,
+          'destinationAddress': destinationAddress,
+          'network': network ?? 'polygon',
+          if (method != null) 'method': method,
+        },
+        options: Options(
+          headers: _transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return WithdrawResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -165,16 +220,19 @@ class WalletService {
     String? address,
   }) async {
     try {
-      final response = await _dio.post('/wallet/kyc/submit', data: {
-        'firstName': firstName,
-        'lastName': lastName,
-        'dateOfBirth': dateOfBirth,
-        'country': country,
-        'idType': idType,
-        'idNumber': idNumber,
-        if (idExpiryDate != null) 'idExpiryDate': idExpiryDate,
-        if (address != null) 'address': address,
-      });
+      final response = await _dio.post(
+        '/wallet/kyc/submit',
+        data: {
+          'firstName': firstName,
+          'lastName': lastName,
+          'dateOfBirth': dateOfBirth,
+          'country': country,
+          'idType': idType,
+          'idNumber': idNumber,
+          if (idExpiryDate != null) 'idExpiryDate': idExpiryDate,
+          if (address != null) 'address': address,
+        },
+      );
       return KycStatusResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -225,7 +283,9 @@ class WalletBalanceResponse {
     // GET returns: {walletId, walletAddress, balances: [...]}
     // POST returns: {id, circleWalletAddress, balance: number}
     final walletId = json['walletId'] as String? ?? json['id'] as String? ?? '';
-    final walletAddress = json['walletAddress'] as String? ?? json['circleWalletAddress'] as String?;
+    final walletAddress =
+        json['walletAddress'] as String? ??
+        json['circleWalletAddress'] as String?;
 
     // If balances array is empty but balance field exists, create a synthetic balance
     List<WalletBalance> balances;
@@ -286,19 +346,38 @@ class DepositResponse {
   });
 
   factory DepositResponse.fromJson(Map<String, dynamic> json) {
+    final paymentInstructions =
+        json['paymentInstructions'] as Map<String, dynamic>?;
+    final depositId =
+        json['depositId'] as String? ?? json['id'] as String? ?? '';
+
     return DepositResponse(
-      transactionId: json['transactionId'] as String,
-      depositId: json['depositId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      sourceCurrency: json['sourceCurrency'] as String,
-      targetCurrency: json['targetCurrency'] as String,
-      rate: (json['rate'] as num).toDouble(),
+      transactionId: json['transactionId'] as String? ?? depositId,
+      depositId: depositId,
+      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      sourceCurrency:
+          json['sourceCurrency'] as String? ??
+          json['currency'] as String? ??
+          'XOF',
+      targetCurrency:
+          json['targetCurrency'] as String? ??
+          json['convertedCurrency'] as String? ??
+          'USDC',
+      rate:
+          (json['rate'] as num?)?.toDouble() ??
+          (json['exchangeRate'] as num?)?.toDouble() ??
+          0,
       fee: (json['fee'] as num?)?.toDouble() ?? 0,
-      estimatedAmount: (json['estimatedAmount'] as num).toDouble(),
+      estimatedAmount:
+          (json['estimatedAmount'] as num?)?.toDouble() ??
+          (json['convertedAmount'] as num?)?.toDouble() ??
+          0,
       paymentInstructions: PaymentInstructions.fromJson(
-        json['paymentInstructions'] as Map<String, dynamic>,
+        paymentInstructions ?? json,
       ),
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
+      expiresAt: json['expiresAt'] != null
+          ? DateTime.parse(json['expiresAt'] as String)
+          : DateTime.now().add(const Duration(minutes: 15)),
     );
   }
 }
@@ -321,11 +400,18 @@ class PaymentInstructions {
 
   factory PaymentInstructions.fromJson(Map<String, dynamic> json) {
     return PaymentInstructions(
-      type: json['type'] as String,
-      provider: json['provider'] as String,
-      accountNumber: json['accountNumber'] as String,
-      reference: json['reference'] as String,
-      instructions: json['instructions'] as String,
+      type:
+          json['type'] as String? ??
+          json['paymentMethodType'] as String? ??
+          'mobile_money',
+      provider:
+          json['provider'] as String? ?? json['providerCode'] as String? ?? '',
+      accountNumber:
+          json['accountNumber'] as String? ??
+          json['phoneNumber'] as String? ??
+          '',
+      reference: json['reference'] as String? ?? json['token'] as String? ?? '',
+      instructions: json['instructions'] as String? ?? '',
     );
   }
 }
@@ -347,12 +433,14 @@ class TransferResponse {
   });
 
   factory TransferResponse.fromJson(Map<String, dynamic> json) {
+    final rawAmount = (json['amount'] as num?)?.toInt() ?? 0;
     return TransferResponse(
-      transactionId: json['transactionId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      currency: json['currency'] as String,
+      transactionId:
+          json['transactionId'] as String? ?? json['id'] as String? ?? '',
+      amount: json['id'] != null ? fromCents(rawAmount) : rawAmount.toDouble(),
+      currency: json['currency'] as String? ?? 'USDC',
       fee: (json['fee'] as num?)?.toDouble() ?? 0,
-      status: json['status'] as String,
+      status: json['status'] as String? ?? 'pending',
     );
   }
 }
@@ -376,13 +464,19 @@ class WithdrawResponse {
   });
 
   factory WithdrawResponse.fromJson(Map<String, dynamic> json) {
+    final rawAmount = (json['amount'] as num?)?.toInt() ?? 0;
     return WithdrawResponse(
-      transactionId: json['transactionId'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      destinationAddress: json['destinationAddress'] as String,
-      network: json['network'] as String? ?? 'polygon',
+      transactionId:
+          json['transactionId'] as String? ?? json['id'] as String? ?? '',
+      amount: json['id'] != null ? fromCents(rawAmount) : rawAmount.toDouble(),
+      destinationAddress:
+          json['destinationAddress'] as String? ??
+          json['phoneNumber'] as String? ??
+          '',
+      network:
+          json['network'] as String? ?? json['providerCode'] as String? ?? '',
       fee: (json['fee'] as num?)?.toDouble() ?? 0,
-      status: json['status'] as String,
+      status: json['status'] as String? ?? 'pending',
     );
   }
 }
@@ -439,7 +533,8 @@ class TransactionLimitsResponse extends TransactionLimits {
     return TransactionLimitsResponse(
       dailyLimit: (json['dailyLimit'] as num).toDouble(),
       monthlyLimit: (json['monthlyLimit'] as num).toDouble(),
-      singleTransactionLimit: (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
+      singleTransactionLimit:
+          (json['singleTransactionLimit'] as num?)?.toDouble() ?? 0.0,
       withdrawalLimit: (json['withdrawalLimit'] as num?)?.toDouble() ?? 0.0,
       dailyUsed: (json['dailyUsed'] as num).toDouble(),
       monthlyUsed: (json['monthlyUsed'] as num).toDouble(),
@@ -465,3 +560,52 @@ class TransactionLimitsResponse extends TransactionLimits {
 final walletServiceProvider = Provider<WalletService>((ref) {
   return WalletService(ref.watch(dioProvider));
 });
+
+Map<String, String> _transactionHeaders({
+  String? pinToken,
+  String? idempotencyKey,
+}) {
+  return {
+    if (pinToken != null) 'X-Pin-Token': pinToken,
+    'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
+  };
+}
+
+String _mobileMoneyProviderCode(String value) {
+  switch (value.replaceAll('-', '_').toLowerCase()) {
+    case 'omci':
+    case 'orange':
+    case 'orange_money':
+    case 'mobile_money':
+      return 'OMCI';
+    case 'mtnci':
+    case 'mtn':
+    case 'mtn_momo':
+    case 'mtn_mobile_money':
+      return 'MTNCI';
+    case 'moovci':
+    case 'moov':
+    case 'moov_money':
+      return 'MOOVCI';
+    case 'waveci':
+    case 'wave':
+      return 'WAVECI';
+    default:
+      return value.toUpperCase();
+  }
+}
+
+String _normalizePhoneNumber(String value, String currency) {
+  var phone = value.replaceAll(RegExp(r'[\s\-().]'), '');
+  if (phone.startsWith('+')) return phone;
+
+  if (currency.toUpperCase() == 'XOF') {
+    if (phone.startsWith('225')) return '+$phone';
+    if (phone.length == 10) return '+225$phone';
+  }
+
+  if (phone.startsWith('1') && phone.length == 11) return '+$phone';
+  if (phone.length == 10) return '+1$phone';
+
+  return phone;
+}

@@ -214,10 +214,12 @@ AppColors.warning        // Orange
 ```dart
 AppSpacing.xs   // 4
 AppSpacing.sm   // 8
-AppSpacing.md   // 16
-AppSpacing.lg   // 24
-AppSpacing.xl   // 32
-AppSpacing.xxl  // 48
+AppSpacing.md   // 12
+AppSpacing.lg   // 16
+AppSpacing.xl   // 20
+AppSpacing.xxl  // 24
+AppSpacing.xxxl // 32
+AppSpacing.massive // 48
 ```
 
 ## Dev Commands

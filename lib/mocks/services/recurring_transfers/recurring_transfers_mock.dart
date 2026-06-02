@@ -3,7 +3,17 @@ import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 class RecurringTransfersMock {
+  static final List<Map<String, dynamic>> _transfers = [];
+
+  static void reset() {
+    _transfers
+      ..clear()
+      ..addAll(_initialTransfers());
+  }
+
   static void register(MockInterceptor interceptor) {
+    if (_transfers.isEmpty) reset();
+
     // GET /recurring-transfers - List all
     interceptor.register(
       method: 'GET',
@@ -77,7 +87,7 @@ class RecurringTransfersMock {
 
   static Future<MockResponse> _handleGetAll(RequestOptions options) async {
     return MockResponse.success({
-      'transfers': _getMockTransfers(),
+      'transfers': List<Map<String, dynamic>>.from(_transfers),
     });
   }
 
@@ -85,10 +95,14 @@ class RecurringTransfersMock {
     final params = options.extractPathParams('/recurring-transfers/:id');
     final id = params['id'];
 
-    final transfer = _getMockTransfers().firstWhere(
-      (t) => t['id'] == id,
-      orElse: () => _getMockTransfers().first,
+    final transfer = _transfers.cast<Map<String, dynamic>?>().firstWhere(
+      (t) => t?['id'] == id,
+      orElse: () => null,
     );
+
+    if (transfer == null) {
+      return MockResponse.notFound('Recurring transfer not found');
+    }
 
     return MockResponse.success(transfer);
   }
@@ -97,7 +111,7 @@ class RecurringTransfersMock {
     final data = options.data as Map<String, dynamic>;
     final now = DateTime.now();
 
-    return MockResponse.success({
+    final transfer = {
       'id': 'rt_${DateTime.now().millisecondsSinceEpoch}',
       'recipientPhone': data['recipientPhone'],
       'recipientName': data['recipientName'],
@@ -115,7 +129,10 @@ class RecurringTransfersMock {
       'createdAt': now.toIso8601String(),
       'updatedAt': now.toIso8601String(),
       'executedCount': 0,
-    });
+    };
+    _transfers.insert(0, transfer);
+
+    return MockResponse.success(transfer);
   }
 
   static Future<MockResponse> _handleUpdate(RequestOptions options) async {
@@ -123,70 +140,84 @@ class RecurringTransfersMock {
     final id = params['id'];
     final updates = options.data as Map<String, dynamic>;
 
-    final transfer = _getMockTransfers().firstWhere(
-      (t) => t['id'] == id,
-      orElse: () => _getMockTransfers().first,
-    );
+    final transferIndex = _transfers.indexWhere((t) => t['id'] == id);
+    if (transferIndex == -1) {
+      return MockResponse.notFound('Recurring transfer not found');
+    }
 
-    return MockResponse.success({
-      ...transfer,
+    final updated = {
+      ..._transfers[transferIndex],
       ...updates,
       'updatedAt': DateTime.now().toIso8601String(),
-    });
+    };
+    _transfers[transferIndex] = updated;
+
+    return MockResponse.success(updated);
   }
 
   static Future<MockResponse> _handlePause(RequestOptions options) async {
     final params = options.extractPathParams('/recurring-transfers/:id/pause');
     final id = params['id'];
 
-    final transfer = _getMockTransfers().firstWhere(
-      (t) => t['id'] == id,
-      orElse: () => _getMockTransfers().first,
-    );
+    final transferIndex = _transfers.indexWhere((t) => t['id'] == id);
+    if (transferIndex == -1) {
+      return MockResponse.notFound('Recurring transfer not found');
+    }
 
-    return MockResponse.success({
-      ...transfer,
+    final updated = {
+      ..._transfers[transferIndex],
       'status': 'paused',
       'updatedAt': DateTime.now().toIso8601String(),
-    });
+    };
+    _transfers[transferIndex] = updated;
+
+    return MockResponse.success(updated);
   }
 
   static Future<MockResponse> _handleResume(RequestOptions options) async {
     final params = options.extractPathParams('/recurring-transfers/:id/resume');
     final id = params['id'];
 
-    final transfer = _getMockTransfers().firstWhere(
-      (t) => t['id'] == id,
-      orElse: () => _getMockTransfers().first,
-    );
+    final transferIndex = _transfers.indexWhere((t) => t['id'] == id);
+    if (transferIndex == -1) {
+      return MockResponse.notFound('Recurring transfer not found');
+    }
 
-    return MockResponse.success({
-      ...transfer,
+    final updated = {
+      ..._transfers[transferIndex],
       'status': 'active',
       'updatedAt': DateTime.now().toIso8601String(),
-    });
+    };
+    _transfers[transferIndex] = updated;
+
+    return MockResponse.success(updated);
   }
 
   static Future<MockResponse> _handleCancel(RequestOptions options) async {
+    final params = options.extractPathParams('/recurring-transfers/:id');
+    final id = params['id'];
+    final removed = _transfers.any((t) => t['id'] == id);
+    if (!removed) {
+      return MockResponse.notFound('Recurring transfer not found');
+    }
+
+    _transfers.removeWhere((t) => t['id'] == id);
     return MockResponse.success({'success': true});
   }
 
   static Future<MockResponse> _handleGetHistory(RequestOptions options) async {
-    return MockResponse.success({
-      'history': _getMockHistory(),
-    });
+    return MockResponse.success({'history': _getMockHistory()});
   }
 
   static Future<MockResponse> _handleGetUpcoming(RequestOptions options) async {
-    return MockResponse.success({
-      'upcoming': _getMockUpcoming(),
-    });
+    return MockResponse.success({'upcoming': _getMockUpcoming()});
   }
 
-  static Future<MockResponse> _handleGetNextDates(RequestOptions options) async {
-    final count = int.tryParse(
-      options.queryParameters['count']?.toString() ?? '3',
-    ) ?? 3;
+  static Future<MockResponse> _handleGetNextDates(
+    RequestOptions options,
+  ) async {
+    final count =
+        int.tryParse(options.queryParameters['count']?.toString() ?? '3') ?? 3;
 
     final now = DateTime.now();
     final dates = List.generate(
@@ -197,7 +228,7 @@ class RecurringTransfersMock {
     return MockResponse.success({'dates': dates});
   }
 
-  static List<Map<String, dynamic>> _getMockTransfers() {
+  static List<Map<String, dynamic>> _initialTransfers() {
     final now = DateTime.now();
 
     return [
@@ -229,7 +260,11 @@ class RecurringTransfersMock {
         'frequency': 'monthly',
         'startDate': now.subtract(const Duration(days: 60)).toIso8601String(),
         'endDate': null,
-        'nextExecutionDate': DateTime(now.year, now.month + 1, 1).toIso8601String(),
+        'nextExecutionDate': DateTime(
+          now.year,
+          now.month + 1,
+          1,
+        ).toIso8601String(),
         'occurrencesRemaining': null,
         'status': 'active',
         'note': 'Monthly rent payment',

@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for Transaction List Item component
@@ -12,8 +13,10 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/transaction_item_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
-  group('Transaction Item Snapshot Tests', () {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+  goldenGroup('Transaction Item Snapshot Tests', () {
     Widget buildTransactionItem({
       required String title,
       required String subtitle,
@@ -93,7 +96,8 @@ void main() {
                           vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: (statusColor ?? AppColors.textTertiary).withOpacity(0.15),
+                          color: (statusColor ?? AppColors.textTertiary)
+                              .withOpacity(0.15),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
@@ -119,7 +123,7 @@ void main() {
       );
     }
 
-    group('Transaction Types', () {
+    goldenGroup('Transaction Types', () {
       testWidgets('deposit transaction', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -253,7 +257,7 @@ void main() {
       });
     });
 
-    group('Transaction Status', () {
+    goldenGroup('Transaction Status', () {
       testWidgets('pending status', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -321,7 +325,7 @@ void main() {
       });
     });
 
-    group('Text Overflow', () {
+    goldenGroup('Text Overflow', () {
       testWidgets('long recipient name', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -347,7 +351,8 @@ void main() {
           TestWrapper(
             child: buildTransactionItem(
               title: 'Bill Payment',
-              subtitle: 'This is a very long description that should truncate properly',
+              subtitle:
+                  'This is a very long description that should truncate properly',
               amount: '-\$35.00',
               icon: Icons.receipt_long,
               iconColor: AppColors.warningText,
@@ -363,7 +368,7 @@ void main() {
       });
     });
 
-    group('Large Amounts', () {
+    goldenGroup('Large Amounts', () {
       testWidgets('large amount', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -409,7 +414,7 @@ void main() {
       });
     });
 
-    group('With Date', () {
+    goldenGroup('With Date', () {
       testWidgets('transaction with date', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -434,7 +439,7 @@ void main() {
       });
     });
 
-    group('Different Icons', () {
+    goldenGroup('Different Icons', () {
       testWidgets('QR payment', (tester) async {
         await tester.pumpWidget(
           TestWrapper(

@@ -28,7 +28,10 @@ class WalletMockState {
   }
 
   /// Create wallet for user
-  static WalletResponse createWallet(String userId, {String network = 'polygon'}) {
+  static WalletResponse createWallet(
+    String userId, {
+    String network = 'polygon',
+  }) {
     final wallet = WalletResponse(
       id: MockDataGenerator.uuid(),
       userId: userId,
@@ -46,7 +49,11 @@ class WalletMockState {
   }
 
   /// Update wallet balance
-  static void updateBalance(String userId, double usdcDelta, double localDelta) {
+  static void updateBalance(
+    String userId,
+    double usdcDelta,
+    double localDelta,
+  ) {
     final wallet = wallets[userId];
     if (wallet == null) return;
 
@@ -82,11 +89,32 @@ class WalletMock {
       handler: _handleCreateWallet,
     );
 
+    // POST /wallet/create
+    interceptor.register(
+      method: 'POST',
+      path: '/wallet/create',
+      handler: _handleCreateWallet,
+    );
+
     // GET /wallet/balance
     interceptor.register(
       method: 'GET',
       path: '/wallet/balance',
       handler: _handleGetBalance,
+    );
+
+    // GET /wallet/rate
+    interceptor.register(
+      method: 'GET',
+      path: '/wallet/rate',
+      handler: _handleGetRate,
+    );
+
+    // GET /wallet/exchange-rate - legacy alias
+    interceptor.register(
+      method: 'GET',
+      path: '/wallet/exchange-rate',
+      handler: _handleGetRate,
     );
 
     // POST /wallet/deposit
@@ -101,6 +129,20 @@ class WalletMock {
       method: 'POST',
       path: '/wallet/withdraw',
       handler: _handleWithdraw,
+    );
+
+    // POST /withdrawals/initiate
+    interceptor.register(
+      method: 'POST',
+      path: '/withdrawals/initiate',
+      handler: _handleWithdraw,
+    );
+
+    // GET /wallet/deposit/channels
+    interceptor.register(
+      method: 'GET',
+      path: '/wallet/deposit/channels',
+      handler: _handleGetDepositChannels,
     );
 
     // GET /wallet/deposit/providers
@@ -139,14 +181,20 @@ class WalletMock {
     return MockResponse.success(wallet.toJson());
   }
 
-  static Future<MockResponse> _handleCreateWallet(RequestOptions options) async {
+  static Future<MockResponse> _handleCreateWallet(
+    RequestOptions options,
+  ) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized();
     }
 
     // Check if wallet already exists
-    if (WalletMockState.getWallet(userId) != null) {
+    final existingWallet = WalletMockState.getWallet(userId);
+    if (existingWallet != null && options.path == '/wallet/create') {
+      return MockResponse.success(existingWallet.toJson());
+    }
+    if (existingWallet != null) {
       return MockResponse.badRequest('Wallet already exists');
     }
 
@@ -175,6 +223,47 @@ class WalletMock {
     });
   }
 
+  static Future<MockResponse> _handleGetRate(RequestOptions options) async {
+    final query = options.queryParameters;
+    final sourceCurrency =
+        query['sourceCurrency'] as String? ??
+        query['fromCurrency'] as String? ??
+        'XOF';
+    final targetCurrency =
+        query['targetCurrency'] as String? ??
+        query['toCurrency'] as String? ??
+        'USD';
+    final sourceAmount =
+        double.tryParse(query['amount']?.toString() ?? '') ?? 10000;
+    const xofPerUsd = 655.957;
+    final isXofToUsd = sourceCurrency == 'XOF' && targetCurrency == 'USD';
+    final targetAmount = isXofToUsd
+        ? sourceAmount / xofPerUsd
+        : sourceAmount * xofPerUsd;
+    final canonicalRate = isXofToUsd ? 1 / xofPerUsd : xofPerUsd;
+
+    if (options.path.endsWith('/exchange-rate')) {
+      return MockResponse.success({
+        'fromCurrency': sourceCurrency,
+        'toCurrency': targetCurrency,
+        'rate': xofPerUsd,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    }
+
+    return MockResponse.success({
+      'sourceCurrency': sourceCurrency,
+      'targetCurrency': targetCurrency,
+      'rate': canonicalRate,
+      'sourceAmount': sourceAmount,
+      'targetAmount': targetAmount,
+      'fee': 0,
+      'expiresAt': DateTime.now()
+          .add(const Duration(minutes: 5))
+          .toIso8601String(),
+    });
+  }
+
   static Future<MockResponse> _handleDeposit(RequestOptions options) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
@@ -187,8 +276,14 @@ class WalletMock {
     }
 
     final data = options.data as Map<String, dynamic>?;
-    final amount = (data?['amount'] as num?)?.toDouble() ?? 0;
-    final provider = data?['provider'] as String? ?? 'orange_money';
+    final rawAmount = (data?['amount'] as num?)?.toDouble() ?? 0;
+    final amount = options.path == '/withdrawals/initiate'
+        ? rawAmount / 100
+        : rawAmount;
+    final provider =
+        (data?['providerCode'] as String?) ??
+        (data?['provider'] as String?) ??
+        'OMCI';
     // phoneNumber from data is stored in the deposit metadata on real backend
 
     if (amount <= 0) {
@@ -200,7 +295,8 @@ class WalletMock {
       status: 'pending',
       amount: amount,
       provider: provider,
-      instructions: 'Dial *144*1*${MockDataGenerator.integer(min: 100000, max: 999999)}# to complete the deposit',
+      instructions:
+          'Dial *144*1*${MockDataGenerator.integer(min: 100000, max: 999999)}# to complete the deposit',
       reference: MockDataGenerator.transactionRef(),
       expiresAt: DateTime.now().add(const Duration(minutes: 30)),
     );
@@ -223,8 +319,14 @@ class WalletMock {
     }
 
     final data = options.data as Map<String, dynamic>?;
-    final amount = (data?['amount'] as num?)?.toDouble() ?? 0;
-    final provider = data?['provider'] as String? ?? 'orange_money';
+    final rawAmount = (data?['amount'] as num?)?.toDouble() ?? 0;
+    final amount = options.path == '/withdrawals/initiate'
+        ? rawAmount / 100
+        : rawAmount;
+    final provider =
+        (data?['providerCode'] as String?) ??
+        (data?['provider'] as String?) ??
+        'OMCI';
 
     if (amount <= 0) {
       return MockResponse.badRequest('Invalid amount');
@@ -249,6 +351,20 @@ class WalletMock {
 
     WalletMockState.pendingWithdrawals[userId] ??= [];
     WalletMockState.pendingWithdrawals[userId]!.add(withdrawal);
+
+    if (options.path == '/withdrawals/initiate') {
+      return MockResponse.created({
+        'id': withdrawal.id,
+        'status': withdrawal.status,
+        'amount': rawAmount,
+        'fiatAmount': (rawAmount * 600).round(),
+        'currency': data?['currency'] as String? ?? 'XOF',
+        'providerCode': provider,
+        'phoneNumber': data?['phoneNumber'] as String? ?? '+2250700000000',
+        'providerReference': MockDataGenerator.transactionRef(),
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+    }
 
     return MockResponse.created(withdrawal.toJson());
   }
@@ -287,6 +403,51 @@ class WalletMock {
           'fee': 0.0,
           'feeType': 'percentage',
           'countries': ['CI', 'SN'],
+        },
+      ],
+    });
+  }
+
+  static Future<MockResponse> _handleGetDepositChannels(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'channels': [
+        {
+          'id': 'OMCI',
+          'name': 'Orange Money',
+          'type': 'mobile_money',
+          'provider': 'orange',
+          'country': 'CI',
+          'minAmount': 500,
+          'maxAmount': 1000000,
+          'fee': 0.0,
+          'feeType': 'percentage',
+          'currency': 'XOF',
+        },
+        {
+          'id': 'MTNCI',
+          'name': 'MTN Mobile Money',
+          'type': 'mobile_money',
+          'provider': 'mtn',
+          'country': 'CI',
+          'minAmount': 500,
+          'maxAmount': 500000,
+          'fee': 0.0,
+          'feeType': 'percentage',
+          'currency': 'XOF',
+        },
+        {
+          'id': 'WAVECI',
+          'name': 'Wave',
+          'type': 'mobile_money',
+          'provider': 'wave',
+          'country': 'CI',
+          'minAmount': 100,
+          'maxAmount': 2000000,
+          'fee': 0.0,
+          'feeType': 'percentage',
+          'currency': 'XOF',
         },
       ],
     });

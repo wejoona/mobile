@@ -6,7 +6,9 @@ import 'package:usdc_wallet/design/tokens/colors.dart';
 
 void main() {
   group('AppText Theme Adaptation Tests', () {
-    testWidgets('uses primary text color in dark theme by default', (tester) async {
+    testWidgets('uses primary text color in dark theme by default', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.darkTheme,
@@ -20,7 +22,9 @@ void main() {
       expect(textWidget.style?.color, AppColors.textPrimary);
     });
 
-    testWidgets('uses primary text color in light theme by default', (tester) async {
+    testWidgets('uses primary text color in light theme by default', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
@@ -154,6 +158,22 @@ void main() {
       expect(textWidget.style?.color, customColor);
     });
 
+    testWidgets('custom style color is preserved by default', (tester) async {
+      const styleColor = Colors.orange;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const Scaffold(
+            body: AppText('Styled', style: TextStyle(color: styleColor)),
+          ),
+        ),
+      );
+
+      final textWidget = tester.widget<Text>(find.text('Styled'));
+      expect(textWidget.style?.color, styleColor);
+    });
+
     testWidgets('all text variants render correctly', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -162,12 +182,30 @@ void main() {
             body: SingleChildScrollView(
               child: Column(
                 children: [
-                  AppText('Display Large', variant: AppTextVariant.displayLarge),
-                  AppText('Display Medium', variant: AppTextVariant.displayMedium),
-                  AppText('Display Small', variant: AppTextVariant.displaySmall),
-                  AppText('Headline Large', variant: AppTextVariant.headlineLarge),
-                  AppText('Headline Medium', variant: AppTextVariant.headlineMedium),
-                  AppText('Headline Small', variant: AppTextVariant.headlineSmall),
+                  AppText(
+                    'Display Large',
+                    variant: AppTextVariant.displayLarge,
+                  ),
+                  AppText(
+                    'Display Medium',
+                    variant: AppTextVariant.displayMedium,
+                  ),
+                  AppText(
+                    'Display Small',
+                    variant: AppTextVariant.displaySmall,
+                  ),
+                  AppText(
+                    'Headline Large',
+                    variant: AppTextVariant.headlineLarge,
+                  ),
+                  AppText(
+                    'Headline Medium',
+                    variant: AppTextVariant.headlineMedium,
+                  ),
+                  AppText(
+                    'Headline Small',
+                    variant: AppTextVariant.headlineSmall,
+                  ),
                   AppText('Title Large', variant: AppTextVariant.titleLarge),
                   AppText('Title Medium', variant: AppTextVariant.titleMedium),
                   AppText('Title Small', variant: AppTextVariant.titleSmall),
@@ -201,7 +239,9 @@ void main() {
       expect(find.text('Percentage'), findsOneWidget);
     });
 
-    testWidgets('disabled text has correct color in dark theme', (tester) async {
+    testWidgets('disabled text has correct color in dark theme', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.darkTheme,
@@ -215,12 +255,17 @@ void main() {
       expect(darkText.style?.color, AppColors.textDisabled);
     });
 
-    testWidgets('disabled text has correct color in light theme', (tester) async {
+    testWidgets('disabled text has correct color in light theme', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.lightTheme,
           home: const Scaffold(
-            body: AppText('Disabled Light', semanticColor: AppTextColor.disabled),
+            body: AppText(
+              'Disabled Light',
+              semanticColor: AppTextColor.disabled,
+            ),
           ),
         ),
       );
@@ -264,7 +309,8 @@ void main() {
           home: const Scaffold(
             body: AppText(
               '\$1,234.56',
-              semanticLabel: 'Balance: one thousand two hundred thirty four dollars and fifty six cents',
+              semanticLabel:
+                  'Balance: one thousand two hundred thirty four dollars and fifty six cents',
             ),
           ),
         ),
@@ -318,10 +364,7 @@ void main() {
           home: const Scaffold(
             body: SizedBox(
               width: 200,
-              child: AppText(
-                'Centered',
-                textAlign: TextAlign.center,
-              ),
+              child: AppText('Centered', textAlign: TextAlign.center),
             ),
           ),
         ),

@@ -32,7 +32,7 @@ enum AppCardVariant {
 /// Usage:
 /// ```dart
 /// AppCard(
-///   variant: AppCardVariant.elevated,
+///   variant: AppCardVariant.flat,
 ///   onTap: () => print('Tapped'),
 ///   child: Text('Card content'),
 /// )
@@ -41,7 +41,7 @@ class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     required this.child,
-    this.variant = AppCardVariant.elevated,
+    this.variant = AppCardVariant.flat,
     this.padding,
     this.margin,
     this.onTap,
@@ -78,8 +78,7 @@ class AppCard extends StatelessWidget {
           splashColor: _getSplashColor(colors),
           highlightColor: _getHighlightColor(colors),
           child: Padding(
-            padding: padding ??
-                const EdgeInsets.all(AppSpacing.cardPadding),
+            padding: padding ?? const EdgeInsets.all(AppSpacing.cardPadding),
             child: child,
           ),
         ),
@@ -96,7 +95,8 @@ class AppCard extends StatelessWidget {
           color: backgroundColor ?? colors.container,
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
-            color: borderColor ?? (isSelected ? colors.gold : colors.borderSubtle),
+            color:
+                borderColor ?? (isSelected ? colors.gold : colors.borderSubtle),
             width: isSelected ? 2 : 1,
           ),
         );
@@ -105,6 +105,7 @@ class AppCard extends StatelessWidget {
         return BoxDecoration(
           color: backgroundColor ?? colors.container,
           borderRadius: BorderRadius.circular(radius),
+          border: colors.isDark ? null : Border.all(color: colors.borderSubtle),
           boxShadow: _getCardShadow(colors),
         );
 
@@ -120,21 +121,25 @@ class AppCard extends StatelessWidget {
 
       case AppCardVariant.filled:
         return BoxDecoration(
-          color: backgroundColor ?? (isSelected ? colors.goldSubtle : colors.elevated),
+          color:
+              backgroundColor ??
+              (isSelected ? colors.goldSubtle : colors.elevated),
           borderRadius: BorderRadius.circular(radius),
-          border: isSelected
-              ? Border.all(color: colors.gold, width: 2)
-              : null,
+          border: isSelected ? Border.all(color: colors.gold, width: 2) : null,
         );
 
       case AppCardVariant.goldAccent:
         return BoxDecoration(
-          color: backgroundColor ?? colors.container,
+          color:
+              backgroundColor ??
+              (colors.isDark
+                  ? colors.container
+                  : Color.alphaBlend(
+                      colors.gold.withValues(alpha: 0.035),
+                      colors.container,
+                    )),
           borderRadius: BorderRadius.circular(radius),
-          border: Border.all(
-            color: borderColor ?? colors.borderGold,
-            width: 1,
-          ),
+          border: Border.all(color: borderColor ?? colors.borderGold, width: 1),
           boxShadow: _getCardShadow(colors),
         );
 
@@ -151,7 +156,8 @@ class AppCard extends StatelessWidget {
 
       case AppCardVariant.glass:
         return BoxDecoration(
-          color: backgroundColor ??
+          color:
+              backgroundColor ??
               colors.container.withValues(alpha: colors.isDark ? 0.85 : 0.9),
           borderRadius: BorderRadius.circular(radius),
           border: Border.all(
@@ -169,19 +175,7 @@ class AppCard extends StatelessWidget {
       // Stronger shadows for dark mode
       return AppShadows.card;
     } else {
-      // Lighter shadows for light mode
-      return [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.08),
-          blurRadius: 16,
-          offset: const Offset(0, 4),
-        ),
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
-          blurRadius: 4,
-          offset: const Offset(0, 1),
-        ),
-      ];
+      return AppShadows.lightCard;
     }
   }
 
@@ -192,9 +186,10 @@ class AppCard extends StatelessWidget {
     } else {
       return [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.06),
-          blurRadius: 8,
-          offset: const Offset(0, 2),
+          color: const Color(0x245A431B),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
+          spreadRadius: -10,
         ),
       ];
     }
@@ -205,8 +200,9 @@ class AppCard extends StatelessWidget {
     if (isSelected) {
       return colors.gold.withValues(alpha: 0.1);
     }
-    return (colors.isDark ? Colors.white : Colors.black)
-        .withValues(alpha: 0.05);
+    return (colors.isDark ? Colors.white : Colors.black).withValues(
+      alpha: 0.05,
+    );
   }
 
   /// Returns theme-appropriate highlight color
@@ -214,7 +210,8 @@ class AppCard extends StatelessWidget {
     if (isSelected) {
       return colors.gold.withValues(alpha: 0.05);
     }
-    return (colors.isDark ? Colors.white : Colors.black)
-        .withValues(alpha: 0.05);
+    return (colors.isDark ? Colors.white : Colors.black).withValues(
+      alpha: 0.05,
+    );
   }
 }

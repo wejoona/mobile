@@ -5,25 +5,24 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/bill_payments/providers/bill_payments_provider.dart';
-import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Bill Payment Form View
 /// Account entry, validation, and amount input
 class BillPaymentFormView extends ConsumerStatefulWidget {
-  const BillPaymentFormView({
-    super.key,
-    required this.providerId,
-  });
+  const BillPaymentFormView({super.key, required this.providerId});
 
   final String providerId;
 
   @override
-  ConsumerState<BillPaymentFormView> createState() => _BillPaymentFormViewState();
+  ConsumerState<BillPaymentFormView> createState() =>
+      _BillPaymentFormViewState();
 }
 
 class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
@@ -46,6 +45,14 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   void _loadProvider() {
+    final selectedProvider = ref.read(selectedBillProviderProvider);
+    if (selectedProvider?.id == widget.providerId) {
+      setState(() {
+        _provider = selectedProvider;
+      });
+      return;
+    }
+
     final providersAsync = ref.read(
       billProvidersProvider(const BillProvidersParams()),
     );
@@ -89,9 +96,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: Center(
-          child: CircularProgressIndicator(color: colors.gold),
-        ),
+        body: Center(child: CircularProgressIndicator(color: colors.gold)),
       );
     }
 
@@ -154,7 +159,7 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
 
               // Balance Display
               walletAsync.when(
-                data: (wallet) => _buildBalanceDisplay(wallet.available, l10n),
+                data: (wallet) => _buildBalanceDisplay(wallet, l10n),
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
               ),
@@ -171,13 +176,9 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
 
   Widget _buildProviderInfo(BillProvider provider) {
     final colors = context.colors;
-    return Container(
+    return AppCard(
+      variant: AppCardVariant.flat,
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle, width: 1),
-      ),
       child: Row(
         children: [
           Container(
@@ -224,7 +225,9 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     return AppInput(
       controller: _accountController,
       label: provider.accountNumberLabel,
-      hint: l10n.billPayments_enterField(provider.accountNumberLabel.toLowerCase()),
+      hint: l10n.billPayments_enterField(
+        provider.accountNumberLabel.toLowerCase(),
+      ),
       maxLength: provider.accountNumberLength,
       inputFormatters: [
         if (provider.accountNumberLength != null)
@@ -235,11 +238,16 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
       },
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return l10n.billPayments_pleaseEnterField(provider.accountNumberLabel.toLowerCase());
+          return l10n.billPayments_pleaseEnterField(
+            provider.accountNumberLabel.toLowerCase(),
+          );
         }
         if (provider.accountNumberLength != null &&
             value.length != provider.accountNumberLength) {
-          return l10n.billPayments_fieldMustBeLength(provider.accountNumberLabel, provider.accountNumberLength!);
+          return l10n.billPayments_fieldMustBeLength(
+            provider.accountNumberLabel,
+            provider.accountNumberLength!,
+          );
         }
         return null;
       },
@@ -263,7 +271,11 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     );
   }
 
-  Widget _buildValidateButton(AppLocalizations l10n, BillProvider provider, bool isLoading) {
+  Widget _buildValidateButton(
+    AppLocalizations l10n,
+    BillProvider provider,
+    bool isLoading,
+  ) {
     return AppButton(
       label: l10n.billPayments_verifyAccount,
       onPressed: isLoading ? null : () => _validateAccount(provider),
@@ -273,56 +285,29 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     );
   }
 
-  Widget _buildValidationResult(AppLocalizations l10n, AccountValidationResult result) {
-    final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: result.isValid ? colors.successBg : colors.errorBg,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: result.isValid ? colors.success : colors.error,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            result.isValid ? Icons.check_circle : Icons.error,
-            color: result.isValid ? colors.successText : colors.errorText,
-            size: 24,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (result.customerName != null)
-                  AppText(
-                    result.customerName!,
-                    variant: AppTextVariant.bodyMedium,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
-                  ),
-                AppText(
-                  result.message ?? (result.isValid ? l10n.billPayments_accountVerified : l10n.billPayments_verificationFailed),
-                  variant: AppTextVariant.labelMedium,
-                  color: result.isValid ? colors.successText : colors.errorText,
-                ),
-                if (result.outstandingBalance != null)
-                  AppText(
-                    l10n.billPayments_outstanding(
-                      result.outstandingBalance!.toStringAsFixed(0),
-                      'XOF',
-                    ),
-                    variant: AppTextVariant.labelSmall,
-                    color: colors.textSecondary,
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  Widget _buildValidationResult(
+    AppLocalizations l10n,
+    AccountValidationResult result,
+  ) {
+    final message =
+        result.message ??
+        (result.isValid
+            ? l10n.billPayments_accountVerified
+            : l10n.billPayments_verificationFailed);
+    final outstanding = result.outstandingBalance == null
+        ? null
+        : l10n.billPayments_outstanding(
+            formatXof(result.outstandingBalance!, showSymbol: false),
+            'XOF',
+          );
+
+    return InfoCallout(
+      icon: result.isValid ? Icons.check_circle : Icons.error,
+      tone: result.isValid ? InfoCalloutTone.success : InfoCalloutTone.danger,
+      title: result.customerName ?? message,
+      body: result.customerName == null
+          ? outstanding
+          : [message, outstanding].whereType<String>().join(' • '),
     );
   }
 
@@ -383,55 +368,33 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   }
 
   Widget _buildFeeDisplay(AppLocalizations l10n, BillProvider provider) {
-    final colors = context.colors;
     final amount = double.tryParse(_amountController.text) ?? 0;
     final fee = provider.calculateFee(amount);
     final total = amount + fee;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: colors.elevated,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Column(
-        children: [
-          _buildFeeRow(l10n.billPayments_amount, '${amount.toStringAsFixed(0)} ${provider.currency}'),
-          const SizedBox(height: AppSpacing.sm),
-          _buildFeeRow(l10n.billPayments_processingFee, '${fee.toStringAsFixed(0)} ${provider.currency}'),
-          Divider(color: colors.borderSubtle, height: AppSpacing.lg),
-          _buildFeeRow(
-            l10n.billPayments_totalAmount,
-            '${total.toStringAsFixed(0)} ${provider.currency}',
-            isTotal: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeeRow(String label, String value, {bool isTotal = false}) {
-    final colors = context.colors;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        AppText(
-          label,
-          variant: isTotal ? AppTextVariant.bodyMedium : AppTextVariant.labelMedium,
-          color: isTotal ? colors.textPrimary : colors.textSecondary,
-          fontWeight: isTotal ? FontWeight.w600 : FontWeight.normal,
+    return MoneySummaryCard(
+      lines: [
+        MoneySummaryLine(
+          label: l10n.billPayments_amount,
+          amount: amount,
+          currencyCode: provider.currency,
         ),
-        AppText(
-          value,
-          variant: isTotal ? AppTextVariant.bodyMedium : AppTextVariant.labelMedium,
-          color: isTotal ? colors.gold : colors.textPrimary,
-          fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+        MoneySummaryLine(
+          label: l10n.billPayments_processingFee,
+          amount: fee,
+          currencyCode: provider.currency,
+        ),
+        MoneySummaryLine(
+          label: l10n.billPayments_totalAmount,
+          amount: total,
+          currencyCode: provider.currency,
+          isTotal: true,
         ),
       ],
     );
   }
 
-  Widget _buildBalanceDisplay(double balance, AppLocalizations l10n) {
+  Widget _buildBalanceDisplay(WalletBalance wallet, AppLocalizations l10n) {
     final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -443,10 +406,12 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
         ),
         const SizedBox(width: AppSpacing.xs),
         AppText(
-          l10n.billPayments_available(
-            formatXof(balance),
-            'USD',
-          ),
+          l10n
+              .billPayments_available(
+                formatCurrency(wallet.available, wallet.currency),
+                '',
+              )
+              .trim(),
           variant: AppTextVariant.labelMedium,
           color: colors.textSecondary,
         ),
@@ -478,11 +443,15 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
   Future<void> _validateAccount(BillProvider provider) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await ref.read(accountValidationProvider.notifier).validate(
-      providerId: provider.id,
-      accountNumber: _accountController.text,
-      meterNumber: _meterController.text.isNotEmpty ? _meterController.text : null,
-    );
+    final success = await ref
+        .read(accountValidationProvider.notifier)
+        .validate(
+          providerId: provider.id,
+          accountNumber: _accountController.text,
+          meterNumber: _meterController.text.isNotEmpty
+              ? _meterController.text
+              : null,
+        );
 
     if (success) {
       final result = ref.read(accountValidationProvider).result;
@@ -496,32 +465,55 @@ class _BillPaymentFormViewState extends ConsumerState<BillPaymentFormView> {
     if (!_formKey.currentState!.validate()) return;
 
     final l10n = AppLocalizations.of(context)!;
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
     final result = await PinConfirmationSheet.show(
       context: context,
       title: l10n.billPayments_confirmPayment,
       subtitle: l10n.billPayments_enterPinToPay(provider.name, provider.name),
       onConfirm: (pin) async {
-        return await ref.read(pinStateProvider.notifier).verifyPin(pin);
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
       },
     );
 
-    if (result == PinConfirmationResult.success) {
-      await _processPayment(provider);
+    if (result == PinConfirmationResult.success && pinToken != null) {
+      await _processPayment(
+        provider,
+        pinToken: pinToken!,
+        idempotencyKey: idempotencyKey,
+      );
     }
   }
 
-  Future<void> _processPayment(BillProvider provider) async {
+  Future<void> _processPayment(
+    BillProvider provider, {
+    required String pinToken,
+    required String idempotencyKey,
+  }) async {
     final formState = ref.read(billPaymentFormProvider);
     final amount = double.tryParse(_amountController.text) ?? 0;
 
-    final success = await ref.read(billPaymentProvider.notifier).payBill(
-      providerId: provider.id,
-      accountNumber: _accountController.text,
-      amount: amount,
-      meterNumber: _meterController.text.isNotEmpty ? _meterController.text : null,
-      customerName: formState.customerName,
-      currency: provider.currency,
-    );
+    final success = await ref
+        .read(billPaymentProvider.notifier)
+        .payBill(
+          providerId: provider.id,
+          accountNumber: _accountController.text,
+          amount: amount,
+          meterNumber: _meterController.text.isNotEmpty
+              ? _meterController.text
+              : null,
+          customerName: formState.customerName,
+          currency: provider.currency,
+          pinToken: pinToken,
+          idempotencyKey: idempotencyKey,
+        );
 
     if (success && mounted) {
       final result = ref.read(billPaymentProvider).result;

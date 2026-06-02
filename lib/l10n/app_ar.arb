@@ -338,9 +338,25 @@
   "@wallet_availableBalance": {
     "description": "Available balance label"
   },
+  "wallet_availableToSend": "متاح للإرسال",
+  "@wallet_availableToSend": {
+    "description": "Label for funds that can be sent immediately"
+  },
+  "wallet_pendingBalance": "قيد الانتظار",
+  "@wallet_pendingBalance": {
+    "description": "Short pending balance label"
+  },
   "wallet_totalBalance": "إجمالي الرصيد",
   "@wallet_totalBalance": {
     "description": "Total balance label"
+  },
+  "wallet_securedWallet": "محفظة مؤمنة",
+  "@wallet_securedWallet": {
+    "description": "Wallet security status label"
+  },
+  "wallet_balanceHidden": "الرصيد مخفي",
+  "@wallet_balanceHidden": {
+    "description": "Label shown when the user hides wallet balances"
   },
   "wallet_usdBalance": "دولار أمريكي",
   "@wallet_usdBalance": {
@@ -966,6 +982,36 @@
   "@settings_noDevicesDescription": {
     "description": "Empty state description"
   },
+  "settings_connectedDevices": "الأجهزة المتصلة",
+  "settings_oneDeviceAccess": "يمكن لجهاز واحد الوصول إلى حسابك",
+  "settings_multipleDevicesAccess": "يمكن لـ {count} أجهزة الوصول إلى حسابك",
+  "settings_otherDevices": "أجهزة أخرى",
+  "settings_activeNow": "نشط الآن",
+  "settings_trusted": "موثوق",
+  "settings_notTrusted": "غير موثوق",
+  "settings_neverActive": "أبداً",
+  "settings_justNow": "الآن",
+  "settings_minutesAgo": "قبل {minutes} د",
+  "settings_hoursAgo": "قبل {hours} س",
+  "settings_daysAgo": "قبل {days} يوم",
+  "settings_loginCountValue": "{count} تسجيلات دخول",
+  "settings_revokeDeviceTitle": "إزالة الجهاز",
+  "settings_revokeDeviceMessage": "سيتم تسجيل خروج هذا الجهاز وسيحتاج إلى المصادقة مرة أخرى.",
+  "settings_untrustDevice": "إزالة الثقة",
+  "settings_deviceUntrustedSuccess": "تمت إزالة الثقة من الجهاز",
+  "settings_deviceUntrustError": "تعذرت إزالة الثقة من الجهاز",
+  "settings_renameDevice": "إعادة تسمية الجهاز",
+  "settings_deviceName": "اسم الجهاز",
+  "settings_deviceRenamedSuccess": "تمت إعادة تسمية الجهاز",
+  "settings_deviceRenameError": "تعذرت إعادة تسمية الجهاز",
+  "settings_signOutOtherDevices": "تسجيل خروج الأجهزة الأخرى",
+  "settings_signOutOtherDevicesTitle": "تسجيل خروج الأجهزة الأخرى؟",
+  "settings_signOutOtherDevicesMessage": "سيتم تسجيل خروج كل الأجهزة الأخرى. سيبقى هذا الجهاز نشطاً.",
+  "settings_signOutOtherDevicesSuccess": "تم تسجيل خروج الأجهزة الأخرى",
+  "settings_signOutOtherDevicesError": "تعذر تسجيل خروج الأجهزة الأخرى",
+  "settings_devicesLoadErrorTitle": "تعذر تحميل الأجهزة",
+  "settings_devicesLoadErrorDescription": "تحقق من الاتصال وحاول مرة أخرى.",
+  "settings_noOtherDevices": "هذا الجهاز فقط لديه وصول الآن.",
   "kyc_verified": "تم التحقق",
   "@kyc_verified": {
     "description": "KYC verified status"
@@ -2485,5 +2531,19 @@
   "delete_consequenceKyc": "بيانات KYC تُمحى خلال 30 يوماً",
   "delete_contactSupportTitle": "اتصل بالدعم",
   "delete_contactSupportDescription": "لحذف حسابك، يرجى الاتصال بفريق الدعم. سيرشدونك خلال العملية.",
-  "delete_contactSupportButton": "اتصل بالدعم"
+  "delete_contactSupportButton": "اتصل بالدعم",
+  "settings_failedToRemovePhoto": "تعذر حذف صورة الملف الشخصي",
+  "settings_photoRemoved": "تم حذف صورة الملف الشخصي",
+  "settings_removePhoto": "حذف الصورة",
+  "splash_tagline": "أموال بلا حدود",
+  "splash_poweredBy": "بدعم من JoonaPay",
+  "auth_authenticating": "جارٍ التحقق...",
+  "auth_tapToUnlock": "اضغط لفتح القفل",
+  "auth_usePhoneInstead": "استخدم رقم الهاتف",
+  "deposit_cardPayment": "ادفع بأمان بالبطاقة",
+  "deposit_bankTransfer": "حوّل من حساب مصرفي مرتبط",
+  "deposit_cryptoTransfer": "أرسل USDC من محفظة خارجية",
+  "deposit_openPaymentApp": "افتح تطبيق الدفع",
+  "wallet_settingUp": "جارٍ إعداد محفظتك...",
+  "wallet_setupMoment": "سيستغرق ذلك لحظة فقط"
 }

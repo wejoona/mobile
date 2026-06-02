@@ -3,6 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 
+const offlineQueueableErrorPrefix = 'OFFLINE_QUEUEABLE:';
+
+bool isOfflineQueueableErrorMessage(String? message) {
+  return message?.startsWith(offlineQueueableErrorPrefix) ?? false;
+}
+
 /// Intercepteur qui détecte les échecs réseau sur les requêtes POST
 /// de transfert et notifie l'utilisateur de passer en mode hors ligne.
 ///
@@ -22,7 +28,8 @@ class OfflineQueueInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    final isNetworkError = err.type == DioExceptionType.connectionError ||
+    final isNetworkError =
+        err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout;
 
@@ -32,7 +39,9 @@ class OfflineQueueInterceptor extends Interceptor {
 
     if (isNetworkError && isQueueable) {
       if (kDebugMode) {
-        debugPrint('[OfflineQueue] Échec réseau sur ${err.requestOptions.path} — éligible à la file d\'attente');
+        debugPrint(
+          '[OfflineQueue] Échec réseau sur ${err.requestOptions.path} — éligible à la file d\'attente',
+        );
       }
 
       // Marquer comme hors ligne si pas déjà fait
@@ -43,13 +52,15 @@ class OfflineQueueInterceptor extends Interceptor {
       }
 
       // Enrichir l'erreur pour que le code appelant sache qu'il peut enqueue
-      handler.next(DioException(
-        requestOptions: err.requestOptions,
-        type: err.type,
-        error: err.error,
-        response: err.response,
-        message: 'OFFLINE_QUEUEABLE: ${err.message}',
-      ));
+      handler.next(
+        DioException(
+          requestOptions: err.requestOptions,
+          type: err.type,
+          error: err.error,
+          response: err.response,
+          message: '$offlineQueueableErrorPrefix ${err.message}',
+        ),
+      );
       return;
     }
 
@@ -58,6 +69,8 @@ class OfflineQueueInterceptor extends Interceptor {
 }
 
 /// Provider pour l'intercepteur de file d'attente hors ligne
-final offlineQueueInterceptorProvider = Provider<OfflineQueueInterceptor>((ref) {
+final offlineQueueInterceptorProvider = Provider<OfflineQueueInterceptor>((
+  ref,
+) {
   return OfflineQueueInterceptor(ref);
 });

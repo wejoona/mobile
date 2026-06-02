@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
@@ -13,27 +15,13 @@ class OtpVerificationView extends ConsumerStatefulWidget {
   const OtpVerificationView({super.key});
 
   @override
-  ConsumerState<OtpVerificationView> createState() => _OtpVerificationViewState();
+  ConsumerState<OtpVerificationView> createState() =>
+      _OtpVerificationViewState();
 }
 
 class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
-  final List<TextEditingController> _controllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
-  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
+  Key _codeInputKey = UniqueKey();
   bool _hasError = false;
-
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    for (var node in _focusNodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,177 +31,128 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Progress indicator
-              const OnboardingProgress(currentStep: 2, totalSteps: 5),
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.onboarding_otp_title,
-                style: AppTypography.headlineLarge.copyWith(
-                  color: colors.textPrimary,
-                ),
-              ),
-              SizedBox(height: AppSpacing.sm),
-              AppText(
-                l10n.onboarding_otp_subtitle(
-                  state.countryCode ?? '+225',
-                  _formatPhoneForDisplay(state.phoneNumber ?? ''),
-                ),
-                style: AppTypography.bodyLarge.copyWith(
-                  color: colors.textSecondary,
-                ),
-              ),
-              SizedBox(height: AppSpacing.xxl),
-              // OTP input boxes
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(
-                  6,
-                  (index) => _buildOtpBox(index),
-                ),
-              ),
-              if (state.error != null) ...[
-                SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: colors.errorBg,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(color: colors.error),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.error_outline, color: colors.errorText),
-                      SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: AppText(
-                          state.error!,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: colors.errorText,
-                          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  children: [
+                    const SizedBox(height: AppSpacing.lg),
+                    AuthTopBar(onBack: () => context.pop()),
+                    const SizedBox(height: AppSpacing.lg),
+                    const OnboardingProgress(currentStep: 2, totalSteps: 5),
+                    const SizedBox(height: AppSpacing.xxl),
+                    AuthScreenHeader(
+                      appName: l10n.appName,
+                      title: l10n.onboarding_otp_title,
+                      subtitle: l10n.onboarding_otp_subtitle(
+                        state.dialCode ?? '+225',
+                        _formatPhoneForDisplay(
+                          state.phoneNumber ?? '',
+                          state.dialCode ?? '+225',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xxxl),
+                    SecurityCodeFields(
+                      key: _codeInputKey,
+                      obscureText: false,
+                      hasError: _hasError,
+                      enabled: !state.isLoading,
+                      onChanged: (code) {
+                        if (_hasError) {
+                          setState(() => _hasError = false);
+                        }
+                      },
+                      onCompleted: _submitOtp,
+                    ),
+                    if (state.error != null) ...[
+                      const SizedBox(height: AppSpacing.lg),
+                      Container(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: colors.errorBg,
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(color: colors.error),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline, color: colors.errorText),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: AppText(
+                                state.error!,
+                                variant: AppTextVariant.bodySmall,
+                                color: colors.errorText,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                ),
-              ],
-              SizedBox(height: AppSpacing.xxl),
-              // Resend code
-              Center(
-                child: state.otpResendCountdown > 0
-                    ? AppText(
-                        l10n.onboarding_otp_resendIn(state.otpResendCountdown),
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: colors.textSecondary,
-                        ),
-                      )
-                    : TextButton(
-                        onPressed: state.isLoading ? null : _handleResend,
-                        child: AppText(
-                          l10n.onboarding_otp_resend,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: colors.gold,
-                          ),
-                        ),
-                      ),
-              ),
-              const Spacer(),
-              if (state.isLoading)
-                Center(
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(colors.gold),
-                      ),
-                      SizedBox(height: AppSpacing.md),
-                      AppText(
-                        l10n.onboarding_otp_verifying,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: colors.textSecondary,
+                    const SizedBox(height: AppSpacing.xxl),
+                    Center(
+                      child: state.otpResendCountdown > 0
+                          ? AppText(
+                              l10n.onboarding_otp_resendIn(
+                                state.otpResendCountdown,
+                              ),
+                              variant: AppTextVariant.bodyMedium,
+                              color: colors.textSecondary,
+                            )
+                          : AppButton(
+                              label: l10n.onboarding_otp_resend,
+                              onPressed: state.isLoading ? null : _handleResend,
+                              variant: AppButtonVariant.ghost,
+                            ),
+                    ),
+                    if (EnvironmentConfig.showDevOtpShortcut) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Center(
+                        child: AppButton(
+                          label: 'Use dev OTP',
+                          onPressed: state.isLoading
+                              ? null
+                              : () => _submitOtp('123456'),
+                          variant: AppButtonVariant.ghost,
                         ),
                       ),
                     ],
-                  ),
+                    if (state.isLoading) ...[
+                      const SizedBox(height: AppSpacing.xxxl),
+                      Center(
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(colors.gold),
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            AppText(
+                              l10n.onboarding_otp_verifying,
+                              variant: AppTextVariant.bodyMedium,
+                              color: colors.textSecondary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xl),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildOtpBox(int index) {
-    final colors = context.colors;
-    return Container(
-      width: 48,
-      height: 56,
-      decoration: BoxDecoration(
-        color: colors.elevated,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: _hasError
-              ? colors.error
-              : _controllers[index].text.isNotEmpty
-                  ? colors.gold
-                  : colors.borderSubtle,
-          width: _controllers[index].text.isNotEmpty ? 2 : 1,
-        ),
-      ),
-      child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        style: AppTypography.headlineMedium.copyWith(
-          color: colors.textPrimary,
-        ),
-        cursorColor: colors.gold,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) => _handleOtpChange(value, index),
-      ),
-    );
-  }
-
-  void _handleOtpChange(String value, int index) {
-    setState(() => _hasError = false);
-
-    if (value.isNotEmpty) {
-      // Move to next box
-      if (index < 5) {
-        _focusNodes[index + 1].requestFocus();
-      } else {
-        // Last digit entered, submit
-        _submitOtp();
-      }
-    } else {
-      // Move to previous box on delete
-      if (index > 0) {
-        _focusNodes[index - 1].requestFocus();
-      }
-    }
-  }
-
-  Future<void> _submitOtp() async {
-    final otp = _controllers.map((c) => c.text).join();
+  Future<void> _submitOtp(String otp) async {
     if (otp.length == 6) {
       ref.read(onboardingProvider.notifier).updateOtp(otp);
       await ref.read(onboardingProvider.notifier).verifyOtp();
@@ -221,7 +160,7 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
       if (mounted) {
         final state = ref.read(onboardingProvider);
         if (state.error == null) {
-          context.go('/onboarding/profile');
+          await _goToNextStep();
         } else {
           setState(() => _hasError = true);
           // Clear inputs and shake
@@ -232,18 +171,33 @@ class _OtpVerificationViewState extends ConsumerState<OtpVerificationView> {
   }
 
   void _clearOtp() {
-    for (var controller in _controllers) {
-      controller.clear();
-    }
-    _focusNodes[0].requestFocus();
+    setState(() {
+      _codeInputKey = UniqueKey();
+    });
   }
 
   Future<void> _handleResend() async {
     await ref.read(onboardingProvider.notifier).resendOtp();
   }
 
-  String _formatPhoneForDisplay(String phone) {
-    if (phone.length < 4) return phone;
-    return '${phone.substring(0, 2)} XX XX XX XX';
+  Future<void> _goToNextStep() async {
+    final user = ref.read(auth.authProvider).user;
+    final hasName = user?.firstName?.trim().isNotEmpty ?? false;
+    final hasPin = user?.hasPin ?? false;
+
+    if (hasName && hasPin) {
+      await ref.read(onboardingProvider.notifier).completeOnboarding();
+      if (mounted) context.go('/home');
+      return;
+    }
+
+    if (!mounted) return;
+    context.go(hasName ? '/onboarding/pin' : '/onboarding/profile');
+  }
+
+  String _formatPhoneForDisplay(String phone, String dialCode) {
+    final local = phone.replaceFirst(dialCode, '');
+    if (local.length < 4) return local;
+    return '${local.substring(0, 2)} XX XX XX XX';
   }
 }

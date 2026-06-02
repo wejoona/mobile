@@ -6,16 +6,14 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 
 /// Beneficiary Select Sheet
 ///
 /// Bottom sheet for selecting a beneficiary from saved list
 /// Used in transfer flows
 class BeneficiarySelectSheet extends ConsumerStatefulWidget {
-  const BeneficiarySelectSheet({
-    super.key,
-    this.accountTypeFilter,
-  });
+  const BeneficiarySelectSheet({super.key, this.accountTypeFilter});
 
   /// Optional filter by account type
   final AccountType? accountTypeFilter;
@@ -25,8 +23,7 @@ class BeneficiarySelectSheet extends ConsumerStatefulWidget {
       _BeneficiarySelectSheetState();
 }
 
-class _BeneficiarySelectSheetState
-    extends ConsumerState<BeneficiarySelectSheet>
+class _BeneficiarySelectSheetState extends ConsumerState<BeneficiarySelectSheet>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
@@ -61,9 +58,7 @@ class _BeneficiarySelectSheetState
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: colors.container,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.lg),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
       child: Column(
         children: [
@@ -130,11 +125,7 @@ class _BeneficiarySelectSheetState
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildBeneficiariesList(
-                  state,
-                  l10n,
-                  BeneficiariesFilter.all,
-                ),
+                _buildBeneficiariesList(state, l10n, BeneficiariesFilter.all),
                 _buildBeneficiariesList(
                   state,
                   l10n,
@@ -174,8 +165,12 @@ class _BeneficiarySelectSheetState
         beneficiaries = beneficiaries.where((b) => b.isFavorite).toList();
         break;
       case BeneficiariesFilter.recent:
-        beneficiaries = beneficiaries.where((b) => b.lastTransferAt != null).toList();
-        beneficiaries.sort((a, b) => b.lastTransferAt!.compareTo(a.lastTransferAt!));
+        beneficiaries = beneficiaries
+            .where((b) => b.lastTransferAt != null)
+            .toList();
+        beneficiaries.sort(
+          (a, b) => b.lastTransferAt!.compareTo(a.lastTransferAt!),
+        );
         break;
       case BeneficiariesFilter.all:
         break;
@@ -261,15 +256,17 @@ class _BeneficiarySelectSheetState
                           beneficiary.name,
                           variant: AppTextVariant.bodyLarge,
                           fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (beneficiary.accountType ==
+                          AccountType.joonapayUser) ...[
+                        SizedBox(width: AppSpacing.xs),
+                        const KoridoAccountBadge(compact: true),
+                      ],
                       if (beneficiary.isFavorite) ...[
                         SizedBox(width: AppSpacing.xs),
-                        Icon(
-                          Icons.star,
-                          size: 16,
-                          color: appColors.gold500,
-                        ),
+                        Icon(Icons.star, size: 16, color: appColors.gold500),
                       ],
                     ],
                   ),
@@ -284,22 +281,7 @@ class _BeneficiarySelectSheetState
                             color: colors.textSecondary,
                           ),
                         ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(AppRadius.xs),
-                        ),
-                        child: AppText(
-                          _getAccountTypeLabel(beneficiary.accountType, l10n),
-                          variant: AppTextVariant.bodySmall,
-                          color: _getAccountTypeColor(beneficiary.accountType),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      _buildAccountTypeBadge(beneficiary, l10n),
                     ],
                   ),
                 ],
@@ -307,10 +289,7 @@ class _BeneficiarySelectSheetState
             ),
 
             // Chevron
-            Icon(
-              Icons.chevron_right,
-              color: colors.textSecondary,
-            ),
+            Icon(Icons.chevron_right, color: colors.textSecondary),
           ],
         ),
       ),
@@ -320,34 +299,65 @@ class _BeneficiarySelectSheetState
   Widget _buildAvatar(Beneficiary beneficiary) {
     final iconColor = _getAccountTypeColor(beneficiary.accountType);
     final iconData = _getAccountTypeIcon(beneficiary.accountType);
-    final initial = beneficiary.accountType == AccountType.joonapayUser &&
-                    beneficiary.name.isNotEmpty
+    final initial =
+        beneficiary.accountType == AccountType.joonapayUser &&
+            beneficiary.name.isNotEmpty
         ? beneficiary.name[0].toUpperCase()
         : null;
 
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border: beneficiary.accountType == AccountType.joonapayUser
+                ? Border.all(color: context.colors.gold.withValues(alpha: 0.5))
+                : null,
+          ),
+          child: initial != null
+              ? Center(
+                  child: Text(
+                    initial,
+                    style: TextStyle(
+                      color: iconColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : Icon(iconData, color: iconColor, size: 24),
+        ),
+        if (beneficiary.accountType == AccountType.joonapayUser)
+          const Positioned(
+            right: -2,
+            bottom: -2,
+            child: KoridoAccountBadge(compact: true),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAccountTypeBadge(
+    Beneficiary beneficiary,
+    AppLocalizations l10n,
+  ) {
+    final badgeColor = _getAccountTypeColor(beneficiary.accountType);
     return Container(
-      width: 48,
-      height: 48,
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
       decoration: BoxDecoration(
-        color: iconColor.withValues(alpha: 0.15),
-        shape: BoxShape.circle,
+        color: badgeColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
       ),
-      child: initial != null
-          ? Center(
-              child: Text(
-                initial,
-                style: TextStyle(
-                  color: iconColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            )
-          : Icon(
-              iconData,
-              color: iconColor,
-              size: 24,
-            ),
+      child: AppText(
+        _getAccountTypeLabel(beneficiary.accountType, l10n),
+        variant: AppTextVariant.bodySmall,
+        color: badgeColor,
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 
@@ -363,10 +373,10 @@ class _BeneficiarySelectSheetState
   Color _getAccountTypeColor(AccountType type) {
     // Fixed brand colors for account types
     return switch (type) {
-      AccountType.joonapayUser => context.colors.gold,        // Gold/primary accent
+      AccountType.joonapayUser => context.colors.gold, // Gold/primary accent
       AccountType.externalWallet => const Color(0xFF6B8DD6), // Purple accent
-      AccountType.bankAccount => const Color(0xFF5B9BD5),    // Blue accent
-      AccountType.mobileMoney => const Color(0xFFFF9955),    // Orange accent
+      AccountType.bankAccount => const Color(0xFF5B9BD5), // Blue accent
+      AccountType.mobileMoney => const Color(0xFFFF9955), // Orange accent
     };
   }
 
@@ -389,8 +399,7 @@ Future<Beneficiary?> showBeneficiarySelectSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (context) => BeneficiarySelectSheet(
-      accountTypeFilter: accountTypeFilter,
-    ),
+    builder: (context) =>
+        BeneficiarySelectSheet(accountTypeFilter: accountTypeFilter),
   );
 }

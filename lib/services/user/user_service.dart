@@ -25,11 +25,14 @@ class UserService {
     String? email,
   }) async {
     try {
-      final response = await _dio.put('/user/profile', data: {
-        if (firstName != null) 'firstName': firstName,
-        if (lastName != null) 'lastName': lastName,
-        if (email != null) 'email': email,
-      });
+      final response = await _dio.put(
+        '/user/profile',
+        data: {
+          if (firstName != null) 'firstName': firstName,
+          if (lastName != null) 'lastName': lastName,
+          if (email != null) 'email': email,
+        },
+      );
       return UserProfile.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -37,39 +40,32 @@ class UserService {
   }
 
   /// POST /user/avatar - Upload avatar image
-  /// Returns the updated user profile with new avatarUrl
-  Future<UserProfile> uploadAvatar(String filePath) async {
+  Future<AvatarUploadResult> uploadAvatar(String filePath) async {
     try {
       final formData = FormData.fromMap({
         'avatar': await MultipartFile.fromFile(filePath),
       });
 
       final response = await _dio.post('/user/avatar', data: formData);
-      return UserProfile.fromJson(response.data);
+      return AvatarUploadResult.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
   /// DELETE /user/avatar - Remove avatar
-  Future<UserProfile> removeAvatar() async {
+  Future<void> removeAvatar() async {
     try {
-      final response = await _dio.delete('/user/avatar');
-      return UserProfile.fromJson(response.data);
+      await _dio.delete('/user/avatar');
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// GET /user/avatar - Get current avatar URL
+  /// Current avatar URL from the profile payload.
   Future<String?> getAvatarUrl() async {
-    try {
-      final response = await _dio.get('/user/avatar');
-      // ignore: avoid_dynamic_calls
-      return response.data['avatarUrl'] as String?;
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
+    final profile = await getProfile();
+    return profile.avatarUrl;
   }
 
   /// POST /user/verify-email — verify email with OTP code
@@ -103,7 +99,7 @@ class UserService {
   /// PUT /user/locale - Update preferred locale
   Future<void> updateLocale(String locale) async {
     try {
-      await _dio.put('/user/locale', data: {'preferredLocale': locale});
+      await _dio.put('/user/locale', data: {'locale': locale});
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -115,14 +111,20 @@ class UserProfile {
   final String id;
   final String phone;
   final bool phoneVerified;
+  final String? username;
   final String? firstName;
   final String? lastName;
   final String? email;
   final bool emailVerified;
   final String? avatarUrl;
   final String? avatarThumb;
+  final String preferredLocale;
   final String countryCode;
   final String kycStatus;
+  final String? kycRejectionReason;
+  final bool canTransact;
+  final bool canWithdraw;
+  final bool hasPin;
   final String role;
   final String status;
   final DateTime createdAt;
@@ -132,14 +134,20 @@ class UserProfile {
     required this.id,
     required this.phone,
     required this.phoneVerified,
+    this.username,
     this.firstName,
     this.lastName,
     this.email,
     this.emailVerified = false,
     this.avatarUrl,
     this.avatarThumb,
+    this.preferredLocale = 'fr',
     required this.countryCode,
     required this.kycStatus,
+    this.kycRejectionReason,
+    this.canTransact = false,
+    this.canWithdraw = false,
+    this.hasPin = false,
     required this.role,
     required this.status,
     required this.createdAt,
@@ -161,34 +169,77 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id'] as String,
-      phone: json['phone'] as String,
+      id: (json['id'] ?? json['userId'] ?? '') as String,
+      phone: json['phone'] as String? ?? '',
       phoneVerified: json['phoneVerified'] as bool? ?? false,
+      username: json['username'] as String?,
       firstName: json['firstName'] as String?,
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
       emailVerified: json['emailVerified'] as bool? ?? false,
-      avatarUrl: json['avatarUrl'] as String?,
-      avatarThumb: json['avatarThumb'] as String?,
+      avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
+      avatarThumb: (json['avatarThumb'] ?? json['avatarBase64']) as String?,
+      preferredLocale: json['preferredLocale'] as String? ?? 'fr',
       countryCode: json['countryCode'] as String? ?? 'CI',
       kycStatus: json['kycStatus'] as String? ?? 'none',
+      kycRejectionReason: json['kycRejectionReason'] as String?,
+      canTransact: json['canTransact'] as bool? ?? false,
+      canWithdraw: json['canWithdraw'] as bool? ?? false,
+      hasPin: json['hasPin'] as bool? ?? false,
       role: json['role'] as String? ?? 'user',
       status: json['status'] as String? ?? 'active',
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: _parseDate(json['createdAt']) ?? DateTime.now(),
       updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
+          ? _parseDate(json['updatedAt'])
           : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'phone': phone, 'phoneVerified': phoneVerified,
-    'firstName': firstName, 'lastName': lastName, 'email': email, 'emailVerified': emailVerified,
-    'avatarUrl': avatarUrl, 'countryCode': countryCode,
-    'kycStatus': kycStatus, 'role': role, 'status': status,
+    'id': id,
+    'phone': phone,
+    'phoneVerified': phoneVerified,
+    'username': username,
+    'firstName': firstName,
+    'lastName': lastName,
+    'email': email,
+    'emailVerified': emailVerified,
+    'avatarUrl': avatarUrl,
+    'avatarThumb': avatarThumb,
+    'preferredLocale': preferredLocale,
+    'countryCode': countryCode,
+    'kycStatus': kycStatus,
+    'kycRejectionReason': kycRejectionReason,
+    'canTransact': canTransact,
+    'canWithdraw': canWithdraw,
+    'hasPin': hasPin,
+    'role': role,
+    'status': status,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt?.toIso8601String(),
   };
+}
+
+DateTime? _parseDate(Object? value) {
+  if (value is DateTime) return value;
+  if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  return null;
+}
+
+class AvatarUploadResult {
+  final String? avatarUrl;
+  final String? avatarThumb;
+  final String? message;
+
+  const AvatarUploadResult({this.avatarUrl, this.avatarThumb, this.message});
+
+  factory AvatarUploadResult.fromJson(Map<String, dynamic> json) {
+    return AvatarUploadResult(
+      avatarUrl: json['avatarUrl'] as String?,
+      avatarThumb: json['avatarThumb'] as String?,
+      message: json['message'] as String?,
+    );
+  }
 }
 
 /// User Service Provider

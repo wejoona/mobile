@@ -1,34 +1,35 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/theme/app_theme.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/router/app_router.dart';
-import 'package:usdc_wallet/services/session/session_manager.dart';
-import 'package:usdc_wallet/services/localization/language_provider.dart';
-import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/analytics/crash_reporting_service.dart';
 import 'package:usdc_wallet/services/app_lifecycle/app_lifecycle_observer.dart';
 import 'package:usdc_wallet/services/error_tracking/sentry_service.dart';
+import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
+import 'package:usdc_wallet/services/localization/language_provider.dart';
+import 'package:usdc_wallet/services/session/session_manager.dart';
 import 'package:usdc_wallet/services/storage/local_cache_service.dart';
 import 'package:usdc_wallet/services/storage/sync_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
+const _mainLogger = AppLogger('Main');
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MockConfig.configureFromEnvironment();
 
-  // Initialize Firebase (gracefully handle missing/invalid config for development)
-  try {
-    await Firebase.initializeApp();
-  } catch (e) {
-    AppLogger('Firebase initialization failed').error('Firebase initialization failed', e);
-    AppLogger('Debug').debug('Push notifications and analytics will be disabled. Configure Firebase for production.');
-  }
+  await _initializeFirebase();
 
   // Initialize Crashlytics for error reporting
   final crashReporting = CrashReportingService();
@@ -38,8 +39,8 @@ void main() async {
   final localCache = LocalCacheService();
   try {
     await localCache.initialize();
-  } catch (e) {
-    debugPrint('Hive initialization failed: $e');
+  } on Object catch (error) {
+    _mainLogger.warn('Hive initialization failed', error);
   }
 
   // Initialize SharedPreferences for feature flags cache
@@ -51,53 +52,51 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Determine environment from build config
-  const environment = String.fromEnvironment('ENV', defaultValue: 'dev');
-
   // Initialize Sentry and run the app inside its error zone
   final sentryService = SentryService();
   await sentryService.initializeAndRunApp(
-    environment: environment,
     appRunner: () async {
       // Global error handling — forward to both Crashlytics and Sentry
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
-        crashReporting.recordError(details.exception, details.stack);
-        sentryService.captureFlutterError(details);
+        unawaited(crashReporting.recordError(details.exception, details.stack));
+        unawaited(sentryService.captureFlutterError(details));
       };
 
       // Custom error widget for release mode
-      ErrorWidget.builder = (FlutterErrorDetails details) {
-        return MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xxl),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline, size: 48, color: AppColors.errorBase),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text(
-                      'Oops! Something went wrong.',
-                      style: AppTypography.titleMedium,
-                      textAlign: TextAlign.center,
+      ErrorWidget.builder = (FlutterErrorDetails details) => MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.xxl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: AppColors.errorBase,
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  const Text(
+                    'Oops! Something went wrong.',
+                    style: AppTypography.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Please restart the app.',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
                     ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      'Please restart the app.',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),
-        );
-      };
+        ),
+      );
 
       // SECURITY: Wrap app with SecurityGate to block compromised devices
       runApp(
@@ -113,6 +112,26 @@ void main() async {
   );
 }
 
+Future<void> _initializeFirebase() async {
+  if (MockConfig.useMocks) {
+    return;
+  }
+
+  try {
+    await Firebase.initializeApp();
+  } on Object catch (error) {
+    const logger = AppLogger('Firebase');
+    if (EnvironmentConfig.isProduction) {
+      logger.error('Firebase initialization failed', error);
+      return;
+    }
+
+    logger.debug(
+      'Firebase unavailable in this build; push and analytics disabled.',
+    );
+  }
+}
+
 class KoridoApp extends ConsumerWidget {
   const KoridoApp({super.key});
 
@@ -122,7 +141,7 @@ class KoridoApp extends ConsumerWidget {
     ref.read(appLifecycleObserverProvider);
 
     // Load cached data into state on app start
-    ref.read(localSyncServiceProvider).onAppStart();
+    unawaited(ref.read(localSyncServiceProvider).onAppStart());
 
     final router = ref.watch(routerProvider);
     final themeState = ref.watch(themeProvider);
@@ -139,32 +158,27 @@ class KoridoApp extends ConsumerWidget {
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: SystemBrightnessObserver(
-      child: MaterialApp.router(
-        title: 'Korido',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: _getThemeMode(themeState.mode),
-        themeAnimationDuration: const Duration(milliseconds: 400),
-        themeAnimationCurve: Curves.easeInOut,
-        locale: localeState.locale,
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('fr'),
-        ],
-        routerConfig: router,
-        builder: (context, child) {
-          // Wrap with SessionManager to handle session lifecycle
-          return SessionManager(child: child ?? const SizedBox.shrink());
-        },
+        child: MaterialApp.router(
+          title: 'Korido',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: _getThemeMode(themeState.mode),
+          themeAnimationDuration: const Duration(milliseconds: 400),
+          themeAnimationCurve: Curves.easeInOut,
+          locale: localeState.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [Locale('en'), Locale('fr')],
+          routerConfig: router,
+          builder: (context, child) =>
+              SessionManager(child: child ?? const SizedBox.shrink()),
+        ),
       ),
-    ),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/composed/balance_card.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for BalanceCard component
@@ -10,9 +11,11 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/balance_card_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
-  group('BalanceCard Snapshot Tests', () {
-    group('Basic States', () {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+  goldenGroup('BalanceCard Snapshot Tests', () {
+    goldenGroup('Basic States', () {
       testWidgets('default balance card', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -38,11 +41,7 @@ void main() {
           const TestWrapper(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: BalanceCard(
-                balance: 0,
-                currency: 'USD',
-                isLoading: true,
-              ),
+              child: BalanceCard(balance: 0, currency: 'USD', isLoading: true),
             ),
           ),
         );
@@ -74,7 +73,7 @@ void main() {
       });
     });
 
-    group('Balance Amounts', () {
+    goldenGroup('Balance Amounts', () {
       testWidgets('small balance', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -156,7 +155,7 @@ void main() {
       });
     });
 
-    group('Change Indicators', () {
+    goldenGroup('Change Indicators', () {
       testWidgets('positive change', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -268,7 +267,7 @@ void main() {
       });
     });
 
-    group('Different Currencies', () {
+    goldenGroup('Different Currencies', () {
       testWidgets('XOF currency', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -314,7 +313,7 @@ void main() {
       });
     });
 
-    group('Action Buttons', () {
+    goldenGroup('Action Buttons', () {
       testWidgets('with deposit button', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -340,10 +339,7 @@ void main() {
           const TestWrapper(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: BalanceCard(
-                balance: 1234.56,
-                currency: 'USD',
-              ),
+              child: BalanceCard(balance: 1234.56, currency: 'USD'),
             ),
           ),
         );
@@ -376,7 +372,7 @@ void main() {
       });
     });
 
-    group('Edge Cases', () {
+    goldenGroup('Edge Cases', () {
       testWidgets('balance with many decimals', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -440,7 +436,7 @@ void main() {
       });
     });
 
-    group('Responsive Layout', () {
+    goldenGroup('Responsive Layout', () {
       testWidgets('full width on mobile', (tester) async {
         await tester.pumpWidget(
           TestWrapper(

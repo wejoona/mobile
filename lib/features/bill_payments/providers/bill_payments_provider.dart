@@ -9,35 +9,43 @@ import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 // ============================================================================
 
 /// Bill Categories Provider with TTL caching (30 minutes)
-final billCategoriesProvider = FutureProvider.family<BillCategoriesResponse, String?>(
-  (ref, country) async {
-    final service = ref.watch(billPaymentsServiceProvider);
-    final link = ref.keepAlive();
+final billCategoriesProvider =
+    FutureProvider.family<BillCategoriesResponse, String?>((
+      ref,
+      country,
+    ) async {
+      final service = ref.watch(billPaymentsServiceProvider);
+      final link = ref.keepAlive();
 
-    // Auto-invalidate after 30 minutes
-    final timer = Timer(const Duration(minutes: 30), () {      link.close();    });
-    ref.onDispose(() => timer.cancel());
+      // Auto-invalidate after 30 minutes
+      final timer = Timer(const Duration(minutes: 30), () {
+        link.close();
+      });
+      ref.onDispose(() => timer.cancel());
 
-    return service.getCategories(country: country);
-  },
-);
+      return service.getCategories(country: country);
+    });
 
 /// Bill Providers Provider with TTL caching (10 minutes)
-final billProvidersProvider = FutureProvider.family<BillProvidersResponse, BillProvidersParams>(
-  (ref, params) async {
-    final service = ref.watch(billPaymentsServiceProvider);
-    final link = ref.keepAlive();
+final billProvidersProvider =
+    FutureProvider.family<BillProvidersResponse, BillProvidersParams>((
+      ref,
+      params,
+    ) async {
+      final service = ref.watch(billPaymentsServiceProvider);
+      final link = ref.keepAlive();
 
-    // Auto-invalidate after 10 minutes
-    final timer = Timer(const Duration(minutes: 10), () {      link.close();    });
-    ref.onDispose(() => timer.cancel());
+      // Auto-invalidate after 10 minutes
+      final timer = Timer(const Duration(minutes: 10), () {
+        link.close();
+      });
+      ref.onDispose(() => timer.cancel());
 
-    return service.getProviders(
-      country: params.country,
-      category: params.category,
-    );
-  },
-);
+      return service.getProviders(
+        country: params.country,
+        category: params.category,
+      );
+    });
 
 class BillProvidersParams {
   final String? country;
@@ -58,17 +66,18 @@ class BillProvidersParams {
 }
 
 /// Bill Payment History Provider
-final billPaymentHistoryProvider = FutureProvider.family<BillPaymentHistoryResponse, BillPaymentHistoryParams>(
-  (ref, params) async {
-    final service = ref.watch(billPaymentsServiceProvider);
-    return service.getHistory(
-      page: params.page,
-      limit: params.limit,
-      category: params.category,
-      status: params.status,
+final billPaymentHistoryProvider =
+    FutureProvider.family<BillPaymentHistoryResponse, BillPaymentHistoryParams>(
+      (ref, params) async {
+        final service = ref.watch(billPaymentsServiceProvider);
+        return service.getHistory(
+          page: params.page,
+          limit: params.limit,
+          category: params.category,
+          status: params.status,
+        );
+      },
     );
-  },
-);
 
 class BillPaymentHistoryParams {
   final int page;
@@ -119,8 +128,8 @@ class SelectedBillCategoryNotifier extends Notifier<BillCategory?> {
 /// Currently selected bill category
 final selectedBillCategoryProvider =
     NotifierProvider<SelectedBillCategoryNotifier, BillCategory?>(
-  SelectedBillCategoryNotifier.new,
-);
+      SelectedBillCategoryNotifier.new,
+    );
 
 /// Selected bill provider notifier
 class SelectedBillProviderNotifier extends Notifier<BillProvider?> {
@@ -139,8 +148,8 @@ class SelectedBillProviderNotifier extends Notifier<BillProvider?> {
 /// Currently selected bill provider
 final selectedBillProviderProvider =
     NotifierProvider<SelectedBillProviderNotifier, BillProvider?>(
-  SelectedBillProviderNotifier.new,
-);
+      SelectedBillProviderNotifier.new,
+    );
 
 // ============================================================================
 // ACCOUNT VALIDATION STATE
@@ -206,9 +215,10 @@ class AccountValidationNotifier extends Notifier<AccountValidationState> {
 }
 
 final accountValidationProvider =
-    NotifierProvider.autoDispose<AccountValidationNotifier, AccountValidationState>(
-  AccountValidationNotifier.new,
-);
+    NotifierProvider.autoDispose<
+      AccountValidationNotifier,
+      AccountValidationState
+    >(AccountValidationNotifier.new);
 
 // ============================================================================
 // BILL PAYMENT STATE
@@ -219,11 +229,7 @@ class BillPaymentState {
   final BillPaymentResult? result;
   final String? error;
 
-  const BillPaymentState({
-    this.isLoading = false,
-    this.result,
-    this.error,
-  });
+  const BillPaymentState({this.isLoading = false, this.result, this.error});
 
   BillPaymentState copyWith({
     bool? isLoading,
@@ -255,6 +261,8 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
     String? currency,
     String? phone,
     String? email,
+    required String pinToken,
+    String? idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -268,6 +276,8 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
         currency: currency,
         phone: phone,
         email: email,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
       );
 
       state = state.copyWith(isLoading: false, result: result);
@@ -293,19 +303,18 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
 
 final billPaymentProvider =
     NotifierProvider.autoDispose<BillPaymentNotifier, BillPaymentState>(
-  BillPaymentNotifier.new,
-);
+      BillPaymentNotifier.new,
+    );
 
 // ============================================================================
 // RECEIPT PROVIDER
 // ============================================================================
 
-final billPaymentReceiptProvider = FutureProvider.family<BillPaymentReceipt, String>(
-  (ref, paymentId) async {
-    final service = ref.watch(billPaymentsServiceProvider);
-    return service.getReceipt(paymentId);
-  },
-);
+final billPaymentReceiptProvider =
+    FutureProvider.family<BillPaymentReceipt, String>((ref, paymentId) async {
+      final service = ref.watch(billPaymentsServiceProvider);
+      return service.getReceipt(paymentId);
+    });
 
 // ============================================================================
 // BILL PAYMENT FORM STATE
@@ -398,5 +407,5 @@ class BillPaymentFormNotifier extends Notifier<BillPaymentFormState> {
 
 final billPaymentFormProvider =
     NotifierProvider.autoDispose<BillPaymentFormNotifier, BillPaymentFormState>(
-  BillPaymentFormNotifier.new,
-);
+      BillPaymentFormNotifier.new,
+    );

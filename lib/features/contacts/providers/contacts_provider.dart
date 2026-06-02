@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 /// App contacts provider — wired to Dio (mock interceptor handles fallback).
 final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
@@ -13,7 +16,7 @@ final appContactsProvider = FutureProvider<List<Contact>>((ref) async {
 
   final response = await dio.get('/contacts');
   final data = response.data as Map<String, dynamic>;
-  final items = data['data'] as List? ?? [];
+  final items = (data['contacts'] ?? data['data']) as List? ?? [];
   return items.map((e) => Contact.fromJson(e as Map<String, dynamic>)).toList();
 });
 
@@ -24,23 +27,29 @@ final favoriteContactsProvider = Provider<List<Contact>>((ref) {
 });
 
 /// Search contacts.
-final contactSearchProvider = Provider.family<List<Contact>, String>((ref, query) {
+final contactSearchProvider = Provider.family<List<Contact>, String>((
+  ref,
+  query,
+) {
   final contacts = ref.watch(appContactsProvider).value ?? [];
   if (query.isEmpty) return contacts;
   final lower = query.toLowerCase();
   return contacts.where((c) {
-    return c.name.toLowerCase().contains(lower) || (c.phone?.contains(query) ?? false);
+    return c.name.toLowerCase().contains(lower) ||
+        (c.phone?.contains(query) ?? false);
   }).toList();
 });
 
 /// Contact actions.
 class ContactActions {
   final dynamic _dio;
-  ContactActions(this._dio);
+  final ContactsService _contactsService;
+  ContactActions(this._dio, this._contactsService);
 
   Future<void> syncPhoneContacts(List<String> phones) async {
+    final hashes = phones.map(_contactsService.hashPhone).toList();
     // ignore: avoid_dynamic_calls
-    await _dio.post('/contacts/sync', data: {'phones': phones});
+    await _dio.post('/contacts/sync', data: {'phoneHashes': hashes});
   }
 
   Future<void> invite(String phone) async {
@@ -50,12 +59,15 @@ class ContactActions {
 
   Future<void> toggleFavorite(String contactId, bool isFavorite) async {
     // ignore: avoid_dynamic_calls
-    await _dio.patch('/contacts/$contactId', data: {'isFavorite': isFavorite});
+    await _dio.put('/contacts/$contactId', data: {'isFavorite': isFavorite});
   }
 }
 
 final contactActionsProvider = Provider<ContactActions>((ref) {
-  return ContactActions(ref.watch(dioProvider));
+  return ContactActions(
+    ref.watch(dioProvider),
+    ref.watch(contactsServiceProvider),
+  );
 });
 
 /// Contact sync result.
@@ -81,9 +93,12 @@ class ContactsState {
   List<SyncedContact> searchContacts(String query) {
     if (query.isEmpty) return contacts;
     final lower = query.toLowerCase();
-    return contacts.where((c) =>
-      c.name.toLowerCase().contains(lower) || c.phone.contains(query)
-    ).toList();
+    return contacts
+        .where(
+          (c) =>
+              c.name.toLowerCase().contains(lower) || c.phone.contains(query),
+        )
+        .toList();
   }
 
   ContactsState copyWith({
@@ -103,7 +118,7 @@ class ContactsState {
 class ContactsNotifier extends Notifier<ContactsState> {
   @override
   ContactsState build() {
-    Future.microtask(() => syncContacts());
+    unawaited(Future.microtask(syncContacts));
     return const ContactsState(isLoading: true);
   }
 
@@ -111,22 +126,13 @@ class ContactsNotifier extends Notifier<ContactsState> {
     state = state.copyWith(isLoading: true);
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.get('/contacts/synced');
-      final data = response.data as Map<String, dynamic>;
-      var items = (data['data'] as List? ?? [])
-          .map((e) => SyncedContact.fromJson(e as Map<String, dynamic>))
-          .toList();
-
-      // Check which contacts are registered Korido users
-      items = await _checkRegisteredContacts(dio, items);
+      final contactsService = ref.read(contactsServiceProvider);
+      final items = MockConfig.useMocks
+          ? await _getMockContacts()
+          : await _getSyncedDeviceContacts(dio, contactsService);
 
       final joonaPayCount = items.where((c) => c.isKoridoUser).length;
-      // Sort: Korido users first
-      items.sort((a, b) {
-        if (a.isKoridoUser && !b.isKoridoUser) return -1;
-        if (!a.isKoridoUser && b.isKoridoUser) return 1;
-        return a.name.compareTo(b.name);
-      });
+      _sortContacts(items);
 
       state = state.copyWith(
         contacts: items,
@@ -139,52 +145,66 @@ class ContactsNotifier extends Notifier<ContactsState> {
     }
   }
 
-  /// Call POST /contacts/check to detect registered Korido users
-  Future<List<SyncedContact>> _checkRegisteredContacts(
-    dynamic dio,
-    List<SyncedContact> contacts,
+  Future<List<SyncedContact>> _getMockContacts() async {
+    final dio = ref.read(dioProvider);
+    final response = await dio.get('/contacts');
+    final rawContacts = _extractContactList(response.data);
+    return rawContacts
+        .map((contact) => SyncedContact.fromJson(contact))
+        .toList();
+  }
+
+  Future<List<SyncedContact>> _getSyncedDeviceContacts(
+    Dio dio,
+    ContactsService contactsService,
   ) async {
-    if (contacts.isEmpty) return contacts;
+    final deviceContacts = await contactsService.getDeviceContacts();
+    final items = contactsService.deviceContactsToSyncedContacts(
+      deviceContacts,
+    );
 
-    try {
-      final phoneNumbers = contacts.map((c) => c.phone).toList();
-      // ignore: avoid_dynamic_calls
-      final response = await dio.post(
-        '/contacts/check',
-        data: {'phoneNumbers': phoneNumbers},
-      );
-      // ignore: avoid_dynamic_calls
-      final data = response.data as Map<String, dynamic>;
-      final registered = (data['registered'] as List? ?? [])
-          .cast<Map<String, dynamic>>();
+    return contactsService.getKoridoContacts(dio, items);
+  }
 
-      // Build a set of registered phones for quick lookup
-      final registeredPhones = <String, Map<String, dynamic>>{};
-      for (final r in registered) {
-        registeredPhones[r['phone'] as String] = r;
-      }
+  List<Map<String, dynamic>> _extractContactList(Object? data) {
+    final raw = switch (data) {
+      {'contacts': final List contacts} => contacts,
+      {'data': final List contacts} => contacts,
+      {'items': final List contacts} => contacts,
+      final List contacts => contacts,
+      _ => const <Object?>[],
+    };
 
-      return contacts.map((c) {
-        final match = registeredPhones[c.phone];
-        if (match != null) {
-          return c.copyWith(
-            isKoridoUser: true,
-            joonaPayUserId: match['userId'] as String?,
-          );
-        }
-        return c;
-      }).toList();
-    } catch (_) {
-      // If check fails, return contacts as-is
-      return contacts;
-    }
+    return raw
+        .whereType<Map>()
+        .map((contact) => Map<String, dynamic>.from(contact))
+        .toList();
+  }
+
+  void _sortContacts(List<SyncedContact> items) {
+    items.sort((a, b) {
+      if (a.isKoridoUser && !b.isKoridoUser) return -1;
+      if (!a.isKoridoUser && b.isKoridoUser) return 1;
+      return a.name.compareTo(b.name);
+    });
   }
 
   Future<bool> requestPermission() async {
-    // Permission request — returns true if granted
-    return true;
+    if (MockConfig.useMocks) {
+      await syncContacts();
+      return true;
+    }
+
+    final contactsService = ref.read(contactsServiceProvider);
+    final granted = await contactsService.requestContactsPermission();
+    if (granted) {
+      await syncContacts();
+    }
+    return granted;
   }
 }
 
 /// Main contacts provider with sync and search support.
-final contactsProvider = NotifierProvider<ContactsNotifier, ContactsState>(ContactsNotifier.new);
+final contactsProvider = NotifierProvider<ContactsNotifier, ContactsState>(
+  ContactsNotifier.new,
+);

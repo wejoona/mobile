@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+
+enum PillBadgeTone { brand, success, warning, error, info }
 
 /// A small pill/badge for counts, labels, status tags.
 class PillBadge extends StatelessWidget {
@@ -8,6 +12,7 @@ class PillBadge extends StatelessWidget {
   final double fontSize;
   final EdgeInsetsGeometry padding;
   final bool isOutlined;
+  final PillBadgeTone tone;
 
   const PillBadge({
     super.key,
@@ -17,41 +22,27 @@ class PillBadge extends StatelessWidget {
     this.fontSize = 11,
     this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
     this.isOutlined = false,
+    this.tone = PillBadgeTone.brand,
   });
 
-  /// Success badge (green).
-  factory PillBadge.success(String label) => PillBadge(
-        label: label,
-        backgroundColor: Colors.green.shade50,
-        textColor: Colors.green.shade700,
-      );
+  factory PillBadge.success(String label) =>
+      PillBadge(label: label, tone: PillBadgeTone.success);
 
-  /// Warning badge (orange).
-  factory PillBadge.warning(String label) => PillBadge(
-        label: label,
-        backgroundColor: Colors.orange.shade50,
-        textColor: Colors.orange.shade700,
-      );
+  factory PillBadge.warning(String label) =>
+      PillBadge(label: label, tone: PillBadgeTone.warning);
 
-  /// Error badge (red).
-  factory PillBadge.error(String label) => PillBadge(
-        label: label,
-        backgroundColor: Colors.red.shade50,
-        textColor: Colors.red.shade700,
-      );
+  factory PillBadge.error(String label) =>
+      PillBadge(label: label, tone: PillBadgeTone.error);
 
-  /// Info badge (blue).
-  factory PillBadge.info(String label) => PillBadge(
-        label: label,
-        backgroundColor: Colors.blue.shade50,
-        textColor: Colors.blue.shade700,
-      );
+  factory PillBadge.info(String label) =>
+      PillBadge(label: label, tone: PillBadgeTone.info);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bg = backgroundColor ?? theme.colorScheme.primaryContainer;
-    final fg = textColor ?? theme.colorScheme.onPrimaryContainer;
+    final colors = context.colors;
+    final palette = _palette(colors);
+    final bg = backgroundColor ?? palette.background;
+    final fg = textColor ?? palette.foreground;
 
     if (isOutlined) {
       return Container(
@@ -60,13 +51,15 @@ class PillBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(100),
           border: Border.all(color: fg.withValues(alpha: 0.5)),
         ),
-        child: Text(
+        child: AppText(
           label,
-          style: TextStyle(
-            fontSize: fontSize,
-            color: fg,
-            fontWeight: FontWeight.w500,
-          ),
+          variant: fontSize <= 11
+              ? AppTextVariant.labelSmall
+              : AppTextVariant.labelMedium,
+          color: fg,
+          fontWeight: FontWeight.w600,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       );
     }
@@ -77,16 +70,55 @@ class PillBadge extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(100),
       ),
-      child: Text(
+      child: AppText(
         label,
-        style: TextStyle(
-          fontSize: fontSize,
-          color: fg,
-          fontWeight: FontWeight.w500,
-        ),
+        variant: fontSize <= 11
+            ? AppTextVariant.labelSmall
+            : AppTextVariant.labelMedium,
+        color: fg,
+        fontWeight: FontWeight.w600,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
+
+  _PillBadgePalette _palette(ThemeColors colors) {
+    switch (tone) {
+      case PillBadgeTone.success:
+        return _PillBadgePalette(
+          colors.successText,
+          colors.success.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+        );
+      case PillBadgeTone.warning:
+        return _PillBadgePalette(
+          colors.warningText,
+          colors.warning.withValues(alpha: colors.isDark ? 0.18 : 0.12),
+        );
+      case PillBadgeTone.error:
+        return _PillBadgePalette(
+          colors.errorText,
+          colors.error.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+        );
+      case PillBadgeTone.info:
+        return _PillBadgePalette(
+          colors.infoText,
+          colors.info.withValues(alpha: colors.isDark ? 0.16 : 0.10),
+        );
+      case PillBadgeTone.brand:
+        return _PillBadgePalette(
+          colors.gold,
+          colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.10),
+        );
+    }
+  }
+}
+
+class _PillBadgePalette {
+  const _PillBadgePalette(this.foreground, this.background);
+
+  final Color foreground;
+  final Color background;
 }
 
 /// Notification count badge (small red circle with number).
@@ -94,32 +126,27 @@ class CountBadge extends StatelessWidget {
   final int count;
   final double size;
 
-  const CountBadge({
-    super.key,
-    required this.count,
-    this.size = 18,
-  });
+  const CountBadge({super.key, required this.count, this.size = 18});
 
   @override
   Widget build(BuildContext context) {
     if (count <= 0) return const SizedBox.shrink();
+    final colors = context.colors;
 
     return Container(
       constraints: BoxConstraints(minWidth: size, minHeight: size),
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.error,
+        color: colors.error,
         shape: count > 9 ? BoxShape.rectangle : BoxShape.circle,
         borderRadius: count > 9 ? BorderRadius.circular(size / 2) : null,
       ),
       alignment: Alignment.center,
-      child: Text(
+      child: AppText(
         count > 99 ? '99+' : count.toString(),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size * 0.6,
-          fontWeight: FontWeight.bold,
-        ),
+        variant: AppTextVariant.labelSmall,
+        color: colors.onDark,
+        fontWeight: FontWeight.w700,
       ),
     );
   }

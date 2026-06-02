@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/send_external/models/external_transfer_request.dart';
-import 'package:usdc_wallet/core/utils/amount_conversion.dart';
 import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 /// External Transfer Service - handles crypto transfers to wallet addresses
@@ -23,14 +22,18 @@ class ExternalTransferService {
 
     // Check length (0x + 40 hex characters = 42 total)
     if (trimmed.length != 42) {
-      return AddressValidationResult.invalid('Address must be 42 characters (0x + 40 hex)');
+      return AddressValidationResult.invalid(
+        'Address must be 42 characters (0x + 40 hex)',
+      );
     }
 
     // Check if all characters after 0x are valid hex
     final hexPart = trimmed.substring(2);
     final hexRegex = RegExp(r'^[0-9a-fA-F]+$');
     if (!hexRegex.hasMatch(hexPart)) {
-      return AddressValidationResult.invalid('Address contains invalid characters');
+      return AddressValidationResult.invalid(
+        'Address contains invalid characters',
+      );
     }
 
     return AddressValidationResult.valid();
@@ -53,8 +56,7 @@ class ExternalTransferService {
   }) async {
     try {
       final data = request.toJson();
-      // Convert amount from dollars to cents for the backend
-      data['amount'] = toCents(request.amount);
+      data['amount'] = request.amount;
 
       final response = await _dio.post(
         '/transfers/external',
@@ -105,6 +107,8 @@ class ExternalTransferService {
 }
 
 /// External Transfer Service Provider
-final externalTransferServiceProvider = Provider<ExternalTransferService>((ref) {
+final externalTransferServiceProvider = Provider<ExternalTransferService>((
+  ref,
+) {
   return ExternalTransferService(ref.watch(dioProvider));
 });

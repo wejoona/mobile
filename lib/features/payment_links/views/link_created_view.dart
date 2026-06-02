@@ -1,196 +1,191 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class LinkCreatedView extends ConsumerWidget {
-  const LinkCreatedView({
-    super.key,
-    required this.linkId,
-  });
+  const LinkCreatedView({required this.linkId, super.key});
 
   final String linkId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final state = ref.watch(paymentLinksStateProvider);
-    final link = state.currentLink ?? state.links.firstWhere((l) => l.id == linkId);
+    final linkAsync = ref.watch(paymentLinkByIdProvider(linkId));
 
-    return Scaffold(
-      backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        title: AppText(
-          l10n.paymentLinks_linkCreated,
-          variant: AppTextVariant.headlineSmall,
+    return linkAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.paymentLinks_linkCreated,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.go('/payment-links'),
+          ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => context.go('/payment-links'),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.paymentLinks_linkCreated,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.go('/payment-links'),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: AppText(
+              l10n.common_errorFormat(error.toString()),
+              textAlign: TextAlign.center,
+            ),
+          ),
         ),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.all(AppSpacing.md),
-          children: [
-            // Success Icon
-            Center(
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: context.colors.success.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle,
-                  color: context.colors.success,
-                  size: 48,
-                ),
-              ),
-            ),
-            SizedBox(height: AppSpacing.lg),
-
-            // Title
-            AppText(
-              l10n.paymentLinks_linkReadyTitle,
-              variant: AppTextVariant.headlineMedium,
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppSpacing.sm),
-            AppText(
-              l10n.paymentLinks_linkReadyDescription,
-              variant: AppTextVariant.bodyLarge,
-              color: context.colors.textSecondary,
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppSpacing.xl),
-
-            // QR Code
-            Center(
-              child: Container(
-                padding: EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: context.colors.textPrimary,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: QrImageView(
-                  data: link.url,
-                  version: QrVersions.auto,
-                  size: 200.0,
-                  backgroundColor: context.colors.textPrimary,
-                ),
-              ),
-            ),
-            SizedBox(height: AppSpacing.xl),
-
-            // Amount Card
-            Container(
-              padding: EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: context.colors.container,
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Column(
-                children: [
-                  AppText(
-                    l10n.paymentLinks_requestedAmount,
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
+      data: (link) => Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.paymentLinks_linkCreated,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => context.go('/payment-links'),
+          ),
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            children: [
+              // Success Icon
+              Center(
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: context.colors.success.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
-                  SizedBox(height: AppSpacing.xs),
-                  AppText(
-                    'CFA ${link.amount.toStringAsFixed(0)}',
-                    variant: AppTextVariant.headlineLarge,
-                    color: context.colors.gold,
+                  child: Icon(
+                    Icons.check_circle,
+                    color: context.colors.success,
+                    size: 48,
                   ),
-                  if (link.description != null) ...[
-                    SizedBox(height: AppSpacing.sm),
-                    AppText(
-                      link.description!,
-                      variant: AppTextVariant.bodyMedium,
-                      color: context.colors.textSecondary,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-            SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Link Code
-            Container(
-              padding: EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: context.colors.container,
-                borderRadius: BorderRadius.circular(AppRadius.md),
+              // Title
+              AppText(
+                l10n.paymentLinks_linkReadyTitle,
+                variant: AppTextVariant.headlineMedium,
+                textAlign: TextAlign.center,
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.link,
-                        color: context.colors.gold,
-                        size: 20,
-                      ),
-                      SizedBox(width: AppSpacing.xs),
-                      AppText(
-                        link.shortCode,
-                        variant: AppTextVariant.headlineSmall,
-                        color: context.colors.gold,
-                      ),
-                    ],
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.paymentLinks_linkReadyDescription,
+                variant: AppTextVariant.bodyLarge,
+                color: context.colors.textSecondary,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // QR Code
+              Center(
+                child: AppCard(
+                  variant: AppCardVariant.flat,
+                  backgroundColor: Colors.white,
+                  borderColor: context.colors.borderSubtle,
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: QrImageView(
+                    data: link.url,
+                    size: 200,
+                    backgroundColor: Colors.white,
                   ),
-                  SizedBox(height: AppSpacing.xs),
-                  AppText(
-                    link.url,
-                    variant: AppTextVariant.bodySmall,
-                    color: context.colors.textSecondary,
-                    textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Amount Card
+              MoneySummaryCard(
+                title: l10n.paymentLinks_requestedAmount,
+                icon: Icons.payments_outlined,
+                description: link.description,
+                lines: [
+                  MoneySummaryLine(
+                    label: l10n.paymentLinks_requestedAmount,
+                    amount: link.amount,
+                    currencyCode: link.currency,
+                    isTotal: true,
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Share Button
-            AppButton(
-              label: l10n.paymentLinks_shareLink,
-              icon: Icons.share,
-              onPressed: () => ShareLinkSheet.show(context, link),
-              isFullWidth: true,
-            ),
-            SizedBox(height: AppSpacing.sm),
+              // Link Code
+              InfoCallout(
+                icon: Icons.link,
+                title: link.shortCode,
+                body: link.url,
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
-            // View Details Button
-            AppButton(
-              label: l10n.paymentLinks_viewDetails,
-              variant: AppButtonVariant.secondary,
-              onPressed: () => context.go('/payment-links/detail/${link.id}'),
-              isFullWidth: true,
-            ),
-            SizedBox(height: AppSpacing.sm),
+              // Share Button
+              AppButton(
+                label: l10n.paymentLinks_shareLink,
+                icon: Icons.share,
+                onPressed: () => ShareLinkSheet.show(context, link),
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
 
-            // Done Button
-            AppButton(
-              label: l10n.common_done,
-              variant: AppButtonVariant.ghost,
-              onPressed: () => context.go('/payment-links'),
-              isFullWidth: true,
-            ),
-          ],
+              // View Details Button
+              AppButton(
+                label: l10n.paymentLinks_viewDetails,
+                variant: AppButtonVariant.secondary,
+                onPressed: () => context.go('/payment-links/${link.id}'),
+                isFullWidth: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
+              // Done Button
+              AppButton(
+                label: l10n.common_done,
+                variant: AppButtonVariant.ghost,
+                onPressed: () => context.go('/payment-links'),
+                isFullWidth: true,
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('linkId', linkId));
   }
 }

@@ -1,5 +1,7 @@
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/services/service_providers.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
@@ -15,10 +18,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 /// Screen for paying via a received payment link
 /// Shows link details and allows user to complete payment
 class PayLinkView extends ConsumerStatefulWidget {
-  const PayLinkView({
-    super.key,
-    required this.linkCode,
-  });
+  const PayLinkView({super.key, required this.linkCode});
 
   final String linkCode;
 
@@ -60,11 +60,13 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
   Future<void> _loadExchangeRate() async {
     try {
       final rateResult = await ref.read(
-        exchangeRateProvider(const ExchangeRateParams(
-          sourceCurrency: 'USD',
-          targetCurrency: 'XOF',
-          amount: 1.0,
-        )).future,
+        exchangeRateProvider(
+          const ExchangeRateParams(
+            sourceCurrency: 'USD',
+            targetCurrency: 'XOF',
+            amount: 1.0,
+          ),
+        ).future,
       );
       if (mounted) {
         setState(() {
@@ -81,9 +83,18 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
 
     final l10n = AppLocalizations.of(context)!;
     final usdcBalance = ref.read(usdcBalanceProvider);
+    final payableUsdcAmount = _payableUsdcAmount;
+
+    if (payableUsdcAmount == null) {
+      _showErrorDialog(
+        l10n.common_error,
+        'Exchange rate unavailable. Please try again.',
+      );
+      return;
+    }
 
     // Check balance
-    if (usdcBalance < _link!.amount) {
+    if (usdcBalance < payableUsdcAmount) {
       _showErrorDialog(
         l10n.common_error,
         l10n.paymentLinks_insufficientBalance,
@@ -91,69 +102,58 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       return;
     }
 
-    // Confirm payment
-    final confirmed = await _showConfirmDialog();
-    if (confirmed != true) return;
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
+    final confirmation = await PinConfirmationSheet.show(
+      context: context,
+      title: l10n.action_confirm,
+      subtitle: l10n.send_enterPinToConfirm,
+      amount: payableUsdcAmount,
+      recipient: _link!.recipientName,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+    if (confirmation != PinConfirmationResult.success || pinToken == null) {
+      return;
+    }
 
     setState(() => _isProcessing = true);
 
     try {
       final service = ref.read(paymentLinksServiceProvider);
-      final result = await service.payLink(widget.linkCode);
+      final result = await service.payLink(
+        widget.linkCode,
+        pinToken: pinToken!,
+        idempotencyKey: idempotencyKey,
+      );
 
       if (mounted) {
         // Show success and navigate to receipt
-        context.go('/send/result', extra: {
-          'success': true,
-          'amount': _link!.amount,
-          'recipient': _link!.recipientName,
-          'transactionId': result.transactionId,
-          'note': _link!.description,
-        });
+        context.go(
+          '/send/result',
+          extra: {
+            'success': true,
+            'amount': payableUsdcAmount,
+            'recipient': _link!.recipientName,
+            'transactionId': result.transactionId,
+            'note': _link!.description,
+          },
+        );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);
-        _showErrorDialog(
-          l10n.common_error,
-          e.toString(),
-        );
+        _showErrorDialog(l10n.common_error, e.toString());
       }
     }
-  }
-
-  Future<bool?> _showConfirmDialog() {
-    final l10n = AppLocalizations.of(context)!;
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: context.colors.container,
-        title: AppText(
-          l10n.action_confirm,
-          variant: AppTextVariant.headlineSmall,
-        ),
-        content: AppText(
-          l10n.paymentLinks_payAmount(
-            '\$${Formatters.formatCurrency(_link!.amount)}',
-          ),
-          variant: AppTextVariant.bodyLarge,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: AppText(
-              l10n.action_cancel,
-              color: context.colors.textSecondary,
-            ),
-          ),
-          AppButton(
-            label: l10n.action_confirm,
-            onPressed: () => Navigator.pop(context, true),
-            size: AppButtonSize.small,
-          ),
-        ],
-      ),
-    );
   }
 
   void _showErrorDialog(String title, String message) {
@@ -161,14 +161,8 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.container,
-        title: AppText(
-          title,
-          variant: AppTextVariant.headlineSmall,
-        ),
-        content: AppText(
-          message,
-          variant: AppTextVariant.bodyLarge,
-        ),
+        title: AppText(title, variant: AppTextVariant.headlineSmall),
+        content: AppText(message, variant: AppTextVariant.bodyLarge),
         actions: [
           AppButton(
             label: AppLocalizations.of(context)!.common_ok,
@@ -224,11 +218,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
   }
 
   Widget _buildLoading() {
-    return Center(
-      child: CircularProgressIndicator(
-        color: context.colors.gold,
-      ),
-    );
+    return Center(child: CircularProgressIndicator(color: context.colors.gold));
   }
 
   Widget _buildError(AppLocalizations l10n) {
@@ -238,11 +228,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 80,
-              color: context.colors.error,
-            ),
+            Icon(Icons.error_outline, size: 80, color: context.colors.error),
             SizedBox(height: AppSpacing.lg),
             AppText(
               l10n.paymentLinks_linkNotFoundTitle,
@@ -275,11 +261,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.schedule,
-              size: 80,
-              color: context.colors.textSecondary,
-            ),
+            Icon(Icons.schedule, size: 80, color: context.colors.textSecondary),
             SizedBox(height: AppSpacing.lg),
             AppText(
               l10n.paymentLinks_linkExpiredTitle,
@@ -337,7 +319,9 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                   children: [
                     _buildInfoRow(
                       l10n.paymentLinks_paidBy,
-                      _link!.paidByName ?? _link!.paidByPhone ?? l10n.common_unknown,
+                      _link!.paidByName ??
+                          _link!.paidByPhone ??
+                          l10n.common_unknown,
                     ),
                     SizedBox(height: AppSpacing.sm),
                     _buildInfoRow(
@@ -367,11 +351,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.block,
-              size: 80,
-              color: context.colors.error,
-            ),
+            Icon(Icons.block, size: 80, color: context.colors.error),
             SizedBox(height: AppSpacing.lg),
             AppText(
               l10n.paymentLinks_linkNotFoundTitle,
@@ -398,6 +378,8 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
   }
 
   Widget _buildPaymentForm(AppLocalizations l10n) {
+    final payableUsdcAmount = _payableUsdcAmount;
+
     return SafeArea(
       child: Column(
         children: [
@@ -431,16 +413,14 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
-                        '\$${Formatters.formatCurrency(_link!.amount)}',
+                        formatCurrency(_link!.amount, _link!.currency),
                         variant: AppTextVariant.displaySmall,
                         color: context.colors.gold,
                         fontWeight: FontWeight.bold,
                       ),
                       SizedBox(height: AppSpacing.xs),
                       AppText(
-                        _xofRate != null
-                            ? formatXof(_link!.amount * _xofRate!)
-                            : '${_link!.currency}',
+                        _paymentEstimateLabel,
                         variant: AppTextVariant.bodyMedium,
                         color: context.colors.textSecondary,
                       ),
@@ -458,7 +438,9 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                         children: [
                           UserAvatar(
                             firstName: _link!.recipientName.split(' ').first,
-                            lastName: _link!.recipientName.split(' ').length > 1 ? _link!.recipientName.split(' ').last : null,
+                            lastName: _link!.recipientName.split(' ').length > 1
+                                ? _link!.recipientName.split(' ').last
+                                : null,
                             size: 40,
                           ),
                           SizedBox(width: AppSpacing.md),
@@ -484,7 +466,11 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                       ),
                       if (_link!.description != null) ...[
                         SizedBox(height: AppSpacing.md),
-                        Divider(color: context.colors.textSecondary.withValues(alpha:0.1)),
+                        Divider(
+                          color: context.colors.textSecondary.withValues(
+                            alpha: 0.1,
+                          ),
+                        ),
                         SizedBox(height: AppSpacing.md),
                         AppText(
                           l10n.paymentLinks_paymentFor,
@@ -524,10 +510,12 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                 Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: context.colors.container.withValues(alpha:0.5),
+                    color: context.colors.container.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
-                      color: context.colors.textSecondary.withValues(alpha:0.1),
+                      color: context.colors.textSecondary.withValues(
+                        alpha: 0.1,
+                      ),
                     ),
                   ),
                   child: Row(
@@ -542,10 +530,12 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
                         builder: (context, ref, child) {
                           final usdcBalance = ref.watch(usdcBalanceProvider);
                           return AppText(
-                            '\$${Formatters.formatCurrency(usdcBalance)}',
+                            formatUsdc(usdcBalance),
                             variant: AppTextVariant.bodyLarge,
                             fontWeight: FontWeight.w600,
-                            color: usdcBalance >= _link!.amount
+                            color:
+                                payableUsdcAmount != null &&
+                                    usdcBalance >= payableUsdcAmount
                                 ? context.colors.success
                                 : context.colors.error,
                           );
@@ -563,7 +553,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
             padding: EdgeInsets.all(AppSpacing.md),
             child: AppButton(
               label: l10n.paymentLinks_payAmount(
-                '\$${Formatters.formatCurrency(_link!.amount)}',
+                formatCurrency(_link!.amount, _link!.currency),
               ),
               onPressed: _isProcessing ? null : _handlePayment,
               isLoading: _isProcessing,
@@ -574,6 +564,42 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
         ],
       ),
     );
+  }
+
+  double? get _payableUsdcAmount {
+    final link = _link;
+    if (link == null) return null;
+
+    switch (link.currency.toUpperCase()) {
+      case 'USDC':
+      case 'USD':
+        return link.amount;
+      case 'XOF':
+      case 'XAF':
+        final rate = _xofRate;
+        return rate == null || rate <= 0 ? null : link.amount / rate;
+      default:
+        return null;
+    }
+  }
+
+  String get _paymentEstimateLabel {
+    final link = _link;
+    if (link == null) return '';
+    final payableUsdcAmount = _payableUsdcAmount;
+
+    switch (link.currency.toUpperCase()) {
+      case 'USDC':
+      case 'USD':
+        return '≈ ${formatXof(link.amount * (_xofRate ?? 615))}';
+      case 'XOF':
+      case 'XAF':
+        return payableUsdcAmount == null
+            ? 'USDC estimate unavailable'
+            : '≈ ${formatUsdc(payableUsdcAmount)}';
+      default:
+        return link.currency;
+    }
   }
 
   Widget _buildInfoRow(String label, String value) {

@@ -5,41 +5,54 @@ import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 /// PIN API mocks
 class PinMock {
   static void register(MockInterceptor interceptor) {
-    // POST /api/v1/user/pin/set
-    interceptor.register(
-      method: 'POST',
-      path: '/api/v1/user/pin/set',
-      handler: _handleSetPin,
-    );
+    for (final path in const [
+      '/user/pin/set',
+      '/wallet/pin/set',
+      '/api/v1/user/pin/set',
+    ]) {
+      interceptor.register(method: 'POST', path: path, handler: _handleSetPin);
+    }
 
-    // POST /api/v1/user/pin/change
-    interceptor.register(
-      method: 'POST',
-      path: '/api/v1/user/pin/change',
-      handler: _handleChangePin,
-    );
+    for (final path in const ['/user/pin/change', '/api/v1/user/pin/change']) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleChangePin,
+      );
+    }
 
-    // POST /api/v1/user/pin/verify
-    interceptor.register(
-      method: 'POST',
-      path: '/api/v1/user/pin/verify',
-      handler: _handleVerifyPin,
-    );
+    for (final path in const [
+      '/user/pin/verify',
+      '/wallet/pin/verify',
+      '/api/v1/user/pin/verify',
+    ]) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleVerifyPin,
+      );
+    }
 
-    // POST /api/v1/user/pin/reset
-    interceptor.register(
-      method: 'POST',
-      path: '/api/v1/user/pin/reset',
-      handler: _handleResetPin,
-    );
+    for (final path in const ['/user/pin/reset', '/api/v1/user/pin/reset']) {
+      interceptor.register(
+        method: 'POST',
+        path: path,
+        handler: _handleResetPin,
+      );
+    }
   }
 
   /// Handle set PIN
   static Future<MockResponse> _handleSetPin(RequestOptions options) async {
-    // ignore: avoid_dynamic_calls
-    final pinHash = options.data['pinHash'] as String?;
-    if (pinHash == null || pinHash.isEmpty) {
-      return MockResponse.badRequest('PIN hash is required');
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final pinHash = data['pinHash'] as String?;
+    final pin = data['pin'] as String?;
+    final confirmPin = data['confirmPin'] as String?;
+    if ((pinHash == null || pinHash.isEmpty) && (pin == null || pin.isEmpty)) {
+      return MockResponse.badRequest('PIN is required');
+    }
+    if (confirmPin != null && confirmPin != pin) {
+      return MockResponse.badRequest('PINs do not match');
     }
 
     return MockResponse.success({
@@ -50,13 +63,18 @@ class PinMock {
 
   /// Handle change PIN
   static Future<MockResponse> _handleChangePin(RequestOptions options) async {
-    // ignore: avoid_dynamic_calls
-    final oldPinHash = options.data['oldPinHash'] as String?;
-    // ignore: avoid_dynamic_calls
-    final newPinHash = options.data['newPinHash'] as String?;
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final oldPinHash = data['oldPinHash'] as String?;
+    final newPinHash = data['newPinHash'] as String?;
+    final oldPin = data['oldPin'] as String?;
+    final newPin = data['newPin'] as String?;
 
-    if (oldPinHash == null || newPinHash == null) {
-      return MockResponse.badRequest('Both old and new PIN hashes are required');
+    final hasHashPair = oldPinHash != null && newPinHash != null;
+    final hasPinPair = oldPin != null && newPin != null;
+    if (!hasHashPair && !hasPinPair) {
+      return MockResponse.badRequest(
+        'Both old and new PIN values are required',
+      );
     }
 
     // Mock verification - accept any hash
@@ -68,16 +86,19 @@ class PinMock {
 
   /// Handle verify PIN
   static Future<MockResponse> _handleVerifyPin(RequestOptions options) async {
-    // ignore: avoid_dynamic_calls
-    final pinHash = options.data['pinHash'] as String?;
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final pinHash = data['pinHash'] as String?;
+    final pin = data['pin'] as String?;
 
-    if (pinHash == null || pinHash.isEmpty) {
-      return MockResponse.badRequest('PIN hash is required');
+    if ((pinHash == null || pinHash.isEmpty) && (pin == null || pin.isEmpty)) {
+      return MockResponse.badRequest('PIN is required');
     }
 
     // Mock: Accept any hash for testing
     return MockResponse.success({
+      'valid': true,
       'verified': true,
+      'message': 'PIN verified successfully',
       'pinToken': 'mock_pin_token_${DateTime.now().millisecondsSinceEpoch}',
       'expiresIn': 300, // 5 minutes
     });
@@ -85,13 +106,13 @@ class PinMock {
 
   /// Handle reset PIN
   static Future<MockResponse> _handleResetPin(RequestOptions options) async {
-    // ignore: avoid_dynamic_calls
-    final otp = options.data['otp'] as String?;
-    // ignore: avoid_dynamic_calls
-    final newPinHash = options.data['newPinHash'] as String?;
+    final data = options.data as Map<String, dynamic>? ?? {};
+    final otp = data['otp'] as String?;
+    final newPinHash = data['newPinHash'] as String?;
+    final newPin = data['newPin'] as String?;
 
-    if (otp == null || newPinHash == null) {
-      return MockResponse.badRequest('OTP and new PIN hash are required');
+    if (otp == null || (newPinHash == null && newPin == null)) {
+      return MockResponse.badRequest('OTP and new PIN are required');
     }
 
     // Mock: Accept 123456 as valid OTP

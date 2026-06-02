@@ -34,40 +34,49 @@ void main() {
       );
     });
 
-    test('should handle logTransferInitiated gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logTransferInitiated(
-          transferType: 'p2p_phone',
-          amount: 1000.0,
-          currency: 'XOF',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logTransferInitiated gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logTransferInitiated(
+            transferType: 'p2p_phone',
+            amount: 1000.0,
+            currency: 'XOF',
+          ),
+          completes,
+        );
+      },
+    );
 
-    test('should handle logTransferCompleted gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logTransferCompleted(
-          transferType: 'p2p_phone',
-          amount: 1000.0,
-          currency: 'XOF',
-          transactionId: 'txn_123',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logTransferCompleted gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logTransferCompleted(
+            transferType: 'p2p_phone',
+            amount: 1000.0,
+            currency: 'XOF',
+            transactionId: 'txn_123',
+          ),
+          completes,
+        );
+      },
+    );
 
-    test('should handle logTransferFailed gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logTransferFailed(
-          transferType: 'p2p_phone',
-          amount: 1000.0,
-          currency: 'XOF',
-          reason: 'Insufficient balance',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logTransferFailed gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logTransferFailed(
+            transferType: 'p2p_phone',
+            amount: 1000.0,
+            currency: 'XOF',
+            reason: 'Insufficient balance',
+          ),
+          completes,
+        );
+      },
+    );
 
     test('should handle logKycStarted gracefully without Firebase', () async {
       await expectLater(
@@ -78,49 +87,55 @@ void main() {
 
     test('should handle logKycCompleted gracefully without Firebase', () async {
       await expectLater(
-        analyticsService.logKycCompleted(
-          tier: 'tier_1',
-          status: 'approved',
-        ),
+        analyticsService.logKycCompleted(tier: 'tier_1', status: 'approved'),
         completes,
       );
     });
 
-    test('should handle logDepositInitiated gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logDepositInitiated(
-          method: 'orange_money',
-          amount: 5000.0,
-          currency: 'XOF',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logDepositInitiated gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logDepositInitiated(
+            method: 'orange_money',
+            amount: 5000.0,
+            currency: 'XOF',
+          ),
+          completes,
+        );
+      },
+    );
 
-    test('should handle logDepositCompleted gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logDepositCompleted(
-          method: 'orange_money',
-          amount: 5000.0,
-          currency: 'XOF',
-          transactionId: 'dep_123',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logDepositCompleted gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logDepositCompleted(
+            method: 'orange_money',
+            amount: 5000.0,
+            currency: 'XOF',
+            transactionId: 'dep_123',
+          ),
+          completes,
+        );
+      },
+    );
 
-    test('should handle logBillPaymentCompleted gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.logBillPaymentCompleted(
-          billerName: 'CIE',
-          category: 'electricity',
-          amount: 2000.0,
-          currency: 'XOF',
-          transactionId: 'bill_123',
-        ),
-        completes,
-      );
-    });
+    test(
+      'should handle logBillPaymentCompleted gracefully without Firebase',
+      () async {
+        await expectLater(
+          analyticsService.logBillPaymentCompleted(
+            billerName: 'CIE',
+            category: 'electricity',
+            amount: 2000.0,
+            currency: 'XOF',
+            transactionId: 'bill_123',
+          ),
+          completes,
+        );
+      },
+    );
 
     test('should handle logScreenView gracefully without Firebase', () async {
       await expectLater(
@@ -133,27 +148,18 @@ void main() {
     });
 
     test('should handle setUserId gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.setUserId('user_123'),
-        completes,
-      );
+      await expectLater(analyticsService.setUserId('user_123'), completes);
     });
 
     test('should handle setUserProperty gracefully without Firebase', () async {
       await expectLater(
-        analyticsService.setUserProperty(
-          name: 'kyc_tier',
-          value: 'tier_1',
-        ),
+        analyticsService.setUserProperty('kyc_tier', 'tier_1'),
         completes,
       );
     });
 
     test('should handle reset gracefully without Firebase', () async {
-      await expectLater(
-        analyticsService.reset(),
-        completes,
-      );
+      await expectLater(analyticsService.reset(), completes);
     });
   });
 }

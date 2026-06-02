@@ -5,12 +5,7 @@
 /// - PUSH: Backend initiates, user approves via push notification
 /// - QR_LINK: QR code + deep link to open provider app
 
-enum PaymentMethodType {
-  otp,
-  push,
-  qrLink,
-  card,
-}
+enum PaymentMethodType { otp, push, qrLink, card, bankTransfer, crypto }
 
 extension PaymentMethodTypeExt on PaymentMethodType {
   String get value {
@@ -23,6 +18,10 @@ extension PaymentMethodTypeExt on PaymentMethodType {
         return 'QR_LINK';
       case PaymentMethodType.card:
         return 'CARD';
+      case PaymentMethodType.bankTransfer:
+        return 'BANK_TRANSFER';
+      case PaymentMethodType.crypto:
+        return 'CRYPTO';
     }
   }
 
@@ -36,6 +35,11 @@ extension PaymentMethodTypeExt on PaymentMethodType {
         return PaymentMethodType.qrLink;
       case 'CARD':
         return PaymentMethodType.card;
+      case 'ACH':
+      case 'BANK_TRANSFER':
+        return PaymentMethodType.bankTransfer;
+      case 'CRYPTO':
+        return PaymentMethodType.crypto;
       default:
         return PaymentMethodType.push;
     }
@@ -51,12 +55,7 @@ extension PaymentMethodTypeExt on PaymentMethodType {
   bool get hasQrOrLink => this == PaymentMethodType.qrLink;
 }
 
-enum MobileMoneyProvider {
-  orangeMoney,
-  mtnMomo,
-  moovMoney,
-  wave,
-}
+enum MobileMoneyProvider { orangeMoney, mtnMomo, moovMoney, wave }
 
 extension MobileMoneyProviderExt on MobileMoneyProvider {
   String get name {

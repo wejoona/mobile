@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 // NOTE: walletBalanceProvider is defined in balance_provider.dart (canonical).
 // Do NOT re-declare it here. Import from balance_provider.dart instead.
@@ -10,42 +12,42 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 /// Deposit Channels Provider with TTL-based caching
 /// Cache duration: 30 minutes (channels rarely change)
 final depositChannelsProvider =
-    FutureProvider.family<List<DepositChannel>, String?>((
-  ref,
-  currency,
-) async {
-  final service = ref.watch(walletServiceProvider);
-  final link = ref.keepAlive();
+    FutureProvider.family<List<DepositChannel>, String?>((ref, currency) async {
+      final service = ref.watch(walletServiceProvider);
+      final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 minutes — properly disposed
-  final timer = Timer(const Duration(minutes: 30), () {
-    link.close();
-  });
-  ref.onDispose(() => timer.cancel());
+      // Auto-invalidate after 30 minutes — properly disposed
+      final timer = Timer(const Duration(minutes: 30), () {
+        link.close();
+      });
+      ref.onDispose(() => timer.cancel());
 
-  return service.getDepositChannels(currency: currency);
-});
+      return service.getDepositChannels(currency: currency);
+    });
 
 /// Exchange Rate Provider with TTL-based caching
 /// Cache duration: 30 seconds (rates change frequently)
-final exchangeRateProvider = FutureProvider
-    .family<ExchangeRate, ExchangeRateParams>((ref, params) async {
-  final service = ref.watch(walletServiceProvider);
-  final link = ref.keepAlive();
+final exchangeRateProvider =
+    FutureProvider.family<ExchangeRate, ExchangeRateParams>((
+      ref,
+      params,
+    ) async {
+      final service = ref.watch(walletServiceProvider);
+      final link = ref.keepAlive();
 
-  // Auto-invalidate after 30 seconds — properly disposed
-  final timer = Timer(const Duration(seconds: 30), () {
-    link.close();
-  });
-  ref.onDispose(() => timer.cancel());
+      // Auto-invalidate after 30 seconds — properly disposed
+      final timer = Timer(const Duration(seconds: 30), () {
+        link.close();
+      });
+      ref.onDispose(() => timer.cancel());
 
-  return service.getRate(
-    sourceCurrency: params.sourceCurrency,
-    targetCurrency: params.targetCurrency,
-    amount: params.amount,
-    direction: params.direction,
-  );
-});
+      return service.getRate(
+        sourceCurrency: params.sourceCurrency,
+        targetCurrency: params.targetCurrency,
+        amount: params.amount,
+        direction: params.direction,
+      );
+    });
 
 class ExchangeRateParams {
   final String sourceCurrency;
@@ -80,8 +82,7 @@ class ExchangeRateParams {
 
 /// KYC Status Provider with TTL-based caching
 /// Cache duration: 5 minutes (KYC status doesn't change often)
-final kycStatusProvider =
-    FutureProvider<KycStatusResponse>((ref) async {
+final kycStatusProvider = FutureProvider<KycStatusResponse>((ref) async {
   final service = ref.watch(walletServiceProvider);
   final link = ref.keepAlive();
 
@@ -100,11 +101,7 @@ class DepositState {
   final DepositResponse? response;
   final String? error;
 
-  const DepositState({
-    this.isLoading = false,
-    this.response,
-    this.error,
-  });
+  const DepositState({this.isLoading = false, this.response, this.error});
 
   DepositState copyWith({
     bool? isLoading,
@@ -136,10 +133,23 @@ class DepositNotifier extends Notifier<DepositState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
+      final userState = ref.read(userStateMachineProvider);
+      final authState = ref.read(authProvider);
+      final phoneNumber =
+          userState.phone ?? authState.user?.phone ?? authState.phone;
+      if (phoneNumber == null || phoneNumber.isEmpty) {
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Phone number is required for mobile money deposit.',
+        );
+        return false;
+      }
+
       final response = await _service.initiateDeposit(
         amount: amount,
         sourceCurrency: sourceCurrency,
         channelId: channelId,
+        phoneNumber: phoneNumber,
       );
 
       state = state.copyWith(isLoading: false, response: response);
@@ -160,8 +170,8 @@ class DepositNotifier extends Notifier<DepositState> {
 
 final depositProvider =
     NotifierProvider.autoDispose<DepositNotifier, DepositState>(
-  DepositNotifier.new,
-);
+      DepositNotifier.new,
+    );
 
 /// Withdraw State
 class WithdrawState {
@@ -169,11 +179,7 @@ class WithdrawState {
   final WithdrawResponse? response;
   final String? error;
 
-  const WithdrawState({
-    this.isLoading = false,
-    this.response,
-    this.error,
-  });
+  const WithdrawState({this.isLoading = false, this.response, this.error});
 
   WithdrawState copyWith({
     bool? isLoading,
@@ -202,6 +208,8 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
     required String destinationAddress,
     String? network,
     String? method,
+    String? pinToken,
+    String? idempotencyKey,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 
@@ -211,6 +219,8 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
         destinationAddress: destinationAddress,
         network: network,
         method: method,
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
       );
 
       state = state.copyWith(isLoading: false, response: response);
@@ -231,5 +241,5 @@ class WithdrawNotifier extends Notifier<WithdrawState> {
 
 final withdrawProvider =
     NotifierProvider.autoDispose<WithdrawNotifier, WithdrawState>(
-  WithdrawNotifier.new,
-);
+      WithdrawNotifier.new,
+    );

@@ -13,7 +13,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Bill Payments E2E', () {
+  e2eGroup('Bill Payments E2E', () {
     test('GET /bill-payments/providers — list providers', () async {
       final res = await client.get('/bill-payments/providers');
       res.expectOk();
@@ -44,14 +44,17 @@ void main() {
       expect(res.statusCode, 400);
     });
 
-    test('POST /bill-payments/pay — invalid provider returns 400/404', () async {
-      final res = await client.post('/bill-payments/pay', {
-        'providerId': 'nonexistent',
-        'reference': 'REF-12345',
-        'amount': 5000,
-      });
-      expect(res.statusCode, anyOf(400, 404));
-    });
+    test(
+      'POST /bill-payments/pay — invalid provider returns 400/404',
+      () async {
+        final res = await client.post('/bill-payments/pay', {
+          'providerId': 'nonexistent',
+          'reference': 'REF-12345',
+          'amount': 5000,
+        });
+        expect(res.statusCode, anyOf(400, 404));
+      },
+    );
 
     test('GET /bill-payments/providers — no auth returns 401', () async {
       final noAuth = E2EClient();

@@ -12,9 +12,15 @@ class PaymentLinksRepository {
   /// Get all payment links
   Future<List<PaymentLink>> getPaymentLinks() async {
     final response = await _dio.get('/payment-links');
-    // ignore: avoid_dynamic_calls
-    return (response.data['payment_links'] as List)
-        .map((json) => PaymentLink.fromJson(json))
+    final data = response.data;
+    final links = data is List
+        ? data
+        : data is Map
+        ? (data['links'] ?? data['payment_links'] ?? data['data']) as List? ??
+              []
+        : const [];
+    return links
+        .map((json) => PaymentLink.fromJson(Map<String, dynamic>.from(json)))
         .toList();
   }
 
@@ -26,10 +32,7 @@ class PaymentLinksRepository {
 
   /// Create payment link
   Future<PaymentLink> createPaymentLink(CreateLinkRequest request) async {
-    final response = await _dio.post(
-      '/payment-links',
-      data: request.toJson(),
-    );
+    final response = await _dio.post('/payment-links', data: request.toJson());
     return PaymentLink.fromJson(response.data);
   }
 

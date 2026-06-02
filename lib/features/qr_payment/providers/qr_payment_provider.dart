@@ -23,9 +23,25 @@ class QrPaymentState {
   final String? pinToken;
   final String? idempotencyKey;
 
-  const QrPaymentState({this.isLoading = false, this.error, this.scannedData, this.isProcessing = false, this.isComplete = false, this.pinToken, this.idempotencyKey});
+  const QrPaymentState({
+    this.isLoading = false,
+    this.error,
+    this.scannedData,
+    this.isProcessing = false,
+    this.isComplete = false,
+    this.pinToken,
+    this.idempotencyKey,
+  });
 
-  QrPaymentState copyWith({bool? isLoading, String? error, QrPaymentData? scannedData, bool? isProcessing, bool? isComplete, String? pinToken, String? idempotencyKey}) => QrPaymentState(
+  QrPaymentState copyWith({
+    bool? isLoading,
+    String? error,
+    QrPaymentData? scannedData,
+    bool? isProcessing,
+    bool? isComplete,
+    String? pinToken,
+    String? idempotencyKey,
+  }) => QrPaymentState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     scannedData: scannedData ?? this.scannedData,
@@ -50,10 +66,9 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
     } catch (e) {
       // Try as plain phone number
       if (rawData.startsWith('+') || rawData.startsWith('00')) {
-        state = state.copyWith(scannedData: QrPaymentData(
-          type: "p2p",
-          recipient: rawData,
-        ));
+        state = state.copyWith(
+          scannedData: QrPaymentData(type: "p2p", recipient: rawData),
+        );
       } else {
         state = state.copyWith(error: 'QR code invalide');
       }
@@ -74,7 +89,10 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
         );
         return true;
       }
-      state = state.copyWith(isLoading: false, error: result.message ?? 'PIN verification failed');
+      state = state.copyWith(
+        isLoading: false,
+        error: result.message ?? 'PIN verification failed',
+      );
       return false;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -104,36 +122,64 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       // data.type is a String? — match against string values, not enum
       switch (data.type) {
         case 'p2p':
-          await dio.post('/transfers/internal', data: {
-            'recipientIdentifier': data.recipient,
-            'amount': amountCents,
-            'currency': 'USDC',
-          }, options: options);
+          final recipientPhone = _recipientPhone(data);
+          if (recipientPhone == null) {
+            state = state.copyWith(
+              isProcessing: false,
+              error: 'QR payment requires a recipient phone number',
+            );
+            return;
+          }
+          await dio.post(
+            '/transfers/internal',
+            data: {
+              'recipientPhone': recipientPhone,
+              'amount': amountCents,
+              'currency': 'USDC',
+              if (data.note != null) 'note': data.note,
+            },
+            options: options,
+          );
           break;
         case 'merchant':
-          await dio.post('/merchants/pay', data: {
-            'merchantId': data.merchantId,
-            'amount': amountCents,
-            'currency': 'USDC',
-            if (data.reference != null) 'reference': data.reference,
-          }, options: options);
+          await dio.post(
+            '/merchants/pay',
+            data: {
+              'merchantId': data.merchantId,
+              'amount': amountCents,
+              'currency': 'USDC',
+              if (data.reference != null) 'reference': data.reference,
+            },
+            options: options,
+          );
           break;
         case 'paymentLink':
           // Backend expects code, not ID
-          await dio.post('/payment-links/code/${data.paymentLinkId}/pay', data: {
-            'amount': amountCents,
-          }, options: options);
+          await dio.post(
+            '/payment-links/code/${data.paymentLinkId}/pay',
+            data: {'amount': amountCents},
+            options: options,
+          );
           break;
         default:
-          // Fallback: treat as p2p if userId is available
-          if (data.userId.isNotEmpty || data.phone != null) {
-            await dio.post('/transfers/internal', data: {
-              'recipientIdentifier': data.phone ?? data.userId,
-              'amount': amountCents,
-              'currency': 'USDC',
-            }, options: options);
+          // Fallback: treat as p2p when the QR includes a phone number.
+          final recipientPhone = _recipientPhone(data);
+          if (recipientPhone != null) {
+            await dio.post(
+              '/transfers/internal',
+              data: {
+                'recipientPhone': recipientPhone,
+                'amount': amountCents,
+                'currency': 'USDC',
+                if (data.note != null) 'note': data.note,
+              },
+              options: options,
+            );
           } else {
-            state = state.copyWith(isProcessing: false, error: 'Unknown QR payment type: ${data.type}');
+            state = state.copyWith(
+              isProcessing: false,
+              error: 'Unknown QR payment type: ${data.type}',
+            );
             return;
           }
       }
@@ -145,7 +191,22 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
     }
   }
 
+  String? _recipientPhone(QrPaymentData data) {
+    for (final value in [data.recipient, data.phone, data.userId]) {
+      if (value == null || value.isEmpty) continue;
+      final normalized = value.startsWith('00')
+          ? '+${value.substring(2)}'
+          : value;
+      if (RegExp(r'^\+[1-9]\d{6,14}$').hasMatch(normalized)) {
+        return normalized;
+      }
+    }
+    return null;
+  }
+
   void reset() => state = const QrPaymentState();
 }
 
-final qrPaymentProvider = NotifierProvider<QrPaymentNotifier, QrPaymentState>(QrPaymentNotifier.new);
+final qrPaymentProvider = NotifierProvider<QrPaymentNotifier, QrPaymentState>(
+  QrPaymentNotifier.new,
+);

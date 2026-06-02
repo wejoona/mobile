@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
-import 'package:local_auth_platform_interface/types/biometric_type.dart' as platform;
+import 'package:local_auth_platform_interface/types/auth_messages.dart';
+import 'package:local_auth_platform_interface/types/biometric_type.dart'
+    as platform;
 
 export 'package:usdc_wallet/services/biometric/biometric_provider.dart';
 
@@ -23,8 +25,10 @@ class BiometricResult {
   });
 
   const BiometricResult.success() : this(success: true);
-  const BiometricResult.failure(String message, {BiometricFailureReason? reason})
-      : this(success: false, errorMessage: message, failureReason: reason);
+  const BiometricResult.failure(
+    String message, {
+    BiometricFailureReason? reason,
+  }) : this(success: false, errorMessage: message, failureReason: reason);
 }
 
 enum BiometricFailureReason {
@@ -36,13 +40,20 @@ enum BiometricFailureReason {
 }
 
 class BiometricService {
-  static const _storage = FlutterSecureStorage();
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final FlutterSecureStorage _storage;
+  final LocalAuthentication _localAuth;
+
+  BiometricService([
+    LocalAuthentication? localAuth,
+    FlutterSecureStorage? storage,
+  ]) : _localAuth = localAuth ?? LocalAuthentication(),
+       _storage = storage ?? const FlutterSecureStorage();
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
     try {
-      return await _localAuth.canCheckBiometrics || await _localAuth.isDeviceSupported();
+      if (await _localAuth.canCheckBiometrics) return true;
+      return await _localAuth.isDeviceSupported();
     } catch (_) {
       return false;
     }
@@ -82,20 +93,15 @@ class BiometricService {
   /// Authenticate using device biometric (Face ID / Touch ID / fingerprint).
   /// The OS decides which biometric to use — we just request authentication.
   Future<BiometricResult> authenticate({
+    String? reason,
     String localizedReason = 'Authentifiez-vous pour continuer',
     bool stickyAuth = true,
   }) async {
     try {
-      final available = await isAvailable();
-      if (!available) {
-        return const BiometricResult.failure(
-          'Authentification biométrique non disponible',
-          reason: BiometricFailureReason.notAvailable,
-        );
-      }
-
+      final authenticationReason = reason ?? localizedReason;
       final didAuthenticate = await _localAuth.authenticate(
-        localizedReason: localizedReason,
+        localizedReason: authenticationReason,
+        authMessages: const <AuthMessages>[],
         options: AuthenticationOptions(
           stickyAuth: stickyAuth,
           biometricOnly: true,
@@ -149,13 +155,46 @@ class BiometricService {
   Future<bool> isBiometricEnabled() async => isEnrolled();
 
   Future<List<BiometricType>> getAvailableBiometrics() async {
-    final type = await getAvailableType();
-    if (type == BiometricType.none) return [];
-    return [type];
+    try {
+      final biometrics = await _localAuth.getAvailableBiometrics();
+      final types = <BiometricType>[];
+
+      for (final biometric in biometrics) {
+        final type = switch (biometric) {
+          platform.BiometricType.face => BiometricType.faceId,
+          platform.BiometricType.fingerprint => BiometricType.fingerprint,
+          platform.BiometricType.iris => BiometricType.iris,
+          platform.BiometricType.strong ||
+          platform.BiometricType.weak => BiometricType.fingerprint,
+        };
+
+        if (!types.contains(type)) {
+          types.add(type);
+        }
+      }
+
+      return types;
+    } catch (_) {
+      return [];
+    }
   }
 
-  Future<bool> isDeviceSupported() async => isAvailable();
-  Future<bool> canCheckBiometrics() async => isAvailable();
+  Future<bool> isDeviceSupported() async {
+    try {
+      return await _localAuth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> canCheckBiometrics() async {
+    try {
+      return await _localAuth.canCheckBiometrics;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<BiometricType> getPrimaryBiometricType() async => getAvailableType();
 
   Future<void> enableBiometric() async {
@@ -172,6 +211,7 @@ class BiometricService {
     return authenticate(localizedReason: localizedReason);
   }
 
-  Future<BiometricResult> guardPinChange() async =>
-      authenticate(localizedReason: 'Vérifiez votre identité pour changer le PIN');
+  Future<BiometricResult> guardPinChange() async => authenticate(
+    localizedReason: 'Vérifiez votre identité pour changer le PIN',
+  );
 }

@@ -12,7 +12,7 @@ class QrPaymentData {
   final String? reference;
 
   const QrPaymentData({
-    this.type = 'joonapay',
+    this.type = 'korido',
     this.version = 1,
     required this.phone,
     this.amount,
@@ -24,13 +24,13 @@ class QrPaymentData {
   /// Create from JSON
   factory QrPaymentData.fromJson(Map<String, dynamic> json) {
     return QrPaymentData(
-      type: json['type'] as String? ?? 'joonapay',
+      type: json['type'] as String? ?? 'korido',
       version: json['version'] as int? ?? 1,
       phone: json['phone'] as String,
       amount: json['amount'] != null
           ? (json['amount'] is String
-              ? double.tryParse(json['amount'] as String)
-              : (json['amount'] as num).toDouble())
+                ? double.tryParse(json['amount'] as String)
+                : (json['amount'] as num).toDouble())
           : null,
       currency: json['currency'] as String?,
       name: json['name'] as String?,

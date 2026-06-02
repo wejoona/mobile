@@ -10,14 +10,11 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('ReferralsView Golden Tests', () {
+  goldenGroup('ReferralsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: ReferralsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: ReferralsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -30,10 +27,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: ReferralsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: ReferralsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

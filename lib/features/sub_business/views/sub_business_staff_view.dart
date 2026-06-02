@@ -12,10 +12,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Screen for managing staff members of a sub-business
 class SubBusinessStaffView extends ConsumerStatefulWidget {
-  const SubBusinessStaffView({
-    super.key,
-    required this.subBusinessId,
-  });
+  const SubBusinessStaffView({super.key, required this.subBusinessId});
 
   final String subBusinessId;
 
@@ -30,6 +27,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     super.initState();
     // Load staff members on mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(subBusinessProvider.notifier).loadSubBusinesses();
       ref.read(subBusinessProvider.notifier).loadStaff(widget.subBusinessId);
     });
   }
@@ -38,10 +36,10 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(subBusinessProvider);
-    // ignore: unused_local_variable
-    final __subBusiness = state.subBusinesses.firstWhere(
-      (sb) => sb.id == widget.subBusinessId,
-    );
+    final subBusiness = _findSubBusiness(state);
+    if (subBusiness == null) {
+      return _buildUnavailableState(l10n, state);
+    }
     final staff = state.staffBySubBusiness[widget.subBusinessId] ?? [];
 
     return Scaffold(
@@ -54,8 +52,9 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
         backgroundColor: Colors.transparent,
       ),
       body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(subBusinessProvider.notifier).loadStaff(widget.subBusinessId),
+        onRefresh: () => ref
+            .read(subBusinessProvider.notifier)
+            .loadStaff(widget.subBusinessId),
         color: context.colors.gold,
         backgroundColor: context.colors.container,
         child: staff.isEmpty
@@ -68,6 +67,58 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
         child: Icon(Icons.person_add, color: context.colors.canvas),
       ),
     );
+  }
+
+  Widget _buildUnavailableState(AppLocalizations l10n, SubBusinessState state) {
+    return Scaffold(
+      backgroundColor: context.colors.canvas,
+      appBar: AppBar(
+        title: AppText(
+          l10n.subBusiness_staffTitle,
+          variant: AppTextVariant.headlineSmall,
+        ),
+        backgroundColor: Colors.transparent,
+      ),
+      body: Center(
+        child: state.isLoading && state.subBusinesses.isEmpty
+            ? CircularProgressIndicator(color: context.colors.gold)
+            : Padding(
+                padding: EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.business_outlined,
+                      size: 56,
+                      color: context.colors.textSecondary,
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    AppText(
+                      l10n.subBusiness_emptyTitle,
+                      variant: AppTextVariant.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                    AppText(
+                      state.error ?? l10n.subBusiness_emptyMessage,
+                      variant: AppTextVariant.bodyMedium,
+                      color: context.colors.textSecondary,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  SubBusiness? _findSubBusiness(SubBusinessState state) {
+    for (final subBusiness in state.subBusinesses) {
+      if (subBusiness.id == widget.subBusinessId) {
+        return subBusiness;
+      }
+    }
+    return null;
   }
 
   Widget _buildEmptyState(AppLocalizations l10n) {
@@ -122,11 +173,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
           padding: EdgeInsets.all(AppSpacing.md),
           child: Row(
             children: [
-              Icon(
-                Icons.info_outline,
-                color: context.colors.gold,
-                size: 20,
-              ),
+              Icon(Icons.info_outline, color: context.colors.gold, size: 20),
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
@@ -236,7 +283,9 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
               onPressed: () async {
                 if (phoneController.text.isEmpty) return;
                 Navigator.pop(context, true);
-                final success = await ref.read(subBusinessProvider.notifier).addStaff(
+                final success = await ref
+                    .read(subBusinessProvider.notifier)
+                    .addStaff(
                       subBusinessId: widget.subBusinessId,
                       phoneNumber: phoneController.text,
                       role: selectedRole,
@@ -249,7 +298,9 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                             ? l10n.subBusiness_inviteSuccess
                             : l10n.error_generic,
                       ),
-                      backgroundColor: success ? context.colors.success : context.colors.error,
+                      backgroundColor: success
+                          ? context.colors.success
+                          : context.colors.error,
                     ),
                   );
                 }
@@ -262,7 +313,10 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     );
   }
 
-  Future<void> _showStaffOptions(StaffMember member, AppLocalizations l10n) async {
+  Future<void> _showStaffOptions(
+    StaffMember member,
+    AppLocalizations l10n,
+  ) async {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.colors.elevated,
@@ -283,10 +337,7 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
               ),
             ),
             SizedBox(height: AppSpacing.md),
-            AppText(
-              member.name,
-              variant: AppTextVariant.headlineSmall,
-            ),
+            AppText(member.name, variant: AppTextVariant.headlineSmall),
             SizedBox(height: AppSpacing.md),
             ListTile(
               leading: Icon(Icons.swap_horiz, color: context.colors.gold),
@@ -376,7 +427,9 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
                             ? l10n.subBusiness_roleUpdateSuccess
                             : l10n.error_generic,
                       ),
-                      backgroundColor: success ? context.colors.success : context.colors.error,
+                      backgroundColor: success
+                          ? context.colors.success
+                          : context.colors.error,
                     ),
                   );
                 }
@@ -421,17 +474,18 @@ class _SubBusinessStaffViewState extends ConsumerState<SubBusinessStaffView> {
     );
 
     if (confirm == true) {
-      final success = await ref.read(subBusinessProvider.notifier).removeStaff(
-            subBusinessId: widget.subBusinessId,
-            staffId: member.id,
-          );
+      final success = await ref
+          .read(subBusinessProvider.notifier)
+          .removeStaff(subBusinessId: widget.subBusinessId, staffId: member.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               success ? l10n.subBusiness_removeSuccess : l10n.error_generic,
             ),
-            backgroundColor: success ? context.colors.success : context.colors.error,
+            backgroundColor: success
+                ? context.colors.success
+                : context.colors.error,
           ),
         );
       }

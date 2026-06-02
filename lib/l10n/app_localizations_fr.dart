@@ -260,7 +260,19 @@ class AppLocalizationsFr extends AppLocalizations {
   String get wallet_availableBalance => 'Solde disponible';
 
   @override
+  String get wallet_availableToSend => 'Disponible à envoyer';
+
+  @override
+  String get wallet_pendingBalance => 'En attente';
+
+  @override
   String get wallet_totalBalance => 'Solde total';
+
+  @override
+  String get wallet_securedWallet => 'Portefeuille sécurisé';
+
+  @override
+  String get wallet_balanceHidden => 'Solde masqué';
 
   @override
   String get wallet_usdBalance => 'USD';
@@ -766,6 +778,116 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get settings_noDevicesDescription =>
       'Vous n\'avez pas encore d\'appareils enregistrés.';
+
+  @override
+  String get settings_connectedDevices => 'Appareils connectés';
+
+  @override
+  String get settings_oneDeviceAccess =>
+      '1 appareil peut accéder à votre compte';
+
+  @override
+  String settings_multipleDevicesAccess(int count) {
+    return '$count appareils peuvent accéder à votre compte';
+  }
+
+  @override
+  String get settings_otherDevices => 'Autres appareils';
+
+  @override
+  String get settings_activeNow => 'Actif';
+
+  @override
+  String get settings_trusted => 'Fiable';
+
+  @override
+  String get settings_notTrusted => 'Non fiable';
+
+  @override
+  String get settings_neverActive => 'Jamais';
+
+  @override
+  String get settings_justNow => 'À l\'instant';
+
+  @override
+  String settings_minutesAgo(int minutes) {
+    return 'Il y a $minutes min';
+  }
+
+  @override
+  String settings_hoursAgo(int hours) {
+    return 'Il y a $hours h';
+  }
+
+  @override
+  String settings_daysAgo(int days) {
+    return 'Il y a $days j';
+  }
+
+  @override
+  String settings_loginCountValue(int count) {
+    return '$count connexions';
+  }
+
+  @override
+  String get settings_revokeDeviceTitle => 'Supprimer l\'appareil';
+
+  @override
+  String get settings_revokeDeviceMessage =>
+      'Cet appareil sera déconnecté et devra s\'authentifier à nouveau.';
+
+  @override
+  String get settings_untrustDevice => 'Retirer la confiance';
+
+  @override
+  String get settings_deviceUntrustedSuccess => 'Confiance retirée';
+
+  @override
+  String get settings_deviceUntrustError =>
+      'Impossible de retirer la confiance';
+
+  @override
+  String get settings_renameDevice => 'Renommer l\'appareil';
+
+  @override
+  String get settings_deviceName => 'Nom de l\'appareil';
+
+  @override
+  String get settings_deviceRenamedSuccess => 'Appareil renommé';
+
+  @override
+  String get settings_deviceRenameError => 'Impossible de renommer l\'appareil';
+
+  @override
+  String get settings_signOutOtherDevices => 'Déconnecter les autres appareils';
+
+  @override
+  String get settings_signOutOtherDevicesTitle =>
+      'Déconnecter les autres appareils ?';
+
+  @override
+  String get settings_signOutOtherDevicesMessage =>
+      'Tous les autres appareils seront déconnectés. Cet appareil restera actif.';
+
+  @override
+  String get settings_signOutOtherDevicesSuccess =>
+      'Autres appareils déconnectés';
+
+  @override
+  String get settings_signOutOtherDevicesError =>
+      'Impossible de déconnecter les autres appareils';
+
+  @override
+  String get settings_devicesLoadErrorTitle =>
+      'Impossible de charger les appareils';
+
+  @override
+  String get settings_devicesLoadErrorDescription =>
+      'Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get settings_noOtherDevices =>
+      'Seul cet appareil a accès pour le moment.';
 
   @override
   String get kyc_verified => 'Vérifié';
@@ -3699,7 +3821,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String referrals_shareMessage(String code) {
-    return 'Rejoignez Korido et obtenez un bonus de 5\$ sur votre premier dépôt! Utilisez mon code de parrainage: $code\n\nTéléchargez maintenant: https://joonapay.com/download';
+    return 'Rejoignez Korido et obtenez un bonus de 5\$ sur votre premier dépôt! Utilisez mon code de parrainage: $code\n\nTéléchargez maintenant: https://korido.app/download';
   }
 
   @override
@@ -6048,7 +6170,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding_page1_description =>
-      'Stockez, envoyez et recevez des USDC en toute sécurité. Votre portefeuille numérique conçu pour l\'Afrique de l\'Ouest.';
+      'Stockez, envoyez et recevez des USDC en toute sécurité. Votre portefeuille s\'adapte à votre pays.';
 
   @override
   String get onboarding_page1_feature1 => 'Stockez vos USDC en toute sécurité';
@@ -6072,7 +6194,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding_page2_feature2 =>
-      'Envoyez vers n\'importe quel compte Mobile Money';
+      'Envoyez vers les comptes locaux disponibles';
 
   @override
   String get onboarding_page2_feature3 =>
@@ -6083,10 +6205,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding_page3_description =>
-      'Ajoutez de l\'argent via Mobile Money. Retirez sur votre compte local à tout moment.';
+      'Ajoutez des fonds avec les moyens de paiement disponibles dans votre pays. Retirez lorsque c\'est pris en charge.';
 
   @override
-  String get onboarding_page3_feature1 => 'Dépôts avec Orange Money, MTN, Wave';
+  String get onboarding_page3_feature1 =>
+      'Les moyens de paiement s\'adaptent à votre pays';
 
   @override
   String get onboarding_page3_feature2 => 'Frais de transaction faibles (1%)';
@@ -6758,6 +6881,16 @@ class AppLocalizationsFr extends AppLocalizations {
       'Paiement par carte bientôt disponible';
 
   @override
+  String get deposit_cardPayment => 'Payez par carte en toute sécurité';
+
+  @override
+  String get deposit_bankTransfer => 'Virement depuis un compte bancaire lié';
+
+  @override
+  String get deposit_cryptoTransfer =>
+      'Envoyez des USDC depuis un portefeuille externe';
+
+  @override
   String get deposit_choosePaymentMethod => 'Choisir le mode de paiement';
 
   @override
@@ -6790,6 +6923,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get deposit_openInWave => 'Ouvrir dans Wave';
+
+  @override
+  String get deposit_openPaymentApp => 'Ouvrir l\'application de paiement';
 
   @override
   String get deposit_orScanQR => 'Ou scannez le code QR ci-dessous';
@@ -7290,6 +7426,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get settings_copiedToClipboard => 'Copié dans le presse-papiers';
 
   @override
+  String get settings_failedToRemovePhoto =>
+      'Impossible de supprimer la photo de profil';
+
+  @override
   String get settings_failedToUpdateProfile =>
       'Impossible de mettre à jour le profil';
 
@@ -7315,7 +7455,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Problème signalé. Nous reviendrons vers vous bientôt.';
 
   @override
+  String get settings_photoRemoved => 'Photo de profil supprimée';
+
+  @override
   String get settings_profileUpdated => 'Profil mis à jour avec succès';
+
+  @override
+  String get settings_removePhoto => 'Supprimer la photo';
 
   @override
   String get settings_takePhoto => 'Prendre une photo';
@@ -7464,4 +7610,25 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get delete_contactSupportButton => 'Contacter le support';
+
+  @override
+  String get splash_tagline => 'L\'argent sans frontières';
+
+  @override
+  String get splash_poweredBy => 'Propulsé par JoonaPay';
+
+  @override
+  String get auth_authenticating => 'Authentification...';
+
+  @override
+  String get auth_tapToUnlock => 'Appuyez pour déverrouiller';
+
+  @override
+  String get auth_usePhoneInstead => 'Utiliser le numéro de téléphone';
+
+  @override
+  String get wallet_settingUp => 'Configuration de votre portefeuille...';
+
+  @override
+  String get wallet_setupMoment => 'Cela ne prendra qu\'un instant';
 }

@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/features/savings_pots/providers/savings_pots_provider.dart';
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -32,7 +35,7 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
     final l10n = AppLocalizations.of(context)!;
     final walletState = ref.watch(walletStateMachineProvider);
     final availableBalance = walletState.usdcBalance;
-    
+
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.md,
@@ -103,11 +106,20 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
           // Quick amount buttons
           Row(
             children: [
-              _buildQuickAmount(l10n.savingsPots_quick10, availableBalance * 0.1),
+              _buildQuickAmount(
+                l10n.savingsPots_quick10,
+                availableBalance * 0.1,
+              ),
               SizedBox(width: AppSpacing.sm),
-              _buildQuickAmount(l10n.savingsPots_quick25, availableBalance * 0.25),
+              _buildQuickAmount(
+                l10n.savingsPots_quick25,
+                availableBalance * 0.25,
+              ),
               SizedBox(width: AppSpacing.sm),
-              _buildQuickAmount(l10n.savingsPots_quick50, availableBalance * 0.5),
+              _buildQuickAmount(
+                l10n.savingsPots_quick50,
+                availableBalance * 0.5,
+              ),
             ],
           ),
           SizedBox(height: AppSpacing.xl),
@@ -173,11 +185,38 @@ class _AddToPotSheetState extends ConsumerState<AddToPotSheet> {
       return;
     }
 
+    String? pinToken;
+    final idempotencyKey = generateIdempotencyKey();
+    final confirmation = await PinConfirmationSheet.show(
+      context: context,
+      title: l10n.savingsPots_addMoney,
+      subtitle: l10n.send_enterPinToConfirm,
+      amount: amount,
+      onConfirm: (pin) async {
+        final verification = await ref
+            .read(pinServiceProvider)
+            .verifyPinWithBackend(pin);
+        if (verification.success && verification.pinToken != null) {
+          pinToken = verification.pinToken;
+          return true;
+        }
+        return false;
+      },
+    );
+
+    if (confirmation != PinConfirmationResult.success || pinToken == null) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
-      await ref.read(savingsPotsActionsProvider).addToPot(
+      await ref
+          .read(savingsPotsActionsProvider)
+          .addToPot(
             widget.potId,
             amount,
+            pinToken: pinToken!,
+            idempotencyKey: idempotencyKey,
           );
 
       if (mounted) {

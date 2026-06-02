@@ -20,14 +20,11 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('AuthLockedView Golden Tests', () {
+  goldenGroup('AuthLockedView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AuthLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AuthLockedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -40,10 +37,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AuthLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AuthLockedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -54,30 +48,26 @@ void main() {
     });
   });
 
-  group('AuthSuspendedView Golden Tests', () {
+  goldenGroup('AuthSuspendedView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: AuthSuspendedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: AuthSuspendedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/auth_suspended/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/auth_suspended/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: AuthSuspendedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: AuthSuspendedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -88,82 +78,75 @@ void main() {
     });
   });
 
-  group('BiometricPromptView Golden Tests', () {
+  goldenGroup('BiometricPromptView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: BiometricPromptView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: BiometricPromptView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/biometric_prompt/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/biometric_prompt/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: BiometricPromptView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: BiometricPromptView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/biometric_prompt/default_dark.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/biometric_prompt/default_dark.png',
+        ),
       );
     });
   });
 
-  group('DeviceVerificationView Golden Tests', () {
+  goldenGroup('DeviceVerificationView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: DeviceVerificationView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: DeviceVerificationView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/device_verification/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/device_verification/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: DeviceVerificationView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: DeviceVerificationView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/device_verification/default_dark.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/device_verification/default_dark.png',
+        ),
       );
     });
   });
 
-  group('KycExpiredView Golden Tests', () {
+  goldenGroup('KycExpiredView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: KycExpiredView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: KycExpiredView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -176,10 +159,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: KycExpiredView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: KycExpiredView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -190,14 +170,11 @@ void main() {
     });
   });
 
-  group('LoadingView Golden Tests', () {
+  goldenGroup('LoadingView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: LoadingView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: LoadingView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -210,10 +187,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: LoadingView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: LoadingView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -224,14 +198,11 @@ void main() {
     });
   });
 
-  group('OtpExpiredView Golden Tests', () {
+  goldenGroup('OtpExpiredView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: OtpExpiredView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: OtpExpiredView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -244,10 +215,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: OtpExpiredView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: OtpExpiredView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -258,64 +226,58 @@ void main() {
     });
   });
 
-  group('SessionConflictView Golden Tests', () {
+  goldenGroup('SessionConflictView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SessionConflictView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SessionConflictView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/session_conflict/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/session_conflict/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SessionConflictView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SessionConflictView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/session_conflict/default_dark.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/session_conflict/default_dark.png',
+        ),
       );
     });
   });
 
-  group('SessionLockedView Golden Tests', () {
+  goldenGroup('SessionLockedView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: SessionLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: SessionLockedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/session_locked/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/session_locked/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: SessionLockedView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: SessionLockedView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -326,14 +288,11 @@ void main() {
     });
   });
 
-  group('WalletFrozenView Golden Tests', () {
+  goldenGroup('WalletFrozenView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: WalletFrozenView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: WalletFrozenView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -346,10 +305,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: WalletFrozenView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: WalletFrozenView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -360,36 +316,34 @@ void main() {
     });
   });
 
-  group('WalletUnderReviewView Golden Tests', () {
+  goldenGroup('WalletUnderReviewView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: WalletUnderReviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: WalletUnderReviewView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/wallet_under_review/default_light.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/wallet_under_review/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: WalletUnderReviewView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: WalletUnderReviewView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/fsm_states/wallet_under_review/default_dark.png'),
+        matchesGoldenFile(
+          'goldens/fsm_states/wallet_under_review/default_dark.png',
+        ),
       );
     });
   });

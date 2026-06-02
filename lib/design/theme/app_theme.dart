@@ -18,9 +18,9 @@ class AppTheme {
 
       colorScheme: const ColorScheme.light(
         primary: AppColorsLight.gold500,
-        onPrimary: AppColorsLight.textInverse,
-        primaryContainer: AppColors.gold200,
-        onPrimaryContainer: AppColors.gold900,
+        onPrimary: AppColorsLight.textOnGold,
+        primaryContainer: AppColorsLight.gold100,
+        onPrimaryContainer: AppColorsLight.textPrimary,
         secondary: AppColorsLight.container,
         onSecondary: AppColorsLight.textPrimary,
         secondaryContainer: AppColorsLight.elevated,
@@ -72,7 +72,7 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColorsLight.container,
-        indicatorColor: AppColorsLight.gold500.withValues(alpha: 0.2),
+        indicatorColor: AppColorsLight.gold100,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -80,7 +80,10 @@ class AppTheme {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: AppColorsLight.gold500, size: 24);
           }
-          return const IconThemeData(color: AppColorsLight.textTertiary, size: 24);
+          return const IconThemeData(
+            color: AppColorsLight.textTertiary,
+            size: 24,
+          );
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -111,7 +114,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsLight.gold500,
-          foregroundColor: AppColorsLight.textInverse,
+          foregroundColor: AppColorsLight.textOnGold,
           disabledBackgroundColor: AppColorsLight.elevated,
           disabledForegroundColor: AppColorsLight.textDisabled,
           elevation: 0,
@@ -137,7 +140,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          textStyle: AppTypography.button.copyWith(color: AppColorsLight.textPrimary),
+          textStyle: AppTypography.button.copyWith(
+            color: AppColorsLight.textPrimary,
+          ),
         ),
       ),
 
@@ -148,7 +153,9 @@ class AppTheme {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          textStyle: AppTypography.labelLarge.copyWith(color: AppColorsLight.gold500),
+          textStyle: AppTypography.labelLarge.copyWith(
+            color: AppColorsLight.gold500,
+          ),
         ),
       ),
 
@@ -177,11 +184,20 @@ class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColorsLight.errorBase, width: 2),
+          borderSide: const BorderSide(
+            color: AppColorsLight.errorBase,
+            width: 2,
+          ),
         ),
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColorsLight.textSecondary),
-        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColorsLight.textTertiary),
-        errorStyle: AppTypography.bodySmall.copyWith(color: AppColorsLight.errorText),
+        labelStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
+        hintStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColorsLight.textTertiary,
+        ),
+        errorStyle: AppTypography.bodySmall.copyWith(
+          color: AppColorsLight.errorText,
+        ),
       ),
 
       dividerTheme: const DividerThemeData(
@@ -196,8 +212,12 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xxl),
         ),
-        titleTextStyle: AppTypography.titleLarge.copyWith(color: AppColorsLight.textPrimary),
-        contentTextStyle: AppTypography.bodyMedium.copyWith(color: AppColorsLight.textSecondary),
+        titleTextStyle: AppTypography.titleLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
       ),
 
       bottomSheetTheme: const BottomSheetThemeData(
@@ -205,7 +225,9 @@ class AppTheme {
         modalBackgroundColor: AppColorsLight.container,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
         ),
         dragHandleColor: AppColorsLight.textTertiary,
         dragHandleSize: Size(40, 4),
@@ -213,7 +235,9 @@ class AppTheme {
 
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColorsLight.textPrimary,
-        contentTextStyle: AppTypography.bodyMedium.copyWith(color: AppColorsLight.textInverse),
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColorsLight.textInverse,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
@@ -226,30 +250,66 @@ class AppTheme {
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.sm,
         ),
-        titleTextStyle: AppTypography.bodyLarge.copyWith(color: AppColorsLight.textPrimary),
-        subtitleTextStyle: AppTypography.bodySmall.copyWith(color: AppColorsLight.textSecondary),
-        leadingAndTrailingTextStyle: AppTypography.labelMedium.copyWith(color: AppColorsLight.textSecondary),
+        titleTextStyle: AppTypography.bodyLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        subtitleTextStyle: AppTypography.bodySmall.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
+        leadingAndTrailingTextStyle: AppTypography.labelMedium.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
 
       textTheme: TextTheme(
-        displayLarge: AppTypography.displayLarge.copyWith(color: AppColorsLight.textPrimary),
-        displayMedium: AppTypography.displayMedium.copyWith(color: AppColorsLight.textPrimary),
-        displaySmall: AppTypography.displaySmall.copyWith(color: AppColorsLight.textPrimary),
-        headlineLarge: AppTypography.headlineLarge.copyWith(color: AppColorsLight.textPrimary),
-        headlineMedium: AppTypography.headlineMedium.copyWith(color: AppColorsLight.textPrimary),
-        headlineSmall: AppTypography.headlineSmall.copyWith(color: AppColorsLight.textPrimary),
-        titleLarge: AppTypography.titleLarge.copyWith(color: AppColorsLight.textPrimary),
-        titleMedium: AppTypography.titleMedium.copyWith(color: AppColorsLight.textPrimary),
-        titleSmall: AppTypography.titleSmall.copyWith(color: AppColorsLight.textPrimary),
-        bodyLarge: AppTypography.bodyLarge.copyWith(color: AppColorsLight.textPrimary),
-        bodyMedium: AppTypography.bodyMedium.copyWith(color: AppColorsLight.textSecondary),
-        bodySmall: AppTypography.bodySmall.copyWith(color: AppColorsLight.textSecondary),
-        labelLarge: AppTypography.labelLarge.copyWith(color: AppColorsLight.textPrimary),
-        labelMedium: AppTypography.labelMedium.copyWith(color: AppColorsLight.textSecondary),
-        labelSmall: AppTypography.labelSmall.copyWith(color: AppColorsLight.textSecondary),
+        displayLarge: AppTypography.displayLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        displayMedium: AppTypography.displayMedium.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        displaySmall: AppTypography.displaySmall.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        headlineLarge: AppTypography.headlineLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        headlineMedium: AppTypography.headlineMedium.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        headlineSmall: AppTypography.headlineSmall.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        titleLarge: AppTypography.titleLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        titleMedium: AppTypography.titleMedium.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        titleSmall: AppTypography.titleSmall.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        bodyLarge: AppTypography.bodyLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        bodyMedium: AppTypography.bodyMedium.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
+        bodySmall: AppTypography.bodySmall.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
+        labelLarge: AppTypography.labelLarge.copyWith(
+          color: AppColorsLight.textPrimary,
+        ),
+        labelMedium: AppTypography.labelMedium.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
+        labelSmall: AppTypography.labelSmall.copyWith(
+          color: AppColorsLight.textSecondary,
+        ),
       ),
 
       // ═══════════════════════════════════════════════════════════════════════
@@ -307,10 +367,7 @@ class AppTheme {
         centerTitle: true,
         systemOverlayStyle: SystemUiOverlayStyle.light,
         titleTextStyle: AppTypography.titleLarge,
-        iconTheme: const IconThemeData(
-          color: AppColors.textPrimary,
-          size: 24,
-        ),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 24),
       ),
 
       // ═══════════════════════════════════════════════════════════════════════
@@ -411,7 +468,9 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          textStyle: AppTypography.button.copyWith(color: AppColors.textPrimary),
+          textStyle: AppTypography.button.copyWith(
+            color: AppColors.textPrimary,
+          ),
         ),
       ),
 
@@ -425,7 +484,9 @@ class AppTheme {
             horizontal: AppSpacing.lg,
             vertical: AppSpacing.sm,
           ),
-          textStyle: AppTypography.labelLarge.copyWith(color: AppColors.gold500),
+          textStyle: AppTypography.labelLarge.copyWith(
+            color: AppColors.gold500,
+          ),
         ),
       ),
 
@@ -459,9 +520,15 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: const BorderSide(color: AppColors.errorBase, width: 2),
         ),
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
-        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
-        errorStyle: AppTypography.bodySmall.copyWith(color: AppColors.errorText),
+        labelStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        hintStyle: AppTypography.bodyMedium.copyWith(
+          color: AppColors.textTertiary,
+        ),
+        errorStyle: AppTypography.bodySmall.copyWith(
+          color: AppColors.errorText,
+        ),
       ),
 
       // ═══════════════════════════════════════════════════════════════════════
@@ -494,7 +561,9 @@ class AppTheme {
         modalBackgroundColor: AppColors.slate,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xxl),
+          ),
         ),
         dragHandleColor: AppColors.textTertiary,
         dragHandleSize: Size(40, 4),

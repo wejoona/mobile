@@ -1,11 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Contact sync provider - syncs device contacts with Korido backend.
-enum ContactSyncStatus { idle, requestingPermission, syncing, synced, permissionDenied, error }
+enum ContactSyncStatus {
+  idle,
+  requestingPermission,
+  syncing,
+  synced,
+  permissionDenied,
+  error,
+}
 
 class ContactSyncState {
   final ContactSyncStatus status;
@@ -50,7 +57,10 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
   /// Request contacts permission
   Future<bool> requestPermission() async {
-    state = state.copyWith(status: ContactSyncStatus.requestingPermission, error: null);
+    state = state.copyWith(
+      status: ContactSyncStatus.requestingPermission,
+      error: null,
+    );
     try {
       final status = await Permission.contacts.request();
       if (status.isGranted) {
@@ -70,7 +80,10 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
       }
     } catch (e) {
       _logger.error('Permission request failed: $e');
-      state = state.copyWith(status: ContactSyncStatus.error, error: e.toString());
+      state = state.copyWith(
+        status: ContactSyncStatus.error,
+        error: e.toString(),
+      );
       return false;
     }
   }
@@ -90,22 +103,24 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
     try {
       // Step 1: Read device contacts
       _logger.info('Reading device contacts...');
-      final contacts = await FlutterContacts.getContacts(withProperties: true);
-      
-      // Step 2: Extract phone numbers
-      final phoneNumbers = <String>[];
+      final contactsService = ref.read(contactsServiceProvider);
+      final contacts = await contactsService.getDeviceContacts();
+
+      // Step 2: Hash normalized phone numbers before sending them to the API.
+      final phoneHashes = <String>{};
       for (final contact in contacts) {
         for (final phone in contact.phones) {
-          final cleaned = phone.number.replaceAll(RegExp(r'[^\d+]'), '');
-          if (cleaned.isNotEmpty) {
-            phoneNumbers.add(cleaned);
+          if (phone.number.trim().isNotEmpty) {
+            phoneHashes.add(contactsService.hashPhone(phone.number));
           }
         }
       }
 
-      _logger.info('Found ${phoneNumbers.length} phone numbers from ${contacts.length} contacts');
+      _logger.info(
+        'Found ${phoneHashes.length} phone numbers from ${contacts.length} contacts',
+      );
 
-      if (phoneNumbers.isEmpty) {
+      if (phoneHashes.isEmpty) {
         state = state.copyWith(
           status: ContactSyncStatus.synced,
           totalContacts: 0,
@@ -117,16 +132,19 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
       // Step 3: Send to backend for matching
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/contacts/sync', data: {
-        'phones': phoneNumbers,
-      });
+      final response = await dio.post(
+        '/contacts/sync',
+        data: {'phoneHashes': phoneHashes.toList()},
+      );
 
       final data = response.data as Map<String, dynamic>;
-      final matchedCount = (data['matched'] as List?)?.length ?? 0;
+      final matchedCount =
+          (data['matchesFound'] as int?) ??
+          (data['matches'] as List? ?? []).length;
 
       state = state.copyWith(
         status: ContactSyncStatus.synced,
-        totalContacts: phoneNumbers.length,
+        totalContacts: phoneHashes.length,
         koridoUsers: matchedCount,
         lastSyncAt: DateTime.now(),
       );
@@ -154,4 +172,6 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 }
 
 final contactSyncProvider =
-    NotifierProvider<ContactSyncNotifier, ContactSyncState>(ContactSyncNotifier.new);
+    NotifierProvider<ContactSyncNotifier, ContactSyncState>(
+      ContactSyncNotifier.new,
+    );

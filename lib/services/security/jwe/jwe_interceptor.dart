@@ -14,11 +14,11 @@ final _log = AppLogger('JweInterceptor');
 
 /// Paths that require JWE encryption of request bodies.
 const _sensitivePathPatterns = [
-  '/user/pin/',        // PIN set, verify, change, reset
-  '/wallet/pin/',      // Wallet PIN operations
-  '/wallet/deposit',   // Deposit initiation
+  '/user/pin/', // PIN set, verify, change, reset
+  '/wallet/pin/', // Wallet PIN operations
+  '/wallet/deposit', // Deposit initiation
   '/wallet/transfer/', // Internal + external transfers
-  '/wallet/withdraw',  // Withdrawals
+  '/wallet/withdraw', // Withdrawals
 ];
 
 class JweInterceptor extends Interceptor {
@@ -31,7 +31,10 @@ class JweInterceptor extends Interceptor {
   set enabled(bool value) => _enabled = value;
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     // Only encrypt POST/PUT/PATCH with body on sensitive endpoints
     if (!_enabled ||
         options.data == null ||
@@ -72,7 +75,8 @@ class JweInterceptor extends Interceptor {
     // If server says "re-fetch key", invalidate cache
     if (err.response?.statusCode == 400) {
       final body = err.response?.data;
-      if (body is Map && body['message']?.toString().contains('re-fetch') == true) {
+      if (body is Map &&
+          body['message']?.toString().contains('re-fetch') == true) {
         _jweService.invalidateKey();
         _log.info('Server key invalidated, will re-fetch on next request');
       }

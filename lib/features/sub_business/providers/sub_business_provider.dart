@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/sub_business/models/sub_business.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -42,19 +43,17 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/sub-businesses');
-      // ignore: avoid_dynamic_calls
-      final List<dynamic> data = response.data['subBusinesses'];
-      final subBusinesses =
-          data.map((json) => SubBusiness.fromJson(json)).toList();
-      state = state.copyWith(
-        isLoading: false,
-        subBusinesses: subBusinesses,
-      );
+      final data = _extractList(response.data, const [
+        'subBusinesses',
+        'data',
+        'items',
+      ]);
+      final subBusinesses = data
+          .map((json) => SubBusiness.fromJson(_asStringMap(json)))
+          .toList();
+      state = state.copyWith(isLoading: false, subBusinesses: subBusinesses);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -67,22 +66,26 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/sub-businesses', data: {
-        'name': name,
-        'description': description,
-        'type': type.name,
-      });
-      final newSubBusiness = SubBusiness.fromJson(response.data);
+      final walletId = await _currentWalletId(dio);
+      final response = await dio.post(
+        '/sub-businesses',
+        data: {
+          'walletId': walletId,
+          'name': name,
+          'description': description,
+          'type': _backendSubBusinessType(type),
+        },
+      );
+      final newSubBusiness = SubBusiness.fromJson(
+        _extractObject(response.data, const ['subBusiness', 'data']),
+      );
       state = state.copyWith(
         isLoading: false,
         subBusinesses: [...state.subBusinesses, newSubBusiness],
       );
       return newSubBusiness;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
       return null;
     }
   }
@@ -92,9 +95,14 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/sub-businesses/$subBusinessId/staff');
-      // ignore: avoid_dynamic_calls
-      final List<dynamic> data = response.data['staff'];
-      final staff = data.map((json) => StaffMember.fromJson(json)).toList();
+      final data = _extractList(response.data, const [
+        'staff',
+        'data',
+        'items',
+      ]);
+      final staff = data
+          .map((json) => StaffMember.fromJson(_asStringMap(json)))
+          .toList();
 
       final updatedStaff = Map<String, List<StaffMember>>.from(
         state.staffBySubBusiness,
@@ -102,6 +110,16 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       updatedStaff[subBusinessId] = staff;
 
       state = state.copyWith(staffBySubBusiness: updatedStaff);
+    } on DioException catch (e) {
+      if (_isMissingEndpoint(e)) {
+        final updatedStaff = Map<String, List<StaffMember>>.from(
+          state.staffBySubBusiness,
+        );
+        updatedStaff[subBusinessId] = const [];
+        state = state.copyWith(staffBySubBusiness: updatedStaff);
+        return;
+      }
+      state = state.copyWith(error: e.toString());
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -118,12 +136,11 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
       final dio = ref.read(dioProvider);
       final response = await dio.post(
         '/sub-businesses/$subBusinessId/staff',
-        data: {
-          'phoneNumber': phoneNumber,
-          'role': role.name,
-        },
+        data: {'phoneNumber': phoneNumber, 'role': role.name},
       );
-      final newStaff = StaffMember.fromJson(response.data);
+      final newStaff = StaffMember.fromJson(
+        _extractObject(response.data, const ['staffMember', 'staff', 'data']),
+      );
 
       final updatedStaff = Map<String, List<StaffMember>>.from(
         state.staffBySubBusiness,
@@ -154,11 +171,16 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         subBusinesses: updatedSubBusinesses,
       );
       return true;
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: _isMissingEndpoint(e)
+            ? 'Staff management is not available yet.'
+            : e.toString(),
       );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -202,11 +224,16 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         staffBySubBusiness: updatedStaff,
       );
       return true;
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: _isMissingEndpoint(e)
+            ? 'Staff management is not available yet.'
+            : e.toString(),
       );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -225,7 +252,9 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         state.staffBySubBusiness,
       );
       final staff = updatedStaff[subBusinessId] ?? [];
-      updatedStaff[subBusinessId] = staff.where((s) => s.id != staffId).toList();
+      updatedStaff[subBusinessId] = staff
+          .where((s) => s.id != staffId)
+          .toList();
 
       // Update staff count
       final updatedSubBusinesses = state.subBusinesses.map((sb) {
@@ -250,11 +279,16 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         subBusinesses: updatedSubBusinesses,
       );
       return true;
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: _isMissingEndpoint(e)
+            ? 'Staff management is not available yet.'
+            : e.toString(),
       );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -268,11 +302,14 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('/sub-businesses/transfer', data: {
-        'fromSubBusinessId': fromSubBusinessId,
-        'toSubBusinessId': toSubBusinessId,
-        'amount': amount,
-      });
+      await dio.post(
+        '/sub-businesses/transfer',
+        data: {
+          'fromSubBusinessId': fromSubBusinessId,
+          'toSubBusinessId': toSubBusinessId,
+          'amount': amount,
+        },
+      );
 
       // Update balances locally
       final updatedSubBusinesses = state.subBusinesses.map((sb) {
@@ -307,11 +344,16 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
         subBusinesses: updatedSubBusinesses,
       );
       return true;
-    } catch (e) {
+    } on DioException catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: _isMissingEndpoint(e)
+            ? 'Sub-business transfers are not available yet.'
+            : e.toString(),
       );
+      return false;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
       return false;
     }
   }
@@ -320,5 +362,55 @@ class SubBusinessNotifier extends Notifier<SubBusinessState> {
 /// Provider for sub-business management
 final subBusinessProvider =
     NotifierProvider<SubBusinessNotifier, SubBusinessState>(
-  SubBusinessNotifier.new,
-);
+      SubBusinessNotifier.new,
+    );
+
+List<dynamic> _extractList(Object? data, List<String> keys) {
+  if (data is List) return data;
+  if (data is Map) {
+    for (final key in keys) {
+      final value = data[key];
+      if (value is List) return value;
+    }
+  }
+  return const [];
+}
+
+Map<String, dynamic> _extractObject(Object? data, List<String> keys) {
+  Object? value = data;
+  if (data is Map) {
+    for (final key in keys) {
+      if (data[key] is Map) {
+        value = data[key];
+        break;
+      }
+    }
+  }
+  return _asStringMap(value);
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected sub-business JSON object');
+}
+
+Future<String> _currentWalletId(Dio dio) async {
+  final response = await dio.get('/wallet');
+  final data = response.data;
+  if (data is Map) {
+    final walletId = data['walletId'] as String? ?? data['id'] as String?;
+    if (walletId != null && walletId.isNotEmpty) return walletId;
+  }
+  throw const FormatException('Current wallet id is required');
+}
+
+String _backendSubBusinessType(SubBusinessType type) {
+  if (type == SubBusinessType.subsidiary) return SubBusinessType.branch.name;
+  return type.name;
+}
+
+bool _isMissingEndpoint(DioException e) {
+  final statusCode = e.response?.statusCode;
+  return statusCode == 404 || statusCode == 405;
+}

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 
 /// Cards Screen - Coming Soon
 ///
@@ -102,7 +103,8 @@ class CardsScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: AppButton(
                   label: l10n.cards_notifyMe,
-                  onPressed: () => _showNotifyDialog(context, l10n, colors),
+                  onPressed: () =>
+                      _showNotifyDialog(context, ref, l10n, colors),
                   variant: AppButtonVariant.secondary,
                 ),
               ),
@@ -118,13 +120,22 @@ class CardsScreen extends ConsumerWidget {
       width: 300,
       height: 180,
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppColors.goldGradient,
+        gradient: LinearGradient(
+          colors: colors.isDark
+              ? [colors.container, colors.elevated]
+              : [colors.surface, colors.container],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: AppShadows.goldGlow,
+        border: Border.all(color: colors.gold.withValues(alpha: 0.28)),
+        boxShadow: [
+          BoxShadow(
+            color: colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Stack(
         children: [
@@ -136,8 +147,9 @@ class CardsScreen extends ConsumerWidget {
               width: 48,
               height: 36,
               decoration: BoxDecoration(
-                color: AppColors.gold500,
+                color: colors.gold.withValues(alpha: 0.22),
                 borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: colors.gold.withValues(alpha: 0.35)),
               ),
             ),
           ),
@@ -149,7 +161,7 @@ class CardsScreen extends ConsumerWidget {
             child: AppText(
               '•••• •••• •••• ••••',
               variant: AppTextVariant.bodyLarge,
-              color: AppColors.textInverse,
+              color: colors.textPrimary,
             ),
           ),
 
@@ -163,13 +175,13 @@ class CardsScreen extends ConsumerWidget {
                 AppText(
                   'CARDHOLDER NAME',
                   variant: AppTextVariant.labelSmall,
-                  color: AppColors.textInverse.withValues(alpha: 0.7),
+                  color: colors.textTertiary,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 AppText(
                   'Korido Card',
                   variant: AppTextVariant.bodyMedium,
-                  color: AppColors.textInverse,
+                  color: colors.textPrimary,
                 ),
               ],
             ),
@@ -181,7 +193,7 @@ class CardsScreen extends ConsumerWidget {
             bottom: AppSpacing.lg,
             child: Icon(
               Icons.credit_card,
-              color: AppColors.textInverse.withValues(alpha: 0.4),
+              color: colors.gold.withValues(alpha: 0.42),
               size: 40,
             ),
           ),
@@ -199,18 +211,12 @@ class CardsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: colors.gold.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(
-          color: colors.gold.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.schedule,
-            color: colors.gold,
-            size: 16,
-          ),
+          Icon(Icons.schedule, color: colors.gold, size: 16),
           const SizedBox(width: AppSpacing.sm),
           AppText(
             l10n.cards_comingSoon,
@@ -230,54 +236,56 @@ class CardsScreen extends ConsumerWidget {
   }) {
     final colors = context.colors;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: colors.elevated,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+    return AppCard(
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: colors.gold.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: colors.gold, size: 20),
           ),
-          child: Icon(
-            icon,
-            color: colors.gold,
-            size: 20,
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  variant: AppTextVariant.labelLarge,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  description,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                title,
-                variant: AppTextVariant.labelLarge,
-                color: colors.textPrimary,
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              AppText(
-                description,
-                variant: AppTextVariant.bodySmall,
-                color: colors.textSecondary,
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   void _showNotifyDialog(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     ThemeColors colors,
   ) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: colors.container,
+        backgroundColor: dialogContext.colors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.xxl),
         ),
@@ -292,16 +300,49 @@ class CardsScreen extends ConsumerWidget {
           color: colors.textSecondary,
         ),
         actions: [
-          TextButton(
+          AppButton(
+            label: l10n.action_cancel,
             onPressed: () => Navigator.pop(dialogContext),
-            child: AppText(
-              l10n.action_cancel,
-              variant: AppTextVariant.labelLarge,
-              color: colors.textSecondary,
-            ),
+            variant: AppButtonVariant.ghost,
+            size: AppButtonSize.small,
           ),
-          TextButton(
-            onPressed: () {
+          AppButton(
+            label: l10n.action_confirm,
+            onPressed: () async {
+              final authState = ref.read(authProvider);
+              final user = authState.user;
+              try {
+                await ref
+                    .read(featureSubscriptionServiceProvider)
+                    .subscribe(
+                      FeatureSubscriptionRequest(
+                        featureKey: 'virtual_card',
+                        source: 'cards_screen',
+                        phone: user?.phone ?? authState.phone,
+                        email: user?.email,
+                        metadata: {
+                          'surface': 'cards',
+                          'featureName': 'Korido virtual card',
+                          if (user?.countryCode != null)
+                            'countryCode': user!.countryCode,
+                          if (user?.preferredLocale != null)
+                            'locale': user!.preferredLocale,
+                        },
+                      ),
+                    );
+              } catch (e) {
+                if (!context.mounted) return;
+                Navigator.pop(dialogContext);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.common_errorFormat(e.toString())),
+                    backgroundColor: colors.error,
+                  ),
+                );
+                return;
+              }
+
+              if (!context.mounted) return;
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -310,11 +351,8 @@ class CardsScreen extends ConsumerWidget {
                 ),
               );
             },
-            child: AppText(
-              l10n.action_confirm,
-              variant: AppTextVariant.labelLarge,
-              color: colors.gold,
-            ),
+            variant: AppButtonVariant.primary,
+            size: AppButtonSize.small,
           ),
         ],
       ),

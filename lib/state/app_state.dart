@@ -2,13 +2,7 @@ import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 
 /// Wallet Balance State Machine
-enum WalletStatus {
-  initial,
-  loading,
-  loaded,
-  error,
-  refreshing,
-}
+enum WalletStatus { initial, loading, loaded, error, refreshing }
 
 class WalletState {
   final WalletStatus status;
@@ -20,6 +14,7 @@ class WalletState {
   final double pendingBalance;
   final String? error;
   final DateTime? lastUpdated;
+
   /// Whether this state was loaded from local cache (not fresh from server)
   final bool isCached;
 
@@ -44,7 +39,8 @@ class WalletState {
   bool get hasError => status == WalletStatus.error;
   bool get isLoaded => status == WalletStatus.loaded;
   bool get hasWallet => walletId.isNotEmpty && status == WalletStatus.loaded;
-  bool get hasWalletAddress => walletAddress != null && walletAddress!.isNotEmpty;
+  bool get hasWalletAddress =>
+      walletAddress != null && walletAddress!.isNotEmpty;
 
   /// Short display version of wallet address
   String get shortAddress {
@@ -131,8 +127,12 @@ class UserState {
   String get displayName =>
       firstName != null ? '$firstName ${lastName ?? ''}' : phone ?? 'User';
 
-  /// Best available avatar: local file > server URL > base64 thumb
-  String? get effectiveAvatarUrl => avatarUrl ?? avatarThumb;
+  /// Best available avatar: local file/server URL first, then base64 thumb.
+  String? get effectiveAvatarUrl {
+    if (avatarUrl != null && avatarUrl!.isNotEmpty) return avatarUrl;
+    if (avatarThumb != null && avatarThumb!.isNotEmpty) return avatarThumb;
+    return null;
+  }
 
   UserState copyWith({
     AuthStatus? status,
@@ -150,6 +150,8 @@ class UserState {
     bool? canWithdraw,
     String? accessToken,
     String? error,
+    bool clearAvatarUrl = false,
+    bool clearAvatarThumb = false,
   }) {
     return UserState(
       status: status ?? this.status,
@@ -159,8 +161,8 @@ class UserState {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       emailVerified: emailVerified ?? this.emailVerified,
-      avatarUrl: avatarUrl ?? this.avatarUrl,
-      avatarThumb: avatarThumb ?? this.avatarThumb,
+      avatarUrl: clearAvatarUrl ? null : avatarUrl ?? this.avatarUrl,
+      avatarThumb: clearAvatarThumb ? null : avatarThumb ?? this.avatarThumb,
       countryCode: countryCode ?? this.countryCode,
       kycStatus: kycStatus ?? this.kycStatus,
       canTransact: canTransact ?? this.canTransact,
@@ -188,6 +190,7 @@ class TransactionListState {
   final int page;
   final bool hasMore;
   final String? error;
+
   /// Whether this state was loaded from local cache
   final bool isCached;
 

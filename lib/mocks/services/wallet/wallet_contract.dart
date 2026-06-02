@@ -33,11 +33,30 @@ class WalletResponse {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'walletId': id,
     'userId': userId,
     'address': address,
+    'walletAddress': address,
     'network': network,
+    'blockchain': network,
+    'currency': 'USDC',
+    'balance': balanceUsdc,
     'balanceUsdc': balanceUsdc,
     'balanceLocal': balanceLocal,
+    'balances': [
+      {
+        'currency': 'USDC',
+        'available': balanceUsdc,
+        'pending': 0,
+        'total': balanceUsdc,
+      },
+      {
+        'currency': localCurrency,
+        'available': balanceLocal,
+        'pending': 0,
+        'total': balanceLocal,
+      },
+    ],
     'localCurrency': localCurrency,
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
@@ -53,7 +72,7 @@ class CreateWalletRequest {
   Map<String, dynamic> toJson() => {'network': network};
 }
 
-/// Deposit request
+/// Legacy deposit request retained for old wallet mock aliases.
 class DepositRequest {
   final double amount;
   final String provider;
@@ -72,7 +91,7 @@ class DepositRequest {
   };
 }
 
-/// Deposit response
+/// Legacy deposit response retained for old wallet mock aliases.
 class DepositResponse {
   final String id;
   final String status;
@@ -103,7 +122,7 @@ class DepositResponse {
   };
 }
 
-/// Withdraw request
+/// Legacy withdraw request retained for old wallet mock aliases.
 class WithdrawRequest {
   final double amount;
   final String provider;
@@ -122,7 +141,7 @@ class WithdrawRequest {
   };
 }
 
-/// Withdraw response
+/// Legacy withdraw response retained for old wallet mock aliases.
 class WithdrawResponse {
   final String id;
   final String status;
@@ -166,7 +185,7 @@ class WalletContract extends ApiContract {
   );
 
   static const createWallet = ApiEndpoint(
-    path: '',
+    path: '/create',
     method: HttpMethod.post,
     description: 'Create a new wallet',
     requestType: CreateWalletRequest,
@@ -174,42 +193,51 @@ class WalletContract extends ApiContract {
     requiresAuth: true,
   );
 
-  static const getBalance = ApiEndpoint(
-    path: '/balance',
+  static const getRate = ApiEndpoint(
+    path: '/rate',
     method: HttpMethod.get,
-    description: 'Get wallet balance',
+    description: 'Get exchange rate quote',
+    requiresAuth: true,
+    queryParams: {
+      'sourceCurrency': 'Source currency, e.g. XOF',
+      'targetCurrency': 'Target currency, e.g. USD',
+      'amount': 'Source amount',
+      'direction': 'deposit or withdrawal',
+    },
+  );
+
+  static const getKycStatus = ApiEndpoint(
+    path: '/kyc/status',
+    method: HttpMethod.get,
+    description: 'Get wallet KYC status',
     requiresAuth: true,
   );
 
-  static const deposit = ApiEndpoint(
-    path: '/deposit',
+  static const submitKyc = ApiEndpoint(
+    path: '/kyc/submit',
     method: HttpMethod.post,
-    description: 'Initiate a deposit',
-    requestType: DepositRequest,
-    responseType: DepositResponse,
+    description: 'Submit wallet KYC details',
     requiresAuth: true,
   );
 
-  static const withdraw = ApiEndpoint(
-    path: '/withdraw',
+  static const setPin = ApiEndpoint(
+    path: '/pin/set',
     method: HttpMethod.post,
-    description: 'Initiate a withdrawal',
-    requestType: WithdrawRequest,
-    responseType: WithdrawResponse,
+    description: 'Set or update wallet PIN',
     requiresAuth: true,
   );
 
-  static const getDepositProviders = ApiEndpoint(
-    path: '/deposit/providers',
-    method: HttpMethod.get,
-    description: 'Get available deposit providers',
+  static const verifyPin = ApiEndpoint(
+    path: '/pin/verify',
+    method: HttpMethod.post,
+    description: 'Verify wallet PIN and return a transaction token',
     requiresAuth: true,
   );
 
-  static const getWithdrawProviders = ApiEndpoint(
-    path: '/withdraw/providers',
+  static const getLimits = ApiEndpoint(
+    path: '/limits',
     method: HttpMethod.get,
-    description: 'Get available withdrawal providers',
+    description: 'Get wallet transaction limits',
     requiresAuth: true,
   );
 
@@ -217,10 +245,11 @@ class WalletContract extends ApiContract {
   List<ApiEndpoint> get endpoints => [
     getWallet,
     createWallet,
-    getBalance,
-    deposit,
-    withdraw,
-    getDepositProviders,
-    getWithdrawProviders,
+    getRate,
+    getKycStatus,
+    submitKyc,
+    setPin,
+    verifyPin,
+    getLimits,
   ];
 }

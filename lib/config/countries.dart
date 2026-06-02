@@ -2,14 +2,20 @@
 /// Each country defines its phone format and supported currencies
 
 class CountryConfig {
-  final String code;        // ISO 3166-1 alpha-2 (e.g., 'CI')
-  final String name;        // Display name
-  final String prefix;      // Phone prefix without + (e.g., '225')
-  final int phoneLength;    // Total digits AFTER prefix (e.g., 10 for Ivory Coast)
-  final String flag;        // Flag emoji
-  final List<String> currencies;  // Supported local currencies
+  final String code; // ISO 3166-1 alpha-2 (e.g., 'CI')
+  final String name; // Display name
+  final String prefix; // Phone prefix without + (e.g., '225')
+  final int phoneLength; // Total digits AFTER prefix (e.g., 10 for Ivory Coast)
+  final String flag; // Flag emoji
+  final List<String> currencies; // Supported local currencies
+  final String? defaultCurrency; // Primary deposit currency for this market
+  final List<String>? depositCurrencies; // Currencies shown in deposit UI
+  final List<String>? depositRails; // Provider rails shown for this market
+  final double? depositMinAmount;
+  final double? depositMaxAmount;
+  final List<double>? depositQuickAmounts;
   final String? phoneFormat; // Optional format hint (e.g., 'XX XX XX XX XX')
-  final bool isEnabled;     // Whether this country is currently enabled
+  final bool isEnabled; // Whether this country is currently enabled
 
   const CountryConfig({
     required this.code,
@@ -18,12 +24,38 @@ class CountryConfig {
     required this.phoneLength,
     required this.flag,
     required this.currencies,
+    this.defaultCurrency,
+    this.depositCurrencies,
+    this.depositRails,
+    this.depositMinAmount,
+    this.depositMaxAmount,
+    this.depositQuickAmounts,
     this.phoneFormat,
-    this.isEnabled = false,  // Disabled by default
+    this.isEnabled = false, // Disabled by default
   });
 
   /// Full prefix with +
   String get fullPrefix => '+$prefix';
+
+  String get primaryCurrency => defaultCurrency ?? currencies.first;
+
+  List<String> get supportedDepositCurrencies =>
+      depositCurrencies ?? currencies;
+
+  List<String> get supportedDepositRails =>
+      depositRails ?? const ['mobile_money', 'bank_transfer', 'crypto'];
+
+  double get minDepositAmount =>
+      depositMinAmount ?? (primaryCurrency == 'USD' ? 5 : 500);
+
+  double get maxDepositAmount =>
+      depositMaxAmount ?? (primaryCurrency == 'USD' ? 10000 : 5000000);
+
+  List<double> get quickDepositAmounts =>
+      depositQuickAmounts ??
+      (primaryCurrency == 'USD'
+          ? const [25, 100, 250, 500]
+          : const [5000, 10000, 25000, 50000]);
 
   /// Validate phone number length (digits only, without prefix)
   bool isValidLength(String phoneDigits) {
@@ -68,6 +100,12 @@ class SupportedCountries {
       phoneLength: 10,
       flag: '\u{1F1FA}\u{1F1F8}',
       currencies: ['USD'],
+      defaultCurrency: 'USD',
+      depositCurrencies: ['USD'],
+      depositRails: ['card', 'bank_transfer', 'crypto'],
+      depositMinAmount: 5,
+      depositMaxAmount: 10000,
+      depositQuickAmounts: [25, 100, 250, 500],
       phoneFormat: 'XXX XXX XXXX',
       isEnabled: true,
     ),
@@ -80,6 +118,12 @@ class SupportedCountries {
       phoneLength: 10,
       flag: '\u{1F1E8}\u{1F1EE}',
       currencies: ['XOF', 'USD'],
+      defaultCurrency: 'XOF',
+      depositCurrencies: ['XOF', 'USD'],
+      depositRails: ['mobile_money', 'bank_transfer', 'crypto'],
+      depositMinAmount: 500,
+      depositMaxAmount: 5000000,
+      depositQuickAmounts: [5000, 10000, 25000, 50000],
       phoneFormat: 'XX XX XX XX XX',
       isEnabled: true,
     ),
@@ -87,7 +131,6 @@ class SupportedCountries {
     // ═══════════════════════════════════════════════════════════════════════════
     // COMING SOON - West Africa CFA Franc Zone (XOF)
     // ═══════════════════════════════════════════════════════════════════════════
-
     CountryConfig(
       code: 'SN',
       name: 'Senegal',
@@ -155,7 +198,6 @@ class SupportedCountries {
     // ═══════════════════════════════════════════════════════════════════════════
     // COMING SOON - Central Africa CFA Franc Zone (XAF)
     // ═══════════════════════════════════════════════════════════════════════════
-
     CountryConfig(
       code: 'CM',
       name: 'Cameroon',
@@ -187,7 +229,6 @@ class SupportedCountries {
     // ═══════════════════════════════════════════════════════════════════════════
     // COMING SOON - Other African Countries
     // ═══════════════════════════════════════════════════════════════════════════
-
     CountryConfig(
       code: 'GH',
       name: 'Ghana',
@@ -253,10 +294,8 @@ class SupportedCountries {
   static List<CountryConfig> get allIncludingDisabled => _allCountries;
 
   /// Default country (Ivory Coast - primary African market)
-  static CountryConfig get defaultCountry => all.firstWhere(
-        (c) => c.code == 'CI',
-        orElse: () => all.first,
-      );
+  static CountryConfig get defaultCountry =>
+      all.firstWhere((c) => c.code == 'CI', orElse: () => all.first);
 
   /// Find country by ISO code (only enabled countries)
   static CountryConfig? findByCode(String code) {

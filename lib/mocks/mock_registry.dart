@@ -14,14 +14,18 @@ import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
 import 'package:usdc_wallet/mocks/services/wallet/wallet_contract.dart';
 import 'package:usdc_wallet/mocks/services/transactions/transactions_mock.dart';
 import 'package:usdc_wallet/mocks/services/transactions/transactions_contract.dart';
+import 'package:usdc_wallet/mocks/services/transfers/transfers_contract.dart';
 import 'package:usdc_wallet/mocks/services/sessions/sessions_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_contract.dart';
+import 'package:usdc_wallet/mocks/services/feature_subscriptions/feature_subscriptions_mock.dart';
 import 'package:usdc_wallet/mocks/services/devices/devices_mock.dart';
 import 'package:usdc_wallet/mocks/services/kyc/kyc_mock.dart';
+import 'package:usdc_wallet/mocks/services/deposit/deposit_contract.dart';
 import 'package:usdc_wallet/mocks/services/deposit/deposit_mock.dart';
 import 'package:usdc_wallet/mocks/services/pin/pin_mock.dart';
 import 'package:usdc_wallet/mocks/services/transfers/transfers_mock.dart';
+import 'package:usdc_wallet/mocks/services/withdrawals/withdrawals_contract.dart';
 import 'package:usdc_wallet/mocks/services/bill_payments/bill_payments_mock.dart';
 import 'package:usdc_wallet/mocks/services/bill_payments/bill_payments_contract.dart';
 import 'package:usdc_wallet/mocks/services/notifications/notifications_mock.dart';
@@ -42,6 +46,7 @@ import 'package:usdc_wallet/mocks/services/referrals/referrals_mock.dart';
 import 'package:usdc_wallet/mocks/services/contacts/contacts_mock.dart';
 import 'package:usdc_wallet/mocks/services/user/user_mock.dart';
 import 'package:usdc_wallet/mocks/services/wallet/wallet_stats_mock.dart';
+import 'package:usdc_wallet/mocks/services/security/step_up_mock.dart';
 
 /// Mock Registry
 ///
@@ -69,6 +74,7 @@ class MockRegistry {
     TransactionsMock.register(_interceptor);
     SessionsMock.register(_interceptor);
     FeatureFlagsMock.register(_interceptor);
+    FeatureSubscriptionsMock.register(_interceptor);
     DevicesMock.register(_interceptor);
     KycMock.register(_interceptor);
     DepositMock.register(_interceptor);
@@ -92,6 +98,7 @@ class MockRegistry {
     ContactsMock.register(_interceptor);
     UserMock.register(_interceptor);
     WalletStatsMock.register(_interceptor);
+    StepUpMock.register(_interceptor);
 
     // Add more mock services here as they are created:
     // MerchantMock.register(_interceptor);
@@ -107,13 +114,20 @@ class MockRegistry {
     AuthMockState.reset();
     WalletMockState.reset();
     TransactionsMockState.reset();
+    FeatureSubscriptionsMockState.reset();
     DevicesMockState.reset();
     KycMockState.reset();
+    DepositMockState.reset();
     TransfersMockState.reset();
     BillPaymentsMockState.reset();
+    NotificationsMockState.reset();
+    SavingsPotsMock.reset();
+    RecurringTransfersMock.reset();
+    PaymentLinksMock.reset();
     BeneficiariesMockState.reset();
     BulkPaymentsMockState.reset();
     CardsMockState.reset();
+    UserMockState.reset();
 
     _logger.info('Mock State Reset');
   }
@@ -133,6 +147,9 @@ class MockRegistry {
     final contracts = [
       AuthContract(),
       WalletContract(),
+      DepositContract(),
+      TransfersContract(),
+      WithdrawalsContract(),
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),
@@ -149,6 +166,9 @@ class MockRegistry {
     final contracts = [
       AuthContract(),
       WalletContract(),
+      DepositContract(),
+      TransfersContract(),
+      WithdrawalsContract(),
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),
@@ -193,6 +213,9 @@ class MockRegistry {
     final contracts = [
       AuthContract(),
       WalletContract(),
+      DepositContract(),
+      TransfersContract(),
+      WithdrawalsContract(),
       TransactionsContract(),
       FeatureFlagsContract(),
       BillPaymentsContract(),

@@ -2,10 +2,12 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/services/security/security_headers_interceptor.dart' show securityHeadersInterceptorProvider;
+import 'package:usdc_wallet/services/security/security_headers_interceptor.dart'
+    show securityHeadersInterceptorProvider;
 import 'package:usdc_wallet/services/api/cache_interceptor.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
 import 'package:usdc_wallet/services/api/retry_interceptor.dart';
@@ -90,15 +92,20 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
   );
 });
 
+/// Bumped when an auth token is known to be invalid and local auth state must
+/// be cleared without calling the backend logout endpoint.
+final authSessionInvalidatedProvider = StateProvider<int>((ref) => 0);
+
 /// Cache Interceptor Provider
 final cacheInterceptorProvider = Provider<CacheInterceptor>((ref) {
   return CacheInterceptor();
 });
 
 /// Request Deduplication Interceptor Provider
-final deduplicationInterceptorProvider = Provider<RequestDeduplicationInterceptor>((ref) {
-  return RequestDeduplicationInterceptor();
-});
+final deduplicationInterceptorProvider =
+    Provider<RequestDeduplicationInterceptor>((ref) {
+      return RequestDeduplicationInterceptor();
+    });
 
 /// Dio Client Provider
 final dioProvider = Provider<Dio>((ref) {
@@ -106,18 +113,22 @@ final dioProvider = Provider<Dio>((ref) {
 
   // Log API configuration
   logger.info('API URL: ${ApiConfig.baseUrl}');
-  logger.info('Environment: ${ApiConfig.isDevelopment ? 'Development' : 'Production'}');
+  logger.info(
+    'Environment: ${ApiConfig.isDevelopment ? 'Development' : 'Production'}',
+  );
   logger.info('Mock Mode: ${MockConfig.useMocks ? 'Enabled' : 'Disabled'}');
 
-  final dio = Dio(BaseOptions(
-    baseUrl: ApiConfig.baseUrl,
-    connectTimeout: ApiConfig.connectTimeout,
-    receiveTimeout: ApiConfig.receiveTimeout,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-  ));
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: ApiConfig.baseUrl,
+      connectTimeout: ApiConfig.connectTimeout,
+      receiveTimeout: ApiConfig.receiveTimeout,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    ),
+  );
 
   // SECURITY: Certificate pinning for production
   if (!MockConfig.useMocks) {
@@ -139,7 +150,9 @@ final dioProvider = Provider<Dio>((ref) {
   dio.interceptors.add(ref.read(cacheInterceptorProvider));
 
   // SECURITY: Add device fingerprint and risk score headers
-  final securityHeadersInterceptor = ref.read(securityHeadersInterceptorProvider);
+  final securityHeadersInterceptor = ref.read(
+    securityHeadersInterceptorProvider,
+  );
   dio.interceptors.add(securityHeadersInterceptor);
 
   // Add auth interceptor
@@ -158,14 +171,16 @@ final dioProvider = Provider<Dio>((ref) {
 
   // SECURITY: Only add log interceptor in debug mode to prevent sensitive data leakage
   if (kDebugMode) {
-    dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      error: true,
-      // Don't log headers which may contain auth tokens
-      requestHeader: false,
-      responseHeader: false,
-    ));
+    dio.interceptors.add(
+      LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        error: true,
+        // Don't log headers which may contain auth tokens
+        requestHeader: false,
+        responseHeader: false,
+      ),
+    );
   }
 
   return dio;
@@ -175,6 +190,7 @@ final dioProvider = Provider<Dio>((ref) {
 class AuthInterceptor extends Interceptor {
   final Ref _ref;
   Completer<bool>? _refreshCompleter;
+  bool _sessionInvalidated = false;
 
   AuthInterceptor(this._ref);
 
@@ -184,8 +200,16 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     // Skip auth for public endpoints
-    final publicEndpoints = ['/auth/register', '/auth/verify-otp', '/auth/login', '/auth/refresh'];
-    if (publicEndpoints.any((e) => options.path.contains(e))) {
+    final publicEndpoints = [
+      '/auth/register',
+      '/auth/verify-otp',
+      '/auth/login',
+      '/auth/refresh',
+    ];
+    final isPublicEndpoint = publicEndpoints.any(
+      (e) => options.path.contains(e),
+    );
+    if (isPublicEndpoint) {
       return handler.next(options);
     }
 
@@ -194,6 +218,7 @@ class AuthInterceptor extends Interceptor {
     final token = await storage.read(key: StorageKeys.accessToken);
 
     if (token != null) {
+      _sessionInvalidated = false;
       options.headers['Authorization'] = 'Bearer $token';
     }
 
@@ -203,15 +228,30 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     // Check if this is an authenticated endpoint
-    final publicEndpoints = ['/auth/register', '/auth/verify-otp', '/auth/login', '/auth/refresh'];
-    final isPublicEndpoint = publicEndpoints.any((e) => err.requestOptions.path.contains(e));
+    final publicEndpoints = [
+      '/auth/register',
+      '/auth/verify-otp',
+      '/auth/login',
+      '/auth/refresh',
+    ];
+    final isPublicEndpoint = publicEndpoints.any(
+      (e) => err.requestOptions.path.contains(e),
+    );
+    final optionalAuthEndpoints = ['/feature-flags/me'];
+    final isOptionalAuthEndpoint = optionalAuthEndpoints.any(
+      (e) => err.requestOptions.path.contains(e),
+    );
+
+    if (err.response?.statusCode == 401 && isOptionalAuthEndpoint) {
+      return handler.next(err);
+    }
 
     // Handle connection errors on authenticated endpoints - may be server rejecting expired token
     // Connection reset can happen when server sends 401 but connection closes before response arrives
     if (!isPublicEndpoint &&
         err.response == null &&
         (err.type == DioExceptionType.connectionError ||
-         err.type == DioExceptionType.unknown)) {
+            err.type == DioExceptionType.unknown)) {
       // Try to refresh token and retry once
       if (!MockConfig.useMocks) {
         final refreshed = await _refreshToken(err.requestOptions);
@@ -222,11 +262,13 @@ class AuthInterceptor extends Interceptor {
             final options = err.requestOptions;
             options.headers['Authorization'] = 'Bearer $newToken';
 
-            final dio = Dio(BaseOptions(
-              baseUrl: ApiConfig.baseUrl,
-              connectTimeout: ApiConfig.connectTimeout,
-              receiveTimeout: ApiConfig.receiveTimeout,
-            ));
+            final dio = Dio(
+              BaseOptions(
+                baseUrl: ApiConfig.baseUrl,
+                connectTimeout: ApiConfig.connectTimeout,
+                receiveTimeout: ApiConfig.receiveTimeout,
+              ),
+            );
 
             final response = await dio.fetch(options);
             return handler.resolve(response);
@@ -241,10 +283,7 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 && !isPublicEndpoint) {
       // Don't try to refresh if using mocks (mock tokens aren't valid JWTs)
       if (MockConfig.useMocks) {
-        // Just clear tokens and continue - user will be redirected to login
-        final storage = _ref.read(secureStorageProvider);
-        await storage.delete(key: StorageKeys.accessToken);
-        await storage.delete(key: StorageKeys.refreshToken);
+        await _invalidateLocalSession();
         return handler.next(err);
       }
 
@@ -260,11 +299,13 @@ class AuthInterceptor extends Interceptor {
           final options = err.requestOptions;
           options.headers['Authorization'] = 'Bearer $newToken';
 
-          final dio = Dio(BaseOptions(
-            baseUrl: ApiConfig.baseUrl,
-            connectTimeout: ApiConfig.connectTimeout,
-            receiveTimeout: ApiConfig.receiveTimeout,
-          ));
+          final dio = Dio(
+            BaseOptions(
+              baseUrl: ApiConfig.baseUrl,
+              connectTimeout: ApiConfig.connectTimeout,
+              receiveTimeout: ApiConfig.receiveTimeout,
+            ),
+          );
 
           final response = await dio.fetch(options);
           return handler.resolve(response);
@@ -277,27 +318,27 @@ class AuthInterceptor extends Interceptor {
         // Only clear tokens if we truly have no valid access token.
         final storage = _ref.read(secureStorageProvider);
         final currentToken = await storage.read(key: StorageKeys.accessToken);
-        final originalToken = err.requestOptions.headers['Authorization']?.toString().replaceFirst('Bearer ', '');
-        
+        final originalToken = err.requestOptions.headers['Authorization']
+            ?.toString()
+            .replaceFirst('Bearer ', '');
+
         // Only logout if the current token is still the same failed one
         // (meaning no concurrent refresh succeeded)
         if (currentToken == null || currentToken == originalToken) {
-          await storage.delete(key: StorageKeys.accessToken);
-          await storage.delete(key: StorageKeys.refreshToken);
-          try {
-            _ref.read(appFsmProvider.notifier).logout();
-          } catch (_) {}
+          await _invalidateLocalSession();
         }
         // Otherwise, retry with the new token from concurrent refresh
         else {
           try {
             final options = err.requestOptions;
             options.headers['Authorization'] = 'Bearer $currentToken';
-            final dio = Dio(BaseOptions(
-              baseUrl: ApiConfig.baseUrl,
-              connectTimeout: ApiConfig.connectTimeout,
-              receiveTimeout: ApiConfig.receiveTimeout,
-            ));
+            final dio = Dio(
+              BaseOptions(
+                baseUrl: ApiConfig.baseUrl,
+                connectTimeout: ApiConfig.connectTimeout,
+                receiveTimeout: ApiConfig.receiveTimeout,
+              ),
+            );
             final response = await dio.fetch(options);
             return handler.resolve(response);
           } catch (e) {
@@ -308,6 +349,24 @@ class AuthInterceptor extends Interceptor {
     }
 
     handler.next(err);
+  }
+
+  Future<void> _invalidateLocalSession() async {
+    if (_sessionInvalidated) return;
+    _sessionInvalidated = true;
+
+    final storage = _ref.read(secureStorageProvider);
+    await storage.delete(key: StorageKeys.accessToken);
+    await storage.delete(key: StorageKeys.refreshToken);
+
+    try {
+      _ref.read(appFsmProvider.notifier).logout();
+    } catch (_) {}
+
+    try {
+      final signal = _ref.read(authSessionInvalidatedProvider.notifier);
+      signal.state = signal.state + 1;
+    } catch (_) {}
   }
 
   /// Refresh token with race condition protection
@@ -331,11 +390,13 @@ class AuthInterceptor extends Interceptor {
       }
 
       // Call refresh endpoint
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        connectTimeout: ApiConfig.connectTimeout,
-        receiveTimeout: ApiConfig.receiveTimeout,
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConfig.baseUrl,
+          connectTimeout: ApiConfig.connectTimeout,
+          receiveTimeout: ApiConfig.receiveTimeout,
+        ),
+      );
 
       final response = await dio.post(
         '/auth/refresh',
@@ -345,9 +406,15 @@ class AuthInterceptor extends Interceptor {
       if (response.statusCode == 200) {
         final data = response.data;
         // ignore: avoid_dynamic_calls
-        await storage.write(key: StorageKeys.accessToken, value: data['accessToken'] as String?);
+        await storage.write(
+          key: StorageKeys.accessToken,
+          value: data['accessToken'] as String?,
+        );
         // ignore: avoid_dynamic_calls
-        await storage.write(key: StorageKeys.refreshToken, value: data['refreshToken'] as String?);
+        await storage.write(
+          key: StorageKeys.refreshToken,
+          value: data['refreshToken'] as String?,
+        );
         _refreshCompleter!.complete(true);
         return true;
       }
@@ -372,15 +439,19 @@ class ApiException implements Exception {
   final int? statusCode;
   final dynamic data;
 
-  ApiException({
-    required this.message,
-    this.statusCode,
-    this.data,
-  });
+  ApiException({required this.message, this.statusCode, this.data});
 
   factory ApiException.fromDioError(DioException error) {
     String message = 'An unexpected error occurred';
     int? statusCode = error.response?.statusCode;
+
+    if (isOfflineQueueableErrorMessage(error.message)) {
+      return ApiException(
+        message: error.message!,
+        statusCode: statusCode,
+        data: const {'offlineQueueable': true},
+      );
+    }
 
     if (error.response?.data != null) {
       final data = error.response?.data;

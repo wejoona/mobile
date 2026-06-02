@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/api/api_client.dart' hide StorageKeys, secureStorageProvider;
+import 'package:usdc_wallet/services/api/api_client.dart'
+    hide StorageKeys, secureStorageProvider;
 import 'package:usdc_wallet/services/storage/secure_prefs.dart';
 
 /// Authentication session state.
@@ -8,7 +9,7 @@ enum AuthState { unknown, authenticated, unauthenticated, expired }
 /// Session management provider.
 /// @deprecated Prefer [AuthNotifier] from auth_provider.dart for new code.
 /// This provider is retained for backward compatibility with login_provider.dart.
-/// TODO: Consolidate SessionNotifier into AuthNotifier to eliminate dual auth state.
+/// Follow-up: Consolidate SessionNotifier into AuthNotifier to eliminate dual auth state.
 class SessionNotifier extends Notifier<AuthState> {
   static const _tokenKey = 'access_token';
   static const _refreshKey = 'refresh_token';
@@ -50,15 +51,30 @@ class SessionNotifier extends Notifier<AuthState> {
       if (refreshToken == null) return false;
 
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/auth/refresh', data: {
-        'refreshToken': refreshToken,
-      });
+      final response = await dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
 
       final data = response.data as Map<String, dynamic>;
       await storage.write(key: _tokenKey, value: data['accessToken'] as String);
-      await storage.write(key: _refreshKey, value: data['refreshToken'] as String);
+      final nextRefreshToken = data['refreshToken'] as String?;
+      if (nextRefreshToken != null && nextRefreshToken.isNotEmpty) {
+        await storage.write(key: _refreshKey, value: nextRefreshToken);
+      }
       if (data['expiresAt'] != null) {
-        await storage.write(key: _expiryKey, value: data['expiresAt'] as String);
+        await storage.write(
+          key: _expiryKey,
+          value: data['expiresAt'] as String,
+        );
+      } else if (data['expiresIn'] != null) {
+        final expiresIn = data['expiresIn'] as num;
+        await storage.write(
+          key: _expiryKey,
+          value: DateTime.now()
+              .add(Duration(seconds: expiresIn.toInt()))
+              .toIso8601String(),
+        );
       }
       return true;
     } catch (_) {
@@ -66,7 +82,11 @@ class SessionNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> setTokens({required String accessToken, required String refreshToken, DateTime? expiresAt}) async {
+  Future<void> setTokens({
+    required String accessToken,
+    required String refreshToken,
+    DateTime? expiresAt,
+  }) async {
     final storage = ref.read(secureStorageProvider);
     await storage.write(key: _tokenKey, value: accessToken);
     await storage.write(key: _refreshKey, value: refreshToken);
@@ -77,11 +97,14 @@ class SessionNotifier extends Notifier<AuthState> {
   }
 
   Future<void> logout() async {
-    try {
-      final dio = ref.read(dioProvider);
-      await dio.post('/auth/logout');
-    } catch (_) {}
     final storage = ref.read(secureStorageProvider);
+    try {
+      final refreshToken = await storage.read(key: _refreshKey);
+      final dio = ref.read(dioProvider);
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await dio.post('/auth/logout', data: {'refreshToken': refreshToken});
+      }
+    } catch (_) {}
     await storage.delete(key: _tokenKey);
     await storage.delete(key: _refreshKey);
     await storage.delete(key: _expiryKey);
@@ -89,7 +112,9 @@ class SessionNotifier extends Notifier<AuthState> {
   }
 }
 
-final sessionProvider = NotifierProvider<SessionNotifier, AuthState>(SessionNotifier.new);
+final sessionProvider = NotifierProvider<SessionNotifier, AuthState>(
+  SessionNotifier.new,
+);
 
 /// Whether the user is authenticated.
 final isAuthenticatedProvider = Provider<bool>((ref) {

@@ -4,13 +4,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Reset PIN View
 /// Multi-step flow to reset PIN via OTP
@@ -42,18 +42,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
-      appBar: AppBar(
-        title: Text(
-          l10n.pin_resetTitle,
-          style: AppTypography.headlineSmall,
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          child: _buildStepContent(l10n),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Column(
+            children: [
+              AuthTopBar(onBack: () => context.pop()),
+              Expanded(child: _buildStepContent(l10n)),
+            ],
+          ),
         ),
       ),
     );
@@ -78,26 +75,22 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.lock_reset,
-          size: 80,
-          color: context.colors.gold,
+        AuthScreenHeader(
+          appName: 'Korido',
+          title: l10n.pin_reset_requestTitle,
+          subtitle: l10n.pin_reset_requestMessage,
+          markSize: 52,
+          titleVariant: AppTextVariant.titleLarge,
         ),
-        SizedBox(height: AppSpacing.xxl),
-        Text(
-          l10n.pin_reset_requestTitle,
-          style: AppTypography.headlineMedium,
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: AppSpacing.md),
-        Text(
-          l10n.pin_reset_requestMessage,
-          style: AppTypography.bodyLarge.copyWith(
-            color: context.colors.textSecondary,
+        if (_errorMessage != null) ...[
+          const SizedBox(height: AppSpacing.xl),
+          InfoCallout(
+            icon: Icons.error_outline,
+            title: _errorMessage!,
+            tone: InfoCalloutTone.danger,
           ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: AppSpacing.xxxl),
+        ],
+        const SizedBox(height: AppSpacing.xxxl),
         AppButton(
           label: l10n.pin_reset_sendOtp,
           onPressed: _requestOtp,
@@ -111,15 +104,15 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   Widget _buildEnterOtpStep(AppLocalizations l10n) {
     return Column(
       children: [
-        SizedBox(height: AppSpacing.xxl),
-        Text(
-          l10n.pin_reset_enterOtp,
-          style: AppTypography.bodyLarge.copyWith(
-            color: context.colors.textSecondary,
-          ),
-          textAlign: TextAlign.center,
+        const SizedBox(height: AppSpacing.xl),
+        AuthScreenHeader(
+          appName: 'Korido',
+          title: l10n.pin_resetTitle,
+          subtitle: l10n.pin_reset_enterOtp,
+          markSize: 44,
+          titleVariant: AppTextVariant.titleLarge,
         ),
-        SizedBox(height: AppSpacing.xxxl),
+        const SizedBox(height: AppSpacing.xxxl),
         AppInput(
           label: l10n.auth_otp,
           controller: _otpController,
@@ -127,12 +120,11 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           maxLength: 6,
         ),
         if (_errorMessage != null) ...[
-          SizedBox(height: AppSpacing.md),
-          Text(
-            _errorMessage!,
-            style: AppTypography.bodyMedium.copyWith(
-              color: context.colors.errorText,
-            ),
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.error_outline,
+            title: _errorMessage!,
+            tone: InfoCalloutTone.danger,
           ),
         ],
         const Spacer(),
@@ -142,14 +134,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           isLoading: _isLoading,
           isFullWidth: true,
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         TextButton(
           onPressed: _requestOtp,
-          child: Text(
+          child: AppText(
             l10n.auth_resendOtp,
-            style: AppTypography.labelLarge.copyWith(
-              color: context.colors.gold,
-            ),
+            variant: AppTextVariant.labelLarge,
+            color: context.colors.gold,
           ),
         ),
       ],
@@ -159,27 +150,21 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   Widget _buildNewPinStep(AppLocalizations l10n) {
     return Column(
       children: [
-        SizedBox(height: AppSpacing.xxl),
-        Text(
+        const SizedBox(height: AppSpacing.xl),
+        AppText(
           l10n.pin_enterNewPin,
-          style: AppTypography.bodyLarge.copyWith(
-            color: context.colors.textSecondary,
-          ),
+          variant: AppTextVariant.bodyLarge,
+          color: context.colors.textSecondary,
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: AppSpacing.xxxl),
-        PinDots(length: 6,
-          filled: _newPin.length,
-          error: _showError,
-        ),
+        const SizedBox(height: AppSpacing.xxxl),
+        PinDots(length: 6, filled: _newPin.length, error: _showError),
         if (_errorMessage != null) ...[
-          SizedBox(height: AppSpacing.md),
-          Text(
-            _errorMessage!,
-            style: AppTypography.bodyMedium.copyWith(
-              color: context.colors.errorText,
-            ),
-            textAlign: TextAlign.center,
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.error_outline,
+            title: _errorMessage!,
+            tone: InfoCalloutTone.danger,
           ),
         ],
         const Spacer(),
@@ -187,7 +172,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
           onDigitPressed: _handleNewPinNumber,
           onDeletePressed: _handleNewPinBackspace,
         ),
-        SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
@@ -195,40 +180,34 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   Widget _buildConfirmPinStep(AppLocalizations l10n) {
     return Column(
       children: [
-        SizedBox(height: AppSpacing.xxl),
-        Text(
+        const SizedBox(height: AppSpacing.xl),
+        AppText(
           l10n.pin_confirmNewPin,
-          style: AppTypography.bodyLarge.copyWith(
-            color: context.colors.textSecondary,
-          ),
+          variant: AppTextVariant.bodyLarge,
+          color: context.colors.textSecondary,
           textAlign: TextAlign.center,
         ),
-        SizedBox(height: AppSpacing.xxxl),
-        PinDots(length: 6,
-          filled: _confirmPin.length,
-          error: _showError,
-        ),
+        const SizedBox(height: AppSpacing.xxxl),
+        PinDots(length: 6, filled: _confirmPin.length, error: _showError),
         if (_errorMessage != null) ...[
-          SizedBox(height: AppSpacing.md),
-          Text(
-            _errorMessage!,
-            style: AppTypography.bodyMedium.copyWith(
-              color: context.colors.errorText,
-            ),
-            textAlign: TextAlign.center,
+          const SizedBox(height: AppSpacing.md),
+          InfoCallout(
+            icon: Icons.error_outline,
+            title: _errorMessage!,
+            tone: InfoCalloutTone.danger,
           ),
         ],
         const Spacer(),
         if (_isLoading)
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.gold),
           )
         else
           PinPad(
             onDigitPressed: _handleConfirmPinNumber,
             onDeletePressed: _handleConfirmPinBackspace,
           ),
-        SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: AppSpacing.xl),
       ],
     );
   }
@@ -236,6 +215,8 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
   /// Request OTP for PIN reset
   /// Calls POST /auth/login to send OTP to user's phone
   Future<void> _requestOtp() async {
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -252,7 +233,7 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
         if (mounted) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Could not retrieve phone number';
+            _errorMessage = l10n.error_phoneRequired;
           });
         }
         return;
@@ -398,10 +379,13 @@ class _ResetPinViewState extends ConsumerState<ResetPinView> {
 
       // Hash the new PIN for transmission (same method as PinService)
       // We need to call the backend reset endpoint with OTP + hashed PIN
-      await dio.post('/user/pin/reset', data: {
-        'otp': _otpController.text,
-        'newPinHash': _hashPinForBackend(_newPin),
-      });
+      await dio.post(
+        '/user/pin/reset',
+        data: {
+          'otp': _otpController.text,
+          'newPinHash': _hashPinForBackend(_newPin),
+        },
+      );
 
       // Also update local PIN storage
       await pinService.setPin(_newPin);

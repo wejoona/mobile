@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 
+import '../../helpers/golden_helpers.dart';
 import '../../helpers/test_wrapper.dart';
 
 /// Component Golden Tests for Design Validation
@@ -28,7 +29,7 @@ void main() {
     'large': const Size(430, 932),
   };
 
-  group('AppButton Golden Tests - Screen Variants', () {
+  goldenGroup('AppButton Golden Tests - Screen Variants', () {
     for (final entry in screenSizes.entries) {
       testWidgets('primary button - ${entry.key} device', (tester) async {
         tester.view.physicalSize = entry.value * tester.view.devicePixelRatio;
@@ -54,7 +55,9 @@ void main() {
 
         await expectLater(
           find.byType(AppButton),
-          matchesGoldenFile('goldens/components/button_primary_${entry.key}.png'),
+          matchesGoldenFile(
+            'goldens/components/button_primary_${entry.key}.png',
+          ),
         );
       });
 
@@ -83,13 +86,15 @@ void main() {
 
         await expectLater(
           find.byType(AppButton),
-          matchesGoldenFile('goldens/components/button_secondary_${entry.key}.png'),
+          matchesGoldenFile(
+            'goldens/components/button_secondary_${entry.key}.png',
+          ),
         );
       });
     }
   });
 
-  group('AppInput Golden Tests', () {
+  goldenGroup('AppInput Golden Tests', () {
     for (final entry in screenSizes.entries) {
       testWidgets('text input - ${entry.key} device', (tester) async {
         tester.view.physicalSize = entry.value * tester.view.devicePixelRatio;
@@ -148,7 +153,7 @@ void main() {
     }
   });
 
-  group('AppCard Golden Tests', () {
+  goldenGroup('AppCard Golden Tests', () {
     for (final entry in screenSizes.entries) {
       testWidgets('card - ${entry.key} device', (tester) async {
         tester.view.physicalSize = entry.value * tester.view.devicePixelRatio;
@@ -169,7 +174,13 @@ void main() {
                       children: [
                         Text('Balance', style: TextStyle(fontSize: 12)),
                         const SizedBox(height: 8),
-                        Text('\$1,234.56', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        Text(
+                          '\$1,234.56',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -189,17 +200,14 @@ void main() {
     }
   });
 
-  group('Button States Golden Tests', () {
+  goldenGroup('Button States Golden Tests', () {
     testWidgets('disabled button', (tester) async {
       await tester.pumpWidget(
         const TestWrapper(
           child: Center(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: AppButton(
-                label: 'Disabled',
-                onPressed: null,
-              ),
+              child: AppButton(label: 'Disabled', onPressed: null),
             ),
           ),
         ),
@@ -334,7 +342,7 @@ void main() {
     });
   });
 
-  group('Light Theme Golden Tests', () {
+  goldenGroup('Light Theme Golden Tests', () {
     testWidgets('button in light theme', (tester) async {
       await tester.pumpWidget(
         TestWrapper(
@@ -342,10 +350,7 @@ void main() {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppButton(
-                label: 'Light Theme',
-                onPressed: () {},
-              ),
+              child: AppButton(label: 'Light Theme', onPressed: () {}),
             ),
           ),
         ),
@@ -366,10 +371,7 @@ void main() {
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppInput(
-                label: 'Email',
-                hint: 'example@email.com',
-              ),
+              child: AppInput(label: 'Email', hint: 'example@email.com'),
             ),
           ),
         ),

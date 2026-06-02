@@ -564,11 +564,35 @@ abstract class AppLocalizations {
   /// **'Available Balance'**
   String get wallet_availableBalance;
 
+  /// Label for funds that can be sent immediately
+  ///
+  /// In en, this message translates to:
+  /// **'Available to send'**
+  String get wallet_availableToSend;
+
+  /// Short pending balance label
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get wallet_pendingBalance;
+
   /// Total balance label
   ///
   /// In en, this message translates to:
   /// **'Total Balance'**
   String get wallet_totalBalance;
+
+  /// Wallet security status label
+  ///
+  /// In en, this message translates to:
+  /// **'Secured wallet'**
+  String get wallet_securedWallet;
+
+  /// Label shown when the user hides wallet balances
+  ///
+  /// In en, this message translates to:
+  /// **'Balance hidden'**
+  String get wallet_balanceHidden;
 
   /// USD balance label
   ///
@@ -1511,6 +1535,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You don\'t have any registered devices yet.'**
   String get settings_noDevicesDescription;
+
+  /// Devices summary heading
+  ///
+  /// In en, this message translates to:
+  /// **'Connected devices'**
+  String get settings_connectedDevices;
+
+  /// Devices summary for one device
+  ///
+  /// In en, this message translates to:
+  /// **'1 device can access your account'**
+  String get settings_oneDeviceAccess;
+
+  /// Devices summary for multiple devices
+  ///
+  /// In en, this message translates to:
+  /// **'{count} devices can access your account'**
+  String settings_multipleDevicesAccess(int count);
+
+  /// Other devices section title
+  ///
+  /// In en, this message translates to:
+  /// **'Other devices'**
+  String get settings_otherDevices;
+
+  /// Current active device badge
+  ///
+  /// In en, this message translates to:
+  /// **'Active now'**
+  String get settings_activeNow;
+
+  /// Trusted device badge
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted'**
+  String get settings_trusted;
+
+  /// Untrusted device badge
+  ///
+  /// In en, this message translates to:
+  /// **'Not trusted'**
+  String get settings_notTrusted;
+
+  /// Never active relative time
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get settings_neverActive;
+
+  /// Just now relative time
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get settings_justNow;
+
+  /// Minutes ago relative time
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes}m ago'**
+  String settings_minutesAgo(int minutes);
+
+  /// Hours ago relative time
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h ago'**
+  String settings_hoursAgo(int hours);
+
+  /// Days ago relative time
+  ///
+  /// In en, this message translates to:
+  /// **'{days}d ago'**
+  String settings_daysAgo(int days);
+
+  /// Login count badge
+  ///
+  /// In en, this message translates to:
+  /// **'{count} logins'**
+  String settings_loginCountValue(int count);
+
+  /// Remove device confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Remove device'**
+  String get settings_revokeDeviceTitle;
+
+  /// Remove device confirmation message
+  ///
+  /// In en, this message translates to:
+  /// **'This device will be signed out and will need to authenticate again.'**
+  String get settings_revokeDeviceMessage;
+
+  /// Untrust device menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Remove trust'**
+  String get settings_untrustDevice;
+
+  /// Device untrusted success message
+  ///
+  /// In en, this message translates to:
+  /// **'Device trust removed'**
+  String get settings_deviceUntrustedSuccess;
+
+  /// Device untrust error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to remove device trust'**
+  String get settings_deviceUntrustError;
+
+  /// Rename device menu item
+  ///
+  /// In en, this message translates to:
+  /// **'Rename device'**
+  String get settings_renameDevice;
+
+  /// Device name field label
+  ///
+  /// In en, this message translates to:
+  /// **'Device name'**
+  String get settings_deviceName;
+
+  /// Device renamed success message
+  ///
+  /// In en, this message translates to:
+  /// **'Device renamed'**
+  String get settings_deviceRenamedSuccess;
+
+  /// Device rename error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to rename device'**
+  String get settings_deviceRenameError;
+
+  /// Sign out other devices button
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out other devices'**
+  String get settings_signOutOtherDevices;
+
+  /// Sign out other devices dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out other devices?'**
+  String get settings_signOutOtherDevicesTitle;
+
+  /// Sign out other devices dialog message
+  ///
+  /// In en, this message translates to:
+  /// **'Every other device will be signed out. This device will stay active.'**
+  String get settings_signOutOtherDevicesMessage;
+
+  /// Sign out other devices success message
+  ///
+  /// In en, this message translates to:
+  /// **'Other devices signed out'**
+  String get settings_signOutOtherDevicesSuccess;
+
+  /// Sign out other devices error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sign out other devices'**
+  String get settings_signOutOtherDevicesError;
+
+  /// Devices loading error title
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load devices'**
+  String get settings_devicesLoadErrorTitle;
+
+  /// Devices loading error description
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get settings_devicesLoadErrorDescription;
+
+  /// No other devices message
+  ///
+  /// In en, this message translates to:
+  /// **'Only this device has access right now.'**
+  String get settings_noOtherDevices;
 
   /// KYC verified status
   ///
@@ -6837,7 +7041,7 @@ abstract class AppLocalizations {
   /// Share message template
   ///
   /// In en, this message translates to:
-  /// **'Join Korido and get \$5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://joonapay.com/download'**
+  /// **'Join Korido and get \$5 bonus on your first deposit! Use my referral code: {code}\n\nDownload now: https://korido.app/download'**
   String referrals_shareMessage(String code);
 
   /// Share subject
@@ -11049,7 +11253,7 @@ abstract class AppLocalizations {
   /// Onboarding page 1 description
   ///
   /// In en, this message translates to:
-  /// **'Store, send, and receive USDC securely. Your digital wallet built for West Africa.'**
+  /// **'Store, send, and receive USDC securely. Your digital wallet adapts to your country.'**
   String get onboarding_page1_description;
 
   /// Onboarding page 1 feature 1
@@ -11091,7 +11295,7 @@ abstract class AppLocalizations {
   /// Onboarding page 2 feature 2
   ///
   /// In en, this message translates to:
-  /// **'Send to any mobile money account'**
+  /// **'Send to local accounts where available'**
   String get onboarding_page2_feature2;
 
   /// Onboarding page 2 feature 3
@@ -11109,13 +11313,13 @@ abstract class AppLocalizations {
   /// Onboarding page 3 description
   ///
   /// In en, this message translates to:
-  /// **'Add money via Mobile Money. Cash out to your local account anytime.'**
+  /// **'Add funds with the payment methods available in your country. Cash out when supported.'**
   String get onboarding_page3_description;
 
   /// Onboarding page 3 feature 1
   ///
   /// In en, this message translates to:
-  /// **'Deposit with Orange Money, MTN, Wave'**
+  /// **'Payment methods adapt to your country'**
   String get onboarding_page3_feature1;
 
   /// Onboarding page 3 feature 2
@@ -12294,6 +12498,24 @@ abstract class AppLocalizations {
   /// **'Card payment coming soon'**
   String get deposit_cardPaymentComingSoon;
 
+  /// No description provided for @deposit_cardPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay securely by card'**
+  String get deposit_cardPayment;
+
+  /// No description provided for @deposit_bankTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer from a linked bank account'**
+  String get deposit_bankTransfer;
+
+  /// No description provided for @deposit_cryptoTransfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Send USDC from an external wallet'**
+  String get deposit_cryptoTransfer;
+
   /// No description provided for @deposit_choosePaymentMethod.
   ///
   /// In en, this message translates to:
@@ -12353,6 +12575,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in Wave'**
   String get deposit_openInWave;
+
+  /// No description provided for @deposit_openPaymentApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Open payment app'**
+  String get deposit_openPaymentApp;
 
   /// No description provided for @deposit_orScanQR.
   ///
@@ -13224,6 +13452,12 @@ abstract class AppLocalizations {
   /// **'Copied to clipboard'**
   String get settings_copiedToClipboard;
 
+  /// No description provided for @settings_failedToRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not remove profile photo'**
+  String get settings_failedToRemovePhoto;
+
   /// No description provided for @settings_failedToUpdateProfile.
   ///
   /// In en, this message translates to:
@@ -13266,11 +13500,23 @@ abstract class AppLocalizations {
   /// **'Problem reported. We\'ll get back to you soon.'**
   String get settings_problemReported;
 
+  /// No description provided for @settings_photoRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile photo removed'**
+  String get settings_photoRemoved;
+
   /// No description provided for @settings_profileUpdated.
   ///
   /// In en, this message translates to:
   /// **'Profile updated successfully'**
   String get settings_profileUpdated;
+
+  /// No description provided for @settings_removePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo'**
+  String get settings_removePhoto;
 
   /// No description provided for @settings_takePhoto.
   ///
@@ -13529,6 +13775,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Contact Support'**
   String get delete_contactSupportButton;
+
+  /// Splash screen tagline
+  ///
+  /// In en, this message translates to:
+  /// **'Money without borders'**
+  String get splash_tagline;
+
+  /// Splash screen partner footer
+  ///
+  /// In en, this message translates to:
+  /// **'Powered by JoonaPay'**
+  String get splash_poweredBy;
+
+  /// Biometric login in-progress label
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticating...'**
+  String get auth_authenticating;
+
+  /// Biometric login prompt label
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to unlock'**
+  String get auth_tapToUnlock;
+
+  /// Switch from biometric login to phone login
+  ///
+  /// In en, this message translates to:
+  /// **'Use phone number instead'**
+  String get auth_usePhoneInstead;
+
+  /// Wallet auto-creation loading title
+  ///
+  /// In en, this message translates to:
+  /// **'Setting up your wallet...'**
+  String get wallet_settingUp;
+
+  /// Wallet auto-creation loading subtitle
+  ///
+  /// In en, this message translates to:
+  /// **'This will only take a moment'**
+  String get wallet_setupMoment;
 }
 
 class _AppLocalizationsDelegate

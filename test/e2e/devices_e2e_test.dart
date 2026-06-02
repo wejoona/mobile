@@ -13,7 +13,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Devices E2E', () {
+  e2eGroup('Devices E2E', () {
     test('POST /devices/register — register device', () async {
       final res = await client.post('/devices/register', {
         'deviceIdentifier': 'e2e-test-device-001',
@@ -48,7 +48,7 @@ void main() {
     });
   });
 
-  group('Sessions E2E', () {
+  e2eGroup('Sessions E2E', () {
     test('GET /sessions — list active sessions', () async {
       final res = await client.get('/sessions');
       res.expectOk();

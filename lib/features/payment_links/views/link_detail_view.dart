@@ -12,10 +12,7 @@ import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkDetailView extends ConsumerStatefulWidget {
-  const LinkDetailView({
-    super.key,
-    required this.linkId,
-  });
+  const LinkDetailView({super.key, required this.linkId});
 
   final String linkId;
 
@@ -39,11 +36,41 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(paymentLinksStateProvider);
-    final link = state.currentLink ??
-        state.links.firstWhere(
-          (l) => l.id == widget.linkId,
-          orElse: () => throw Exception('Link not found'),
-        );
+    final linkAsync = ref.watch(paymentLinkByIdProvider(widget.linkId));
+
+    PaymentLink? link;
+    for (final candidate in state.links) {
+      if (candidate.id == widget.linkId) {
+        link = candidate;
+        break;
+      }
+    }
+    link ??= linkAsync.value;
+
+    final resolvedLink = link;
+    if (resolvedLink == null) {
+      return Scaffold(
+        backgroundColor: context.colors.canvas,
+        appBar: AppBar(
+          title: AppText(
+            l10n.paymentLinks_linkDetails,
+            variant: AppTextVariant.headlineSmall,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Center(
+          child: linkAsync.hasError
+              ? AppText(
+                  linkAsync.error.toString(),
+                  variant: AppTextVariant.bodyMedium,
+                  color: context.colors.error,
+                  textAlign: TextAlign.center,
+                )
+              : const CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: context.colors.canvas,
@@ -55,28 +82,26 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
-          if (link.isActive)
+          if (resolvedLink.isActive)
             IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: () => _handleRefresh(link.id),
+              onPressed: () => _handleRefresh(resolvedLink.id),
             ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => _handleRefresh(link.id),
+        onRefresh: () => _handleRefresh(resolvedLink.id),
         color: context.colors.gold,
         backgroundColor: context.colors.container,
         child: ListView(
           padding: EdgeInsets.all(AppSpacing.md),
           children: [
             // Status Badge
-            Center(
-              child: _buildStatusBadge(link.status, l10n),
-            ),
+            Center(child: _buildStatusBadge(resolvedLink.status, l10n)),
             SizedBox(height: AppSpacing.lg),
 
             // QR Code (only for active links)
-            if (link.isActive) ...[
+            if (resolvedLink.isActive) ...[
               Center(
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.md),
@@ -85,7 +110,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: QrImageView(
-                    data: link.url,
+                    data: resolvedLink.url,
                     version: QrVersions.auto,
                     size: 200.0,
                     backgroundColor: context.colors.textPrimary,
@@ -98,26 +123,27 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // Amount Card
             _buildInfoCard(
               l10n.paymentLinks_amount,
-              'CFA ${link.amount.toStringAsFixed(0)}',
+              'CFA ${resolvedLink.amount.toStringAsFixed(0)}',
               Icons.payments,
               context.colors.gold,
             ),
             SizedBox(height: AppSpacing.md),
 
             // Description
-            if (link.description != null)
+            if (resolvedLink.description != null)
               _buildInfoCard(
                 l10n.paymentLinks_description,
-                link.description!,
+                resolvedLink.description!,
                 Icons.description,
                 context.colors.info,
               ),
-            if (link.description != null) SizedBox(height: AppSpacing.md),
+            if (resolvedLink.description != null)
+              SizedBox(height: AppSpacing.md),
 
             // Link Code
             _buildInfoCard(
               l10n.paymentLinks_linkCode,
-              link.shortCode,
+              resolvedLink.shortCode,
               Icons.link,
               context.colors.gold,
             ),
@@ -126,7 +152,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // Link URL
             _buildInfoCard(
               l10n.paymentLinks_linkUrl,
-              link.url,
+              resolvedLink.url,
               Icons.language,
               context.colors.info,
             ),
@@ -135,7 +161,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // View Count
             _buildInfoCard(
               l10n.paymentLinks_viewCount,
-              link.viewCount.toString(),
+              resolvedLink.viewCount.toString(),
               Icons.visibility,
               context.colors.textSecondary,
             ),
@@ -144,7 +170,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // Created Date
             _buildInfoCard(
               l10n.paymentLinks_created,
-              _formatDateTime(link.createdAt),
+              _formatDateTime(resolvedLink.createdAt),
               Icons.calendar_today,
               context.colors.textSecondary,
             ),
@@ -153,24 +179,28 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // Expires Date
             _buildInfoCard(
               l10n.paymentLinks_expires,
-              _formatDateTime(link.expiresAt),
+              _formatDateTime(resolvedLink.expiresAt),
               Icons.schedule,
-              _isExpiringSoon(link) ? context.colors.warning : context.colors.textSecondary,
+              _isExpiringSoon(resolvedLink)
+                  ? context.colors.warning
+                  : context.colors.textSecondary,
             ),
             SizedBox(height: AppSpacing.md),
 
             // Paid Information (if paid)
-            if (link.isPaid) ...[
+            if (resolvedLink.isPaid) ...[
               _buildInfoCard(
                 l10n.paymentLinks_paidBy,
-                link.paidByName ?? link.paidByPhone ?? 'Unknown',
+                resolvedLink.paidByName ??
+                    resolvedLink.paidByPhone ??
+                    'Unknown',
                 Icons.person,
                 context.colors.success,
               ),
               SizedBox(height: AppSpacing.md),
               _buildInfoCard(
                 l10n.paymentLinks_paidAt,
-                _formatDateTime(link.paidAt!),
+                _formatDateTime(resolvedLink.paidAt!),
                 Icons.check_circle,
                 context.colors.success,
               ),
@@ -180,11 +210,11 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             SizedBox(height: AppSpacing.xl),
 
             // Actions
-            if (link.isActive) ...[
+            if (resolvedLink.isActive) ...[
               AppButton(
                 label: l10n.paymentLinks_shareLink,
                 icon: Icons.share,
-                onPressed: () => ShareLinkSheet.show(context, link),
+                onPressed: () => ShareLinkSheet.show(context, resolvedLink),
                 isFullWidth: true,
               ),
               SizedBox(height: AppSpacing.sm),
@@ -192,19 +222,19 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 label: l10n.paymentLinks_cancelLink,
                 variant: AppButtonVariant.danger,
                 icon: Icons.cancel,
-                onPressed: () => _handleCancel(link.id),
+                onPressed: () => _handleCancel(resolvedLink.id),
                 isFullWidth: true,
               ),
             ],
 
-            if (link.isPaid) ...[
+            if (resolvedLink.isPaid) ...[
               AppButton(
                 label: l10n.paymentLinks_viewTransaction,
                 variant: AppButtonVariant.secondary,
                 icon: Icons.receipt_long,
                 onPressed: () {
-                  if (link.transactionId != null) {
-                    context.push('/transactions/${link.transactionId}');
+                  if (resolvedLink.transactionId != null) {
+                    context.push('/transactions/${resolvedLink.transactionId}');
                   }
                 },
                 isFullWidth: true,
@@ -252,7 +282,12 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     );
   }
 
-  Widget _buildInfoCard(String label, String value, IconData icon, Color color) {
+  Widget _buildInfoCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -280,10 +315,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                   color: context.colors.textSecondary,
                 ),
                 SizedBox(height: AppSpacing.xs),
-                AppText(
-                  value,
-                  variant: AppTextVariant.bodyLarge,
-                ),
+                AppText(value, variant: AppTextVariant.bodyLarge),
               ],
             ),
           ),
@@ -372,7 +404,12 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
     );
 
     if (confirmed == true && mounted) {
-      bool success = true; try { await ref.read(paymentLinkActionsProvider).cancelLink(id); } catch (_) { success = false; }
+      bool success = true;
+      try {
+        await ref.read(paymentLinkActionsProvider).cancelLink(id);
+      } catch (_) {
+        success = false;
+      }
       if (mounted) {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/bulk_payments/providers/bulk_payments_provider.dart';
+import 'package:usdc_wallet/features/bulk_payments/providers/bulk_submit_provider.dart';
 import 'package:usdc_wallet/features/bulk_payments/models/bulk_batch.dart';
 import 'package:usdc_wallet/features/bulk_payments/widgets/payment_row.dart';
+import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
 import 'package:usdc_wallet/utils/formatting.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -47,9 +49,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
             _buildSummaryCard(l10n, batch),
             if (batch.hasErrors) _buildErrorBanner(l10n, batch),
             _buildFilterToggle(l10n, batch),
-            Expanded(
-              child: _buildPaymentsList(l10n, batch),
-            ),
+            Expanded(child: _buildPaymentsList(l10n, batch)),
             _buildBottomBar(l10n, batch),
           ],
         ),
@@ -118,11 +118,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.error_outline,
-            color: context.colors.error,
-            size: 24,
-          ),
+          Icon(Icons.error_outline, color: context.colors.error, size: 24),
           SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
@@ -188,16 +184,14 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
       itemCount: payments.length,
       itemBuilder: (context, index) {
-        return PaymentRow(
-          payment: payments[index],
-          index: index + 1,
-        );
+        return PaymentRow(payment: payments[index], index: index + 1);
       },
     );
   }
 
   Widget _buildBottomBar(AppLocalizations l10n, BulkBatch batch) {
     final canSubmit = !batch.hasErrors && batch.totalCount > 0;
+    final submitState = ref.watch(bulkSubmitProvider);
 
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
@@ -226,7 +220,7 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
             child: AppButton(
               label: l10n.bulkPayments_submitBatch,
               onPressed: canSubmit ? () => _submitBatch(batch) : null,
-              isLoading: false,
+              isLoading: submitState.isLoading || submitState.isSubmitting,
             ),
           ),
         ],
@@ -258,19 +252,46 @@ class _BulkPreviewViewState extends ConsumerState<BulkPreviewView> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: AppText(
-              l10n.action_confirm,
-              color: context.colors.gold,
-            ),
+            child: AppText(l10n.action_confirm, color: context.colors.gold),
           ),
         ],
       ),
     );
 
     if (confirmed == true && mounted) {
-      await ref.read(bulkPaymentActionsProvider).submitBatch(batch);
+      final pinResult = await PinConfirmationSheet.show(
+        context: context,
+        title: l10n.bulkPayments_confirmSubmit,
+        subtitle: l10n.send_enterPinToConfirm,
+        amount: batch.totalAmount,
+        recipient: l10n.bulkPayments_title,
+        onConfirm: (pin) {
+          return ref.read(bulkSubmitProvider.notifier).verifyPin(pin);
+        },
+      );
+
+      if (pinResult != PinConfirmationResult.success || !mounted) {
+        return;
+      }
+
+      final submitted = await ref
+          .read(bulkSubmitProvider.notifier)
+          .submit(batch);
+
+      if (!submitted || !mounted) {
+        final error = ref.read(bulkSubmitProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? l10n.common_error),
+            backgroundColor: context.colors.error,
+          ),
+        );
+        return;
+      }
+
       // Clear draft after successful submission
       ref.read(draftBatchProvider.notifier).state = null;
+      ref.invalidate(bulkPaymentsProvider);
 
       if (mounted) {
         context.go('/bulk-payments');

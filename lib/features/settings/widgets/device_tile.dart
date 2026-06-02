@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/components/primitives/status_pill.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/device.dart';
-import 'package:usdc_wallet/utils/duration_extensions.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/duration_extensions.dart';
 
 /// Tile showing a registered device.
 class DeviceTile extends StatelessWidget {
@@ -12,17 +15,28 @@ class DeviceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(color: theme.colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.10),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(
+                color: colors.gold.withValues(
+                  alpha: colors.isDark ? 0.22 : 0.16,
+                ),
+              ),
+            ),
             child: Icon(
-              device.platform == 'ios' ? Icons.phone_iphone_rounded : Icons.phone_android_rounded,
-              color: theme.colorScheme.onSurfaceVariant,
+              device.platform == 'ios'
+                  ? Icons.phone_iphone_rounded
+                  : Icons.phone_android_rounded,
+              color: colors.gold,
               size: 22,
             ),
           ),
@@ -33,13 +47,24 @@ class DeviceTile extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(child: Text(device.displayLabel, style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+                    Flexible(
+                      child: AppText(
+                        device.displayLabel,
+                        variant: AppTextVariant.bodyMedium,
+                        color: colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                     if (device.isCurrent) ...[
                       const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(4)),
-                        child: Text(AppLocalizations.of(context)!.settings_thisDevice, style: TextStyle(fontSize: 10, color: Colors.green.shade700, fontWeight: FontWeight.w500)),
+                      StatusPill(
+                        label: AppLocalizations.of(
+                          context,
+                        )!.settings_thisDevice,
+                        tone: StatusTone.success,
+                        compact: true,
+                        emphasis: true,
                       ),
                     ],
                   ],
@@ -47,7 +72,9 @@ class DeviceTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   'Last active: ${device.lastActiveAt.timeAgo}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  style: AppTypography.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -55,11 +82,11 @@ class DeviceTile extends StatelessWidget {
           if (!device.isCurrent && onRemove != null)
             IconButton(
               onPressed: onRemove,
-              icon: Icon(Icons.close_rounded, color: theme.colorScheme.error, size: 20),
+              icon: Icon(Icons.close_rounded, color: colors.error, size: 20),
               visualDensity: VisualDensity.compact,
             ),
           if (device.isTrusted)
-            Icon(Icons.verified_user_rounded, color: Colors.green.shade600, size: 18),
+            Icon(Icons.verified_user_rounded, color: colors.success, size: 18),
         ],
       ),
     );

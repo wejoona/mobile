@@ -5,11 +5,10 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/receipts/models/receipt_data.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
-/// Receipt widget for rendering as image or PDF
-/// This widget can be captured using RepaintBoundary or screenshot package
+/// Receipt widget for rendering as image or PDF.
 class ReceiptWidget extends StatelessWidget {
   const ReceiptWidget({
     super.key,
@@ -22,256 +21,276 @@ class ReceiptWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormatter = DateFormat('MMM dd, yyyy  •  HH:mm');
+    final dateFormatter = DateFormat('MMM dd, yyyy • HH:mm');
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: 400,
-      padding: const EdgeInsets.all(32),
-      color: context.colors.goldSubtle, // Light cream - paper-like for receipts
+      padding: const EdgeInsets.all(AppSpacing.xxl),
+      decoration: BoxDecoration(
+        color: AppColorsLight.container,
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
+        border: Border.all(color: AppColorsLight.borderDefault),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Logo & Title
           _buildHeader(),
-          const SizedBox(height: 32),
-
-          // Status Badge
-          _buildStatusBadge(),
-          const SizedBox(height: 24),
-
-          // Divider
-          Container(height: 1, color: context.colors.goldLight),
-          const SizedBox(height: 24),
-
-          // Amount Section
-          _buildAmountSection(),
-          const SizedBox(height: 24),
-
-          // Divider
-          Container(height: 1, color: context.colors.goldLight),
-          const SizedBox(height: 24),
-
-          // Recipient Section (if applicable)
-          if (receiptData.recipientPhone != null || receiptData.recipientAddress != null) ...[
-            _buildRecipientSection(),
-            const SizedBox(height: 24),
-            Container(height: 1, color: context.colors.goldLight),
-            const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xxl),
+          _buildStatusRow(),
+          const SizedBox(height: AppSpacing.xxl),
+          _buildAmountSection(l10n),
+          const SizedBox(height: AppSpacing.xxl),
+          _Divider(),
+          const SizedBox(height: AppSpacing.xl),
+          if (receiptData.recipientPhone != null ||
+              receiptData.recipientAddress != null) ...[
+            _buildRecipientSection(l10n),
+            const SizedBox(height: AppSpacing.xl),
+            _Divider(),
+            const SizedBox(height: AppSpacing.xl),
           ],
-
-          // Transaction Details
-          _buildDetailsSection(dateFormatter),
-          const SizedBox(height: 24),
-
-          // Divider
-          Container(height: 1, color: context.colors.goldLight),
-          const SizedBox(height: 24),
-
-          // QR Code
+          _buildDetailsSection(l10n, dateFormatter),
           if (showQrCode) ...[
+            const SizedBox(height: AppSpacing.xxl),
             _buildQrCode(),
-            const SizedBox(height: 24),
           ],
-
-          // Footer
-          _buildFooter(),
+          const SizedBox(height: AppSpacing.xxl),
+          _buildFooter(l10n),
         ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Column(
+    return Row(
       children: [
-        // Logo placeholder - replace with actual logo asset
         Container(
-          width: 80,
-          height: 80,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: AppColors.gold500,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: const Center(
             child: AppText(
-              'JP',
-              variant: AppTextVariant.displayMedium,
-              color: AppColors.textPrimary,
-              fontWeight: FontWeight.bold,
+              'K',
+              variant: AppTextVariant.titleLarge,
+              color: AppColors.textInverse,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        const AppText(
-          'TRANSACTION RECEIPT',
-          variant: AppTextVariant.titleLarge,
-          color: AppColors.textInverse,
-          fontWeight: FontWeight.bold,
-          style: TextStyle(letterSpacing: 1.2),
+        const SizedBox(width: AppSpacing.md),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                'Korido',
+                variant: AppTextVariant.titleLarge,
+                color: AppColorsLight.textPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+              AppText(
+                'Transaction receipt',
+                variant: AppTextVariant.bodySmall,
+                color: AppColorsLight.textSecondary,
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildStatusBadge() {
+  Widget _buildStatusRow() {
     final color = _getStatusColor();
-    final icon = _getStatusIcon();
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: color.withValues(alpha:0.1),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: color, width: 2),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: color.withValues(alpha: 0.20)),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(width: 8),
+          Icon(_getStatusIcon(), color: color, size: 22),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: StatusPill(
+                label: receiptData.getStatusLabel(),
+                tone: _getStatusTone(),
+                icon: _getStatusIcon(),
+                emphasis: true,
+              ),
+            ),
+          ),
           AppText(
-            receiptData.getStatusLabel().toUpperCase(),
-            variant: AppTextVariant.labelLarge,
-            color: color,
-            fontWeight: FontWeight.bold,
-            style: const TextStyle(letterSpacing: 1.0),
+            receiptData.getTypeLabel(),
+            variant: AppTextVariant.labelMedium,
+            color: AppColorsLight.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAmountSection() {
+  Widget _buildAmountSection(AppLocalizations l10n) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        AppText(
+          l10n.send_total,
+          variant: AppTextVariant.labelMedium,
+          color: AppColorsLight.textSecondary,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        AmountText.fromText(
+          formatCurrency(receiptData.total, receiptData.currency),
+          size: AmountTextSize.display,
+          color: AppColorsLight.textPrimary,
+        ),
+        const SizedBox(height: AppSpacing.lg),
         _buildRow(
-          'Amount:',
+          l10n.common_amount,
           formatCurrency(receiptData.amount, receiptData.currency),
-          isBold: true,
+          money: true,
         ),
         if (receiptData.fee > 0) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
           _buildRow(
-            'Fee:',
+            l10n.send_fee,
             formatCurrency(receiptData.fee, receiptData.currency),
+            money: true,
           ),
         ],
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.gold100,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: _buildRow(
-            'Total:',
-            formatCurrency(receiptData.total, receiptData.currency),
-            isBold: true,
-            fontSize: 18,
-          ),
-        ),
       ],
     );
   }
 
-  Widget _buildRecipientSection() {
+  Widget _buildRecipientSection(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const AppText(
-          'Recipient',
+        AppText(
+          l10n.send_recipient,
           variant: AppTextVariant.labelMedium,
-          color: AppColors.gold800,
-          fontWeight: FontWeight.w600,
+          color: AppColorsLight.textSecondary,
+          fontWeight: FontWeight.w700,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         if (receiptData.recipientName != null)
-          _buildRow('Name:', receiptData.recipientName!),
+          _buildRow('Name', receiptData.recipientName!),
         if (receiptData.recipientPhone != null) ...[
-          if (receiptData.recipientName != null) const SizedBox(height: 8),
-          _buildRow('Phone:', receiptData.recipientPhone!),
+          const SizedBox(height: AppSpacing.sm),
+          _buildRow('Phone', receiptData.recipientPhone!),
         ],
         if (receiptData.recipientAddress != null) ...[
-          const SizedBox(height: 8),
-          _buildRow('Address:', _truncateAddress(receiptData.recipientAddress!)),
+          const SizedBox(height: AppSpacing.sm),
+          _buildRow('Address', _truncateAddress(receiptData.recipientAddress!)),
         ],
       ],
     );
   }
 
-  Widget _buildDetailsSection(DateFormat dateFormatter) {
+  Widget _buildDetailsSection(AppLocalizations l10n, DateFormat dateFormatter) {
     return Column(
       children: [
-        _buildRow('Date:', dateFormatter.format(receiptData.date)),
-        const SizedBox(height: 12),
-        _buildRow('Reference:', receiptData.referenceNumber),
-        const SizedBox(height: 12),
-        _buildRow('Type:', receiptData.getTypeLabel()),
+        _buildRow(l10n.send_date, dateFormatter.format(receiptData.date)),
+        const SizedBox(height: AppSpacing.sm),
+        _buildRow(
+          l10n.send_reference,
+          receiptData.referenceNumber,
+          monospace: true,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        _buildRow(l10n.common_type, receiptData.getTypeLabel()),
         if (receiptData.description != null) ...[
-          const SizedBox(height: 12),
-          _buildRow('Note:', receiptData.description!),
+          const SizedBox(height: AppSpacing.sm),
+          _buildRow(l10n.common_note, receiptData.description!),
         ],
       ],
     );
   }
 
   Widget _buildQrCode() {
-    // QR code contains transaction reference for verification
-    return Column(
-      children: [
-        QrImageView(
-          data: receiptData.referenceNumber,
-          version: QrVersions.auto,
-          size: 120,
-          backgroundColor: AppColors.gold50,
-        ),
-        const SizedBox(height: 8),
-        AppText(
-          receiptData.truncatedId,
-          variant: AppTextVariant.monoSmall,
-          color: AppColors.gold500,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFooter() {
-    return Column(
-      children: [
-        const AppText(
-          'Thank you for using',
-          variant: AppTextVariant.bodySmall,
-          color: AppColors.gold500,
-        ),
-        const SizedBox(height: 4),
-        const AppText(
-          'Korido',
-          variant: AppTextVariant.titleMedium,
-          color: AppColors.gold500,
-          fontWeight: FontWeight.bold,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRow(String label, String value, {bool isBold = false, double fontSize = 14}) {
-    final variant = fontSize >= 18 ? AppTextVariant.titleMedium : AppTextVariant.bodyMedium;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        AppText(
-          label,
-          variant: variant,
-          color: AppColors.textInverse,
-          fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
-        ),
-        Flexible(
-          child: AppText(
-            value,
-            variant: variant,
-            color: AppColors.textInverse,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
-            textAlign: TextAlign.right,
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.xl),
+              border: Border.all(color: AppColorsLight.borderSubtle),
+            ),
+            child: QrImageView(
+              data: receiptData.referenceNumber,
+              version: QrVersions.auto,
+              size: 112,
+              backgroundColor: Colors.white,
+            ),
           ),
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            receiptData.truncatedId,
+            variant: AppTextVariant.monoSmall,
+            color: AppColorsLight.textSecondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter(AppLocalizations l10n) {
+    return AppText(
+      l10n.receipts_receiptView,
+      variant: AppTextVariant.bodySmall,
+      color: AppColorsLight.textTertiary,
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _buildRow(
+    String label,
+    String value, {
+    bool monospace = false,
+    bool money = false,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: AppText(
+            label,
+            variant: AppTextVariant.bodySmall,
+            color: AppColorsLight.textSecondary,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Flexible(
+          flex: 2,
+          child: money
+              ? AmountText.fromText(
+                  value,
+                  size: AmountTextSize.small,
+                  color: AppColorsLight.textPrimary,
+                  textAlign: TextAlign.right,
+                )
+              : AppText(
+                  value,
+                  variant: monospace
+                      ? AppTextVariant.monoSmall
+                      : AppTextVariant.bodyMedium,
+                  color: AppColorsLight.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  textAlign: TextAlign.right,
+                ),
         ),
       ],
     );
@@ -280,31 +299,50 @@ class ReceiptWidget extends StatelessWidget {
   Color _getStatusColor() {
     switch (receiptData.status) {
       case TransactionStatus.completed:
-        return AppColors.successBase;
+        return AppColorsLight.successText;
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        return AppColors.warningBase;
+        return AppColorsLight.warningText;
       case TransactionStatus.failed:
       case TransactionStatus.cancelled:
-        return AppColors.errorBase;
+        return AppColorsLight.errorText;
+    }
+  }
+
+  StatusTone _getStatusTone() {
+    switch (receiptData.status) {
+      case TransactionStatus.completed:
+        return StatusTone.success;
+      case TransactionStatus.pending:
+      case TransactionStatus.processing:
+        return StatusTone.warning;
+      case TransactionStatus.failed:
+      case TransactionStatus.cancelled:
+        return StatusTone.danger;
     }
   }
 
   IconData _getStatusIcon() {
     switch (receiptData.status) {
       case TransactionStatus.completed:
-        return Icons.check_circle;
+        return Icons.check_circle_rounded;
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        return Icons.schedule;
+        return Icons.schedule_rounded;
       case TransactionStatus.failed:
       case TransactionStatus.cancelled:
-        return Icons.cancel;
+        return Icons.cancel_rounded;
     }
   }
 
   String _truncateAddress(String address) {
-    if (address.length <= 20) return address;
-    return '${address.substring(0, 10)}...${address.substring(address.length - 8)}';
+    if (address.length <= 24) return address;
+    return '${address.substring(0, 12)}...${address.substring(address.length - 8)}';
   }
+}
+
+class _Divider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) =>
+      Container(height: 1, color: AppColorsLight.borderSubtle);
 }

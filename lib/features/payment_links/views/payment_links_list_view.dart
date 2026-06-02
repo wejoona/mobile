@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
-import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/empty_state.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
+import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
+import 'package:usdc_wallet/features/payment_links/widgets/payment_link_card.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Payment links list screen.
@@ -18,19 +19,35 @@ class PaymentLinksListView extends ConsumerWidget {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.paymentLinks_title),
         actions: [
-          IconButton(icon: const Icon(Icons.add_rounded), tooltip: 'Créer un lien', onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.add_rounded),
+            tooltip: AppLocalizations.of(context)!.paymentLinks_createLink,
+            onPressed: () => context.push('/payment-links/create'),
+          ),
         ],
       ),
       body: linksAsync.when(
-        loading: () => const Padding(padding: EdgeInsets.all(16), child: ShimmerList(itemCount: 3)),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.paymentLinks_error(e.toString()))),
+        loading: () => const Padding(
+          padding: EdgeInsets.all(16),
+          child: ShimmerList(itemCount: 3),
+        ),
+        error: (e, _) => Center(
+          child: Text(
+            AppLocalizations.of(context)!.paymentLinks_error(e.toString()),
+          ),
+        ),
         data: (links) {
           if (links.isEmpty) {
-            return const EmptyState(
+            return EmptyState(
               icon: Icons.link_rounded,
-              title: 'No payment links',
-              subtitle: 'Create a payment link to receive money from anyone',
-              actionLabel: 'Create Link',
+              title: AppLocalizations.of(context)!.paymentLinks_title,
+              subtitle: AppLocalizations.of(
+                context,
+              )!.paymentLinks_createDescription,
+              actionLabel: AppLocalizations.of(
+                context,
+              )!.paymentLinks_createLink,
+              onAction: () => context.push('/payment-links/create'),
             );
           }
           return RefreshIndicator(
@@ -38,7 +55,10 @@ class PaymentLinksListView extends ConsumerWidget {
             child: ListView.builder(
               padding: const EdgeInsets.only(top: 8, bottom: 80),
               itemCount: links.length,
-              itemBuilder: (_, i) => PaymentLinkCard(link: links[i]),
+              itemBuilder: (_, i) => PaymentLinkCard(
+                link: links[i],
+                onTap: () => context.push('/payment-links/${links[i].id}'),
+              ),
             ),
           );
         },

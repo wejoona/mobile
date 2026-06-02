@@ -1,31 +1,37 @@
 import 'dart:async';
+
+import 'package:dio/dio.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:dio/dio.dart';
 
 /// Crash Reporting Service Provider
-final crashReportingServiceProvider = Provider<CrashReportingService>((ref) {
-  return CrashReportingService();
-});
+final crashReportingServiceProvider = Provider<CrashReportingService>(
+  (ref) => CrashReportingService(),
+);
 
 /// Firebase Crashlytics Service
 /// Reports crashes and non-fatal errors to Firebase
 class CrashReportingService {
-  static final _logger = AppLogger('Crashlytics');
+  CrashReportingService() : this._(_initializeCrashlytics());
+
+  CrashReportingService._(this._crashlytics)
+    : _isEnabled = _crashlytics != null;
+  static const _logger = AppLogger('Crashlytics');
   final FirebaseCrashlytics? _crashlytics;
   final bool _isEnabled;
 
-  CrashReportingService()
-      : _crashlytics = _initializeCrashlytics(),
-        _isEnabled = _initializeCrashlytics() != null;
-
   static FirebaseCrashlytics? _initializeCrashlytics() {
+    if (MockConfig.useMocks) {
+      return null;
+    }
+
     try {
       return FirebaseCrashlytics.instance;
-    } catch (e) {
-      _logger.debug('Failed to initialize: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to initialize: $error');
       return null;
     }
   }
@@ -45,7 +51,7 @@ class CrashReportingService {
 
       // Pass all uncaught Flutter errors to Crashlytics
       FlutterError.onError = (FlutterErrorDetails details) {
-        _crashlytics?.recordFlutterFatalError(details);
+        unawaited(_crashlytics?.recordFlutterFatalError(details));
 
         // Still print in debug mode for development
         if (kDebugMode) {
@@ -55,24 +61,26 @@ class CrashReportingService {
 
       // Pass all uncaught async errors to Crashlytics
       PlatformDispatcher.instance.onError = (error, stack) {
-        _crashlytics?.recordError(error, stack, fatal: true);
+        unawaited(_crashlytics?.recordError(error, stack, fatal: true));
         return true;
       };
 
       _logger.debug('Initialized successfully');
-    } catch (e) {
-      _logger.debug('Failed to initialize: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to initialize: $error');
     }
   }
 
   /// Record a non-fatal error
   Future<void> recordError(
-    dynamic exception,
+    Object exception,
     StackTrace? stack, {
     String? reason,
     bool fatal = false,
   }) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.recordError(
@@ -84,10 +92,12 @@ class CrashReportingService {
 
       if (kDebugMode) {
         _logger.debug('Error recorded: $exception');
-        if (reason != null) _logger.debug('Reason: $reason');
+        if (reason != null) {
+          _logger.debug('Reason: $reason');
+        }
       }
-    } catch (e) {
-      _logger.debug('Failed to record error: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to record error: $error');
     }
   }
 
@@ -97,7 +107,9 @@ class CrashReportingService {
     String? endpoint,
     String? userId,
   }) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       final reason = _buildApiErrorReason(exception, endpoint);
@@ -116,14 +128,9 @@ class CrashReportingService {
         await _crashlytics?.setCustomKey('user_id', userId);
       }
 
-      await recordError(
-        exception,
-        exception.stackTrace,
-        reason: reason,
-        fatal: false,
-      );
-    } catch (e) {
-      _logger.debug('Failed to record API error: $e');
+      await recordError(exception, exception.stackTrace, reason: reason);
+    } on Object catch (error) {
+      _logger.debug('Failed to record API error: $error');
     }
   }
 
@@ -145,11 +152,13 @@ class CrashReportingService {
 
   /// Record authentication error
   Future<void> recordAuthError(
-    dynamic exception, {
+    Object exception, {
     String? reason,
     String? userId,
   }) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.setCustomKey('error_type', 'auth_error');
@@ -161,23 +170,24 @@ class CrashReportingService {
         exception,
         exception is Error ? exception.stackTrace : StackTrace.current,
         reason: reason ?? 'Authentication error',
-        fatal: false,
       );
-    } catch (e) {
-      _logger.debug('Failed to record auth error: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to record auth error: $error');
     }
   }
 
   /// Record payment/transfer error
   Future<void> recordPaymentError(
-    dynamic exception, {
+    Object exception, {
     required String paymentType,
     String? amount,
     String? currency,
     String? transactionId,
     String? userId,
   }) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.setCustomKey('error_type', 'payment_error');
@@ -200,21 +210,22 @@ class CrashReportingService {
         exception,
         exception is Error ? exception.stackTrace : StackTrace.current,
         reason: 'Payment error: $paymentType',
-        fatal: false,
       );
-    } catch (e) {
-      _logger.debug('Failed to record payment error: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to record payment error: $error');
     }
   }
 
   /// Record KYC error
   Future<void> recordKycError(
-    dynamic exception, {
+    Object exception, {
     String? tier,
     String? step,
     String? userId,
   }) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.setCustomKey('error_type', 'kyc_error');
@@ -233,40 +244,45 @@ class CrashReportingService {
         exception,
         exception is Error ? exception.stackTrace : StackTrace.current,
         reason: 'KYC error${tier != null ? ': $tier' : ''}',
-        fatal: false,
       );
-    } catch (e) {
-      _logger.debug('Failed to record KYC error: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to record KYC error: $error');
     }
   }
 
   /// Log a custom message
   Future<void> log(String message) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.log(message);
       _logger.debug('Log: $message');
-    } catch (e) {
-      _logger.debug('Failed to log message: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to log message: $error');
     }
   }
 
   /// Set user identifier
   Future<void> setUserId(String? userId) async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.setUserIdentifier(userId ?? '');
       _logger.debug('User ID set: $userId');
-    } catch (e) {
-      _logger.debug('Failed to set user ID: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to set user ID: $error');
     }
   }
 
   /// Set custom key-value pair for crash context
-  Future<void> setCustomKey(String key, dynamic value) async {
-    if (!_isEnabled) return;
+  Future<void> setCustomKey(String key, Object? value) async {
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       if (value is String) {
@@ -282,14 +298,16 @@ class CrashReportingService {
       }
 
       _logger.debug('Custom key set: $key = $value');
-    } catch (e) {
-      _logger.debug('Failed to set custom key: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to set custom key: $error');
     }
   }
 
   /// Clear user data (e.g., on logout)
   Future<void> clearUserData() async {
-    if (!_isEnabled) return;
+    if (!_isEnabled) {
+      return;
+    }
 
     try {
       await _crashlytics?.setUserIdentifier('');
@@ -297,8 +315,8 @@ class CrashReportingService {
       await _crashlytics?.setCustomKey('user_id', '');
 
       _logger.debug('User data cleared');
-    } catch (e) {
-      _logger.debug('Failed to clear user data: $e');
+    } on Object catch (error) {
+      _logger.debug('Failed to clear user data: $error');
     }
   }
 

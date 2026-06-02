@@ -10,14 +10,11 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('LimitsView Golden Tests', () {
+  goldenGroup('LimitsView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: LimitsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: LimitsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -30,10 +27,7 @@ void main() {
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: LimitsView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: LimitsView()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

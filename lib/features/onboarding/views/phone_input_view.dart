@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/config/countries.dart' as app_config;
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
+import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
 
@@ -24,6 +27,14 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   bool _termsAccepted = false;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedCountry = CountryData.fromConfig(
+      ref.read(selectedCountryProvider),
+    );
+  }
+
+  @override
   void dispose() {
     _phoneController.dispose();
     super.dispose();
@@ -37,42 +48,28 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.icon),
-          onPressed: () => context.pop(),
-        ),
-      ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Progress indicator
+              AuthTopBar(onBack: () => context.pop()),
+              const SizedBox(height: AppSpacing.lg),
               const OnboardingProgress(currentStep: 1, totalSteps: 5),
-              SizedBox(height: AppSpacing.xxl),
-              AppText(
-                l10n.onboarding_phoneInput_title,
-                style: AppTypography.headlineLarge.copyWith(
-                  color: colors.textPrimary,
-                ),
+              const SizedBox(height: AppSpacing.xxl),
+              AuthScreenHeader(
+                appName: l10n.appName,
+                title: l10n.onboarding_phoneInput_title,
+                subtitle: l10n.onboarding_phoneInput_subtitle,
+                markSize: 52,
               ),
-              SizedBox(height: AppSpacing.sm),
-              AppText(
-                l10n.onboarding_phoneInput_subtitle,
-                style: AppTypography.bodyLarge.copyWith(
-                  color: colors.textSecondary,
-                ),
-              ),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
               // Country picker
               GestureDetector(
                 onTap: _showCountryPicker,
                 child: Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: colors.elevated,
                     borderRadius: BorderRadius.circular(AppRadius.md),
@@ -84,31 +81,26 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                         _selectedCountry.flag,
                         style: const TextStyle(fontSize: 24),
                       ),
-                      SizedBox(width: AppSpacing.sm),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
                           _selectedCountry.name,
-                          style: AppTypography.bodyLarge.copyWith(
-                            color: colors.textPrimary,
-                          ),
+                          variant: AppTextVariant.bodyLarge,
+                          color: colors.textPrimary,
                         ),
                       ),
                       AppText(
                         _selectedCountry.dialCode,
-                        style: AppTypography.bodyLarge.copyWith(
-                          color: colors.gold,
-                        ),
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.gold,
                       ),
-                      SizedBox(width: AppSpacing.sm),
-                      Icon(
-                        Icons.arrow_drop_down,
-                        color: colors.iconSecondary,
-                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Icon(Icons.arrow_drop_down, color: colors.iconSecondary),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
               // Phone input
               AppInput(
                 label: l10n.onboarding_phoneInput_label,
@@ -120,7 +112,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                   _PhoneNumberFormatter(_selectedCountry.phoneFormat),
                 ],
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
               // Terms checkbox
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,21 +126,20 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(top: AppSpacing.sm),
+                      padding: const EdgeInsets.only(top: AppSpacing.sm),
                       child: AppText(
                         l10n.onboarding_phoneInput_terms,
-                        style: AppTypography.bodySmall.copyWith(
-                          color: colors.textSecondary,
-                        ),
+                        variant: AppTextVariant.bodySmall,
+                        color: colors.textSecondary,
                       ),
                     ),
                   ),
                 ],
               ),
               if (state.error != null) ...[
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
                 Container(
-                  padding: EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: colors.errorBg,
                     borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -157,13 +148,12 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                   child: Row(
                     children: [
                       Icon(Icons.error_outline, color: colors.errorText),
-                      SizedBox(width: AppSpacing.sm),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: AppText(
                           state.error!,
-                          style: AppTypography.bodySmall.copyWith(
-                            color: colors.errorText,
-                          ),
+                          variant: AppTextVariant.bodySmall,
+                          color: colors.errorText,
                         ),
                       ),
                     ],
@@ -177,7 +167,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
                 isLoading: state.isLoading,
                 isFullWidth: true,
               ),
-              SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.md),
               // Login link
               Center(
                 child: TextButton(
@@ -198,7 +188,8 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   bool get _canSubmit {
-    return _phoneController.text.isNotEmpty && _termsAccepted;
+    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    return digits.length == _selectedCountry.phoneLength && _termsAccepted;
   }
 
   void _showCountryPicker() {
@@ -212,7 +203,19 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
       builder: (context) => CountryPickerWidget(
         selectedCountry: _selectedCountry,
         onCountrySelected: (country) {
-          setState(() => _selectedCountry = country);
+          setState(() {
+            _selectedCountry = country;
+            if (_phoneController.text.replaceAll(RegExp(r'\D'), '').length >
+                country.phoneLength) {
+              _phoneController.clear();
+            }
+          });
+          final configCountry = app_config.SupportedCountries.findByCode(
+            country.code,
+          );
+          if (configCountry != null) {
+            ref.read(selectedCountryProvider.notifier).select(configCountry);
+          }
           Navigator.pop(context);
         },
       ),
@@ -221,10 +224,20 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
 
   Future<void> _handleSubmit() async {
     final phoneNumber = _phoneController.text.replaceAll(' ', '');
-    ref.read(onboardingProvider.notifier).updatePhoneNumber(
-      phoneNumber,
-      _selectedCountry.dialCode,
+    final fullPhoneNumber = '${_selectedCountry.dialCode}$phoneNumber';
+    final configCountry = app_config.SupportedCountries.findByCode(
+      _selectedCountry.code,
     );
+    if (configCountry != null) {
+      ref.read(selectedCountryProvider.notifier).select(configCountry);
+    }
+    ref
+        .read(onboardingProvider.notifier)
+        .updatePhoneNumber(
+          fullPhoneNumber,
+          _selectedCountry.code,
+          _selectedCountry.dialCode,
+        );
     await ref.read(onboardingProvider.notifier).submitPhoneNumber();
 
     if (mounted && ref.read(onboardingProvider).error == null) {

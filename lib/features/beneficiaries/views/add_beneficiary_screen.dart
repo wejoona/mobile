@@ -9,10 +9,7 @@ import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 
 /// Add/Edit Beneficiary Screen
 class AddBeneficiaryScreen extends ConsumerStatefulWidget {
-  const AddBeneficiaryScreen({
-    super.key,
-    this.beneficiaryId,
-  });
+  const AddBeneficiaryScreen({super.key, this.beneficiaryId});
 
   final String? beneficiaryId;
 
@@ -93,9 +90,7 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         title: AppText(
-          isEdit
-              ? l10n.beneficiaries_editTitle
-              : l10n.beneficiaries_addTitle,
+          isEdit ? l10n.beneficiaries_editTitle : l10n.beneficiaries_addTitle,
           variant: AppTextVariant.headlineSmall,
         ),
         backgroundColor: Colors.transparent,
@@ -245,9 +240,6 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
         // Update existing beneficiary
         final request = UpdateBeneficiaryRequest(
           name: _nameController.text.trim(),
-          phoneE164: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
         );
 
         final success = await ref
@@ -274,8 +266,8 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
           accountType: _selectedAccountType,
           beneficiaryWalletAddress:
               _selectedAccountType == AccountType.externalWallet
-                  ? _walletAddressController.text.trim()
-                  : null,
+              ? _walletAddressController.text.trim()
+              : null,
           bankCode: _selectedAccountType == AccountType.bankAccount
               ? _bankCodeController.text.trim()
               : null,
@@ -307,7 +299,9 @@ class _AddBeneficiaryScreenState extends ConsumerState<AddBeneficiaryScreen> {
         final colors = context.colors;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: AppText(AppLocalizations.of(context)!.beneficiaries_addError),
+            content: AppText(
+              AppLocalizations.of(context)!.beneficiaries_addError,
+            ),
             backgroundColor: colors.error,
           ),
         );

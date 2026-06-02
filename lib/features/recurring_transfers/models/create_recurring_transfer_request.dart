@@ -10,7 +10,7 @@ class CreateRecurringTransferRequest {
   final DateTime? endDate;
   final int? occurrences;
   final String? note;
-  final int? dayOfWeek; // For weekly/biweekly (1=Monday, 7=Sunday)
+  final int? dayOfWeek; // For weekly/biweekly (0=Sunday, 6=Saturday)
   final int? dayOfMonth; // For monthly (1-31)
 
   const CreateRecurringTransferRequest({

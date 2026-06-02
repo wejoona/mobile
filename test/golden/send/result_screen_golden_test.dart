@@ -21,16 +21,13 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('ResultScreen Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('ResultScreen Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: ResultScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: ResultScreen()),
         );
         await tester.pump(const Duration(milliseconds: 500));
 
@@ -41,15 +38,12 @@ void main() {
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: ResultScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: ResultScreen()),
         );
         await tester.pump(const Duration(milliseconds: 500));
 

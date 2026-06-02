@@ -15,12 +15,29 @@ class KycApi {
   Future<Response> submit(Map<String, dynamic> data) =>
       _dio.post('/kyc/submit', data: data);
 
-  /// POST /kyc/upload — upload KYC document
+  /// POST /kyc/documents — upload KYC document
   Future<Response> uploadDocument(File file, {String? type}) async {
+    final fieldName = _fieldNameForType(type);
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(file.path),
-      if (type != null) 'type': type,
+      fieldName: await MultipartFile.fromFile(file.path),
     });
-    return _dio.post('/kyc/upload', data: formData);
+    return _dio.post('/kyc/documents', data: formData);
+  }
+
+  String _fieldNameForType(String? type) {
+    switch ((type ?? 'idFront').replaceAll('_', '').toLowerCase()) {
+      case 'idfront':
+      case 'front':
+        return 'idFront';
+      case 'idback':
+      case 'back':
+        return 'idBack';
+      case 'selfie':
+        return 'selfie';
+      case 'video':
+        return 'video';
+      default:
+        throw ArgumentError('Unsupported KYC document type: $type');
+    }
   }
 }

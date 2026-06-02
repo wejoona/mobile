@@ -14,7 +14,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Payment Links E2E', () {
+  e2eGroup('Payment Links E2E', () {
     test('POST /payment-links — create link', () async {
       final res = await client.post('/payment-links', {
         'amount': 5000,
@@ -39,7 +39,9 @@ void main() {
     });
 
     test('GET /payment-links/nonexistent — returns 404', () async {
-      final res = await client.get('/payment-links/00000000-0000-0000-0000-000000000000');
+      final res = await client.get(
+        '/payment-links/00000000-0000-0000-0000-000000000000',
+      );
       expect(res.statusCode, anyOf(404, 400));
     });
 

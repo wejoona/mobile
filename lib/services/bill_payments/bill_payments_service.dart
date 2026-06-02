@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Bill Payments Service - mirrors backend BillPaymentController
@@ -48,11 +49,14 @@ class BillPaymentsService {
     String? meterNumber,
   }) async {
     try {
-      final response = await _dio.post('/bill-payments/validate', data: {
-        'providerId': providerId,
-        'accountNumber': accountNumber,
-        if (meterNumber != null) 'meterNumber': meterNumber,
-      });
+      final response = await _dio.post(
+        '/bill-payments/validate',
+        data: {
+          'providerId': providerId,
+          'accountNumber': accountNumber,
+          if (meterNumber != null) 'meterNumber': meterNumber,
+        },
+      );
       return AccountValidationResult.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -69,18 +73,29 @@ class BillPaymentsService {
     String? currency,
     String? phone,
     String? email,
+    required String pinToken,
+    String? idempotencyKey,
   }) async {
     try {
-      final response = await _dio.post('/bill-payments/pay', data: {
-        'providerId': providerId,
-        'accountNumber': accountNumber,
-        'amount': amount,
-        if (meterNumber != null) 'meterNumber': meterNumber,
-        if (customerName != null) 'customerName': customerName,
-        if (currency != null) 'currency': currency,
-        if (phone != null) 'phone': phone,
-        if (email != null) 'email': email,
-      });
+      final response = await _dio.post(
+        '/bill-payments/pay',
+        data: {
+          'providerId': providerId,
+          'accountNumber': accountNumber,
+          'amount': amount,
+          if (meterNumber != null) 'meterNumber': meterNumber,
+          if (customerName != null) 'customerName': customerName,
+          if (currency != null) 'currency': currency,
+          if (phone != null) 'phone': phone,
+          if (email != null) 'email': email,
+        },
+        options: Options(
+          headers: transactionHeaders(
+            pinToken: pinToken,
+            idempotencyKey: idempotencyKey,
+          ),
+        ),
+      );
       return BillPaymentResult.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -97,13 +112,11 @@ class BillPaymentsService {
     DateTime? endDate,
   }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'limit': limit,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'limit': limit};
       if (category != null) queryParams['category'] = category;
       if (status != null) queryParams['status'] = status;
-      if (startDate != null) queryParams['startDate'] = startDate.toIso8601String();
+      if (startDate != null)
+        queryParams['startDate'] = startDate.toIso8601String();
       if (endDate != null) queryParams['endDate'] = endDate.toIso8601String();
 
       final response = await _dio.get(
@@ -286,7 +299,8 @@ class BillProvider {
       requiresAccountNumber: json['requiresAccountNumber'] as bool? ?? true,
       requiresMeterNumber: json['requiresMeterNumber'] as bool? ?? false,
       requiresCustomerName: json['requiresCustomerName'] as bool? ?? false,
-      accountNumberLabel: json['accountNumberLabel'] as String? ?? 'Account Number',
+      accountNumberLabel:
+          json['accountNumberLabel'] as String? ?? 'Account Number',
       accountNumberPattern: json['accountNumberPattern'] as String?,
       accountNumberLength: json['accountNumberLength'] as int?,
       minimumAmount: (json['minimumAmount'] as num).toDouble(),
@@ -296,7 +310,8 @@ class BillProvider {
       currency: json['currency'] as String? ?? 'XOF',
       isActive: json['isActive'] as bool? ?? true,
       supportsValidation: json['supportsValidation'] as bool? ?? true,
-      estimatedProcessingTime: json['estimatedProcessingTime'] as String? ?? 'Instant',
+      estimatedProcessingTime:
+          json['estimatedProcessingTime'] as String? ?? 'Instant',
     );
   }
 
@@ -462,7 +477,9 @@ class BillPaymentResult {
       fee: (json['fee'] as num).toDouble(),
       totalAmount: (json['totalAmount'] as num).toDouble(),
       currency: json['currency'] as String,
-      paidAt: json['paidAt'] != null ? DateTime.parse(json['paidAt'] as String) : null,
+      paidAt: json['paidAt'] != null
+          ? DateTime.parse(json['paidAt'] as String)
+          : null,
       estimatedCompletionTime: json['estimatedCompletionTime'] as String?,
     );
   }
@@ -554,7 +571,9 @@ class BillPaymentHistoryResponse {
     final pagination = json['pagination'] as Map<String, dynamic>;
     return BillPaymentHistoryResponse(
       items: (json['items'] as List<dynamic>)
-          .map((e) => BillPaymentHistoryItem.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => BillPaymentHistoryItem.fromJson(e as Map<String, dynamic>),
+          )
           .toList(),
       page: pagination['page'] as int,
       limit: pagination['limit'] as int,

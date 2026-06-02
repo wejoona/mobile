@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart' hide BillPaymentResult;
+import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart'
+    hide BillPaymentResult;
+import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 
@@ -61,13 +64,18 @@ class BillPaymentResult {
   final String status;
   final String? reference;
 
-  const BillPaymentResult({required this.id, required this.status, this.reference});
+  const BillPaymentResult({
+    required this.id,
+    required this.status,
+    this.reference,
+  });
 
-  factory BillPaymentResult.fromJson(Map<String, dynamic> json) => BillPaymentResult(
-    id: json['id'] as String,
-    status: json['status'] as String,
-    reference: json['reference'] as String?,
-  );
+  factory BillPaymentResult.fromJson(Map<String, dynamic> json) =>
+      BillPaymentResult(
+        id: json['id'] as String,
+        status: json['status'] as String,
+        reference: json['reference'] as String?,
+      );
 }
 
 /// Bill payment notifier — wired to BillPaymentsService.
@@ -84,18 +92,40 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
   }
 
   void setAmount(double amount) => state = state.copyWith(amount: amount);
-  void setSubscriberNumber(String number) => state = state.copyWith(subscriberNumber: number);
+  void setSubscriberNumber(String number) =>
+      state = state.copyWith(subscriberNumber: number);
 
   Future<void> pay({String? pin}) async {
-    if (state.selectedBiller == null || state.amount == null || state.subscriberNumber == null) return;
+    if (state.selectedBiller == null ||
+        state.amount == null ||
+        state.subscriberNumber == null)
+      return;
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(billPaymentsServiceProvider);
+      final pinService = ref.read(pinServiceProvider);
+      String? pinToken;
+
+      if (pin != null && pin.isNotEmpty) {
+        final verification = await pinService.verifyPinWithBackend(pin);
+        if (verification.success) {
+          pinToken = verification.pinToken;
+        }
+      } else {
+        pinToken = await pinService.getPinToken();
+      }
+
+      if (pinToken == null || pinToken.isEmpty) {
+        throw Exception('PIN verification required');
+      }
+
       final svcResult = await service.payBill(
         // ignore: avoid_dynamic_calls
         providerId: state.selectedBiller.id ?? 'unknown',
         accountNumber: state.subscriberNumber!,
         amount: state.amount!,
+        pinToken: pinToken,
+        idempotencyKey: generateIdempotencyKey(),
       );
       final result = BillPaymentResult(
         id: svcResult.paymentId,
@@ -113,4 +143,7 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
   void reset() => state = const BillPaymentState();
 }
 
-final billPaymentProvider = NotifierProvider<BillPaymentNotifier, BillPaymentState>(BillPaymentNotifier.new);
+final billPaymentProvider =
+    NotifierProvider<BillPaymentNotifier, BillPaymentState>(
+      BillPaymentNotifier.new,
+    );

@@ -18,6 +18,55 @@ class KycMock {
       handler: _handleGetStatus,
     );
 
+    // POST /kyc/documents - Upload KYC documents
+    interceptor.register(
+      method: 'POST',
+      path: '/kyc/documents',
+      handler: _handleUploadDocuments,
+    );
+
+    // POST /kyc/liveness/session - Create liveness session
+    interceptor.register(
+      method: 'POST',
+      path: '/kyc/liveness/session',
+      handler: _handleCreateLivenessSession,
+    );
+
+    // POST /kyc/liveness/challenge - Submit challenge photo
+    interceptor.register(
+      method: 'POST',
+      path: '/kyc/liveness/challenge',
+      handler: _handleSubmitLivenessChallenge,
+    );
+
+    // POST /kyc/liveness/reference-selfie - Submit reference selfie
+    interceptor.register(
+      method: 'POST',
+      path: '/kyc/liveness/reference-selfie',
+      handler: _handleSubmitReferenceSelfie,
+    );
+
+    // GET /kyc/liveness/status - Get liveness status
+    interceptor.register(
+      method: 'GET',
+      path: '/kyc/liveness/status',
+      handler: _handleGetLivenessStatus,
+    );
+
+    // POST /kyc/document/submit - Submit document verification
+    interceptor.register(
+      method: 'POST',
+      path: '/kyc/document/submit',
+      handler: _handleSubmitDocumentVerification,
+    );
+
+    // GET /kyc/verification/status - Get full verification status
+    interceptor.register(
+      method: 'GET',
+      path: '/kyc/verification/status',
+      handler: _handleGetFullVerificationStatus,
+    );
+
     // GET /wallet/kyc/status - Wallet KYC status endpoint
     interceptor.register(
       method: 'GET',
@@ -85,17 +134,137 @@ class KycMock {
     });
   }
 
+  static Future<MockResponse> _handleUploadDocuments(
+    RequestOptions options,
+  ) async {
+    final data = options.data;
+    final documents = <String, Map<String, dynamic>>{};
+
+    if (data is FormData) {
+      for (final file in data.files) {
+        final field = file.key;
+        documents[field] = {
+          'key':
+              'kyc/mock-user/$field-${DateTime.now().millisecondsSinceEpoch}.jpg',
+          'url': 'mock://kyc/$field',
+          'size': file.value.length,
+        };
+      }
+    }
+
+    if (documents.isEmpty) {
+      return MockResponse.badRequest(
+        'At least one file required: idFront, idBack, selfie, or video',
+      );
+    }
+
+    return MockResponse.success({
+      'message': 'Documents uploaded successfully',
+      'documents': documents,
+    });
+  }
+
+  static Future<MockResponse> _handleCreateLivenessSession(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'sessionToken': 'mock_liveness_${DateTime.now().millisecondsSinceEpoch}',
+      'challenges': [
+        {'id': 'blink', 'type': 'BLINK', 'instruction': 'Blink twice'},
+        {
+          'id': 'turn_left',
+          'type': 'TURN_LEFT',
+          'instruction': 'Turn your head left',
+        },
+      ],
+    });
+  }
+
+  static Future<MockResponse> _handleSubmitLivenessChallenge(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'sessionToken': 'mock_liveness_session',
+      'status': 'PASSED',
+      'challengesCompleted': 2,
+      'challengesTotal': 2,
+      'isAlive': true,
+      'confidence': 91,
+      'result': {
+        'isAlive': true,
+        'confidence': 91,
+        'antiSpoofScore': 94,
+        'faceMatchScore': 90,
+      },
+    });
+  }
+
+  static Future<MockResponse> _handleSubmitReferenceSelfie(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'id': 'selfie_${DateTime.now().millisecondsSinceEpoch}',
+      'status': 'SUBMITTED',
+    });
+  }
+
+  static Future<MockResponse> _handleGetLivenessStatus(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'id': 'live_${DateTime.now().millisecondsSinceEpoch}',
+      'status': 'PASSED',
+      'isAlive': true,
+      'confidence': 0.91,
+    });
+  }
+
+  static Future<MockResponse> _handleSubmitDocumentVerification(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'id': 'doc_${DateTime.now().millisecondsSinceEpoch}',
+      'status': 'PENDING',
+      'extractedData': <String, dynamic>{},
+    });
+  }
+
+  static Future<MockResponse> _handleGetFullVerificationStatus(
+    RequestOptions options,
+  ) async {
+    return MockResponse.success({
+      'kyc': {
+        'status': KycMockState.kycStatus,
+        'rejectionReason': KycMockState.rejectionReason,
+      },
+      'verification': {
+        'overallStatus': 'PENDING',
+        'documentVerificationId': 'doc_mock',
+        'livenessCheckId': 'live_mock',
+        'faceMatchScore': 91,
+        'tier': 'BASIC',
+      },
+    });
+  }
+
   static Future<MockResponse> _handleGetStatus(RequestOptions options) async {
     return MockResponse.success({
       'status': KycMockState.kycStatus,
-      'score': KycMockState.kycStatus == 'auto_approved' ||
-               KycMockState.kycStatus == 'approved' ? 92 : null,
-      'submittedAt': KycMockState.kycStatus != 'none' &&
-                     KycMockState.kycStatus != 'documents_pending'
-          ? DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String()
+      'score':
+          KycMockState.kycStatus == 'auto_approved' ||
+              KycMockState.kycStatus == 'approved'
+          ? 92
           : null,
-      'approvedAt': KycMockState.kycStatus == 'auto_approved' ||
-                    KycMockState.kycStatus == 'approved'
+      'submittedAt':
+          KycMockState.kycStatus != 'none' &&
+              KycMockState.kycStatus != 'documents_pending'
+          ? DateTime.now()
+                .subtract(const Duration(minutes: 5))
+                .toIso8601String()
+          : null,
+      'approvedAt':
+          KycMockState.kycStatus == 'auto_approved' ||
+              KycMockState.kycStatus == 'approved'
           ? DateTime.now().toIso8601String()
           : null,
       'rejectedAt': KycMockState.kycStatus == 'rejected'
@@ -115,7 +284,9 @@ class KycMock {
       'email': 'amadou@example.com',
       'kycStatus': KycMockState.kycStatus,
       'kycRejectionReason': KycMockState.rejectionReason,
-      'createdAt': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
+      'createdAt': DateTime.now()
+          .subtract(const Duration(days: 30))
+          .toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
     });
   }

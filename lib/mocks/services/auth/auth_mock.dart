@@ -5,7 +5,6 @@ library;
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 import 'package:usdc_wallet/mocks/services/auth/auth_contract.dart';
@@ -15,6 +14,8 @@ import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
 class AuthMockState {
   static String? currentUserId;
   static String? currentPhone;
+  static String? pendingCountryCode;
+  static bool pendingRegistration = false;
   static String? pendingOtp;
   static DateTime? otpExpiry;
   static final Map<String, UserResponse> users = {};
@@ -23,6 +24,8 @@ class AuthMockState {
   static void reset() {
     currentUserId = null;
     currentPhone = null;
+    pendingCountryCode = null;
+    pendingRegistration = false;
     pendingOtp = null;
     otpExpiry = null;
     users.clear();
@@ -30,10 +33,16 @@ class AuthMockState {
   }
 
   /// Generate and store OTP for a phone
-  static String generateOtp(String phone) {
+  static String generateOtp(
+    String phone, {
+    String? countryCode,
+    bool isRegistration = false,
+  }) {
     pendingOtp = '123456'; // Dev OTP for easy testing
     otpExpiry = DateTime.now().add(const Duration(minutes: 5));
     currentPhone = phone;
+    pendingCountryCode = countryCode;
+    pendingRegistration = isRegistration;
     return pendingOtp!;
   }
 
@@ -46,7 +55,11 @@ class AuthMockState {
   }
 
   /// Get or create user for phone
-  static UserResponse getOrCreateUser(String phone, {String? countryCode}) {
+  static UserResponse getOrCreateUser(
+    String phone, {
+    String? countryCode,
+    bool profileComplete = true,
+  }) {
     if (users.containsKey(phone)) {
       return users[phone]!;
     }
@@ -54,8 +67,8 @@ class AuthMockState {
     final user = UserResponse(
       id: MockDataGenerator.uuid(),
       phone: phone,
-      firstName: MockDataGenerator.firstName(),
-      lastName: MockDataGenerator.lastName(),
+      firstName: profileComplete ? MockDataGenerator.firstName() : null,
+      lastName: profileComplete ? MockDataGenerator.lastName() : null,
       countryCode: countryCode ?? 'CI',
       kycStatus: 'not_started',
       hasPinSet: false,
@@ -72,10 +85,10 @@ class AuthMockState {
     // Generate JWT-like tokens (base64 encoded header.payload.signature)
     final header = _base64UrlEncode('{"alg":"HS256","typ":"JWT"}');
     final accessPayload = _base64UrlEncode(
-      '{"sub":"${user.id}","phone":"${user.phone}","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 3600}}'
+      '{"sub":"${user.id}","phone":"${user.phone}","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 3600}}',
     );
     final refreshPayload = _base64UrlEncode(
-      '{"sub":"${user.id}","type":"refresh","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 604800}}'
+      '{"sub":"${user.id}","type":"refresh","iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000},"exp":${(DateTime.now().millisecondsSinceEpoch ~/ 1000) + 604800}}',
     );
     final signature = _base64UrlEncode('mock_signature_${user.id}');
 
@@ -114,7 +127,9 @@ class AuthMockState {
       final parts = refreshToken.split('.');
       if (parts.length != 3) return null;
 
-      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payload = utf8.decode(
+        base64Url.decode(base64Url.normalize(parts[1])),
+      );
       final data = jsonDecode(payload) as Map<String, dynamic>;
       final sub = data['sub'] as String?;
 
@@ -197,7 +212,7 @@ class AuthMock {
 
     // Check if user exists (for login, user should exist)
     // For this mock, we allow login for any phone
-    AuthMockState.generateOtp(phone);
+    AuthMockState.generateOtp(phone, isRegistration: false);
 
     return MockResponse.success({
       'message': 'OTP sent successfully',
@@ -224,7 +239,11 @@ class AuthMock {
       return MockResponse.badRequest('User already exists');
     }
 
-    AuthMockState.generateOtp(phone);
+    AuthMockState.generateOtp(
+      phone,
+      countryCode: countryCode,
+      isRegistration: true,
+    );
 
     return MockResponse.success({
       'message': 'OTP sent successfully',
@@ -247,7 +266,11 @@ class AuthMock {
     }
 
     // Get or create user
-    final user = AuthMockState.getOrCreateUser(phone);
+    final user = AuthMockState.getOrCreateUser(
+      phone,
+      countryCode: AuthMockState.pendingCountryCode,
+      profileComplete: !AuthMockState.pendingRegistration,
+    );
     final tokens = AuthMockState.generateTokens(user);
 
     // Auto-create wallet for user if it doesn't exist

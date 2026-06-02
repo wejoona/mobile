@@ -63,18 +63,20 @@ class BulkBatch {
       id: json['id'] as String,
       name: json['name'] as String,
       payments: (json['payments'] as List)
-          .map((p) => BulkPayment(
-                // ignore: avoid_dynamic_calls
-                phone: p['phone'] as String,
-                // ignore: avoid_dynamic_calls
-                amount: (p['amount'] as num).toDouble(),
-                // ignore: avoid_dynamic_calls
-                description: p['description'] as String,
-                // ignore: avoid_dynamic_calls
-                isValid: p['isValid'] as bool? ?? true,
-                // ignore: avoid_dynamic_calls
-                error: p['error'] as String?,
-              ))
+          .map(
+            (p) => BulkPayment(
+              // ignore: avoid_dynamic_calls
+              phone: p['phone'] as String,
+              // ignore: avoid_dynamic_calls
+              amount: (p['amount'] as num).toDouble(),
+              // ignore: avoid_dynamic_calls
+              description: p['description'] as String? ?? '',
+              // ignore: avoid_dynamic_calls
+              isValid: p['isValid'] as bool? ?? true,
+              // ignore: avoid_dynamic_calls
+              error: p['error'] as String?,
+            ),
+          )
           .toList(),
       status: BatchStatus.values.firstWhere(
         (e) => e.name == json['status'],
@@ -92,17 +94,17 @@ class BulkBatch {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'payments': payments.map((p) => p.toJson()).toList(),
-        'status': status.name,
-        'createdAt': createdAt.toIso8601String(),
-        'processedAt': processedAt?.toIso8601String(),
-        'totalCount': totalCount,
-        'successCount': successCount,
-        'failedCount': failedCount,
-        'totalAmount': totalAmount,
-      };
+    'id': id,
+    'name': name,
+    'payments': payments.map((p) => p.toJson()).toList(),
+    'status': status.name,
+    'createdAt': createdAt.toIso8601String(),
+    'processedAt': processedAt?.toIso8601String(),
+    'totalCount': totalCount,
+    'successCount': successCount,
+    'failedCount': failedCount,
+    'totalAmount': totalAmount,
+  };
 
   List<BulkPayment> get validPayments =>
       payments.where((p) => p.isValid).toList();

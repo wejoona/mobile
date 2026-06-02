@@ -27,16 +27,13 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('LoginPINView Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('LoginPINView Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 
@@ -48,12 +45,9 @@ void main() {
 
       testWidgets('partial PIN entered', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 
@@ -69,20 +63,19 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/auth/login_pin_view/partial_pin_light.png'),
+          matchesGoldenFile(
+            'goldens/auth/login_pin_view/partial_pin_light.png',
+          ),
         );
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: LoginPinView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: LoginPinView()),
         );
         await tester.pumpAndSettle();
 

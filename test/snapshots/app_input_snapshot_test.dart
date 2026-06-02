@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for AppInput component
@@ -10,9 +11,11 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_input_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
-  group('AppInput Snapshot Tests', () {
-    group('Variants', () {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+  goldenGroup('AppInput Snapshot Tests', () {
+    goldenGroup('Variants', () {
       testWidgets('standard variant - idle', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -114,7 +117,7 @@ void main() {
       });
     });
 
-    group('States', () {
+    goldenGroup('States', () {
       testWidgets('focused state', (tester) async {
         final controller = TextEditingController();
         final focusNode = FocusNode();
@@ -228,7 +231,7 @@ void main() {
       });
     });
 
-    group('Helper Text', () {
+    goldenGroup('Helper Text', () {
       testWidgets('with helper text', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -273,7 +276,7 @@ void main() {
       });
     });
 
-    group('Icons', () {
+    goldenGroup('Icons', () {
       testWidgets('with prefix icon', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -336,7 +339,7 @@ void main() {
       });
     });
 
-    group('Prefix/Suffix Widgets', () {
+    goldenGroup('Prefix/Suffix Widgets', () {
       testWidgets('with prefix widget', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -380,7 +383,7 @@ void main() {
       });
     });
 
-    group('Multiline', () {
+    goldenGroup('Multiline', () {
       testWidgets('multiline input', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -403,7 +406,8 @@ void main() {
 
       testWidgets('multiline with content', (tester) async {
         final controller = TextEditingController(
-          text: 'This is a longer description\nthat spans multiple lines\nto test multiline input',
+          text:
+              'This is a longer description\nthat spans multiple lines\nto test multiline input',
         );
 
         await tester.pumpWidget(
@@ -426,7 +430,7 @@ void main() {
       });
     });
 
-    group('Obscure Text', () {
+    goldenGroup('Obscure Text', () {
       testWidgets('password field', (tester) async {
         final controller = TextEditingController(text: 'password123');
 
@@ -452,7 +456,7 @@ void main() {
       });
     });
 
-    group('PhoneInput Widget', () {
+    goldenGroup('PhoneInput Widget', () {
       testWidgets('phone input with country code', (tester) async {
         final controller = TextEditingController();
 
@@ -523,16 +527,13 @@ void main() {
       });
     });
 
-    group('No Label', () {
+    goldenGroup('No Label', () {
       testWidgets('input without label', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: AppInput(
-                hint: 'Search...',
-                prefixIcon: Icons.search,
-              ),
+              child: AppInput(hint: 'Search...', prefixIcon: Icons.search),
             ),
           ),
         );

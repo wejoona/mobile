@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_usage_card.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
@@ -14,39 +17,86 @@ class LimitsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final limitsAsync = ref.watch(transactionLimitsProvider);
     final kycAsync = ref.watch(kycProfileProvider);
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.limits_title)),
+      backgroundColor: colors.canvas,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: AppText(
+          l10n.limits_title,
+          variant: AppTextVariant.titleLarge,
+          color: colors.textPrimary,
+        ),
+      ),
       body: RefreshIndicator(
+        color: colors.gold,
+        backgroundColor: colors.container,
         onRefresh: () async {
           ref.invalidate(transactionLimitsProvider);
           ref.invalidate(kycProfileProvider);
         },
         child: limitsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () =>
+              Center(child: CircularProgressIndicator(color: colors.gold)),
           error: (e, _) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
-            children: [Center(child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Text(AppLocalizations.of(context)!.limits_error(e.toString())),
-            ))],
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            children: [
+              AppCard(
+                variant: AppCardVariant.flat,
+                child: AppText(
+                  l10n.limits_error(e.toString()),
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.errorText,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
           data: (limits) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               LimitUsageCard(limits: limits),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.md),
               kycAsync.when(
                 loading: () => const SizedBox.shrink(),
                 error: (_, __) => const SizedBox.shrink(),
-                data: (kyc) => KycStatusCard(profile: kyc, onUpgrade: () {}),
+                data: (kyc) => KycStatusCard(
+                  profile: kyc,
+                  onUpgrade: () => context.push('/kyc'),
+                ),
               ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Augmentez votre niveau KYC pour accroître vos limites de transaction. Les limites se réinitialisent quotidiennement, hebdomadairement et mensuellement.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(height: AppSpacing.md),
+              AppCard(
+                variant: AppCardVariant.flat,
+                borderRadius: AppRadius.lg,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: colors.gold, size: 20),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            l10n.limits_aboutTitle,
+                            variant: AppTextVariant.labelLarge,
+                            color: colors.textPrimary,
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          AppText(
+                            l10n.limits_aboutDescription,
+                            variant: AppTextVariant.bodySmall,
+                            color: colors.textSecondary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

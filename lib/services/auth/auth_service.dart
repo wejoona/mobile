@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
@@ -11,8 +12,9 @@ import 'package:usdc_wallet/utils/logger.dart';
 class AuthService {
   final Dio _dio;
   final DeviceFingerprintService _fingerprintService;
+  final FlutterSecureStorage _storage;
 
-  AuthService(this._dio, this._fingerprintService);
+  AuthService(this._dio, this._fingerprintService, this._storage);
 
   /// POST /auth/register
   Future<OtpResponse> register({
@@ -79,7 +81,9 @@ class AuthService {
   /// POST /auth/logout - Invalidate session on backend
   Future<void> logout() async {
     try {
-      await _dio.post('/auth/logout');
+      final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+      if (refreshToken == null || refreshToken.isEmpty) return;
+      await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
     } catch (e) {
       // Non-critical — we clear local tokens regardless
       AppLogger('Auth').error('Backend logout failed', e);
@@ -184,5 +188,6 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(
     ref.watch(dioProvider),
     ref.watch(deviceFingerprintServiceProvider),
+    ref.watch(secureStorageProvider),
   );
 });

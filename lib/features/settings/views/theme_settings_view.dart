@@ -61,7 +61,9 @@ class ThemeSettingsView extends ConsumerWidget {
                 description: l10n.settings_themeLightDescription,
                 onTap: () {
                   hapticService.selection();
-                  ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.light);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.light);
                 },
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -75,7 +77,9 @@ class ThemeSettingsView extends ConsumerWidget {
                 description: l10n.settings_themeDarkDescription,
                 onTap: () {
                   hapticService.selection();
-                  ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.dark);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.dark);
                 },
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -89,7 +93,9 @@ class ThemeSettingsView extends ConsumerWidget {
                 description: l10n.settings_themeSystemDescription,
                 onTap: () {
                   hapticService.selection();
-                  ref.read(themeProvider.notifier).setThemeMode(AppThemeMode.system);
+                  ref
+                      .read(themeProvider.notifier)
+                      .setThemeMode(AppThemeMode.system);
                 },
               ),
             ],
@@ -135,7 +141,9 @@ class _ThemePreviewCard extends StatelessWidget {
           color: isSelected ? colors.gold : colors.borderSubtle,
           width: isSelected ? 2 : 1,
         ),
-        boxShadow: isSelected ? AppShadows.goldGlow : AppShadows.card,
+        boxShadow: isSelected
+            ? (colors.isDark ? AppShadows.goldGlow : AppShadows.lightGoldGlow)
+            : (colors.isDark ? AppShadows.card : AppShadows.lightCard),
       ),
       child: Material(
         color: Colors.transparent,
@@ -178,7 +186,9 @@ class _ThemePreviewCard extends StatelessWidget {
                           AppText(
                             label,
                             variant: AppTextVariant.titleSmall,
-                            color: isSelected ? colors.gold : colors.textPrimary,
+                            color: isSelected
+                                ? colors.gold
+                                : colors.textPrimary,
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           AppText(
@@ -471,7 +481,10 @@ class _ThemePreview extends StatelessWidget {
             ),
 
             // Divider
-            Container(width: 1, color: colors.textPrimary.withValues(alpha: 0.2)),
+            Container(
+              width: 1,
+              color: colors.textPrimary.withValues(alpha: 0.2),
+            ),
 
             // Dark half
             Expanded(

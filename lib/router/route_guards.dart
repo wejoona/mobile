@@ -18,16 +18,19 @@ const _publicRoutes = {
 };
 
 /// Public route paths (derived from names for path-based checks).
-const _publicPaths = [
+const _publicPaths = ['/login', '/otp', '/splash', '/pay/'];
+
+const _publicExactPaths = {
   '/',
-  '/login',
   '/onboarding',
-  '/splash',
-  '/pay/',
-];
+  '/onboarding/phone',
+  '/onboarding/otp',
+};
 
 /// Routes that require KYC tier 2+.
 const _kycRequiredRoutes = {
+  RouteNames.send,
+  RouteNames.deposit,
   RouteNames.sendExternal,
   RouteNames.withdraw,
   RouteNames.bulkPayments,
@@ -42,7 +45,8 @@ bool requiresKyc(String routeName) => _kycRequiredRoutes.contains(routeName);
 
 /// Check if a path is public (for path-based redirect logic).
 bool isPublicPath(String path) {
-  return _publicPaths.any((p) => path.startsWith(p));
+  return _publicExactPaths.contains(path) ||
+      _publicPaths.any((p) => path.startsWith(p));
 }
 
 /// GoRouter redirect function for auth guards.

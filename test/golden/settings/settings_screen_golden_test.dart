@@ -21,41 +21,39 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('SettingsScreen Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('SettingsScreen Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: SettingsScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: SettingsScreen()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/settings/settings_screen/initial_light.png'),
+          matchesGoldenFile(
+            'goldens/settings/settings_screen/initial_light.png',
+          ),
         );
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: SettingsScreen(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: SettingsScreen()),
         );
         await tester.pumpAndSettle();
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/settings/settings_screen/initial_dark.png'),
+          matchesGoldenFile(
+            'goldens/settings/settings_screen/initial_dark.png',
+          ),
         );
       });
     });

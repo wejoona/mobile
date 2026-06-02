@@ -42,7 +42,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -53,9 +53,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
             // Authentication Section
             AppText(
-              l10n.security_authentication,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
+              l10n.security_authentication.toUpperCase(),
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
@@ -74,7 +74,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               colors: colors,
               icon: Icons.security,
               title: l10n.security_twoFactorAuth,
-              subtitle: _twoFactorEnabled ? l10n.security_twoFactorEnabledSubtitle : l10n.security_twoFactorDisabledSubtitle,
+              subtitle: _twoFactorEnabled
+                  ? l10n.security_twoFactorEnabledSubtitle
+                  : l10n.security_twoFactorDisabledSubtitle,
               value: _twoFactorEnabled,
               onChanged: (value) => _handleTwoFactorToggle(value),
             ),
@@ -83,9 +85,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
             // Transaction Security
             AppText(
-              l10n.security_transactionSecurity,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
+              l10n.security_transactionSecurity.toUpperCase(),
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
@@ -95,16 +97,17 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               title: l10n.security_requirePinForTransactions,
               subtitle: l10n.security_requirePinSubtitle,
               value: _transactionPinRequired,
-              onChanged: (value) => setState(() => _transactionPinRequired = value),
+              onChanged: (value) =>
+                  setState(() => _transactionPinRequired = value),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
 
             // Alerts Section
             AppText(
-              l10n.security_alerts,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
+              l10n.security_alerts.toUpperCase(),
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildToggleOption(
@@ -131,9 +134,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
             // Session Management
             AppText(
-              l10n.security_sessions,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
+              l10n.security_sessions.toUpperCase(),
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
@@ -168,9 +171,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
 
             // Privacy
             AppText(
-              l10n.security_privacy,
-              variant: AppTextVariant.titleMedium,
-              color: colors.textPrimary,
+              l10n.security_privacy.toUpperCase(),
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.md),
             _buildSecurityOption(
@@ -205,7 +208,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
         : (score >= 60 ? context.colors.warning : context.colors.error);
 
     return AppCard(
-      variant: AppCardVariant.elevated,
+      variant: AppCardVariant.goldAccent,
       child: Column(
         children: [
           Row(
@@ -222,7 +225,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                       child: CircularProgressIndicator(
                         value: score / 100,
                         strokeWidth: 8,
-                        backgroundColor: colors.textSecondary.withValues(alpha: 0.2),
+                        backgroundColor: colors.textSecondary.withValues(
+                          alpha: 0.2,
+                        ),
                         valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
                       ),
                     ),
@@ -287,11 +292,16 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     required VoidCallback onTap,
     bool isDanger = false,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AppCard(
+        variant: AppCardVariant.flat,
+        borderRadius: AppRadius.lg,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.md,
+        ),
+        onTap: onTap,
         child: Row(
           children: [
             Container(
@@ -300,12 +310,12 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               decoration: BoxDecoration(
                 color: isDanger
                     ? context.colors.error.withValues(alpha: 0.1)
-                    : colors.elevated,
+                    : colors.gold.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
               child: Icon(
                 icon,
-                color: isDanger ? context.colors.error : colors.gold,
+                color: isDanger ? context.colors.errorText : colors.gold,
                 size: 22,
               ),
             ),
@@ -317,7 +327,9 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                   AppText(
                     title,
                     variant: AppTextVariant.labelMedium,
-                    color: isDanger ? context.colors.error : colors.textPrimary,
+                    color: isDanger
+                        ? context.colors.errorText
+                        : colors.textPrimary,
                   ),
                   AppText(
                     subtitle,
@@ -329,7 +341,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
             ),
             Icon(
               Icons.chevron_right,
-              color: isDanger ? context.colors.error : colors.textTertiary,
+              color: isDanger ? context.colors.errorText : colors.textTertiary,
             ),
           ],
         ),
@@ -347,7 +359,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     required ValueChanged<bool> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: AppToggleTile(
         icon: icon,
         title: title,
@@ -547,7 +559,6 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
     );
   }
 
-
   void _confirmLogoutAll() {
     final l10n = AppLocalizations.of(context)!;
     // ignore: unused_local_variable
@@ -580,13 +591,17 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               label: l10n.security_logoutAll,
               onPressed: () async {
                 Navigator.pop(dialogContext);
-                final success = await ref.read(sessionsProvider.notifier).logoutAllDevices();
+                final success = await ref
+                    .read(sessionsProvider.notifier)
+                    .logoutAllDevices();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(success
-                          ? l10n.security_logoutAllSuccess
-                          : 'Erreur lors de la déconnexion'),
+                      content: Text(
+                        success
+                            ? l10n.security_logoutAllSuccess
+                            : 'Erreur lors de la déconnexion',
+                      ),
                       backgroundColor: success
                           ? context.colors.success
                           : context.colors.error,
@@ -675,7 +690,10 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
                               l10n: l10n,
                               colors: colors,
                               device: session.deviceDescription,
-                              location: session.location ?? session.ipAddress ?? 'Inconnu',
+                              location:
+                                  session.location ??
+                                  session.ipAddress ??
+                                  'Inconnu',
                               time: _formatSessionTime(session.lastActivityAt),
                               success: session.isActive,
                             );
@@ -737,10 +755,7 @@ class _SecurityViewState extends ConsumerState<SecurityView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
-                    device,
-                    variant: AppTextVariant.labelMedium,
-                  ),
+                  AppText(device, variant: AppTextVariant.labelMedium),
                   AppText(
                     '$location - $time',
                     variant: AppTextVariant.bodySmall,

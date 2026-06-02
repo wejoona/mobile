@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/features/send/models/transfer_request.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/views/confirm_screen.dart';
 
 import '../helpers/golden_test_helper.dart';
@@ -21,14 +23,17 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('ConfirmScreen Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('ConfirmScreen Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
           GoldenTestWrapper(
             isDarkMode: false,
+            overrides: [
+              sendMoneyProvider.overrideWith(_GoldenSendNotifier.new),
+            ],
             child: ConfirmScreen(),
           ),
         );
@@ -41,13 +46,16 @@ void main() {
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
           GoldenTestWrapper(
             isDarkMode: true,
+            overrides: [
+              sendMoneyProvider.overrideWith(_GoldenSendNotifier.new),
+            ],
             child: ConfirmScreen(),
           ),
         );
@@ -60,4 +68,18 @@ void main() {
       });
     });
   });
+}
+
+class _GoldenSendNotifier extends SendMoneyNotifier {
+  @override
+  SendMoneyState build() => const SendMoneyState(
+    recipient: RecipientInfo(
+      phoneNumber: '+2250711223344',
+      name: 'Awa Kone',
+      isKoridoUser: true,
+    ),
+    amount: 42.5,
+    note: 'Dinner and transport',
+    availableBalance: 1250,
+  );
 }

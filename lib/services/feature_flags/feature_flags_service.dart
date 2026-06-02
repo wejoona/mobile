@@ -74,10 +74,15 @@ class FeatureFlagsService {
 
   FeatureFlagsService(this._dio, this._prefs);
 
-  /// Initialize service and load cached flags
-  Future<void> init() async {
+  /// Initialize service and load cached flags.
+  ///
+  /// Remote fetches are opt-in so reading the provider during router startup
+  /// cannot turn an unauthenticated 401 into a startup failure.
+  Future<void> init({bool fetchRemote = false}) async {
     await _loadFromCache();
-    await fetchFlags();
+    if (fetchRemote) {
+      await fetchFlags();
+    }
   }
 
   /// Fetch flags from backend API

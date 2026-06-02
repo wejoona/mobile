@@ -2,6 +2,7 @@
 library;
 
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/transaction_headers.dart';
 
 class BankLinkingApi {
   BankLinkingApi(this._dio);
@@ -23,4 +24,46 @@ class BankLinkingApi {
   /// DELETE /bank-accounts/:id — unlink
   Future<Response> unlinkAccount(String id) =>
       _dio.delete('/bank-accounts/$id');
+
+  /// POST /bank-accounts/:id/set-primary
+  Future<Response> setPrimaryAccount(String id) =>
+      _dio.post('/bank-accounts/$id/set-primary');
+
+  /// GET /bank-accounts/:id/balance
+  Future<Response> getBalance(String id) =>
+      _dio.get('/bank-accounts/$id/balance');
+
+  /// POST /bank-accounts/:id/deposit
+  Future<Response> deposit(
+    String id,
+    Map<String, dynamic> data, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/bank-accounts/$id/deposit',
+    data: data,
+    options: Options(
+      headers: transactionHeaders(
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      ),
+    ),
+  );
+
+  /// POST /bank-accounts/:id/withdraw
+  Future<Response> withdraw(
+    String id,
+    Map<String, dynamic> data, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) => _dio.post(
+    '/bank-accounts/$id/withdraw',
+    data: data,
+    options: Options(
+      headers: transactionHeaders(
+        pinToken: pinToken,
+        idempotencyKey: idempotencyKey,
+      ),
+    ),
+  );
 }

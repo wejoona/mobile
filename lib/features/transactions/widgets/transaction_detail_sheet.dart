@@ -19,7 +19,9 @@ class TransactionDetailSheet extends StatelessWidget {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (_) => TransactionDetailSheet(transaction: transaction),
     );
   }
@@ -29,24 +31,36 @@ class TransactionDetailSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isCredit = transaction.isCredit;
-    final statusColor = ColorUtils.statusColor(transaction.status.name, isDark: isDark);
+    final statusColor = ColorUtils.statusColor(
+      transaction.status.name,
+      isDark: isDark,
+    );
 
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          BottomSheetHandle(title: 'Transaction Details', onClose: () => Navigator.pop(context)),
+          BottomSheetHandle(
+            title: 'Transaction Details',
+            onClose: () => Navigator.pop(context),
+          ),
           Padding(
-            padding: EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.xxl),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              0,
+              AppSpacing.lg,
+              AppSpacing.xxl,
+            ),
             child: Column(
               children: [
                 // Amount
-                Text(
-                  '${isCredit ? '+' : '-'}\$${transaction.amount.toStringAsFixed(2)}',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: isCredit ? context.colors.success : theme.colorScheme.onSurface,
-                  ),
+                AmountText.fromText(
+                  '${isCredit ? '+' : '-'}\$${transaction.amount.abs().toStringAsFixed(2)}',
+                  currencyCode: transaction.currency,
+                  size: AmountTextSize.large,
+                  color: isCredit
+                      ? context.colors.success
+                      : theme.colorScheme.onSurface,
                 ),
                 SizedBox(height: AppSpacing.xs),
                 PillBadge(
@@ -58,20 +72,38 @@ class TransactionDetailSheet extends StatelessWidget {
 
                 // Details
                 Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       children: [
                         InfoRow(label: 'Type', value: transaction.type.name),
-                        InfoRow(label: 'Date', value: '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year}'),
+                        InfoRow(
+                          label: 'Date',
+                          value:
+                              '${transaction.createdAt.day}/${transaction.createdAt.month}/${transaction.createdAt.year}',
+                        ),
                         if (transaction.fee != null && transaction.fee! > 0)
-                          InfoRow(label: 'Fee', value: '\$${transaction.fee!.toStringAsFixed(2)}'),
+                          InfoRow(
+                            label: 'Fee',
+                            value: '\$${transaction.fee!.toStringAsFixed(2)}',
+                          ),
                         if (transaction.recipientPhone != null)
-                          InfoRow(label: 'Recipient', value: transaction.recipientPhone!),
+                          InfoRow(
+                            label: 'Recipient',
+                            value: transaction.recipientPhone!,
+                          ),
                         if (transaction.description != null)
-                          InfoRow(label: 'Description', value: transaction.description!),
-                        InfoRow(label: 'Reference', value: transaction.reference),
+                          InfoRow(
+                            label: 'Description',
+                            value: transaction.description!,
+                          ),
+                        InfoRow(
+                          label: 'Reference',
+                          value: transaction.reference,
+                        ),
                       ],
                     ),
                   ),
@@ -84,7 +116,8 @@ class TransactionDetailSheet extends StatelessWidget {
                     Expanded(
                       child: AppButton(
                         label: AppLocalizations.of(context)!.action_copy,
-                        onPressed: () => ClipboardUtils.copyTransactionId(transaction.id),
+                        onPressed: () =>
+                            ClipboardUtils.copyTransactionId(transaction.id),
                         variant: AppButtonVariant.secondary,
                         icon: Icons.copy_rounded,
                       ),

@@ -14,7 +14,7 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Cards E2E', () {
+  e2eGroup('Cards E2E', () {
     test('GET /cards — list cards', () async {
       final res = await client.get('/cards');
       res.expectOk();

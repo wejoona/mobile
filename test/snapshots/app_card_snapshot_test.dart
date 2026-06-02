@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 
+import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
 /// Golden/Snapshot tests for AppCard component
@@ -12,9 +13,11 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_card_snapshot_test.dart
 void main() {
-  setUpAll(() { GoogleFonts.config.allowRuntimeFetching = false; });
-  group('AppCard Snapshot Tests', () {
-    group('Variants', () {
+  setUpAll(() {
+    GoogleFonts.config.allowRuntimeFetching = false;
+  });
+  goldenGroup('AppCard Snapshot Tests', () {
+    goldenGroup('Variants', () {
       testWidgets('elevated variant', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -27,9 +30,14 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      AppText('Card Title', variant: AppTextVariant.titleMedium),
+                      AppText(
+                        'Card Title',
+                        variant: AppTextVariant.titleMedium,
+                      ),
                       SizedBox(height: 8),
-                      AppText('This is an elevated card with shadow and border.'),
+                      AppText(
+                        'This is an elevated card with shadow and border.',
+                      ),
                     ],
                   ),
                 ),
@@ -56,7 +64,10 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      AppText('Premium Card', variant: AppTextVariant.titleMedium),
+                      AppText(
+                        'Premium Card',
+                        variant: AppTextVariant.titleMedium,
+                      ),
                       SizedBox(height: 8),
                       AppText('Card with gold border accent.'),
                     ],
@@ -85,7 +96,10 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      AppText('Subtle Card', variant: AppTextVariant.titleMedium),
+                      AppText(
+                        'Subtle Card',
+                        variant: AppTextVariant.titleMedium,
+                      ),
                       SizedBox(height: 8),
                       AppText('Minimal styling for subtle emphasis.'),
                     ],
@@ -114,7 +128,10 @@ void main() {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      AppText('Glass Card', variant: AppTextVariant.titleMedium),
+                      AppText(
+                        'Glass Card',
+                        variant: AppTextVariant.titleMedium,
+                      ),
                       SizedBox(height: 8),
                       AppText('Glass morphism effect.'),
                     ],
@@ -132,16 +149,14 @@ void main() {
       });
     });
 
-    group('Padding', () {
+    goldenGroup('Padding', () {
       testWidgets('default padding', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
             child: Center(
               child: SizedBox(
                 width: 300,
-                child: AppCard(
-                  child: const AppText('Default padding'),
-                ),
+                child: AppCard(child: const AppText('Default padding')),
               ),
             ),
           ),
@@ -196,16 +211,14 @@ void main() {
       });
     });
 
-    group('Border Radius', () {
+    goldenGroup('Border Radius', () {
       testWidgets('default radius', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
             child: Center(
               child: SizedBox(
                 width: 300,
-                child: AppCard(
-                  child: const AppText('Default border radius'),
-                ),
+                child: AppCard(child: const AppText('Default border radius')),
               ),
             ),
           ),
@@ -239,7 +252,7 @@ void main() {
       });
     });
 
-    group('Interactive', () {
+    goldenGroup('Interactive', () {
       testWidgets('tappable card', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -250,9 +263,7 @@ void main() {
                   onTap: () {},
                   child: Row(
                     children: const [
-                      Expanded(
-                        child: AppText('Tappable card'),
-                      ),
+                      Expanded(child: AppText('Tappable card')),
                       Icon(Icons.chevron_right, color: AppColors.textTertiary),
                     ],
                   ),
@@ -269,7 +280,7 @@ void main() {
       });
     });
 
-    group('Content Variations', () {
+    goldenGroup('Content Variations', () {
       testWidgets('card with icon and text', (tester) async {
         await tester.pumpWidget(
           TestWrapper(
@@ -296,7 +307,10 @@ void main() {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppText('Wallet', variant: AppTextVariant.labelLarge),
+                            AppText(
+                              'Wallet',
+                              variant: AppTextVariant.labelLarge,
+                            ),
                             SizedBox(height: 4),
                             AppText(
                               'Main wallet',
@@ -353,7 +367,7 @@ void main() {
       });
     });
 
-    group('Margin', () {
+    goldenGroup('Margin', () {
       testWidgets('card with margin', (tester) async {
         await tester.pumpWidget(
           TestWrapper(

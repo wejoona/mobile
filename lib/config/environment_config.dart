@@ -1,3 +1,5 @@
+// ignore_for_file: do_not_use_environment
+
 /// Environment configuration for Korido.
 ///
 /// Values are injected at compile time via --dart-define or
@@ -23,25 +25,30 @@ class EnvironmentConfig {
   /// Enable verbose logging in non-production builds.
   static bool get enableLogging => !isProduction;
 
+  /// Opt into debug/info logs while developing.
+  static bool get verboseLogs => _verboseLogs;
+
+  static const bool _verboseLogs = bool.fromEnvironment('VERBOSE_LOGS');
+
+  /// Skip the app lock during debug sessions.
+  static bool get debugSkipPin => _debugSkipPin.isNotEmpty;
+
+  static const String _debugSkipPin = String.fromEnvironment('DEBUG_SKIP_PIN');
+
+  /// Show simulator-only OTP helpers during explicit dogfood debug runs.
+  static bool get showDevOtpShortcut => isDevelopment && _showDevOtpShortcut;
+
+  static const bool _showDevOtpShortcut = bool.fromEnvironment('SHOW_DEV_OTP');
+
   /// Enable mock data for development.
-  static const bool useMocks = bool.fromEnvironment(
-    'USE_MOCKS',
-    defaultValue: false,
-  );
+  static const bool useMocks = bool.fromEnvironment('USE_MOCKS');
 
   /// Sentry DSN for crash reporting (empty = disabled).
-  static const String sentryDsn = String.fromEnvironment(
-    'SENTRY_DSN',
-    defaultValue: '',
-  );
+  static const String sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
   /// Whether crash reporting is enabled.
-  static bool get enableCrashReporting =>
-      sentryDsn.isNotEmpty && isProduction;
+  static bool get enableCrashReporting => sentryDsn.isNotEmpty && isProduction;
 
   /// App version override (for testing).
-  static const String versionOverride = String.fromEnvironment(
-    'APP_VERSION',
-    defaultValue: '',
-  );
+  static const String versionOverride = String.fromEnvironment('APP_VERSION');
 }

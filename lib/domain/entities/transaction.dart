@@ -40,11 +40,12 @@ class Transaction {
 
   bool get isDebit =>
       type == TransactionType.withdrawal ||
-      type == TransactionType.transferExternal;
+      type == TransactionType.transferExternal ||
+      (type == TransactionType.transferInternal && amount < 0);
 
   bool get isCredit =>
       type == TransactionType.deposit ||
-      type == TransactionType.transferInternal;
+      (type == TransactionType.transferInternal && amount >= 0);
 
   bool get isPending =>
       status == TransactionStatus.pending ||
@@ -74,7 +75,9 @@ class Transaction {
       recipientPhone: json['recipientPhone'] as String?,
       recipientAddress: json['recipientAddress'] as String?,
       recipientWalletId: json['recipientWalletId'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
+      metadata: json['metadata'] is Map
+          ? Map<String, dynamic>.from(json['metadata'] as Map)
+          : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
       completedAt: json['completedAt'] != null
           ? DateTime.parse(json['completedAt'] as String)
@@ -133,7 +136,7 @@ class TransactionPage {
 
   factory TransactionPage.fromJson(Map<String, dynamic> json) {
     final list = (json['transactions'] as List<dynamic>? ?? [])
-        .map((e) => Transaction.fromJson(e as Map<String, dynamic>))
+        .map((e) => Transaction.fromJson(_asStringMap(e)))
         .toList();
 
     // API returns limit/offset, convert to page/pageSize
@@ -150,4 +153,10 @@ class TransactionPage {
       hasMore: json['hasMore'] as bool? ?? (offset + list.length < total),
     );
   }
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected transaction JSON object');
 }

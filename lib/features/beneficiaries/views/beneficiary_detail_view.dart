@@ -8,16 +8,14 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_extensions.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// Beneficiary Detail View
 ///
 /// Shows detailed information about a beneficiary
 class BeneficiaryDetailView extends ConsumerWidget {
-  const BeneficiaryDetailView({
-    super.key,
-    required this.beneficiaryId,
-  });
+  const BeneficiaryDetailView({super.key, required this.beneficiaryId});
 
   final String beneficiaryId;
 
@@ -36,24 +34,26 @@ class BeneficiaryDetailView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(
-          beneficiary.name,
-          variant: AppTextVariant.headlineSmall,
-        ),
+        title: AppText(beneficiary.name, variant: AppTextVariant.headlineSmall),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(
               beneficiary.isFavorite ? Icons.star : Icons.star_border,
-              color: beneficiary.isFavorite ? appColors.gold500 : colors.textSecondary,
+              color: beneficiary.isFavorite
+                  ? appColors.gold500
+                  : colors.textSecondary,
             ),
             onPressed: () {
-              ref.read(beneficiariesProvider.notifier).toggleFavorite(beneficiaryId);
+              ref
+                  .read(beneficiariesProvider.notifier)
+                  .toggleFavorite(beneficiaryId);
             },
           ),
           PopupMenuButton<String>(
-            onSelected: (value) => _handleMenuAction(context, ref, value, beneficiary, l10n),
+            onSelected: (value) =>
+                _handleMenuAction(context, ref, value, beneficiary, l10n),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'edit',
@@ -71,10 +71,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                   children: [
                     Icon(Icons.delete, color: colors.error),
                     SizedBox(width: AppSpacing.sm),
-                    AppText(
-                      l10n.beneficiaries_menuDelete,
-                      color: colors.error,
-                    ),
+                    AppText(l10n.beneficiaries_menuDelete, color: colors.error),
                   ],
                 ),
               ),
@@ -128,18 +125,34 @@ class BeneficiaryDetailView extends ConsumerWidget {
       child: Column(
         children: [
           // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _getAccountTypeIcon(beneficiary.accountType),
-              size: 40,
-              color: _getAccountTypeColor(beneficiary.accountType),
-            ),
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: _getAccountTypeColor(
+                    beneficiary.accountType,
+                  ).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: beneficiary.accountType == AccountType.joonapayUser
+                      ? Border.all(color: context.colors.gold)
+                      : null,
+                ),
+                child: Icon(
+                  _getAccountTypeIcon(beneficiary.accountType),
+                  size: 40,
+                  color: _getAccountTypeColor(beneficiary.accountType),
+                ),
+              ),
+              if (beneficiary.accountType == AccountType.joonapayUser)
+                const Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: KoridoAccountBadge(compact: true),
+                ),
+            ],
           ),
           SizedBox(height: AppSpacing.md),
 
@@ -152,21 +165,26 @@ class BeneficiaryDetailView extends ConsumerWidget {
           SizedBox(height: AppSpacing.xs),
 
           // Account type badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.sm,
-              vertical: AppSpacing.xs,
+          if (beneficiary.accountType == AccountType.joonapayUser)
+            const KoridoAccountBadge()
+          else
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: _getAccountTypeColor(
+                  beneficiary.accountType,
+                ).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+              ),
+              child: AppText(
+                _getAccountTypeLabel(beneficiary.accountType, l10n),
+                variant: AppTextVariant.bodySmall,
+                color: _getAccountTypeColor(beneficiary.accountType),
+              ),
             ),
-            decoration: BoxDecoration(
-              color: _getAccountTypeColor(beneficiary.accountType).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: AppText(
-              _getAccountTypeLabel(beneficiary.accountType, l10n),
-              variant: AppTextVariant.bodySmall,
-              color: _getAccountTypeColor(beneficiary.accountType),
-            ),
-          ),
 
           // Verified badge
           if (beneficiary.isVerified) ...[
@@ -329,10 +347,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
                       color: colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.xs),
-                    AppText(
-                      value,
-                      variant: AppTextVariant.bodyMedium,
-                    ),
+                    AppText(value, variant: AppTextVariant.bodyMedium),
                   ],
                 ),
               ),
@@ -361,10 +376,7 @@ class BeneficiaryDetailView extends ConsumerWidget {
               Icon(icon, size: 20, color: appColors.gold500),
               SizedBox(width: AppSpacing.sm),
               Expanded(
-                child: AppText(
-                  label,
-                  variant: AppTextVariant.bodyMedium,
-                ),
+                child: AppText(label, variant: AppTextVariant.bodyMedium),
               ),
               AppText(
                 value,

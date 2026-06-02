@@ -45,16 +45,37 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>JoonaPay needs camera access to scan QR codes for payments</string>
+	<string>Korido needs camera access to scan QR codes for payments</string>
 	<key>NSContactsUsageDescription</key>
-	<string>JoonaPay needs access to your contacts to help you send money to friends and family</string>
+	<string>Korido uses your contacts to find people who can receive payments on Korido. Names and photos are not uploaded for matching.</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>JoonaPay uses Face ID for secure authentication</string>
+	<string>Korido uses Face ID for secure authentication</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>JoonaPay needs access to save your QR code to the photo library</string>
+	<string>Korido needs access to save your QR code to the photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>JoonaPay needs access to your photo library to save QR codes</string>
+	<string>Korido needs access to your photo library to save QR codes</string>
 	<!-- SECURITY: Enforce HTTPS for all network connections -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
@@ -88,14 +109,15 @@
 	<!-- Firebase Messaging Auto-init -->
 	<key>FirebaseMessagingAutoInitEnabled</key>
 	<true/>
-	<!-- Deep Links: Custom URL scheme (joonapay://) -->
+	<!-- Deep Links: Custom URL schemes. Keep joonapay:// as a legacy alias. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.joonapay.wallet</string>
+			<string>com.joonapay.korido</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
+				<string>korido</string>
 				<string>joonapay</string>
 			</array>
 		</dict>

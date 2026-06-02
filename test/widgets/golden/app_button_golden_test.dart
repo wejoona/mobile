@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 
+import '../../helpers/golden_helpers.dart';
 import '../../helpers/test_wrapper.dart';
 
 /// Golden tests for AppButton visual regression
@@ -13,15 +14,12 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  group('AppButton Golden Tests', () {
+  goldenGroup('AppButton Golden Tests', () {
     testWidgets('primary button default state', (tester) async {
       await tester.pumpWidget(
         TestWrapper(
           child: Center(
-            child: AppButton(
-              label: 'Primary Button',
-              onPressed: () {},
-            ),
+            child: AppButton(label: 'Primary Button', onPressed: () {}),
           ),
         ),
       );
@@ -36,10 +34,7 @@ void main() {
       await tester.pumpWidget(
         const TestWrapper(
           child: Center(
-            child: AppButton(
-              label: 'Disabled Button',
-              onPressed: null,
-            ),
+            child: AppButton(label: 'Disabled Button', onPressed: null),
           ),
         ),
       );

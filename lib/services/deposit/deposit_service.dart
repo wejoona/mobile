@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_request.dart';
 import 'package:usdc_wallet/features/deposit/models/deposit_response.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
@@ -26,10 +27,15 @@ class DepositService {
   }
 
   /// Initiate a deposit — returns payment method type + instructions
-  Future<DepositResponse> initiateDeposit(InitiateDepositRequest request) async {
+  Future<DepositResponse> initiateDeposit(
+    InitiateDepositRequest request,
+  ) async {
     final response = await _dio.post(
       '/deposits/initiate',
       data: request.toJson(),
+      options: Options(
+        headers: {'X-Idempotency-Key': generateIdempotencyKey()},
+      ),
     );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
@@ -56,7 +62,7 @@ class DepositService {
   }) async {
     final response = await _dio.get(
       '/deposits',
-      queryParameters: {'page': page, 'limit': limit},
+      queryParameters: {'limit': limit, 'offset': (page - 1) * limit},
     );
     final data = response.data;
     if (data is Map<String, dynamic> && data['deposits'] != null) {
@@ -73,8 +79,23 @@ class DepositService {
   }
 
   /// Initiate a mobile money deposit
-  Future<DepositResponse> initiateMobileMoneyDeposit(Map<String, dynamic> data) async {
-    final response = await _dio.post('/deposits/initiate', data: data);
+  Future<DepositResponse> initiateMobileMoneyDeposit(
+    Map<String, dynamic> data,
+  ) async {
+    final provider = data['provider'] ?? data['providerCode'];
+    final normalized = {
+      'amount': data['amount'],
+      'currency': data['currency'] ?? 'XOF',
+      'providerCode': provider,
+      'phoneNumber': data['phoneNumber'],
+    };
+    final response = await _dio.post(
+      '/deposits/initiate',
+      data: normalized,
+      options: Options(
+        headers: {'X-Idempotency-Key': generateIdempotencyKey()},
+      ),
+    );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -87,14 +108,37 @@ class DepositService {
   Future<ExchangeRate> getExchangeRate({
     String from = 'XOF',
     String to = 'USD',
+    double amount = 10000,
   }) async {
     final response = await _dio.get(
-      '/deposits/rate',
+      '/wallet/rate',
       queryParameters: {
         'sourceCurrency': from,
         'targetCurrency': to,
+        'amount': amount,
+        'direction': 'buy',
       },
     );
-    return ExchangeRate.fromJson(response.data as Map<String, dynamic>);
+    final data = response.data as Map<String, dynamic>;
+    if (data.containsKey('fromCurrency')) {
+      return ExchangeRate.fromJson(data);
+    }
+
+    final sourceAmount = (data['sourceAmount'] as num?)?.toDouble() ?? amount;
+    final targetAmount = (data['targetAmount'] as num?)?.toDouble() ?? 0;
+    final rawRate = (data['rate'] as num?)?.toDouble() ?? 0.001524;
+    final rate = targetAmount > 0
+        ? sourceAmount / targetAmount
+        : rawRate > 0
+        ? 1 / rawRate
+        : 655.957;
+    return ExchangeRate(
+      fromCurrency: data['sourceCurrency'] as String? ?? from,
+      toCurrency: data['targetCurrency'] as String? ?? to,
+      rate: rate,
+      timestamp:
+          DateTime.tryParse(data['expiresAt'] as String? ?? '') ??
+          DateTime.now(),
+    );
   }
 }

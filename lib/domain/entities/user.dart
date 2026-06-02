@@ -9,6 +9,7 @@ class User {
   final String? lastName;
   final String? email;
   final String? avatarUrl;
+
   /// Avatar stocké en base64 depuis la base de données (pas depuis le bucket S3)
   final String? avatarBase64;
   final String preferredLocale;
@@ -92,11 +93,13 @@ class User {
       lastName: json['lastName'] as String?,
       email: json['email'] as String?,
       avatarUrl: json['avatarUrl'] as String?,
-      avatarBase64: json['avatarBase64'] as String?,
+      avatarBase64:
+          json['avatarBase64'] as String? ?? json['avatarThumb'] as String?,
       preferredLocale: json['preferredLocale'] as String? ?? 'fr',
       countryCode: json['countryCode'] as String? ?? 'CI',
       // Backend returns 'phoneVerified', handle both keys
-      isPhoneVerified: (json['phoneVerified'] ?? json['isPhoneVerified']) as bool? ?? false,
+      isPhoneVerified:
+          (json['phoneVerified'] ?? json['isPhoneVerified']) as bool? ?? false,
       role: UserRole.values.firstWhere(
         (e) => e.name == json['role'],
         orElse: () => UserRole.user,

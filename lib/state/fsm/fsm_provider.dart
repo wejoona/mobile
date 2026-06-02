@@ -86,7 +86,9 @@ abstract class FsmNotifier<S extends FsmState, E extends FsmEvent>
     final result = fsm.handleGlobal(state, event);
 
     if (result is TransitionSuccess<S>) {
-      _logger.info('Global transition: ${state.name} -> ${result.newState.name}');
+      _logger.info(
+        'Global transition: ${state.name} -> ${result.newState.name}',
+      );
       state = result.newState;
       if (result.effects != null && result.effects!.isNotEmpty) {
         handleEffects(result.effects!);
@@ -198,6 +200,7 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     );
     // Trigger wallet and KYC fetches
     Future.microtask(() {
+      if (!ref.mounted) return;
       ref.read(walletStateMachineProvider.notifier).fetch();
       ref.read(kycStateMachineProvider.notifier).fetch();
     });
@@ -216,6 +219,10 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     dispatchGlobal(const AppLogout());
   }
 
+  void unlockSession() {
+    dispatch(const AppSessionEvent(SessionUnlock()));
+  }
+
   /// Called when OTP is received from API
   void onOtpReceived({int? expiresIn}) {
     dispatch(AppAuthEvent(AuthOtpReceived(expiresIn: expiresIn)));
@@ -227,11 +234,15 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     required String accessToken,
     String? refreshToken,
   }) {
-    dispatch(AppAuthEvent(AuthVerified(
-      userId: userId,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    )));
+    dispatch(
+      AppAuthEvent(
+        AuthVerified(
+          userId: userId,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        ),
+      ),
+    );
   }
 
   /// Called when auth fails
@@ -256,13 +267,17 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     required double usdcBalance,
     double pendingBalance = 0,
   }) {
-    dispatch(AppWalletEvent(WalletLoaded(
-      walletId: walletId,
-      walletAddress: walletAddress,
-      blockchain: blockchain,
-      usdcBalance: usdcBalance,
-      pendingBalance: pendingBalance,
-    )));
+    dispatch(
+      AppWalletEvent(
+        WalletLoaded(
+          walletId: walletId,
+          walletAddress: walletAddress,
+          blockchain: blockchain,
+          usdcBalance: usdcBalance,
+          pendingBalance: pendingBalance,
+        ),
+      ),
+    );
   }
 
   /// Called when wallet is not found (404)
@@ -276,11 +291,15 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     String? walletAddress,
     String blockchain = 'polygon',
   }) {
-    dispatch(AppWalletEvent(WalletCreated(
-      walletId: walletId,
-      walletAddress: walletAddress,
-      blockchain: blockchain,
-    )));
+    dispatch(
+      AppWalletEvent(
+        WalletCreated(
+          walletId: walletId,
+          walletAddress: walletAddress,
+          blockchain: blockchain,
+        ),
+      ),
+    );
   }
 
   /// Called when wallet operation fails
@@ -304,12 +323,16 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
     String? rejectionReason,
     DateTime? verifiedAt,
   }) {
-    dispatch(AppKycEvent(KycStatusLoaded(
-      tier: tier,
-      status: status,
-      rejectionReason: rejectionReason,
-      verifiedAt: verifiedAt,
-    )));
+    dispatch(
+      AppKycEvent(
+        KycStatusLoaded(
+          tier: tier,
+          status: status,
+          rejectionReason: rejectionReason,
+          verifiedAt: verifiedAt,
+        ),
+      ),
+    );
   }
 
   // ─────────────────────────────────────────────────────────────────

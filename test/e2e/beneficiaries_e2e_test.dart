@@ -14,18 +14,23 @@ void main() {
     await client.loginFlow(testPhone);
   });
 
-  group('Beneficiaries E2E', () {
+  e2eGroup('Beneficiaries E2E', () {
     test('POST /beneficiaries — add beneficiary', () async {
       final res = await client.post('/beneficiaries', {
         'name': 'E2E Beneficiary',
         'phoneE164': '+2250799999999',
-        'accountType': 'WALLET',
+        'accountType': 'joonapay_user',
       });
       // 200/201 = created, 400 = validation, 409 = duplicate
       expect(res.statusCode, anyOf(200, 201, 400, 409));
       if (res.isOk) {
-        final data = res.data?['data'] ?? res.data;
-        createdId = data?['id']?.toString();
+        final data = res.data;
+        final wrapped = data?['data'];
+        final payload = wrapped is Map ? wrapped : data;
+        if (payload is Map) {
+          final Object? id = payload['id'];
+          createdId = id?.toString();
+        }
       }
     });
 

@@ -1,16 +1,20 @@
-import 'package:usdc_wallet/core/utils/formatters.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
-import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
-import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
-import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
+import 'package:usdc_wallet/core/utils/formatters.dart';
 
 class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({super.key});
@@ -36,27 +40,29 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       parent: _controller,
       curve: Curves.elasticOut,
     );
-    _controller.forward();
+    unawaited(_controller.forward());
 
-    // Trigger haptic feedback based on result
-    Future.microtask(() {
-      _checkBeneficiaryStatus();
-      _triggerResultHaptic();
-    });
+    unawaited(
+      Future<void>.microtask(() {
+        _checkBeneficiaryStatus();
+        _triggerResultHaptic();
+      }),
+    );
   }
 
   void _triggerResultHaptic() {
     final state = ref.read(sendMoneyProvider);
-    final isSuccess = state.result != null && state.result!.status == 'completed';
+    final isSuccess =
+        state.result != null && state.result!.status == 'completed';
 
     if (isSuccess) {
-      hapticService.paymentConfirmed();
+      unawaited(hapticService.paymentConfirmed());
     } else {
-      hapticService.error();
+      unawaited(hapticService.error());
     }
   }
 
-  Future<void> _checkBeneficiaryStatus() async {
+  void _checkBeneficiaryStatus() {
     final state = ref.read(sendMoneyProvider);
     if (state.recipient != null && !state.recipient!.isBeneficiary) {
       setState(() => _showSaveOption = true);
@@ -75,7 +81,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
     final state = ref.watch(sendMoneyProvider);
     final colors = context.colors;
 
-    final isSuccess = state.result != null && state.result!.status == 'completed';
+    final isSuccess =
+        state.result != null && state.result!.status == 'completed';
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -84,207 +91,233 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
         automaticallyImplyLeading: false,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Spacer(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final minHeight =
+                constraints.maxHeight > AppSpacing.screenPadding * 2
+                ? constraints.maxHeight - AppSpacing.screenPadding * 2
+                : 0.0;
 
-              // Success/Error animation
-              ScaleTransition(
-                scale: _scaleAnimation,
-                child: Container(
-                  padding: EdgeInsets.all(AppSpacing.xl),
-                  decoration: BoxDecoration(
-                    color: (isSuccess ? colors.success : colors.error)
-                        .withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isSuccess ? Icons.check_circle : Icons.error,
-                    size: 80,
-                    color: isSuccess ? colors.success : colors.error,
-                  ),
-                ),
-              ),
-              SizedBox(height: AppSpacing.xl),
-
-              // Title
-              AppText(
-                isSuccess ? l10n.send_transferSuccess : l10n.send_transferFailed,
-                variant: AppTextVariant.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: AppSpacing.sm),
-
-              // Subtitle
-              if (isSuccess) ...[
-                AppText(
-                  l10n.send_transferSuccessMessage,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
-                  textAlign: TextAlign.center,
-                ),
-              ] else ...[
-                AppText(
-                  state.error ?? l10n.error_transferFailed,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.error,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              SizedBox(height: AppSpacing.xl),
-
-              // Transaction details card
-              if (isSuccess && state.result != null) ...[
-                AppCard(
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minHeight),
+                child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      // Amount
-                      AppText(
-                        '\$${Formatters.formatCurrency(state.result!.amount)}',
-                        variant: AppTextVariant.headlineLarge,
-                        color: colors.gold,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
-                      AppText(
-                        l10n.send_sentTo,
-                        variant: AppTextVariant.bodySmall,
-                        color: colors.textSecondary,
-                      ),
-                      SizedBox(height: AppSpacing.xs),
-                      AppText(
-                        state.recipient?.name ?? state.recipient?.phoneNumber ?? '',
-                        variant: AppTextVariant.bodyLarge,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      if (state.recipient?.name != null) ...[
-                        SizedBox(height: AppSpacing.xs),
-                        AppText(
-                          state.recipient!.phoneNumber,
-                          variant: AppTextVariant.bodySmall,
-                          color: colors.textSecondary,
-                        ),
-                      ],
-                      SizedBox(height: AppSpacing.md),
-
-                      Divider(
-                        color: colors.textSecondary.withValues(alpha: 0.2),
-                      ),
-                      SizedBox(height: AppSpacing.md),
-
-                      // Reference
-                      _buildDetailRow(
-                        l10n.send_reference,
-                        state.result!.reference,
-                        colors,
-                        canCopy: true,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
-
-                      // Date
-                      _buildDetailRow(
-                        l10n.send_date,
-                        Formatters.formatDateTime(state.result!.createdAt),
-                        colors,
-                      ),
+                      _buildResultContent(l10n, state, colors, isSuccess),
+                      const Spacer(),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildActions(l10n, isSuccess),
                     ],
                   ),
                 ),
-                SizedBox(height: AppSpacing.md),
-              ],
-
-              const Spacer(),
-
-              // Action buttons
-              if (isSuccess) ...[
-                // Save as beneficiary option
-                if (_showSaveOption)
-                  AppButton(
-                    label: l10n.send_saveAsBeneficiary,
-                    variant: AppButtonVariant.secondary,
-                    icon: Icons.bookmark_add_outlined,
-                    onPressed: _handleSaveBeneficiary,
-                    isFullWidth: true,
-                  ),
-                if (_showSaveOption) SizedBox(height: AppSpacing.sm),
-
-                // Share receipt
-                AppButton(
-                  label: l10n.send_shareReceipt,
-                  variant: AppButtonVariant.secondary,
-                  icon: Icons.share_outlined,
-                  onPressed: _handleShareReceipt,
-                  isFullWidth: true,
-                ),
-                SizedBox(height: AppSpacing.sm),
-
-                // Done button
-                AppButton(
-                  label: l10n.action_done,
-                  onPressed: _handleDone,
-                  isFullWidth: true,
-                ),
-              ] else ...[
-                // Retry button
-                AppButton(
-                  label: l10n.action_retry,
-                  onPressed: () => context.go('/send/confirm'),
-                  isFullWidth: true,
-                ),
-                SizedBox(height: AppSpacing.sm),
-
-                // Cancel button
-                AppButton(
-                  label: l10n.action_cancel,
-                  variant: AppButtonVariant.secondary,
-                  onPressed: _handleDone,
-                  isFullWidth: true,
-                ),
-              ],
-            ],
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, ThemeColors colors, {bool canCopy = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        AppText(
-          label,
-          variant: AppTextVariant.bodyMedium,
-          color: colors.textSecondary,
-        ),
-        Row(
-          children: [
-            AppText(
-              value,
-              variant: AppTextVariant.bodyMedium,
+  Widget _buildResultContent(
+    AppLocalizations l10n,
+    SendMoneyState state,
+    ThemeColors colors,
+    bool isSuccess,
+  ) => Column(
+    children: [
+      const SizedBox(height: AppSpacing.lg),
+      ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          decoration: BoxDecoration(
+            color: (isSuccess ? colors.success : colors.error).withValues(
+              alpha: 0.1,
             ),
-            if (canCopy) ...[
-              SizedBox(width: AppSpacing.xs),
-              InkWell(
-                onTap: () => _copyToClipboard(value, colors),
-                child: Icon(
-                  Icons.copy,
-                  size: 16,
-                  color: colors.gold,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            isSuccess ? Icons.check_circle : Icons.error,
+            size: 80,
+            color: isSuccess ? colors.success : colors.error,
+          ),
+        ),
+      ),
+      const SizedBox(height: AppSpacing.xl),
+      AppText(
+        isSuccess ? l10n.send_transferSuccess : l10n.send_transferFailed,
+        variant: AppTextVariant.headlineMedium,
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: AppSpacing.sm),
+      if (isSuccess)
+        AppText(
+          l10n.send_transferSuccessMessage,
+          color: colors.textSecondary,
+          textAlign: TextAlign.center,
+        )
+      else
+        AppText(
+          state.error ?? l10n.error_transferFailed,
+          color: colors.error,
+          textAlign: TextAlign.center,
+        ),
+      const SizedBox(height: AppSpacing.xl),
+      if (isSuccess && state.result != null) ...[
+        AppCard(
+          variant: AppCardVariant.flat,
+          child: Column(
+            children: [
+              AmountText.fromText(
+                formatUsdc(state.result!.amount),
+                size: AmountTextSize.display,
+                color: colors.gold,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              AppText(
+                l10n.send_sentTo,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: AppText(
+                      state.recipient?.name ??
+                          state.recipient?.phoneNumber ??
+                          '',
+                      variant: AppTextVariant.bodyLarge,
+                      fontWeight: FontWeight.w600,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (state.recipient?.isKoridoUser ?? false) ...[
+                    const SizedBox(width: AppSpacing.xs),
+                    const KoridoAccountBadge(),
+                  ],
+                ],
+              ),
+              if (state.recipient?.name != null) ...[
+                const SizedBox(height: AppSpacing.xs),
+                AppText(
+                  state.recipient!.phoneNumber,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
                 ),
+              ],
+              const SizedBox(height: AppSpacing.md),
+              Divider(color: colors.textSecondary.withValues(alpha: 0.2)),
+              const SizedBox(height: AppSpacing.md),
+              _buildDetailRow(
+                l10n.send_reference,
+                state.result!.reference,
+                colors,
+                canCopy: true,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _buildDetailRow(
+                l10n.send_date,
+                Formatters.formatDateTime(state.result!.createdAt),
+                colors,
               ),
             ],
-          ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+      ],
+    ],
+  );
+
+  Widget _buildActions(AppLocalizations l10n, bool isSuccess) {
+    if (isSuccess) {
+      return Column(
+        children: [
+          if (_showSaveOption)
+            AppButton(
+              label: l10n.send_saveAsBeneficiary,
+              variant: AppButtonVariant.secondary,
+              icon: Icons.bookmark_add_outlined,
+              onPressed: _handleSaveBeneficiary,
+              isFullWidth: true,
+            ),
+          if (_showSaveOption) const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: l10n.send_shareReceipt,
+            variant: AppButtonVariant.secondary,
+            icon: Icons.share_outlined,
+            onPressed: _handleShareReceipt,
+            isFullWidth: true,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppButton(
+            label: l10n.action_done,
+            onPressed: _handleDone,
+            isFullWidth: true,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        AppButton(
+          label: l10n.action_retry,
+          onPressed: () => context.go('/send/confirm'),
+          isFullWidth: true,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        AppButton(
+          label: l10n.action_cancel,
+          variant: AppButtonVariant.secondary,
+          onPressed: _handleDone,
+          isFullWidth: true,
         ),
       ],
     );
   }
 
+  Widget _buildDetailRow(
+    String label,
+    String value,
+    ThemeColors colors, {
+    bool canCopy = false,
+  }) => Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      AppText(label, color: colors.textSecondary),
+      Flexible(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: AppText(
+                value,
+                textAlign: TextAlign.right,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (canCopy) ...[
+              const SizedBox(width: AppSpacing.xs),
+              InkWell(
+                onTap: () => _copyToClipboard(value, colors),
+                child: Icon(Icons.copy, size: 16, color: colors.gold),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ],
+  );
+
   Future<void> _copyToClipboard(String text, ThemeColors colors) async {
     final l10n = AppLocalizations.of(context)!;
-    hapticService.lightTap();
+    unawaited(hapticService.lightTap());
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -300,7 +333,9 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
   Future<void> _handleSaveBeneficiary() async {
     final state = ref.read(sendMoneyProvider);
     final colors = context.colors;
-    if (state.recipient == null) return;
+    if (state.recipient == null) {
+      return;
+    }
 
     // Navigate to add beneficiary screen or show dialog
     // For now, we'll add directly
@@ -324,7 +359,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
           ),
         );
       }
-    } catch (e) {
+    } on Object {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -338,13 +373,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
   Future<void> _handleShareReceipt() async {
     final state = ref.read(sendMoneyProvider);
-    if (state.result == null) return;
+    if (state.result == null) {
+      return;
+    }
 
     final l10n = AppLocalizations.of(context)!;
-    final text = '''
+    final text =
+        '''
 ${l10n.send_transferReceipt}
 
-${l10n.send_amount}: \$${Formatters.formatCurrency(state.result!.amount)}
+${l10n.send_amount}: ${formatUsdc(state.result!.amount)}
 ${l10n.send_recipient}: ${state.recipient?.name ?? state.recipient?.phoneNumber}
 ${l10n.send_reference}: ${state.result!.reference}
 ${l10n.send_date}: ${Formatters.formatDateTime(state.result!.createdAt)}

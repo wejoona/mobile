@@ -4,7 +4,7 @@ import DeviceCheck
 import CryptoKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
     var attestationKeyId: String?
     var securityChannel: FlutterMethodChannel?
     var attestationChannel: FlutterMethodChannel?
@@ -14,20 +14,13 @@ import CryptoKit
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        GeneratedPluginRegistrant.register(with: self)
-
-        // Set up method channels using the Flutter view controller
-        setupChannels()
-
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 
-    // MARK: - UIScene migration prep
-    // When FlutterImplicitEngineDelegate becomes available, uncomment:
-    // func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
-    //     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    //     setupChannelsWithMessenger(engineBridge.applicationRegistrar.messenger())
-    // }
+    func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+        GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+        setupChannelsWithMessenger(engineBridge.applicationRegistrar.messenger())
+    }
 
     // MARK: - Channel Setup
 
@@ -50,7 +43,7 @@ import CryptoKit
         securityChannel?.setMethodCallHandler { [weak self] (call, result) in
             switch call.method {
             case "enableSecureMode":
-                SecurityOverlay.shared.show(in: self?.window, isDark: self?.appIsDarkMode)
+                SecurityOverlay.shared.show(in: self?.activeWindow(), isDark: self?.appIsDarkMode)
                 result(true)
             case "disableSecureMode":
                 SecurityOverlay.shared.hide()
@@ -94,13 +87,24 @@ import CryptoKit
     // MARK: - App Lifecycle (UI-related — will move to SceneDelegate)
 
     override func applicationWillResignActive(_ application: UIApplication) {
-        SecurityOverlay.shared.show(in: self.window, isDark: appIsDarkMode)
+        SecurityOverlay.shared.show(in: activeWindow(), isDark: appIsDarkMode)
         super.applicationWillResignActive(application)
     }
 
     override func applicationDidBecomeActive(_ application: UIApplication) {
         SecurityOverlay.shared.hide()
         super.applicationDidBecomeActive(application)
+    }
+
+    func activeWindow() -> UIWindow? {
+        if #available(iOS 13.0, *) {
+            return UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow } ?? window
+        }
+
+        return window
     }
 
     // MARK: - Screen Capture Detection

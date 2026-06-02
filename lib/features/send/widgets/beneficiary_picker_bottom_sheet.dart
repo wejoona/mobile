@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
+import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class BeneficiaryPickerBottomSheet extends ConsumerStatefulWidget {
   const BeneficiaryPickerBottomSheet({super.key});
@@ -43,10 +44,12 @@ class _BeneficiaryPickerBottomSheetState
     final filteredBeneficiaries = _searchQuery.isEmpty
         ? state.beneficiaries
         : state.beneficiaries
-            .where((b) =>
-                b.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                (b.phoneE164?.contains(_searchQuery) ?? false))
-            .toList();
+              .where(
+                (b) =>
+                    b.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                    (b.phoneE164?.contains(_searchQuery) ?? false),
+              )
+              .toList();
 
     // Filter only Korido users for internal transfers
     final joonaPayBeneficiaries = filteredBeneficiaries
@@ -57,9 +60,7 @@ class _BeneficiaryPickerBottomSheetState
       height: MediaQuery.of(context).size.height * 0.8,
       decoration: BoxDecoration(
         color: colors.container,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.lg),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
       child: Column(
         children: [
@@ -114,40 +115,37 @@ class _BeneficiaryPickerBottomSheetState
             child: state.isLoading
                 ? Center(
                     child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(colors.gold),
+                      valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
                 : joonaPayBeneficiaries.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.bookmark_outline,
-                              size: 64,
-                              color: colors.textSecondary.withValues(alpha: 0.5),
-                            ),
-                            SizedBox(height: AppSpacing.md),
-                            AppText(
-                              l10n.send_noBeneficiariesFound,
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textSecondary,
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.bookmark_outline,
+                          size: 64,
+                          color: colors.textSecondary.withValues(alpha: 0.5),
                         ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
+                        SizedBox(height: AppSpacing.md),
+                        AppText(
+                          l10n.send_noBeneficiariesFound,
+                          variant: AppTextVariant.bodyMedium,
+                          color: colors.textSecondary,
+                          textAlign: TextAlign.center,
                         ),
-                        itemCount: joonaPayBeneficiaries.length,
-                        itemBuilder: (context, index) {
-                          final beneficiary = joonaPayBeneficiaries[index];
-                          return _buildBeneficiaryItem(beneficiary, colors);
-                        },
-                      ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    itemCount: joonaPayBeneficiaries.length,
+                    itemBuilder: (context, index) {
+                      final beneficiary = joonaPayBeneficiaries[index];
+                      return _buildBeneficiaryItem(beneficiary, colors);
+                    },
+                  ),
           ),
         ],
       ),
@@ -155,16 +153,32 @@ class _BeneficiaryPickerBottomSheetState
   }
 
   Widget _buildBeneficiaryItem(Beneficiary beneficiary, ThemeColors colors) {
-    return InkWell(
+    return GestureDetector(
+      key: ValueKey('beneficiary_picker_${beneficiary.id}'),
+      behavior: HitTestBehavior.opaque,
       onTap: () => Navigator.pop(context, beneficiary),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
           children: [
-            UserAvatar(
-              firstName: beneficiary.name.split(' ').first,
-              lastName: beneficiary.name.split(' ').length > 1 ? beneficiary.name.split(' ').last : null,
-              size: 40,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                UserAvatar(
+                  firstName: beneficiary.name.split(' ').first,
+                  lastName: beneficiary.name.split(' ').length > 1
+                      ? beneficiary.name.split(' ').last
+                      : null,
+                  size: 40,
+                  showBorder: true,
+                  borderColor: colors.gold,
+                ),
+                const Positioned(
+                  right: -2,
+                  bottom: -2,
+                  child: KoridoAccountBadge(compact: true),
+                ),
+              ],
             ),
             SizedBox(width: AppSpacing.md),
             Expanded(
@@ -173,18 +187,19 @@ class _BeneficiaryPickerBottomSheetState
                 children: [
                   Row(
                     children: [
-                      AppText(
-                        beneficiary.name,
-                        variant: AppTextVariant.bodyLarge,
-                        fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: AppText(
+                          beneficiary.name,
+                          variant: AppTextVariant.bodyLarge,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
+                      SizedBox(width: AppSpacing.xs),
+                      const KoridoAccountBadge(compact: true),
                       if (beneficiary.isFavorite) ...[
                         SizedBox(width: AppSpacing.xs),
-                        Icon(
-                          Icons.star,
-                          size: 16,
-                          color: colors.gold,
-                        ),
+                        Icon(Icons.star, size: 16, color: colors.gold),
                       ],
                     ],
                   ),
@@ -197,10 +212,7 @@ class _BeneficiaryPickerBottomSheetState
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: colors.textSecondary,
-            ),
+            Icon(Icons.chevron_right, color: colors.textSecondary),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/components/primitives/gradient_card.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/wallet/providers/exchange_rate_provider.dart';
 
 /// Main wallet balance card on home screen.
@@ -24,82 +25,80 @@ class BalanceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final rateAsync = ref.watch(exchangeRateProvider);
+    final colors = context.colors;
 
-    return GradientCard(
+    return AppCard(
+      variant: AppCardVariant.flat,
       onTap: onTap,
-      padding: const EdgeInsets.all(24),
+      borderRadius: AppRadius.xxl,
+      borderColor: colors.gold.withValues(alpha: colors.isDark ? 0.24 : 0.18),
+      backgroundColor: Color.alphaBlend(
+        colors.gold.withValues(alpha: colors.isDark ? 0.08 : 0.04),
+        colors.container,
+      ),
+      padding: const EdgeInsets.all(AppSpacing.xxl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              AppText(
                 'Solde total',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  fontSize: 14,
-                ),
+                variant: AppTextVariant.labelLarge,
+                color: colors.textSecondary,
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  currency,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+              StatusPill(
+                label: currency,
+                tone: StatusTone.brand,
+                compact: true,
+                emphasis: true,
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.lg),
           // USDC balance
           Row(
             children: [
-              Text(
-                isVisible ? '\$${balance.toStringAsFixed(2)}' : '\$••••••',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  fontFeatures: [FontFeature.tabularFigures()],
+              Expanded(
+                child: AmountText(
+                  amount: balance,
+                  currencyCode: currency,
+                  size: AmountTextSize.large,
+                  color: colors.gold,
+                  isHidden: !isVisible,
                 ),
               ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: onToggleVisibility,
-                child: Icon(
-                  isVisible ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-                  color: Colors.white.withValues(alpha: 0.5),
-                  size: 22,
+              const SizedBox(width: AppSpacing.sm),
+              IconButton(
+                onPressed: onToggleVisibility,
+                constraints: const BoxConstraints.tightFor(
+                  width: 40,
+                  height: 40,
                 ),
+                icon: Icon(
+                  isVisible
+                      ? Icons.visibility_rounded
+                      : Icons.visibility_off_rounded,
+                  color: colors.textSecondary,
+                  size: 20,
+                ),
+                tooltip: isVisible ? 'Masquer le solde' : 'Afficher le solde',
               ),
             ],
           ),
           // XOF/CFA equivalent
-          const SizedBox(height: 6),
+          const SizedBox(height: AppSpacing.sm),
           rateAsync.when(
-            data: (rate) => Text(
+            data: (rate) => AppText(
               isVisible ? '≈ ${rate.formatXof(balance)}' : '≈ •••••• FCFA',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
+              variant: AppTextVariant.moneySmall,
+              color: colors.textSecondary,
             ),
-            loading: () => Text(
+            loading: () => AppText(
               '≈ ...',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.4),
-                fontSize: 16,
-              ),
+              variant: AppTextVariant.moneySmall,
+              color: colors.textTertiary,
             ),
             error: (_, __) => const SizedBox.shrink(),
           ),

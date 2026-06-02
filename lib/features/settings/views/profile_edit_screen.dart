@@ -1,17 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:dio/dio.dart';
+
+enum _AvatarAction { camera, gallery, remove }
 
 /// Profile Edit Screen
 /// Allows users to update their personal information
@@ -30,6 +28,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   bool _isLoading = false;
   File? _selectedImage;
   String? _avatarUrl;
+  String? _avatarThumb;
+
+  bool get _hasAvatar =>
+      _selectedImage != null ||
+      (_avatarUrl != null && _avatarUrl!.isNotEmpty) ||
+      (_avatarThumb != null && _avatarThumb!.isNotEmpty);
 
   @override
   void initState() {
@@ -48,6 +52,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         }
       }
       _avatarUrl = userState.avatarUrl;
+      _avatarThumb = userState.avatarThumb;
     });
   }
 
@@ -69,7 +74,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: AppText(
-          'Modifier le profil',
+          l10n.settings_profile,
           variant: AppTextVariant.titleLarge,
           color: context.colors.textPrimary,
         ),
@@ -82,7 +87,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
             children: [
               // Avatar section
               _buildAvatarSection(userState),
@@ -90,22 +95,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.xxxl),
 
               // First Name
-              AppText(
-                'Prénom',
-                variant: AppTextVariant.labelMedium,
-                color: context.colors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
               AppInput(
+                label: l10n.profile_firstName,
                 controller: _firstNameController,
-                hint: 'Enter your first name',
+                hint: l10n.onboarding_profile_firstNameHint,
                 keyboardType: TextInputType.name,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'First name is required';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'First name must be at least 2 characters';
+                    return l10n.onboarding_profile_firstNameRequired;
                   }
                   return null;
                 },
@@ -114,22 +111,14 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Last Name
-              AppText(
-                'Nom de famille',
-                variant: AppTextVariant.labelMedium,
-                color: context.colors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
               AppInput(
+                label: l10n.profile_lastName,
                 controller: _lastNameController,
-                hint: 'Enter your last name',
+                hint: l10n.onboarding_profile_lastNameHint,
                 keyboardType: TextInputType.name,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Last name is required';
-                  }
-                  if (value.trim().length < 2) {
-                    return 'Last name must be at least 2 characters';
+                    return l10n.onboarding_profile_lastNameRequired;
                   }
                   return null;
                 },
@@ -138,15 +127,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               const SizedBox(height: AppSpacing.lg),
 
               // Email (Optional)
-              AppText(
-                'E-mail (optionnel)',
-                variant: AppTextVariant.labelMedium,
-                color: context.colors.textSecondary,
-              ),
-              const SizedBox(height: AppSpacing.sm),
               AppInput(
+                label: l10n.onboarding_profile_email,
                 controller: _emailController,
-                hint: 'your@email.com',
+                hint: l10n.onboarding_profile_emailHint,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
@@ -154,7 +138,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
                     );
                     if (!emailRegex.hasMatch(value)) {
-                      return 'Please enter a valid email';
+                      return l10n.onboarding_profile_emailInvalid;
                     }
                   }
                   return null;
@@ -165,7 +149,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
 
               // Phone Number (Read-only)
               AppText(
-                'Numéro de téléphone',
+                l10n.profile_phoneNumber,
                 variant: AppTextVariant.labelMedium,
                 color: context.colors.textSecondary,
               ),
@@ -205,7 +189,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
-                'Le numéro de téléphone ne peut pas être modifié',
+                l10n.profile_phoneCannotChange,
                 variant: AppTextVariant.bodySmall,
                 color: context.colors.textSecondary,
               ),
@@ -233,7 +217,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         child: Stack(
           children: [
             UserAvatar(
-              imageUrl: _selectedImage?.path ?? _avatarUrl,
+              imageUrl: _selectedImage?.path ?? _avatarUrl ?? _avatarThumb,
               firstName: userState.firstName,
               lastName: userState.lastName,
               size: UserAvatar.sizeXLarge,
@@ -248,10 +232,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 decoration: BoxDecoration(
                   color: context.colors.gold,
                   borderRadius: BorderRadius.circular(AppRadius.full),
-                  border: Border.all(
-                    color: context.colors.canvas,
-                    width: 2,
-                  ),
+                  border: Border.all(color: context.colors.canvas, width: 2),
                 ),
                 child: Icon(
                   Icons.camera_alt,
@@ -267,64 +248,145 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   Future<void> _pickProfileImage() async {
-    final source = await showModalBottomSheet<ImageSource>(
+    final action = await showModalBottomSheet<_AvatarAction>(
       context: context,
+      backgroundColor: context.colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
+      ),
       builder: (ctx) => SafeArea(
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: Text(AppLocalizations.of(context)!.settings_takePhoto),
-              onTap: () => Navigator.pop(ctx, ImageSource.camera),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: Text(AppLocalizations.of(context)!.settings_chooseFromGallery),
-              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.md,
+            AppSpacing.screenPadding,
+            AppSpacing.screenPadding,
+          ),
+          child: Wrap(
+            runSpacing: AppSpacing.sm,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: context.colors.border,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppCard(
+                variant: AppCardVariant.flat,
+                onTap: () => Navigator.pop(ctx, _AvatarAction.camera),
+                child: Row(
+                  children: [
+                    Icon(Icons.camera_alt, color: context.colors.gold),
+                    const SizedBox(width: AppSpacing.md),
+                    AppText(
+                      AppLocalizations.of(context)!.settings_takePhoto,
+                      variant: AppTextVariant.bodyLarge,
+                    ),
+                  ],
+                ),
+              ),
+              AppCard(
+                variant: AppCardVariant.flat,
+                onTap: () => Navigator.pop(ctx, _AvatarAction.gallery),
+                child: Row(
+                  children: [
+                    Icon(Icons.photo_library, color: context.colors.gold),
+                    const SizedBox(width: AppSpacing.md),
+                    AppText(
+                      AppLocalizations.of(context)!.settings_chooseFromGallery,
+                      variant: AppTextVariant.bodyLarge,
+                    ),
+                  ],
+                ),
+              ),
+              if (_hasAvatar)
+                AppCard(
+                  variant: AppCardVariant.flat,
+                  onTap: () => Navigator.pop(ctx, _AvatarAction.remove),
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, color: context.colors.error),
+                      const SizedBox(width: AppSpacing.md),
+                      AppText(
+                        AppLocalizations.of(context)!.settings_removePhoto,
+                        variant: AppTextVariant.bodyLarge,
+                        color: context.colors.errorText,
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
 
-    if (source == null) return;
+    if (action == null) return;
+    if (action == _AvatarAction.remove) {
+      await _removeProfileImage();
+      return;
+    }
 
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: source,
-      preferredCameraDevice: CameraDevice.front,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
+    final pictureService = ref.read(profilePictureServiceProvider);
+    final picked = action == _AvatarAction.camera
+        ? await pictureService.pickFromCamera()
+        : await pictureService.pickFromGallery();
 
     if (picked != null) {
+      final compressed = await pictureService.compressImage(picked);
       setState(() {
-        _selectedImage = File(picked.path);
+        _selectedImage = compressed;
       });
     }
   }
 
-  Future<String?> _uploadProfileImage(File image) async {
+  Future<void> _removeProfileImage() async {
+    final hadRemoteAvatar =
+        (_avatarUrl != null && _avatarUrl!.isNotEmpty) ||
+        (_avatarThumb != null && _avatarThumb!.isNotEmpty);
+
+    setState(() => _isLoading = true);
+
     try {
-      final dio = ref.read(dioProvider);
-      final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(
-          image.path,
-          filename: 'avatar.jpg',
-        ),
+      if (hadRemoteAvatar) {
+        await ref.read(profilePictureServiceProvider).deleteAvatar();
+      }
+      await ref.read(userStateMachineProvider.notifier).clearAvatar();
+
+      if (!mounted) return;
+      setState(() {
+        _selectedImage = null;
+        _avatarUrl = null;
+        _avatarThumb = null;
       });
 
-      final response = await dio.post('/user/avatar', data: formData);
-
-      // ignore: avoid_dynamic_calls
-      if (response.data['success'] == true) {
-        // ignore: avoid_dynamic_calls
-        return response.data['data']?['avatarUrl'] as String?;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.settings_photoRemoved),
+          backgroundColor: context.colors.success,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.settings_failedToRemovePhoto,
+          ),
+          backgroundColor: context.colors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
-      return null;
-    } catch (e) {
-      return null;
     }
   }
 
@@ -348,54 +410,47 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     setState(() => _isLoading = true);
 
     try {
-      String? savedAvatarUrl;
+      AvatarUploadResult? avatar;
 
-      // Save profile image locally + attempt backend upload
       if (_selectedImage != null) {
-        // Save to app documents for persistence
-        final appDir = await getApplicationDocumentsDirectory();
-        final savedPath = '${appDir.path}/profile_avatar.jpg';
-        await _selectedImage!.copy(savedPath);
-        savedAvatarUrl = savedPath;
-
-        // Persist local path for app restart
-        const storage = FlutterSecureStorage();
-        await storage.write(key: 'local_avatar_path', value: savedPath);
-
-        // Also try uploading to backend (best-effort)
-        final url = await _uploadProfileImage(_selectedImage!);
-        if (url != null) {
-          savedAvatarUrl = url; // Prefer server URL if available
-        }
+        avatar = await ref
+            .read(profilePictureServiceProvider)
+            .uploadAvatar(_selectedImage!, onProgress: (_) {});
       }
 
-      // Update backend profile (best-effort)
-      final dio = ref.read(dioProvider);
-      try {
-        await dio.put('/user/profile', data: {
-          'firstName': _firstNameController.text.trim(),
-          'lastName': _lastNameController.text.trim(),
-          if (_emailController.text.trim().isNotEmpty)
-            'email': _emailController.text.trim(),
-        });
-      } catch (_) {
-        // Backend update failed — still save locally
-      }
+      final profile = await ref
+          .read(userServiceProvider)
+          .updateProfile(
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            email: _emailController.text.trim().isEmpty
+                ? null
+                : _emailController.text.trim(),
+          );
 
-      // Update local state (including avatar)
-      ref.read(userStateMachineProvider.notifier).updateProfile(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim().isEmpty
-            ? null
-            : _emailController.text.trim(),
-        avatarUrl: savedAvatarUrl,
-      );
+      final nextAvatarUrl = avatar?.avatarUrl ?? profile.avatarUrl;
+      final nextAvatarThumb = avatar?.avatarThumb ?? profile.avatarThumb;
+
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateProfile(
+            firstName: profile.firstName,
+            lastName: profile.lastName,
+            email: profile.email,
+            emailVerified: profile.emailVerified,
+            avatarUrl: nextAvatarUrl,
+            avatarThumb: nextAvatarThumb,
+            clearAvatarUrl: nextAvatarUrl == null || nextAvatarUrl.isEmpty,
+            clearAvatarThumb:
+                nextAvatarThumb == null || nextAvatarThumb.isEmpty,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.settings_profileUpdated),
+            content: Text(
+              AppLocalizations.of(context)!.settings_profileUpdated,
+            ),
             backgroundColor: context.colors.success,
           ),
         );
@@ -405,7 +460,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.settings_failedToUpdateProfile),
+            content: Text(
+              AppLocalizations.of(context)!.settings_failedToUpdateProfile,
+            ),
             backgroundColor: context.colors.error,
           ),
         );

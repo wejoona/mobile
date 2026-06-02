@@ -83,7 +83,7 @@ class BalanceWidgetProvider : AppWidgetProvider() {
 
         // Set tap intent to open app
         val appIntent = Intent(Intent.ACTION_VIEW).apply {
-            data = Uri.parse("joonapay://home")
+            data = Uri.parse("korido://home")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val appPendingIntent = PendingIntent.getActivity(
@@ -98,7 +98,7 @@ class BalanceWidgetProvider : AppWidgetProvider() {
         if (layoutId == R.layout.widget_balance_medium) {
             // Send button
             val sendIntent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("joonapay://send")
+                data = Uri.parse("korido://send")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             val sendPendingIntent = PendingIntent.getActivity(
@@ -111,7 +111,7 @@ class BalanceWidgetProvider : AppWidgetProvider() {
 
             // Receive button
             val receiveIntent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse("joonapay://receive")
+                data = Uri.parse("korido://receive")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             val receivePendingIntent = PendingIntent.getActivity(

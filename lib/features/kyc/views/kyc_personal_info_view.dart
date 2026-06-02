@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/state/index.dart';
 
@@ -23,7 +24,9 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
+  final _documentNumberController = TextEditingController();
   DateTime? _dateOfBirth;
+  String _country = 'CI';
 
   @override
   void initState() {
@@ -44,6 +47,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _documentNumberController.dispose();
     super.dispose();
   }
 
@@ -103,6 +107,48 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                       ),
                       SizedBox(height: AppSpacing.lg),
                       _buildDateOfBirthField(context, l10n),
+                      SizedBox(height: AppSpacing.lg),
+                      AppSelect<String>(
+                        label: l10n.profile_country,
+                        value: _country,
+                        items: [
+                          AppSelectItem(
+                            value: 'CI',
+                            label: l10n.profile_countryIvoryCoast,
+                            subtitle: '+225',
+                          ),
+                          AppSelectItem(
+                            value: 'SN',
+                            label: l10n.profile_countrySenegal,
+                            subtitle: '+221',
+                          ),
+                          const AppSelectItem(
+                            value: 'ML',
+                            label: 'Mali',
+                            subtitle: '+223',
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => _country = value);
+                          }
+                        },
+                      ),
+                      SizedBox(height: AppSpacing.lg),
+                      AppInput(
+                        label: 'Document number',
+                        controller: _documentNumberController,
+                        keyboardType: TextInputType.text,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Document number is required';
+                          }
+                          if (value.trim().length < 4) {
+                            return 'Enter the number shown on your ID';
+                          }
+                          return null;
+                        },
+                      ),
                       SizedBox(height: AppSpacing.xxl),
                       _buildInfoCard(context, l10n),
                     ],
@@ -188,11 +234,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: colors.gold,
-            size: 24,
-          ),
+          Icon(Icons.info_outline, color: colors.gold, size: 24),
           SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(
@@ -231,17 +273,20 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              AppLocalizations.of(context)!.kyc_personalInfo_dateRequired),
+            AppLocalizations.of(context)!.kyc_personalInfo_dateRequired,
+          ),
         ),
       );
       return;
     }
 
     ref.read(kycProvider.notifier).setPersonalInfo({
-          'firstName': _firstNameController.text.trim(),
-          'lastName': _lastNameController.text.trim(),
-          'dateOfBirth': _dateOfBirth!.toIso8601String(),
-        });
+      'firstName': _firstNameController.text.trim(),
+      'lastName': _lastNameController.text.trim(),
+      'dateOfBirth': _dateOfBirth!.toIso8601String(),
+      'country': _country,
+      'documentNumber': _documentNumberController.text.trim(),
+    });
 
     context.push('/kyc/document-capture');
   }

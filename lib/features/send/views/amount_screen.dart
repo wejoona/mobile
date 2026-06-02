@@ -1,14 +1,15 @@
-import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
+import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class AmountScreen extends ConsumerStatefulWidget {
   const AmountScreen({super.key});
@@ -54,7 +55,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
       appBar: AppBar(
         title: AppText(
           l10n.send_enterAmount,
-          variant: AppTextVariant.headlineSmall,
+          variant: AppTextVariant.titleLarge,
         ),
         backgroundColor: Colors.transparent,
       ),
@@ -65,27 +66,61 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
                     // Recipient info card
                     AppCard(
+                      variant: AppCardVariant.flat,
                       child: Row(
                         children: [
-                          UserAvatar(
-                            firstName: state.recipient!.name?.split(' ').first ?? state.recipient!.phoneNumber,
-                            lastName: state.recipient!.name != null && state.recipient!.name!.split(' ').length > 1 ? state.recipient!.name!.split(' ').last : null,
-                            size: 40,
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              UserAvatar(
+                                firstName:
+                                    state.recipient!.name?.split(' ').first ??
+                                    state.recipient!.phoneNumber,
+                                lastName:
+                                    state.recipient!.name != null &&
+                                        state.recipient!.name!
+                                                .split(' ')
+                                                .length >
+                                            1
+                                    ? state.recipient!.name!.split(' ').last
+                                    : null,
+                                size: 40,
+                                showBorder: state.recipient!.isKoridoUser,
+                                borderColor: colors.gold,
+                              ),
+                              if (state.recipient!.isKoridoUser)
+                                const Positioned(
+                                  right: -2,
+                                  bottom: -2,
+                                  child: KoridoAccountBadge(compact: true),
+                                ),
+                            ],
                           ),
                           SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                AppText(
-                                  state.recipient!.name ??
-                                      state.recipient!.phoneNumber,
-                                  variant: AppTextVariant.bodyLarge,
-                                  fontWeight: FontWeight.w600,
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: AppText(
+                                        state.recipient!.name ??
+                                            state.recipient!.phoneNumber,
+                                        variant: AppTextVariant.bodyLarge,
+                                        fontWeight: FontWeight.w600,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    if (state.recipient!.isKoridoUser) ...[
+                                      SizedBox(width: AppSpacing.xs),
+                                      const KoridoAccountBadge(compact: true),
+                                    ],
+                                  ],
                                 ),
                                 if (state.recipient!.name != null)
                                   AppText(
@@ -110,10 +145,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                           variant: AppTextVariant.bodyMedium,
                           color: colors.textSecondary,
                         ),
-                        AppText(
-                          '\$${Formatters.formatCurrency(state.availableBalance)}',
-                          variant: AppTextVariant.bodyLarge,
-                          fontWeight: FontWeight.w600,
+                        AmountText.fromText(
+                          formatUsdc(state.availableBalance),
+                          size: AmountTextSize.small,
                           color: colors.gold,
                         ),
                       ],
@@ -131,17 +165,23 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                     AppInput(
                       label: l10n.send_amount,
                       controller: _amountController,
+                      variant: AppInputVariant.amount,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       prefix: Padding(
                         padding: const EdgeInsets.only(left: 12),
-                        child: Text('\$ ', style: TextStyle(color: colors.textPrimary)),
+                        child: AppText(
+                          'USDC',
+                          variant: AppTextVariant.labelMedium,
+                          color: colors.textTertiary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       validator: _validateAmount,
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}'),
+                          RegExp(r'^\d*\.?\d{0,2}'),
                         ),
                       ],
                       suffix: TextButton(
@@ -168,7 +208,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                     // Fee preview
                     if (state.fee > 0)
                       AppCard(
-                        variant: AppCardVariant.subtle,
+                        variant: AppCardVariant.flat,
                         child: Column(
                           children: [
                             Row(
@@ -178,9 +218,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                   l10n.send_amount,
                                   variant: AppTextVariant.bodyMedium,
                                 ),
-                                AppText(
-                                  '\$${Formatters.formatCurrency(state.amount ?? 0)}',
-                                  variant: AppTextVariant.bodyMedium,
+                                AmountText.fromText(
+                                  formatUsdc(state.amount ?? 0),
+                                  size: AmountTextSize.small,
                                 ),
                               ],
                             ),
@@ -193,16 +233,18 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                   variant: AppTextVariant.bodyMedium,
                                   color: colors.textSecondary,
                                 ),
-                                AppText(
-                                  '\$${Formatters.formatCurrency(state.fee)}',
-                                  variant: AppTextVariant.bodyMedium,
+                                AmountText.fromText(
+                                  formatUsdc(state.fee),
+                                  size: AmountTextSize.small,
                                   color: colors.textSecondary,
                                 ),
                               ],
                             ),
                             Divider(
                               height: AppSpacing.md,
-                              color: colors.textSecondary.withValues(alpha: 0.2),
+                              color: colors.textSecondary.withValues(
+                                alpha: 0.2,
+                              ),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -212,10 +254,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                   variant: AppTextVariant.bodyLarge,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                AppText(
-                                  '\$${Formatters.formatCurrency(state.total)}',
-                                  variant: AppTextVariant.bodyLarge,
-                                  fontWeight: FontWeight.w600,
+                                AmountText.fromText(
+                                  formatUsdc(state.total),
+                                  size: AmountTextSize.small,
                                   color: colors.gold,
                                 ),
                               ],
@@ -229,7 +270,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
 
               // Bottom button
               Padding(
-                padding: EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 child: AppButton(
                   label: l10n.action_continue,
                   onPressed: _handleContinue,
@@ -265,16 +306,16 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     if (limitsState.limits != null) {
       final limits = limitsState.limits!;
       if (limits.isDailyAtLimit) {
-        return '${l10n.limits_dailyLimitReached} \$${limits.dailyLimit.toStringAsFixed(0)}';
+        return '${l10n.limits_dailyLimitReached} ${formatUsdc(limits.dailyLimit)}';
       }
       if (amount > limits.dailyRemaining) {
-        return '${l10n.limits_remaining}: \$${limits.dailyRemaining.toStringAsFixed(2)}';
+        return '${l10n.limits_remaining}: ${formatUsdc(limits.dailyRemaining)}';
       }
       if (limits.isMonthlyAtLimit) {
-        return '${l10n.limits_monthlyLimitReached} \$${limits.monthlyLimit.toStringAsFixed(0)}';
+        return '${l10n.limits_monthlyLimitReached} ${formatUsdc(limits.monthlyLimit)}';
       }
       if (amount > limits.monthlyRemaining) {
-        return '${l10n.limits_remaining}: \$${limits.monthlyRemaining.toStringAsFixed(2)}';
+        return '${l10n.limits_remaining}: ${formatUsdc(limits.monthlyRemaining)}';
       }
     }
 
@@ -292,8 +333,9 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
     setState(() => _isLoading = true);
     try {
       final amount = double.parse(_amountController.text);
-      final note =
-          _noteController.text.isEmpty ? null : _noteController.text.trim();
+      final note = _noteController.text.isEmpty
+          ? null
+          : _noteController.text.trim();
 
       ref.read(sendMoneyProvider.notifier).setAmount(amount);
       ref.read(sendMoneyProvider.notifier).setNote(note);

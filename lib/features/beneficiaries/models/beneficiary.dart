@@ -1,6 +1,6 @@
 /// Account Types for Beneficiaries
 enum AccountType {
-  joonapayUser('korido_user'),
+  joonapayUser('joonapay_user'),
   externalWallet('external_wallet'),
   bankAccount('bank_account'),
   mobileMoney('mobile_money');
@@ -9,6 +9,15 @@ enum AccountType {
   const AccountType(this.value);
 
   static AccountType fromString(String value) {
+    if (value == 'korido_user' || value == 'internal') {
+      return AccountType.joonapayUser;
+    }
+    if (value == 'external') {
+      return AccountType.externalWallet;
+    }
+    if (value == 'bank') {
+      return AccountType.bankAccount;
+    }
     return AccountType.values.firstWhere(
       (e) => e.value == value,
       orElse: () => AccountType.joonapayUser,
@@ -57,49 +66,89 @@ class Beneficiary {
   });
 
   factory Beneficiary.fromJson(Map<String, dynamic> json) {
+    Object? read(String camel, String snake) => json[camel] ?? json[snake];
+    String? readString(String camel, String snake) =>
+        read(camel, snake)?.toString();
+    int readInt(String camel, String snake) {
+      final value = read(camel, snake);
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return int.tryParse(value?.toString() ?? '') ?? 0;
+    }
+
+    double readDouble(String camel, String snake) {
+      final value = read(camel, snake);
+      if (value is double) return value;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value?.toString() ?? '') ?? 0.0;
+    }
+
+    bool readBool(String camel, String snake) {
+      final value = read(camel, snake);
+      if (value is bool) return value;
+      return value?.toString().toLowerCase() == 'true';
+    }
+
+    DateTime? readDate(String camel, String snake) {
+      final value = readString(camel, snake);
+      if (value == null || value.isEmpty) return null;
+      return DateTime.tryParse(value);
+    }
+
+    final now = DateTime.now();
+    final createdAtValue = readDate('createdAt', 'created_at') ?? now;
+    final updatedAtValue =
+        readDate('updatedAt', 'updated_at') ?? createdAtValue;
+    final accountTypeValue =
+        readString('accountType', 'account_type') ??
+        AccountType.joonapayUser.value;
+
     return Beneficiary(
       id: json['id'] as String,
-      walletId: json['wallet_id'] as String,
+      walletId: readString('walletId', 'wallet_id') ?? '',
       name: json['name'] as String,
-      phoneE164: json['phone_e164'] as String?,
-      accountType: AccountType.fromString(json['account_type'] as String),
-      beneficiaryUserId: json['beneficiary_user_id'] as String?,
-      beneficiaryWalletAddress: json['beneficiary_wallet_address'] as String?,
-      bankCode: json['bank_code'] as String?,
-      bankAccountNumber: json['bank_account_number'] as String?,
-      mobileMoneyProvider: json['mobile_money_provider'] as String?,
-      isFavorite: json['is_favorite'] as bool? ?? false,
-      isVerified: json['is_verified'] as bool? ?? false,
-      transferCount: json['transfer_count'] as int? ?? 0,
-      totalTransferred:
-          (json['total_transferred'] as num?)?.toDouble() ?? 0.0,
-      lastTransferAt: json['last_transfer_at'] != null
-          ? DateTime.parse(json['last_transfer_at'] as String)
-          : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      phoneE164: readString('phoneE164', 'phone_e164'),
+      accountType: AccountType.fromString(accountTypeValue),
+      beneficiaryUserId: readString('beneficiaryUserId', 'beneficiary_user_id'),
+      beneficiaryWalletAddress: readString(
+        'beneficiaryWalletAddress',
+        'beneficiary_wallet_address',
+      ),
+      bankCode: readString('bankCode', 'bank_code'),
+      bankAccountNumber: readString('bankAccountNumber', 'bank_account_number'),
+      mobileMoneyProvider: readString(
+        'mobileMoneyProvider',
+        'mobile_money_provider',
+      ),
+      isFavorite: readBool('isFavorite', 'is_favorite'),
+      isVerified: readBool('isVerified', 'is_verified'),
+      transferCount: readInt('transferCount', 'transfer_count'),
+      totalTransferred: readDouble('totalTransferred', 'total_transferred'),
+      lastTransferAt: readDate('lastTransferAt', 'last_transfer_at'),
+      createdAt: createdAtValue,
+      updatedAt: updatedAtValue,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'wallet_id': walletId,
-        'name': name,
-        'phone_e164': phoneE164,
-        'account_type': accountType.value,
-        'beneficiary_user_id': beneficiaryUserId,
-        'beneficiary_wallet_address': beneficiaryWalletAddress,
-        'bank_code': bankCode,
-        'bank_account_number': bankAccountNumber,
-        'mobile_money_provider': mobileMoneyProvider,
-        'is_favorite': isFavorite,
-        'is_verified': isVerified,
-        'transfer_count': transferCount,
-        'total_transferred': totalTransferred,
-        'last_transfer_at': lastTransferAt?.toIso8601String(),
-        'created_at': createdAt.toIso8601String(),
-        'updated_at': updatedAt.toIso8601String(),
-      };
+    'id': id,
+    'walletId': walletId,
+    'name': name,
+    'phoneE164': phoneE164,
+    'accountType': accountType.value,
+    'beneficiaryUserId': beneficiaryUserId,
+    'beneficiaryWalletAddress': beneficiaryWalletAddress,
+    'bankCode': bankCode,
+    'bankAccountNumber': bankAccountNumber,
+    'mobileMoneyProvider': mobileMoneyProvider,
+    'isFavorite': isFavorite,
+    'isVerified': isVerified,
+    'transferCount': transferCount,
+    'totalTransferred': totalTransferred,
+    'lastTransferAt': lastTransferAt?.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 
   Beneficiary copyWith({
     String? id,
@@ -164,28 +213,21 @@ class CreateBeneficiaryRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'phone_e164': phoneE164,
-        'account_type': accountType.value,
-        'beneficiary_wallet_address': beneficiaryWalletAddress,
-        'bank_code': bankCode,
-        'bank_account_number': bankAccountNumber,
-        'mobile_money_provider': mobileMoneyProvider,
-      };
+    'name': name,
+    'phoneE164': phoneE164,
+    'accountType': accountType.value,
+    'beneficiaryWalletAddress': beneficiaryWalletAddress,
+    'bankCode': bankCode,
+    'bankAccountNumber': bankAccountNumber,
+    'mobileMoneyProvider': mobileMoneyProvider,
+  };
 }
 
 /// Update Beneficiary Request
 class UpdateBeneficiaryRequest {
   final String? name;
-  final String? phoneE164;
 
-  const UpdateBeneficiaryRequest({
-    this.name,
-    this.phoneE164,
-  });
+  const UpdateBeneficiaryRequest({this.name});
 
-  Map<String, dynamic> toJson() => {
-        if (name != null) 'name': name,
-        if (phoneE164 != null) 'phone_e164': phoneE164,
-      };
+  Map<String, dynamic> toJson() => {if (name != null) 'name': name};
 }

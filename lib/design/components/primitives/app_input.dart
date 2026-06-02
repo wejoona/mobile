@@ -94,6 +94,7 @@ class AppInput extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final VoidCallback? onTap;
   final String? Function(String?)? validator;
+
   /// Optional semantic label for screen readers (defaults to label or hint)
   final String? semanticLabel;
 
@@ -156,16 +157,14 @@ class _AppInputState extends State<AppInput> {
     final colors = context.colors;
 
     // Build semantic label
-    final String effectiveLabel = widget.semanticLabel ??
-        widget.label ??
-        widget.hint ??
-        'Text input';
+    final String effectiveLabel =
+        widget.semanticLabel ?? widget.label ?? widget.hint ?? 'Text input';
 
     final String semanticHint = widget.readOnly
         ? 'Read only'
         : widget.error != null
-            ? 'Error: ${widget.error}'
-            : widget.helper ?? '';
+        ? 'Error: ${widget.error}'
+        : widget.helper ?? '';
 
     return Semantics(
       label: effectiveLabel,
@@ -187,98 +186,116 @@ class _AppInputState extends State<AppInput> {
             const SizedBox(height: AppSpacing.sm),
           ],
           TextFormField(
-          controller: widget.controller,
-          focusNode: _focusNode,
-          obscureText: widget.obscureText,
-          enabled: widget.enabled,
-          readOnly: widget.readOnly,
-          autofocus: widget.autofocus,
-          maxLines: widget.maxLines,
-          maxLength: widget.maxLength,
-          keyboardType: _getKeyboardType(),
-          textInputAction: widget.textInputAction,
-          inputFormatters: _getInputFormatters(),
-          onChanged: (value) {
-            widget.onChanged?.call(value);
-            _onTextChange();
-          },
-          onFieldSubmitted: widget.onSubmitted,
-          onTap: widget.onTap,
-          validator: widget.validator,
-          style: _getTextStyle(currentState, colors),
-          textAlign: _getTextAlign(),
-          cursorColor: colors.gold,
-          selectionControls: MaterialTextSelectionControls(),
-          decoration: InputDecoration(
-            hintText: widget.hint,
-            errorText: widget.error,
-            helperText: widget.helper,
-            prefix: widget.prefix,
-            suffix: widget.suffix,
-            prefixIcon: widget.prefixIcon != null
-                ? Icon(
-                    widget.prefixIcon,
-                    color: _getIconColor(currentState, colors),
-                    size: 20,
-                  )
-                : null,
-            suffixIcon: widget.suffixIcon != null
-                ? Icon(
-                    widget.suffixIcon,
-                    color: _getIconColor(currentState, colors),
-                    size: 20,
-                  )
-                : null,
-            counterText: '',
-            filled: true,
-            fillColor: _getFillColor(currentState, colors),
-            hintStyle: _getHintStyle(colors),
-            errorStyle: AppTypography.bodySmall.copyWith(
-              color: colors.errorText,
-            ),
-            helperStyle: AppTypography.bodySmall.copyWith(
-              color: colors.textSecondary,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.lg,
-              vertical: AppSpacing.lg,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(currentState, colors),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.idle, colors),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.focused, colors),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.error, colors),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: BorderSide(
-                color: colors.error,
-                width: 2,
+            controller: widget.controller,
+            focusNode: _focusNode,
+            obscureText: widget.obscureText,
+            enabled: widget.enabled,
+            readOnly: widget.readOnly,
+            autofocus: widget.autofocus,
+            maxLines: widget.maxLines,
+            maxLength: widget.maxLength,
+            keyboardType: _getKeyboardType(),
+            textInputAction: widget.textInputAction,
+            inputFormatters: _getInputFormatters(),
+            onChanged: (value) {
+              widget.onChanged?.call(value);
+              _onTextChange();
+            },
+            onFieldSubmitted: widget.onSubmitted,
+            onTap: widget.onTap,
+            validator: widget.validator,
+            style: _getTextStyle(currentState, colors),
+            textAlign: _getTextAlign(),
+            cursorColor: colors.gold,
+            selectionControls: MaterialTextSelectionControls(),
+            decoration: InputDecoration(
+              hintText: widget.hint,
+              errorText: widget.error,
+              helperText: widget.helper,
+              prefix: widget.prefix,
+              suffix: widget.suffix,
+              prefixIcon: widget.prefixIcon != null
+                  ? Icon(
+                      widget.prefixIcon,
+                      color: _getIconColor(currentState, colors),
+                      size: 20,
+                    )
+                  : null,
+              suffixIcon: widget.suffixIcon != null
+                  ? Icon(
+                      widget.suffixIcon,
+                      color: _getIconColor(currentState, colors),
+                      size: 20,
+                    )
+                  : null,
+              counterText: '',
+              filled: true,
+              fillColor: _getFillColor(currentState, colors),
+              hintStyle: _getHintStyle(colors),
+              errorStyle: AppTypography.bodySmall.copyWith(
+                color: colors.errorText,
+              ),
+              helperStyle: AppTypography.bodySmall.copyWith(
+                color: colors.textSecondary,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.lg,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: _getBorderSide(currentState, colors),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: _getBorderSide(AppInputState.idle, colors),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: _getBorderSide(AppInputState.focused, colors),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: _getBorderSide(AppInputState.error, colors),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: BorderSide(color: colors.error, width: 2),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderSide: _getBorderSide(AppInputState.disabled, colors),
               ),
             ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              borderSide: _getBorderSide(AppInputState.disabled, colors),
-            ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
 
   /// Get fill color based on state
   Color _getFillColor(AppInputState state, ThemeColors colors) {
+    if (!colors.isDark) {
+      switch (state) {
+        case AppInputState.disabled:
+          return colors.surface.withValues(alpha: 0.64);
+        case AppInputState.error:
+          return colors.errorBg;
+        case AppInputState.focused:
+          return Color.alphaBlend(
+            colors.gold.withValues(alpha: 0.025),
+            colors.container,
+          );
+        case AppInputState.filled:
+          return Color.alphaBlend(
+            colors.gold.withValues(alpha: 0.018),
+            colors.elevated,
+          );
+        case AppInputState.idle:
+          return colors.elevated;
+      }
+    }
+
     switch (state) {
       case AppInputState.disabled:
         return colors.elevated.withValues(alpha: 0.5);
@@ -298,29 +315,20 @@ class _AppInputState extends State<AppInput> {
   BorderSide _getBorderSide(AppInputState state, ThemeColors colors) {
     switch (state) {
       case AppInputState.disabled:
-        return BorderSide(
-          color: colors.borderSubtle,
-          width: 1,
-        );
+        return BorderSide(color: colors.borderSubtle, width: 1);
       case AppInputState.error:
-        return BorderSide(
-          color: colors.error,
-          width: 1,
-        );
+        return BorderSide(color: colors.error, width: 1);
       case AppInputState.focused:
         // Gold highlight on focus
-        return BorderSide(
-          color: colors.gold,
-          width: 2,
-        );
+        return BorderSide(color: colors.gold, width: 2);
       case AppInputState.filled:
         return BorderSide(
-          color: colors.border,
+          color: colors.isDark ? colors.border : colors.borderStrong,
           width: 1,
         );
       case AppInputState.idle:
         return BorderSide(
-          color: colors.border,
+          color: colors.isDark ? colors.border : colors.borderSubtle,
           width: 1,
         );
     }
@@ -390,9 +398,7 @@ class _AppInputState extends State<AppInput> {
       case AppInputVariant.pin:
         return [FilteringTextInputFormatter.digitsOnly];
       case AppInputVariant.amount:
-        return [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-        ];
+        return [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))];
       case AppInputVariant.search:
       case AppInputVariant.standard:
         return null;
@@ -400,18 +406,17 @@ class _AppInputState extends State<AppInput> {
   }
 
   TextStyle _getTextStyle(AppInputState state, ThemeColors colors) {
-    final baseStyle = widget.variant == AppInputVariant.amount ||
-            widget.variant == AppInputVariant.pin
-        ? AppTypography.monoLarge
-        : AppTypography.bodyLarge;
+    final baseStyle = switch (widget.variant) {
+      AppInputVariant.amount => AppTypography.moneyLarge,
+      AppInputVariant.pin => AppTypography.monoLarge,
+      _ => AppTypography.bodyLarge,
+    };
 
     return baseStyle.copyWith(color: _getTextColor(state, colors));
   }
 
   TextStyle _getHintStyle(ThemeColors colors) {
-    return AppTypography.bodyMedium.copyWith(
-      color: colors.textTertiary,
-    );
+    return AppTypography.bodyMedium.copyWith(color: colors.textTertiary);
   }
 
   TextAlign _getTextAlign() {
@@ -471,11 +476,9 @@ class PhoneInput extends StatelessWidget {
                   vertical: AppSpacing.lg,
                 ),
                 decoration: BoxDecoration(
-                  color: colors.elevated,
+                  color: colors.isDark ? colors.elevated : colors.container,
                   borderRadius: BorderRadius.circular(AppRadius.md),
-                  border: Border.all(
-                    color: colors.border,
-                  ),
+                  border: Border.all(color: colors.borderSubtle),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

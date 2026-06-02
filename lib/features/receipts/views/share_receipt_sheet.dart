@@ -13,13 +13,9 @@ import 'package:usdc_wallet/features/receipts/services/receipt_service.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 
-/// Bottom sheet for sharing transaction receipt
-/// TODO: Replace hardcoded strings with AppLocalizations after running flutter gen-l10n
+/// Bottom sheet for sharing transaction receipt.
 class ShareReceiptSheet extends ConsumerStatefulWidget {
-  const ShareReceiptSheet({
-    super.key,
-    required this.transaction,
-  });
+  const ShareReceiptSheet({super.key, required this.transaction});
 
   final Transaction transaction;
 
@@ -44,11 +40,14 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xl),
+        ),
       ),
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -71,9 +70,11 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
 
             // Title
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-              child: const AppText(
-                'Share Receipt',
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
+              child: AppText(
+                l10n.action_shareReceipt,
                 variant: AppTextVariant.titleLarge,
               ),
             ),
@@ -108,8 +109,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.message,
                       iconColor: const Color(0xFF25D366), // WhatsApp green
-                      label: 'Share via WhatsApp',
-                      subtitle: 'Send receipt to WhatsApp contact',
+                      label: 'WhatsApp',
+                      subtitle: l10n.contacts_invite_via_whatsapp_desc,
                       isPrimary: true,
                       onTap: _shareViaWhatsApp,
                     ),
@@ -119,8 +120,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.image,
                       iconColor: context.colors.info,
-                      label: 'Share as Image',
-                      subtitle: 'Share via any app',
+                      label: 'Image',
+                      subtitle: l10n.send_shareReceipt,
                       onTap: () => _shareReceipt(ReceiptFormat.image),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -129,8 +130,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.picture_as_pdf,
                       iconColor: context.colors.error,
-                      label: 'Share as PDF',
-                      subtitle: 'Professional PDF document',
+                      label: 'PDF',
+                      subtitle: l10n.receipts_receiptView,
                       onTap: () => _shareReceipt(ReceiptFormat.pdf),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -139,8 +140,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.download,
                       iconColor: context.colors.success,
-                      label: 'Save to Gallery',
-                      subtitle: 'Save receipt image to photos',
+                      label: l10n.common_save,
+                      subtitle: l10n.qr_savedToGallery,
                       onTap: _saveToGallery,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -149,8 +150,8 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.email,
                       iconColor: colors.gold,
-                      label: 'Email Receipt',
-                      subtitle: 'Send via email',
+                      label: l10n.notifications_emailReceipts,
+                      subtitle: l10n.notifications_emailReceiptsDescription,
                       onTap: _emailReceipt,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -159,7 +160,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
                     _ShareOption(
                       icon: Icons.copy,
                       iconColor: colors.textSecondary,
-                      label: 'Copy Reference Number',
+                      label: l10n.send_reference,
                       subtitle: widget.transaction.reference,
                       onTap: _copyReference,
                     ),
@@ -173,9 +174,10 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   }
 
   Future<void> _shareViaWhatsApp() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
-      _loadingMessage = 'Opening WhatsApp...';
+      _loadingMessage = l10n.settings_openingWhatsApp;
     });
 
     try {
@@ -188,11 +190,11 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       if (success) {
         Navigator.pop(context);
       } else {
-        _showError('WhatsApp is not installed');
+        _showError(l10n.help_whatsappSupport);
       }
     } catch (e) {
       if (!mounted) return;
-      _showError('Failed to share receipt');
+      _showError(l10n.common_errorFormat(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -204,11 +206,12 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   }
 
   Future<void> _shareReceipt(ReceiptFormat format) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
       _loadingMessage = format == ReceiptFormat.image
-          ? 'Generating image...'
-          : 'Generating PDF...';
+          ? l10n.send_shareReceipt
+          : l10n.receipts_receiptView;
     });
 
     try {
@@ -221,7 +224,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      _showError('Failed to share receipt');
+      _showError(l10n.common_errorFormat(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -233,13 +236,16 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   }
 
   Future<void> _saveToGallery() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
-      _loadingMessage = 'Generating PDF...';
+      _loadingMessage = l10n.receipts_receiptView;
     });
 
     try {
-      final pdfBytes = await _receiptService.generateReceiptDocument(widget.transaction);
+      final pdfBytes = await _receiptService.generateReceiptDocument(
+        widget.transaction,
+      );
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'Korido_Receipt_$timestamp.pdf';
 
@@ -248,18 +254,17 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(pdfBytes);
 
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: 'Korido transaction receipt',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: l10n.receipts_receiptView),
+      );
 
       if (!mounted) return;
 
       Navigator.pop(context);
-      _showSuccess('Receipt saved to gallery');
+      _showSuccess(l10n.qr_savedToGallery);
     } catch (e) {
       if (!mounted) return;
-      _showError('Failed to save receipt');
+      _showError(l10n.common_errorFormat(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -271,13 +276,14 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
   }
 
   Future<void> _emailReceipt() async {
+    final l10n = AppLocalizations.of(context)!;
     // Show text field to enter email
     final email = await _showEmailDialog();
     if (email == null || email.isEmpty) return;
 
     setState(() {
       _isLoading = true;
-      _loadingMessage = 'Opening email...';
+      _loadingMessage = l10n.notifications_emailReceipts;
     });
 
     try {
@@ -291,11 +297,11 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       if (success) {
         Navigator.pop(context);
       } else {
-        _showError('Failed to open email app');
+        _showError(l10n.common_errorFormat(l10n.notifications_emailReceipts));
       }
     } catch (e) {
       if (!mounted) return;
-      _showError('Failed to share receipt');
+      _showError(l10n.common_errorFormat(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -313,7 +319,9 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.receipts_referenceNumberCopied),
+        content: Text(
+          AppLocalizations.of(context)!.receipts_referenceNumberCopied,
+        ),
         backgroundColor: context.colors.success,
         duration: Duration(seconds: 2),
       ),
@@ -329,10 +337,13 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: context.colors.surface,
-        title: AppText(AppLocalizations.of(context)!.receipts_enterEmailAddress, variant: AppTextVariant.titleMedium),
+        title: AppText(
+          AppLocalizations.of(context)!.receipts_enterEmailAddress,
+          variant: AppTextVariant.titleMedium,
+        ),
         content: AppInput(
           controller: controller,
-          label: 'Email Address',
+          label: AppLocalizations.of(context)!.receipts_enterEmailAddress,
           keyboardType: TextInputType.emailAddress,
           autofocus: true,
         ),
@@ -342,7 +353,7 @@ class _ShareReceiptSheetState extends ConsumerState<ShareReceiptSheet> {
             child: AppText(AppLocalizations.of(context)!.action_cancel),
           ),
           AppButton(
-            label: 'Continue',
+            label: AppLocalizations.of(context)!.action_continue,
             onPressed: () => Navigator.pop(context, controller.text),
           ),
         ],
@@ -393,7 +404,7 @@ class _ShareOption extends StatelessWidget {
     final colors = context.colors;
 
     return AppCard(
-      variant: isPrimary ? AppCardVariant.elevated : AppCardVariant.subtle,
+      variant: isPrimary ? AppCardVariant.elevated : AppCardVariant.flat,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -406,11 +417,7 @@ class _ShareOption extends StatelessWidget {
                 color: iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.md),
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 24,
-              ),
+              child: Icon(icon, color: iconColor, size: 24),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -431,10 +438,7 @@ class _ShareOption extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: colors.textTertiary,
-            ),
+            Icon(Icons.chevron_right, color: colors.textTertiary),
           ],
         ),
       ),

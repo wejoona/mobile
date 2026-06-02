@@ -8,6 +8,8 @@ import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_data_generator.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 import 'package:usdc_wallet/mocks/services/auth/auth_mock.dart';
+import 'package:usdc_wallet/mocks/services/transactions/transactions_mock.dart';
+import 'package:usdc_wallet/mocks/services/wallet/wallet_mock.dart';
 
 /// Transfers mock state
 class TransfersMockState {
@@ -96,8 +98,8 @@ class TransfersMock {
     }
 
     // Get PIN token from header
-    final pinToken = options.headers['X-Pin-Token'] ??
-                     options.headers['x-pin-token'];
+    final pinToken =
+        options.headers['X-Pin-Token'] ?? options.headers['x-pin-token'];
 
     if (pinToken == null || (pinToken is String && pinToken.isEmpty)) {
       return MockResponse(
@@ -106,14 +108,16 @@ class TransfersMock {
         data: {
           'message': 'PIN verification required for this operation',
           'code': 'PIN_REQUIRED',
-          'hint': 'Call POST /wallet/pin/verify first, then include the returned token in X-Pin-Token header',
+          'hint':
+              'Call POST /wallet/pin/verify first, then include the returned token in X-Pin-Token header',
         },
       );
     }
 
     // Validate token format (should be a hex string from mock PIN verify)
     final tokenStr = pinToken.toString();
-    if (tokenStr.isEmpty || (!tokenStr.startsWith('mock_pin_token_') && tokenStr.length < 16)) {
+    if (tokenStr.isEmpty ||
+        (!tokenStr.startsWith('mock_pin_token_') && tokenStr.length < 16)) {
       return MockResponse(
         statusCode: 403,
         errorMessage: 'Invalid or expired PIN verification',
@@ -130,7 +134,9 @@ class TransfersMock {
   }
 
   /// Handle internal transfer
-  static Future<MockResponse> _handleInternalTransfer(RequestOptions options) async {
+  static Future<MockResponse> _handleInternalTransfer(
+    RequestOptions options,
+  ) async {
     // Check PIN verification first
     final pinCheckResult = _checkPinVerification(options);
     if (pinCheckResult != null) {
@@ -138,6 +144,7 @@ class TransfersMock {
     }
 
     final data = options.data as Map<String, dynamic>;
+    final userId = AuthMockState.currentUserId!;
     final recipientPhone = data['recipientPhone'] as String;
     final amount = (data['amount'] as num).toDouble();
     final note = data['note'] as String?;
@@ -159,11 +166,22 @@ class TransfersMock {
       note: note,
     );
 
+    WalletMockState.updateBalance(userId, -amount, -(amount * 655.957));
+    TransactionsMockState.addTransaction(
+      userId,
+      type: 'transfer_internal',
+      amount: -amount,
+      recipient: recipientPhone,
+      note: note,
+    );
+
     return MockResponse.success(transfer);
   }
 
   /// Handle external transfer
-  static Future<MockResponse> _handleExternalTransfer(RequestOptions options) async {
+  static Future<MockResponse> _handleExternalTransfer(
+    RequestOptions options,
+  ) async {
     // Check PIN verification first
     final pinCheckResult = _checkPinVerification(options);
     if (pinCheckResult != null) {
@@ -171,9 +189,11 @@ class TransfersMock {
     }
 
     final data = options.data as Map<String, dynamic>;
+    final userId = AuthMockState.currentUserId!;
     final recipientAddress = data['recipientAddress'] as String;
     final amount = (data['amount'] as num).toDouble();
-    final blockchain = data['blockchain'] as String?;
+    final network =
+        (data['network'] as String?) ?? (data['blockchain'] as String?);
     final note = data['note'] as String?;
 
     // Validate
@@ -195,7 +215,8 @@ class TransfersMock {
       'fee': amount * 0.005, // 0.5% fee
       'currency': 'USDC',
       'recipientAddress': recipientAddress,
-      'blockchain': blockchain ?? 'polygon',
+      'network': network ?? 'polygon',
+      'blockchain': network ?? 'polygon',
       'note': note,
       'txHash': '0x${MockDataGenerator.uuid().replaceAll('-', '')}',
       'createdAt': DateTime.now().toIso8601String(),
@@ -203,12 +224,24 @@ class TransfersMock {
     };
 
     TransfersMockState.transfers.add(transfer);
+    WalletMockState.updateBalance(userId, -(amount + (amount * 0.005)), 0);
+    TransactionsMockState.addTransaction(
+      userId,
+      type: 'transfer_external',
+      amount: amount,
+      fee: amount * 0.005,
+      recipient: recipientAddress,
+      note: note,
+      status: 'pending',
+    );
 
     return MockResponse.success(transfer);
   }
 
   /// Handle get transfers
-  static Future<MockResponse> _handleGetTransfers(RequestOptions options) async {
+  static Future<MockResponse> _handleGetTransfers(
+    RequestOptions options,
+  ) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized('Not authenticated');
@@ -235,7 +268,9 @@ class TransfersMock {
   }
 
   /// Handle get transfer by ID
-  static Future<MockResponse> _handleGetTransferById(RequestOptions options) async {
+  static Future<MockResponse> _handleGetTransferById(
+    RequestOptions options,
+  ) async {
     final userId = AuthMockState.currentUserId;
     if (userId == null) {
       return MockResponse.unauthorized('Not authenticated');

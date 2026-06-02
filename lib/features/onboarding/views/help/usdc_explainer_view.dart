@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 /// USDC explainer screen for new users
 class UsdcExplainerView extends ConsumerWidget {
@@ -236,7 +235,7 @@ class UsdcExplainerView extends ConsumerWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: AppColors.goldGradient),
+              gradient: LinearGradient(colors: colors.goldGradient),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: Colors.white, size: 16),

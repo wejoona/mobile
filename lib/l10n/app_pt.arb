@@ -338,9 +338,25 @@
   "@wallet_availableBalance": {
     "description": "Available balance label"
   },
+  "wallet_availableToSend": "Disponível para enviar",
+  "@wallet_availableToSend": {
+    "description": "Label for funds that can be sent immediately"
+  },
+  "wallet_pendingBalance": "Pendente",
+  "@wallet_pendingBalance": {
+    "description": "Short pending balance label"
+  },
   "wallet_totalBalance": "Saldo total",
   "@wallet_totalBalance": {
     "description": "Total balance label"
+  },
+  "wallet_securedWallet": "Carteira protegida",
+  "@wallet_securedWallet": {
+    "description": "Wallet security status label"
+  },
+  "wallet_balanceHidden": "Saldo oculto",
+  "@wallet_balanceHidden": {
+    "description": "Label shown when the user hides wallet balances"
   },
   "wallet_usdBalance": "USD",
   "@wallet_usdBalance": {
@@ -966,6 +982,36 @@
   "@settings_noDevicesDescription": {
     "description": "Empty state description"
   },
+  "settings_connectedDevices": "Dispositivos ligados",
+  "settings_oneDeviceAccess": "1 dispositivo pode aceder à sua conta",
+  "settings_multipleDevicesAccess": "{count} dispositivos podem aceder à sua conta",
+  "settings_otherDevices": "Outros dispositivos",
+  "settings_activeNow": "Ativo agora",
+  "settings_trusted": "Confiável",
+  "settings_notTrusted": "Não confiável",
+  "settings_neverActive": "Nunca",
+  "settings_justNow": "Agora mesmo",
+  "settings_minutesAgo": "Há {minutes} min",
+  "settings_hoursAgo": "Há {hours} h",
+  "settings_daysAgo": "Há {days} d",
+  "settings_loginCountValue": "{count} entradas",
+  "settings_revokeDeviceTitle": "Remover dispositivo",
+  "settings_revokeDeviceMessage": "Este dispositivo será desconectado e terá de autenticar novamente.",
+  "settings_untrustDevice": "Remover confiança",
+  "settings_deviceUntrustedSuccess": "Confiança removida",
+  "settings_deviceUntrustError": "Falha ao remover confiança",
+  "settings_renameDevice": "Renomear dispositivo",
+  "settings_deviceName": "Nome do dispositivo",
+  "settings_deviceRenamedSuccess": "Dispositivo renomeado",
+  "settings_deviceRenameError": "Falha ao renomear dispositivo",
+  "settings_signOutOtherDevices": "Sair dos outros dispositivos",
+  "settings_signOutOtherDevicesTitle": "Sair dos outros dispositivos?",
+  "settings_signOutOtherDevicesMessage": "Todos os outros dispositivos serão desconectados. Este dispositivo ficará ativo.",
+  "settings_signOutOtherDevicesSuccess": "Outros dispositivos desconectados",
+  "settings_signOutOtherDevicesError": "Falha ao desconectar outros dispositivos",
+  "settings_devicesLoadErrorTitle": "Não foi possível carregar dispositivos",
+  "settings_devicesLoadErrorDescription": "Verifique a sua ligação e tente novamente.",
+  "settings_noOtherDevices": "Só este dispositivo tem acesso agora.",
   "kyc_verified": "Verificado",
   "@kyc_verified": {
     "description": "KYC verified status"
@@ -4447,7 +4493,7 @@
   "@referrals_codeCopied": {
     "description": "Code copied message"
   },
-  "referrals_shareMessage": "Join joonapay and get $5 bonus on your first depositar! use my referral code: {code}\n\ntransferir now: https://joonapay.com/transferir",
+  "referrals_shareMessage": "Join Korido and get $5 bonus on your first depositar! use my referral code: {code}\n\ntransferir now: https://korido.app/download",
   "@referrals_shareMessage": {
     "description": "Share message template",
     "placeholders": {
@@ -4456,7 +4502,7 @@
       }
     }
   },
-  "referrals_shareSubject": "Join joonapay - get $5 bonus!",
+  "referrals_shareSubject": "Join Korido - get $5 bonus!",
   "@referrals_shareSubject": {
     "description": "Share subject"
   },
@@ -7310,7 +7356,7 @@
   "@onboarding_page1_title": {
     "description": "Onboarding page 1 title"
   },
-  "onboarding_page1_description": "Store, enviar, and receber usdc securely. your digital carteira built for west africa.",
+  "onboarding_page1_description": "Guarde, envie e receba USDC com segurança. A carteira adapta-se ao seu país.",
   "@onboarding_page1_description": {
     "description": "Onboarding page 1 description"
   },
@@ -7338,7 +7384,7 @@
   "@onboarding_page2_feature1": {
     "description": "Onboarding page 2 feature 1"
   },
-  "onboarding_page2_feature2": "Enviar to any mobile money conta",
+  "onboarding_page2_feature2": "Enviar para contas locais quando disponível",
   "@onboarding_page2_feature2": {
     "description": "Onboarding page 2 feature 2"
   },
@@ -7350,11 +7396,11 @@
   "@onboarding_page3_title": {
     "description": "Onboarding page 3 title"
   },
-  "onboarding_page3_description": "Adicionar money via mobile money. cash out to your local conta anytime.",
+  "onboarding_page3_description": "Adicione fundos com os métodos disponíveis no seu país. Levante quando suportado.",
   "@onboarding_page3_description": {
     "description": "Onboarding page 3 description"
   },
-  "onboarding_page3_feature1": "Depositar with orange money, mtn, wave",
+  "onboarding_page3_feature1": "Os métodos de pagamento adaptam-se ao seu país",
   "@onboarding_page3_feature1": {
     "description": "Onboarding page 3 feature 1"
   },
@@ -7775,5 +7821,19 @@
   "delete_consequenceKyc": "Dados KYC apagados em 30 dias",
   "delete_contactSupportTitle": "Contatar Suporte",
   "delete_contactSupportDescription": "Para excluir sua conta, entre em contato com nossa equipe de suporte. Eles irão guiá-lo no processo.",
-  "delete_contactSupportButton": "Contatar Suporte"
+  "delete_contactSupportButton": "Contatar Suporte",
+  "settings_failedToRemovePhoto": "Não foi possível remover a foto de perfil",
+  "settings_photoRemoved": "Foto de perfil removida",
+  "settings_removePhoto": "Remover foto",
+  "splash_tagline": "Dinheiro sem fronteiras",
+  "splash_poweredBy": "Desenvolvido por JoonaPay",
+  "auth_authenticating": "Autenticando...",
+  "auth_tapToUnlock": "Toque para desbloquear",
+  "auth_usePhoneInstead": "Usar número de telefone",
+  "deposit_cardPayment": "Pagar com cartão em segurança",
+  "deposit_bankTransfer": "Transferir de uma conta bancária associada",
+  "deposit_cryptoTransfer": "Enviar USDC de uma carteira externa",
+  "deposit_openPaymentApp": "Abrir aplicação de pagamento",
+  "wallet_settingUp": "Configurando sua carteira...",
+  "wallet_setupMoment": "Isso levará apenas um momento"
 }

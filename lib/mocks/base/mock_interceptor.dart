@@ -13,16 +13,16 @@ import 'package:usdc_wallet/mocks/base/api_contract.dart';
 export 'package:usdc_wallet/mocks/base/api_contract.dart' show MockResponse;
 
 /// Type definition for mock handlers (single-arg: RequestOptions)
-typedef MockHandler = Future<MockResponse<dynamic>> Function(
-  RequestOptions options,
-);
+typedef MockHandler =
+    Future<MockResponse<dynamic>> Function(RequestOptions options);
 
 /// Legacy mock handler (3-arg: uri, headers, data) used by service mocks
-typedef LegacyMockHandler = Future<MockResponse<dynamic>> Function(
-  Uri uri,
-  Map<String, dynamic>? headers,
-  dynamic data,
-);
+typedef LegacyMockHandler =
+    Future<MockResponse<dynamic>> Function(
+      Uri uri,
+      Map<String, dynamic>? headers,
+      dynamic data,
+    );
 
 /// Mock interceptor for Dio
 class MockInterceptor extends Interceptor {
@@ -44,14 +44,17 @@ class MockInterceptor extends Interceptor {
     MockHandler? handler,
     LegacyMockHandler? legacyHandler,
   }) {
-    assert(handler != null || legacyHandler != null,
-        'Provide either handler or legacyHandler');
-    final resolvedHandler = handler ??
+    assert(
+      handler != null || legacyHandler != null,
+      'Provide either handler or legacyHandler',
+    );
+    final resolvedHandler =
+        handler ??
         (RequestOptions options) => legacyHandler!(
-              options.uri,
-              options.headers.cast<String, dynamic>(),
-              options.data,
-            );
+          options.uri,
+          options.headers.cast<String, dynamic>(),
+          options.data,
+        );
     _handlers[method.toUpperCase()] ??= {};
     _handlers[method.toUpperCase()]![path] = resolvedHandler;
 
@@ -67,11 +70,7 @@ class MockInterceptor extends Interceptor {
       final endpoint = entry.key;
       final handler = entry.value;
       final fullPath = '${contract.basePath}${endpoint.path}';
-      register(
-        method: endpoint.method.name,
-        path: fullPath,
-        handler: handler,
-      );
+      register(method: endpoint.method.name, path: fullPath, handler: handler);
     }
   }
 
@@ -95,9 +94,29 @@ class MockInterceptor extends Interceptor {
     final mockHandler = _findHandler(options.method, options.path);
 
     if (mockHandler == null) {
-      // No mock handler, pass through to real API
-      _logger.debug('No handler for ${options.method} ${options.path}, passing through');
-      handler.next(options);
+      if (!MockConfig.blockUnmockedRequests) {
+        // No mock handler, pass through to real API.
+        _logger.debug(
+          'No handler for ${options.method} ${options.path}, passing through',
+        );
+        handler.next(options);
+        return;
+      }
+
+      final fallback = _fallbackResponse(options);
+      _logger.debug(
+        '${options.method} ${options.path} -> ${fallback.statusCode} fallback',
+      );
+      handler.resolve(
+        Response(
+          requestOptions: options,
+          statusCode: fallback.statusCode,
+          data: fallback.data,
+          headers: Headers.fromMap(
+            fallback.headers?.map((k, v) => MapEntry(k, [v])) ?? {},
+          ),
+        ),
+      );
       return;
     }
 
@@ -120,7 +139,9 @@ class MockInterceptor extends Interceptor {
       // Call the mock handler
       final mockResponse = await mockHandler(options);
 
-      _logger.debug('${options.method} ${options.path} -> ${mockResponse.statusCode}');
+      _logger.debug(
+        '${options.method} ${options.path} -> ${mockResponse.statusCode}',
+      );
 
       // Apply additional delay if specified
       if (mockResponse.delay.inMilliseconds > 0) {
@@ -129,32 +150,38 @@ class MockInterceptor extends Interceptor {
 
       // Return mock response
       if (mockResponse.isSuccess) {
-        handler.resolve(Response(
-          requestOptions: options,
-          statusCode: mockResponse.statusCode,
-          data: mockResponse.data,
-          headers: Headers.fromMap(
-            mockResponse.headers?.map((k, v) => MapEntry(k, [v])) ?? {},
-          ),
-        ));
-      } else {
-        handler.reject(DioException(
-          requestOptions: options,
-          response: Response(
+        handler.resolve(
+          Response(
             requestOptions: options,
             statusCode: mockResponse.statusCode,
-            data: {'error': mockResponse.errorMessage},
+            data: mockResponse.data,
+            headers: Headers.fromMap(
+              mockResponse.headers?.map((k, v) => MapEntry(k, [v])) ?? {},
+            ),
           ),
-          type: DioExceptionType.badResponse,
-        ));
+        );
+      } else {
+        handler.reject(
+          DioException(
+            requestOptions: options,
+            response: Response(
+              requestOptions: options,
+              statusCode: mockResponse.statusCode,
+              data: {'error': mockResponse.errorMessage},
+            ),
+            type: DioExceptionType.badResponse,
+          ),
+        );
       }
     } catch (e) {
       _logger.error('Mock handler error', e);
-      handler.reject(DioException(
-        requestOptions: options,
-        error: e,
-        type: DioExceptionType.unknown,
-      ));
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          error: e,
+          type: DioExceptionType.unknown,
+        ),
+      );
     }
   }
 
@@ -162,33 +189,211 @@ class MockInterceptor extends Interceptor {
   MockHandler? _findHandler(String method, String path) {
     final methodHandlers = _handlers[method.toUpperCase()];
     if (methodHandlers == null) return null;
+    final candidatePaths = _pathCandidates(path);
 
     // Try exact match first
-    if (methodHandlers.containsKey(path)) {
-      return methodHandlers[path];
+    for (final candidate in candidatePaths) {
+      if (methodHandlers.containsKey(candidate)) {
+        return methodHandlers[candidate];
+      }
     }
 
     // Try pattern matching (for paths with parameters)
     for (final entry in methodHandlers.entries) {
       final pattern = entry.key;
-      if (_matchesPattern(pattern, path)) {
-        return entry.value;
+      for (final candidate in candidatePaths) {
+        if (_matchesPattern(pattern, candidate)) {
+          return entry.value;
+        }
       }
     }
 
     return null;
   }
 
+  List<String> _pathCandidates(String path) {
+    final normalized = _normalizePath(path);
+    final candidates = <String>{path, normalized};
+    if (normalized.startsWith('/api/v1/')) {
+      candidates.add(normalized.substring('/api/v1'.length));
+    } else {
+      candidates.add('/api/v1$normalized');
+    }
+    return candidates.toList();
+  }
+
+  String _normalizePath(String path) {
+    if (path.isEmpty) return '/';
+    final uri = Uri.tryParse(path);
+    final parsedPath = uri?.hasAbsolutePath == true ? uri!.path : path;
+    return parsedPath.startsWith('/') ? parsedPath : '/$parsedPath';
+  }
+
   /// Check if a path matches a pattern (with :param placeholders)
   bool _matchesPattern(String pattern, String path) {
+    final normalizedPath = _normalizePath(path);
+
+    if (_looksLikeRegex(pattern)) {
+      final anchored = pattern.startsWith('^') ? pattern : '^$pattern\$';
+      return RegExp(anchored).hasMatch(normalizedPath);
+    }
+
+    final normalizedPattern = _normalizePath(pattern);
+
     // Convert pattern to regex
     // e.g., '/users/:id/transactions' -> '/users/[^/]+/transactions'
-    final regexPattern = pattern
+    final regexPattern = normalizedPattern
         .replaceAll('/', '\\/')
         .replaceAll(RegExp(r':[^/]+'), '[^/]+');
 
     final regex = RegExp('^$regexPattern\$');
-    return regex.hasMatch(path);
+    return regex.hasMatch(normalizedPath);
+  }
+
+  bool _looksLikeRegex(String pattern) {
+    return pattern.startsWith('^') ||
+        pattern.endsWith(r'$') ||
+        pattern.contains(r'\w') ||
+        pattern.contains('[') ||
+        pattern.contains('(');
+  }
+
+  MockResponse<dynamic> _fallbackResponse(RequestOptions options) {
+    final path = _normalizePath(options.path);
+    final method = options.method.toUpperCase();
+
+    if (path == '/config/countries') {
+      return MockResponse.success({
+        'countries': [
+          {
+            'code': 'US',
+            'name': 'United States',
+            'prefix': '1',
+            'phoneLength': 10,
+            'flag': '🇺🇸',
+            'currencies': ['USD'],
+            'phoneFormat': 'XXX XXX XXXX',
+          },
+          {
+            'code': 'CI',
+            'name': "Côte d'Ivoire",
+            'prefix': '225',
+            'phoneLength': 10,
+            'flag': '🇨🇮',
+            'currencies': ['XOF', 'USD'],
+            'phoneFormat': 'XX XX XX XX XX',
+          },
+          {
+            'code': 'SN',
+            'name': 'Senegal',
+            'prefix': '221',
+            'phoneLength': 9,
+            'flag': 'SN',
+            'currencies': ['XOF', 'USDC'],
+            'phoneFormat': 'XX XXX XX XX',
+          },
+          {
+            'code': 'ML',
+            'name': 'Mali',
+            'prefix': '223',
+            'phoneLength': 8,
+            'flag': 'ML',
+            'currencies': ['XOF', 'USDC'],
+            'phoneFormat': 'XX XX XX XX',
+          },
+        ],
+      });
+    }
+
+    if (path == '/risk/session') {
+      return MockResponse.success({
+        'success': true,
+        'data': {
+          'sessionRiskToken': 'mock-risk-token',
+          'riskLevel': 'low',
+          'deviceTrust': 92,
+          'requiredActions': <String>[],
+        },
+      });
+    }
+
+    if (path == '/security/public-key') {
+      return MockResponse.success({
+        'kty': 'RSA',
+        'kid': 'mock-key',
+        'n': '',
+        'e': 'AQAB',
+      });
+    }
+
+    if (path == '/wallet/receive') {
+      return MockResponse.success({
+        'walletAddress': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+        'address': '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
+        'network': 'polygon',
+        'currency': 'USDC',
+      });
+    }
+
+    if (path.contains('/rate') || path.contains('/rates')) {
+      return MockResponse.success({
+        'sourceCurrency': 'XOF',
+        'targetCurrency': 'USDC',
+        'fromCurrency': 'XOF',
+        'toCurrency': 'USDC',
+        'rate': 1 / 655.957,
+        'sourceAmount': 10000,
+        'targetAmount': 15.24,
+        'fee': 0,
+        'expiresAt': DateTime.now()
+            .add(const Duration(minutes: 5))
+            .toIso8601String(),
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+    }
+
+    if (method == 'DELETE') {
+      return MockResponse.success({
+        'success': true,
+        'message': 'Mock delete completed',
+      });
+    }
+
+    if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
+      return MockResponse.success({
+        'success': true,
+        'id': 'mock-${DateTime.now().millisecondsSinceEpoch}',
+        'status': 'completed',
+        'message': 'Mock operation completed',
+      });
+    }
+
+    return MockResponse.success(_emptyListPayload(path));
+  }
+
+  Map<String, dynamic> _emptyListPayload(String path) {
+    final parts = path
+        .split('/')
+        .where(
+          (segment) =>
+              segment.isNotEmpty && segment != 'api' && segment != 'v1',
+        )
+        .toList();
+    final resource = parts.isEmpty ? null : parts.last;
+
+    if (resource == null) {
+      return {'data': <dynamic>[]};
+    }
+
+    final normalized = resource.replaceAll('-', '_');
+    return {
+      normalized: <dynamic>[],
+      'items': <dynamic>[],
+      'data': <dynamic>[],
+      'total': 0,
+      'page': 1,
+      'limit': 20,
+    };
   }
 
   /// Extract path parameters from a path

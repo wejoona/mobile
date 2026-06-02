@@ -26,7 +26,7 @@ void main() {
   group('Set PIN with PBKDF2 hashing', () {
     test('should set PIN and store hash, not plain text', () async {
       // Act
-      final result = await pinService.setPin('7392');
+      final result = await pinService.setPin('739251');
 
       // Assert
       expect(result, isTrue);
@@ -34,7 +34,7 @@ void main() {
       // Verify hash is stored, not plain PIN
       final storedHash = mockStorage.storage['pin_hash'];
       expect(storedHash, isNotNull);
-      expect(storedHash, isNot(equals('7392'))); // Not plain text
+      expect(storedHash, isNot(equals('739251'))); // Not plain text
 
       // Verify salt is stored
       final storedSalt = mockStorage.storage['pin_salt'];
@@ -47,7 +47,7 @@ void main() {
       await mockStorage.write(key: 'pin_attempts', value: '3');
 
       // Act
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Assert
       final attempts = mockStorage.storage['pin_attempts'];
@@ -58,11 +58,13 @@ void main() {
       // Arrange - simulate locked state
       await mockStorage.write(
         key: 'pin_locked_until',
-        value: DateTime.now().add(const Duration(minutes: 10)).toIso8601String(),
+        value: DateTime.now()
+            .add(const Duration(minutes: 10))
+            .toIso8601String(),
       );
 
       // Act
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Assert
       final lockedUntil = mockStorage.storage['pin_locked_until'];
@@ -79,7 +81,7 @@ void main() {
 
     test('should reject PIN with non-digit characters', () async {
       // Act
-      final result = await pinService.setPin('12ab');
+      final result = await pinService.setPin('12ab56');
 
       // Assert
       expect(result, isFalse);
@@ -89,10 +91,10 @@ void main() {
   group('Verify PIN locally with hash comparison', () {
     test('should return success for correct PIN', () async {
       // Arrange - set PIN first
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
-      final result = await pinService.verifyPinLocally('7392');
+      final result = await pinService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isTrue);
@@ -100,10 +102,10 @@ void main() {
 
     test('should return failure for incorrect PIN', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
-      final result = await pinService.verifyPinLocally('1234');
+      final result = await pinService.verifyPinLocally('123456');
 
       // Assert
       expect(result.success, isFalse);
@@ -112,7 +114,7 @@ void main() {
 
     test('should return error when PIN not set', () async {
       // Act
-      final result = await pinService.verifyPinLocally('7392');
+      final result = await pinService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isFalse);
@@ -121,11 +123,11 @@ void main() {
 
     test('should reset attempts on successful verification', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       await mockStorage.write(key: 'pin_attempts', value: '2');
 
       // Act
-      final result = await pinService.verifyPinLocally('7392');
+      final result = await pinService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isTrue);
@@ -134,23 +136,26 @@ void main() {
   });
 
   group('Verify PIN with backend API', () {
-    test('should return success with PIN token on valid verification', () async {
-      // Arrange
-      mockDio.queueResponse({
-        'valid': true,
-        'message': 'PIN verified',
-        'pinToken': 'a' * 64,
-        'expiresIn': 300,
-      });
+    test(
+      'should return success with PIN token on valid verification',
+      () async {
+        // Arrange
+        mockDio.queueResponse({
+          'valid': true,
+          'message': 'PIN verified',
+          'pinToken': 'a' * 64,
+          'expiresIn': 300,
+        });
 
-      // Act
-      final result = await pinService.verifyPinWithBackend('1234');
+        // Act
+        final result = await pinService.verifyPinWithBackend('123456');
 
-      // Assert
-      expect(result.success, isTrue);
-      expect(result.pinToken, equals('a' * 64));
-      expect(result.expiresIn, equals(300));
-    });
+        // Assert
+        expect(result.success, isTrue);
+        expect(result.pinToken, equals('a' * 64));
+        expect(result.expiresIn, equals(300));
+      },
+    );
 
     test('should store PIN token in secure storage', () async {
       // Arrange
@@ -161,7 +166,7 @@ void main() {
       });
 
       // Act
-      await pinService.verifyPinWithBackend('1234');
+      await pinService.verifyPinWithBackend('123456');
 
       // Assert
       final storedToken = mockStorage.storage['pin_verification_token'];
@@ -185,7 +190,7 @@ void main() {
       mockDio.queueErrorResponse(statusCode: 429);
 
       // Act
-      final result = await pinService.verifyPinWithBackend('1234');
+      final result = await pinService.verifyPinWithBackend('123456');
 
       // Assert
       expect(result.success, isFalse);
@@ -195,43 +200,43 @@ void main() {
   });
 
   group('Detect weak PINs', () {
-    test('should reject repeated digits (0000)', () async {
-      final result = await pinService.setPin('0000');
+    test('should reject repeated digits (000000)', () async {
+      final result = await pinService.setPin('000000');
       expect(result, isFalse);
     });
 
-    test('should reject repeated digits (1111)', () async {
-      final result = await pinService.setPin('1111');
+    test('should reject repeated digits (111111)', () async {
+      final result = await pinService.setPin('111111');
       expect(result, isFalse);
     });
 
-    test('should reject sequential digits (1234)', () async {
-      final result = await pinService.setPin('1234');
+    test('should reject sequential digits (123456)', () async {
+      final result = await pinService.setPin('123456');
       expect(result, isFalse);
     });
 
-    test('should reject reverse sequential digits (4321)', () async {
-      final result = await pinService.setPin('4321');
+    test('should reject reverse sequential digits (654321)', () async {
+      final result = await pinService.setPin('654321');
       expect(result, isFalse);
     });
 
-    test('should reject common weak PINs (1212)', () async {
-      final result = await pinService.setPin('1212');
+    test('should reject common weak PINs (121212)', () async {
+      final result = await pinService.setPin('121212');
       expect(result, isFalse);
     });
 
-    test('should reject common weak PINs (0852)', () async {
-      final result = await pinService.setPin('0852');
+    test('should reject common weak PINs (102030)', () async {
+      final result = await pinService.setPin('102030');
       expect(result, isFalse);
     });
 
-    test('should accept strong PIN (7392)', () async {
-      final result = await pinService.setPin('7392');
+    test('should accept strong PIN (739251)', () async {
+      final result = await pinService.setPin('739251');
       expect(result, isTrue);
     });
 
-    test('should accept strong PIN (8641)', () async {
-      final result = await pinService.setPin('8641');
+    test('should accept strong PIN (864197)', () async {
+      final result = await pinService.setPin('864197');
       expect(result, isTrue);
     });
   });
@@ -239,7 +244,7 @@ void main() {
   group('Track failed attempts with 15-minute lockout', () {
     test('should track failed attempt count', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
       await pinService.verifyPinLocally('wrong');
@@ -251,7 +256,7 @@ void main() {
 
     test('should show remaining attempts after failure', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       await mockStorage.write(key: 'pin_attempts', value: '3');
 
       // Act
@@ -264,7 +269,7 @@ void main() {
 
     test('should lock after 5 failed attempts', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       await mockStorage.write(key: 'pin_attempts', value: '4');
 
       // Act
@@ -278,7 +283,7 @@ void main() {
 
     test('should reject verification during lockout period', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       final lockUntil = DateTime.now().add(const Duration(minutes: 10));
       await mockStorage.write(
         key: 'pin_locked_until',
@@ -286,7 +291,7 @@ void main() {
       );
 
       // Act
-      final result = await pinService.verifyPinLocally('7392');
+      final result = await pinService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isFalse);
@@ -296,7 +301,7 @@ void main() {
 
     test('should clear lockout after expiry', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       final expiredLock = DateTime.now().subtract(const Duration(minutes: 1));
       await mockStorage.write(
         key: 'pin_locked_until',
@@ -305,7 +310,7 @@ void main() {
       await mockStorage.write(key: 'pin_attempts', value: '5');
 
       // Act
-      final result = await pinService.verifyPinLocally('7392');
+      final result = await pinService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isTrue);
@@ -316,8 +321,14 @@ void main() {
     test('should return stored PIN token if valid', () async {
       // Arrange
       final expiry = DateTime.now().add(const Duration(minutes: 5));
-      await mockStorage.write(key: 'pin_verification_token', value: 'valid-token');
-      await mockStorage.write(key: 'pin_token_expiry', value: expiry.toIso8601String());
+      await mockStorage.write(
+        key: 'pin_verification_token',
+        value: 'valid-token',
+      );
+      await mockStorage.write(
+        key: 'pin_token_expiry',
+        value: expiry.toIso8601String(),
+      );
 
       // Act
       final token = await pinService.getPinToken();
@@ -329,8 +340,14 @@ void main() {
     test('should return null for expired token', () async {
       // Arrange
       final expiry = DateTime.now().subtract(const Duration(minutes: 1));
-      await mockStorage.write(key: 'pin_verification_token', value: 'expired-token');
-      await mockStorage.write(key: 'pin_token_expiry', value: expiry.toIso8601String());
+      await mockStorage.write(
+        key: 'pin_verification_token',
+        value: 'expired-token',
+      );
+      await mockStorage.write(
+        key: 'pin_token_expiry',
+        value: expiry.toIso8601String(),
+      );
 
       // Act
       final token = await pinService.getPinToken();
@@ -342,8 +359,14 @@ void main() {
     test('hasValidPinToken should return true for valid token', () async {
       // Arrange
       final expiry = DateTime.now().add(const Duration(minutes: 5));
-      await mockStorage.write(key: 'pin_verification_token', value: 'valid-token');
-      await mockStorage.write(key: 'pin_token_expiry', value: expiry.toIso8601String());
+      await mockStorage.write(
+        key: 'pin_verification_token',
+        value: 'valid-token',
+      );
+      await mockStorage.write(
+        key: 'pin_token_expiry',
+        value: expiry.toIso8601String(),
+      );
 
       // Act
       final hasToken = await pinService.hasValidPinToken();
@@ -364,7 +387,7 @@ void main() {
   group('Clear PIN and reset state', () {
     test('should clear all PIN-related data', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       await mockStorage.write(key: 'pin_attempts', value: '2');
       await mockStorage.write(key: 'pin_verification_token', value: 'token');
 
@@ -383,11 +406,11 @@ void main() {
   group('Change PIN with old PIN verification', () {
     test('should change PIN when old PIN is correct', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       final oldHash = mockStorage.storage['pin_hash'];
 
       // Act
-      final result = await pinService.changePin('7392', '9012');
+      final result = await pinService.changePin('739251', '901275');
 
       // Assert
       expect(result, isTrue);
@@ -396,10 +419,10 @@ void main() {
 
     test('should reject change when old PIN is incorrect', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
-      final result = await pinService.changePin('wrong', '9012');
+      final result = await pinService.changePin('wrong', '901275');
 
       // Assert
       expect(result, isFalse);
@@ -407,10 +430,13 @@ void main() {
 
     test('should reject weak new PIN', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
-      final result = await pinService.changePin('7392', '1234'); // Sequential
+      final result = await pinService.changePin(
+        '739251',
+        '123456',
+      ); // Sequential
 
       // Assert
       expect(result, isFalse);
@@ -428,7 +454,7 @@ void main() {
 
     test('should return true when PIN is set', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Act
       final hasPin = await pinService.hasPin();
@@ -439,7 +465,7 @@ void main() {
 
     test('should return false after clearing PIN', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       await pinService.clearPin();
 
       // Act
@@ -453,11 +479,11 @@ void main() {
   group('PBKDF2 hashing verification', () {
     test('should produce same hash for same PIN and salt', () async {
       // Arrange
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
 
       // Create new service with same storage
       final newService = PinService(mockStorage, mockDio);
-      final result = await newService.verifyPinLocally('7392');
+      final result = await newService.verifyPinLocally('739251');
 
       // Assert
       expect(result.success, isTrue);
@@ -465,12 +491,12 @@ void main() {
 
     test('should produce different hash with different salt', () async {
       // Arrange - set first PIN
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       final hash1 = mockStorage.storage['pin_hash'];
 
       // Clear and set same PIN again (new salt)
       await pinService.clearPin();
-      await pinService.setPin('7392');
+      await pinService.setPin('739251');
       final hash2 = mockStorage.storage['pin_hash'];
 
       // Assert - different salt = different hash

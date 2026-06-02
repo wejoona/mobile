@@ -1,21 +1,18 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/core/haptics/haptic_service.dart';
+import 'package:usdc_wallet/design/theme/app_theme.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/index.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-
-import '../../helpers/test_theme.dart';
 
 /// Configuration for golden tests
 class GoldenTestConfig {
@@ -43,39 +40,136 @@ class GoldenTestConfig {
 class GoldenTestUtils {
   GoldenTestUtils._();
 
+  static bool _fontsLoaded = false;
+
   /// Initialize golden test environment
   static Future<void> init() async {
     TestWidgetsFlutterBinding.ensureInitialized();
-    
-    // Disable Google Fonts fetching - use fallback fonts
+
+    // Production fonts are bundled; keep tests deterministic and offline.
     GoogleFonts.config.allowRuntimeFetching = false;
-    
+    await _loadBundledFonts();
+
     // Enable mock mode for API calls
     MockConfig.enableAllMocks();
     MockConfig.networkDelayMs = 0; // No delays in tests
     MockRegistry.initialize();
-    
+
     // Disable haptics to avoid timer issues in tests
     HapticService().setEnabled(false);
-    
+
     // Set up SharedPreferences with empty initial values
     SharedPreferences.setMockInitialValues({});
-    
+
     // Set up HTTP overrides
     HttpOverrides.global = _GoldenTestHttpOverrides();
-    
+
     // Set up method channel mocks for platform plugins
     _setupMethodChannelMocks();
+  }
+
+  static Future<void> _loadBundledFonts() async {
+    if (_fontsLoaded) return;
+
+    await Future.wait([
+      _loadFontFamily('DMSans', const [
+        'assets/fonts/DMSans-Regular.ttf',
+        'assets/fonts/DMSans-Medium.ttf',
+        'assets/fonts/DMSans-SemiBold.ttf',
+        'assets/fonts/DMSans-Bold.ttf',
+      ]),
+      _loadFontFamily('PlayfairDisplay', const [
+        'assets/fonts/PlayfairDisplay-Regular.ttf',
+        'assets/fonts/PlayfairDisplay-SemiBold.ttf',
+        'assets/fonts/PlayfairDisplay-Bold.ttf',
+      ]),
+      _loadFontFamily('JetBrainsMono', const [
+        'assets/fonts/JetBrainsMono-Regular.ttf',
+        'assets/fonts/JetBrainsMono-Medium.ttf',
+      ]),
+      _loadOptionalFontFamily('MaterialIcons', const [
+        'fonts/MaterialIcons-Regular.otf',
+      ]),
+      _loadOptionalFontFamily('CupertinoIcons', const [
+        'packages/cupertino_icons/assets/CupertinoIcons.ttf',
+      ]),
+      _loadOptionalFontFiles('Apple Color Emoji', const [
+        '/System/Library/Fonts/Apple Color Emoji.ttc',
+      ]),
+    ]);
+
+    _fontsLoaded = true;
+  }
+
+  static Future<void> _loadFontFamily(
+    String family,
+    List<String> assetPaths,
+  ) async {
+    final loader = FontLoader(family);
+    for (final assetPath in assetPaths) {
+      loader.addFont(rootBundle.load(assetPath));
+    }
+    await loader.load();
+  }
+
+  static Future<void> _loadOptionalFontFamily(
+    String family,
+    List<String> assetPaths,
+  ) async {
+    final loader = FontLoader(family);
+    var hasFont = false;
+
+    for (final assetPath in assetPaths) {
+      try {
+        final data = await rootBundle.load(assetPath);
+        loader.addFont(Future<ByteData>.value(data));
+        hasFont = true;
+      } catch (_) {
+        // Optional icon fonts are not always present in stripped test bundles.
+      }
+    }
+
+    if (hasFont) {
+      await loader.load();
+    }
+  }
+
+  static Future<void> _loadOptionalFontFiles(
+    String family,
+    List<String> fontPaths,
+  ) async {
+    final loader = FontLoader(family);
+    var hasFont = false;
+
+    for (final fontPath in fontPaths) {
+      try {
+        final bytes = await File(fontPath).readAsBytes();
+        loader.addFont(
+          Future<ByteData>.value(
+            ByteData.sublistView(Uint8List.fromList(bytes)),
+          ),
+        );
+        hasFont = true;
+      } catch (_) {
+        // Optional system emoji font is only available on macOS runners.
+      }
+    }
+
+    if (hasFont) {
+      await loader.load();
+    }
   }
 
   /// Set up method channel mocks for platform plugins
   static void _setupMethodChannelMocks() {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Mock shared_preferences
-    const sharedPrefsChannel = MethodChannel('plugins.flutter.io/shared_preferences');
+    const sharedPrefsChannel = MethodChannel(
+      'plugins.flutter.io/shared_preferences',
+    );
     final Map<String, Object?> sharedPrefsData = {};
-    
+
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       sharedPrefsChannel,
       (MethodCall methodCall) async {
@@ -87,8 +181,9 @@ class GoldenTestUtils {
           case 'setDouble':
           case 'setString':
           case 'setStringList':
-            final key = methodCall.arguments['key'] as String;
-            final value = methodCall.arguments['value'];
+            final arguments = methodCall.arguments as Map<Object?, Object?>;
+            final key = arguments['key']! as String;
+            final value = arguments['value'];
             sharedPrefsData[key] = value;
             return true;
           case 'remove':
@@ -106,21 +201,25 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock flutter_secure_storage
-    const secureStorageChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    const secureStorageChannel = MethodChannel(
+      'plugins.it_nomads.com/flutter_secure_storage',
+    );
     final Map<String, String> secureStorageData = {};
-    
+
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       secureStorageChannel,
       (MethodCall methodCall) async {
         switch (methodCall.method) {
           case 'read':
-            final key = methodCall.arguments['key'] as String;
+            final arguments = methodCall.arguments as Map<Object?, Object?>;
+            final key = arguments['key']! as String;
             return secureStorageData[key];
           case 'write':
-            final key = methodCall.arguments['key'] as String;
-            final value = methodCall.arguments['value'] as String?;
+            final arguments = methodCall.arguments as Map<Object?, Object?>;
+            final key = arguments['key']! as String;
+            final value = arguments['value'] as String?;
             if (value != null) {
               secureStorageData[key] = value;
             } else {
@@ -128,7 +227,8 @@ class GoldenTestUtils {
             }
             return null;
           case 'delete':
-            final key = methodCall.arguments['key'] as String;
+            final arguments = methodCall.arguments as Map<Object?, Object?>;
+            final key = arguments['key']! as String;
             secureStorageData.remove(key);
             return null;
           case 'deleteAll':
@@ -137,16 +237,19 @@ class GoldenTestUtils {
           case 'readAll':
             return secureStorageData;
           case 'containsKey':
-            final key = methodCall.arguments['key'] as String;
+            final arguments = methodCall.arguments as Map<Object?, Object?>;
+            final key = arguments['key']! as String;
             return secureStorageData.containsKey(key);
           default:
             return null;
         }
       },
     );
-    
+
     // Mock path_provider
-    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       pathProviderChannel,
       (MethodCall methodCall) async {
@@ -166,9 +269,11 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock path_provider macOS channel
-    const pathProviderMacOSChannel = MethodChannel('plugins.flutter.io/path_provider_macos');
+    const pathProviderMacOSChannel = MethodChannel(
+      'plugins.flutter.io/path_provider_macos',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       pathProviderMacOSChannel,
       (MethodCall methodCall) async {
@@ -188,9 +293,11 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock connectivity_plus method channel
-    const connectivityChannel = MethodChannel('dev.fluttercommunity.plus/connectivity');
+    const connectivityChannel = MethodChannel(
+      'dev.fluttercommunity.plus/connectivity',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       connectivityChannel,
       (MethodCall methodCall) async {
@@ -201,9 +308,11 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock connectivity_plus event channel (status stream)
-    const connectivityStatusChannel = MethodChannel('dev.fluttercommunity.plus/connectivity_status');
+    const connectivityStatusChannel = MethodChannel(
+      'dev.fluttercommunity.plus/connectivity_status',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       connectivityStatusChannel,
       (MethodCall methodCall) async {
@@ -211,25 +320,24 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock local_auth
     const localAuthChannel = MethodChannel('plugins.flutter.io/local_auth');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      localAuthChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'getAvailableBiometrics':
-            return <String>[];
-          case 'isDeviceSupported':
-            return false;
-          case 'authenticate':
-            return false;
-          default:
-            return null;
-        }
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(localAuthChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'getAvailableBiometrics':
+          return <String>[];
+        case 'isDeviceSupported':
+          return false;
+        case 'authenticate':
+          return false;
+        default:
+          return null;
+      }
+    });
+
     // Mock sms_autofill
     const smsAutofillChannel = MethodChannel('sms_autofill');
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -238,45 +346,47 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock HapticFeedback
     const hapticChannel = MethodChannel('flutter/haptic_feedback');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      hapticChannel,
-      (MethodCall methodCall) async {
-        // Haptic feedback methods: vibrate, lightImpact, mediumImpact, heavyImpact, selectionClick
-        return null;
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(hapticChannel, (
+      MethodCall methodCall,
+    ) async {
+      // Haptic feedback methods: vibrate, lightImpact, mediumImpact, heavyImpact, selectionClick
+      return null;
+    });
+
     // Mock camera plugin
     const cameraChannel = MethodChannel('plugins.flutter.io/camera');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      cameraChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'availableCameras':
-            return <Map<String, dynamic>>[];
-          case 'create':
-            return {'cameraId': 0};
-          case 'initialize':
-            return {'previewWidth': 1920.0, 'previewHeight': 1080.0};
-          case 'dispose':
-            return null;
-          default:
-            return null;
-        }
-      },
-    );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(cameraChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'availableCameras':
+          return <Map<String, dynamic>>[];
+        case 'create':
+          return {'cameraId': 0};
+        case 'initialize':
+          return {'previewWidth': 1920.0, 'previewHeight': 1080.0};
+        case 'dispose':
+          return null;
+        default:
+          return null;
+      }
+    });
+
     // Mock mobile_scanner method channel
-    const mobileScannerChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+    const mobileScannerChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/method',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerChannel,
       (MethodCall methodCall) async {
         switch (methodCall.method) {
           case 'start':
-            return {'size': {'width': 1920.0, 'height': 1080.0}};
+            return {
+              'size': {'width': 1920.0, 'height': 1080.0},
+            };
           case 'stop':
             return null;
           case 'toggleTorch':
@@ -288,51 +398,58 @@ class GoldenTestUtils {
         }
       },
     );
-    
+
     // Mock mobile_scanner event channels
-    const mobileScannerEventChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/event');
+    const mobileScannerEventChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/event',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerEventChannel,
       (MethodCall methodCall) async {
         return null;
       },
     );
-    
-    const mobileScannerOrientationChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/deviceOrientation');
+
+    const mobileScannerOrientationChannel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/deviceOrientation',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       mobileScannerOrientationChannel,
       (MethodCall methodCall) async {
         return null;
       },
     );
-    
+
     // Mock permission_handler
-    const permissionChannel = MethodChannel('flutter.baseflow.com/permissions/methods');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      permissionChannel,
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'requestPermissions':
-            // Return granted (1) for all permissions
-            final permissions = methodCall.arguments as List<dynamic>?;
-            if (permissions != null) {
-              return {for (var p in permissions) p: 1};
-            }
-            return <int, int>{};
-          case 'checkPermissionStatus':
-            return 1; // granted
-          case 'shouldShowRequestPermissionRationale':
-            return false;
-          case 'openAppSettings':
-            return true;
-          default:
-            return null;
-        }
-      },
+    const permissionChannel = MethodChannel(
+      'flutter.baseflow.com/permissions/methods',
     );
-    
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(permissionChannel, (
+      MethodCall methodCall,
+    ) async {
+      switch (methodCall.method) {
+        case 'requestPermissions':
+          // Return granted (1) for all permissions
+          final permissions = methodCall.arguments as List<dynamic>?;
+          if (permissions != null) {
+            return {for (var p in permissions) p: 1};
+          }
+          return <int, int>{};
+        case 'checkPermissionStatus':
+          return 1; // granted
+        case 'shouldShowRequestPermissionRationale':
+          return false;
+        case 'openAppSettings':
+          return true;
+        default:
+          return null;
+      }
+    });
+
     // Mock package_info_plus
-    const packageInfoChannel = MethodChannel('dev.fluttercommunity.plus/package_info');
+    const packageInfoChannel = MethodChannel(
+      'dev.fluttercommunity.plus/package_info',
+    );
     binding.defaultBinaryMessenger.setMockMethodCallHandler(
       packageInfoChannel,
       (MethodCall methodCall) async {
@@ -347,26 +464,27 @@ class GoldenTestUtils {
         return null;
       },
     );
-    
+
     // Mock device_info_plus
-    const deviceInfoChannel = MethodChannel('dev.fluttercommunity.plus/device_info');
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      deviceInfoChannel,
-      (MethodCall methodCall) async {
-        if (methodCall.method == 'getInfo') {
-          return {
-            'name': 'iPhone 14',
-            'systemName': 'iOS',
-            'systemVersion': '16.0',
-            'model': 'iPhone',
-            'localizedModel': 'iPhone',
-            'identifierForVendor': 'test-device-id',
-            'isPhysicalDevice': false,
-          };
-        }
-        return null;
-      },
+    const deviceInfoChannel = MethodChannel(
+      'dev.fluttercommunity.plus/device_info',
     );
+    binding.defaultBinaryMessenger.setMockMethodCallHandler(deviceInfoChannel, (
+      MethodCall methodCall,
+    ) async {
+      if (methodCall.method == 'getInfo') {
+        return {
+          'name': 'iPhone 14',
+          'systemName': 'iOS',
+          'systemVersion': '16.0',
+          'model': 'iPhone',
+          'localizedModel': 'iPhone',
+          'identifierForVendor': 'test-device-id',
+          'isPhysicalDevice': false,
+        };
+      }
+      return null;
+    });
   }
 
   /// Generate golden file path
@@ -454,6 +572,22 @@ class GoldenTestUtils {
     }
     return matrix;
   }
+}
+
+bool get shouldRunGoldenTests {
+  return Platform.environment['CI'] == 'true' ||
+      Platform.environment['RUN_GOLDENS'] == 'true' ||
+      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+      const bool.fromEnvironment('RUN_GOLDENS') ||
+      const bool.fromEnvironment('UPDATE_GOLDENS');
+}
+
+String? get goldenSkipReason => shouldRunGoldenTests
+    ? null
+    : 'Set RUN_GOLDENS=true or UPDATE_GOLDENS=true to run golden tests';
+
+void goldenGroup(String description, void Function() body) {
+  group(description, body, skip: goldenSkipReason);
 }
 
 /// HTTP overrides for golden tests (allows real backend connections)
@@ -561,6 +695,121 @@ class _MockDio extends DioMixin implements Dio {
 
   dynamic _getMockData(String path) {
     // Return appropriate mock data based on path
+    if (path == '/user/limits') {
+      return {
+        'dailyLimit': 1000.0,
+        'dailyUsed': 75.0,
+        'weeklyLimit': 5000.0,
+        'weeklyUsed': 420.0,
+        'monthlyLimit': 20000.0,
+        'monthlyUsed': 1800.0,
+        'perTransactionLimit': 2500.0,
+      };
+    }
+    if (path == '/wallet/transactions') {
+      return {
+        'transactions': [
+          {
+            'id': 'tx_001',
+            'type': 'deposit',
+            'amount': 100.0,
+            'currency': 'USDC',
+            'status': 'completed',
+            'description': 'Mobile Money Deposit',
+            'counterpartyName': 'Orange Money',
+            'createdAt': DateTime(2026, 5, 27, 19, 11).toIso8601String(),
+          },
+          {
+            'id': 'tx_002',
+            'type': 'transfer_internal',
+            'amount': -24.5,
+            'currency': 'USDC',
+            'status': 'completed',
+            'description': 'Lunch transfer',
+            'counterpartyName': 'Awa Kone',
+            'counterpartyPhone': '+2250711223344',
+            'createdAt': DateTime(2026, 5, 26, 12, 30).toIso8601String(),
+          },
+        ],
+        'total': 2,
+        'page': 1,
+        'limit': 20,
+        'hasMore': false,
+      };
+    }
+    if (path.startsWith('/wallet/transactions/')) {
+      return {
+        'id': 'tx_001',
+        'walletId': 'wallet_001',
+        'type': 'deposit',
+        'status': 'completed',
+        'amount': 100.0,
+        'currency': 'USDC',
+        'description': 'Mobile Money Deposit',
+        'externalReference': 'MOMO-001',
+        'createdAt': DateTime(2026, 5, 27, 19, 11).toIso8601String(),
+        'completedAt': DateTime(2026, 5, 27, 19, 12).toIso8601String(),
+      };
+    }
+    if (path.endsWith('/failed-report')) {
+      return {'csv': 'phone,amount,description,error\n'};
+    }
+    if (path.startsWith('/bulk-payments/batches/')) {
+      return _bulkBatch();
+    }
+    if (path == '/bulk-payments/batches') {
+      return {
+        'batches': [_bulkBatch()],
+      };
+    }
+    if (path.startsWith('/beneficiaries/')) {
+      return {'beneficiary': _beneficiary()};
+    }
+    if (path == '/beneficiaries') {
+      return {
+        'beneficiaries': [_beneficiary()],
+      };
+    }
+    if (path.startsWith('/savings-pots/')) {
+      return {'pot': _savingsPot()};
+    }
+    if (path == '/savings-pots') {
+      return {
+        'pots': [_savingsPot()],
+      };
+    }
+    if (path.endsWith('/staff') && path.startsWith('/sub-businesses/')) {
+      return {
+        'staff': [
+          {
+            'id': 'staff_001',
+            'subBusinessId': 'test-sub-123',
+            'userId': 'user_001',
+            'name': 'Awa Kone',
+            'phoneNumber': '+2250711223344',
+            'role': 'admin',
+            'addedAt': DateTime(2026, 5, 20).toIso8601String(),
+            'isActive': true,
+          },
+        ],
+      };
+    }
+    if (path == '/sub-businesses') {
+      return {
+        'subBusinesses': [
+          {
+            'id': 'test-sub-123',
+            'name': 'Abidjan Operations',
+            'description': 'Local expense and field team wallet',
+            'balance': 125000.0,
+            'type': 'department',
+            'staffCount': 1,
+            'createdAt': DateTime(2026, 5, 1).toIso8601String(),
+            'updatedAt': DateTime(2026, 5, 27).toIso8601String(),
+          },
+        ],
+      };
+    }
     if (path.contains('/alerts/statistics')) {
       return {
         'total': 5,
@@ -582,10 +831,7 @@ class _MockDio extends DioMixin implements Dio {
         'isRead': false,
         'actionRequired': false,
         'createdAt': DateTime.now().toIso8601String(),
-        'metadata': {
-          'transactionId': 'tx_123',
-          'amount': 1000.0,
-        },
+        'metadata': {'transactionId': 'tx_123', 'amount': 1000.0},
       };
     }
     if (path.contains('/alerts')) {
@@ -610,7 +856,9 @@ class _MockDio extends DioMixin implements Dio {
             'message': 'Login from a new device detected',
             'isRead': true,
             'actionRequired': false,
-            'createdAt': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
+            'createdAt': DateTime.now()
+                .subtract(const Duration(hours: 2))
+                .toIso8601String(),
           },
         ],
         'page': 1,
@@ -634,6 +882,69 @@ class _MockDio extends DioMixin implements Dio {
     // Default empty response
     return {};
   }
+
+  Map<String, Object?> _bulkBatch() {
+    return {
+      'id': 'batch_001',
+      'name': 'May vendors.csv',
+      'payments': [
+        {
+          'phone': '+2250711223344',
+          'amount': 120.0,
+          'description': 'Market delivery',
+          'isValid': true,
+        },
+        {
+          'phone': '+2250748805663',
+          'amount': 80.0,
+          'description': 'Design review',
+          'isValid': true,
+        },
+      ],
+      'status': 'processing',
+      'createdAt': DateTime(2026, 5, 27, 10, 15).toIso8601String(),
+      'processedAt': null,
+      'totalCount': 2,
+      'successCount': 1,
+      'failedCount': 0,
+      'totalAmount': 200.0,
+    };
+  }
+
+  Map<String, Object?> _beneficiary() {
+    return {
+      'id': 'ben_001',
+      'walletId': 'wallet_001',
+      'name': 'Awa Kone',
+      'phoneE164': '+2250711223344',
+      'accountType': 'korido_user',
+      'beneficiaryUserId': 'user_awa',
+      'isFavorite': true,
+      'isVerified': true,
+      'transferCount': 12,
+      'totalTransferred': 840.0,
+      'lastTransferAt': DateTime(2026, 5, 26).toIso8601String(),
+      'createdAt': DateTime(2026, 5, 1).toIso8601String(),
+      'updatedAt': DateTime(2026, 5, 26).toIso8601String(),
+    };
+  }
+
+  Map<String, Object?> _savingsPot() {
+    return {
+      'id': 'test-pot-123',
+      'userId': 'user_001',
+      'name': 'Abidjan Trip',
+      'emoji': '✈️',
+      'color': 0xFF2F80ED,
+      'targetAmount': 1000.0,
+      'currentAmount': 420.0,
+      'currency': 'USDC',
+      'targetDate': DateTime(2026, 8, 1).toIso8601String(),
+      'isLocked': false,
+      'createdAt': DateTime(2026, 5, 1).toIso8601String(),
+      'updatedAt': DateTime(2026, 5, 27).toIso8601String(),
+    };
+  }
 }
 
 /// No-op HTTP client adapter
@@ -652,7 +963,7 @@ class _NoopHttpClientAdapter implements HttpClientAdapter {
 }
 
 /// Helper to run golden tests tolerant of non-fatal rendering errors
-/// 
+///
 /// Many widgets throw during layout/paint (overflow, IntrinsicHeight issues,
 /// provider init errors) but still render a meaningful visual. This helper
 /// catches those errors so the golden snapshot can still be taken.
@@ -794,7 +1105,7 @@ class GoldenTestWrapper extends StatelessWidget {
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: isDarkMode ? TestTheme.darkTheme : TestTheme.lightTheme,
+        theme: isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
         routerConfig: _router,
       ),
     );
@@ -871,15 +1182,13 @@ class GoldenScreenWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
-      overrides: [
-        dioProvider.overrideWithValue(_mockDio),
-      ],
+      overrides: [dioProvider.overrideWithValue(_mockDio)],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         locale: locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        theme: isDarkMode ? TestTheme.darkTheme : TestTheme.lightTheme,
+        theme: isDarkMode ? AppTheme.darkTheme : AppTheme.lightTheme,
         routerConfig: _router,
       ),
     );
@@ -889,16 +1198,8 @@ class GoldenScreenWrapper extends StatelessWidget {
 /// Extension for easier golden test writing
 extension GoldenWidgetTesterExtension on WidgetTester {
   /// Pump widget with golden test wrapper
-  Future<void> pumpGolden(
-    Widget child, {
-    bool isDarkMode = false,
-  }) async {
-    await pumpWidget(
-      GoldenTestWrapper(
-        isDarkMode: isDarkMode,
-        child: child,
-      ),
-    );
+  Future<void> pumpGolden(Widget child, {bool isDarkMode = false}) async {
+    await pumpWidget(GoldenTestWrapper(isDarkMode: isDarkMode, child: child));
     await pumpAndSettle();
   }
 

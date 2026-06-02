@@ -11,7 +11,7 @@ void main() {
     client = E2EClient();
   });
 
-  group('Health E2E', () {
+  e2eGroup('Health E2E', () {
     test('GET /health — API is alive', () async {
       final res = await client.get('/health');
       res.expectOk();
@@ -25,7 +25,7 @@ void main() {
     });
   });
 
-  group('Feature Flags E2E', () {
+  e2eGroup('Feature Flags E2E', () {
     test('GET /feature-flags — list flags (may need auth)', () async {
       final res = await client.get('/feature-flags');
       // Might need auth (401) or work publicly

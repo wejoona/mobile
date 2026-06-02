@@ -14,6 +14,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/qr_payment/services/qr_code_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart' as user_state;
 
 /// Screen for displaying user's QR code to receive payments
 class ReceiveQrScreen extends ConsumerStatefulWidget {
@@ -86,8 +87,17 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final authState = ref.watch(authProvider);
-    final phone = authState.phone ?? authState.user?.phone ?? '';
-    final name = authState.user?.fullName;
+    final profileState = ref.watch(user_state.userStateMachineProvider);
+    final phone =
+        profileState.phone ?? authState.phone ?? authState.user?.phone ?? '';
+    final profileName = _profileName(
+      profileState.firstName,
+      profileState.lastName,
+    );
+    final authName = authState.user?.fullName;
+    final name =
+        profileName ?? (authName?.isNotEmpty == true ? authName : null);
+    final userId = profileState.userId ?? authState.user?.id;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -136,7 +146,9 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
                     AppInput(
                       label: 'Amount (USD)',
                       controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       prefix: const Text('\$ '),
                       onChanged: (_) => setState(() {}),
                     ),
@@ -163,7 +175,11 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
                         borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
                       child: QrImageView(
-                        data: _generateQrData(phone, name),
+                        data: _generateQrData(
+                          phone: phone,
+                          name: name,
+                          userId: userId,
+                        ),
                         version: QrVersions.auto,
                         size: 220,
                         backgroundColor: Colors.white,
@@ -205,7 +221,8 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
                       ),
                     ],
 
-                    if (_includeAmount && _amountController.text.isNotEmpty) ...[
+                    if (_includeAmount &&
+                        _amountController.text.isNotEmpty) ...[
                       const SizedBox(height: AppSpacing.lg),
                       Divider(color: colors.borderSubtle),
                       const SizedBox(height: AppSpacing.lg),
@@ -288,14 +305,23 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
     );
   }
 
-  String _generateQrData(String phone, String? name) {
+  String? _profileName(String? firstName, String? lastName) {
+    final name = [firstName, lastName]
+        .where((value) => value != null && value.trim().isNotEmpty)
+        .join(' ')
+        .trim();
+    return name.isEmpty ? null : name;
+  }
+
+  String _generateQrData({
+    required String phone,
+    required String? name,
+    required String? userId,
+  }) {
     double? amount;
     if (_includeAmount && _amountController.text.isNotEmpty) {
       amount = double.tryParse(_amountController.text);
     }
-
-    final authState = ref.read(authProvider);
-    final userId = authState.user?.id;
 
     return _qrService.generateReceiveQr(
       phone: phone,
@@ -336,7 +362,9 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
             content: Text(
               success ? 'QR code saved to gallery' : 'Failed to save QR code',
             ),
-            backgroundColor: success ? context.colors.success : context.colors.error,
+            backgroundColor: success
+                ? context.colors.success
+                : context.colors.error,
           ),
         );
       }
@@ -344,7 +372,9 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+            ),
             backgroundColor: context.colors.error,
           ),
         );
@@ -386,16 +416,20 @@ class _ReceiveQrScreenState extends ConsumerState<ReceiveQrScreen> {
         shareText += '\nAmount: \$${_amountController.text} USD';
       }
 
-      await SharePlus.instance.share(ShareParams(
-        files: [XFile(file.path)],
-        text: shareText,
-        title: 'Korido Payment QR Code',
-      ));
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(file.path)],
+          text: shareText,
+          title: 'Korido Payment QR Code',
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString())),
+            content: Text(
+              AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+            ),
             backgroundColor: context.colors.error,
           ),
         );

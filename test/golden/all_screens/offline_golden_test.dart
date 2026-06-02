@@ -10,30 +10,26 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('PendingTransfersScreen Golden Tests', () {
+  goldenGroup('PendingTransfersScreen Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: PendingTransfersScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: PendingTransfersScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(
         find.byType(MaterialApp),
-        matchesGoldenFile('goldens/offline/pending_transfers/default_light.png'),
+        matchesGoldenFile(
+          'goldens/offline/pending_transfers/default_light.png',
+        ),
       );
     });
 
     testWidgets('dark mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await tester.pumpWidget(
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: PendingTransfersScreen(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: PendingTransfersScreen()),
       );
       await tester.pump(const Duration(milliseconds: 100));
 

@@ -17,24 +17,24 @@ abstract final class ApiEndpoints {
   static const userExportData = '/user/export';
 
   // Wallet
-  static const walletBalance = '/wallet/balance';
+  static const walletBalance = '/wallet';
   static const walletAddress = '/wallet/address';
   static const walletTransactions = '/wallet/transactions';
 
   // Transfers
-  static const transfersSend = '/transfers/send';
-  static const transfersEstimateFee = '/transfers/estimate-fee';
+  static const transfersSend = '/transfers/internal';
+  static const transfersEstimateFee = '/wallet/transfer/external/estimate-fee';
   static const transfersExternal = '/transfers/external';
 
   // Deposit
-  static const depositInitiate = '/deposit/initiate';
-  static const depositStatus = '/deposit/status';
-  static const depositProviders = '/deposit/providers';
-  static const depositHistory = '/deposit/history';
+  static const depositInitiate = '/deposits/initiate';
+  static const depositStatus = '/deposits';
+  static const depositProviders = '/deposits/providers';
+  static const depositHistory = '/deposits';
 
   // Withdraw
-  static const withdrawInitiate = '/withdraw/initiate';
-  static const withdrawStatus = '/withdraw/status';
+  static const withdrawInitiate = '/withdrawals/initiate';
+  static const withdrawStatus = '/withdrawals';
 
   // Cards
   static const cards = '/cards';
@@ -55,7 +55,8 @@ abstract final class ApiEndpoints {
   static const paymentLinks = '/payment-links';
   static String paymentLinkById(String id) => '/payment-links/$id';
   static String paymentLinkPay(String id) => '/payment-links/$id/pay';
-  static String paymentLinkDeactivate(String id) => '/payment-links/$id/deactivate';
+  static String paymentLinkDeactivate(String id) =>
+      '/payment-links/$id/deactivate';
 
   // Savings Pots
   static const savingsPots = '/savings-pots';
@@ -66,13 +67,15 @@ abstract final class ApiEndpoints {
   // Recurring Transfers
   static const recurringTransfers = '/recurring-transfers';
   static String recurringTransferById(String id) => '/recurring-transfers/$id';
-  static String recurringTransferPause(String id) => '/recurring-transfers/$id/pause';
-  static String recurringTransferResume(String id) => '/recurring-transfers/$id/resume';
+  static String recurringTransferPause(String id) =>
+      '/recurring-transfers/$id/pause';
+  static String recurringTransferResume(String id) =>
+      '/recurring-transfers/$id/resume';
 
   // KYC
   static const kycStatus = '/kyc/status';
   static const kycSubmit = '/kyc/submit';
-  static const kycUpload = '/kyc/upload';
+  static const kycUpload = '/kyc/documents';
 
   // Beneficiaries
   static const beneficiaries = '/beneficiaries';
@@ -106,7 +109,7 @@ abstract final class ApiEndpoints {
   // Notifications
   static const notifications = '/notifications';
   static String notificationById(String id) => '/notifications/$id';
-  static const notificationPreferences = '/notifications/preferences';
+  static const notificationPreferences = '/user/notification-preferences';
 
   // Limits
   static const limits = '/limits';

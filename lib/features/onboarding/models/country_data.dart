@@ -1,10 +1,16 @@
-/// Country data for phone input
+import 'package:usdc_wallet/config/countries.dart' as app_config;
+
+/// Country data for onboarding phone input.
+///
+/// This wraps the shared app country config so login and registration expose
+/// the same launch markets.
 class CountryData {
   final String name;
   final String code;
   final String dialCode;
   final String flag;
   final String phoneFormat;
+  final int phoneLength;
 
   const CountryData({
     required this.name,
@@ -12,47 +18,43 @@ class CountryData {
     required this.dialCode,
     required this.flag,
     required this.phoneFormat,
+    required this.phoneLength,
   });
+
+  factory CountryData.fromConfig(app_config.CountryConfig country) {
+    return CountryData(
+      name: country.name,
+      code: country.code,
+      dialCode: country.fullPrefix,
+      flag: country.flag,
+      phoneFormat:
+          country.phoneFormat ?? List.filled(country.phoneLength, 'X').join(),
+      phoneLength: country.phoneLength,
+    );
+  }
 
   String get displayName => '$flag $name ($dialCode)';
 }
 
-/// Supported West African countries
 class SupportedCountries {
-  static const coteDivoire = CountryData(
-    name: "Côte d'Ivoire",
-    code: 'CI',
-    dialCode: '+225',
-    flag: '🇨🇮',
-    phoneFormat: 'XX XX XX XX XX',
-  );
+  static final List<CountryData> all = app_config.SupportedCountries.all
+      .map(CountryData.fromConfig)
+      .toList(growable: false);
 
-  static const senegal = CountryData(
-    name: 'Senegal',
-    code: 'SN',
-    dialCode: '+221',
-    flag: '🇸🇳',
-    phoneFormat: 'XX XXX XX XX',
-  );
-
-  static const mali = CountryData(
-    name: 'Mali',
-    code: 'ML',
-    dialCode: '+223',
-    flag: '🇲🇱',
-    phoneFormat: 'XX XX XX XX',
-  );
-
-  static const List<CountryData> all = [
-    coteDivoire,
-    senegal,
-    mali,
-  ];
+  static final CountryData coteDivoire = getByCode('CI');
 
   static CountryData getByDialCode(String dialCode) {
     return all.firstWhere(
       (country) => country.dialCode == dialCode,
       orElse: () => coteDivoire,
+    );
+  }
+
+  static CountryData getByCode(String code) {
+    return all.firstWhere(
+      (country) => country.code == code,
+      orElse: () =>
+          CountryData.fromConfig(app_config.SupportedCountries.defaultCountry),
     );
   }
 }

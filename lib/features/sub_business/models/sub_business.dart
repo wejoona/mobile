@@ -21,39 +21,40 @@ class SubBusiness {
   });
 
   factory SubBusiness.fromJson(Map<String, dynamic> json) {
+    final createdAt = json['createdAt'] != null
+        ? DateTime.parse(json['createdAt'] as String)
+        : DateTime.now();
     return SubBusiness(
       id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String?,
-      balance: (json['balance'] as num).toDouble(),
+      name: json['name'] as String? ?? json['_name'] as String? ?? '',
+      description:
+          json['description'] as String? ?? json['_description'] as String?,
+      balance: (json['balance'] as num?)?.toDouble() ?? 0,
       type: SubBusinessType.values.firstWhere(
-        (e) => e.name == json['type'],
+        (e) => e.name == (json['type'] ?? json['_type']),
         orElse: () => SubBusinessType.department,
       ),
-      staffCount: json['staffCount'] as int,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      staffCount: json['staffCount'] as int? ?? 0,
+      createdAt: createdAt,
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'] as String)
+          : createdAt,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'balance': balance,
-        'type': type.name,
-        'staffCount': staffCount,
-        'createdAt': createdAt.toIso8601String(),
-        'updatedAt': updatedAt.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'balance': balance,
+    'type': type.name,
+    'staffCount': staffCount,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
 }
 
-enum SubBusinessType {
-  department,
-  branch,
-  subsidiary,
-  team,
-}
+enum SubBusinessType { department, branch, subsidiary, team }
 
 /// Staff member of a sub-business
 class StaffMember {
@@ -80,29 +81,34 @@ class StaffMember {
   factory StaffMember.fromJson(Map<String, dynamic> json) {
     return StaffMember(
       id: json['id'] as String,
-      subBusinessId: json['subBusinessId'] as String,
-      userId: json['userId'] as String,
-      name: json['name'] as String,
-      phoneNumber: json['phoneNumber'] as String,
+      subBusinessId: json['subBusinessId'] as String? ?? '',
+      userId: json['userId'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      phoneNumber:
+          json['phoneNumber'] as String? ?? json['phone'] as String? ?? '',
       role: StaffRole.values.firstWhere(
         (e) => e.name == json['role'],
         orElse: () => StaffRole.viewer,
       ),
-      addedAt: DateTime.parse(json['addedAt'] as String),
+      addedAt: json['addedAt'] != null
+          ? DateTime.parse(json['addedAt'] as String)
+          : json['joinedAt'] != null
+          ? DateTime.parse(json['joinedAt'] as String)
+          : DateTime.now(),
       isActive: json['isActive'] as bool? ?? true,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'subBusinessId': subBusinessId,
-        'userId': userId,
-        'name': name,
-        'phoneNumber': phoneNumber,
-        'role': role.name,
-        'addedAt': addedAt.toIso8601String(),
-        'isActive': isActive,
-      };
+    'id': id,
+    'subBusinessId': subBusinessId,
+    'userId': userId,
+    'name': name,
+    'phoneNumber': phoneNumber,
+    'role': role.name,
+    'addedAt': addedAt.toIso8601String(),
+    'isActive': isActive,
+  };
 }
 
 enum StaffRole {

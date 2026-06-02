@@ -35,16 +35,18 @@ class CardsService {
 
   /// Create a new virtual or physical card
   Future<Map<String, dynamic>> createCard({
-    required String cardType, // 'virtual' or 'physical'
-    required String currency,
+    String cardType = 'virtual',
+    String? currency,
     String? nickname,
+    String? cardholderName,
+    double? spendingLimit,
   }) async {
     final response = await _dio.post(
       '/cards',
       data: {
+        'cardholderName': cardholderName ?? nickname ?? 'Korido User',
+        'spendingLimit': spendingLimit ?? 500,
         'cardType': cardType,
-        'currency': currency,
-        if (nickname != null) 'nickname': nickname,
       },
     );
     return response.data as Map<String, dynamic>;
@@ -70,10 +72,7 @@ class CardsService {
   }) async {
     final response = await _dio.put(
       '/cards/$cardId/limit',
-      data: {
-        'dailyLimit': dailyLimit,
-        'transactionLimit': transactionLimit,
-      },
+      data: {'spendingLimit': dailyLimit},
     );
     return response.data as Map<String, dynamic>;
   }
@@ -99,7 +98,6 @@ class CardsService {
     return response.data as Map<String, dynamic>;
   }
 
-
   // === Convenience aliases ===
   Future<void> freeze(String cardId) => freezeCard(cardId);
   Future<void> block(String cardId) => cancelCard(cardId);
@@ -113,23 +111,33 @@ class CardsService {
       await freezeCard(cardId);
     }
   }
+
   Future<Map<String, dynamic>> requestCard(Map<String, dynamic> data) =>
       createCard(
         cardType: data['cardType'] as String? ?? 'virtual',
         currency: data['currency'] as String? ?? 'USDC',
         nickname: data['nickname'] as String?,
+        cardholderName: data['cardholderName'] as String?,
+        spendingLimit: _parseDouble(data['spendingLimit']),
       );
   Future<Map<String, dynamic>> requestVirtual(Map<String, dynamic> data) =>
       createCard(
         cardType: 'virtual',
         currency: data['currency'] as String? ?? 'USDC',
         nickname: data['nickname'] as String?,
+        cardholderName: data['cardholderName'] as String?,
+        spendingLimit: _parseDouble(data['spendingLimit']),
       );
   Future<void> setSpendLimit(String cardId, double limit) =>
       updateSpendingLimit(cardId, dailyLimit: limit, transactionLimit: limit);
   Future<List<dynamic>> loadCardTransactions(String cardId) async {
     final result = await getCardTransactions(cardId);
-    return (result['data'] as List?) ?? [];
+    return (result['data'] as List?) ?? (result['transactions'] as List?) ?? [];
   }
+}
 
+double? _parseDouble(Object? value) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }

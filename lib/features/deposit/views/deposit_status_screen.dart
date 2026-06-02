@@ -27,202 +27,251 @@ class DepositStatusScreen extends ConsumerWidget {
       backgroundColor: colors.canvas,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Status Icon
-              _buildStatusIcon(status, colors),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Title
-              AppText(
-                _getStatusTitle(status, l10n),
-                variant: AppTextVariant.headlineMedium,
-                color: colors.textPrimary,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Subtitle/Description
-              AppText(
-                _getStatusSubtitle(status, state, l10n),
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Amount Display (for success)
-              if (status == _DepositStatus.completed && response != null) ...[
-                AppCard(
-                  variant: AppCardVariant.elevated,
+              Expanded(
+                child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                l10n.deposit_deposited,
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.textSecondary,
-                              ),
-                              AppText(
-                                '${(state.amountXOF ?? 0).toStringAsFixed(0)} XOF',
-                                variant: AppTextVariant.titleMedium,
-                                color: colors.textPrimary,
-                              ),
-                            ],
-                          ),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: colors.textTertiary,
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              AppText(
-                                l10n.deposit_received,
-                                variant: AppTextVariant.bodySmall,
-                                color: colors.textSecondary,
-                              ),
-                              AppText(
-                                formatXof(state.amountUSD ?? 0),
-                                variant: AppTextVariant.titleMedium,
-                                color: colors.gold,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: AppSpacing.lg),
-                      Divider(color: colors.borderSubtle, height: 1),
-                      const SizedBox(height: AppSpacing.lg),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            color: colors.success,
-                            size: 20,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: AppText(
-                              l10n.deposit_balanceUpdated,
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.textPrimary,
-                            ),
-                          ),
-                        ],
+                      _buildStatusIcon(status, colors),
+                      const SizedBox(height: AppSpacing.xl),
+
+                      AppText(
+                        _getStatusTitle(status, l10n),
+                        variant: AppTextVariant.headlineMedium,
+                        color: colors.textPrimary,
+                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
+                      const SizedBox(height: AppSpacing.md),
 
-              // Error Details (for failure)
-              if (status == _DepositStatus.failed && state.error != null) ...[
-                AppCard(
-                  variant: AppCardVariant.elevated,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: colors.error,
-                        size: 24,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText(
-                              l10n.deposit_errorReason(state.error ?? l10n.common_unknownError),
-                              variant: AppTextVariant.bodyMedium,
-                              color: colors.errorText,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-
-              // Processing Details
-              if (status == _DepositStatus.processing) ...[
-                AppCard(
-                  variant: AppCardVariant.elevated,
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: colors.gold,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: AppText(
-                          l10n.deposit_processingDesc,
-                          variant: AppTextVariant.bodyMedium,
-                          color: colors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-              ],
-
-              const Spacer(),
-
-              // Action Buttons
-              Column(
-                children: [
-                  AppButton(
-                    label: status == _DepositStatus.processing 
-                        ? l10n.action_checkStatus 
-                        : l10n.action_done,
-                    onPressed: () => _handlePrimaryAction(status, ref, context),
-                    isFullWidth: true,
-                  ),
-
-                  if (status == _DepositStatus.failed) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    AppButton(
-                      label: l10n.action_tryAgain,
-                      variant: AppButtonVariant.secondary,
-                      onPressed: () => _handleTryAgain(ref, context),
-                      isFullWidth: true,
-                    ),
-                  ],
-
-                  if (status != _DepositStatus.completed) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    TextButton(
-                      onPressed: () => _handleGoHome(ref, context),
-                      child: AppText(
-                        l10n.action_backToHome,
-                        variant: AppTextVariant.labelMedium,
+                      AppText(
+                        _getStatusSubtitle(status, state, l10n),
+                        variant: AppTextVariant.bodyMedium,
                         color: colors.textSecondary,
+                        textAlign: TextAlign.center,
                       ),
-                    ),
-                  ],
-                ],
+
+                      const SizedBox(height: AppSpacing.xl),
+
+                      if (status == _DepositStatus.completed &&
+                          response != null) ...[
+                        AppCard(
+                          variant: AppCardVariant.flat,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        AppText(
+                                          l10n.deposit_deposited,
+                                          variant: AppTextVariant.bodySmall,
+                                          color: colors.textSecondary,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: AppSpacing.xxs),
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: AppText(
+                                              formatXof(
+                                                state.amountXOF ??
+                                                    response.amount,
+                                              ),
+                                              variant:
+                                                  AppTextVariant.titleMedium,
+                                              color: colors.textPrimary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Icon(
+                                    Icons.arrow_forward,
+                                    color: colors.textTertiary,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        AppText(
+                                          l10n.deposit_received,
+                                          variant: AppTextVariant.bodySmall,
+                                          color: colors.textSecondary,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: AppSpacing.xxs),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerRight,
+                                            child: AppText(
+                                              formatUsdc(
+                                                state.amountUSD ??
+                                                    response.convertedAmount ??
+                                                    0,
+                                              ),
+                                              variant:
+                                                  AppTextVariant.titleMedium,
+                                              color: colors.gold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppSpacing.lg),
+                              Divider(color: colors.borderSubtle, height: 1),
+                              const SizedBox(height: AppSpacing.lg),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.check_circle,
+                                    color: colors.success,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: AppText(
+                                      l10n.deposit_balanceUpdated,
+                                      variant: AppTextVariant.bodyMedium,
+                                      color: colors.textPrimary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+
+                      if (status == _DepositStatus.failed &&
+                          state.error != null) ...[
+                        AppCard(
+                          variant: AppCardVariant.flat,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: colors.error,
+                                size: 24,
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppText(
+                                      l10n.deposit_errorReason(
+                                        state.error ?? l10n.common_unknownError,
+                                      ),
+                                      variant: AppTextVariant.bodyMedium,
+                                      color: colors.errorText,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+
+                      if (status == _DepositStatus.processing) ...[
+                        AppCard(
+                          variant: AppCardVariant.flat,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colors.gold,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: AppText(
+                                  l10n.deposit_processingDesc,
+                                  variant: AppTextVariant.bodyMedium,
+                                  color: colors.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                      ],
+                    ],
+                  ),
+                ),
               ),
+              const SizedBox(height: AppSpacing.md),
+              _buildActions(status, ref, context, l10n, colors),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildActions(
+    _DepositStatus status,
+    WidgetRef ref,
+    BuildContext context,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) {
+    return Column(
+      children: [
+        AppButton(
+          label: status == _DepositStatus.processing
+              ? l10n.action_checkStatus
+              : l10n.action_done,
+          onPressed: () => _handlePrimaryAction(status, ref, context),
+          isFullWidth: true,
+        ),
+
+        if (status == _DepositStatus.failed) ...[
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: l10n.action_tryAgain,
+            variant: AppButtonVariant.secondary,
+            onPressed: () => _handleTryAgain(ref, context),
+            isFullWidth: true,
+          ),
+        ],
+
+        if (status != _DepositStatus.completed) ...[
+          const SizedBox(height: AppSpacing.sm),
+          TextButton(
+            onPressed: () => _handleGoHome(ref, context),
+            child: AppText(
+              l10n.action_backToHome,
+              variant: AppTextVariant.labelMedium,
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -252,15 +301,8 @@ class DepositStatusScreen extends ConsumerWidget {
     return Container(
       width: 120,
       height: 120,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: backgroundColor,
-      ),
-      child: Icon(
-        iconData,
-        size: 64,
-        color: iconColor,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: backgroundColor),
+      child: Icon(iconData, size: 64, color: iconColor),
     );
   }
 
@@ -286,8 +328,8 @@ class DepositStatusScreen extends ConsumerWidget {
   }
 
   String _getStatusSubtitle(
-    _DepositStatus status, 
-    DepositState state, 
+    _DepositStatus status,
+    DepositState state,
     AppLocalizations l10n,
   ) {
     switch (status) {

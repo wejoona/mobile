@@ -14,8 +14,14 @@ class SubBusinessService {
   Future<List<SubBusinessItem>> getSubBusinesses() async {
     try {
       final response = await _dio.get('/sub-businesses');
-      // ignore: avoid_dynamic_calls
-      return (response.data['items'] as List<dynamic>)
+      final data = response.data;
+      final items = data is List
+          ? data
+          : data is Map
+          ? (data['items'] ?? data['data'] ?? data['subBusinesses']) as List? ??
+                []
+          : const [];
+      return items
           .map((e) => SubBusinessItem.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
@@ -27,16 +33,21 @@ class SubBusinessService {
   Future<SubBusinessItem> create({
     required String name,
     required String type,
+    String? walletId,
     String? description,
     String? address,
   }) async {
     try {
-      final response = await _dio.post('/sub-businesses', data: {
-        'name': name,
-        'type': type,
-        if (description != null) 'description': description,
-        if (address != null) 'address': address,
-      });
+      final resolvedWalletId = walletId ?? await _currentWalletId();
+      final response = await _dio.post(
+        '/sub-businesses',
+        data: {
+          'name': name,
+          'type': _backendSubBusinessType(type),
+          'walletId': resolvedWalletId,
+          if (description != null) 'description': description,
+        },
+      );
       return SubBusinessItem.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -53,20 +64,22 @@ class SubBusinessService {
     }
   }
 
-  /// PUT /sub-businesses/:id
-  Future<SubBusinessItem> update(String id, {
+  /// PATCH /sub-businesses/:id
+  Future<SubBusinessItem> update(
+    String id, {
     String? name,
     String? description,
     String? address,
     bool? isActive,
   }) async {
     try {
-      final response = await _dio.put('/sub-businesses/$id', data: {
-        if (name != null) 'name': name,
-        if (description != null) 'description': description,
-        if (address != null) 'address': address,
-        if (isActive != null) 'isActive': isActive,
-      });
+      final response = await _dio.patch(
+        '/sub-businesses/$id',
+        data: {
+          if (name != null) 'name': name,
+          if (description != null) 'description': description,
+        },
+      );
       return SubBusinessItem.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -82,22 +95,23 @@ class SubBusinessService {
           .map((e) => StaffMember.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
+      if (_isMissingEndpoint(e)) return const [];
       throw ApiException.fromDioError(e);
     }
   }
 
   /// POST /sub-businesses/:id/staff
-  Future<StaffMember> addStaff(String businessId, {
+  Future<StaffMember> addStaff(
+    String businessId, {
     required String phone,
     required String role,
     String? name,
   }) async {
     try {
-      final response = await _dio.post('/sub-businesses/$businessId/staff', data: {
-        'phone': phone,
-        'role': role,
-        if (name != null) 'name': name,
-      });
+      final response = await _dio.post(
+        '/sub-businesses/$businessId/staff',
+        data: {'phone': phone, 'role': role, if (name != null) 'name': name},
+      );
       return StaffMember.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -112,6 +126,21 @@ class SubBusinessService {
       throw ApiException.fromDioError(e);
     }
   }
+
+  Future<String> _currentWalletId() async {
+    final response = await _dio.get('/wallet');
+    final data = response.data;
+    if (data is Map) {
+      final walletId = data['walletId'] as String? ?? data['id'] as String?;
+      if (walletId != null && walletId.isNotEmpty) return walletId;
+    }
+    throw const FormatException('Current wallet id is required');
+  }
+}
+
+bool _isMissingEndpoint(DioException e) {
+  final statusCode = e.response?.statusCode;
+  return statusCode == 404 || statusCode == 405;
 }
 
 // Models
@@ -140,16 +169,20 @@ class SubBusinessItem {
   });
 
   factory SubBusinessItem.fromJson(Map<String, dynamic> json) {
+    final status = json['status'] as String? ?? json['_status'] as String?;
     return SubBusinessItem(
       id: json['id'] as String,
-      name: json['name'] as String,
-      type: json['type'] as String,
-      description: json['description'] as String?,
+      name: json['name'] as String? ?? json['_name'] as String? ?? '',
+      type: json['type'] as String? ?? json['_type'] as String? ?? '',
+      description:
+          json['description'] as String? ?? json['_description'] as String?,
       address: json['address'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
+      isActive: json['isActive'] as bool? ?? status == 'active',
       staffCount: json['staffCount'] as int? ?? 0,
       totalRevenue: (json['totalRevenue'] as num?)?.toDouble() ?? 0.0,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -175,12 +208,20 @@ class StaffMember {
     return StaffMember(
       id: json['id'] as String,
       name: json['name'] as String? ?? '',
-      phone: json['phone'] as String,
-      role: json['role'] as String,
+      phone: json['phone'] as String? ?? json['phoneNumber'] as String? ?? '',
+      role: json['role'] as String? ?? 'viewer',
       isActive: json['isActive'] as bool? ?? true,
-      joinedAt: DateTime.parse(json['joinedAt'] as String),
+      joinedAt: json['joinedAt'] != null
+          ? DateTime.parse(json['joinedAt'] as String)
+          : json['addedAt'] != null
+          ? DateTime.parse(json['addedAt'] as String)
+          : DateTime.now(),
     );
   }
+}
+
+String _backendSubBusinessType(String type) {
+  return type == 'subsidiary' ? 'branch' : type;
 }
 
 final subBusinessServiceProvider = Provider<SubBusinessService>((ref) {

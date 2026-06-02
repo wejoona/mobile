@@ -13,15 +13,12 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('PotsListView Golden Tests', () {
+  goldenGroup('PotsListView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: PotsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: PotsListView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -35,10 +32,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: PotsListView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: PotsListView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -49,15 +43,12 @@ void main() {
     });
   });
 
-  group('CreatePotView Golden Tests', () {
+  goldenGroup('CreatePotView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: false,
-          child: CreatePotView(),
-        ),
+        GoldenTestWrapper(isDarkMode: false, child: CreatePotView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -71,10 +62,7 @@ void main() {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
         tester,
-        GoldenTestWrapper(
-          isDarkMode: true,
-          child: CreatePotView(),
-        ),
+        GoldenTestWrapper(isDarkMode: true, child: CreatePotView()),
         pumpDuration: const Duration(milliseconds: 100),
       );
 
@@ -85,7 +73,7 @@ void main() {
     });
   });
 
-  group('EditPotView Golden Tests', () {
+  goldenGroup('EditPotView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(
@@ -121,7 +109,7 @@ void main() {
     });
   });
 
-  group('PotDetailView Golden Tests', () {
+  goldenGroup('PotDetailView Golden Tests', () {
     testWidgets('light mode', (tester) async {
       await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
       await pumpGoldenTolerant(

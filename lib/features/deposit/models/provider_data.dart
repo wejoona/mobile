@@ -6,6 +6,9 @@ class ProviderData {
   final double? maxAmount;
   final String? paymentMethodType;
   final String? enumProvider;
+  final List<String> countries;
+  final List<String> supportedCurrencies;
+  final List<String> rails;
 
   const ProviderData({
     required this.id,
@@ -15,5 +18,8 @@ class ProviderData {
     this.maxAmount,
     this.paymentMethodType,
     this.enumProvider,
+    this.countries = const [],
+    this.supportedCurrencies = const [],
+    this.rails = const [],
   });
 }

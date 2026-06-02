@@ -26,10 +26,9 @@ class BeneficiariesService {
         queryParameters: queryParams,
       );
 
-      // ignore: avoid_dynamic_calls
-      return (response.data['beneficiaries'] as List)
-          .map((json) => Beneficiary.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _beneficiaryListFromResponse(
+        response.data,
+      ).map((json) => Beneficiary.fromJson(_asStringMap(json))).toList();
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -39,7 +38,7 @@ class BeneficiariesService {
   Future<Beneficiary> getBeneficiary(String id) async {
     try {
       final response = await _dio.get('/beneficiaries/$id');
-      return Beneficiary.fromJson(response.data as Map<String, dynamic>);
+      return Beneficiary.fromJson(_beneficiaryJsonFromResponse(response.data));
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -54,7 +53,7 @@ class BeneficiariesService {
         '/beneficiaries',
         data: request.toJson(),
       );
-      return Beneficiary.fromJson(response.data as Map<String, dynamic>);
+      return Beneficiary.fromJson(_beneficiaryJsonFromResponse(response.data));
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -70,7 +69,7 @@ class BeneficiariesService {
         '/beneficiaries/$id',
         data: request.toJson(),
       );
-      return Beneficiary.fromJson(response.data as Map<String, dynamic>);
+      return Beneficiary.fromJson(_beneficiaryJsonFromResponse(response.data));
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -89,17 +88,51 @@ class BeneficiariesService {
   Future<Beneficiary> toggleFavorite(String id) async {
     try {
       final response = await _dio.post('/beneficiaries/$id/favorite');
-      return Beneficiary.fromJson(response.data as Map<String, dynamic>);
+      return Beneficiary.fromJson(_beneficiaryJsonFromResponse(response.data));
     } on DioException catch (e) {
       throw _handleError(e);
     }
   }
 
+  List<Object?> _beneficiaryListFromResponse(Object? data) {
+    if (data is List) return data;
+    if (data is Map) {
+      final wrapped = data['beneficiaries'] ?? data['data'] ?? data['items'];
+      if (wrapped is List) return wrapped;
+    }
+    return const [];
+  }
+
+  Map<String, dynamic> _beneficiaryJsonFromResponse(Object? data) {
+    final value = data is Map
+        ? (data['beneficiary'] ?? data['data'] ?? data)
+        : data;
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    throw Exception('Invalid beneficiary response');
+  }
+
+  Map<String, dynamic> _asStringMap(Object? data) {
+    if (data is Map<String, dynamic>) return data;
+    if (data is Map) return Map<String, dynamic>.from(data);
+    throw Exception('Invalid beneficiary response');
+  }
+
   Exception _handleError(DioException e) {
-    if (e.response?.data != null && e.response!.data is Map) {
-      // ignore: avoid_dynamic_calls
-      final message = e.response!.data['message'] as String?;
-      return Exception(message ?? 'Failed to process beneficiary request');
+    final data = e.response?.data;
+    if (data is Map) {
+      final message = data['message'];
+      if (message is String && message.isNotEmpty) {
+        return Exception(message);
+      }
+      if (message is List && message.isNotEmpty) {
+        return Exception(message.join(', '));
+      }
+      final error = data['error'];
+      if (error is String && error.isNotEmpty) {
+        return Exception(error);
+      }
+      return Exception('Failed to process beneficiary request');
     }
     return Exception('Network error: ${e.message}');
   }

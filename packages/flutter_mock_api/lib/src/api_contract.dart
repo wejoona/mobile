@@ -109,38 +109,51 @@ abstract class ApiContract {
 
   /// Generate OpenAPI spec for this contract.
   Map<String, dynamic> toOpenApiSpec() {
-    final paths = <String, dynamic>{};
+    final paths = <String, Map<String, dynamic>>{};
 
     for (final endpoint in endpoints) {
       final fullPath = '$basePath${endpoint.path}';
       final methodName = endpoint.method.name;
+      final pathSpec = paths.putIfAbsent(fullPath, () => <String, dynamic>{});
+      final parameters = <Map<String, dynamic>>[];
 
-      paths[fullPath] ??= {};
-      paths[fullPath][methodName] = {
+      if (endpoint.pathParams != null) {
+        parameters.addAll(
+          endpoint.pathParams!.entries.map(
+            (e) => {
+              'name': e.key,
+              'in': 'path',
+              'required': true,
+              'schema': {'type': 'string'},
+              'description': e.value,
+            },
+          ),
+        );
+      }
+
+      if (endpoint.queryParams != null) {
+        parameters.addAll(
+          endpoint.queryParams!.entries.map(
+            (e) => {
+              'name': e.key,
+              'in': 'query',
+              'required': false,
+              'schema': {'type': 'string'},
+              'description': e.value,
+            },
+          ),
+        );
+      }
+
+      pathSpec[methodName] = {
         'summary': endpoint.description,
         'tags': endpoint.tags ?? [serviceName],
-        'security': endpoint.requiresAuth ? [{'bearerAuth': <dynamic>[]}] : <dynamic>[],
-        if (endpoint.pathParams != null)
-          'parameters': [
-            ...endpoint.pathParams!.entries.map((e) => {
-                  'name': e.key,
-                  'in': 'path',
-                  'required': true,
-                  'schema': {'type': 'string'},
-                  'description': e.value,
-                }),
-          ],
-        if (endpoint.queryParams != null)
-          'parameters': [
-            ...(paths[fullPath][methodName]['parameters'] as List? ?? []),
-            ...endpoint.queryParams!.entries.map((e) => {
-                  'name': e.key,
-                  'in': 'query',
-                  'required': false,
-                  'schema': {'type': 'string'},
-                  'description': e.value,
-                }),
-          ],
+        'security': endpoint.requiresAuth
+            ? [
+                {'bearerAuth': <dynamic>[]}
+              ]
+            : <dynamic>[],
+        if (parameters.isNotEmpty) 'parameters': parameters,
         'responses': {
           '200': {'description': 'Success'},
           if (endpoint.requiresAuth) '401': {'description': 'Unauthorized'},
@@ -180,7 +193,8 @@ abstract class ApiContract {
     print('Endpoints:');
     for (final endpoint in endpoints) {
       // ignore: avoid_print
-      print('  ${endpoint.method.name.toUpperCase().padRight(6)} $basePath${endpoint.path}');
+      print(
+          '  ${endpoint.method.name.toUpperCase().padRight(6)} $basePath${endpoint.path}');
       // ignore: avoid_print
       print('         ${endpoint.description}');
     }

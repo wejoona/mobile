@@ -46,11 +46,15 @@ class NotificationsService {
     }
   }
 
-  /// GET /notifications/unread/count
+  /// GET /notifications/unread-count
   Future<int> getUnreadCount() async {
     try {
-      final response = await _dio.get('/notifications/unread/count');
+      final response = await _dio.get('/notifications/unread-count');
       final countData = response.data as Map<String, dynamic>?;
+      final data = countData?['data'];
+      if (data is Map<String, dynamic>) {
+        return data['count'] as int? ?? 0;
+      }
       return countData?['count'] as int? ?? 0;
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -79,9 +83,7 @@ class NotificationsService {
   /// Legacy method - use PushNotificationService.registerWithBackend() instead
   Future<void> registerDeviceToken(String token) async {
     try {
-      await _dio.post('/notifications/device-token', data: {
-        'token': token,
-      });
+      await _dio.post('/notifications/device-token', data: {'token': token});
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -97,14 +99,17 @@ class NotificationsService {
     String? osVersion,
   }) async {
     try {
-      await _dio.post('/notifications/push/token', data: {
-        'token': token,
-        'platform': platform,
-        if (deviceId != null) 'deviceId': deviceId,
-        if (deviceName != null) 'deviceName': deviceName,
-        if (appVersion != null) 'appVersion': appVersion,
-        if (osVersion != null) 'osVersion': osVersion,
-      });
+      await _dio.post(
+        '/notifications/push/token',
+        data: {
+          'token': token,
+          'platform': platform,
+          if (deviceId != null) 'deviceId': deviceId,
+          if (deviceName != null) 'deviceName': deviceName,
+          if (appVersion != null) 'appVersion': appVersion,
+          if (osVersion != null) 'osVersion': osVersion,
+        },
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -113,9 +118,7 @@ class NotificationsService {
   /// DELETE /notifications/push/token - Remove FCM token
   Future<void> removeFcmToken(String token) async {
     try {
-      await _dio.delete('/notifications/push/token', data: {
-        'token': token,
-      });
+      await _dio.delete('/notifications/push/token', data: {'token': token});
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -263,10 +266,7 @@ class NotificationPreferencesService {
 
   /// Save preferences
   Future<void> savePreferences(NotificationPreferences prefs) async {
-    await _storage.write(
-      key: _prefsKey,
-      value: jsonEncode(prefs.toJson()),
-    );
+    await _storage.write(key: _prefsKey, value: jsonEncode(prefs.toJson()));
   }
 
   /// Update a single preference
@@ -297,12 +297,13 @@ class NotificationPreferencesService {
 /// Notification Preferences Service Provider
 final notificationPreferencesServiceProvider =
     Provider<NotificationPreferencesService>((ref) {
-  return NotificationPreferencesService(ref.watch(secureStorageProvider));
-});
+      return NotificationPreferencesService(ref.watch(secureStorageProvider));
+    });
 
 /// Notification Preferences Provider
-final notificationPreferencesProvider =
-    FutureProvider<NotificationPreferences>((ref) async {
-  final service = ref.watch(notificationPreferencesServiceProvider);
-  return service.getPreferences();
-});
+final notificationPreferencesProvider = FutureProvider<NotificationPreferences>(
+  (ref) async {
+    final service = ref.watch(notificationPreferencesServiceProvider);
+    return service.getPreferences();
+  },
+);

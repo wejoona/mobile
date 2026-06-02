@@ -60,11 +60,11 @@ void main() {
     createdAt: DateTime.now().subtract(const Duration(days: 3)),
   );
 
-  group('TransactionDetailView Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('TransactionDetailView Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('completed deposit', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
@@ -76,13 +76,15 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transaction_detail/deposit_light.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transaction_detail/deposit_light.png',
+          ),
         );
       });
 
       testWidgets('pending transfer', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
@@ -94,13 +96,15 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transaction_detail/pending_light.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transaction_detail/pending_light.png',
+          ),
         );
       });
 
       testWidgets('failed withdrawal', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
@@ -112,15 +116,17 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transaction_detail/failed_light.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transaction_detail/failed_light.png',
+          ),
         );
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('completed deposit', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
@@ -132,7 +138,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('goldens/transactions/transaction_detail/deposit_dark.png'),
+          matchesGoldenFile(
+            'goldens/transactions/transaction_detail/deposit_dark.png',
+          ),
         );
       });
     });

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:intl/intl.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Transaction Types
 enum TransactionDisplayType {
@@ -26,6 +29,7 @@ class TransactionRow extends StatelessWidget {
     this.iconUrl,
     this.onTap,
     this.showDivider = false,
+    this.currencyCode = 'USDC',
   });
 
   final String title;
@@ -38,6 +42,7 @@ class TransactionRow extends StatelessWidget {
   final String? iconUrl;
   final VoidCallback? onTap;
   final bool showDivider;
+  final String currencyCode;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +83,7 @@ class TransactionRow extends StatelessWidget {
                             ),
                             if (_showStatusBadge) ...[
                               const SizedBox(width: AppSpacing.sm),
-                              _buildStatusBadge(colors),
+                              _buildStatusBadge(context),
                             ],
                           ],
                         ),
@@ -96,15 +101,14 @@ class TransactionRow extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      AppText(
+                      AmountText.fromText(
                         _formatAmount(),
-                        variant: AppTextVariant.bodyLarge,
+                        size: AmountTextSize.small,
                         color: _getAmountColor(colors),
-                        fontWeight: FontWeight.w500,
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       AppText(
-                        _formatDate(),
+                        _formatDate(context),
                         variant: AppTextVariant.bodySmall,
                         color: colors.textTertiary,
                       ),
@@ -120,7 +124,8 @@ class TransactionRow extends StatelessWidget {
             height: 1,
             thickness: 1,
             color: colors.borderSubtle,
-            indent: AppSpacing.lg + 44 + AppSpacing.md, // indent to align with text
+            // Indent to align with the text column after the icon.
+            indent: AppSpacing.lg + 44 + AppSpacing.md,
           ),
       ],
     );
@@ -132,50 +137,30 @@ class TransactionRow extends StatelessWidget {
           status == TransactionStatus.processing ||
           status == TransactionStatus.failed);
 
-  Widget _buildStatusBadge(ThemeColors colors) {
-    Color backgroundColor;
-    Color textColor;
+  Widget _buildStatusBadge(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    StatusTone tone;
     String label;
 
     switch (status) {
       case TransactionStatus.pending:
       case TransactionStatus.processing:
-        backgroundColor = colors.warningBg;
-        textColor = colors.warningText;
-        label = status == TransactionStatus.pending ? 'Pending' : 'Processing';
+        tone = StatusTone.warning;
+        label = l10n.transaction_pending;
         break;
       case TransactionStatus.failed:
-        backgroundColor = colors.errorBg;
-        textColor = colors.errorText;
-        label = 'Failed';
+        tone = StatusTone.danger;
+        label = l10n.transaction_failed;
         break;
       case TransactionStatus.completed:
-        backgroundColor = colors.successBg;
-        textColor = colors.successText;
-        label = 'Completed';
+        tone = StatusTone.success;
+        label = l10n.transaction_completed;
         break;
       default:
         return const SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+    return StatusPill(label: label, tone: tone, compact: true);
   }
 
   Widget _buildIcon(ThemeColors colors) {
@@ -205,11 +190,7 @@ class TransactionRow extends StatelessWidget {
   }
 
   Widget _buildFallbackIcon(Color iconColor) {
-    return Icon(
-      icon ?? _getDefaultIcon(),
-      color: iconColor,
-      size: 22,
-    );
+    return Icon(icon ?? _getDefaultIcon(), color: iconColor, size: 22);
   }
 
   IconData _getDefaultIcon() {
@@ -287,7 +268,7 @@ class TransactionRow extends StatelessWidget {
   String _formatAmount() {
     final sign = _isPositive() ? '+' : '-';
     final absAmount = amount.abs();
-    return '$sign \$${absAmount.toStringAsFixed(2)}';
+    return '$sign${formatCurrency(absAmount, currencyCode)}';
   }
 
   bool _isPositive() {
@@ -302,23 +283,20 @@ class TransactionRow extends StatelessWidget {
     }
   }
 
-  String _formatDate() {
+  String _formatDate(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final diff = now.difference(date);
 
     if (diff.inDays == 0) {
-      return 'Today';
+      return l10n.transactions_today;
     } else if (diff.inDays == 1) {
-      return 'Yesterday';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays} days ago';
-    } else {
-      final months = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-      ];
-      return '${months[date.month - 1]} ${date.day}';
+      return l10n.transactions_yesterday;
     }
+
+    return DateFormat.MMMd(
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(date);
   }
 }
 

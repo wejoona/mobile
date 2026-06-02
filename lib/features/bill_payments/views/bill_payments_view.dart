@@ -34,9 +34,9 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
     final colors = context.colors;
     final selectedCategory = ref.watch(selectedBillCategoryProvider);
     final providersAsync = ref.watch(
-      billProvidersProvider(BillProvidersParams(
-        category: selectedCategory?.value,
-      )),
+      billProvidersProvider(
+        BillProvidersParams(category: selectedCategory?.value),
+      ),
     );
 
     return Scaffold(
@@ -90,7 +90,9 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                 categories: categories,
                 selectedCategory: selectedCategory,
                 onCategorySelected: (category) {
-                  ref.read(selectedBillCategoryProvider.notifier).select(category);
+                  ref
+                      .read(selectedBillCategoryProvider.notifier)
+                      .select(category);
                 },
               );
             },
@@ -102,7 +104,9 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
 
           // Section Title
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+            ),
             child: AppText(
               selectedCategory != null
                   ? '${selectedCategory.displayName} ${l10n.billPayments_providers}'
@@ -122,9 +126,15 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                 // Filter by search
                 if (_searchQuery.isNotEmpty) {
                   providers = providers
-                      .where((p) =>
-                          p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                          p.shortName.toLowerCase().contains(_searchQuery.toLowerCase()))
+                      .where(
+                        (p) =>
+                            p.name.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ) ||
+                            p.shortName.toLowerCase().contains(
+                              _searchQuery.toLowerCase(),
+                            ),
+                      )
                       .toList();
                 }
 
@@ -137,7 +147,8 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                     horizontal: AppSpacing.screenPadding,
                   ),
                   itemCount: providers.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                  separatorBuilder: (_, __) =>
+                      const SizedBox(height: AppSpacing.sm),
                   itemBuilder: (context, index) {
                     final provider = providers[index];
                     return ProviderCard(
@@ -147,9 +158,8 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
                   },
                 );
               },
-              loading: () => Center(
-                child: CircularProgressIndicator(color: colors.gold),
-              ),
+              loading: () =>
+                  Center(child: CircularProgressIndicator(color: colors.gold)),
               error: (error, _) => _buildErrorState(l10n, error.toString()),
             ),
           ),
@@ -185,11 +195,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
               color: colors.container,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: Icon(
-              Icons.search_off,
-              size: 48,
-              color: colors.textTertiary,
-            ),
+            child: Icon(Icons.search_off, size: 48, color: colors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
@@ -226,11 +232,7 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
               color: colors.errorBg,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
-            child: Icon(
-              Icons.error_outline,
-              size: 48,
-              color: colors.errorText,
-            ),
+            child: Icon(Icons.error_outline, size: 48, color: colors.errorText),
           ),
           const SizedBox(height: AppSpacing.xl),
           AppText(
@@ -264,6 +266,6 @@ class _BillPaymentsViewState extends ConsumerState<BillPaymentsView> {
 
   void _onProviderSelected(BillProvider provider) {
     ref.read(selectedBillProviderProvider.notifier).select(provider);
-    context.push('/bill-payments/pay/${provider.id}');
+    context.push('/bill-payments/form/${provider.id}');
   }
 }

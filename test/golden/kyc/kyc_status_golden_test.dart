@@ -21,16 +21,13 @@ void main() {
     await GoldenTestUtils.init();
   });
 
-  group('KycStatusView Golden Tests', () {
-    group('Light Mode', () {
+  goldenGroup('KycStatusView Golden Tests', () {
+    goldenGroup('Light Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: false,
-            child: KycStatusView(),
-          ),
+          GoldenTestWrapper(isDarkMode: false, child: KycStatusView()),
         );
         await tester.pumpAndSettle();
 
@@ -41,15 +38,12 @@ void main() {
       });
     });
 
-    group('Dark Mode', () {
+    goldenGroup('Dark Mode', () {
       testWidgets('initial state', (tester) async {
         await tester.binding.setSurfaceSize(GoldenTestConfig.defaultSize);
-        
+
         await tester.pumpWidget(
-          GoldenTestWrapper(
-            isDarkMode: true,
-            child: KycStatusView(),
-          ),
+          GoldenTestWrapper(isDarkMode: true, child: KycStatusView()),
         );
         await tester.pumpAndSettle();
 

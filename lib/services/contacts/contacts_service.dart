@@ -1,24 +1,36 @@
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
-import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart' as domain;
-import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/models/contact_sync_result.dart';
+import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Simple contact info for contact picker
 class ContactInfo {
   final String name;
   final String phoneNumber;
 
-  const ContactInfo({
-    required this.name,
-    required this.phoneNumber,
+  const ContactInfo({required this.name, required this.phoneNumber});
+}
+
+class _ContactSyncMatch {
+  const _ContactSyncMatch({
+    required this.phoneHash,
+    required this.userId,
+    this.displayName,
+    this.avatarUrl,
   });
+
+  final String phoneHash;
+  final String userId;
+  final String? displayName;
+  final String? avatarUrl;
 }
 
 /// Contact with app status
@@ -53,13 +65,13 @@ class AppContact {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'phone': phone,
-        'photoUrl': photoUrl,
-        'hasApp': hasApp,
-        'lastTransfer': lastTransfer?.toIso8601String(),
-      };
+    'id': id,
+    'name': name,
+    'phone': phone,
+    'photoUrl': photoUrl,
+    'hasApp': hasApp,
+    'lastTransfer': lastTransfer?.toIso8601String(),
+  };
 
   AppContact copyWith({
     String? id,
@@ -93,10 +105,7 @@ class ContactsService {
     if (!await FlutterContacts.requestPermission(readonly: true)) {
       return [];
     }
-    return FlutterContacts.getContacts(
-      withProperties: true,
-      withPhoto: true,
-    );
+    return FlutterContacts.getContacts(withProperties: true, withPhoto: false);
   }
 
   /// Get contacts as ContactInfo (simplified for picker)
@@ -104,10 +113,12 @@ class ContactsService {
     final contacts = await getDeviceContacts();
     return contacts
         .where((c) => c.phones.isNotEmpty)
-        .map((c) => ContactInfo(
-              name: c.displayName,
-              phoneNumber: _normalizePhone(c.phones.first.number),
-            ))
+        .map(
+          (c) => ContactInfo(
+            name: c.displayName,
+            phoneNumber: _normalizePhone(c.phones.first.number),
+          ),
+        )
         .toList();
   }
 
@@ -154,10 +165,7 @@ class ContactsService {
     recents.removeWhere((c) => c.phone == contact.phone);
 
     // Add to front with updated timestamp
-    recents.insert(
-      0,
-      contact.copyWith(lastTransfer: DateTime.now()),
-    );
+    recents.insert(0, contact.copyWith(lastTransfer: DateTime.now()));
 
     // Keep only last 10
     final trimmed = recents.take(10).toList();
@@ -233,14 +241,10 @@ class ContactsService {
 
     for (final contact in deviceContacts) {
       if (contact.phones.isNotEmpty) {
-        final phone = contact.phones.first.number;
+        final phone = normalizePhoneE164(contact.phones.first.number);
         final name = contact.displayName;
 
-        synced.add(SyncedContact(
-          id: contact.id,
-          name: name,
-          phone: phone,
-        ));
+        synced.add(SyncedContact(id: contact.id, name: name, phone: phone));
       }
     }
 
@@ -254,7 +258,7 @@ class ContactsService {
     Dio dio,
     List<SyncedContact> allContacts,
   ) async {
-    final hashes = allContacts.map((c) => hashPhone(c.phone)).toList();
+    final hashes = allContacts.map((c) => hashPhone(c.phone)).toSet().toList();
 
     try {
       final response = await dio.post(
@@ -262,18 +266,25 @@ class ContactsService {
         data: {'phoneHashes': hashes},
       );
 
-      // ignore: avoid_dynamic_calls
-      final matches = (response.data['matches'] as List)
-          .cast<Map<String, dynamic>>()
-          .map((m) => {
-                'phoneHash': m['phoneHash'] as String,
-                'userId': m['userId'] as String,
-                'avatarUrl': m['avatarUrl'] as String?,
-              })
+      final data = response.data as Map<String, dynamic>;
+      final rawMatches = data['matches'] as List<dynamic>? ?? const [];
+      final matches = rawMatches
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (match) => _ContactSyncMatch(
+              phoneHash: match['phoneHash'] as String? ?? '',
+              userId: match['userId'] as String? ?? '',
+              displayName: match['displayName'] as String?,
+              avatarUrl: match['avatarUrl'] as String?,
+            ),
+          )
+          .where(
+            (match) => match.phoneHash.isNotEmpty && match.userId.isNotEmpty,
+          )
           .toList();
 
       // Create a map of hash -> user info
-      final matchMap = {for (var m in matches) m['phoneHash']: m};
+      final matchMap = {for (final match in matches) match.phoneHash: match};
 
       // Mark matching contacts
       return allContacts.map((contact) {
@@ -283,8 +294,9 @@ class ContactsService {
         if (match != null) {
           return contact.copyWith(
             isKoridoUser: true,
-            joonaPayUserId: match['userId'] as String,
-            avatarUrl: match['avatarUrl'],
+            joonaPayUserId: match.userId,
+            name: match.displayName ?? contact.name,
+            avatarUrl: match.avatarUrl,
           );
         }
 
@@ -394,9 +406,10 @@ class KoridoContactsService {
 
   /// Search contacts by name or username
   Future<List<domain.Contact>> searchContacts(String query) async {
-    final response = await _dio.get('/contacts/search', queryParameters: {
-      'query': query,
-    });
+    final response = await _dio.get(
+      '/contacts/search',
+      queryParameters: {'query': query},
+    );
     final data = response.data as Map<String, dynamic>;
     final contacts = data['contacts'] as List;
     return contacts
@@ -411,12 +424,15 @@ class KoridoContactsService {
     String? walletAddress,
     String? username,
   }) async {
-    final response = await _dio.post('/contacts', data: {
-      'name': name,
-      if (phone != null) 'phone': phone,
-      if (walletAddress != null) 'walletAddress': walletAddress,
-      if (username != null) 'username': username,
-    });
+    final response = await _dio.post(
+      '/contacts',
+      data: {
+        'name': name,
+        if (phone != null) 'phone': phone,
+        if (walletAddress != null) 'walletAddress': walletAddress,
+        if (username != null) 'username': username,
+      },
+    );
     return domain.Contact.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -426,10 +442,13 @@ class KoridoContactsService {
     String? name,
     bool? isFavorite,
   }) async {
-    final response = await _dio.put('/contacts/$contactId', data: {
-      if (name != null) 'name': name,
-      if (isFavorite != null) 'isFavorite': isFavorite,
-    });
+    final response = await _dio.put(
+      '/contacts/$contactId',
+      data: {
+        if (name != null) 'name': name,
+        if (isFavorite != null) 'isFavorite': isFavorite,
+      },
+    );
     return domain.Contact.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -453,20 +472,20 @@ final joonaPayContactsServiceProvider = Provider<KoridoContactsService>((ref) {
 /// All Korido Contacts Provider
 final joonaPayContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-  final service = ref.watch(joonaPayContactsServiceProvider);
-  return service.getContacts();
-});
+      final service = ref.watch(joonaPayContactsServiceProvider);
+      return service.getContacts();
+    });
 
 /// Favorite Contacts Provider
 final favoriteContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-  final service = ref.watch(joonaPayContactsServiceProvider);
-  return service.getFavorites();
-});
+      final service = ref.watch(joonaPayContactsServiceProvider);
+      return service.getFavorites();
+    });
 
 /// Recent Korido Contacts Provider
 final recentKoridoContactsProvider =
     FutureProvider.autoDispose<List<domain.Contact>>((ref) async {
-  final service = ref.watch(joonaPayContactsServiceProvider);
-  return service.getRecents();
-});
+      final service = ref.watch(joonaPayContactsServiceProvider);
+      return service.getRecents();
+    });

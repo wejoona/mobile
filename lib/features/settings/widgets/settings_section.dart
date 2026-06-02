@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// A settings section with header and grouped items.
 class SettingsSection extends StatelessWidget {
@@ -6,11 +8,16 @@ class SettingsSection extends StatelessWidget {
   final List<Widget> items;
   final EdgeInsetsGeometry margin;
 
-  const SettingsSection({super.key, this.title, required this.items, this.margin = const EdgeInsets.only(bottom: 24)});
+  const SettingsSection({
+    super.key,
+    this.title,
+    required this.items,
+    this.margin = const EdgeInsets.only(bottom: 24),
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Padding(
       padding: margin,
       child: Column(
@@ -19,20 +26,31 @@ class SettingsSection extends StatelessWidget {
           if (title != null)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 16, 8),
-              child: Text(title!.toUpperCase(), style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, letterSpacing: 1.2)),
+              child: AppText(
+                title!.toUpperCase(),
+                variant: AppTextVariant.labelSmall,
+                color: colors.textTertiary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              color: colors.container,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(color: colors.borderSubtle),
+              boxShadow: colors.isDark ? null : AppShadows.lightCard,
             ),
             child: Column(
               children: [
                 for (var i = 0; i < items.length; i++) ...[
                   items[i],
-                  if (i < items.length - 1) Divider(height: 0.5, indent: items[i] is ListTile ? 56 : 16, color: theme.colorScheme.outlineVariant.withValues(alpha: 0.3)),
+                  if (i < items.length - 1)
+                    Divider(
+                      height: 0.5,
+                      indent: items[i] is ListTile ? 56 : 16,
+                      color: colors.borderSubtle,
+                    ),
                 ],
               ],
             ),
@@ -64,8 +82,8 @@ class SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textColor = isDestructive ? theme.colorScheme.error : null;
+    final colors = context.colors;
+    final textColor = isDestructive ? colors.errorText : colors.textPrimary;
 
     return InkWell(
       onTap: onTap,
@@ -78,14 +96,29 @@ class SettingsItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: theme.textTheme.bodyLarge?.copyWith(color: textColor, fontWeight: FontWeight.w500)),
+                  AppText(
+                    title,
+                    variant: AppTextVariant.bodyLarge,
+                    color: textColor,
+                    fontWeight: FontWeight.w500,
+                  ),
                   if (subtitle != null)
-                    Text(subtitle!, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                    AppText(
+                      subtitle!,
+                      variant: AppTextVariant.bodySmall,
+                      color: colors.textSecondary,
+                    ),
                 ],
               ),
             ),
-            if (trailing != null) trailing!
-            else if (onTap != null) Icon(Icons.chevron_right_rounded, color: theme.colorScheme.onSurfaceVariant, size: 20),
+            if (trailing != null)
+              trailing!
+            else if (onTap != null)
+              Icon(
+                Icons.chevron_right_rounded,
+                color: colors.textTertiary,
+                size: 20,
+              ),
           ],
         ),
       ),
@@ -101,7 +134,14 @@ class SettingsToggle extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const SettingsToggle({super.key, required this.title, this.subtitle, this.leading, required this.value, required this.onChanged});
+  const SettingsToggle({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.leading,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {

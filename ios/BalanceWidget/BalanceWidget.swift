@@ -120,7 +120,7 @@ struct BalanceWidgetSmallView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 // App name
-                Text("JoonaPay")
+                Text("Korido")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(Color(red: 0.79, green: 0.66, blue: 0.38)) // gold500
 
@@ -140,7 +140,7 @@ struct BalanceWidgetSmallView: View {
             }
             .padding(12)
         }
-        .widgetURL(URL(string: "joonapay://home"))
+        .widgetURL(URL(string: "korido://home"))
     }
 }
 
@@ -163,7 +163,7 @@ struct BalanceWidgetMediumView: View {
             HStack(spacing: 0) {
                 // Left: Balance section
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("JoonaPay")
+                    Text("Korido")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(Color(red: 0.79, green: 0.66, blue: 0.38))
 
@@ -191,7 +191,7 @@ struct BalanceWidgetMediumView: View {
                 // Right: Quick actions
                 VStack(spacing: 8) {
                     // Send button
-                    Link(destination: URL(string: "joonapay://send")!) {
+                    Link(destination: URL(string: "korido://send")!) {
                         VStack(spacing: 4) {
                             Image(systemName: "arrow.up.circle.fill")
                                 .font(.system(size: 20))
@@ -207,7 +207,7 @@ struct BalanceWidgetMediumView: View {
                     }
 
                     // Receive button
-                    Link(destination: URL(string: "joonapay://receive")!) {
+                    Link(destination: URL(string: "korido://receive")!) {
                         VStack(spacing: 4) {
                             Image(systemName: "arrow.down.circle.fill")
                                 .font(.system(size: 20))
@@ -240,7 +240,7 @@ struct BalanceWidget: Widget {
             BalanceWidgetEntryView(entry: entry)
         }
         .configurationDisplayName("Balance Widget")
-        .description("View your JoonaPay balance at a glance.")
+        .description("View your Korido balance at a glance.")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }

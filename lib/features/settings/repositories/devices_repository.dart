@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/domain/entities/device.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/features/settings/models/device.dart';
 
 /// Repository for managing user devices
 class DevicesRepository {
@@ -15,40 +15,70 @@ class DevicesRepository {
     required String platform,
     String? model,
     String? brand,
+    String? os,
+    String? deviceName,
     String? osVersion,
     String? appVersion,
     String? fcmToken,
     String? locale,
   }) async {
-    final response = await _dio.post('/devices/register', data: {
-      'deviceIdentifier': deviceId,
-      'platform': platform,
-      if (model != null) 'model': model,
-      if (brand != null) 'brand': brand,
-      if (osVersion != null) 'osVersion': osVersion,
-      if (appVersion != null) 'appVersion': appVersion,
-      if (fcmToken != null) 'fcmToken': fcmToken,
-    });
-    return Device.fromJson(response.data);
+    final response = await _dio.post(
+      '/devices/register',
+      data: {
+        'deviceIdentifier': deviceId,
+        'platform': platform,
+        if (deviceName != null) 'deviceName': deviceName,
+        if (model != null) 'model': model,
+        if (brand != null) 'brand': brand,
+        if (os != null) 'os': os,
+        if (osVersion != null) 'osVersion': osVersion,
+        if (appVersion != null) 'appVersion': appVersion,
+        if (fcmToken != null) 'fcmToken': fcmToken,
+        if (locale != null) 'metadata': {'locale': locale},
+      },
+    );
+    return Device.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
     final response = await _dio.get('/devices');
-    // ignore: avoid_dynamic_calls
-    final List<dynamic> devicesJson = response.data['devices'] ?? [];
+    final raw = response.data;
+    final List<dynamic> devicesJson;
+    if (raw is Map<String, dynamic>) {
+      devicesJson =
+          (raw['devices'] ?? raw['data'] ?? raw['items']) as List? ?? [];
+    } else if (raw is List) {
+      devicesJson = raw;
+    } else {
+      devicesJson = [];
+    }
     return devicesJson.map((json) => Device.fromJson(json)).toList();
   }
 
   /// Trust a device
-  Future<Device> trustDevice(String deviceId) async {
-    final response = await _dio.post('/devices/$deviceId/trust');
-    return Device.fromJson(response.data);
+  Future<void> trustDevice(String deviceId) async {
+    await _dio.post('/devices/$deviceId/trust');
+  }
+
+  /// Remove trust from a device
+  Future<void> untrustDevice(String deviceId) async {
+    await _dio.post('/devices/$deviceId/untrust');
+  }
+
+  /// Rename a device
+  Future<void> renameDevice(String deviceId, String name) async {
+    await _dio.post('/devices/$deviceId/rename', data: {'name': name});
   }
 
   /// Revoke/remove a device
   Future<void> revokeDevice(String deviceId) async {
     await _dio.delete('/devices/$deviceId');
+  }
+
+  /// Revoke all devices for the current account. Backend route is DELETE /devices.
+  Future<void> revokeAllDevices() async {
+    await _dio.delete('/devices');
   }
 }
 

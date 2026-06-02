@@ -21,7 +21,7 @@ import 'package:usdc_wallet/services/risk/session_risk_provider.dart';
 /// - Referrals
 /// - Settings details
 ///
-/// TODO: Replace parallel fetches with a single `/api/v1/init` backend
+/// Follow-up: Replace parallel fetches with a single `/api/v1/init` backend
 /// endpoint that returns all essential data in one call. This reduces
 /// cold-start latency from N round-trips to 1.
 class AppBootstrapData {
@@ -126,5 +126,5 @@ class AppBootstrapNotifier extends AsyncNotifier<AppBootstrapData> {
 
 final appBootstrapProvider =
     AsyncNotifierProvider<AppBootstrapNotifier, AppBootstrapData>(
-  AppBootstrapNotifier.new,
-);
+      AppBootstrapNotifier.new,
+    );

@@ -17,11 +17,7 @@ Future<void> _syncThemeToNative(bool isDark) async {
 }
 
 /// Theme mode state - supports system, light, and dark
-enum AppThemeMode {
-  system,
-  light,
-  dark,
-}
+enum AppThemeMode { system, light, dark }
 
 /// Theme state that holds the current mode
 class ThemeState {
@@ -49,7 +45,8 @@ class ThemeState {
 
   /// Get the appropriate system UI overlay style
   SystemUiOverlayStyle getSystemUiStyle(Brightness systemBrightness) {
-    final isDark = mode == AppThemeMode.dark ||
+    final isDark =
+        mode == AppThemeMode.dark ||
         (mode == AppThemeMode.system && systemBrightness == Brightness.dark);
 
     if (isDark) {
@@ -66,7 +63,7 @@ class ThemeState {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
-        systemNavigationBarColor: AppColorsLight.container,
+        systemNavigationBarColor: AppColorsLight.canvas,
         systemNavigationBarIconBrightness: Brightness.dark,
         systemNavigationBarDividerColor: Colors.transparent,
       );
@@ -149,7 +146,9 @@ class ThemeNotifier extends Notifier<ThemeState> {
       if (wasDark != isDark) {
         if (animated) {
           // Animated transition with color interpolation
-          final previousStyle = previousState.getSystemUiStyle(systemBrightness);
+          final previousStyle = previousState.getSystemUiStyle(
+            systemBrightness,
+          );
           final newStyle = state.getSystemUiStyle(systemBrightness);
           await StatusBarTransition.animate(
             from: previousStyle,
@@ -239,16 +238,15 @@ final themeProvider = NotifierProvider<ThemeNotifier, ThemeState>(
 class SystemBrightnessObserver extends ConsumerStatefulWidget {
   final Widget child;
 
-  const SystemBrightnessObserver({
-    super.key,
-    required this.child,
-  });
+  const SystemBrightnessObserver({super.key, required this.child});
 
   @override
-  ConsumerState<SystemBrightnessObserver> createState() => _SystemBrightnessObserverState();
+  ConsumerState<SystemBrightnessObserver> createState() =>
+      _SystemBrightnessObserverState();
 }
 
-class _SystemBrightnessObserverState extends ConsumerState<SystemBrightnessObserver>
+class _SystemBrightnessObserverState
+    extends ConsumerState<SystemBrightnessObserver>
     with WidgetsBindingObserver {
   Brightness? _lastBrightness;
 
@@ -256,7 +254,8 @@ class _SystemBrightnessObserverState extends ConsumerState<SystemBrightnessObser
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _lastBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    _lastBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
   }
 
   @override
@@ -269,7 +268,8 @@ class _SystemBrightnessObserverState extends ConsumerState<SystemBrightnessObser
   void didChangePlatformBrightness() {
     super.didChangePlatformBrightness();
 
-    final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final currentBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
 
     // Only update if brightness actually changed
     if (_lastBrightness != currentBrightness) {
@@ -280,7 +280,8 @@ class _SystemBrightnessObserverState extends ConsumerState<SystemBrightnessObser
       final themeState = ref.read(themeProvider);
 
       // Only animate if theme is in system mode
-      if (themeState.mode == AppThemeMode.system && previousBrightness != null) {
+      if (themeState.mode == AppThemeMode.system &&
+          previousBrightness != null) {
         final previousStyle = themeState.getSystemUiStyle(previousBrightness);
         final newStyle = themeState.getSystemUiStyle(currentBrightness);
 

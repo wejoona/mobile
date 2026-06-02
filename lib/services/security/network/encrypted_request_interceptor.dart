@@ -13,12 +13,16 @@ class EncryptedRequestInterceptor extends Interceptor {
   static const _encryptedPaths = [
     '/wallet/transfer',
     '/wallet/withdraw',
+    '/wallet/deposit',
+    '/transfers/',
+    '/withdrawals/',
+    '/deposits/',
     '/pin/verify',
     '/pin/change',
   ];
 
   EncryptedRequestInterceptor({required RequestEncryptor encryptor})
-      : _encryptor = encryptor;
+    : _encryptor = encryptor;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -30,7 +34,8 @@ class EncryptedRequestInterceptor extends Interceptor {
     try {
       if (options.data is Map<String, dynamic>) {
         options.data = _encryptor.encryptPayload(
-            options.data as Map<String, dynamic>);
+          options.data as Map<String, dynamic>,
+        );
         options.headers['X-Encrypted'] = '1';
       }
     } catch (e) {
@@ -50,7 +55,8 @@ class EncryptedRequestInterceptor extends Interceptor {
       if (response.data is Map<String, dynamic> &&
           (response.data as Map).containsKey('encrypted')) {
         response.data = _encryptor.decryptPayload(
-            response.data as Map<String, dynamic>);
+          response.data as Map<String, dynamic>,
+        );
       }
     } catch (e) {
       _log.error('Response decryption failed', e);

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// KYC prompt screen
 class KycPromptView extends ConsumerWidget {
@@ -56,16 +55,19 @@ class KycPromptView extends ConsumerWidget {
               SizedBox(height: AppSpacing.xxl),
               // Benefits
               _buildBenefit(
+                context,
                 l10n.onboarding_kyc_benefit1,
                 Icons.trending_up,
               ),
               SizedBox(height: AppSpacing.md),
               _buildBenefit(
+                context,
                 l10n.onboarding_kyc_benefit2,
                 Icons.send_rounded,
               ),
               SizedBox(height: AppSpacing.md),
               _buildBenefit(
+                context,
                 l10n.onboarding_kyc_benefit3,
                 Icons.lock_open_rounded,
               ),
@@ -94,40 +96,29 @@ class KycPromptView extends ConsumerWidget {
     );
   }
 
-  Widget _buildBenefit(String text, IconData icon) {
+  Widget _buildBenefit(BuildContext context, String text, IconData icon) {
+    final colors = context.colors;
+
     return Container(
       padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.charcoal,
+        color: colors.container,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.textSecondary.withValues(alpha: 0.2)),
+        border: Border.all(color: colors.borderSubtle),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(AppSpacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.gold500.withValues(alpha: 0.1),
+              color: colors.gold.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.gold500,
-              size: 24,
-            ),
+            child: Icon(icon, color: colors.gold, size: 24),
           ),
           SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: AppText(
-              text,
-              style: AppTypography.bodyMedium,
-            ),
-          ),
-          Icon(
-            Icons.check_circle,
-            color: AppColors.successBase,
-            size: 20,
-          ),
+          Expanded(child: AppText(text, style: AppTypography.bodyMedium)),
+          Icon(Icons.check_circle, color: colors.success, size: 20),
         ],
       ),
     );

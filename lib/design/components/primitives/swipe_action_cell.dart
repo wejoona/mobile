@@ -75,6 +75,8 @@ class _SwipeActionCellState extends State<SwipeActionCell>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.actions.isEmpty) return widget.child;
+
     return Stack(
       children: [
         // Action buttons
@@ -91,8 +93,9 @@ class _SwipeActionCellState extends State<SwipeActionCell>
                       action.onTap();
                       _dragExtent = 0;
                       setState(() {
-                        _slideAnimation =
-                            const AlwaysStoppedAnimation(Offset.zero);
+                        _slideAnimation = const AlwaysStoppedAnimation(
+                          Offset.zero,
+                        );
                       });
                     },
                     child: Center(

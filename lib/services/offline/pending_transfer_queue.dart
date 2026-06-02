@@ -13,6 +13,12 @@ class PendingTransfer {
   final TransferStatus status;
   final String? errorMessage;
 
+  /// Deprecated: PIN tokens are intentionally not persisted.
+  final String? pinToken;
+
+  /// Deprecated for draft queue entries; generated again after fresh PIN.
+  final String? idempotencyKey;
+
   const PendingTransfer({
     required this.id,
     required this.recipientPhone,
@@ -22,18 +28,20 @@ class PendingTransfer {
     required this.timestamp,
     this.status = TransferStatus.pending,
     this.errorMessage,
+    this.pinToken,
+    this.idempotencyKey,
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'recipientPhone': recipientPhone,
-        'recipientName': recipientName,
-        'amount': amount,
-        'description': description,
-        'timestamp': timestamp.toIso8601String(),
-        'status': status.name,
-        'errorMessage': errorMessage,
-      };
+    'id': id,
+    'recipientPhone': recipientPhone,
+    'recipientName': recipientName,
+    'amount': amount,
+    'description': description,
+    'timestamp': timestamp.toIso8601String(),
+    'status': status.name,
+    'errorMessage': errorMessage,
+  };
 
   factory PendingTransfer.fromJson(Map<String, dynamic> json) {
     return PendingTransfer(
@@ -48,6 +56,8 @@ class PendingTransfer {
         orElse: () => TransferStatus.pending,
       ),
       errorMessage: json['errorMessage'] as String?,
+      pinToken: null,
+      idempotencyKey: null,
     );
   }
 
@@ -60,6 +70,8 @@ class PendingTransfer {
     DateTime? timestamp,
     TransferStatus? status,
     String? errorMessage,
+    String? pinToken,
+    String? idempotencyKey,
   }) {
     return PendingTransfer(
       id: id ?? this.id,
@@ -70,6 +82,8 @@ class PendingTransfer {
       timestamp: timestamp ?? this.timestamp,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
+      pinToken: pinToken ?? this.pinToken,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
     );
   }
 }
@@ -87,6 +101,9 @@ enum TransferStatus {
 
   /// Failed to process
   failed,
+
+  /// Saved locally but requires a fresh PIN before it can be submitted.
+  needsAuthorization,
 }
 
 /// Pending Transfer Queue Service
@@ -127,8 +144,9 @@ class PendingTransferQueue {
   /// Supprimer les éléments expirés (> 24h)
   void _expireOldItems(List<PendingTransfer> queue) {
     final cutoff = DateTime.now().subtract(maxAge);
-    queue.removeWhere((t) =>
-        t.status == TransferStatus.pending && t.timestamp.isBefore(cutoff));
+    queue.removeWhere(
+      (t) => t.status == TransferStatus.pending && t.timestamp.isBefore(cutoff),
+    );
   }
 
   /// Get all pending transfers
@@ -147,9 +165,12 @@ class PendingTransferQueue {
   /// Get pending transfers count
   int getPendingCount() {
     return getQueue()
-        .where((t) =>
-            t.status == TransferStatus.pending ||
-            t.status == TransferStatus.processing)
+        .where(
+          (t) =>
+              t.status == TransferStatus.pending ||
+              t.status == TransferStatus.processing ||
+              t.status == TransferStatus.needsAuthorization,
+        )
         .length;
   }
 
@@ -183,9 +204,11 @@ class PendingTransferQueue {
     final queue = getQueue();
     final cutoffDate = DateTime.now().subtract(Duration(days: olderThanDays));
 
-    queue.removeWhere((t) =>
-        t.status == TransferStatus.completed &&
-        t.timestamp.isBefore(cutoffDate));
+    queue.removeWhere(
+      (t) =>
+          t.status == TransferStatus.completed &&
+          t.timestamp.isBefore(cutoffDate),
+    );
 
     await _saveQueue(queue);
   }
@@ -201,9 +224,17 @@ class PendingTransferQueue {
 
   /// Get transfers ready to process
   List<PendingTransfer> getTransfersToProcess() {
-    return getQueue()
-        .where((t) => t.status == TransferStatus.pending)
-        .toList();
+    final staleProcessingCutoff = DateTime.now().subtract(
+      const Duration(minutes: 2),
+    );
+    return getQueue().where((t) {
+      final hasReplayAuthorization =
+          t.pinToken != null && t.idempotencyKey != null;
+      if (!hasReplayAuthorization) return false;
+      return t.status == TransferStatus.pending ||
+          t.status == TransferStatus.processing &&
+              t.timestamp.isBefore(staleProcessingCutoff);
+    }).toList();
   }
 
   /// Mark transfer as processing
@@ -242,11 +273,12 @@ final pendingTransferQueueProvider = Provider<PendingTransferQueue>((ref) {
 });
 
 /// Provider for PendingTransferQueue with SharedPreferences
-final pendingTransferQueueFutureProvider =
-    FutureProvider<PendingTransferQueue>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  return PendingTransferQueue(prefs);
-});
+final pendingTransferQueueFutureProvider = FutureProvider<PendingTransferQueue>(
+  (ref) async {
+    final prefs = await SharedPreferences.getInstance();
+    return PendingTransferQueue(prefs);
+  },
+);
 
 /// Pending count provider (reactive)
 final pendingTransferCountProvider = Provider<int>((ref) {

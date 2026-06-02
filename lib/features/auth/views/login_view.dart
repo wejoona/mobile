@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -12,8 +13,8 @@ import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
+import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/core/l10n/app_strings.dart';
 
 /// Login screen with two modes:
 /// 1. Returning user with biometric → full-screen biometric prompt
@@ -43,6 +44,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   @override
   void initState() {
     super.initState();
+    _selectedCountry = ref.read(selectedCountryProvider);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -80,6 +82,7 @@ class _LoginViewState extends ConsumerState<LoginView>
 
   Future<void> _doBiometricAuth(String refreshToken) async {
     if (_biometricInProgress) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _biometricInProgress = true;
       _biometricError = null;
@@ -88,17 +91,19 @@ class _LoginViewState extends ConsumerState<LoginView>
     try {
       final biometricService = ref.read(biometricServiceProvider);
       final authenticatedBio = await biometricService.authenticate(
-        localizedReason: AppStrings.unlockKorido,
+        localizedReason: l10n.session_unlockReason,
       );
 
       if (authenticatedBio.success && mounted) {
-        final success = await ref.read(authProvider.notifier).loginWithBiometric(refreshToken);
+        final success = await ref
+            .read(authProvider.notifier)
+            .loginWithBiometric(refreshToken);
         if (success && mounted) {
           context.go('/home');
           return;
         }
         if (mounted) {
-          setState(() => _biometricError = AppStrings.sessionExpiredRelogin);
+          setState(() => _biometricError = l10n.error_sessionExpired);
           // Clear invalid tokens and switch to phone
           await Future.delayed(const Duration(seconds: 2));
           if (mounted) _switchToPhone();
@@ -180,6 +185,8 @@ class _LoginViewState extends ConsumerState<LoginView>
   // ──────────────────────────────────────────
 
   Widget _buildBiometricScreen(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         return SizedBox(
@@ -204,7 +211,9 @@ class _LoginViewState extends ConsumerState<LoginView>
               // Biometric area
               if (_biometricError != null) ...[
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxl,
+                  ),
                   child: AppText(
                     _biometricError!,
                     variant: AppTextVariant.bodyMedium,
@@ -228,7 +237,9 @@ class _LoginViewState extends ConsumerState<LoginView>
                 GestureDetector(
                   onTap: () async {
                     final storage = ref.read(secureStorageProvider);
-                    final refreshToken = await storage.read(key: StorageKeys.refreshToken);
+                    final refreshToken = await storage.read(
+                      key: StorageKeys.refreshToken,
+                    );
                     if (refreshToken != null) _doBiometricAuth(refreshToken);
                   },
                   child: Container(
@@ -253,7 +264,9 @@ class _LoginViewState extends ConsumerState<LoginView>
               const SizedBox(height: AppSpacing.lg),
 
               AppText(
-                _biometricInProgress ? AppStrings.authenticating : AppStrings.tapToUnlock,
+                _biometricInProgress
+                    ? l10n.auth_authenticating
+                    : l10n.auth_tapToUnlock,
                 variant: AppTextVariant.bodyMedium,
                 color: colors.textSecondary,
               ),
@@ -264,7 +277,7 @@ class _LoginViewState extends ConsumerState<LoginView>
               TextButton(
                 onPressed: _switchToPhone,
                 child: AppText(
-                  AppStrings.usePhoneInstead,
+                  l10n.auth_usePhoneInstead,
                   variant: AppTextVariant.labelMedium,
                   color: colors.gold,
                 ),
@@ -291,7 +304,9 @@ class _LoginViewState extends ConsumerState<LoginView>
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding,
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: AppSpacing.giant),
@@ -306,7 +321,9 @@ class _LoginViewState extends ConsumerState<LoginView>
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AppText(
-                    _isRegistering ? l10n.auth_createWallet : l10n.auth_welcomeBack,
+                    _isRegistering
+                        ? l10n.auth_createWallet
+                        : l10n.auth_welcomeBack,
                     variant: AppTextVariant.bodyLarge,
                     color: colors.textSecondary,
                   ),
@@ -321,31 +338,49 @@ class _LoginViewState extends ConsumerState<LoginView>
 
                   // Submit
                   AppButton(
-                    label: _isRegistering ? l10n.auth_createAccount : l10n.action_continue,
+                    label: _isRegistering
+                        ? l10n.auth_createAccount
+                        : l10n.action_continue,
                     onPressed: _isPhoneValid() ? _submit : null,
                     variant: AppButtonVariant.primary,
                     size: AppButtonSize.large,
                     isFullWidth: true,
                     isLoading: authState.isLoading,
                   ),
+                  if (EnvironmentConfig.showDevOtpShortcut) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    AppButton(
+                      label: 'Use dev phone',
+                      onPressed: authState.isLoading ? null : _useDevPhone,
+                      variant: AppButtonVariant.ghost,
+                      isFullWidth: true,
+                    ),
+                  ],
 
                   const SizedBox(height: AppSpacing.xl),
 
                   // Toggle register/login
                   GestureDetector(
-                    onTap: () => setState(() => _isRegistering = !_isRegistering),
+                    onTap: () =>
+                        setState(() => _isRegistering = !_isRegistering),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.sm,
+                      ),
                       child: Wrap(
                         alignment: WrapAlignment.center,
                         children: [
                           AppText(
-                            _isRegistering ? l10n.auth_alreadyHaveAccount : l10n.auth_dontHaveAccount,
+                            _isRegistering
+                                ? l10n.auth_alreadyHaveAccount
+                                : l10n.auth_dontHaveAccount,
                             variant: AppTextVariant.bodyMedium,
                             color: colors.textSecondary,
                           ),
                           AppText(
-                            _isRegistering ? l10n.auth_signIn : l10n.auth_signUp,
+                            _isRegistering
+                                ? l10n.auth_signIn
+                                : l10n.auth_signUp,
                             variant: AppTextVariant.labelLarge,
                             color: colors.gold,
                           ),
@@ -373,29 +408,7 @@ class _LoginViewState extends ConsumerState<LoginView>
   // ──────────────────────────────────────────
 
   Widget _buildLogo(ThemeColors colors, {double size = 72}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: context.colors.goldGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: AppShadows.goldGlow,
-      ),
-      child: Center(
-        child: Text(
-          'K',
-          style: TextStyle(
-            color: colors.textInverse,
-            fontSize: size * 0.5,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
+    return KoridoMark(size: size);
   }
 
   Widget _buildCountrySelector() {
@@ -429,7 +442,10 @@ class _LoginViewState extends ConsumerState<LoginView>
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   alignment: Alignment.center,
-                  child: Text(_selectedCountry.flag, style: const TextStyle(fontSize: 24)),
+                  child: Text(
+                    _selectedCountry.flag,
+                    style: const TextStyle(fontSize: 24),
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -450,7 +466,11 @@ class _LoginViewState extends ConsumerState<LoginView>
                     ],
                   ),
                 ),
-                Icon(Icons.unfold_more_rounded, color: colors.textSecondary, size: 20),
+                Icon(
+                  Icons.unfold_more_rounded,
+                  color: colors.textSecondary,
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -482,8 +502,8 @@ class _LoginViewState extends ConsumerState<LoginView>
               color: hasText && !isValid
                   ? colors.error.withValues(alpha: 0.5)
                   : isValid && hasText
-                      ? colors.success.withValues(alpha: 0.5)
-                      : colors.borderSubtle,
+                  ? colors.success.withValues(alpha: 0.5)
+                  : colors.borderSubtle,
             ),
           ),
           child: Row(
@@ -526,7 +546,9 @@ class _LoginViewState extends ConsumerState<LoginView>
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(_selectedCountry.phoneLength),
+                    LengthLimitingTextInputFormatter(
+                      _selectedCountry.phoneLength,
+                    ),
                   ],
                   onChanged: (_) => setState(() {}),
                 ),
@@ -569,12 +591,24 @@ class _LoginViewState extends ConsumerState<LoginView>
           children: [
             GestureDetector(
               onTap: () => _openLegalDocument(LegalDocumentType.termsOfService),
-              child: AppText(l10n.auth_termsOfService, variant: AppTextVariant.bodySmall, color: colors.gold),
+              child: AppText(
+                l10n.auth_termsOfService,
+                variant: AppTextVariant.bodySmall,
+                color: colors.gold,
+              ),
             ),
-            AppText(' ${l10n.auth_and} ', variant: AppTextVariant.bodySmall, color: colors.textTertiary),
+            AppText(
+              ' ${l10n.auth_and} ',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textTertiary,
+            ),
             GestureDetector(
               onTap: () => _openLegalDocument(LegalDocumentType.privacyPolicy),
-              child: AppText(l10n.auth_privacyPolicy, variant: AppTextVariant.bodySmall, color: colors.gold),
+              child: AppText(
+                l10n.auth_privacyPolicy,
+                variant: AppTextVariant.bodySmall,
+                color: colors.gold,
+              ),
             ),
           ],
         ),
@@ -589,7 +623,9 @@ class _LoginViewState extends ConsumerState<LoginView>
   void _openLegalDocument(LegalDocumentType type) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LegalDocumentView(documentType: type)),
+      MaterialPageRoute(
+        builder: (context) => LegalDocumentView(documentType: type),
+      ),
     );
   }
 
@@ -617,6 +653,7 @@ class _LoginViewState extends ConsumerState<LoginView>
               _phoneController.clear();
             }
           });
+          ref.read(selectedCountryProvider.notifier).select(country);
         },
       ),
     );
@@ -630,11 +667,23 @@ class _LoginViewState extends ConsumerState<LoginView>
   void _submit() {
     if (!_isPhoneValid()) return;
     final phone = '${_selectedCountry.fullPrefix}${_phoneController.text}';
+    ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
     if (_isRegistering) {
       ref.read(authProvider.notifier).register(phone, _selectedCountry.code);
     } else {
       ref.read(authProvider.notifier).login(phone);
     }
+  }
+
+  void _useDevPhone() {
+    setState(() {
+      _isRegistering = false;
+      _selectedCountry =
+          SupportedCountries.findByCode('CI') ??
+          SupportedCountries.defaultCountry;
+      _phoneController.text = '0748805663';
+    });
+    _submit();
   }
 }
 
@@ -674,10 +723,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       } else {
         final lower = query.toLowerCase();
         _filteredCountries = widget.countries
-            .where((c) =>
-                c.name.toLowerCase().contains(lower) ||
-                c.prefix.contains(lower) ||
-                c.code.toLowerCase().contains(lower))
+            .where(
+              (c) =>
+                  c.name.toLowerCase().contains(lower) ||
+                  c.prefix.contains(lower) ||
+                  c.code.toLowerCase().contains(lower),
+            )
             .toList();
       }
     });
@@ -693,7 +744,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       ),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppRadius.xxl),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -711,11 +764,19 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Row(
               children: [
-                AppText(l10n.auth_selectCountry, variant: AppTextVariant.titleMedium, color: colors.textPrimary),
+                AppText(
+                  l10n.auth_selectCountry,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
                 const Spacer(),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.close_rounded, color: colors.textSecondary, size: 24),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: colors.textSecondary,
+                    size: 24,
+                  ),
                 ),
               ],
             ),
@@ -747,12 +808,21 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     Navigator.pop(context);
                   },
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.xs,
+                    ),
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: isSelected ? colors.gold.withValues(alpha: 0.1) : Colors.transparent,
+                      color: isSelected
+                          ? colors.gold.withValues(alpha: 0.1)
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: isSelected ? Border.all(color: colors.gold.withValues(alpha: 0.3)) : null,
+                      border: isSelected
+                          ? Border.all(
+                              color: colors.gold.withValues(alpha: 0.3),
+                            )
+                          : null,
                     ),
                     child: Row(
                       children: [
@@ -760,15 +830,28 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                           width: 40,
                           height: 40,
                           alignment: Alignment.center,
-                          child: Text(country.flag, style: const TextStyle(fontSize: 24)),
+                          child: Text(
+                            country.flag,
+                            style: const TextStyle(fontSize: 24),
+                          ),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              AppText(country.name, variant: AppTextVariant.bodyLarge, color: isSelected ? colors.gold : colors.textPrimary),
-                              AppText('${country.fullPrefix} • ${country.currencies.join(", ")}', variant: AppTextVariant.bodySmall, color: colors.textTertiary),
+                              AppText(
+                                country.name,
+                                variant: AppTextVariant.bodyLarge,
+                                color: isSelected
+                                    ? colors.gold
+                                    : colors.textPrimary,
+                              ),
+                              AppText(
+                                '${country.fullPrefix} • ${country.currencies.join(", ")}',
+                                variant: AppTextVariant.bodySmall,
+                                color: colors.textTertiary,
+                              ),
                             ],
                           ),
                         ),
@@ -776,8 +859,15 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                           Container(
                             width: 24,
                             height: 24,
-                            decoration: BoxDecoration(color: colors.gold, shape: BoxShape.circle),
-                            child: Icon(Icons.check_rounded, color: colors.textInverse, size: 16),
+                            decoration: BoxDecoration(
+                              color: colors.gold,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.check_rounded,
+                              color: colors.textInverse,
+                              size: 16,
+                            ),
                           ),
                       ],
                     ),

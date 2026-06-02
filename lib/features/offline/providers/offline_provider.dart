@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/connectivity/connectivity_service.dart';
+import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
 import 'package:usdc_wallet/services/offline/offline_cache_service.dart';
 import 'package:usdc_wallet/services/offline/pending_transfer_queue.dart';
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
@@ -49,16 +49,23 @@ class OfflineNotifier extends Notifier<OfflineState> {
 
   @override
   OfflineState build() {
+    ref.listen<ConnectivityState>(connectivityProvider, (previous, next) {
+      _handleConnectivityChange(next.isOnline);
+    });
     _initialize();
     return const OfflineState();
   }
 
   Future<void> _initialize() async {
     // Initialize services
-    final cacheServiceAsync = await ref.read(offlineCacheServiceFutureProvider.future);
+    final cacheServiceAsync = await ref.read(
+      offlineCacheServiceFutureProvider.future,
+    );
     _cacheService = cacheServiceAsync;
 
-    final queueAsync = await ref.read(pendingTransferQueueFutureProvider.future);
+    final queueAsync = await ref.read(
+      pendingTransferQueueFutureProvider.future,
+    );
     _queue = queueAsync;
 
     // Load initial state
@@ -66,27 +73,18 @@ class OfflineNotifier extends Notifier<OfflineState> {
     final pendingCount = _queue?.getPendingCount() ?? 0;
 
     state = state.copyWith(
+      isOnline: ref.read(connectivityProvider).isOnline,
       lastSync: lastSync,
       pendingTransferCount: pendingCount,
     );
-
-    // Listen to connectivity changes
-    ref.listen(connectivityStatusProvider, (previous, next) {
-      next.when(
-        data: (status) => _handleConnectivityChange(status),
-        loading: () {},
-        error: (_, __) {},
-      );
-    });
   }
 
   // ============================================================
   // Connectivity Handling
   // ============================================================
 
-  void _handleConnectivityChange(ConnectivityStatus status) {
+  void _handleConnectivityChange(bool isNowOnline) {
     final wasOffline = !state.isOnline;
-    final isNowOnline = status == ConnectivityStatus.online;
 
     state = state.copyWith(isOnline: isNowOnline);
 
@@ -101,10 +99,7 @@ class OfflineNotifier extends Notifier<OfflineState> {
   // ============================================================
 
   /// Cache wallet data
-  Future<void> cacheWalletData({
-    double? balance,
-    String? walletId,
-  }) async {
+  Future<void> cacheWalletData({double? balance, String? walletId}) async {
     if (_cacheService == null) return;
 
     if (balance != null) {
@@ -134,7 +129,7 @@ class OfflineNotifier extends Notifier<OfflineState> {
     required double amount,
     String? description,
   }) async {
-    if (_queue == null) throw Exception('Queue not initialized');
+    _queue ??= await ref.read(pendingTransferQueueFutureProvider.future);
 
     final transfer = PendingTransfer(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -143,13 +138,13 @@ class OfflineNotifier extends Notifier<OfflineState> {
       amount: amount,
       description: description,
       timestamp: DateTime.now(),
+      status: TransferStatus.needsAuthorization,
     );
 
     await _queue!.enqueue(transfer);
 
-    state = state.copyWith(
-      pendingTransferCount: _queue!.getPendingCount(),
-    );
+    state = state.copyWith(pendingTransferCount: _queue!.getPendingCount());
+    await ref.read(connectivityProvider.notifier).refreshPendingCount();
 
     return transfer.id;
   }
@@ -183,10 +178,7 @@ class OfflineNotifier extends Notifier<OfflineState> {
         pendingTransferCount: _queue?.getPendingCount() ?? 0,
       );
     } catch (e) {
-      state = state.copyWith(
-        isSyncing: false,
-        syncError: e.toString(),
-      );
+      state = state.copyWith(isSyncing: false, syncError: e.toString());
     }
   }
 
@@ -206,8 +198,8 @@ class OfflineNotifier extends Notifier<OfflineState> {
           recipientPhone: transfer.recipientPhone,
           amount: transfer.amount,
           note: transfer.description,
-          pinToken: '',
-          idempotencyKey: transfer.id,
+          pinToken: transfer.pinToken!,
+          idempotencyKey: transfer.idempotencyKey!,
         );
 
         await _queue!.markCompleted(transfer.id);
@@ -271,21 +263,17 @@ class OfflineNotifier extends Notifier<OfflineState> {
     if (_queue == null || !state.isOnline) return;
 
     await _queue!.updateTransferStatus(transferId, TransferStatus.pending);
-    state = state.copyWith(
-      pendingTransferCount: _queue!.getPendingCount(),
-    );
+    state = state.copyWith(pendingTransferCount: _queue!.getPendingCount());
 
     await _processPendingTransfers();
   }
 
   /// Cancel pending transfer
   Future<void> cancelPendingTransfer(String transferId) async {
-    if (_queue == null) return;
+    _queue ??= await ref.read(pendingTransferQueueFutureProvider.future);
 
     await _queue!.removeTransfer(transferId);
-    state = state.copyWith(
-      pendingTransferCount: _queue!.getPendingCount(),
-    );
+    state = state.copyWith(pendingTransferCount: _queue!.getPendingCount());
   }
 }
 

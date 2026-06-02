@@ -4,10 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Deposit Amount Screen
@@ -15,17 +17,15 @@ class DepositAmountScreen extends ConsumerStatefulWidget {
   const DepositAmountScreen({super.key});
 
   @override
-  ConsumerState<DepositAmountScreen> createState() => _DepositAmountScreenState();
+  ConsumerState<DepositAmountScreen> createState() =>
+      _DepositAmountScreenState();
 }
 
 class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
   final _amountController = TextEditingController();
   bool _isXOF = true; // Toggle between XOF and USD
+  bool _currencyInitialized = false;
   String? _amountError;
-
-  // Limits
-  static const double _minXOF = 500;
-  static const double _maxXOF = 5000000;
 
   @override
   void dispose() {
@@ -37,16 +37,19 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final country = ref.watch(selectedCountryProvider);
     final exchangeRateAsync = ref.watch(exchangeRateProvider);
+
+    if (!_currencyInitialized) {
+      _isXOF = country.primaryCurrency == 'XOF';
+      _currencyInitialized = true;
+    }
 
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: AppText(
-          l10n.deposit_title,
-          variant: AppTextVariant.titleLarge,
-        ),
+        title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -54,7 +57,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             children: [
               Expanded(
@@ -64,7 +67,8 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                     children: [
                       // Exchange Rate Card
                       exchangeRateAsync.when(
-                        data: (rate) => _buildExchangeRateCard(rate, colors, l10n),
+                        data: (rate) =>
+                            _buildExchangeRateCard(rate, colors, l10n),
                         loading: () => const SizedBox.shrink(),
                         error: (_, __) => const SizedBox.shrink(),
                       ),
@@ -73,7 +77,8 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
                       // Amount Input Card
                       exchangeRateAsync.when(
-                        data: (rate) => _buildAmountCard(rate, colors, l10n),
+                        data: (rate) =>
+                            _buildAmountCard(rate, colors, l10n, country),
                         loading: () => _buildLoadingCard(colors, l10n),
                         error: (err, _) => _buildErrorCard(colors, l10n),
                       ),
@@ -88,7 +93,8 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       exchangeRateAsync.when(
-                        data: (rate) => _buildQuickAmounts(rate, colors),
+                        data: (rate) =>
+                            _buildQuickAmounts(rate, colors, country),
                         loading: () => const SizedBox.shrink(),
                         error: (_, __) => const SizedBox.shrink(),
                       ),
@@ -96,7 +102,12 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                       const SizedBox(height: AppSpacing.xl),
 
                       // Min/Max Info
-                      _buildLimitsInfo(colors, l10n),
+                      _buildLimitsInfo(
+                        colors,
+                        l10n,
+                        country,
+                        exchangeRateAsync.value,
+                      ),
                     ],
                   ),
                 ),
@@ -108,7 +119,9 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
               exchangeRateAsync.when(
                 data: (rate) => AppButton(
                   label: l10n.action_continue,
-                  onPressed: _canContinue() ? () => _handleContinue(rate) : null,
+                  onPressed: _canContinue(rate, country)
+                      ? () => _handleContinue(rate)
+                      : null,
                   isFullWidth: true,
                 ),
                 loading: () => AppButton(
@@ -129,16 +142,35 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  Widget _buildExchangeRateCard(ExchangeRate rate, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildExchangeRateCard(
+    ExchangeRate rate,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
+    if (!_isXOF) {
+      return AppCard(
+        variant: AppCardVariant.elevated,
+        child: Row(
+          children: [
+            Icon(Icons.currency_exchange, color: colors.gold, size: 24),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppText(
+                '1 USD = 1 USDC',
+                variant: AppTextVariant.bodyMedium,
+                color: colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return AppCard(
       variant: AppCardVariant.elevated,
       child: Row(
         children: [
-          Icon(
-            Icons.currency_exchange,
-            color: colors.gold,
-            size: 24,
-          ),
+          Icon(Icons.currency_exchange, color: colors.gold, size: 24),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -169,9 +201,17 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  Widget _buildAmountCard(ExchangeRate rate, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildAmountCard(
+    ExchangeRate rate,
+    ThemeColors colors,
+    AppLocalizations l10n,
+    CountryConfig country,
+  ) {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final convertedAmount = _isXOF ? rate.convert(amount) : rate.convertBack(amount);
+    final convertedAmount = _isXOF ? rate.convert(amount) : amount;
+    final currencies = country.supportedDepositCurrencies
+        .where((currency) => currency == 'XOF' || currency == 'USD')
+        .toList();
 
     return AppCard(
       variant: AppCardVariant.elevated,
@@ -181,19 +221,16 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
           // Currency Toggle
           Row(
             children: [
-              _CurrencyTab(
-                label: 'XOF',
-                isSelected: _isXOF,
-                onTap: () => setState(() => _isXOF = true),
-                colors: colors,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              _CurrencyTab(
-                label: 'USD',
-                isSelected: !_isXOF,
-                onTap: () => setState(() => _isXOF = false),
-                colors: colors,
-              ),
+              for (final currency in currencies) ...[
+                _CurrencyTab(
+                  label: currency,
+                  isSelected: _currency == currency,
+                  onTap: () => _selectCurrency(currency == 'XOF', rate),
+                  colors: colors,
+                ),
+                if (currency != currencies.last)
+                  const SizedBox(width: AppSpacing.sm),
+              ],
             ],
           ),
 
@@ -203,41 +240,30 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
           Row(
             children: [
               AppText(
-                _isXOF ? 'XOF' : 'USD',
+                _currency,
                 variant: AppTextVariant.titleLarge,
                 color: colors.textSecondary,
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: TextField(
+                child: AppInput(
                   controller: _amountController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  variant: AppInputVariant.amount,
+                  hint: '0.00',
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,2}'),
+                    ),
                   ],
-                  style: AppTypography.displaySmall.copyWith(
-                    color: _amountError != null ? colors.error : colors.textPrimary,
-                  ),
-                  textAlign: TextAlign.right,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: '0.00',
-                    hintStyle: TextStyle(color: colors.textTertiary),
-                  ),
+                  error: _amountError,
                   onChanged: (_) => _validateAmount(rate),
                 ),
               ),
             ],
           ),
-
-          if (_amountError != null) ...[
-            const SizedBox(height: AppSpacing.xs),
-            AppText(
-              _amountError!,
-              variant: AppTextVariant.bodySmall,
-              color: colors.errorText,
-            ),
-          ],
 
           const SizedBox(height: AppSpacing.lg),
           Divider(color: colors.borderSubtle, height: 1),
@@ -247,17 +273,24 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              AppText(
-                _isXOF ? l10n.deposit_youWillReceive : l10n.deposit_youWillPay,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textSecondary,
+              Expanded(
+                child: AppText(
+                  l10n.deposit_youWillReceive,
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                ),
               ),
-              AppText(
-                _isXOF
-                    ? formatXof(convertedAmount)
-                    : '${convertedAmount.toStringAsFixed(0)} XOF',
-                variant: AppTextVariant.titleMedium,
-                color: colors.gold,
+              const SizedBox(width: AppSpacing.md),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: AppText(
+                    formatUsdc(convertedAmount),
+                    variant: AppTextVariant.titleMedium,
+                    color: colors.gold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -266,10 +299,12 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  Widget _buildQuickAmounts(ExchangeRate rate, ThemeColors colors) {
-    final amounts = _isXOF
-        ? [5000.0, 10000.0, 25000.0, 50000.0]
-        : [10.0, 20.0, 50.0, 100.0];
+  Widget _buildQuickAmounts(
+    ExchangeRate rate,
+    ThemeColors colors,
+    CountryConfig country,
+  ) {
+    final amounts = _quickAmounts(country);
 
     return Row(
       children: amounts.map((amount) {
@@ -280,7 +315,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
             ),
             child: _QuickAmountButton(
               amount: amount,
-              currency: _isXOF ? 'XOF' : 'USD',
+              currency: _currency,
               onTap: () => _setAmount(amount, rate),
               colors: colors,
             ),
@@ -290,7 +325,13 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  Widget _buildLimitsInfo(ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildLimitsInfo(
+    ThemeColors colors,
+    AppLocalizations l10n,
+    CountryConfig country,
+    ExchangeRate? rate,
+  ) {
+    final limits = _limits(country, rate);
     return AppCard(
       variant: AppCardVariant.flat,
       child: Row(
@@ -307,7 +348,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                   color: colors.textSecondary,
                 ),
                 AppText(
-                  'Min: ${_formatAmount(_minXOF)} XOF • Max: ${_formatAmount(_maxXOF)} XOF',
+                  'Min: ${_formatAmount(limits.$1, _currency)} • Max: ${_formatAmount(limits.$2, _currency)}',
                   variant: AppTextVariant.bodySmall,
                   color: colors.textTertiary,
                 ),
@@ -344,20 +385,34 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     );
   }
 
-  void _validateAmount(ExchangeRate rate) {
-    final amount = double.tryParse(_amountController.text) ?? 0;
-    final amountXOF = _isXOF ? amount : rate.convertBack(amount);
+  void _selectCurrency(bool isXof, ExchangeRate rate) {
+    if (_isXOF == isXof) return;
 
     setState(() {
-      if (_amountController.text.isEmpty) {
-        _amountError = null;
-      } else if (amountXOF < _minXOF) {
-        _amountError = 'Minimum ${_formatAmount(_minXOF)} XOF';
-      } else if (amountXOF > _maxXOF) {
-        _amountError = 'Maximum ${_formatAmount(_maxXOF)} XOF';
-      } else {
-        _amountError = null;
-      }
+      _isXOF = isXof;
+      _amountError = _validationErrorFor(rate);
+    });
+  }
+
+  String? _validationErrorFor(ExchangeRate rate) {
+    final amount = double.tryParse(_amountController.text) ?? 0;
+    final country = ref.read(selectedCountryProvider);
+    final limits = _limits(country, rate);
+
+    if (_amountController.text.isEmpty) {
+      return null;
+    } else if (amount < limits.$1) {
+      return 'Minimum ${_formatAmount(limits.$1, _currency)}';
+    } else if (amount > limits.$2) {
+      return 'Maximum ${_formatAmount(limits.$2, _currency)}';
+    }
+
+    return null;
+  }
+
+  void _validateAmount(ExchangeRate rate) {
+    setState(() {
+      _amountError = _validationErrorFor(rate);
     });
   }
 
@@ -366,9 +421,10 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     _validateAmount(rate);
   }
 
-  bool _canContinue() {
+  bool _canContinue(ExchangeRate rate, CountryConfig country) {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    return amount > 0 && _amountError == null;
+    if (!country.supportedDepositCurrencies.contains(_currency)) return false;
+    return amount > 0 && _validationErrorFor(rate) == null;
   }
 
   void _handleContinue(ExchangeRate rate) {
@@ -381,13 +437,38 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
     context.push('/deposit/provider');
   }
 
-  String _formatAmount(double amount) {
+  String get _currency => _isXOF ? 'XOF' : 'USD';
+
+  (double, double) _limits(CountryConfig country, ExchangeRate? rate) {
+    if (_isXOF) {
+      return (country.minDepositAmount, country.maxDepositAmount);
+    }
+    if (country.primaryCurrency == 'XOF' && rate != null) {
+      return (
+        rate.convert(country.minDepositAmount),
+        rate.convert(country.maxDepositAmount),
+      );
+    }
+    return (country.minDepositAmount, country.maxDepositAmount);
+  }
+
+  List<double> _quickAmounts(CountryConfig country) {
+    if (_isXOF || country.primaryCurrency == 'USD') {
+      return country.quickDepositAmounts;
+    }
+    return const [10, 20, 50, 100];
+  }
+
+  String _formatAmount(double amount, [String? currency]) {
+    if ((currency ?? _currency) == 'USD') {
+      return '\$${amount.toStringAsFixed(amount >= 100 ? 0 : 2)}';
+    }
     if (amount >= 1000000) {
       return '${(amount / 1000000).toStringAsFixed(1)}M';
     } else if (amount >= 1000) {
       return '${(amount / 1000).toStringAsFixed(0)}K';
     }
-    return amount.toStringAsFixed(0);
+    return '${amount.toStringAsFixed(0)} XOF';
   }
 
   String _formatTimestamp(DateTime timestamp) {
@@ -425,11 +506,14 @@ class _CurrencyTab extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? colors.gold : colors.elevated,
           borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(
+            color: isSelected ? colors.gold : colors.borderSubtle,
+          ),
         ),
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? colors.textInverse : colors.textSecondary,
+          color: isSelected ? const Color(0xFF19130A) : colors.textSecondary,
         ),
       ),
     );
@@ -459,24 +543,19 @@ class _QuickAmountButton extends StatelessWidget {
         label = amount.toStringAsFixed(0);
       }
     } else {
-      label = formatXof(amount);
+      label = '\$${amount.toStringAsFixed(0)}';
     }
 
-    return GestureDetector(
+    return AppCard(
+      variant: AppCardVariant.flat,
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      borderRadius: AppRadius.md,
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        decoration: BoxDecoration(
-          color: colors.elevated,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: colors.borderSubtle),
-        ),
-        child: Center(
-          child: AppText(
-            label,
-            variant: AppTextVariant.labelMedium,
-            color: colors.textPrimary,
-          ),
+      child: Center(
+        child: AppText(
+          label,
+          variant: AppTextVariant.labelMedium,
+          color: colors.textPrimary,
         ),
       ),
     );

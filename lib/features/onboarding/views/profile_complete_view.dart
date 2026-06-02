@@ -49,7 +49,9 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
       );
 
       // Update local state
-      ref.read(userStateMachineProvider.notifier).updateName(
+      ref
+          .read(userStateMachineProvider.notifier)
+          .updateName(
             firstName: _firstNameController.text.trim(),
             lastName: _lastNameController.text.trim(),
           );
@@ -95,10 +97,7 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
                   height: 64,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        colors.gold,
-                        colors.gold.withValues(alpha: 0.7),
-                      ],
+                      colors: [colors.gold, colors.gold.withValues(alpha: 0.7)],
                     ),
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
@@ -167,7 +166,11 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: colors.error, size: 20),
+                        Icon(
+                          Icons.error_outline,
+                          color: colors.error,
+                          size: 20,
+                        ),
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: AppText(
@@ -190,20 +193,6 @@ class _ProfileCompleteViewState extends ConsumerState<ProfileCompleteView> {
                   isLoading: _isSubmitting,
                   isFullWidth: true,
                   variant: AppButtonVariant.primary,
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Skip for now
-                Center(
-                  child: TextButton(
-                    onPressed: () => context.go('/home'),
-                    child: AppText(
-                      l10n.action_skip,
-                      variant: AppTextVariant.bodyMedium,
-                      color: colors.textTertiary,
-                    ),
-                  ),
                 ),
 
                 const SizedBox(height: AppSpacing.md),

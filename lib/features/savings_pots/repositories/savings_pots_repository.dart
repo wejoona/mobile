@@ -35,13 +35,33 @@ class SavingsPotsRepository {
   }
 
   /// Deposit into a savings pot.
-  Future<SavingsPot> depositToPot(String potId, double amount) async {
-    return _service.deposit(potId, amount);
+  Future<SavingsPot> depositToPot(
+    String potId,
+    double amount, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
+    return _service.deposit(
+      potId,
+      amount,
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+    );
   }
 
   /// Withdraw from a savings pot.
-  Future<SavingsPot> withdrawFromPot(String potId, double amount) async {
-    return _service.withdraw(potId, amount);
+  Future<SavingsPot> withdrawFromPot(
+    String potId,
+    double amount, {
+    required String pinToken,
+    String? idempotencyKey,
+  }) async {
+    return _service.withdraw(
+      potId,
+      amount,
+      pinToken: pinToken,
+      idempotencyKey: idempotencyKey,
+    );
   }
 
   /// Delete a savings pot.

@@ -7,13 +7,13 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
-import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Provider Selection Screen
 ///
-/// Fetches providers from API and shows list: Orange Money, MTN MoMo, Moov Money, Wave
-/// Each shows its PaymentMethodType (OTP, PUSH, QR_LINK)
+/// Fetches country-aware providers from API.
+/// Each shows its PaymentMethodType (OTP, PUSH, QR_LINK, CARD, ACH, CRYPTO)
 /// User selects → calls initiate API → navigates to payment instructions
 class ProviderSelectionScreen extends ConsumerWidget {
   const ProviderSelectionScreen({super.key});
@@ -24,15 +24,13 @@ class ProviderSelectionScreen extends ConsumerWidget {
     final colors = context.colors;
     final depositState = ref.watch(depositProvider);
     final providersAsync = ref.watch(providersListProvider);
+    final country = ref.watch(selectedCountryProvider);
 
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: AppText(
-          l10n.deposit_title,
-          variant: AppTextVariant.titleLarge,
-        ),
+        title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -40,46 +38,70 @@ class ProviderSelectionScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Amount Summary Card
               if ((depositState.amountXOF ?? 0) > 0) ...[
                 AppCard(
-                  variant: AppCardVariant.elevated,
+                  variant: AppCardVariant.flat,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            l10n.deposit_amount,
-                            variant: AppTextVariant.bodySmall,
-                            color: colors.textSecondary,
-                          ),
-                          AppText(
-                            '${(depositState.amountXOF ?? 0).toStringAsFixed(0)} XOF',
-                            variant: AppTextVariant.titleMedium,
-                            color: colors.textPrimary,
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppText(
+                              '${l10n.deposit_amount} · ${country.code}',
+                              variant: AppTextVariant.bodySmall,
+                              color: colors.textSecondary,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: AppText(
+                                  _formatSourceAmount(depositState),
+                                  variant: AppTextVariant.titleMedium,
+                                  color: colors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          AppText(
-                            l10n.deposit_youWillReceive,
-                            variant: AppTextVariant.bodySmall,
-                            color: colors.textSecondary,
-                          ),
-                          AppText(
-                            formatXof(depositState.amountUSD ?? 0),
-                            variant: AppTextVariant.titleMedium,
-                            color: colors.gold,
-                          ),
-                        ],
+                      const SizedBox(width: AppSpacing.lg),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            AppText(
+                              l10n.deposit_youWillReceive,
+                              variant: AppTextVariant.bodySmall,
+                              color: colors.textSecondary,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: AppSpacing.xxs),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerRight,
+                                child: AppText(
+                                  formatUsdc(depositState.amountUSD ?? 0),
+                                  variant: AppTextVariant.titleMedium,
+                                  color: colors.gold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -105,9 +127,9 @@ class ProviderSelectionScreen extends ConsumerWidget {
               Expanded(
                 child: providersAsync.when(
                   data: (providers) => _buildProvidersList(
-                    providers, 
-                    colors, 
-                    l10n, 
+                    providers,
+                    colors,
+                    l10n,
                     ref,
                     depositState.isLoading,
                   ),
@@ -123,7 +145,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
   }
 
   Widget _buildProvidersList(
-    List<dynamic> providers,
+    List<ProviderData> providers,
     ThemeColors colors,
     AppLocalizations l10n,
     WidgetRef ref,
@@ -135,12 +157,14 @@ class ProviderSelectionScreen extends ConsumerWidget {
 
     return ListView.separated(
       itemCount: providers.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final provider = providers[index];
         return _ProviderTile(
           provider: provider,
           colors: colors,
+          l10n: l10n,
           isLoading: isLoading,
           onTap: () => _selectProvider(context, provider, ref),
         );
@@ -165,16 +189,16 @@ class ProviderSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorState(ThemeColors colors, AppLocalizations l10n, WidgetRef ref) {
+  Widget _buildErrorState(
+    ThemeColors colors,
+    AppLocalizations l10n,
+    WidgetRef ref,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: colors.error,
-          ),
+          Icon(Icons.error_outline, size: 64, color: colors.error),
           const SizedBox(height: AppSpacing.lg),
           AppText(
             l10n.common_error,
@@ -203,11 +227,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.payment_outlined,
-            size: 64,
-            color: colors.textTertiary,
-          ),
+          Icon(Icons.payment_outlined, size: 64, color: colors.textTertiary),
           const SizedBox(height: AppSpacing.lg),
           AppText(
             l10n.deposit_noProvidersAvailable,
@@ -226,13 +246,17 @@ class ProviderSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _selectProvider(BuildContext context, ProviderData provider, WidgetRef ref) async {
+  Future<void> _selectProvider(
+    BuildContext context,
+    ProviderData provider,
+    WidgetRef ref,
+  ) async {
     // Select the provider
     ref.read(depositProvider.notifier).selectProviderData(provider);
-    
+
     // Initiate the deposit immediately
     await ref.read(depositProvider.notifier).initiateDeposit();
-    
+
     // Navigate to payment instructions if successful, passing response as extra
     final response = ref.read(depositProvider).response;
     if (response != null && context.mounted) {
@@ -244,12 +268,14 @@ class ProviderSelectionScreen extends ConsumerWidget {
 class _ProviderTile extends StatelessWidget {
   final ProviderData provider;
   final ThemeColors colors;
+  final AppLocalizations l10n;
   final bool isLoading;
   final VoidCallback onTap;
 
   const _ProviderTile({
     required this.provider,
     required this.colors,
+    required this.l10n,
     required this.isLoading,
     required this.onTap,
   });
@@ -257,156 +283,153 @@ class _ProviderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      variant: AppCardVariant.elevated,
+      key: ValueKey('deposit_provider_${provider.id}'),
+      variant: AppCardVariant.flat,
+      borderRadius: AppRadius.lg,
       onTap: isLoading ? null : onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          children: [
-            // Provider Logo/Icon
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: _getProviderColor().withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              child: Center(
-                child: _buildProviderIcon(),
-              ),
+      child: Row(
+        children: [
+          // Provider Logo/Icon
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: _getProviderColor().withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            const SizedBox(width: AppSpacing.lg),
+            child: Center(child: _buildProviderIcon()),
+          ),
+          const SizedBox(width: AppSpacing.lg),
 
-            // Provider Info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    provider.name,
-                    variant: AppTextVariant.titleMedium,
-                    color: colors.textPrimary,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Row(
-                    children: [
-                      Icon(
-                        _getPaymentMethodIcon(),
-                        size: 16,
-                        color: colors.textSecondary,
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                      AppText(
+          // Provider Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  provider.name,
+                  variant: AppTextVariant.titleMedium,
+                  color: colors.textPrimary,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  children: [
+                    Icon(
+                      _getPaymentMethodIcon(),
+                      size: 16,
+                      color: colors.textSecondary,
+                    ),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: AppText(
                         _getPaymentMethodDescription(),
                         variant: AppTextVariant.bodySmall,
                         color: colors.textSecondary,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            // Loading or Arrow
-            if (isLoading)
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colors.gold,
+                    ),
+                  ],
                 ),
-              )
-            else
-              Icon(
-                Icons.chevron_right,
-                color: colors.textTertiary,
+              ],
+            ),
+          ),
+
+          // Loading or Arrow
+          if (isLoading)
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colors.gold,
               ),
-          ],
-        ),
+            )
+          else
+            Icon(Icons.chevron_right, color: colors.textTertiary),
+        ],
       ),
     );
   }
 
   Color _getProviderColor() {
-    // Use enum provider for color if available, otherwise default
-    final enumProvider = provider.enumProvider;
-    if (enumProvider != null) {
-      switch (enumProvider) {
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.orangeMoney:
-          return const Color(0xFFFF6B35);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.mtnMomo:
-          return const Color(0xFFFFCB05);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.moovMoney:
-          return const Color(0xFF0066CC);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.wave:
-          return const Color(0xFF4A148C);
-      }
+    switch (provider.id.toUpperCase()) {
+      case 'OMCI':
+      case 'ORANGE_MONEY':
+        return const Color(0xFFFF6B35);
+      case 'MTNCI':
+      case 'MTN_MOMO':
+        return const Color(0xFFFFCB05);
+      case 'MOOVCI':
+      case 'MOOV_MONEY':
+        return const Color(0xFF0066CC);
+      case 'WAVECI':
+      case 'WAVE':
+        return const Color(0xFF4A148C);
+      case 'US_CARD':
+        return const Color(0xFF2563EB);
+      case 'US_ACH':
+        return const Color(0xFF047857);
+      case 'USDC_CRYPTO':
+        return const Color(0xFF2775CA);
+      default:
+        return colors.gold;
     }
-    return colors.gold;
   }
 
   Widget _buildProviderIcon() {
-    // Try to load from assets first, fallback to generic icon
-    final enumProvider = provider.enumProvider;
-    if (enumProvider != null) {
-      return Image.asset(
-        enumProvider,
-        width: 32,
-        height: 32,
-        errorBuilder: (context, error, stackTrace) => _getGenericIcon(),
-      );
-    }
     return _getGenericIcon();
   }
 
   Widget _getGenericIcon() {
-    return Icon(
-      _getPaymentMethodIcon(),
-      color: _getProviderColor(),
-      size: 32,
-    );
+    return Icon(_getPaymentMethodIcon(), color: _getProviderColor(), size: 32);
   }
 
   IconData _getPaymentMethodIcon() {
-    switch (provider.paymentMethodType) {
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.otp:
+    switch (provider.paymentMethodType?.toUpperCase()) {
+      case 'OTP':
         return Icons.dialpad;
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.push:
+      case 'PUSH':
         return Icons.notifications_active;
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.qrLink:
+      case 'QR_LINK':
         return Icons.qr_code;
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.card:
+      case 'CARD':
         return Icons.credit_card;
+      case 'ACH':
+      case 'BANK_TRANSFER':
+        return Icons.account_balance;
+      case 'CRYPTO':
+        return Icons.account_balance_wallet;
       default:
         return Icons.payment;
     }
   }
 
   String _getPaymentMethodDescription() {
-    switch (provider.paymentMethodType) {
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.otp:
-        return 'Enter OTP code';
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.push:
-        return 'Approve on your phone';
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.qrLink:
-        return 'Scan QR or open app';
-      // ignore: constant_pattern_never_matches_value_type
-      case PaymentMethodType.card:
-        return 'Card payment';
+    switch (provider.paymentMethodType?.toUpperCase()) {
+      case 'OTP':
+        return l10n.deposit_enterOTP;
+      case 'PUSH':
+        return l10n.deposit_approveOnPhone;
+      case 'QR_LINK':
+        return l10n.deposit_scanQRCode;
+      case 'CARD':
+        return l10n.deposit_cardPayment;
+      case 'ACH':
+      case 'BANK_TRANSFER':
+        return l10n.deposit_bankTransfer;
+      case 'CRYPTO':
+        return l10n.deposit_cryptoTransfer;
       default:
         return '';
     }
   }
+}
+
+String _formatSourceAmount(DepositState depositState) {
+  final currency = depositState.sourceCurrency ?? 'XOF';
+  if (currency == 'USD') {
+    return '\$${(depositState.amountUSD ?? 0).toStringAsFixed(2)}';
+  }
+  return formatXof(depositState.amountXOF ?? 0);
 }

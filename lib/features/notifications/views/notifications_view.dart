@@ -38,26 +38,35 @@ class NotificationsView extends ConsumerWidget {
         loading: () => Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
-            children: List.generate(5, (_) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: Row(
-                children: [
-                  const ShimmerLoading.circle(size: 40),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      ShimmerLoading(width: 180, height: 14),
-                      SizedBox(height: AppSpacing.xs),
-                      ShimmerLoading(width: 120, height: 12),
-                    ],
-                  )),
-                ],
+            children: List.generate(
+              5,
+              (_) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                child: Row(
+                  children: [
+                    const ShimmerLoading.circle(size: 40),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          ShimmerLoading(width: 180, height: 14),
+                          SizedBox(height: AppSpacing.xs),
+                          ShimmerLoading(width: 120, height: 12),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
           ),
         ),
-        error: (e, _) => Center(child: Text(AppLocalizations.of(context)!.common_errorFormat(e.toString()))),
+        error: (e, _) => Center(
+          child: Text(
+            AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+          ),
+        ),
         data: (notifications) {
           if (notifications.isEmpty) {
             return const EmptyState(
@@ -70,7 +79,12 @@ class NotificationsView extends ConsumerWidget {
             onRefresh: () => ref.refresh(notificationsProvider.future),
             child: ListView.separated(
               itemCount: notifications.length,
-              separatorBuilder: (_, __) => Divider(height: 0.5, color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3)),
+              separatorBuilder: (_, __) => Divider(
+                height: 0.5,
+                color: Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
               itemBuilder: (_, i) {
                 final notification = notifications[i];
                 return NotificationTile(
@@ -81,11 +95,6 @@ class NotificationsView extends ConsumerWidget {
                       await actions.markAsRead(notification.id);
                       ref.invalidate(notificationsProvider);
                     }
-                  },
-                  onDismiss: () async {
-                    final actions = ref.read(notificationActionsProvider);
-                    await actions.delete(notification.id);
-                    ref.invalidate(notificationsProvider);
                   },
                 );
               },

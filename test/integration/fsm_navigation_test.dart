@@ -144,84 +144,90 @@ void main() {
       expect(screen.route, equals('/kyc-expired'));
     });
 
-    test('Screen precedence - Auth locked takes priority over wallet frozen',
-        () {
-      // Arrange - Multiple blocking states
-      final appState = AppState(
-        auth: AuthLocked(
-          phone: '+22512345678',
-          lockedAt: DateTime.now(),
-          lockDuration: const Duration(minutes: 15),
-          reason: 'Too many failed attempts',
-        ),
-        wallet: WalletFrozen(
-          walletId: 'wallet123',
-          frozenAt: DateTime.now(),
-          reason: 'Suspicious activity',
-        ),
-        kyc: const KycInitial(),
-        session: const SessionNone(),
-      );
+    test(
+      'Screen precedence - Auth locked takes priority over wallet frozen',
+      () {
+        // Arrange - Multiple blocking states
+        final appState = AppState(
+          auth: AuthLocked(
+            phone: '+22512345678',
+            lockedAt: DateTime.now(),
+            lockDuration: const Duration(minutes: 15),
+            reason: 'Too many failed attempts',
+          ),
+          wallet: WalletFrozen(
+            walletId: 'wallet123',
+            frozenAt: DateTime.now(),
+            reason: 'Suspicious activity',
+          ),
+          kyc: const KycInitial(),
+          session: const SessionNone(),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - AuthLocked should take precedence
-      expect(screen, equals(AppScreen.authLocked));
-    });
+        // Assert - AuthLocked should take precedence
+        expect(screen, equals(AppScreen.authLocked));
+      },
+    );
 
-    test('Screen precedence - Session locked takes priority over wallet frozen',
-        () {
-      // Arrange
-      final appState = AppState(
-        auth: const AuthAuthenticated(
-          userId: 'user123',
-          phone: '+22512345678',
-          accessToken: 'token123',
-        ),
-        wallet: WalletFrozen(
-          walletId: 'wallet123',
-          frozenAt: DateTime.now(),
-          reason: 'Suspicious activity',
-        ),
-        kyc: const KycInitial(),
-        session: SessionLocked(
-          lockedAt: DateTime.now(),
-          reason: 'Session timeout',
-        ),
-      );
+    test(
+      'Screen precedence - Session locked takes priority over wallet frozen',
+      () {
+        // Arrange
+        final appState = AppState(
+          auth: const AuthAuthenticated(
+            userId: 'user123',
+            phone: '+22512345678',
+            accessToken: 'token123',
+          ),
+          wallet: WalletFrozen(
+            walletId: 'wallet123',
+            frozenAt: DateTime.now(),
+            reason: 'Suspicious activity',
+          ),
+          kyc: const KycInitial(),
+          session: SessionLocked(
+            lockedAt: DateTime.now(),
+            reason: 'Session timeout',
+          ),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - SessionLocked should take precedence
-      expect(screen, equals(AppScreen.sessionLocked));
-    });
+        // Assert - SessionLocked should take precedence
+        expect(screen, equals(AppScreen.sessionLocked));
+      },
+    );
 
-    test('Screen precedence - Auth states take priority over session states',
-        () {
-      // Arrange
-      final appState = AppState(
-        auth: AuthSuspended(
-          userId: 'user123',
-          phone: '+22512345678',
-          reason: 'Account suspended',
-          suspendedAt: DateTime.now(),
-        ),
-        wallet: const WalletNone(),
-        kyc: const KycInitial(),
-        session: SessionLocked(
-          lockedAt: DateTime.now(),
-          reason: 'Session locked',
-        ),
-      );
+    test(
+      'Screen precedence - Auth states take priority over session states',
+      () {
+        // Arrange
+        final appState = AppState(
+          auth: AuthSuspended(
+            userId: 'user123',
+            phone: '+22512345678',
+            reason: 'Account suspended',
+            suspendedAt: DateTime.now(),
+          ),
+          wallet: const WalletNone(),
+          kyc: const KycInitial(),
+          session: SessionLocked(
+            lockedAt: DateTime.now(),
+            reason: 'Session locked',
+          ),
+        );
 
-      // Act
-      final screen = appState.currentScreen;
+        // Act
+        final screen = appState.currentScreen;
 
-      // Assert - AuthSuspended should take precedence over SessionLocked
-      expect(screen, equals(AppScreen.authSuspended));
-    });
+        // Assert - AuthSuspended should take precedence over SessionLocked
+        expect(screen, equals(AppScreen.authSuspended));
+      },
+    );
 
     test('AppState correctly reports derived properties', () {
       // Arrange - Various states
@@ -308,10 +314,7 @@ void main() {
           usdcBalance: 100.0,
           lastUpdated: DateTime.now(),
         ),
-        kyc: KycExpired(
-          previousTier: KycTier.tier1,
-          expiredAt: DateTime.now(),
-        ),
+        kyc: KycExpired(previousTier: KycTier.tier1, expiredAt: DateTime.now()),
         session: const SessionNone(),
       );
       expect(kycExpiredState.isKycExpired, isTrue);
@@ -348,6 +351,31 @@ void main() {
           lastUpdated: DateTime.now(),
         ),
         kyc: KycVerified(tier: KycTier.tier1, verifiedAt: DateTime.now()),
+        session: const SessionNone(),
+      );
+
+      // Act
+      final screen = appState.currentScreen;
+
+      // Assert
+      expect(screen, equals(AppScreen.home));
+      expect(screen.route, equals('/home'));
+    });
+
+    test('Authenticated with wallet and no KYC navigates to home', () {
+      // Arrange - KYC banner on Home should prompt verification without blocking the wallet shell.
+      final appState = AppState(
+        auth: const AuthAuthenticated(
+          userId: 'user123',
+          phone: '+22512345678',
+          accessToken: 'token123',
+        ),
+        wallet: WalletReady(
+          walletId: 'wallet123',
+          usdcBalance: 100.0,
+          lastUpdated: DateTime.now(),
+        ),
+        kyc: const KycNone(),
         session: const SessionNone(),
       );
 
