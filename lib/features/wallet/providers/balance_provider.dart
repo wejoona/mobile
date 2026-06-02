@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -19,11 +20,18 @@ class WalletBalance {
   });
 
   factory WalletBalance.fromJson(Map<String, dynamic> json) => WalletBalance(
-    available: (json['available'] as num?)?.toDouble() ?? (json['balance'] as num?)?.toDouble() ?? 0,
+    available:
+        (json['available'] as num?)?.toDouble() ??
+        (json['balance'] as num?)?.toDouble() ??
+        0,
     pending: (json['pending'] as num?)?.toDouble() ?? 0,
-    total: (json['total'] as num?)?.toDouble() ?? (json['balance'] as num?)?.toDouble() ?? 0,
+    total:
+        (json['total'] as num?)?.toDouble() ??
+        (json['balance'] as num?)?.toDouble() ??
+        0,
     currency: json['currency'] as String? ?? 'USDC',
-    updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+    updatedAt:
+        DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
   );
 }
 
@@ -35,12 +43,28 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   final timer = Timer(const Duration(seconds: 30), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final response = await dio.get('/wallet');
-  final data = response.data as Map<String, dynamic>;
+  try {
+    final response = await dio.get('/wallet');
+    return _walletBalanceFromPayload(response.data);
+  } on DioException catch (error) {
+    if (error.response?.statusCode != 404) {
+      rethrow;
+    }
 
-  // The backend returns { walletId, currency, balances: [{ currency, available, pending, total }] }
-  // Extract the first USDC balance entry
-  final balances = data['balances'] as List? ?? [];
+    final response = await dio.post('/wallet/create');
+    return _walletBalanceFromPayload(response.data);
+  }
+});
+
+WalletBalance _walletBalanceFromPayload(dynamic payload) {
+  final data = _asMap(payload);
+  final envelopeData = _asMap(data['data']);
+  final wallet = envelopeData.isNotEmpty ? envelopeData : data;
+
+  // GET /wallet returns { walletId, currency, balances: [...] }.
+  // POST /wallet/create returns { id, currency, balance }.
+  // Extract the first balance entry when present, otherwise use root balance.
+  final balances = wallet['balances'] as List? ?? [];
   if (balances.isNotEmpty) {
     final first = balances.first as Map<String, dynamic>;
     return WalletBalance.fromJson({
@@ -52,8 +76,20 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
     });
   }
 
-  return WalletBalance(updatedAt: DateTime.now());
-});
+  return WalletBalance.fromJson({
+    'available': wallet['available'] ?? wallet['balance'] ?? 0,
+    'pending': wallet['pending'] ?? 0,
+    'total': wallet['total'] ?? wallet['balance'] ?? 0,
+    'currency': wallet['currency'] ?? 'USDC',
+    'updatedAt': DateTime.now().toIso8601String(),
+  });
+}
+
+Map<String, dynamic> _asMap(dynamic value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return const {};
+}
 
 /// Available balance shortcut.
 final availableBalanceProvider = Provider<double>((ref) {
@@ -61,6 +97,9 @@ final availableBalanceProvider = Provider<double>((ref) {
 });
 
 /// Whether balance is sufficient for a given amount.
-final hasSufficientBalanceProvider = Provider.family<bool, double>((ref, amount) {
+final hasSufficientBalanceProvider = Provider.family<bool, double>((
+  ref,
+  amount,
+) {
   return ref.watch(availableBalanceProvider) >= amount;
 });

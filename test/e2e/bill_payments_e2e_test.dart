@@ -6,11 +6,10 @@ import 'e2e_test_client.dart';
 
 void main() {
   late E2EClient client;
-  const testPhone = '+2250700000000';
 
   setUpAll(() async {
     client = E2EClient();
-    await client.loginFlow(testPhone);
+    await client.loginFlow(uniqueE2EPhone());
   });
 
   e2eGroup('Bill Payments E2E', () {

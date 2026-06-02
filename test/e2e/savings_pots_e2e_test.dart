@@ -6,12 +6,12 @@ import 'e2e_test_client.dart';
 
 void main() {
   late E2EClient client;
-  const testPhone = '+2250700000000';
   String? createdPotId;
 
   setUpAll(() async {
     client = E2EClient();
-    await client.loginFlow(testPhone);
+    await client.loginFlow(uniqueE2EPhone());
+    await client.ensureWallet();
   });
 
   e2eGroup('Savings Pots E2E', () {

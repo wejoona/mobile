@@ -40,6 +40,12 @@ void e2eGroup(String description, void Function() body) {
 /// E2E test bypass secret — skips rate limiting in dev mode
 const String _testBypassSecret = 'korido-e2e-test-2026';
 
+/// Generate an isolated CI-format Ivorian phone number for mutating E2E flows.
+String uniqueE2EPhone() {
+  final seed = DateTime.now().microsecondsSinceEpoch.toString();
+  return '+22507${seed.substring(seed.length - 8)}';
+}
+
 /// Lightweight HTTP wrapper for E2E tests.
 class E2EClient {
   E2EClient({String? baseUrl}) : baseUrl = baseUrl ?? _envApiUrl;
@@ -139,11 +145,17 @@ class E2EClient {
       _accessToken = _envAuthToken;
       return;
     }
-    // Step 1: Register (idempotent) then login
-    await post('/auth/register', {'phone': phone, 'countryCode': 'CI'});
-    await post('/auth/login', {'phone': phone});
+    // Step 1: Register is idempotent and sends an OTP for both new and
+    // existing users, so avoid a second OTP request through /auth/login.
+    final registerRes = await post('/auth/register', {
+      'phone': phone,
+      'countryCode': 'CI',
+    });
+    _expectAuthStepOk('register', registerRes);
 
-    // Step 2: Get OTP from dev endpoint
+    // Step 2: Get OTP from dev endpoint when local verification is active.
+    // For VerifyHQ sandbox, /dev/otp intentionally has no local OTP, so the
+    // default dev code remains the fallback.
     final otpRes = await get('/dev/otp/${Uri.encodeComponent(phone)}');
     String otp;
     if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
@@ -158,12 +170,46 @@ class E2EClient {
       'phone': phone,
       'otp': otp,
     });
+    _expectAuthStepOk('verify OTP', verifyRes);
 
     if (verifyRes.statusCode == 200 || verifyRes.statusCode == 201) {
       final data = verifyRes.data?['data'] ?? verifyRes.data;
-      _accessToken = data?['accessToken'] ?? data?['access_token'];
-      _refreshToken = data?['refreshToken'] ?? data?['refresh_token'];
+      _accessToken =
+          data?['accessToken']?.toString() ?? data?['access_token']?.toString();
+      _refreshToken =
+          data?['refreshToken']?.toString() ??
+          data?['refresh_token']?.toString();
     }
+
+    if (_accessToken == null || _accessToken!.isEmpty) {
+      throw AssertionError(
+        'Live E2E login did not return an access token.\n'
+        'Base URL: $baseUrl\n'
+        'Phone: $phone\n'
+        'Verify response: ${verifyRes.statusCode} ${verifyRes.body}',
+      );
+    }
+
+    final sessionProbe = await get('/sessions');
+    if (sessionProbe.statusCode == 401) {
+      throw AssertionError(
+        'Live E2E login returned an invalid access token.\n'
+        'Base URL: $baseUrl\n'
+        'Phone: $phone\n'
+        'Token prefix: ${_accessToken!.substring(0, 16)}...\n'
+        'Session probe: ${sessionProbe.statusCode} ${sessionProbe.body}',
+      );
+    }
+  }
+
+  void _expectAuthStepOk(String step, E2EResponse response) {
+    if (response.isOk) return;
+    throw AssertionError(
+      'Live E2E auth $step failed.\n'
+      'Base URL: $baseUrl\n'
+      'Status: ${response.statusCode}\n'
+      'Body: ${response.body}',
+    );
   }
 
   /// Refresh the access token
@@ -178,6 +224,19 @@ class E2EClient {
       return true;
     }
     return false;
+  }
+
+  Future<void> ensureWallet() async {
+    if (!runE2E) return;
+
+    final res = await post('/wallet/create');
+    if (res.statusCode == 200 || res.statusCode == 201) return;
+    throw AssertionError(
+      'Live E2E wallet creation failed.\n'
+      'Base URL: $baseUrl\n'
+      'Status: ${res.statusCode}\n'
+      'Body: ${res.body}',
+    );
   }
 }
 
