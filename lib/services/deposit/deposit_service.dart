@@ -26,10 +26,15 @@ class DepositService {
   }
 
   /// Initiate a deposit — returns payment method type + instructions
-  Future<DepositResponse> initiateDeposit(InitiateDepositRequest request) async {
+  Future<DepositResponse> initiateDeposit(
+    InitiateDepositRequest request,
+  ) async {
     final response = await _dio.post(
       '/deposits/initiate',
       data: request.toJson(),
+      options: Options(
+        headers: {'X-Idempotency-Key': _idempotencyKey('deposit-initiate')},
+      ),
     );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
@@ -54,9 +59,10 @@ class DepositService {
     int page = 1,
     int limit = 20,
   }) async {
+    final offset = page <= 1 ? 0 : (page - 1) * limit;
     final response = await _dio.get(
       '/deposits',
-      queryParameters: {'page': page, 'limit': limit},
+      queryParameters: {'offset': offset, 'limit': limit},
     );
     final data = response.data;
     if (data is Map<String, dynamic> && data['deposits'] != null) {
@@ -73,8 +79,16 @@ class DepositService {
   }
 
   /// Initiate a mobile money deposit
-  Future<DepositResponse> initiateMobileMoneyDeposit(Map<String, dynamic> data) async {
-    final response = await _dio.post('/deposits/initiate', data: data);
+  Future<DepositResponse> initiateMobileMoneyDeposit(
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _dio.post(
+      '/deposits/initiate',
+      data: data,
+      options: Options(
+        headers: {'X-Idempotency-Key': _idempotencyKey('deposit-initiate')},
+      ),
+    );
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -87,14 +101,21 @@ class DepositService {
   Future<ExchangeRate> getExchangeRate({
     String from = 'XOF',
     String to = 'USD',
+    double amount = 10000,
   }) async {
     final response = await _dio.get(
-      '/deposits/rate',
+      '/wallet/exchange-rate',
       queryParameters: {
         'sourceCurrency': from,
         'targetCurrency': to,
+        'amount': amount,
       },
     );
     return ExchangeRate.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  static String _idempotencyKey(String prefix) {
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    return '$prefix-$timestamp';
   }
 }

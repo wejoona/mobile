@@ -21,6 +21,7 @@ import 'package:usdc_wallet/features/wallet/views/wallet_home_screen.dart';
 import 'package:usdc_wallet/features/wallet/views/deposit_view.dart';
 import 'package:usdc_wallet/features/wallet/views/deposit_instructions_view.dart';
 import 'package:usdc_wallet/features/deposit/views/deposit_amount_screen.dart';
+import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.dart';
 import 'package:usdc_wallet/features/deposit/views/provider_selection_screen.dart';
 import 'package:usdc_wallet/features/deposit/views/deposit_status_screen.dart';
 import 'package:usdc_wallet/features/wallet/views/withdraw_view.dart';
@@ -874,10 +875,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/deposit/instructions',
         pageBuilder: (context, state) {
-          final response = state.extra as DepositResponse?;
+          final extra = state.extra;
           Widget child;
-          if (response != null) {
-            child = DepositInstructionsView(response: response);
+          if (extra is DepositResponse) {
+            child = DepositInstructionsView(response: extra);
+          } else if (extra is Map<String, dynamic>) {
+            child = const PaymentInstructionsScreen();
           } else {
             child = const _PlaceholderPage(title: 'No Deposit Info');
           }

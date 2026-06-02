@@ -29,10 +29,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
       backgroundColor: colors.canvas,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: AppText(
-          l10n.deposit_title,
-          variant: AppTextVariant.titleLarge,
-        ),
+        title: AppText(l10n.deposit_title, variant: AppTextVariant.titleLarge),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -105,9 +102,9 @@ class ProviderSelectionScreen extends ConsumerWidget {
               Expanded(
                 child: providersAsync.when(
                   data: (providers) => _buildProvidersList(
-                    providers, 
-                    colors, 
-                    l10n, 
+                    providers,
+                    colors,
+                    l10n,
                     ref,
                     depositState.isLoading,
                   ),
@@ -123,7 +120,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
   }
 
   Widget _buildProvidersList(
-    List<dynamic> providers,
+    List<ProviderData> providers,
     ThemeColors colors,
     AppLocalizations l10n,
     WidgetRef ref,
@@ -135,7 +132,8 @@ class ProviderSelectionScreen extends ConsumerWidget {
 
     return ListView.separated(
       itemCount: providers.length,
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemBuilder: (context, index) {
         final provider = providers[index];
         return _ProviderTile(
@@ -165,16 +163,16 @@ class ProviderSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorState(ThemeColors colors, AppLocalizations l10n, WidgetRef ref) {
+  Widget _buildErrorState(
+    ThemeColors colors,
+    AppLocalizations l10n,
+    WidgetRef ref,
+  ) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: colors.error,
-          ),
+          Icon(Icons.error_outline, size: 64, color: colors.error),
           const SizedBox(height: AppSpacing.lg),
           AppText(
             l10n.common_error,
@@ -203,11 +201,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.payment_outlined,
-            size: 64,
-            color: colors.textTertiary,
-          ),
+          Icon(Icons.payment_outlined, size: 64, color: colors.textTertiary),
           const SizedBox(height: AppSpacing.lg),
           AppText(
             l10n.deposit_noProvidersAvailable,
@@ -226,13 +220,17 @@ class ProviderSelectionScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _selectProvider(BuildContext context, ProviderData provider, WidgetRef ref) async {
+  Future<void> _selectProvider(
+    BuildContext context,
+    ProviderData provider,
+    WidgetRef ref,
+  ) async {
     // Select the provider
     ref.read(depositProvider.notifier).selectProviderData(provider);
-    
+
     // Initiate the deposit immediately
     await ref.read(depositProvider.notifier).initiateDeposit();
-    
+
     // Navigate to payment instructions if successful, passing response as extra
     final response = ref.read(depositProvider).response;
     if (response != null && context.mounted) {
@@ -271,9 +269,7 @@ class _ProviderTile extends StatelessWidget {
                 color: _getProviderColor().withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
-              child: Center(
-                child: _buildProviderIcon(),
-              ),
+              child: Center(child: _buildProviderIcon()),
             ),
             const SizedBox(width: AppSpacing.lg),
 
@@ -318,10 +314,7 @@ class _ProviderTile extends StatelessWidget {
                 ),
               )
             else
-              Icon(
-                Icons.chevron_right,
-                color: colors.textTertiary,
-              ),
+              Icon(Icons.chevron_right, color: colors.textTertiary),
           ],
         ),
       ),
@@ -329,33 +322,27 @@ class _ProviderTile extends StatelessWidget {
   }
 
   Color _getProviderColor() {
-    // Use enum provider for color if available, otherwise default
-    final enumProvider = provider.enumProvider;
-    if (enumProvider != null) {
-      switch (enumProvider) {
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.orangeMoney:
-          return const Color(0xFFFF6B35);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.mtnMomo:
-          return const Color(0xFFFFCB05);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.moovMoney:
-          return const Color(0xFF0066CC);
-        // ignore: constant_pattern_never_matches_value_type
-        case MobileMoneyProvider.wave:
-          return const Color(0xFF4A148C);
-      }
+    final enumProvider = MobileMoneyProviderExt.fromCode(provider.id);
+    switch (enumProvider) {
+      case MobileMoneyProvider.orangeMoney:
+        return const Color(0xFFFF6B35);
+      case MobileMoneyProvider.mtnMomo:
+        return const Color(0xFFFFCB05);
+      case MobileMoneyProvider.moovMoney:
+        return const Color(0xFF0066CC);
+      case MobileMoneyProvider.wave:
+        return const Color(0xFF1E9FFB);
+      case null:
+        return colors.gold;
     }
-    return colors.gold;
   }
 
   Widget _buildProviderIcon() {
-    // Try to load from assets first, fallback to generic icon
-    final enumProvider = provider.enumProvider;
-    if (enumProvider != null) {
+    final assetPath =
+        provider.logo ?? MobileMoneyProviderExt.fromCode(provider.id)?.logoPath;
+    if (assetPath != null && assetPath.isNotEmpty) {
       return Image.asset(
-        enumProvider,
+        assetPath,
         width: 32,
         height: 32,
         errorBuilder: (context, error, stackTrace) => _getGenericIcon(),
@@ -365,48 +352,35 @@ class _ProviderTile extends StatelessWidget {
   }
 
   Widget _getGenericIcon() {
-    return Icon(
-      _getPaymentMethodIcon(),
-      color: _getProviderColor(),
-      size: 32,
-    );
+    return Icon(_getPaymentMethodIcon(), color: _getProviderColor(), size: 32);
   }
 
   IconData _getPaymentMethodIcon() {
-    switch (provider.paymentMethodType) {
-      // ignore: constant_pattern_never_matches_value_type
+    switch (_paymentMethodType) {
       case PaymentMethodType.otp:
         return Icons.dialpad;
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.push:
         return Icons.notifications_active;
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.qrLink:
         return Icons.qr_code;
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.card:
         return Icons.credit_card;
-      default:
-        return Icons.payment;
     }
   }
 
   String _getPaymentMethodDescription() {
-    switch (provider.paymentMethodType) {
-      // ignore: constant_pattern_never_matches_value_type
+    switch (_paymentMethodType) {
       case PaymentMethodType.otp:
         return 'Enter OTP code';
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.push:
         return 'Approve on your phone';
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.qrLink:
         return 'Scan QR or open app';
-      // ignore: constant_pattern_never_matches_value_type
       case PaymentMethodType.card:
         return 'Card payment';
-      default:
-        return '';
     }
   }
+
+  PaymentMethodType get _paymentMethodType =>
+      PaymentMethodTypeExt.fromString(provider.paymentMethodType ?? '');
 }

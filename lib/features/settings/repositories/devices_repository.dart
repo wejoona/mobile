@@ -20,30 +20,47 @@ class DevicesRepository {
     String? fcmToken,
     String? locale,
   }) async {
-    final response = await _dio.post('/devices/register', data: {
-      'deviceIdentifier': deviceId,
-      'platform': platform,
-      if (model != null) 'model': model,
-      if (brand != null) 'brand': brand,
-      if (osVersion != null) 'osVersion': osVersion,
-      if (appVersion != null) 'appVersion': appVersion,
-      if (fcmToken != null) 'fcmToken': fcmToken,
-    });
-    return Device.fromJson(response.data);
+    final response = await _dio.post(
+      '/devices/register',
+      data: {
+        'deviceIdentifier': deviceId,
+        'platform': platform,
+        if (model != null) 'model': model,
+        if (brand != null) 'brand': brand,
+        if (osVersion != null) 'osVersion': osVersion,
+        if (appVersion != null) 'appVersion': appVersion,
+        if (fcmToken != null) 'fcmToken': fcmToken,
+      },
+    );
+    return Device.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Get all active devices for the current user
   Future<List<Device>> getDevices() async {
     final response = await _dio.get('/devices');
-    // ignore: avoid_dynamic_calls
-    final List<dynamic> devicesJson = response.data['devices'] ?? [];
-    return devicesJson.map((json) => Device.fromJson(json)).toList();
+    final raw = response.data;
+    final List devicesJson;
+    if (raw is Map<String, dynamic>) {
+      devicesJson = raw['devices'] as List? ?? raw['data'] as List? ?? [];
+    } else if (raw is List) {
+      devicesJson = raw;
+    } else {
+      devicesJson = [];
+    }
+    return devicesJson
+        .map((json) => Device.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   /// Trust a device
   Future<Device> trustDevice(String deviceId) async {
     final response = await _dio.post('/devices/$deviceId/trust');
-    return Device.fromJson(response.data);
+    final raw = response.data;
+    if (raw is Map<String, dynamic> && raw.containsKey('id')) {
+      return Device.fromJson(raw);
+    }
+    final devices = await getDevices();
+    return devices.firstWhere((device) => device.id == deviceId);
   }
 
   /// Revoke/remove a device

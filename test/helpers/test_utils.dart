@@ -134,11 +134,13 @@ class MockDio extends Mock implements Dio {
 
   /// Queue a successful response
   void queueResponse(dynamic data, {int statusCode = 200}) {
-    _responseQueue.add(Response<dynamic>(
-      data: data,
-      statusCode: statusCode,
-      requestOptions: RequestOptions(path: ''),
-    ));
+    _responseQueue.add(
+      Response<dynamic>(
+        data: data,
+        statusCode: statusCode,
+        requestOptions: RequestOptions(path: ''),
+      ),
+    );
   }
 
   /// Queue an error response
@@ -152,15 +154,17 @@ class MockDio extends Mock implements Dio {
     String? message,
     dynamic data,
   }) {
-    _responseQueue.add(DioException(
-      requestOptions: RequestOptions(path: ''),
-      response: Response<dynamic>(
-        data: data ?? {'message': message ?? 'Error'},
-        statusCode: statusCode,
+    _responseQueue.add(
+      DioException(
         requestOptions: RequestOptions(path: ''),
+        response: Response<dynamic>(
+          data: data ?? {'message': message ?? 'Error'},
+          statusCode: statusCode,
+          requestOptions: RequestOptions(path: ''),
+        ),
+        type: DioExceptionType.badResponse,
       ),
-      type: DioExceptionType.badResponse,
-    ));
+    );
   }
 
   /// Get request history for assertions
@@ -174,7 +178,9 @@ class MockDio extends Mock implements Dio {
 
   dynamic _getNextResponse() {
     if (_responseQueue.isEmpty) {
-      throw StateError('No responses queued. Add responses with queueResponse()');
+      throw StateError(
+        'No responses queued. Add responses with queueResponse()',
+      );
     }
     return _responseQueue.removeAt(0);
   }
@@ -188,11 +194,14 @@ class MockDio extends Mock implements Dio {
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) async {
-    _requestHistory.add(RequestOptions(
-      path: path,
-      method: 'GET',
-      queryParameters: queryParameters,
-    ));
+    _requestHistory.add(
+      RequestOptions(
+        path: path,
+        method: 'GET',
+        queryParameters: queryParameters,
+        headers: options?.headers,
+      ),
+    );
 
     final response = _getNextResponse();
     if (response is DioException) throw response;
@@ -209,12 +218,15 @@ class MockDio extends Mock implements Dio {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    _requestHistory.add(RequestOptions(
-      path: path,
-      method: 'POST',
-      data: data,
-      queryParameters: queryParameters,
-    ));
+    _requestHistory.add(
+      RequestOptions(
+        path: path,
+        method: 'POST',
+        data: data,
+        queryParameters: queryParameters,
+        headers: options?.headers,
+      ),
+    );
 
     final response = _getNextResponse();
     if (response is DioException) throw response;
@@ -231,12 +243,14 @@ class MockDio extends Mock implements Dio {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
-    _requestHistory.add(RequestOptions(
-      path: path,
-      method: 'PUT',
-      data: data,
-      queryParameters: queryParameters,
-    ));
+    _requestHistory.add(
+      RequestOptions(
+        path: path,
+        method: 'PUT',
+        data: data,
+        queryParameters: queryParameters,
+      ),
+    );
 
     final response = _getNextResponse();
     if (response is DioException) throw response;
@@ -251,12 +265,14 @@ class MockDio extends Mock implements Dio {
     Options? options,
     CancelToken? cancelToken,
   }) async {
-    _requestHistory.add(RequestOptions(
-      path: path,
-      method: 'DELETE',
-      data: data,
-      queryParameters: queryParameters,
-    ));
+    _requestHistory.add(
+      RequestOptions(
+        path: path,
+        method: 'DELETE',
+        data: data,
+        queryParameters: queryParameters,
+      ),
+    );
 
     final response = _getNextResponse();
     if (response is DioException) throw response;
@@ -353,12 +369,7 @@ class FakeSessionService {
   }
 }
 
-enum SessionEvent {
-  warning,
-  expired,
-  ended,
-  refreshed,
-}
+enum SessionEvent { warning, expired, ended, refreshed }
 
 // ============================================
 // TEST ENTITY FACTORIES

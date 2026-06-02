@@ -45,9 +45,10 @@ final currentDeviceProvider = Provider<Device?>((ref) {
   final devices = ref.watch(devicesProvider).value ?? [];
   final localId = ref.watch(localDeviceIdProvider).value ?? '';
   try {
-    return devices.firstWhere((d) =>
-        d.isCurrent ||
-        (localId.isNotEmpty && d.deviceIdentifier == localId));
+    return devices.firstWhere(
+      (d) =>
+          d.isCurrent || (localId.isNotEmpty && d.deviceIdentifier == localId),
+    );
   } catch (_) {
     return null;
   }
@@ -82,8 +83,17 @@ class DeviceActions {
   }
 
   Future<void> revokeAllOtherDevices() async {
-    // ignore: avoid_dynamic_calls
-    await _dio.post('/devices/revoke-others');
+    final currentDevice = _ref.read(currentDeviceProvider);
+    final devices = _ref.read(devicesProvider).value ?? [];
+    final otherDevices = devices.where(
+      (device) =>
+          !device.isCurrent &&
+          (currentDevice == null || device.id != currentDevice.id),
+    );
+    for (final device in otherDevices) {
+      // ignore: avoid_dynamic_calls
+      await _dio.delete('/devices/${device.id}');
+    }
     _ref.invalidate(devicesProvider);
   }
 }

@@ -17,6 +17,7 @@ import 'package:usdc_wallet/mocks/services/transactions/transactions_contract.da
 import 'package:usdc_wallet/mocks/services/sessions/sessions_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_contract.dart';
+import 'package:usdc_wallet/mocks/services/feature_subscriptions/feature_subscriptions_mock.dart';
 import 'package:usdc_wallet/mocks/services/devices/devices_mock.dart';
 import 'package:usdc_wallet/mocks/services/kyc/kyc_mock.dart';
 import 'package:usdc_wallet/mocks/services/deposit/deposit_mock.dart';
@@ -69,6 +70,7 @@ class MockRegistry {
     TransactionsMock.register(_interceptor);
     SessionsMock.register(_interceptor);
     FeatureFlagsMock.register(_interceptor);
+    FeatureSubscriptionsMock.register(_interceptor);
     DevicesMock.register(_interceptor);
     KycMock.register(_interceptor);
     DepositMock.register(_interceptor);
@@ -107,6 +109,9 @@ class MockRegistry {
     AuthMockState.reset();
     WalletMockState.reset();
     TransactionsMockState.reset();
+    SessionsMock.reset();
+    FeatureSubscriptionsMockState.reset();
+    DepositMock.reset();
     DevicesMockState.reset();
     KycMockState.reset();
     TransfersMockState.reset();

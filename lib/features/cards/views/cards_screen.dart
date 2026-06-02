@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_request.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscriptions_provider.dart';
 
 /// Cards Screen - Coming Soon
 ///
@@ -102,7 +106,8 @@ class CardsScreen extends ConsumerWidget {
                 width: double.infinity,
                 child: AppButton(
                   label: l10n.cards_notifyMe,
-                  onPressed: () => _showNotifyDialog(context, l10n, colors),
+                  onPressed: () =>
+                      _showNotifyDialog(context, ref, l10n, colors),
                   variant: AppButtonVariant.secondary,
                 ),
               ),
@@ -199,18 +204,12 @@ class CardsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: colors.gold.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(
-          color: colors.gold.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: colors.gold.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.schedule,
-            color: colors.gold,
-            size: 16,
-          ),
+          Icon(Icons.schedule, color: colors.gold, size: 16),
           const SizedBox(width: AppSpacing.sm),
           AppText(
             l10n.cards_comingSoon,
@@ -240,11 +239,7 @@ class CardsScreen extends ConsumerWidget {
             color: colors.elevated,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
-          child: Icon(
-            icon,
-            color: colors.gold,
-            size: 20,
-          ),
+          child: Icon(icon, color: colors.gold, size: 20),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
@@ -271,53 +266,92 @@ class CardsScreen extends ConsumerWidget {
 
   void _showNotifyDialog(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     ThemeColors colors,
   ) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: colors.container,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.xxl),
-        ),
-        title: AppText(
-          l10n.cards_notifyDialogTitle,
-          variant: AppTextVariant.titleMedium,
-          color: colors.textPrimary,
-        ),
-        content: AppText(
-          l10n.cards_notifyDialogMessage,
-          variant: AppTextVariant.bodyMedium,
-          color: colors.textSecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: AppText(
-              l10n.action_cancel,
-              variant: AppTextVariant.labelLarge,
-              color: colors.textSecondary,
-            ),
+    unawaited(
+      showDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          backgroundColor: colors.container,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.cards_notifySuccess),
-                  backgroundColor: colors.success,
-                ),
-              );
-            },
-            child: AppText(
-              l10n.action_confirm,
-              variant: AppTextVariant.labelLarge,
-              color: colors.gold,
-            ),
+          title: AppText(
+            l10n.cards_notifyDialogTitle,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
           ),
-        ],
+          content: AppText(
+            l10n.cards_notifyDialogMessage,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: AppText(
+                l10n.action_cancel,
+                variant: AppTextVariant.labelLarge,
+                color: colors.textSecondary,
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await _subscribeToCardsWaitlist(context, ref, l10n, colors);
+              },
+              child: AppText(
+                l10n.action_confirm,
+                variant: AppTextVariant.labelLarge,
+                color: colors.gold,
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _subscribeToCardsWaitlist(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) async {
+    final locale = Localizations.localeOf(context);
+    try {
+      await ref
+          .read(featureSubscriptionsServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'virtual_card',
+              source: 'cards_screen',
+              metadata: {
+                'surface': 'cards',
+                'featureName': 'Korido virtual card',
+                'locale': locale.toLanguageTag(),
+                if (locale.countryCode != null) 'region': locale.countryCode,
+              },
+            ),
+          );
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.cards_notifySuccess),
+          backgroundColor: colors.success,
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.cards_createError),
+          backgroundColor: colors.error,
+        ),
+      );
+    }
   }
 }
