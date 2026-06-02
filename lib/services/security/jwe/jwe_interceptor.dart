@@ -15,7 +15,6 @@ final _log = AppLogger('JweInterceptor');
 /// Paths that require JWE encryption of request bodies.
 const _sensitivePathPatterns = [
   '/user/pin/', // PIN set, verify, change, reset
-  '/wallet/pin/', // Wallet PIN operations
   '/wallet/deposit', // Deposit initiation
   '/wallet/transfer/', // Internal + external transfers
   '/wallet/withdraw', // Withdrawals

@@ -107,18 +107,6 @@ class WalletApi {
   Future<Response> submitKyc(Map<String, dynamic> data) =>
       _dio.post('/wallet/kyc/submit', data: data);
 
-  // ── PIN ──
-
-  /// POST /wallet/pin/set
-  Future<Response> setPin(String pin, {String? confirmPin}) => _dio.post(
-    '/wallet/pin/set',
-    data: {'pin': pin, 'confirmPin': confirmPin ?? pin},
-  );
-
-  /// POST /wallet/pin/verify
-  Future<Response> verifyPin(String pin) =>
-      _dio.post('/wallet/pin/verify', data: {'pin': pin});
-
   // ── Limits ──
 
   /// GET /wallet/limits

@@ -109,7 +109,7 @@ class TransfersMock {
           'message': 'PIN verification required for this operation',
           'code': 'PIN_REQUIRED',
           'hint':
-              'Call POST /wallet/pin/verify first, then include the returned token in X-Pin-Token header',
+              'Call POST /user/pin/verify first, then include the returned token in X-Pin-Token header',
         },
       );
     }
