@@ -1,23 +1,18 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
 
-/// Notifications list provider — wired to Dio (mock interceptor handles fallback).
+/// Notifications list provider.
 final notificationsProvider = FutureProvider<List<AppNotification>>((
   ref,
 ) async {
-  final dio = ref.watch(dioProvider);
+  final repository = ref.watch(notificationsRepositoryProvider);
   final link = ref.keepAlive();
   final timer = Timer(const Duration(minutes: 1), () => link.close());
   ref.onDispose(() => timer.cancel());
 
-  final response = await dio.get('/notifications');
-  final data = response.data as Map<String, dynamic>;
-  final items = data['data'] as List? ?? [];
-  return items
-      .map((e) => AppNotification.fromJson(e as Map<String, dynamic>))
-      .toList();
+  return repository.getNotifications();
 });
 
 /// Unread notification count.
@@ -31,22 +26,21 @@ final hasUnreadNotificationsProvider = Provider<bool>((ref) {
   return ref.watch(unreadNotificationCountProvider) > 0;
 });
 
-/// Notification actions — wired to Dio.
+/// Notification actions.
 class NotificationActions {
-  final dynamic _dio;
-  NotificationActions(this._dio);
+  NotificationActions(this._repository);
+
+  final NotificationsRepository _repository;
 
   Future<void> markAsRead(String id) async {
-    // ignore: avoid_dynamic_calls
-    await _dio.put('/notifications/$id/read');
+    await _repository.markAsRead(id);
   }
 
   Future<void> markAllAsRead() async {
-    // ignore: avoid_dynamic_calls
-    await _dio.put('/notifications/read-all');
+    await _repository.markAllAsRead();
   }
 }
 
 final notificationActionsProvider = Provider<NotificationActions>((ref) {
-  return NotificationActions(ref.watch(dioProvider));
+  return NotificationActions(ref.watch(notificationsRepositoryProvider));
 });

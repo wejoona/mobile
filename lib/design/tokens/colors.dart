@@ -130,13 +130,13 @@ class AppColorsLight {
   // LIGHT FOUNDATIONS (70% of UI)
   // ═══════════════════════════════════════════════════════════════════════════
 
-  // Mirrors the dark theme's perceptual depth ladder: about 0.10 OKLCH-L
-  // spread across canvas, surface, container, and elevated layers.
-  static const Color canvas = Color(0xFFF5F0E6); // Main canvas - porcelain
-  static const Color surface = Color(0xFFEFE4D3); // Elevated surfaces
-  static const Color container = Color(0xFFFFFDF8); // Cards, containers
-  static const Color elevated = Color(0xFFE8DBC5); // Hover states, inputs
-  static const Color glass = Color(0xEFFFFDF8); // Glassmorphism (94% opacity)
+  // Light mode keeps the dark theme's layered feeling without tinting the
+  // whole app beige. Gold is the accent; foundations stay porcelain and stone.
+  static const Color canvas = Color(0xFFF8F6F1); // Main canvas - porcelain
+  static const Color surface = Color(0xFFF0EDE6); // Recessed screen bands
+  static const Color container = Color(0xFFFFFEFA); // Cards, sheets, nav
+  static const Color elevated = Color(0xFFECE7DD); // Inputs, chips, toggles
+  static const Color glass = Color(0xF2FFFEFA); // Glassmorphism (95% opacity)
 
   // Background aliases
   static const Color backgroundPrimary = canvas;
@@ -149,14 +149,14 @@ class AppColorsLight {
   // ═══════════════════════════════════════════════════════════════════════════
 
   static const Color textPrimary = Color(
-    0xFF17130C,
+    0xFF15130F,
   ); // High emphasis - warm ink
   static const Color textSecondary = Color(
-    0xFF5E564A,
+    0xFF565148,
   ); // Medium emphasis - labels
-  static const Color textTertiary = Color(0xFF7D7364); // Low emphasis - hints
-  static const Color textDisabled = Color(0xFFAFA797); // Disabled states
-  static const Color textInverse = Color(0xFFFFFCF6); // On dark backgrounds
+  static const Color textTertiary = Color(0xFF777064); // Low emphasis - hints
+  static const Color textDisabled = Color(0xFFA9A196); // Disabled states
+  static const Color textInverse = Color(0xFFFFFEFA); // On dark backgrounds
   static const Color textOnGold = Color(
     0xFF141007,
   ); // On gold/champagne surfaces
@@ -166,16 +166,16 @@ class AppColorsLight {
   // Same gold palette for brand consistency
   // ═══════════════════════════════════════════════════════════════════════════
 
-  static const Color gold50 = Color(0xFFFFFBF1);
-  static const Color gold100 = Color(0xFFFCEFCB);
-  static const Color gold200 = Color(0xFFF4DA88);
-  static const Color gold300 = Color(0xFFF0CD68);
-  static const Color gold400 = Color(0xFFE3B748);
-  static const Color gold500 = Color(0xFFC08A25); // PRIMARY - brighter gold
-  static const Color gold600 = Color(0xFFA9751C);
-  static const Color gold700 = Color(0xFF7E5515);
-  static const Color gold800 = Color(0xFF5D3B0E);
-  static const Color gold900 = Color(0xFF3F2808);
+  static const Color gold50 = Color(0xFFFFFBF0);
+  static const Color gold100 = Color(0xFFF7EBC8);
+  static const Color gold200 = Color(0xFFE8D092);
+  static const Color gold300 = Color(0xFFEAD06B);
+  static const Color gold400 = Color(0xFFE0BE4B);
+  static const Color gold500 = Color(0xFFD4AF37); // PRIMARY - clean gold
+  static const Color gold600 = Color(0xFFBE9827);
+  static const Color gold700 = Color(0xFF8F6B18);
+  static const Color gold800 = Color(0xFF563B13);
+  static const Color gold900 = Color(0xFF38260B);
   static final Color logoGold = BrandColorCalculator.deriveLightIdentityGold(
     darkIdentityGold: AppColors.gold500,
     darkCanvas: AppColors.obsidian,
@@ -208,18 +208,18 @@ class AppColorsLight {
   // BORDERS & DIVIDERS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  static const Color borderSubtle = Color(0x145A431B); // Warm hairline
-  static const Color borderDefault = Color(0x245A431B); // Warm default border
-  static const Color borderStrong = Color(0x385A431B); // Warm strong border
-  static const Color borderGold = Color(0x52C08A25); // 32% gold
-  static const Color borderGoldStrong = Color(0x80C08A25); // 50% gold
+  static const Color borderSubtle = Color(0x102F281C); // Porcelain hairline
+  static const Color borderDefault = Color(0x1A2F281C); // Default hairline
+  static const Color borderStrong = Color(0x2E2F281C); // Focused structure
+  static const Color borderGold = Color(0x4DD4AF37); // 30% clean gold
+  static const Color borderGoldStrong = Color(0x73D4AF37); // 45% clean gold
 
   // ═══════════════════════════════════════════════════════════════════════════
   // OVERLAYS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  static const Color overlayLight = Color(0x0D17130C); // 5% warm ink
-  static const Color overlayMedium = Color(0x1A17130C); // 10% warm ink
+  static const Color overlayLight = Color(0x0D15130F); // 5% warm ink
+  static const Color overlayMedium = Color(0x1A15130F); // 10% warm ink
   static const Color overlayDark = Color(0x80000000); // 50% black
   static const Color overlayScrim = Color(0xCC000000); // 80% black
 }

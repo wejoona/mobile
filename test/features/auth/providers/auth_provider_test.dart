@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -69,6 +70,9 @@ class MockUserStateMachine extends UserStateMachine {
   }
 }
 
+class MockDeviceRegistrationService extends Mock
+    implements DeviceRegistrationService {}
+
 /// Mock SessionService for testing
 class MockSessionNotifier extends Notifier<SessionState>
     implements SessionService {
@@ -122,6 +126,7 @@ void main() {
   late ProviderContainer container;
   late MockAuthService mockAuthService;
   late MockSecureStorage mockStorage;
+  late MockDeviceRegistrationService mockDeviceRegistrationService;
 
   setUpAll(() {
     registerFallbackValues();
@@ -130,11 +135,18 @@ void main() {
   setUp(() {
     mockAuthService = MockAuthService();
     mockStorage = MockSecureStorage();
+    mockDeviceRegistrationService = MockDeviceRegistrationService();
     when(() => mockAuthService.logout()).thenAnswer((_) async {});
+    when(
+      () => mockDeviceRegistrationService.registerCurrentDevice(),
+    ).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
         authServiceProvider.overrideWithValue(mockAuthService),
+        deviceRegistrationServiceProvider.overrideWithValue(
+          mockDeviceRegistrationService,
+        ),
         secureStorageProvider.overrideWithValue(mockStorage),
         sessionServiceProvider.overrideWith(() => MockSessionNotifier()),
         appFsmProvider.overrideWith(() => MockAppFsmNotifier()),

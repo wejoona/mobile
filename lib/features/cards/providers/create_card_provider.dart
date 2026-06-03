@@ -8,15 +8,35 @@ class CreateCardState {
   final String? error;
   final String cardType; // 'virtual' or 'physical'
   final String? nickname;
+  final String? cardholderName;
+  final double? spendingLimit;
   final bool isComplete;
 
-  const CreateCardState({this.isLoading = false, this.error, this.cardType = 'virtual', this.nickname, this.isComplete = false});
+  const CreateCardState({
+    this.isLoading = false,
+    this.error,
+    this.cardType = 'virtual',
+    this.nickname,
+    this.cardholderName,
+    this.spendingLimit,
+    this.isComplete = false,
+  });
 
-  CreateCardState copyWith({bool? isLoading, String? error, String? cardType, String? nickname, bool? isComplete}) => CreateCardState(
+  CreateCardState copyWith({
+    bool? isLoading,
+    String? error,
+    String? cardType,
+    String? nickname,
+    String? cardholderName,
+    double? spendingLimit,
+    bool? isComplete,
+  }) => CreateCardState(
     isLoading: isLoading ?? this.isLoading,
     error: error,
     cardType: cardType ?? this.cardType,
     nickname: nickname ?? this.nickname,
+    cardholderName: cardholderName ?? this.cardholderName,
+    spendingLimit: spendingLimit ?? this.spendingLimit,
     isComplete: isComplete ?? this.isComplete,
   );
 }
@@ -28,8 +48,23 @@ class CreateCardNotifier extends Notifier<CreateCardState> {
 
   void setCardType(String type) => state = state.copyWith(cardType: type);
   void setNickname(String name) => state = state.copyWith(nickname: name);
+  void setCardholderName(String name) =>
+      state = state.copyWith(cardholderName: name.trim());
+  void setSpendingLimit(double limit) =>
+      state = state.copyWith(spendingLimit: limit);
 
   Future<void> create() async {
+    final cardholderName = state.cardholderName?.trim();
+    final spendingLimit = state.spendingLimit;
+    if (cardholderName == null || cardholderName.isEmpty) {
+      state = state.copyWith(error: 'Cardholder name is required');
+      return;
+    }
+    if (spendingLimit == null || spendingLimit <= 0) {
+      state = state.copyWith(error: 'Spending limit is required');
+      return;
+    }
+
     state = state.copyWith(isLoading: true);
     try {
       final service = ref.read(cardsServiceProvider);
@@ -37,6 +72,8 @@ class CreateCardNotifier extends Notifier<CreateCardState> {
         cardType: state.cardType,
         currency: 'USDC',
         nickname: state.nickname,
+        cardholderName: cardholderName,
+        spendingLimit: spendingLimit,
       );
       state = state.copyWith(isLoading: false, isComplete: true);
       ref.invalidate(cardsProvider);
@@ -48,4 +85,7 @@ class CreateCardNotifier extends Notifier<CreateCardState> {
   void reset() => state = const CreateCardState();
 }
 
-final createCardProvider = NotifierProvider<CreateCardNotifier, CreateCardState>(CreateCardNotifier.new);
+final createCardProvider =
+    NotifierProvider<CreateCardNotifier, CreateCardState>(
+      CreateCardNotifier.new,
+    );

@@ -115,13 +115,23 @@ void main() {
       reason: 'queued transfer needing PIN',
     );
 
-    await driver.tapText(['Confirm & Send', 'Confirmer & Envoyer']);
+    await driver.tapText([
+      'Continue to PIN',
+      'Continuer vers le PIN',
+      'Confirm & Send',
+      'Confirmer & Envoyer',
+    ]);
     await driver.pumpUntil(
       () => driver.hasAnyText(['Confirm Transfer', 'Confirmer le transfert']),
       reason: 'resumed transfer confirmation',
     );
 
-    await driver.tapText(['Confirm & Send', 'Confirmer & Envoyer']);
+    await driver.tapText([
+      'Continue to PIN',
+      'Continuer vers le PIN',
+      'Confirm & Send',
+      'Confirmer & Envoyer',
+    ]);
     await driver.pumpUntil(
       () => driver.hasAnyText(['Verify PIN', 'Vérifier le code PIN']),
       reason: 'PIN verification for queued transfer',

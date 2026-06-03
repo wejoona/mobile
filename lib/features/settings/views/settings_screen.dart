@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/theme/theme_provider.dart';
@@ -13,6 +14,8 @@ import 'package:usdc_wallet/services/currency/currency_provider.dart';
 import 'package:usdc_wallet/services/currency/currency_service.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Comprehensive Settings Screen
 /// Integrates profile, security, preferences, devices, sessions, and support
@@ -239,6 +242,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showDebugMenu() {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -259,13 +263,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'Environment: ${const String.fromEnvironment('ENV', defaultValue: 'dev')}',
+              'Environment: ${EnvironmentConfig.environment}',
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'Mock Mode: Active',
+              'Mock Mode: ${MockConfig.useMocks ? 'Enabled' : 'Disabled'}',
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
@@ -273,7 +277,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         actions: [
           AppButton(
-            label: 'Close',
+            label: l10n.common_close,
             onPressed: () => Navigator.pop(context),
             variant: AppButtonVariant.ghost,
             size: AppButtonSize.small,
@@ -283,16 +287,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _openExternalLink(String url) {
-    // In production, use url_launcher package
-    ScaffoldMessenger.of(context).showSnackBar(
+  Future<void> _openExternalLink(String url) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final colors = context.colors;
+    final uri = Uri.parse(url);
+
+    messenger.showSnackBar(
       SnackBar(
-        content: AppText(
-          AppLocalizations.of(context)!.settings_openingUrl(url),
-        ),
-        backgroundColor: context.colors.info,
+        content: AppText(l10n.settings_openingUrl(url)),
+        backgroundColor: colors.info,
       ),
     );
+
+    final launched = await _tryLaunch(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!mounted || launched) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: AppText(l10n.error_generic),
+        backgroundColor: colors.error,
+      ),
+    );
+  }
+
+  Future<bool> _tryLaunch(Uri uri, {required LaunchMode mode}) async {
+    try {
+      return launchUrl(uri, mode: mode);
+    } on Object {
+      return false;
+    }
   }
 
   void _showLogoutDialog(

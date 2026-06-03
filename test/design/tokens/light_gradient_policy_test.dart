@@ -26,12 +26,12 @@ void main() {
       );
 
       expect(themeColorsGradient, [
-        AppColorsLight.logoGold,
-        AppColorsLight.logoGold,
+        AppColorsLight.gold500,
+        AppColorsLight.gold500,
       ]);
       expect(extensionGradient.colors, [
-        AppColorsLight.logoGold,
-        AppColorsLight.logoGold,
+        AppColorsLight.gold500,
+        AppColorsLight.gold500,
       ]);
     });
   });

@@ -69,9 +69,7 @@ class EndConditionPicker extends StatelessWidget {
                   ),
                 ),
                 keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 initialValue: occurrences?.toString(),
                 onChanged: (v) {
                   final count = int.tryParse(v);
@@ -101,7 +99,11 @@ class EndConditionPicker extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_today, color: context.colors.gold, size: 20),
+                    Icon(
+                      Icons.calendar_today,
+                      color: context.colors.gold,
+                      size: 20,
+                    ),
                     SizedBox(width: AppSpacing.sm),
                     AppText(
                       endDate != null
@@ -148,7 +150,9 @@ class EndConditionPicker extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? context.colors.gold : context.colors.textSecondary,
+              color: isSelected
+                  ? context.colors.gold
+                  : context.colors.textSecondary,
               size: 20,
             ),
             SizedBox(width: AppSpacing.md),
@@ -156,23 +160,24 @@ class EndConditionPicker extends StatelessWidget {
               child: AppText(
                 label,
                 variant: AppTextVariant.bodyMedium,
-                color: isSelected ? context.colors.gold : context.colors.textPrimary,
+                color: isSelected
+                    ? context.colors.gold
+                    : context.colors.textPrimary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: context.colors.gold,
-                size: 20,
-              ),
+              Icon(Icons.check_circle, color: context.colors.gold, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _selectEndDate(BuildContext context, DateTime? initialDate) async {
+  Future<void> _selectEndDate(
+    BuildContext context,
+    DateTime? initialDate,
+  ) async {
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
@@ -180,13 +185,15 @@ class EndConditionPicker extends StatelessWidget {
       firstDate: now.add(const Duration(days: 1)),
       lastDate: now.add(const Duration(days: 730)), // 2 years
       builder: (context, child) {
+        final baseTheme = Theme.of(context);
+        final colors = context.colors;
+        final scheme = baseTheme.colorScheme.copyWith(
+          primary: colors.gold,
+          surface: colors.container,
+          onSurface: colors.textPrimary,
+        );
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: context.colors.gold,
-              surface: context.colors.container,
-            ),
-          ),
+          data: baseTheme.copyWith(colorScheme: scheme),
           child: child!,
         );
       },

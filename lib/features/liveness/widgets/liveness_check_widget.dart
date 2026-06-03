@@ -4,17 +4,11 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/services/liveness/liveness_service.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-
-/// Provider to detect simulator (mock flow)
-final isSimulatorProvider = Provider<bool>((ref) => false);
-final mockCameraProvider = Provider<bool>((ref) => false);
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/mocks/mock_config_provider.dart';
+import 'package:usdc_wallet/services/liveness/liveness_service.dart';
 
 /// Challenge-based liveness check widget
 ///
@@ -27,14 +21,11 @@ class LivenessCheckWidget extends ConsumerStatefulWidget {
   final void Function(LivenessResult result)? onComplete;
   final VoidCallback? onCancel;
 
-  const LivenessCheckWidget({
-    super.key,
-    this.onComplete,
-    this.onCancel,
-  });
+  const LivenessCheckWidget({super.key, this.onComplete, this.onCancel});
 
   @override
-  ConsumerState<LivenessCheckWidget> createState() => _LivenessCheckWidgetState();
+  ConsumerState<LivenessCheckWidget> createState() =>
+      _LivenessCheckWidgetState();
 }
 
 enum _LivenessState {
@@ -76,12 +67,14 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     if (isSimulator || mockCamera) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       if (mounted) {
-        widget.onComplete?.call(LivenessResult(
-          sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
-          isLive: true,
-          confidence: 0.99,
-          completedAt: DateTime.now(),
-        ));
+        widget.onComplete?.call(
+          LivenessResult(
+            sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
+            isLive: true,
+            confidence: 0.99,
+            completedAt: DateTime.now(),
+          ),
+        );
       }
       return;
     }
@@ -142,8 +135,11 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
   }
 
   Future<void> _captureAndSubmit() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) return;
-    if (_state == _LivenessState.capturing || _state == _LivenessState.uploading) return;
+    if (_cameraController == null || !_cameraController!.value.isInitialized)
+      return;
+    if (_state == _LivenessState.capturing ||
+        _state == _LivenessState.uploading)
+      return;
 
     setState(() {
       _state = _LivenessState.capturing;
@@ -155,7 +151,8 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
 
       setState(() {
         _state = _LivenessState.uploading;
-        _statusMessage = 'Submitting challenge ${_currentChallengeIndex + 1} of ${_challenges.length}...';
+        _statusMessage =
+            'Submitting challenge ${_currentChallengeIndex + 1} of ${_challenges.length}...';
       });
 
       final livenessService = ref.read(livenessServiceProvider);
@@ -168,25 +165,33 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
       );
 
       // Clean up temp photo
-      try { File(photo.path).deleteSync(); } catch (_) {}
+      try {
+        File(photo.path).deleteSync();
+      } catch (_) {}
 
       if (!mounted) return;
 
       if (result.allComplete && result.result != null) {
         // All challenges done — show result
         setState(() {
-          _state = result.result!.isAlive ? _LivenessState.completed : _LivenessState.failed;
-          _statusMessage = result.result!.isAlive ? 'Verification passed!' : 'Verification failed';
+          _state = result.result!.isAlive
+              ? _LivenessState.completed
+              : _LivenessState.failed;
+          _statusMessage = result.result!.isAlive
+              ? 'Verification passed!'
+              : 'Verification failed';
           _errorMessage = result.result!.failureReason;
         });
 
         if (result.result!.isAlive) {
-          widget.onComplete?.call(LivenessResult(
-            sessionId: result.sessionToken,
-            isLive: true,
-            confidence: result.result!.confidence / 100.0,
-            completedAt: DateTime.now(),
-          ));
+          widget.onComplete?.call(
+            LivenessResult(
+              sessionId: result.sessionToken,
+              isLive: true,
+              confidence: result.result!.confidence / 100.0,
+              completedAt: DateTime.now(),
+            ),
+          );
         }
       } else {
         // Move to next challenge
@@ -308,13 +313,15 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
               return Expanded(
                 child: Container(
                   height: 4,
-                  margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxs,
+                  ),
                   decoration: BoxDecoration(
                     color: i < _currentChallengeIndex
                         ? colors.success
                         : i == _currentChallengeIndex
-                            ? colors.gold
-                            : colors.surface,
+                        ? colors.gold
+                        : colors.surface,
                     borderRadius: BorderRadius.circular(AppSpacing.xxs),
                   ),
                 ),
@@ -459,7 +466,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
           const SizedBox(height: AppSpacing.sm),
           TextButton(
             onPressed: widget.onCancel,
-            child: Text(AppLocalizations.of(context)!.liveness_goBack, style: TextStyle(color: colors.textSecondary)),
+            child: Text(
+              AppLocalizations.of(context)!.liveness_goBack,
+              style: TextStyle(color: colors.textSecondary),
+            ),
           ),
         ],
       ),

@@ -27,9 +27,10 @@ abstract final class ApiEndpoints {
   static const transfersExternal = '/transfers/external';
 
   // Deposit
-  static const depositInitiate = '/deposits/initiate';
-  static const depositStatus = '/deposits';
-  static const depositProviders = '/deposits/providers';
+  static const depositInitiate = '/wallet/deposit';
+  static const depositStatus = '/wallet/deposit';
+  static const depositProviders = '/wallet/deposit/providers';
+  static const depositChannels = '/wallet/deposit/channels';
   static const depositHistory = '/deposits';
 
   // Withdraw

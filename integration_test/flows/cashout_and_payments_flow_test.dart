@@ -162,6 +162,8 @@ void main() {
       reason: 'external transfer confirmation screen',
     );
     await driver.tapText([
+      'Continue to PIN',
+      'Continuer vers le PIN',
       'Confirm and Send',
       'Confirm & Send',
       'Confirmer et envoyer',

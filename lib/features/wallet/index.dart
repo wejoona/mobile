@@ -2,11 +2,8 @@
 library;
 
 export 'package:usdc_wallet/features/wallet/providers/balance_visibility_provider.dart';
-export 'package:usdc_wallet/features/wallet/providers/budget_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/contacts_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/currency_converter_provider.dart';
-export 'package:usdc_wallet/features/wallet/providers/saved_recipients_provider.dart';
-export 'package:usdc_wallet/features/wallet/providers/scheduled_transfers_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 export 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 export 'package:usdc_wallet/features/wallet/repositories/wallet_repository.dart';
@@ -22,8 +19,7 @@ export 'package:usdc_wallet/features/wallet/views/request_money_view.dart';
 export 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
 export 'package:usdc_wallet/features/wallet/views/savings_goals_view.dart';
 export 'package:usdc_wallet/features/wallet/views/scan_view.dart';
-export 'package:usdc_wallet/features/wallet/views/scheduled_transfers_view.dart'
-    hide ScheduledTransfer;
+export 'package:usdc_wallet/features/wallet/views/scheduled_transfers_view.dart';
 export 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
 export 'package:usdc_wallet/features/wallet/views/transaction_filter_view.dart';
 export 'package:usdc_wallet/features/wallet/views/transfer_success_view.dart';

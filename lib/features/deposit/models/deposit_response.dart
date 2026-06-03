@@ -2,8 +2,9 @@ import 'package:usdc_wallet/features/deposit/models/mobile_money_provider.dart';
 
 /// Deposit Response Model
 ///
-/// Returned by both POST /deposits/initiate and GET /deposits/:id
+/// Returned by POST /wallet/deposit and GET /wallet/deposit/:id.
 class DepositResponse {
+  final String transactionId;
   final String depositId;
   final String token;
   final PaymentMethodType paymentMethodType;
@@ -21,6 +22,7 @@ class DepositResponse {
   final String? failureReason;
 
   const DepositResponse({
+    this.transactionId = '',
     required this.depositId,
     this.token = '',
     required this.paymentMethodType,
@@ -39,15 +41,29 @@ class DepositResponse {
   });
 
   factory DepositResponse.fromJson(Map<String, dynamic> json) {
+    final paymentInstructions =
+        json['paymentInstructions'] as Map<String, dynamic>?;
+
     return DepositResponse(
+      transactionId: json['transactionId'] as String? ?? '',
       depositId: json['depositId'] as String? ?? json['id'] as String? ?? '',
       token: json['token'] as String? ?? '',
       paymentMethodType: PaymentMethodTypeExt.fromString(
-        json['paymentMethodType'] as String? ?? 'PUSH',
+        json['paymentMethodType'] as String? ??
+            paymentInstructions?['paymentMethodType'] as String? ??
+            paymentInstructions?['type'] as String? ??
+            'PUSH',
       ),
-      instructions: json['instructions'] as String? ?? '',
-      qrCodeData: json['qrCodeData'] as String?,
-      deepLinkUrl: json['deepLinkUrl'] as String?,
+      instructions:
+          json['instructions'] as String? ??
+          paymentInstructions?['instructions'] as String? ??
+          '',
+      qrCodeData:
+          json['qrCodeData'] as String? ??
+          paymentInstructions?['qrCodeData'] as String?,
+      deepLinkUrl:
+          json['deepLinkUrl'] as String? ??
+          paymentInstructions?['deepLinkUrl'] as String?,
       expiresAt: json['expiresAt'] != null
           ? DateTime.parse(json['expiresAt'] as String)
           : DateTime.now().add(const Duration(minutes: 15)),
@@ -76,12 +92,17 @@ class DepositResponse {
           ? (json['rate'] as num).toDouble()
           : null,
       providerCode:
-          json['provider'] as String? ?? json['providerCode'] as String? ?? '',
+          json['provider'] as String? ??
+          json['providerCode'] as String? ??
+          json['channelId'] as String? ??
+          paymentInstructions?['provider'] as String? ??
+          '',
       failureReason: json['failureReason'] as String?,
     );
   }
 
   DepositResponse copyWith({
+    String? transactionId,
     String? depositId,
     String? token,
     PaymentMethodType? paymentMethodType,
@@ -99,6 +120,7 @@ class DepositResponse {
     String? failureReason,
   }) {
     return DepositResponse(
+      transactionId: transactionId ?? this.transactionId,
       depositId: depositId ?? this.depositId,
       token: token ?? this.token,
       paymentMethodType: paymentMethodType ?? this.paymentMethodType,

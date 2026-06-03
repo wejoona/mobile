@@ -12,7 +12,8 @@ class CurrencyConverterView extends ConsumerStatefulWidget {
   const CurrencyConverterView({super.key});
 
   @override
-  ConsumerState<CurrencyConverterView> createState() => _CurrencyConverterViewState();
+  ConsumerState<CurrencyConverterView> createState() =>
+      _CurrencyConverterViewState();
 }
 
 class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
@@ -24,15 +25,25 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   String? _rateError;
 
   // Exchange rates fetched from API (rates relative to USD)
-  Map<String, double> _exchangeRates = {
-    'USD': 1.0,
-    'USDC': 1.0,
-  };
+  Map<String, double> _exchangeRates = {'USD': 1.0, 'USDC': 1.0};
 
   // Supported currencies to fetch rates for
   static const List<String> _supportedCurrencies = [
-    'USD', 'USDC', 'EUR', 'GBP', 'NGN', 'ZAR', 'GHS',
-    'INR', 'BRL', 'MXN', 'CAD', 'AUD', 'JPY', 'CNY', 'XOF',
+    'USD',
+    'USDC',
+    'EUR',
+    'GBP',
+    'NGN',
+    'ZAR',
+    'GHS',
+    'INR',
+    'BRL',
+    'MXN',
+    'CAD',
+    'AUD',
+    'JPY',
+    'CNY',
+    'XOF',
   ];
 
   @override
@@ -70,6 +81,10 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       if (mounted) {
         setState(() {
           _exchangeRates = rates;
+          _fromCurrency = rates.containsKey(_fromCurrency)
+              ? _fromCurrency
+              : 'USDC';
+          _toCurrency = rates.containsKey(_toCurrency) ? _toCurrency : 'USD';
           _isLoading = false;
         });
       }
@@ -98,6 +113,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'AUD': 'Australian Dollar',
     'JPY': 'Japanese Yen',
     'CNY': 'Chinese Yuan',
+    'XOF': 'CFA Franc BCEAO',
   };
 
   final Map<String, String> _currencySymbols = {
@@ -115,19 +131,26 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     'AUD': 'A\$',
     'JPY': '\u00A5',
     'CNY': '\u00A5',
+    'XOF': 'F CFA',
   };
 
   double get _fromAmount => double.tryParse(_fromController.text) ?? 0;
 
-  double get _convertedAmount {
-    final fromRate = _exchangeRates[_fromCurrency] ?? 1;
-    final toRate = _exchangeRates[_toCurrency] ?? 1;
+  bool get _canConvert =>
+      _exchangeRates.containsKey(_fromCurrency) &&
+      _exchangeRates.containsKey(_toCurrency);
+
+  double? get _convertedAmount {
+    if (!_canConvert) return null;
+    final fromRate = _exchangeRates[_fromCurrency]!;
+    final toRate = _exchangeRates[_toCurrency]!;
     return (_fromAmount / fromRate) * toRate;
   }
 
-  double get _exchangeRate {
-    final fromRate = _exchangeRates[_fromCurrency] ?? 1;
-    final toRate = _exchangeRates[_toCurrency] ?? 1;
+  double? get _exchangeRate {
+    if (!_canConvert) return null;
+    final fromRate = _exchangeRates[_fromCurrency]!;
+    final toRate = _exchangeRates[_toCurrency]!;
     return toRate / fromRate;
   }
 
@@ -200,11 +223,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.swap_vert,
-                    color: colors.canvas,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.swap_vert, color: colors.canvas, size: 24),
                 ),
               ),
             ),
@@ -271,7 +290,11 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: context.colors.info, size: 20),
+                      Icon(
+                        Icons.info_outline,
+                        color: context.colors.info,
+                        size: 20,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
                         l10n.converter_rateInfo,
@@ -322,9 +345,13 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 child: isEditable
                     ? TextField(
                         controller: controller,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d+\.?\d{0,2}'),
+                          ),
                         ],
                         style: AppTypography.headlineMedium.copyWith(
                           color: colors.textPrimary,
@@ -337,14 +364,27 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                         onChanged: (_) => setState(() {}),
                       )
                     : AppText(
-                        _formatAmount(amount ?? 0),
+                        amount == null
+                            ? _localizedText(
+                                context,
+                                en: 'Rate unavailable',
+                                fr: 'Taux indisponible',
+                              )
+                            : _formatAmount(amount),
                         variant: AppTextVariant.headlineMedium,
-                        color: colors.gold,
+                        color: amount == null
+                            ? colors.warningText
+                            : colors.gold,
                       ),
               ),
               const SizedBox(width: AppSpacing.md),
               GestureDetector(
-                onTap: () => _showCurrencyPicker(currency, onCurrencyChanged, colors, currencyNames),
+                onTap: () => _showCurrencyPicker(
+                  currency,
+                  onCurrencyChanged,
+                  colors,
+                  currencyNames,
+                ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
@@ -404,6 +444,7 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       'AUD': Colors.blue.shade800,
       'JPY': Colors.red.shade400,
       'CNY': Colors.red.shade600,
+      'XOF': colors.gold,
     };
 
     return Container(
@@ -424,6 +465,9 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
   }
 
   Widget _buildExchangeRateCard(ThemeColors colors, AppLocalizations l10n) {
+    final rate = _exchangeRate;
+    final hasRate = rate != null;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -444,15 +488,32 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AppText(
-                l10n.converter_exchangeRate(_fromCurrency, _formatAmount(_exchangeRate), _toCurrency),
+                hasRate
+                    ? l10n.converter_exchangeRate(
+                        _fromCurrency,
+                        _formatAmount(rate),
+                        _toCurrency,
+                      )
+                    : _localizedText(
+                        context,
+                        en: 'Exchange rate unavailable',
+                        fr: 'Taux de change indisponible',
+                      ),
                 variant: AppTextVariant.titleMedium,
-                color: colors.gold,
+                color: hasRate ? colors.gold : colors.warningText,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
           AppText(
-            l10n.converter_updatedJustNow,
+            _rateError ??
+                (hasRate
+                    ? l10n.converter_updatedJustNow
+                    : _localizedText(
+                        context,
+                        en: 'Refresh or choose another supported currency.',
+                        fr: 'Actualisez ou choisissez une devise prise en charge.',
+                      )),
             variant: AppTextVariant.bodySmall,
             color: colors.textSecondary,
           ),
@@ -488,13 +549,19 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  Widget _buildPopularCurrencies(ThemeColors colors, Map<String, String> currencyNames, AppLocalizations l10n) {
+  Widget _buildPopularCurrencies(
+    ThemeColors colors,
+    Map<String, String> currencyNames,
+    AppLocalizations l10n,
+  ) {
     final popularCurrencies = ['USD', 'EUR', 'GBP', 'NGN', 'XOF'];
 
     return Column(
       children: popularCurrencies.map((currency) {
-        final rate = _exchangeRates[currency] ?? 1;
-        final usdcRate = rate / (_exchangeRates['USDC'] ?? 1);
+        final rate = _exchangeRates[currency];
+        final usdcRate = rate != null && _exchangeRates.containsKey('USDC')
+            ? rate / _exchangeRates['USDC']!
+            : null;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -528,12 +595,20 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     AppText(
-                      '${_currencySymbols[currency]}${_formatAmount(usdcRate)}',
+                      usdcRate == null
+                          ? _localizedText(
+                              context,
+                              en: 'Unavailable',
+                              fr: 'Indisponible',
+                            )
+                          : '${_currencySymbols[currency] ?? ''}${_formatAmount(usdcRate)}',
                       variant: AppTextVariant.labelMedium,
-                      color: colors.textPrimary,
+                      color: usdcRate == null
+                          ? colors.warningText
+                          : colors.textPrimary,
                     ),
                     AppText(
-                      l10n.converter_perUsdc,
+                      usdcRate == null ? '' : l10n.converter_perUsdc,
                       variant: AppTextVariant.bodySmall,
                       color: colors.textTertiary,
                     ),
@@ -547,7 +622,12 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     );
   }
 
-  void _showCurrencyPicker(String currentCurrency, ValueChanged<String> onChanged, ThemeColors colors, Map<String, String> currencyNames) {
+  void _showCurrencyPicker(
+    String currentCurrency,
+    ValueChanged<String> onChanged,
+    ThemeColors colors,
+    Map<String, String> currencyNames,
+  ) {
     final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
@@ -585,7 +665,8 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
                 controller: scrollController,
                 itemCount: _exchangeRates.length,
                 itemBuilder: (context, index) {
-                  final currency = _exchangeRates.keys.elementAt(index);
+                  final currencies = _exchangeRates.keys.toList()..sort();
+                  final currency = currencies.elementAt(index);
                   final isSelected = currency == currentCurrency;
 
                   return ListTile(
@@ -625,7 +706,10 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
     });
   }
 
-  Future<void> _refreshRates(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _refreshRates(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     await _fetchExchangeRates();
 
     if (mounted && _rateError == null) {
@@ -654,4 +738,12 @@ class _CurrencyConverterViewState extends ConsumerState<CurrencyConverterView> {
       return amount.toStringAsFixed(4);
     }
   }
+}
+
+String _localizedText(
+  BuildContext context, {
+  required String en,
+  required String fr,
+}) {
+  return Localizations.localeOf(context).languageCode == 'fr' ? fr : en;
 }

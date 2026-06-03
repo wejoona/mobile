@@ -10,6 +10,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/beneficiary_picker_bottom_sheet.dart';
 import 'package:usdc_wallet/features/send/widgets/contact_picker_bottom_sheet.dart';
 import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 
@@ -37,6 +38,8 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
         return 9;
       case '+223':
         return 8;
+      case '+1':
+        return 10;
       case '+225':
       default:
         return 10;
@@ -89,95 +92,147 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
-                    AppSelect<String>(
-                      label: l10n.auth_country,
-                      value: _selectedCountryCode,
-                      items: [
-                        AppSelectItem(
-                          value: '+225',
-                          label: l10n.profile_countryIvoryCoast,
-                          subtitle: '+225',
-                        ),
-                        AppSelectItem(
-                          value: '+221',
-                          label: l10n.profile_countrySenegal,
-                          subtitle: '+221',
-                        ),
-                        const AppSelectItem(
-                          value: '+223',
-                          label: 'Mali',
-                          subtitle: '+223',
-                        ),
-                      ],
-                      onChanged: (value) {
-                        if (value == null) return;
-                        setState(() {
-                          _selectedCountryCode = value;
-                          _selectedRecipientName = null;
-                          _phoneController.clear();
-                        });
-                      },
-                    ),
-                    SizedBox(height: AppSpacing.md),
-
-                    // Phone number input
-                    AppInput(
-                      label: l10n.send_recipientPhone,
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      prefix: Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          '$_selectedCountryCode ',
-                          style: TextStyle(color: colors.textPrimary),
-                        ),
+                    SendFlowHeader(
+                      icon: Icons.near_me_outlined,
+                      title: l10n.send_selectRecipient,
+                      subtitle: localizedSendCopy(
+                        context,
+                        en: 'Choose a Korido contact, saved beneficiary, or phone number.',
+                        fr: 'Choisissez un contact Korido, un bénéficiaire enregistré ou un numéro.',
                       ),
-                      validator: _validatePhone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(_selectedLocalLength),
-                      ],
-                      onChanged: (_) {
-                        if (_selectedRecipientName == null) return;
-                        setState(() => _selectedRecipientName = null);
-                      },
+                      currentStep: 0,
+                      metaLabel: sendStepLabel(context, 1),
                     ),
-                    SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    // Action buttons row
+                    AppCard(
+                      variant: AppCardVariant.elevated,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        children: [
+                          AppSelect<String>(
+                            label: l10n.auth_country,
+                            value: _selectedCountryCode,
+                            items: [
+                              AppSelectItem(
+                                value: '+225',
+                                label: l10n.profile_countryIvoryCoast,
+                                subtitle: '+225',
+                              ),
+                              AppSelectItem(
+                                value: '+221',
+                                label: l10n.profile_countrySenegal,
+                                subtitle: '+221',
+                              ),
+                              const AppSelectItem(
+                                value: '+223',
+                                label: 'Mali',
+                                subtitle: '+223',
+                              ),
+                              AppSelectItem(
+                                value: '+1',
+                                label: localizedSendCopy(
+                                  context,
+                                  en: 'United States',
+                                  fr: 'États-Unis',
+                                ),
+                                subtitle: '+1',
+                              ),
+                            ],
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() {
+                                _selectedCountryCode = value;
+                                _selectedRecipientName = null;
+                                _phoneController.clear();
+                              });
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppInput(
+                            label: l10n.send_recipientPhone,
+                            controller: _phoneController,
+                            keyboardType: TextInputType.phone,
+                            prefix: Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: AppText(
+                                '$_selectedCountryCode ',
+                                variant: AppTextVariant.labelLarge,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                            validator: _validatePhone,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(
+                                _selectedLocalLength,
+                              ),
+                            ],
+                            onChanged: (_) {
+                              if (_selectedRecipientName == null) return;
+                              setState(() => _selectedRecipientName = null);
+                            },
+                          ),
+                          if (_selectedRecipientName != null) ...[
+                            const SizedBox(height: AppSpacing.md),
+                            SendCallout(
+                              icon: Icons.verified_user_outlined,
+                              title: localizedSendCopy(
+                                context,
+                                en: 'Korido account selected',
+                                fr: 'Compte Korido sélectionné',
+                              ),
+                              body: _selectedRecipientName!,
+                              tone: SendCalloutTone.success,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+
+                    SendCallout(
+                      icon: Icons.privacy_tip_outlined,
+                      title: localizedSendCopy(
+                        context,
+                        en: 'Private contact matching',
+                        fr: 'Recherche privée des contacts',
+                      ),
+                      body: localizedSendCopy(
+                        context,
+                        en: 'Phone numbers are matched securely. Non-users are not notified.',
+                        fr: 'Les numéros sont vérifiés de façon sécurisée. Les non-utilisateurs ne sont pas notifiés.',
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+
                     Row(
                       children: [
                         Expanded(
-                          child: AppButton(
-                            label: l10n.send_fromContacts,
-                            variant: AppButtonVariant.secondary,
-                            size: AppButtonSize.small,
+                          child: SendActionTile(
                             icon: Icons.contacts_outlined,
-                            onPressed: _selectFromContacts,
+                            label: l10n.send_fromContacts,
+                            subtitle: l10n.send_contacts,
+                            onTap: _selectFromContacts,
                           ),
                         ),
-                        SizedBox(width: AppSpacing.sm),
+                        const SizedBox(width: AppSpacing.sm),
                         Expanded(
-                          child: AppButton(
-                            label: l10n.send_fromBeneficiaries,
-                            variant: AppButtonVariant.secondary,
-                            size: AppButtonSize.small,
+                          child: SendActionTile(
                             icon: Icons.bookmark_outline,
-                            onPressed: _selectFromBeneficiaries,
+                            label: l10n.send_fromBeneficiaries,
+                            subtitle: l10n.send_saved,
+                            onTap: _selectFromBeneficiaries,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.xl),
 
                     // Recent recipients section
                     if (state.recentRecipients.isNotEmpty) ...[
-                      AppText(
-                        l10n.send_recentRecipients,
-                        variant: AppTextVariant.labelLarge,
-                        color: colors.textSecondary,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
+                      SendSectionTitle(l10n.send_recentRecipients),
+                      const SizedBox(height: AppSpacing.sm),
                       ...state.recentRecipients.map(
                         (recipient) => RecentRecipientCard(
                           recipient: recipient,
@@ -196,7 +251,10 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 child: AppButton(
+                  key: const ValueKey('send_recipient_continue_button'),
                   label: l10n.action_continue,
+                  icon: Icons.arrow_forward_rounded,
+                  iconPosition: IconPosition.right,
                   onPressed: _handleContinue,
                   isLoading: _isLoading,
                   isFullWidth: true,
@@ -278,7 +336,7 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
 
   void _setRecipientFields(String phoneNumber, String? name) {
     String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    for (final code in ['+225', '+221', '+223']) {
+    for (final code in ['+225', '+221', '+223', '+1']) {
       if (cleanPhone.startsWith(code)) {
         _selectedCountryCode = code;
         cleanPhone = cleanPhone.substring(code.length).trim();
@@ -300,6 +358,24 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       await ref
           .read(sendMoneyProvider.notifier)
           .setRecipient(phoneNumber, name: _selectedRecipientName);
+
+      final recipient = ref.read(sendMoneyProvider).recipient;
+      if (recipient?.isKoridoUser != true) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizedSendCopy(
+                context,
+                en: 'This transfer is available only to Korido accounts for now.',
+                fr: 'Ce transfert est disponible uniquement vers les comptes Korido pour le moment.',
+              ),
+            ),
+            backgroundColor: context.colors.warning,
+          ),
+        );
+        return;
+      }
 
       if (mounted) {
         context.push('/send/amount');

@@ -37,8 +37,8 @@ class ApiConfig {
     defaultValue: 'development',
   );
 
-  /// Default development URL — dev API with debug endpoints
-  static const String _defaultDevUrl = 'https://api.joonapay.com/api/v1';
+  /// Default development URL — host-local API for simulator/device debugging.
+  static const String _defaultDevUrl = 'http://127.0.0.1:3401/api/v1';
 
   /// Default production URL
   static const String _defaultProdUrl = 'https://api.joonapay.com/api/v1';
@@ -69,6 +69,9 @@ class ApiConfig {
 
   /// Check if running in development
   static bool get isDevelopment => _env == 'development' || kDebugMode;
+
+  static bool get allowsBodyLogging =>
+      isDevelopment && !baseUrl.contains('api.joonapay.com');
 
   static const Duration connectTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
@@ -173,8 +176,8 @@ final dioProvider = Provider<Dio>((ref) {
   if (kDebugMode) {
     dio.interceptors.add(
       LogInterceptor(
-        requestBody: true,
-        responseBody: true,
+        requestBody: ApiConfig.allowsBodyLogging,
+        responseBody: ApiConfig.allowsBodyLogging,
         error: true,
         // Don't log headers which may contain auth tokens
         requestHeader: false,

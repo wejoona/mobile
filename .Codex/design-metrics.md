@@ -34,17 +34,30 @@ Calculate with perceptual color values, preferably OKLCH:
 
 ## Current Light Target
 
-After the 2026-06-02 light-theme tuning:
+After the 2026-06-03 light-theme tuning:
 
-- Foundation depth range: `0.098`
-- Foundation chroma average: `0.023`
-- Primary contrast: `16.29`
-- Secondary contrast: `6.36`
-- Tertiary contrast: `4.10`
-- Gold contrast: `2.68`
-- Overall transfer score: `93.2`
+- Foundation is porcelain/stone, not beige/tan:
+  - canvas `#F8F6F1`
+  - surface `#F0EDE6`
+  - container `#FFFEFA`
+  - elevated `#ECE7DD`
+- Borders are low-alpha taupe hairlines:
+  - subtle `#102F281C`
+  - default `#1A2F281C`
+  - strong `#2E2F281C`
+- Common light gold is intentionally brighter than strict contrast metrics:
+  - primary `#D4AF37`
+  - darken with `#BE9827`, lighten with `#E0BE4B`
+  - primary buttons use ivory/white text, not dark ink
+  - this sacrifices some text contrast to avoid muddy/brown action surfaces
+- Identity logo gold is separate from ordinary button/card gold. Do not use the
+  identity logo ramp for large repeated CTAs.
 
-The previous light score was `80.9`, mainly because foundation depth was only `0.065`.
+The previous 2026-06-02 light pass scored well numerically, but still felt
+uncanny in screenshots because the whole app was warm beige and repeated
+surfaces depended on visible brown borders. The 2026-06-03 decision prioritizes
+perceived neutrality, softer light-only shadows, and bright non-muddy action
+gold accents.
 
 ## Logo Gold Calculation
 
@@ -56,18 +69,19 @@ Use `BrandColorCalculator.deriveLightIdentityGold`:
 - dark background: `AppColors.obsidian`
 - light background: `AppColorsLight.canvas`
 - method: preserve OKLCH hue/chroma from dark gold, then compress the dark contrast by square root for light mode
-- material effect: use `BrandColorCalculator.deriveLightIdentityGoldRamp` for the logo gradient, producing `#CAB351`, `#C1A44A`, `#AD9635`
+- material effect: use `BrandColorCalculator.deriveLightIdentityGoldRamp` for the logo gradient, producing `#CFB756`, `#C6A84F`, `#B29A3A`
 
 This avoids both failed manual extremes:
 
 - `AppColorsLight.gold300` / `#F0CD68`: too yellow
-- `AppColorsLight.gold500` / `#C08A25`: too dark and orange
+- muddy antique action gold around `#B58D3A`: can read dirty on large CTAs
 
 ## Light Gradient Restraint
 
 Ordinary light-theme gold gradients should render as a calm solid fill.
 
 - use `context.colors.goldGradient` / `context.appGradients.goldGradient` for buttons and common icon fills
-- these common tokens intentionally resolve to `#C1A44A` twice in light mode
+- these common tokens intentionally resolve to `#D4AF37` twice in light mode
 - keep visible material gradients for identity or hero-grade surfaces only, such as the Korido mark
+- in light mode, the Korido mark is a solid gold surface, not a gradient
 - avoid left-to-right or obvious diagonal bands on repeated cards, buttons, list items, and child-screen icons

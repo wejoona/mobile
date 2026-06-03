@@ -190,30 +190,30 @@ class AppShadows {
 
   static List<BoxShadow> get lightCard => [
     BoxShadow(
-      color: const Color(0x335A431B),
-      blurRadius: 24,
-      offset: const Offset(0, 12),
-      spreadRadius: -14,
+      color: const Color(0x1F2F281C),
+      blurRadius: 30,
+      offset: const Offset(0, 16),
+      spreadRadius: -18,
     ),
     BoxShadow(
-      color: const Color(0x1F5A431B),
-      blurRadius: 10,
-      offset: const Offset(0, 4),
-      spreadRadius: -6,
+      color: const Color(0x14352F25),
+      blurRadius: 12,
+      offset: const Offset(0, 5),
+      spreadRadius: -8,
     ),
     BoxShadow(
-      color: Colors.white.withValues(alpha: 0.72),
-      blurRadius: 1,
+      color: Colors.white.withValues(alpha: 0.82),
+      blurRadius: 2,
       offset: const Offset(0, -1),
     ),
   ];
 
   static List<BoxShadow> get lightGoldGlow => [
     BoxShadow(
-      color: AppColorsLight.logoGold.withValues(alpha: 0.27),
-      blurRadius: 24,
-      offset: const Offset(0, 10),
-      spreadRadius: -7,
+      color: AppColorsLight.gold500.withValues(alpha: 0.22),
+      blurRadius: 26,
+      offset: const Offset(0, 12),
+      spreadRadius: -9,
     ),
   ];
 }

@@ -21,7 +21,10 @@ class DevicesRepository {
     String? appVersion,
     String? fcmToken,
     String? locale,
+    Map<String, dynamic>? metadata,
   }) async {
+    final deviceMetadata = {if (locale != null) 'locale': locale, ...?metadata};
+
     final response = await _dio.post(
       '/devices/register',
       data: {
@@ -34,7 +37,7 @@ class DevicesRepository {
         if (osVersion != null) 'osVersion': osVersion,
         if (appVersion != null) 'appVersion': appVersion,
         if (fcmToken != null) 'fcmToken': fcmToken,
-        if (locale != null) 'metadata': {'locale': locale},
+        if (deviceMetadata.isNotEmpty) 'metadata': deviceMetadata,
       },
     );
     return Device.fromJson(response.data as Map<String, dynamic>);

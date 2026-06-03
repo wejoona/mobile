@@ -260,13 +260,15 @@ class _CreateRecurringTransferViewState
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
+        final baseTheme = Theme.of(context);
+        final colors = context.colors;
+        final scheme = baseTheme.colorScheme.copyWith(
+          primary: colors.gold,
+          surface: colors.container,
+          onSurface: colors.textPrimary,
+        );
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: context.colors.gold,
-              surface: context.colors.container,
-            ),
-          ),
+          data: baseTheme.copyWith(colorScheme: scheme),
           child: child!,
         );
       },

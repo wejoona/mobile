@@ -85,10 +85,9 @@ class ExternalResultScreen extends ConsumerWidget {
                           color: context.colors.textSecondary,
                         ),
                         SizedBox(height: AppSpacing.xs),
-                        AppText(
+                        AmountText.fromText(
                           '\$${Formatters.formatCurrency(state.amount!)}',
-                          variant: AppTextVariant.headlineLarge,
-                          fontWeight: FontWeight.bold,
+                          size: AmountTextSize.large,
                           color: context.colors.gold,
                         ),
                       ],
@@ -130,6 +129,11 @@ class ExternalResultScreen extends ConsumerWidget {
                     l10n.sendExternal_networkFee,
                     '\$${Formatters.formatCurrency(result.fee)}',
                     icon: Icons.receipt_long,
+                    valueWidget: AmountText.fromText(
+                      '\$${Formatters.formatCurrency(result.fee)}',
+                      size: AmountTextSize.small,
+                      color: context.colors.textPrimary,
+                    ),
                   ),
                   SizedBox(height: AppSpacing.sm),
 
@@ -148,7 +152,11 @@ class ExternalResultScreen extends ConsumerWidget {
                     label: l10n.sendExternal_viewOnExplorer,
                     variant: AppButtonVariant.secondary,
                     icon: Icons.open_in_new,
-                    onPressed: () => _viewOnExplorer(context, result.txHash, result.network.value),
+                    onPressed: () => _viewOnExplorer(
+                      context,
+                      result.txHash,
+                      result.network.value,
+                    ),
                   ),
                 ],
               ),
@@ -163,7 +171,8 @@ class ExternalResultScreen extends ConsumerWidget {
                     label: l10n.sendExternal_shareDetails,
                     variant: AppButtonVariant.secondary,
                     icon: Icons.share,
-                    onPressed: () => _shareDetails(context, l10n, state, result),
+                    onPressed: () =>
+                        _shareDetails(context, l10n, state, result),
                     isFullWidth: true,
                   ),
                   SizedBox(height: AppSpacing.sm),
@@ -189,6 +198,7 @@ class ExternalResultScreen extends ConsumerWidget {
     bool isCopyable = false,
     IconData? icon,
     Color? statusColor,
+    Widget? valueWidget,
   }) {
     return AppCard(
       child: Row(
@@ -210,17 +220,22 @@ class ExternalResultScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: AppText(
-                        value,
-                        variant: isCopyable ? AppTextVariant.monoMedium : AppTextVariant.bodyMedium,
-                        fontWeight: FontWeight.w600,
-                        color: statusColor,
-                      ),
+                      child:
+                          valueWidget ??
+                          AppText(
+                            value,
+                            variant: isCopyable
+                                ? AppTextVariant.monoMedium
+                                : AppTextVariant.bodyMedium,
+                            fontWeight: FontWeight.w600,
+                            color: statusColor,
+                          ),
                     ),
                     if (isCopyable) ...[
                       SizedBox(width: AppSpacing.xs),
                       GestureDetector(
-                        onTap: () => _copyToClipboard(context, fullValue ?? value),
+                        onTap: () =>
+                            _copyToClipboard(context, fullValue ?? value),
                         child: Icon(
                           Icons.copy,
                           size: 16,
@@ -291,7 +306,9 @@ class ExternalResultScreen extends ConsumerWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.settings_openingUrl(explorerUrl)),
+        content: Text(
+          AppLocalizations.of(context)!.settings_openingUrl(explorerUrl),
+        ),
         backgroundColor: context.colors.info,
         duration: const Duration(seconds: 3),
       ),
@@ -304,7 +321,8 @@ class ExternalResultScreen extends ConsumerWidget {
     state,
     result,
   ) {
-    final message = '''
+    final message =
+        '''
 ${l10n.sendExternal_transferSuccess}
 
 ${l10n.sendExternal_amount}: \$${Formatters.formatCurrency(state.amount!)}

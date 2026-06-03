@@ -1,8 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/domain/entities/contact.dart';
-import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 // =============================================================================
 // CONTACTS PROVIDERS
@@ -15,21 +16,23 @@ final contactsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
-  ref.onDispose(() => timer.cancel());
+  final timer = Timer(const Duration(seconds: 30), link.close);
+  ref.onDispose(timer.cancel);
 
   return service.getContacts();
 });
 
 /// Favorite Contacts Provider with TTL-based caching
 /// Cache duration: 30 seconds
-final favoritesProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
+final favoritesProvider = FutureProvider.autoDispose<List<Contact>>((
+  ref,
+) async {
   final service = ref.watch(joonaPayContactsServiceProvider);
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
-  ref.onDispose(() => timer.cancel());
+  final timer = Timer(const Duration(seconds: 30), link.close);
+  ref.onDispose(timer.cancel);
 
   return service.getFavorites();
 });
@@ -41,21 +44,23 @@ final recentsProvider = FutureProvider.autoDispose<List<Contact>>((ref) async {
   final link = ref.keepAlive();
 
   // Auto-invalidate after 30 seconds
-  final timer = Timer(const Duration(seconds: 30), () {    link.close();  });
-  ref.onDispose(() => timer.cancel());
+  final timer = Timer(const Duration(seconds: 30), link.close);
+  ref.onDispose(timer.cancel);
 
   return service.getRecents();
 });
 
 /// Search Contacts Provider
 /// No caching - search results should be fresh
-final searchContactsProvider =
-    FutureProvider.autoDispose.family<List<Contact>, String>((ref, query) async {
-  if (query.isEmpty) return [];
+final searchContactsProvider = FutureProvider.autoDispose
+    .family<List<Contact>, String>((ref, query) async {
+      if (query.isEmpty) {
+        return [];
+      }
 
-  final service = ref.watch(joonaPayContactsServiceProvider);
-  return service.searchContacts(query);
-});
+      final service = ref.watch(joonaPayContactsServiceProvider);
+      return service.searchContacts(query);
+    });
 
 // =============================================================================
 // CONTACT MUTATION STATE
@@ -67,17 +72,9 @@ class ContactState {
   final Contact? contact;
   final String? error;
 
-  const ContactState({
-    this.isLoading = false,
-    this.contact,
-    this.error,
-  });
+  const ContactState({this.isLoading = false, this.contact, this.error});
 
-  ContactState copyWith({
-    bool? isLoading,
-    Contact? contact,
-    String? error,
-  }) {
+  ContactState copyWith({bool? isLoading, Contact? contact, String? error}) {
     return ContactState(
       isLoading: isLoading ?? this.isLoading,
       contact: contact ?? this.contact,
@@ -93,7 +90,8 @@ class ContactNotifier extends Notifier<ContactState> {
     return const ContactState();
   }
 
-  KoridoContactsService get _service => ref.read(joonaPayContactsServiceProvider);
+  KoridoContactsService get _service =>
+      ref.read(joonaPayContactsServiceProvider);
 
   /// Create a new contact
   Future<bool> createContact({
@@ -202,5 +200,5 @@ class ContactNotifier extends Notifier<ContactState> {
 
 final contactProvider =
     NotifierProvider.autoDispose<ContactNotifier, ContactState>(
-  ContactNotifier.new,
-);
+      ContactNotifier.new,
+    );

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Result of device attestation.
@@ -32,6 +33,17 @@ class DeviceAttestationService {
       // iOS: DCAppAttestService.attestKey()
       _log.debug('Performing device attestation');
 
+      if (EnvironmentConfig.isProduction) {
+        _log.error(
+          'Native device attestation is not configured for production',
+        );
+        return AttestationResult(
+          isGenuine: false,
+          deviceProperties: {'error': 'native_attestation_not_configured'},
+          attestedAt: DateTime.now(),
+        );
+      }
+
       return AttestationResult(
         isGenuine: true,
         attestationToken: 'placeholder_attestation_token',
@@ -53,13 +65,20 @@ class DeviceAttestationService {
 
   /// Verify a previously obtained attestation token with the backend.
   Future<bool> verifyWithBackend(String attestationToken) async {
+    if (EnvironmentConfig.isProduction ||
+        attestationToken == 'placeholder_attestation_token') {
+      _log.error('Refusing placeholder attestation verification');
+      return false;
+    }
+
     // Would send token to backend for server-side verification
     _log.debug('Verifying attestation token with backend');
     return true;
   }
 }
 
-final deviceAttestationServiceProvider =
-    Provider<DeviceAttestationService>((ref) {
+final deviceAttestationServiceProvider = Provider<DeviceAttestationService>((
+  ref,
+) {
   return DeviceAttestationService();
 });

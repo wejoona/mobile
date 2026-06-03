@@ -16,35 +16,23 @@ class KoridoMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isLight
-              ? AppColorsLight.logoGoldGradient
-              : colors.goldGradient,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isLight ? AppColorsLight.gold500 : null,
+        gradient: isLight
+            ? null
+            : LinearGradient(
+                colors: colors.goldGradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
         borderRadius: BorderRadius.circular(size * 0.28),
         border: isLight
-            ? Border.all(color: AppColorsLight.logoGold.withValues(alpha: 0.2))
+            ? Border.all(color: AppColorsLight.gold600.withValues(alpha: 0.18))
             : null,
         boxShadow: isLight ? AppShadows.lightGoldGlow : AppShadows.goldGlow,
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          if (isLight)
-            Positioned(
-              top: size * 0.14,
-              left: size * 0.2,
-              right: size * 0.2,
-              height: size * 0.035,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(size),
-                ),
-              ),
-            ),
           AppText(
             'K',
             variant: AppTextVariant.headlineLarge,

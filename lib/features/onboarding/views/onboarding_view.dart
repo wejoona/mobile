@@ -34,22 +34,10 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
   late AnimationController _contentController;
 
   static const _pages = [
-    _OnboardingPageData(
-      illustrationType: _IllustrationType.wallet,
-      accentColor: Color(0xFFD4AF37),
-    ),
-    _OnboardingPageData(
-      illustrationType: _IllustrationType.transfer,
-      accentColor: Color(0xFF00C853),
-    ),
-    _OnboardingPageData(
-      illustrationType: _IllustrationType.mobile,
-      accentColor: Color(0xFF448AFF),
-    ),
-    _OnboardingPageData(
-      illustrationType: _IllustrationType.shield,
-      accentColor: Color(0xFFAA00FF),
-    ),
+    _OnboardingPageData(illustrationType: _IllustrationType.wallet),
+    _OnboardingPageData(illustrationType: _IllustrationType.transfer),
+    _OnboardingPageData(illustrationType: _IllustrationType.mobile),
+    _OnboardingPageData(illustrationType: _IllustrationType.shield),
   ];
 
   @override
@@ -157,7 +145,10 @@ class _OnboardingViewState extends ConsumerState<OnboardingView>
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
                           color: isActive
-                              ? _pages[_currentPage].accentColor
+                              ? _onboardingAccentFor(
+                                  _pages[_currentPage].illustrationType,
+                                  colors,
+                                )
                               : colors.textTertiary.withValues(alpha: 0.3),
                         ),
                       );
@@ -284,7 +275,10 @@ class _OnboardingPageContent extends StatelessWidget {
               height: 260,
               child: _OnboardingIllustration(
                 type: page.illustrationType,
-                accentColor: page.accentColor,
+                accentColor: _onboardingAccentFor(
+                  page.illustrationType,
+                  colors,
+                ),
                 colors: colors,
               ),
             ),
@@ -341,6 +335,24 @@ class _OnboardingPageContent extends StatelessWidget {
 // --- Illustrations ---
 
 enum _IllustrationType { wallet, transfer, mobile, shield }
+
+Color _onboardingAccentFor(_IllustrationType type, ThemeColors colors) {
+  if (colors.isDark) {
+    return switch (type) {
+      _IllustrationType.wallet => AppColors.gold500,
+      _IllustrationType.transfer => AppColors.successText,
+      _IllustrationType.mobile => AppColors.infoText,
+      _IllustrationType.shield => AppColors.gold400,
+    };
+  }
+
+  return switch (type) {
+    _IllustrationType.wallet => AppColorsLight.gold500,
+    _IllustrationType.transfer => const Color(0xFF2F6F5E),
+    _IllustrationType.mobile => const Color(0xFF315F83),
+    _IllustrationType.shield => const Color(0xFF6B6253),
+  };
+}
 
 class _OnboardingIllustration extends StatefulWidget {
   const _OnboardingIllustration({
@@ -869,11 +881,7 @@ class _ShieldIllustration extends StatelessWidget {
 // --- Data Model ---
 
 class _OnboardingPageData {
-  const _OnboardingPageData({
-    required this.illustrationType,
-    required this.accentColor,
-  });
+  const _OnboardingPageData({required this.illustrationType});
 
   final _IllustrationType illustrationType;
-  final Color accentColor;
 }

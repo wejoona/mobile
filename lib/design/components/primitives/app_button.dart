@@ -102,8 +102,7 @@ class AppButton extends StatelessWidget {
       button: true,
       enabled: !isDisabled,
       excludeSemantics: true,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+      child: Container(
         width: isFullWidth ? double.infinity : null,
         constraints: isFullWidth
             ? const BoxConstraints(minHeight: 48)
@@ -151,16 +150,12 @@ class AppButton extends StatelessWidget {
             boxShadow: AppShadows.goldGlow,
           );
         } else {
-          // Light mode: calm gold fill with warm ambient shadow.
+          // Light mode: solid clean gold.
           return BoxDecoration(
-            gradient: LinearGradient(
-              colors: colors.goldGradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: colors.gold,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: AppColorsLight.gold700.withValues(alpha: 0.18),
+              color: AppColorsLight.gold600.withValues(alpha: 0.18),
             ),
             boxShadow: AppShadows.lightGoldGlow,
           );
@@ -172,7 +167,7 @@ class AppButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(
             color: isDisabled ? colors.borderSubtle : colors.border,
-            width: 1.5,
+            width: colors.isDark ? 1.5 : 1,
           ),
         );
 
@@ -292,7 +287,7 @@ class AppButton extends StatelessWidget {
 
     switch (variant) {
       case AppButtonVariant.primary:
-        // Gold needs dark ink in both themes for contrast and brand polish.
+        // Theme contract decides text on gold; light CTAs use ivory text.
         return colors.onGold;
 
       case AppButtonVariant.secondary:

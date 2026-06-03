@@ -33,6 +33,46 @@ class _ContactSyncMatch {
   final String? avatarUrl;
 }
 
+List<Map<String, dynamic>> _extractMapList(Object? payload, List<String> keys) {
+  Object? readKey(Object? source, String key) {
+    if (source is Map) return source[key];
+    return null;
+  }
+
+  if (payload is List) {
+    return payload.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  for (final key in keys) {
+    final direct = readKey(payload, key);
+    if (direct is List) {
+      return direct.whereType<Map>().map(Map<String, dynamic>.from).toList();
+    }
+  }
+
+  final nestedData = readKey(payload, 'data');
+  if (nestedData is List) {
+    return nestedData.whereType<Map>().map(Map<String, dynamic>.from).toList();
+  }
+
+  for (final key in keys) {
+    final nested = readKey(nestedData, key);
+    if (nested is List) {
+      return nested.whereType<Map>().map(Map<String, dynamic>.from).toList();
+    }
+  }
+
+  return const [];
+}
+
+String _stringField(Map<String, dynamic> source, List<String> keys) {
+  for (final key in keys) {
+    final value = source[key];
+    if (value is String && value.trim().isNotEmpty) return value;
+  }
+  return '';
+}
+
 /// Contact with app status
 class AppContact {
   final String id;
@@ -266,22 +306,41 @@ class ContactsService {
         data: {'phoneHashes': hashes},
       );
 
-      final data = response.data as Map<String, dynamic>;
-      final rawMatches = data['matches'] as List<dynamic>? ?? const [];
-      final matches = rawMatches
-          .whereType<Map<String, dynamic>>()
-          .map(
-            (match) => _ContactSyncMatch(
-              phoneHash: match['phoneHash'] as String? ?? '',
-              userId: match['userId'] as String? ?? '',
-              displayName: match['displayName'] as String?,
-              avatarUrl: match['avatarUrl'] as String?,
-            ),
-          )
-          .where(
-            (match) => match.phoneHash.isNotEmpty && match.userId.isNotEmpty,
-          )
-          .toList();
+      final matches =
+          _extractMapList(response.data, ['matches', 'users', 'contacts'])
+              .map((match) {
+                final displayName = _stringField(match, [
+                  'displayName',
+                  'name',
+                  'username',
+                ]);
+                final avatarUrl = _stringField(match, [
+                  'avatarUrl',
+                  'photoUrl',
+                  'profilePhotoUrl',
+                ]);
+
+                return _ContactSyncMatch(
+                  phoneHash: _stringField(match, [
+                    'phoneHash',
+                    'hash',
+                    'phoneNumberHash',
+                  ]),
+                  userId: _stringField(match, [
+                    'userId',
+                    'koridoUserId',
+                    'joonaPayUserId',
+                    'id',
+                  ]),
+                  displayName: displayName.isEmpty ? null : displayName,
+                  avatarUrl: avatarUrl.isEmpty ? null : avatarUrl,
+                );
+              })
+              .where(
+                (match) =>
+                    match.phoneHash.isNotEmpty && match.userId.isNotEmpty,
+              )
+              .toList();
 
       // Create a map of hash -> user info
       final matchMap = {for (final match in matches) match.phoneHash: match};
@@ -320,9 +379,11 @@ class ContactsService {
         data: {'phoneHashes': hashes},
       );
 
-      final matches =
-          // ignore: avoid_dynamic_calls
-          (response.data['matches'] as List).cast<Map<String, dynamic>>();
+      final matches = _extractMapList(response.data, [
+        'matches',
+        'users',
+        'contacts',
+      ]);
 
       return ContactSyncResult(
         totalContacts: contacts.length,
@@ -377,31 +438,22 @@ class KoridoContactsService {
   /// Get all saved contacts from backend
   Future<List<domain.Contact>> getContacts() async {
     final response = await _dio.get('/contacts');
-    final data = response.data as Map<String, dynamic>;
-    final contacts = data['contacts'] as List;
-    return contacts
-        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
-        .toList();
+    final contacts = _extractMapList(response.data, ['contacts', 'items']);
+    return contacts.map(domain.Contact.fromJson).toList();
   }
 
   /// Get favorite contacts
   Future<List<domain.Contact>> getFavorites() async {
     final response = await _dio.get('/contacts/favorites');
-    final data = response.data as Map<String, dynamic>;
-    final contacts = data['contacts'] as List;
-    return contacts
-        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
-        .toList();
+    final contacts = _extractMapList(response.data, ['contacts', 'items']);
+    return contacts.map(domain.Contact.fromJson).toList();
   }
 
   /// Get recent contacts (last transactions)
   Future<List<domain.Contact>> getRecents() async {
     final response = await _dio.get('/contacts/recents');
-    final data = response.data as Map<String, dynamic>;
-    final contacts = data['contacts'] as List;
-    return contacts
-        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
-        .toList();
+    final contacts = _extractMapList(response.data, ['contacts', 'items']);
+    return contacts.map(domain.Contact.fromJson).toList();
   }
 
   /// Search contacts by name or username
@@ -410,10 +462,35 @@ class KoridoContactsService {
       '/contacts/search',
       queryParameters: {'query': query},
     );
-    final data = response.data as Map<String, dynamic>;
-    final contacts = data['contacts'] as List;
-    return contacts
-        .map((c) => domain.Contact.fromJson(c as Map<String, dynamic>))
+    final contacts = _extractMapList(response.data, ['contacts', 'items']);
+    return contacts.map(domain.Contact.fromJson).toList();
+  }
+
+  /// Lookup discoverable Korido users for recipient search.
+  Future<List<SyncedContact>> lookupKoridoUsers(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) return const [];
+
+    final response = await _dio.get(
+      '/contacts/lookup',
+      queryParameters: {'query': trimmed},
+    );
+    return _extractMapList(response.data, ['users', 'contacts', 'items'])
+        .map(
+          (user) => SyncedContact(
+            id: _stringField(user, ['id', 'userId', 'koridoUserId']),
+            name: _stringField(user, ['name', 'displayName', 'phone']),
+            phone: _stringField(user, ['phone', 'phoneNumber']),
+            isKoridoUser: user['isKoridoUser'] as bool? ?? true,
+            joonaPayUserId: _stringField(user, [
+              'id',
+              'userId',
+              'koridoUserId',
+            ]),
+            avatarUrl: _stringField(user, ['avatarUrl', 'photoUrl']),
+          ),
+        )
+        .where((user) => user.id.isNotEmpty && user.phone.isNotEmpty)
         .toList();
   }
 

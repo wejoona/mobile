@@ -318,9 +318,7 @@ bool _isMerchantQrPath(String location) =>
 
 bool _requiresVerifiedKycPath(String location) {
   const regulatedPrefixes = [
-    '/send',
     '/send-external',
-    '/deposit',
     '/withdraw',
     '/cards/request',
     '/bulk-payments',

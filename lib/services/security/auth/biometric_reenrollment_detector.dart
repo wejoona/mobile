@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Detects changes in enrolled biometrics on the device.
@@ -17,6 +18,14 @@ class BiometricReenrollmentDetector {
       final prefs = await SharedPreferences.getInstance();
       final storedHash = prefs.getString(_prefKey);
       final currentHash = await _getCurrentEnrollmentHash();
+
+      if (EnvironmentConfig.isProduction &&
+          currentHash == 'biometric_state_placeholder') {
+        _log.error(
+          'Native biometric enrollment state is not configured for production',
+        );
+        return true;
+      }
 
       if (storedHash == null) {
         // First check, store baseline
@@ -60,5 +69,5 @@ class BiometricReenrollmentDetector {
 
 final biometricReenrollmentDetectorProvider =
     Provider<BiometricReenrollmentDetector>((ref) {
-  return BiometricReenrollmentDetector();
-});
+      return BiometricReenrollmentDetector();
+    });

@@ -7,10 +7,7 @@ class CachedResponse {
   final Response response;
   final DateTime expiresAt;
 
-  CachedResponse({
-    required this.response,
-    required this.expiresAt,
-  });
+  CachedResponse({required this.response, required this.expiresAt});
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
 }
@@ -18,15 +15,13 @@ class CachedResponse {
 /// HTTP Response Cache Interceptor
 /// Caches GET requests to reduce network calls and improve performance
 class CacheInterceptor extends Interceptor {
+  static const int _maxEntries = 128;
   final Map<String, CachedResponse> _cache = {};
 
   @override
-  void onRequest(
-    RequestOptions options,
-    RequestInterceptorHandler handler,
-  ) {
-    // Only cache GET requests
-    if (options.method != 'GET') {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    // Only cache eligible GET requests
+    if (options.method != 'GET' || !_isCacheablePath(options.path)) {
       return handler.next(options);
     }
 
@@ -36,7 +31,9 @@ class CacheInterceptor extends Interceptor {
     // Return cached response if not expired
     if (cached != null && !cached.isExpired) {
       if (kDebugMode) {
-        AppLogger('Debug').debug('[CacheInterceptor] Cache HIT: ${options.path}');
+        AppLogger(
+          'Debug',
+        ).debug('[CacheInterceptor] Cache HIT: ${options.path}');
       }
 
       return handler.resolve(
@@ -54,32 +51,36 @@ class CacheInterceptor extends Interceptor {
 
     // Cache miss or expired
     if (kDebugMode && cached != null) {
-      AppLogger('Debug').debug('[CacheInterceptor] Cache EXPIRED: ${options.path}');
+      AppLogger(
+        'Debug',
+      ).debug('[CacheInterceptor] Cache EXPIRED: ${options.path}');
     }
 
     handler.next(options);
   }
 
   @override
-  void onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
-    // Only cache successful GET requests
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    // Only cache successful eligible GET requests
     if (response.requestOptions.method == 'GET' &&
+        _isCacheablePath(response.requestOptions.path) &&
         response.statusCode != null &&
         response.statusCode! >= 200 &&
         response.statusCode! < 300) {
       final key = _generateKey(response.requestOptions);
       final ttl = getTTL(response.requestOptions.path);
 
+      _evictExpired();
+      _evictOverflow();
       _cache[key] = CachedResponse(
         response: response,
         expiresAt: DateTime.now().add(ttl),
       );
 
       if (kDebugMode) {
-        AppLogger('Debug').debug('[CacheInterceptor] Cached: ${response.requestOptions.path} (TTL: ${ttl.inSeconds}s)');
+        AppLogger('Debug').debug(
+          '[CacheInterceptor] Cached: ${response.requestOptions.path} (TTL: ${ttl.inSeconds}s)',
+        );
       }
     }
 
@@ -100,7 +101,9 @@ class CacheInterceptor extends Interceptor {
               err.type == DioExceptionType.receiveTimeout ||
               err.type == DioExceptionType.connectionError)) {
         if (kDebugMode) {
-          AppLogger('Debug').debug('[CacheInterceptor] Network error, returning STALE cache: ${err.requestOptions.path}');
+          AppLogger('Debug').debug(
+            '[CacheInterceptor] Network error, returning STALE cache: ${err.requestOptions.path}',
+          );
         }
 
         return handler.resolve(
@@ -131,8 +134,15 @@ class CacheInterceptor extends Interceptor {
   /// Get Time-To-Live (TTL) for different endpoints
   @visibleForTesting
   Duration getTTL(String path) {
+    // Wallet balance is financial state. Fetch it fresh and let the offline
+    // cache layer show explicit stale indicators when the network is down.
+    if (path == '/wallet' || path.contains('/wallet/balance')) {
+      return Duration.zero;
+    }
+
     // Deposit channels cache for 30 minutes (rarely change)
-    if (path.contains('/deposit/channels') || path.contains('/wallet/channels')) {
+    if (path.contains('/deposit/channels') ||
+        path.contains('/wallet/channels')) {
       return const Duration(minutes: 30);
     }
 
@@ -154,11 +164,6 @@ class CacheInterceptor extends Interceptor {
     // Referral stats/history cache for 5 minutes
     if (path.contains('/referrals')) {
       return const Duration(minutes: 5);
-    }
-
-    // Wallet balance cache for 30 seconds
-    if (path.contains('/wallet/balance')) {
-      return const Duration(seconds: 30);
     }
 
     // Transaction list cache for 1 minute
@@ -196,11 +201,27 @@ class CacheInterceptor extends Interceptor {
       'total': _cache.length,
       'active': activeEntries,
       'expired': expiredEntries,
-      'entries': _cache.entries.map((e) => {
-        'key': e.key,
-        'isExpired': e.value.isExpired,
-        'expiresIn': e.value.expiresAt.difference(now).inSeconds,
-      }).toList(),
+      'entries': _cache.entries
+          .map(
+            (e) => {
+              'key': e.key,
+              'isExpired': e.value.isExpired,
+              'expiresIn': e.value.expiresAt.difference(now).inSeconds,
+            },
+          )
+          .toList(),
     };
+  }
+
+  bool _isCacheablePath(String path) => getTTL(path) > Duration.zero;
+
+  void _evictExpired() {
+    _cache.removeWhere((_, cached) => cached.isExpired);
+  }
+
+  void _evictOverflow() {
+    while (_cache.length >= _maxEntries) {
+      _cache.remove(_cache.keys.first);
+    }
   }
 }

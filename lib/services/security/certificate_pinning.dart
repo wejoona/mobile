@@ -42,14 +42,14 @@ import 'package:usdc_wallet/utils/logger.dart';
 class CertificatePinning {
   static final _logger = AppLogger('CertificatePinning');
 
-  /// SHA-256 fingerprints of trusted certificate public keys (SPKI)
+  /// SHA-256 fingerprints of trusted certificate material.
   ///
   /// IMPORTANT: Replace these with actual fingerprints before production deployment!
   /// Use the commands above to generate fingerprints for your certificates.
   ///
   /// Include at least 2 fingerprints:
-  /// - Current production certificate
-  /// - Backup/rotation certificate
+  /// - Current production certificate / public key
+  /// - Backup/rotation public key
   ///
   /// To generate fingerprints for your production domain:
   /// ```bash
@@ -60,20 +60,29 @@ class CertificatePinning {
   ///   openssl enc -base64
   /// ```
   static const List<String> _trustedFingerprints = [
-    // Production API certificate - api.joonapay.com (leaf SPKI SHA-256)
-    // Generated: 2026-02-17
-    '0ooL4eQsEMj6lnm33qMAdKWlYsbH1IW49TkdFDraPzY=',
+    // Production API certificate - api.joonapay.com.
+    // Leaf DER SHA-256 for Dart fallback validation, generated 2026-06-03.
+    'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
 
-    // Intermediate CA certificate (backup pin for rotation)
-    // Generated: 2026-02-17
+    // Production apex certificate - joonapay.com.
+    // Leaf DER SHA-256 for Dart fallback validation, generated 2026-06-03.
+    'BWCq7vFEHnLEBB9FD9tOUTlIeFRPNHIJL7vPHgNjodc=',
+
+    // Leaf SPKI SHA-256 for native platform pinning reference.
+    // api.joonapay.com, generated 2026-06-03.
+    'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
+
+    // Leaf SPKI SHA-256 for native platform pinning reference.
+    // joonapay.com, generated 2026-06-03.
+    'vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=',
+
+    // Google Trust Services WE1 intermediate SPKI SHA-256.
+    // Generated 2026-06-03; kept as backup for leaf rotation.
     'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
   ];
 
   /// Trusted hosts that require certificate pinning
-  static const List<String> _pinnedHosts = [
-    'api.joonapay.com',
-    'joonapay.com',
-  ];
+  static const List<String> _pinnedHosts = ['api.joonapay.com', 'joonapay.com'];
 
   /// Configure Dio client with certificate pinning
   /// Only applies in release mode for production API
@@ -104,12 +113,18 @@ class CertificatePinning {
       },
     );
 
-    _logger.security('Certificate pinning enabled for ${_pinnedHosts.join(", ")}');
+    _logger.security(
+      'Certificate pinning enabled for ${_pinnedHosts.join(", ")}',
+    );
   }
 
   /// Certificate validation callback
   /// Returns true if certificate is valid, false to reject
-  static bool _validateCertificate(X509Certificate cert, String host, int port) {
+  static bool _validateCertificate(
+    X509Certificate cert,
+    String host,
+    int port,
+  ) {
     // Check if this host requires pinning
     final requiresPinning = _pinnedHosts.any(
       (pinnedHost) => host == pinnedHost || host.endsWith('.$pinnedHost'),
@@ -118,7 +133,10 @@ class CertificatePinning {
     if (!requiresPinning) {
       // For non-pinned hosts, reject bad certificates (default behavior)
       // This callback is only called for certificates that failed standard validation
-      _logger.security('Rejecting bad certificate for non-pinned host: $host', level: 'WARN');
+      _logger.security(
+        'Rejecting bad certificate for non-pinned host: $host',
+        level: 'WARN',
+      );
       return false;
     }
 
@@ -126,9 +144,18 @@ class CertificatePinning {
     final isValid = validateFingerprint(cert);
 
     if (!isValid) {
-      _logger.security('SECURITY ALERT - Certificate mismatch for $host', level: 'CRITICAL');
-      _logger.security('Expected one of: ${_trustedFingerprints.join(", ")}', level: 'CRITICAL');
-      _logger.security('Received: ${_computeFingerprint(cert)}', level: 'CRITICAL');
+      _logger.security(
+        'SECURITY ALERT - Certificate mismatch for $host',
+        level: 'CRITICAL',
+      );
+      _logger.security(
+        'Expected one of: ${_trustedFingerprints.join(", ")}',
+        level: 'CRITICAL',
+      );
+      _logger.security(
+        'Received: ${_computeFingerprint(cert)}',
+        level: 'CRITICAL',
+      );
     }
 
     return isValid;
@@ -147,7 +174,9 @@ class CertificatePinning {
 
       final isValid = _trustedFingerprints.contains(fingerprint);
 
-      _logger.debug('Fingerprint validation - computed: $fingerprint, valid: $isValid');
+      _logger.debug(
+        'Fingerprint validation - computed: $fingerprint, valid: $isValid',
+      );
 
       return isValid;
     } catch (e) {
@@ -158,9 +187,9 @@ class CertificatePinning {
 
   /// Compute SHA-256 fingerprint of certificate
   ///
-  /// This computes the hash of the full DER-encoded certificate.
-  /// For production, consider extracting just the SPKI (Subject Public Key Info)
-  /// for more resilient pinning across certificate renewals.
+  /// This currently computes the hash of the full DER-encoded certificate
+  /// because Dart's [X509Certificate] does not expose SPKI bytes directly.
+  /// Native platform pinning uses the SPKI pins above.
   static String _computeFingerprint(X509Certificate certificate) {
     try {
       // Get DER-encoded certificate bytes

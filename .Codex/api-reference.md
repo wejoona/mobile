@@ -62,6 +62,7 @@ Use with local API:
 | Favorites | GET | `/contacts/favorites` |
 | Recents | GET | `/contacts/recents` |
 | Search | GET | `/contacts/search` |
+| Lookup Korido users | GET | `/contacts/lookup?query=ama` |
 | Update | PUT | `/contacts/:id` |
 | Toggle favorite | PUT | `/contacts/:id/favorite` |
 | Delete | DELETE | `/contacts/:id` |

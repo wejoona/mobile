@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 
 class VirtualCardView extends ConsumerWidget {
   const VirtualCardView({super.key});
@@ -11,6 +14,7 @@ class VirtualCardView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: colors.canvas,
@@ -70,14 +74,17 @@ class VirtualCardView extends ConsumerWidget {
                       left: 24,
                       bottom: 60,
                       child: Row(
-                        children: List.generate(4, (i) => Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: AppText(
-                            '••••',
-                            variant: AppTextVariant.titleMedium,
-                            color: colors.textTertiary.withValues(alpha: 0.5),
+                        children: List.generate(
+                          4,
+                          (i) => Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: AppText(
+                              '••••',
+                              variant: AppTextVariant.titleMedium,
+                              color: colors.textTertiary.withValues(alpha: 0.5),
+                            ),
                           ),
-                        )),
+                        ),
                       ),
                     ),
                     // Logo placeholder
@@ -154,11 +161,63 @@ class VirtualCardView extends ConsumerWidget {
                 text: 'Real-time transaction alerts',
                 colors: colors,
               ),
+              const SizedBox(height: AppSpacing.xxxl),
+              AppButton(
+                label: l10n.cards_notifyMe,
+                onPressed: () => _subscribe(context, ref, l10n, colors),
+                variant: AppButtonVariant.primary,
+              ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _subscribe(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ThemeColors colors,
+  ) async {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'virtual_card',
+              source: 'wallet_virtual_card_view',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              metadata: {
+                'surface': 'wallet_virtual_card',
+                'featureName': 'Korido virtual card',
+                if (user?.countryCode != null) 'countryCode': user!.countryCode,
+                if (user?.preferredLocale != null)
+                  'locale': user!.preferredLocale,
+              },
+            ),
+          );
+
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.cards_notifySuccess),
+          backgroundColor: colors.success,
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.common_errorFormat(e.toString())),
+          backgroundColor: colors.error,
+        ),
+      );
+    }
   }
 }
 

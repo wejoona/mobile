@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/limits/providers/limits_provider.dart';
 import 'package:usdc_wallet/features/limits/widgets/limit_warning_banner.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
@@ -23,6 +24,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   bool _isLoading = false;
+  double? _draftAmount;
 
   @override
   void initState() {
@@ -68,9 +70,22 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   children: [
-                    // Recipient info card
+                    SendFlowHeader(
+                      icon: Icons.payments_outlined,
+                      title: l10n.send_enterAmount,
+                      subtitle: localizedSendCopy(
+                        context,
+                        en: 'Enter a USDC amount. Fees and total stay visible before confirmation.',
+                        fr: 'Saisissez un montant en USDC. Les frais et le total restent visibles avant confirmation.',
+                      ),
+                      currentStep: 1,
+                      metaLabel: sendStepLabel(context, 2),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+
                     AppCard(
-                      variant: AppCardVariant.flat,
+                      variant: AppCardVariant.elevated,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       child: Row(
                         children: [
                           Stack(
@@ -116,10 +131,6 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    if (state.recipient!.isKoridoUser) ...[
-                                      SizedBox(width: AppSpacing.xs),
-                                      const KoridoAccountBadge(compact: true),
-                                    ],
                                   ],
                                 ),
                                 if (state.recipient!.name != null)
@@ -134,25 +145,60 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.lg),
 
-                    // Available balance
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        AppText(
-                          l10n.wallet_availableBalance,
-                          variant: AppTextVariant.bodyMedium,
-                          color: colors.textSecondary,
-                        ),
-                        AmountText.fromText(
-                          formatUsdc(state.availableBalance),
-                          size: AmountTextSize.small,
-                          color: colors.gold,
-                        ),
-                      ],
+                    AppCard(
+                      variant: AppCardVariant.flat,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.account_balance_wallet_outlined,
+                                  color: colors.infoText,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: AppSpacing.sm),
+                                Expanded(
+                                  child: AppText(
+                                    l10n.wallet_availableBalance,
+                                    variant: AppTextVariant.bodyMedium,
+                                    color: colors.textSecondary,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          AmountText.fromText(
+                            formatUsdc(state.availableBalance),
+                            size: AmountTextSize.small,
+                            color: colors.textPrimary,
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.md),
+
+                    SendCallout(
+                      icon: Icons.verified_outlined,
+                      title: localizedSendCopy(
+                        context,
+                        en: 'Internal Korido transfer',
+                        fr: 'Transfert interne Korido',
+                      ),
+                      body: localizedSendCopy(
+                        context,
+                        en: 'Transfers between Korido accounts are instant and currently have no fee.',
+                        fr: 'Les transferts entre comptes Korido sont instantanés et sans frais pour le moment.',
+                      ),
+                      tone: SendCalloutTone.success,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
 
                     // Limits warning banner
                     if (limitsState.limits != null)
@@ -161,105 +207,95 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                         child: LimitWarningBanner(limits: limitsState.limits!),
                       ),
 
-                    // Amount input
-                    AppInput(
-                      label: l10n.send_amount,
-                      controller: _amountController,
-                      variant: AppInputVariant.amount,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      prefix: Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: AppText(
-                          'USDC',
-                          variant: AppTextVariant.labelMedium,
-                          color: colors.textTertiary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      validator: _validateAmount,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,2}'),
-                        ),
-                      ],
-                      suffix: TextButton(
-                        onPressed: _setMaxAmount,
-                        child: AppText(
-                          l10n.send_max,
-                          variant: AppTextVariant.labelMedium,
-                          color: colors.gold,
-                        ),
+                    AppCard(
+                      variant: AppCardVariant.elevated,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Column(
+                        children: [
+                          AppInput(
+                            label: l10n.send_amount,
+                            controller: _amountController,
+                            variant: AppInputVariant.amount,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            prefix: Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: AppText(
+                                'USDC',
+                                variant: AppTextVariant.labelMedium,
+                                color: colors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            validator: _validateAmount,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d*\.?\d{0,2}'),
+                              ),
+                            ],
+                            onChanged: _updateDraftAmount,
+                            suffix: TextButton(
+                              onPressed: _setMaxAmount,
+                              child: AppText(
+                                localizedSendCopy(
+                                  context,
+                                  en: 'Max available',
+                                  fr: 'Solde max',
+                                ),
+                                variant: AppTextVariant.labelMedium,
+                                color: colors.gold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppInput(
+                            label: l10n.send_note,
+                            controller: _noteController,
+                            hint: l10n.send_noteOptional,
+                            maxLines: 3,
+                            maxLength: 200,
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.xl),
 
-                    // Note/memo input (optional)
-                    AppInput(
-                      label: l10n.send_note,
-                      controller: _noteController,
-                      hint: l10n.send_noteOptional,
-                      maxLines: 3,
-                      maxLength: 200,
-                    ),
-                    SizedBox(height: AppSpacing.xl),
-
-                    // Fee preview
-                    if (state.fee > 0)
+                    if (_draftAmount != null && _draftAmount! > 0)
                       AppCard(
                         variant: AppCardVariant.flat,
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                AppText(
-                                  l10n.send_amount,
-                                  variant: AppTextVariant.bodyMedium,
-                                ),
-                                AmountText.fromText(
-                                  formatUsdc(state.amount ?? 0),
-                                  size: AmountTextSize.small,
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: AppSpacing.sm),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                AppText(
-                                  l10n.send_fee,
-                                  variant: AppTextVariant.bodyMedium,
-                                  color: colors.textSecondary,
-                                ),
-                                AmountText.fromText(
-                                  formatUsdc(state.fee),
-                                  size: AmountTextSize.small,
-                                  color: colors.textSecondary,
-                                ),
-                              ],
-                            ),
-                            Divider(
-                              height: AppSpacing.md,
-                              color: colors.textSecondary.withValues(
-                                alpha: 0.2,
+                            SendDetailRow(
+                              label: l10n.send_amount,
+                              value: '',
+                              valueWidget: AmountText.fromText(
+                                formatUsdc(_draftAmount!),
+                                size: AmountTextSize.small,
                               ),
                             ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                AppText(
-                                  l10n.send_total,
-                                  variant: AppTextVariant.bodyLarge,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                AmountText.fromText(
-                                  formatUsdc(state.total),
-                                  size: AmountTextSize.small,
-                                  color: colors.gold,
-                                ),
-                              ],
+                            const SizedBox(height: AppSpacing.sm),
+                            SendDetailRow(
+                              label: l10n.send_fee,
+                              value: '',
+                              valueWidget: AmountText.fromText(
+                                formatUsdc(state.fee),
+                                size: AmountTextSize.small,
+                                color: colors.textSecondary,
+                              ),
+                            ),
+                            Divider(
+                              height: AppSpacing.xl,
+                              color: colors.borderSubtle,
+                            ),
+                            SendDetailRow(
+                              label: l10n.send_total,
+                              value: '',
+                              valueWidget: AmountText.fromText(
+                                formatUsdc(_draftAmount! + state.fee),
+                                size: AmountTextSize.small,
+                                color: colors.gold,
+                              ),
                             ),
                           ],
                         ),
@@ -273,6 +309,8 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
                 padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 child: AppButton(
                   label: l10n.action_continue,
+                  icon: Icons.arrow_forward_rounded,
+                  iconPosition: IconPosition.right,
                   onPressed: _handleContinue,
                   isLoading: _isLoading,
                   isFullWidth: true,
@@ -283,6 +321,11 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
         ),
       ),
     );
+  }
+
+  void _updateDraftAmount(String value) {
+    final parsed = double.tryParse(value);
+    setState(() => _draftAmount = parsed);
   }
 
   String? _validateAmount(String? value) {
@@ -325,6 +368,7 @@ class _AmountScreenState extends ConsumerState<AmountScreen> {
   void _setMaxAmount() {
     final state = ref.read(sendMoneyProvider);
     _amountController.text = state.availableBalance.toStringAsFixed(2);
+    _updateDraftAmount(_amountController.text);
   }
 
   Future<void> _handleContinue() async {

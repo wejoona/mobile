@@ -19,21 +19,23 @@ class WalletApi {
 
   // ── Deposit ──
 
-  /// GET /deposits/providers
-  Future<Response> getDepositChannels() => _dio.get('/deposits/providers');
+  /// GET /wallet/deposit/channels
+  Future<Response> getDepositChannels() => _dio.get('/wallet/deposit/channels');
 
-  /// GET /deposits/providers
-  Future<Response> getDepositProviders() => _dio.get('/deposits/providers');
+  /// GET /wallet/deposit/providers
+  Future<Response> getDepositProviders() =>
+      _dio.get('/wallet/deposit/providers');
 
-  /// POST /deposits/initiate
+  /// POST /wallet/deposit
   Future<Response> initiateDeposit(Map<String, dynamic> data) => _dio.post(
-    '/deposits/initiate',
+    '/wallet/deposit',
     data: _depositPayload(data),
     options: Options(headers: {'X-Idempotency-Key': generateIdempotencyKey()}),
   );
 
-  /// GET /deposits/:id
-  Future<Response> getDepositStatus(String id) => _dio.get('/deposits/$id');
+  /// GET /wallet/deposit/:id
+  Future<Response> getDepositStatus(String id) =>
+      _dio.get('/wallet/deposit/$id');
 
   // ── Transfer ──
 
@@ -132,60 +134,45 @@ class WalletApi {
 
 Map<String, dynamic> _depositPayload(Map<String, dynamic> data) {
   final payload = Map<String, dynamic>.from(data);
-  final providerCode =
-      payload.remove('providerCode') ?? payload.remove('provider');
-  if (providerCode != null) {
-    payload['providerCode'] = _mobileMoneyProviderCode(providerCode.toString());
+  final channelId =
+      payload.remove('channelId') ??
+      payload.remove('provider') ??
+      payload.remove('providerCode');
+  if (channelId != null) {
+    payload['channelId'] = _mobileMoneyChannelId(channelId.toString());
   }
   payload.putIfAbsent(
-    'currency',
-    () => payload.remove('sourceCurrency') ?? 'XOF',
+    'sourceCurrency',
+    () => payload.remove('currency') ?? 'XOF',
   );
-  final phoneNumber = payload['phoneNumber'];
-  if (phoneNumber is String && phoneNumber.trim().isNotEmpty) {
-    payload['phoneNumber'] = _normalizePhoneNumber(
-      phoneNumber,
-      payload['currency'].toString(),
-    );
-  }
+  payload.remove('phoneNumber');
   return payload;
 }
 
-String _mobileMoneyProviderCode(String value) {
+String _mobileMoneyChannelId(String value) {
   switch (value.replaceAll('-', '_').toLowerCase()) {
+    case 'orange_money_ci':
     case 'omci':
     case 'orange':
     case 'orange_money':
     case 'mobile_money':
-      return 'OMCI';
+      return 'orange_money_ci';
+    case 'mtn_momo_ci':
     case 'mtnci':
     case 'mtn':
     case 'mtn_momo':
     case 'mtn_mobile_money':
-      return 'MTNCI';
+      return 'mtn_momo_ci';
+    case 'moov_money_ci':
     case 'moovci':
     case 'moov':
     case 'moov_money':
-      return 'MOOVCI';
+      return 'moov_money_ci';
+    case 'wave_ci':
     case 'waveci':
     case 'wave':
-      return 'WAVECI';
+      return 'wave_ci';
     default:
-      return value.toUpperCase();
+      return value;
   }
-}
-
-String _normalizePhoneNumber(String value, String currency) {
-  var phone = value.replaceAll(RegExp(r'[\s\-().]'), '');
-  if (phone.startsWith('+')) return phone;
-
-  if (currency.toUpperCase() == 'XOF') {
-    if (phone.startsWith('225')) return '+$phone';
-    if (phone.length == 10) return '+225$phone';
-  }
-
-  if (phone.startsWith('1') && phone.length == 11) return '+$phone';
-  if (phone.length == 10) return '+1$phone';
-
-  return phone;
 }

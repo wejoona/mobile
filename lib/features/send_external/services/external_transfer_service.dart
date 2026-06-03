@@ -41,9 +41,20 @@ class ExternalTransferService {
 
   /// Estimate fee for network transfer
   Future<double> estimateFee(double amount, NetworkOption network) async {
-    // Mock fee estimation - in production, call actual API
-    await Future.delayed(const Duration(milliseconds: 500));
-    return network.estimatedFee;
+    try {
+      final response = await _dio.get(
+        '/wallet/transfer/external/estimate-fee',
+        queryParameters: {'network': network.value, 'amount': amount},
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return (data['estimatedFee'] as num?)?.toDouble() ??
+            network.estimatedFee;
+      }
+      return network.estimatedFee;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 
   /// Execute external transfer

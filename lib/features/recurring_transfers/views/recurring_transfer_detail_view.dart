@@ -10,12 +10,10 @@ import 'package:usdc_wallet/features/recurring_transfers/models/transfer_frequen
 import 'package:usdc_wallet/features/recurring_transfers/models/recurring_transfer_status.dart';
 import 'package:usdc_wallet/features/recurring_transfers/widgets/execution_history_list.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class RecurringTransferDetailView extends ConsumerWidget {
-  const RecurringTransferDetailView({
-    super.key,
-    required this.transferId,
-  });
+  const RecurringTransferDetailView({super.key, required this.transferId});
 
   final String transferId;
 
@@ -33,18 +31,6 @@ class RecurringTransferDetailView extends ConsumerWidget {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          asyncState.whenOrNull(
-            data: (state) => state.transfer != null && !state.transfer!.isCancelled
-                ? IconButton(
-                    icon: Icon(Icons.edit, color: context.colors.gold),
-                    onPressed: () => context.push(
-                      '/recurring-transfers/edit/$transferId',
-                    ),
-                  )
-                : null,
-          ) ?? const SizedBox.shrink(),
-        ],
       ),
       body: asyncState.when(
         loading: () => Center(
@@ -67,11 +53,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: AppColors.errorBase,
-            ),
+            Icon(Icons.error_outline, size: 64, color: AppColors.errorBase),
             SizedBox(height: AppSpacing.md),
             AppText(
               error ?? l10n.common_error,
@@ -135,8 +117,13 @@ class RecurringTransferDetailView extends ConsumerWidget {
                       Expanded(
                         child: _buildInfoItem(
                           l10n.recurringTransfers_amount,
-                          '${transfer.amount.toStringAsFixed(0)} ${transfer.currency}',
+                          '',
                           Icons.payments,
+                          valueWidget: AmountText.fromText(
+                            formatCurrency(transfer.amount, transfer.currency),
+                            size: AmountTextSize.small,
+                            color: context.colors.textPrimary,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -184,10 +171,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
                       color: context.colors.textSecondary,
                     ),
                     SizedBox(height: AppSpacing.xs),
-                    AppText(
-                      transfer.note!,
-                      variant: AppTextVariant.bodyMedium,
-                    ),
+                    AppText(transfer.note!, variant: AppTextVariant.bodyMedium),
                   ],
                 ],
               ),
@@ -306,7 +290,10 @@ class RecurringTransferDetailView extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatusBadge(BuildContext context, RecurringTransferStatus status) {
+  Widget _buildStatusBadge(
+    BuildContext context,
+    RecurringTransferStatus status,
+  ) {
     Color color;
     switch (status) {
       case RecurringTransferStatus.active:
@@ -342,7 +329,12 @@ class RecurringTransferDetailView extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoItem(String label, String value, IconData icon) {
+  Widget _buildInfoItem(
+    String label,
+    String value,
+    IconData icon, {
+    Widget? valueWidget,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -358,16 +350,22 @@ class RecurringTransferDetailView extends ConsumerWidget {
           ],
         ),
         SizedBox(height: AppSpacing.xs),
-        AppText(
-          value,
-          variant: AppTextVariant.bodyMedium,
-          fontWeight: FontWeight.w600,
-        ),
+        valueWidget ??
+            AppText(
+              value,
+              variant: AppTextVariant.bodyMedium,
+              fontWeight: FontWeight.w600,
+            ),
       ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return AppCard(
       variant: AppCardVariant.subtle,
       child: Padding(
@@ -402,10 +400,12 @@ class RecurringTransferDetailView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     bool success = true;
     try {
-    await ref
-        .read(recurringTransferActionsProvider)
-        .pauseRecurringTransfer(id);
-    } catch (_) { success = false; }
+      await ref
+          .read(recurringTransferActionsProvider)
+          .pauseRecurringTransfer(id);
+    } catch (_) {
+      success = false;
+    }
 
     if (!context.mounted) return;
 
@@ -416,7 +416,9 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_pauseSuccess
               : l10n.recurringTransfers_pauseError,
         ),
-        backgroundColor: success ? context.colors.success : context.colors.error,
+        backgroundColor: success
+            ? context.colors.success
+            : context.colors.error,
       ),
     );
 
@@ -433,8 +435,12 @@ class RecurringTransferDetailView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     bool success = true;
     try {
-      await ref.read(recurringTransferActionsProvider).resumeRecurringTransfer(id);
-    } catch (_) { success = false; }
+      await ref
+          .read(recurringTransferActionsProvider)
+          .resumeRecurringTransfer(id);
+    } catch (_) {
+      success = false;
+    }
 
     if (!context.mounted) return;
 
@@ -445,7 +451,9 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_resumeSuccess
               : l10n.recurringTransfers_resumeError,
         ),
-        backgroundColor: success ? context.colors.success : context.colors.error,
+        backgroundColor: success
+            ? context.colors.success
+            : context.colors.error,
       ),
     );
 
@@ -489,8 +497,12 @@ class RecurringTransferDetailView extends ConsumerWidget {
 
     bool success = true;
     try {
-      await ref.read(recurringTransferActionsProvider).cancelRecurringTransfer(id);
-    } catch (_) { success = false; }
+      await ref
+          .read(recurringTransferActionsProvider)
+          .cancelRecurringTransfer(id);
+    } catch (_) {
+      success = false;
+    }
 
     if (!context.mounted) return;
 
@@ -501,7 +513,9 @@ class RecurringTransferDetailView extends ConsumerWidget {
               ? l10n.recurringTransfers_cancelSuccess
               : l10n.recurringTransfers_cancelError,
         ),
-        backgroundColor: success ? context.colors.success : context.colors.error,
+        backgroundColor: success
+            ? context.colors.success
+            : context.colors.error,
       ),
     );
 

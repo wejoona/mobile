@@ -178,7 +178,8 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
   // ─────────────────────────────────────────────────────────────────
 
   /// Restore session from stored tokens (app restart)
-  /// Directly sets authenticated state and triggers data fetches
+  /// Directly sets authenticated state without hydrating network data.
+  /// Hydration waits until the locked session is explicitly unlocked.
   void restoreSession({
     required String userId,
     required String accessToken,
@@ -198,7 +199,10 @@ class AppFsmNotifier extends FsmNotifier<AppState, AppEvent> {
         timeout: const Duration(minutes: 30),
       ),
     );
-    // Trigger wallet and KYC fetches
+  }
+
+  /// Hydrate authenticated resources after the session is unlocked.
+  void hydrateAuthenticatedSession() {
     Future.microtask(() {
       if (!ref.mounted) return;
       ref.read(walletStateMachineProvider.notifier).fetch();

@@ -35,7 +35,7 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Confirm & Send'));
+    await tester.tap(find.text('Continue to PIN'));
     await tester.pumpAndSettle();
 
     expect(find.text('Transfer queued'), findsOneWidget);

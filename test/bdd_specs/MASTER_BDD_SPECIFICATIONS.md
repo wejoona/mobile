@@ -576,10 +576,10 @@ Feature: Confirm Send Transfer
     And I should see amount in USDC
     And I should see transaction fee
     And I should see total amount
-    And I should see "Confirm & Send" button
+    And I should see "Continue to PIN" button
 
   Scenario: Confirm and proceed to PIN
-    When I tap "Confirm & Send"
+    When I tap "Continue to PIN"
     Then I should be navigated to "/send/pin"
 ```
 

@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/views/offline_queue_dialog.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/features/wallet/widgets/risk_step_up_dialog.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/connectivity/connectivity_provider.dart';
@@ -44,15 +45,28 @@ class ConfirmScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 children: [
+                  SendFlowHeader(
+                    icon: Icons.verified_outlined,
+                    title: l10n.send_confirmTransfer,
+                    subtitle: localizedSendCopy(
+                      context,
+                      en: 'Review carefully. Money leaves only after PIN approval.',
+                      fr: 'Vérifiez attentivement. L’argent part uniquement après validation du PIN.',
+                    ),
+                    currentStep: 2,
+                    metaLabel: sendStepLabel(context, 3),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+
                   // Summary card
                   AppCard(
-                    variant: AppCardVariant.flat,
+                    variant: AppCardVariant.elevated,
+                    padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Recipient section
-                        _buildSectionHeader(l10n.send_recipient, colors),
-                        SizedBox(height: AppSpacing.sm),
+                        SendSectionTitle(l10n.send_recipient),
+                        const SizedBox(height: AppSpacing.md),
                         Row(
                           children: [
                             UserAvatar(
@@ -101,91 +115,102 @@ class ConfirmScreen extends ConsumerWidget {
                               ),
                             ),
                             IconButton(
+                              tooltip: localizedSendCopy(
+                                context,
+                                en: 'Edit recipient',
+                                fr: 'Modifier le destinataire',
+                              ),
                               icon: Icon(
                                 Icons.edit_outlined,
-                                color: colors.gold,
+                                color: colors.infoText,
                                 size: 20,
                               ),
                               onPressed: () => context.go('/send'),
                             ),
                           ],
                         ),
-                        SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.xl),
 
                         // Amount section
-                        _buildSectionHeader(l10n.send_amount, colors),
-                        SizedBox(height: AppSpacing.sm),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            AmountText.fromText(
-                              formatUsdc(state.amount!),
-                              size: AmountTextSize.large,
-                              color: colors.gold,
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                color: colors.gold,
-                                size: 20,
-                              ),
-                              onPressed: () => context.go('/send/amount'),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AppSpacing.md),
-
-                        // Fee breakdown
-                        if (state.fee > 0) ...[
-                          Divider(
-                            color: colors.textSecondary.withValues(alpha: 0.2),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          decoration: BoxDecoration(
+                            color: colors.elevated,
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
+                            border: Border.all(color: colors.borderSubtle),
                           ),
-                          SizedBox(height: AppSpacing.sm),
-                          Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              AppText(
-                                l10n.send_fee,
-                                variant: AppTextVariant.bodyMedium,
-                                color: colors.textSecondary,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppText(
+                                    l10n.send_amount,
+                                    variant: AppTextVariant.bodySmall,
+                                    color: colors.textSecondary,
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  AmountText.fromText(
+                                    formatUsdc(state.amount!),
+                                    size: AmountTextSize.large,
+                                    color: colors.gold,
+                                  ),
+                                ],
                               ),
-                              AmountText.fromText(
-                                formatUsdc(state.fee),
-                                size: AmountTextSize.small,
-                                color: colors.textSecondary,
+                              IconButton(
+                                tooltip: localizedSendCopy(
+                                  context,
+                                  en: 'Edit amount',
+                                  fr: 'Modifier le montant',
+                                ),
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  color: colors.infoText,
+                                  size: 20,
+                                ),
+                                onPressed: () => context.go('/send/amount'),
                               ),
                             ],
                           ),
-                          SizedBox(height: AppSpacing.sm),
-                        ],
-
-                        Divider(
-                          color: colors.textSecondary.withValues(alpha: 0.2),
                         ),
-                        SizedBox(height: AppSpacing.sm),
+                        const SizedBox(height: AppSpacing.lg),
 
-                        // Total
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            AppText(
-                              l10n.send_total,
-                              variant: AppTextVariant.bodyLarge,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            AmountText.fromText(
-                              formatUsdc(state.total),
-                              size: AmountTextSize.small,
-                              color: colors.gold,
-                            ),
-                          ],
+                        AppCard(
+                          variant: AppCardVariant.flat,
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          borderRadius: AppRadius.lg,
+                          child: Column(
+                            children: [
+                              SendDetailRow(
+                                label: l10n.send_fee,
+                                value: '',
+                                valueWidget: AmountText.fromText(
+                                  formatUsdc(state.fee),
+                                  size: AmountTextSize.small,
+                                  color: colors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              SendDetailRow(
+                                label: l10n.send_total,
+                                value: '',
+                                valueWidget: AmountText.fromText(
+                                  formatUsdc(state.total),
+                                  size: AmountTextSize.small,
+                                  color: colors.gold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        SizedBox(height: AppSpacing.lg),
+                        const SizedBox(height: AppSpacing.lg),
 
                         // Note section (if provided)
                         if (state.note != null && state.note!.isNotEmpty) ...[
-                          _buildSectionHeader(l10n.send_note, colors),
-                          SizedBox(height: AppSpacing.sm),
+                          SendSectionTitle(l10n.send_note),
+                          const SizedBox(height: AppSpacing.sm),
                           AppText(
                             state.note!,
                             variant: AppTextVariant.bodyMedium,
@@ -197,22 +222,15 @@ class ConfirmScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: AppSpacing.md),
 
-                  // Info message
-                  AppCard(
-                    variant: AppCardVariant.flat,
-                    child: Row(
-                      children: [
-                        Icon(Icons.info_outline, color: colors.gold, size: 20),
-                        SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: AppText(
-                            l10n.send_pinVerificationRequired,
-                            variant: AppTextVariant.bodySmall,
-                            color: colors.textSecondary,
-                          ),
-                        ),
-                      ],
+                  SendCallout(
+                    icon: Icons.lock_outline,
+                    title: l10n.send_pinVerificationRequired,
+                    body: localizedSendCopy(
+                      context,
+                      en: 'No transfer is executed on this screen. The next step asks for your PIN.',
+                      fr: 'Aucun transfert n’est exécuté sur cet écran. L’étape suivante demande votre PIN.',
                     ),
+                    tone: SendCalloutTone.warning,
                   ),
                 ],
               ),
@@ -222,7 +240,12 @@ class ConfirmScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: AppButton(
-                label: l10n.send_confirmAndSend,
+                label: localizedSendCopy(
+                  context,
+                  en: 'Continue to PIN',
+                  fr: 'Continuer vers le PIN',
+                ),
+                icon: Icons.lock_outline,
                 onPressed: () async {
                   HapticFeedback.mediumImpact();
 
@@ -266,14 +289,6 @@ class ConfirmScreen extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(String text, ThemeColors colors) {
-    return AppText(
-      text,
-      variant: AppTextVariant.labelSmall,
-      color: colors.textSecondary,
     );
   }
 

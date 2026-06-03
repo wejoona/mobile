@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -38,11 +39,15 @@ class NotificationPreferencesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context, WidgetRef ref, NotificationPreferencesState state, ThemeColors colors, AppLocalizations l10n) {
+  Widget _buildBody(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationPreferencesState state,
+    ThemeColors colors,
+    AppLocalizations l10n,
+  ) {
     if (state.isLoading && !state.hasData) {
-      return Center(
-        child: CircularProgressIndicator(color: colors.gold),
-      );
+      return Center(child: CircularProgressIndicator(color: colors.gold));
     }
 
     if (state.error != null && !state.hasData) {
@@ -64,9 +69,7 @@ class NotificationPreferencesScreen extends ConsumerWidget {
 
     final preferences = state.preferences;
     if (preferences == null) {
-      return Center(
-        child: CircularProgressIndicator(color: colors.gold),
-      );
+      return Center(child: CircularProgressIndicator(color: colors.gold));
     }
 
     return ListView(
@@ -88,7 +91,9 @@ class NotificationPreferencesScreen extends ConsumerWidget {
               description: l10n.notifications_pref_transaction_alerts_desc,
               value: preferences.pushTransactions,
               onChanged: (value) {
-                ref.read(notificationPreferencesProvider.notifier).setPushTransactions(value);
+                ref
+                    .read(notificationPreferencesProvider.notifier)
+                    .setPushTransactions(value);
               },
             ),
           ],
@@ -121,7 +126,9 @@ class NotificationPreferencesScreen extends ConsumerWidget {
               description: l10n.notifications_pref_promotions_desc,
               value: preferences.pushMarketing,
               onChanged: (value) {
-                ref.read(notificationPreferencesProvider.notifier).setPushMarketing(value);
+                ref
+                    .read(notificationPreferencesProvider.notifier)
+                    .setPushMarketing(value);
               },
             ),
           ],
@@ -138,7 +145,9 @@ class NotificationPreferencesScreen extends ConsumerWidget {
               description: l10n.notifications_pref_weekly_summary_desc,
               value: preferences.emailMonthlyStatement,
               onChanged: (value) {
-                ref.read(notificationPreferencesProvider.notifier).setEmailMonthlyStatement(value);
+                ref
+                    .read(notificationPreferencesProvider.notifier)
+                    .setEmailMonthlyStatement(value);
               },
             ),
           ],
@@ -165,7 +174,9 @@ class NotificationPreferencesScreen extends ConsumerWidget {
           value: preferences.largeTransactionThreshold,
           unit: 'USDC',
           onChanged: (value) {
-            ref.read(notificationPreferencesProvider.notifier).setLargeTransactionThreshold(value);
+            ref
+                .read(notificationPreferencesProvider.notifier)
+                .setLargeTransactionThreshold(value);
           },
         ),
         const SizedBox(height: AppSpacing.md),
@@ -174,7 +185,9 @@ class NotificationPreferencesScreen extends ConsumerWidget {
           value: preferences.lowBalanceThreshold,
           unit: 'USDC',
           onChanged: (value) {
-            ref.read(notificationPreferencesProvider.notifier).setLowBalanceThreshold(value);
+            ref
+                .read(notificationPreferencesProvider.notifier)
+                .setLowBalanceThreshold(value);
           },
         ),
         const SizedBox(height: AppSpacing.xxl),
@@ -194,7 +207,11 @@ class _PreferenceSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(title, variant: AppTextVariant.titleMedium, color: colors.textPrimary),
+        AppText(
+          title,
+          variant: AppTextVariant.titleMedium,
+          color: colors.textPrimary,
+        ),
         const SizedBox(height: AppSpacing.md),
         ...children,
       ],
@@ -204,8 +221,11 @@ class _PreferenceSection extends StatelessWidget {
 
 class _PreferenceSwitch extends StatelessWidget {
   const _PreferenceSwitch({
-    required this.label, required this.description,
-    required this.value, required this.onChanged, this.locked = false,
+    required this.label,
+    required this.description,
+    required this.value,
+    required this.onChanged,
+    this.locked = false,
   });
   final String label;
   final String description;
@@ -229,12 +249,27 @@ class _PreferenceSwitch extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: [
-                  Flexible(child: AppText(label, variant: AppTextVariant.bodyLarge, color: colors.textPrimary)),
-                  if (locked) ...[const SizedBox(width: AppSpacing.xs), Icon(Icons.lock, size: 16, color: colors.gold)],
-                ]),
+                Row(
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        label,
+                        variant: AppTextVariant.bodyLarge,
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    if (locked) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      Icon(Icons.lock, size: 16, color: colors.gold),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.xxs),
-                AppText(description, variant: AppTextVariant.bodySmall, color: colors.textSecondary),
+                AppText(
+                  description,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
               ],
             ),
           ),
@@ -254,7 +289,12 @@ class _PreferenceSwitch extends StatelessWidget {
 }
 
 class _ThresholdCard extends StatefulWidget {
-  const _ThresholdCard({required this.label, required this.value, required this.unit, required this.onChanged});
+  const _ThresholdCard({
+    required this.label,
+    required this.value,
+    required this.unit,
+    required this.onChanged,
+  });
   final String label;
   final double value;
   final String unit;
@@ -274,7 +314,10 @@ class _ThresholdCardState extends State<_ThresholdCard> {
   }
 
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -289,33 +332,45 @@ class _ThresholdCardState extends State<_ThresholdCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText(widget.label, variant: AppTextVariant.bodyLarge, color: colors.textPrimary),
+          AppText(
+            widget.label,
+            variant: AppTextVariant.bodyLarge,
+            color: colors.textPrimary,
+          ),
           const SizedBox(height: AppSpacing.md),
-          Row(children: [
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                keyboardType: TextInputType.number,
-                style: TextStyle(color: colors.textPrimary, fontSize: 16),
-                decoration: InputDecoration(
-                  filled: true, fillColor: colors.elevated,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.md), borderSide: BorderSide.none),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                  hintText: '0', hintStyle: TextStyle(color: colors.textTertiary),
+          Row(
+            children: [
+              Expanded(
+                child: AppInput(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  hint: '0',
+                  prefixIcon: Icons.tune_rounded,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (value) {
+                    final parsed = double.tryParse(value);
+                    if (parsed != null) widget.onChanged(parsed);
+                  },
                 ),
-                onChanged: (value) {
-                  final parsed = double.tryParse(value);
-                  if (parsed != null) widget.onChanged(parsed);
-                },
               ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-              decoration: BoxDecoration(color: colors.gold.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(AppRadius.md)),
-              child: AppText(widget.unit, variant: AppTextVariant.bodyMedium, color: colors.gold),
-            ),
-          ]),
+              const SizedBox(width: AppSpacing.md),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: colors.goldSubtle,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: AppText(
+                  widget.unit,
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.gold,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

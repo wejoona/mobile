@@ -54,7 +54,7 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
   final WalletService _walletService;
 
   CurrencyConverterNotifier(this._walletService)
-      : super(const CurrencyConversionState());
+    : super(const CurrencyConversionState());
 
   void setFromCurrency(String currency) {
     state = state.copyWith(fromCurrency: currency);
@@ -80,7 +80,6 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
   }
 
   /// Fetch live exchange rate from backend GET /wallet/rate.
-  /// Falls back to hardcoded rates if the API is unreachable.
   Future<void> fetchRate() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -103,15 +102,13 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
       );
       _recalculate();
     } catch (e) {
-      // Fallback to approximate rates if API fails
-      final fallbackRate = _getFallbackRate(state.fromCurrency, state.toCurrency);
-      state = state.copyWith(
-        rate: fallbackRate,
+      state = CurrencyConversionState(
+        fromCurrency: state.fromCurrency,
+        toCurrency: state.toCurrency,
+        amount: state.amount,
         isLoading: false,
-        rateTimestamp: DateTime.now(),
-        error: null, // Don't show error — fallback is fine
+        error: 'Exchange rate unavailable. Please try again.',
       );
-      _recalculate();
     }
   }
 
@@ -120,26 +117,17 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
       state = state.copyWith(convertedAmount: state.amount * state.rate!);
     }
   }
-
-  /// Fallback rates used when the API is unreachable.
-  double _getFallbackRate(String from, String to) {
-    if (from == 'USDC' && to == 'XOF') return 615.0;
-    if (from == 'XOF' && to == 'USDC') return 1 / 615.0;
-    if (from == 'USDC' && to == 'EUR') return 0.92;
-    if (from == 'EUR' && to == 'USDC') return 1.087;
-    if (from == 'USD' && to == 'XOF') return 615.0;
-    if (from == 'XOF' && to == 'USD') return 1 / 615.0;
-    return 1.0;
-  }
 }
 
-final currencyConverterProvider = StateNotifierProvider<
-    CurrencyConverterNotifier, CurrencyConversionState>((ref) {
-  final walletService = ref.watch(walletServiceProvider);
-  final notifier = CurrencyConverterNotifier(walletService);
-  notifier.fetchRate();
-  return notifier;
-});
+final currencyConverterProvider =
+    StateNotifierProvider<CurrencyConverterNotifier, CurrencyConversionState>((
+      ref,
+    ) {
+      final walletService = ref.watch(walletServiceProvider);
+      final notifier = CurrencyConverterNotifier(walletService);
+      notifier.fetchRate();
+      return notifier;
+    });
 
 /// Supported currencies for conversion
 final supportedCurrenciesProvider = Provider<List<String>>((ref) {

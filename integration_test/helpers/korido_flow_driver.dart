@@ -240,14 +240,24 @@ class KoridoFlowDriver {
       reason: 'deposit provider options',
     );
 
-    final orangeProvider = find.byKey(const ValueKey('deposit_provider_OMCI'));
-    await tester.ensureVisible(orangeProvider);
-    await tester.tap(orangeProvider);
+    final orangeProvider = find.byKey(
+      const ValueKey('deposit_provider_orange_money_ci'),
+    );
+    final legacyOrangeProvider = find.byKey(
+      const ValueKey('deposit_provider_OMCI'),
+    );
+    final providerFinder = orangeProvider.evaluate().isNotEmpty
+        ? orangeProvider
+        : legacyOrangeProvider;
+    await tester.ensureVisible(providerFinder);
+    await tester.tap(providerFinder);
     await tester.pump(const Duration(milliseconds: 350));
 
     await pumpUntil(
       () =>
           hasAnyText(['Instructions de paiement', 'Payment Instructions']) ||
+          hasAnyText(['Payment', 'Paiement']) ||
+          hasAnyText(['Waiting for approval', 'En attente']) ||
           hasAnyText(['Enter OTP', 'Entrer OTP']) ||
           hasAnyText(['Deposit Successful', 'Dépôt réussi']),
       reason: 'deposit instructions, OTP prompt, or success status',
@@ -281,7 +291,7 @@ class KoridoFlowDriver {
       if (closeButton.evaluate().isNotEmpty) {
         await tester.tap(closeButton.first);
       } else {
-        await tester.pageBack();
+        await goToRoute('/home');
       }
     }
     await tester.pump(const Duration(milliseconds: 350));
@@ -312,7 +322,12 @@ class KoridoFlowDriver {
       reason: 'send confirmation screen',
     );
 
-    await tapText(['Confirm & Send', 'Confirmer & Envoyer']);
+    await tapText([
+      'Continue to PIN',
+      'Continuer vers le PIN',
+      'Confirm & Send',
+      'Confirmer & Envoyer',
+    ]);
 
     await pumpUntil(
       () => hasAnyText(['Verify PIN', 'Vérifier le code PIN']),
@@ -355,9 +370,24 @@ class KoridoFlowDriver {
 
   Future<void> enterPinTextFields(String pin) async {
     await pumpUntil(
-      () => find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty,
+      () =>
+          find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty ||
+          find
+              .byKey(const ValueKey('security_code_input'))
+              .evaluate()
+              .isNotEmpty,
       reason: 'PIN input fields',
     );
+
+    final securityCodeInput = find.byKey(const ValueKey('security_code_input'));
+    if (securityCodeInput.evaluate().isNotEmpty) {
+      await tester.ensureVisible(securityCodeInput);
+      await tester.tap(securityCodeInput);
+      await tester.enterText(securityCodeInput, pin);
+      await tester.pump(const Duration(milliseconds: 250));
+      await dismissKeyboard();
+      return;
+    }
 
     for (var i = 0; i < pin.length; i++) {
       final field = find.byKey(ValueKey('pin_digit_$i'));
