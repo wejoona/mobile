@@ -179,7 +179,7 @@ final profileNotifierProvider =
       }
     });
 
-/// Deposit providers list — wired to GET /deposits/providers.
+/// Deposit providers list — wired to GET /wallet/deposit/channels.
 final providersListProvider = FutureProvider<List<ProviderData>>((ref) async {
   final depositService = ref.watch(depositServiceProvider);
   final selectedCountry = ref.watch(selectedCountryProvider);
@@ -227,6 +227,8 @@ final providersListProvider = FutureProvider<List<ProviderData>>((ref) async {
             id: json['code'] as String? ?? json['id'] as String? ?? '',
             name: json['name'] as String? ?? '',
             paymentMethodType: json['paymentMethodType'] as String?,
+            enumProvider:
+                json['provider'] as String? ?? json['code'] as String?,
             minAmount: (json['minAmount'] as num?)?.toDouble(),
             maxAmount: (json['maxAmount'] as num?)?.toDouble(),
             countries: _stringList(json, const [
@@ -238,7 +240,7 @@ final providersListProvider = FutureProvider<List<ProviderData>>((ref) async {
               'supportedCurrencies',
               'currencies',
             ]),
-            rails: _stringList(json, const ['rails']),
+            rails: _stringList(json, const ['rails', 'type']),
           ),
         )
         .where((provider) => provider.id.isNotEmpty)

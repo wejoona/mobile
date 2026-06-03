@@ -4,6 +4,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart' as auth;
 import 'package:usdc_wallet/services/pin/pin_service.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/state/user_state_machine.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Onboarding state.
 class OnboardingState {
@@ -298,14 +299,14 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 
   String? _normalizePhone(String? phone) {
-    final raw = phone?.replaceAll(RegExp(r'\s+'), '');
+    final raw = phone?.trim();
     if (raw == null || raw.isEmpty) return null;
-    if (raw.startsWith('+')) return raw;
+    if (raw.startsWith('+')) return '+${digitsOnly(raw)}';
     final dialCode = state.dialCode;
     if (dialCode != null && dialCode.isNotEmpty) {
-      return '$dialCode$raw';
+      return normalizePhoneE164(dialCode: dialCode, localNumber: raw);
     }
-    return raw;
+    return digitsOnly(raw);
   }
 
   String _messageFrom(Object error) {

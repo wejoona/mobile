@@ -22,52 +22,62 @@ class _HelpViewState extends ConsumerState<HelpView> {
   final List<_FaqItem> _faqs = [
     _FaqItem(
       question: 'Comment déposer des USDC ?',
-      answer: 'Pour déposer des USDC, allez sur l\'écran d\'accueil et appuyez sur « Dépôt ». Vous pouvez déposer via mobile money, virement bancaire, ou en envoyant des USDC à votre adresse de portefeuille.',
+      answer:
+          'Pour déposer des USDC, allez sur l\'écran d\'accueil et appuyez sur « Dépôt ». Vous pouvez déposer via mobile money, virement bancaire, ou en envoyant des USDC à votre adresse de portefeuille.',
       category: 'Dépôts',
     ),
     _FaqItem(
       question: 'Combien de temps prennent les dépôts ?',
-      answer: 'Les virements bancaires prennent généralement 1 à 3 jours ouvrables. Les dépôts mobile money sont quasi instantanés. Les transferts crypto dépendent de la congestion du réseau.',
+      answer:
+          'Les virements bancaires prennent généralement 1 à 3 jours ouvrables. Les dépôts mobile money sont quasi instantanés. Les transferts crypto dépendent de la congestion du réseau.',
       category: 'Dépôts',
     ),
     _FaqItem(
       question: 'Quels sont les frais d\'envoi d\'argent ?',
-      answer: 'Korido ne facture aucun frais pour les transferts internes entre utilisateurs Korido. Les transferts externes vers d\'autres portefeuilles ou banques peuvent entraîner de petits frais réseau, affichés avant confirmation.',
+      answer:
+          'Korido ne facture aucun frais pour les transferts internes entre utilisateurs Korido. Les transferts externes vers d\'autres portefeuilles ou banques peuvent entraîner de petits frais réseau, affichés avant confirmation.',
       category: 'Transferts',
     ),
     _FaqItem(
       question: 'Comment retirer vers ma banque ?',
-      answer: 'Allez sur l\'écran d\'accueil et appuyez sur « Retrait ». Sélectionnez votre compte bancaire et entrez le montant. Les retraits sont généralement traités sous 1 à 2 jours ouvrables.',
+      answer:
+          'Allez sur l\'écran d\'accueil et appuyez sur « Retrait ». Sélectionnez votre compte bancaire et entrez le montant. Les retraits sont généralement traités sous 1 à 2 jours ouvrables.',
       category: 'Retraits',
     ),
     _FaqItem(
       question: 'Qu\'est-ce que le KYC et pourquoi est-il requis ?',
-      answer: 'La vérification KYC (Know Your Customer) confirme votre identité conformément aux réglementations financières. Elle débloque également des limites de transaction plus élevées et protège contre la fraude.',
+      answer:
+          'La vérification KYC (Know Your Customer) confirme votre identité conformément aux réglementations financières. Elle débloque également des limites de transaction plus élevées et protège contre la fraude.',
       category: 'Compte',
     ),
     _FaqItem(
       question: 'Comment augmenter mes limites de transaction ?',
-      answer: 'Complétez la vérification KYC pour débloquer des limites plus élevées. Allez dans Paramètres > Vérifier l\'identité pour commencer le processus.',
+      answer:
+          'Complétez la vérification KYC pour débloquer des limites plus élevées. Allez dans Paramètres > Vérifier l\'identité pour commencer le processus.',
       category: 'Compte',
     ),
     _FaqItem(
       question: 'Mon argent est-il en sécurité ?',
-      answer: 'Oui ! Korido utilise un chiffrement de niveau bancaire et vos USDC sont garantis 1:1 par des réserves en USD. Nous offrons aussi la connexion biométrique et la 2FA pour plus de sécurité.',
+      answer:
+          'Oui ! Korido utilise un chiffrement de niveau bancaire et vos USDC sont garantis 1:1 par des réserves en USD. Nous offrons aussi la connexion biométrique et la 2FA pour plus de sécurité.',
       category: 'Sécurité',
     ),
     _FaqItem(
       question: 'J\'ai oublié mon PIN. Que faire ?',
-      answer: 'Allez dans Paramètres > Sécurité > Réinitialiser le PIN. Vous devrez vérifier votre identité par e-mail ou téléphone avant de définir un nouveau PIN.',
+      answer:
+          'Allez dans Paramètres > Sécurité > Réinitialiser le PIN. Vous devrez vérifier votre identité par e-mail ou téléphone avant de définir un nouveau PIN.',
       category: 'Sécurité',
     ),
     _FaqItem(
       question: 'Comment fonctionne le parrainage ?',
-      answer: 'Partagez votre code de parrainage avec vos amis. Quand ils s\'inscrivent et font leur premier dépôt, vous recevez tous les deux un bonus ! Consultez l\'onglet Récompenses pour votre code.',
+      answer:
+          'Partagez votre code de parrainage avec vos amis. Quand ils s\'inscrivent et font leur premier dépôt, vous recevez tous les deux un bonus ! Consultez l\'onglet Récompenses pour votre code.',
       category: 'Récompenses',
     ),
     _FaqItem(
       question: 'Puis-je annuler une transaction ?',
-      answer: 'Une fois qu\'une transaction est confirmée sur la blockchain, elle ne peut pas être annulée. Pour les transactions en attente, contactez immédiatement le support. Les transferts internes peuvent être réversibles.',
+      answer:
+          'Une fois qu\'une transaction est confirmée sur la blockchain, elle ne peut pas être annulée. Pour les transactions en attente, contactez immédiatement le support. Les transferts internes peuvent être réversibles.',
       category: 'Transferts',
     ),
   ];
@@ -75,11 +85,14 @@ class _HelpViewState extends ConsumerState<HelpView> {
   List<_FaqItem> get _filteredFaqs {
     if (_searchQuery.isEmpty) return _faqs;
     final query = _searchQuery.toLowerCase();
-    return _faqs.where((faq) =>
-      faq.question.toLowerCase().contains(query) ||
-      faq.answer.toLowerCase().contains(query) ||
-      faq.category.toLowerCase().contains(query)
-    ).toList();
+    return _faqs
+        .where(
+          (faq) =>
+              faq.question.toLowerCase().contains(query) ||
+              faq.answer.toLowerCase().contains(query) ||
+              faq.category.toLowerCase().contains(query),
+        )
+        .toList();
   }
 
   @override
@@ -261,7 +274,11 @@ class _HelpViewState extends ConsumerState<HelpView> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.info_outline, color: colors.textTertiary, size: 16),
+                      Icon(
+                        Icons.info_outline,
+                        color: colors.textTertiary,
+                        size: 16,
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       AppText(
                         'Korido v1.0.0',
@@ -425,11 +442,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
         padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           children: [
-            Icon(
-              Icons.search_off,
-              color: colors.textTertiary,
-              size: 48,
-            ),
+            Icon(Icons.search_off, color: colors.textTertiary, size: 48),
             const SizedBox(height: AppSpacing.md),
             AppText(
               'No results found',
@@ -516,11 +529,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
                 ],
               ),
             ),
-            Icon(
-              Icons.open_in_new,
-              color: colors.textTertiary,
-              size: 18,
-            ),
+            Icon(Icons.open_in_new, color: colors.textTertiary, size: 18),
           ],
         ),
       ),
@@ -557,22 +566,17 @@ class _HelpViewState extends ConsumerState<HelpView> {
             ),
             const SizedBox(height: AppSpacing.sm),
             AppText(
-              'Our support team is available 24/7. Average response time: 2 minutes.',
+              'Send a message to the Korido support team and we will follow up by email.',
               variant: AppTextVariant.bodyMedium,
               color: colors.textSecondary,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
-              label: 'Start Chat',
+              label: 'Email Support',
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLocalizations.of(context)!.settings_connectingToSupport),
-                    backgroundColor: context.colors.info,
-                  ),
-                );
+                _sendEmail(subject: 'Korido Support Request');
               },
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -590,31 +594,65 @@ class _HelpViewState extends ConsumerState<HelpView> {
     );
   }
 
-  void _sendEmail() async {
-    final uri = Uri.parse('mailto:support@joonapay.com?subject=Korido Support Request');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+  Future<void> _sendEmail({String subject = 'Korido Support Request'}) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: 'support@joonapay.com',
+      queryParameters: {'subject': subject},
+    );
+    await _launchOrNotify(uri);
   }
 
-  void _callSupport() async {
-    final uri = Uri.parse('tel:+1-800-555-0123');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
+  Future<void> _callSupport() async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text(
+          'Phone support is not available yet. Please email support@joonapay.com.',
+        ),
+        backgroundColor: context.colors.info,
+      ),
+    );
   }
 
-  void _openUrl(String url) async {
+  Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    await _launchOrNotify(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _launchOrNotify(
+    Uri uri, {
+    LaunchMode mode = LaunchMode.platformDefault,
+  }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final colors = context.colors;
+    final launched = await _tryLaunch(uri, mode);
+    if (!mounted || launched) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.error_generic),
+        backgroundColor: colors.error,
+      ),
+    );
+  }
+
+  Future<bool> _tryLaunch(Uri uri, LaunchMode mode) async {
+    try {
+      return launchUrl(uri, mode: mode);
+    } on Object {
+      return false;
     }
   }
 
   void _markHelpful(bool helpful) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(helpful ? AppLocalizations.of(context)!.settings_thanksFeedback : AppLocalizations.of(context)!.settings_improveAnswer),
+        content: Text(
+          helpful
+              ? AppLocalizations.of(context)!.settings_thanksFeedback
+              : AppLocalizations.of(context)!.settings_improveAnswer,
+        ),
         backgroundColor: context.colors.info,
       ),
     );

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/utils/logger.dart';
@@ -19,7 +20,7 @@ class SslPinningManager {
   bool _enforced = true;
 
   SslPinningManager({required List<String> pinnedHashes})
-      : _pinnedHashes = List.unmodifiable(pinnedHashes);
+    : _pinnedHashes = List.of(pinnedHashes);
 
   /// Create an [HttpClient] with certificate pinning applied.
   HttpClient createPinnedClient() {
@@ -51,16 +52,8 @@ class SslPinningManager {
   /// Compute SHA-256 fingerprint of the certificate DER encoding.
   String _sha256Fingerprint(X509Certificate cert) {
     final der = cert.der;
-    final digest = _computeSha256(der);
-    return base64Encode(digest);
-  }
-
-  /// Simple SHA-256 via dart:convert (platform-level).
-  List<int> _computeSha256(List<int> data) {
-    // In production, use crypto package or platform channel.
-    // Placeholder: returns the raw DER prefix as hash stand-in.
-    // Replace with: import 'package:crypto/crypto.dart'; sha256.convert(data).bytes;
-    return data.take(32).toList();
+    final digest = sha256.convert(der);
+    return base64Encode(digest.bytes);
   }
 
   /// Temporarily disable pinning (e.g. during debug).
@@ -91,8 +84,10 @@ class SslPinningManager {
 
 /// Provider for [SslPinningManager].
 final sslPinningManagerProvider = Provider<SslPinningManager>((ref) {
-  return SslPinningManager(pinnedHashes: const [
-    // Production API pin (rotate quarterly)
-    'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
-  ]);
+  return SslPinningManager(
+    pinnedHashes: const [
+      // Leaf DER SHA-256 for joonapay.com, generated 2026-06-03.
+      'gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=',
+    ],
+  );
 });

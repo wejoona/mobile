@@ -55,37 +55,12 @@ class UserStateMachine extends Notifier<UserState> {
       final phone = await _storage.read(key: _phoneKey);
 
       if (token != null && token.isNotEmpty) {
-        // Load local avatar immediately (before network call)
-        String? localAvatar;
-        final savedAvatar = await _storage.read(key: 'local_avatar_path');
-        if (savedAvatar != null && await File(savedAvatar).exists()) {
-          localAvatar = savedAvatar;
-        }
-
-        // We have a token, set authenticated state first
-        state = UserState(
-          status: AuthStatus.authenticated,
+        _loadCachedProfile();
+        state = state.copyWith(
+          status: AuthStatus.unauthenticated,
           accessToken: token,
           phone: phone,
-          avatarUrl: localAvatar,
         );
-
-        // Immediately load cached profile so name/data show while network loads
-        _loadCachedProfile();
-
-        // Fetch user profile from server (will update with fresh data)
-        _fetchUserProfile();
-
-        // Trigger wallet, KYC, and transaction fetch after a small delay
-        Future.delayed(const Duration(milliseconds: 100), () {
-          try {
-            ref.read(walletStateMachineProvider.notifier).fetch();
-            ref.read(kycStateMachineProvider.notifier).fetch();
-            ref.read(transactionStateMachineProvider.notifier).fetch();
-          } catch (e) {
-            // Ignore if providers not ready
-          }
-        });
       } else {
         state = const UserState(status: AuthStatus.unauthenticated);
       }
@@ -94,10 +69,67 @@ class UserStateMachine extends Notifier<UserState> {
     }
   }
 
+  /// Hydrate profile and related authenticated resources after primary auth
+  /// confirms the session is usable.
+  Future<void> hydrateAuthenticatedSession({bool fetchRelated = true}) async {
+    final token = await _storage.read(key: _tokenKey);
+    final phone = await _storage.read(key: _phoneKey);
+    if (!ref.mounted) return;
+
+    if (token == null || token.isEmpty) {
+      state = const UserState(status: AuthStatus.unauthenticated);
+      return;
+    }
+
+    try {
+      // Load local avatar immediately (before network call)
+      String? localAvatar;
+      final savedAvatar = await _storage.read(key: 'local_avatar_path');
+      if (savedAvatar != null && await File(savedAvatar).exists()) {
+        localAvatar = savedAvatar;
+      }
+      if (!ref.mounted) return;
+
+      // We have a token, set authenticated state first
+      state = UserState(
+        status: AuthStatus.authenticated,
+        accessToken: token,
+        phone: phone,
+        avatarUrl: localAvatar,
+      );
+
+      // Immediately load cached profile so name/data show while network loads
+      _loadCachedProfile();
+
+      // Fetch user profile from server (will update with fresh data)
+      await _fetchUserProfile();
+      if (!ref.mounted) return;
+
+      // Trigger wallet, KYC, and transaction fetch after a small delay
+      if (fetchRelated) {
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (!ref.mounted) return;
+          try {
+            ref.read(walletStateMachineProvider.notifier).fetch();
+            ref.read(kycStateMachineProvider.notifier).fetch();
+            ref.read(transactionStateMachineProvider.notifier).fetch();
+          } catch (e) {
+            // Ignore if providers not ready
+          }
+        });
+      }
+    } catch (e) {
+      if (!ref.mounted) return;
+      state = state.copyWith(status: AuthStatus.error, error: e.toString());
+    }
+  }
+
   /// Fetch user profile to populate user data
   Future<void> _fetchUserProfile() async {
     try {
       final profile = await _userService.getProfile();
+      if (!ref.mounted) return;
+
       final hasServerAvatar =
           profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty;
       final hasAvatarThumb =

@@ -44,7 +44,17 @@ final walletBalanceProvider = FutureProvider<WalletBalance>((ref) async {
   ref.onDispose(() => timer.cancel());
 
   try {
-    final response = await dio.get('/wallet');
+    final response = await dio.get(
+      '/wallet',
+      options: Options(
+        validateStatus: (status) =>
+            status != null && (status < 400 || status == 404),
+      ),
+    );
+    if (response.statusCode == 404) {
+      final created = await dio.post('/wallet/create');
+      return _walletBalanceFromPayload(created.data);
+    }
     return _walletBalanceFromPayload(response.data);
   } on DioException catch (error) {
     if (error.response?.statusCode != 404) {

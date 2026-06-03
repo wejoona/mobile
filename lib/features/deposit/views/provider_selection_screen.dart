@@ -65,9 +65,9 @@ class ProviderSelectionScreen extends ConsumerWidget {
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
-                                child: AppText(
+                                child: AmountText.fromText(
                                   _formatSourceAmount(depositState),
-                                  variant: AppTextVariant.titleMedium,
+                                  size: AmountTextSize.small,
                                   color: colors.textPrimary,
                                 ),
                               ),
@@ -93,9 +93,9 @@ class ProviderSelectionScreen extends ConsumerWidget {
                               child: FittedBox(
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerRight,
-                                child: AppText(
+                                child: AmountText.fromText(
                                   formatUsdc(depositState.amountUSD ?? 0),
-                                  variant: AppTextVariant.titleMedium,
+                                  size: AmountTextSize.small,
                                   color: colors.gold,
                                 ),
                               ),

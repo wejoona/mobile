@@ -7,7 +7,8 @@ import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 /// Deposit Service
 ///
 /// Handles mobile money deposit operations via the Korido API.
-/// Mobile only talks to /deposits/* — never to payment providers directly.
+/// Mobile only talks to Korido wallet deposit routes — never to payment
+/// providers directly.
 class DepositService {
   final Dio _dio;
 
@@ -15,8 +16,11 @@ class DepositService {
 
   /// Get available deposit providers
   Future<List<Map<String, dynamic>>> getProviders() async {
-    final response = await _dio.get('/deposits/providers');
+    final response = await _dio.get('/wallet/deposit/channels');
     final data = response.data;
+    if (data is Map<String, dynamic> && data['channels'] != null) {
+      return List<Map<String, dynamic>>.from(data['channels'] as List);
+    }
     if (data is Map<String, dynamic> && data['providers'] != null) {
       return List<Map<String, dynamic>>.from(data['providers'] as List);
     }
@@ -31,8 +35,8 @@ class DepositService {
     InitiateDepositRequest request,
   ) async {
     final response = await _dio.post(
-      '/deposits/initiate',
-      data: request.toJson(),
+      '/wallet/deposit',
+      data: request.toWalletDepositJson(),
       options: Options(
         headers: {'X-Idempotency-Key': generateIdempotencyKey()},
       ),
@@ -51,7 +55,7 @@ class DepositService {
 
   /// Get deposit status (for polling)
   Future<DepositResponse> getDepositStatus(String depositId) async {
-    final response = await _dio.get('/deposits/$depositId');
+    final response = await _dio.get('/wallet/deposit/$depositId');
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
@@ -85,12 +89,13 @@ class DepositService {
     final provider = data['provider'] ?? data['providerCode'];
     final normalized = {
       'amount': data['amount'],
-      'currency': data['currency'] ?? 'XOF',
-      'providerCode': provider,
-      'phoneNumber': data['phoneNumber'],
+      'sourceCurrency': data['currency'] ?? data['sourceCurrency'] ?? 'XOF',
+      'channelId': normalizeDepositChannelId(
+        (provider ?? data['channelId'] ?? 'orange_money_ci').toString(),
+      ),
     };
     final response = await _dio.post(
-      '/deposits/initiate',
+      '/wallet/deposit',
       data: normalized,
       options: Options(
         headers: {'X-Idempotency-Key': generateIdempotencyKey()},

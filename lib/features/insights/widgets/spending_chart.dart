@@ -1,30 +1,47 @@
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Simple spending breakdown chart (horizontal bars).
 class SpendingChart extends StatelessWidget {
   final List<SpendingSummary> categories;
   final double totalSpent;
 
-  const SpendingChart({super.key, required this.categories, required this.totalSpent});
+  const SpendingChart({
+    super.key,
+    required this.categories,
+    required this.totalSpent,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final sorted = List<SpendingSummary>.from(categories)..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+    final colors = context.colors;
+    final sorted = List<SpendingSummary>.from(categories)
+      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
     final maxAmount = sorted.isNotEmpty ? sorted.first.totalAmount : 1.0;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final category in sorted.take(8)) ...[
-          _CategoryBar(category: category, maxAmount: maxAmount, theme: theme),
-          const SizedBox(height: AppSpacing.sm),
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final category in sorted.take(8)) ...[
+            _CategoryBar(
+              category: category,
+              maxAmount: maxAmount,
+              theme: theme,
+              colors: colors,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -33,12 +50,20 @@ class _CategoryBar extends StatelessWidget {
   final SpendingSummary category;
   final double maxAmount;
   final ThemeData theme;
+  final ThemeColors colors;
 
-  const _CategoryBar({required this.category, required this.maxAmount, required this.theme});
+  const _CategoryBar({
+    required this.category,
+    required this.maxAmount,
+    required this.theme,
+    required this.colors,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final ratio = maxAmount > 0 ? (category.totalAmount / maxAmount).clamp(0.0, 1.0) : 0.0;
+    final ratio = maxAmount > 0
+        ? (category.totalAmount / maxAmount).clamp(0.0, 1.0)
+        : 0.0;
     final color = _categoryColor(context, category.category);
 
     return Column(
@@ -47,10 +72,16 @@ class _CategoryBar extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(ExpenseCategories.label(category.category), style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500)),
             Text(
+              ExpenseCategories.label(category.category),
+              style: theme.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            AmountText.fromText(
               '${formatXof(category.totalAmount)} (${category.percentageOfTotal.toStringAsFixed(0)}%)',
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              size: AmountTextSize.small,
+              color: colors.textSecondary,
             ),
           ],
         ),
@@ -61,8 +92,11 @@ class _CategoryBar extends StatelessWidget {
             height: 6,
             child: Stack(
               children: [
-                Container(color: theme.colorScheme.surfaceContainerHighest),
-                FractionallySizedBox(widthFactor: ratio, child: Container(color: color)),
+                Container(color: colors.elevated),
+                FractionallySizedBox(
+                  widthFactor: ratio,
+                  child: Container(color: color),
+                ),
               ],
             ),
           ),
@@ -72,20 +106,31 @@ class _CategoryBar extends StatelessWidget {
   }
 
   Color _categoryColor(BuildContext context, String category) {
-    final colors = context.colors;
     switch (category) {
-      case 'transport': return colors.info;
-      case 'food': return colors.warning;
-      case 'utilities': return colors.infoText;
-      case 'telecom': return AppColors.gold400;
-      case 'health': return colors.error;
-      case 'education': return AppColors.gold700;
-      case 'shopping': return colors.errorText;
-      case 'entertainment': return colors.gold;
-      case 'transfers': return colors.infoText;
-      case 'bills': return colors.warningText;
-      case 'savings': return colors.success;
-      default: return colors.textTertiary;
+      case 'transport':
+        return colors.info;
+      case 'food':
+        return colors.warning;
+      case 'utilities':
+        return colors.infoText;
+      case 'telecom':
+        return AppColors.gold400;
+      case 'health':
+        return colors.error;
+      case 'education':
+        return AppColors.gold700;
+      case 'shopping':
+        return colors.errorText;
+      case 'entertainment':
+        return colors.gold;
+      case 'transfers':
+        return colors.infoText;
+      case 'bills':
+        return colors.warningText;
+      case 'savings':
+        return colors.success;
+      default:
+        return colors.textTertiary;
     }
   }
 }
@@ -96,28 +141,49 @@ class SpendingSummaryHeader extends StatelessWidget {
   final double totalReceived;
   final String currency;
 
-  const SpendingSummaryHeader({super.key, required this.totalSpent, required this.totalReceived, this.currency = 'USDC'});
+  const SpendingSummaryHeader({
+    super.key,
+    required this.totalSpent,
+    required this.totalReceived,
+    this.currency = 'USDC',
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     final netFlow = totalReceived - totalSpent;
     final isPositive = netFlow >= 0;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.zero,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _FlowItem(label: 'Spent', amount: totalSpent, color: colors.error, currency: currency),
-            Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
-            _FlowItem(label: 'Received', amount: totalReceived, color: colors.success, currency: currency),
-            Container(width: 1, height: 40, color: theme.colorScheme.outlineVariant),
-            _FlowItem(label: 'Net', amount: netFlow.abs(), color: isPositive ? colors.success : colors.error, currency: currency, prefix: isPositive ? '+' : '-'),
+            _FlowItem(
+              label: l10n.insights_total_spent,
+              amount: totalSpent,
+              color: colors.errorText,
+              currency: currency,
+            ),
+            Container(width: 1, height: 40, color: colors.borderSubtle),
+            _FlowItem(
+              label: l10n.insights_total_received,
+              amount: totalReceived,
+              color: colors.successText,
+              currency: currency,
+            ),
+            Container(width: 1, height: 40, color: colors.borderSubtle),
+            _FlowItem(
+              label: l10n.insights_net_flow,
+              amount: netFlow.abs(),
+              color: isPositive ? colors.successText : colors.errorText,
+              currency: currency,
+              prefix: isPositive ? '+' : '-',
+            ),
           ],
         ),
       ),
@@ -132,16 +198,31 @@ class _FlowItem extends StatelessWidget {
   final String currency;
   final String prefix;
 
-  const _FlowItem({required this.label, required this.amount, required this.color, required this.currency, this.prefix = ''});
+  const _FlowItem({
+    required this.label,
+    required this.amount,
+    required this.color,
+    required this.currency,
+    this.prefix = '',
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = context.colors;
     return Column(
       children: [
-        Text(label, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+        AppText(
+          label,
+          variant: AppTextVariant.labelSmall,
+          color: colors.textSecondary,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: AppSpacing.xs),
-        Text('$prefix${formatXof(amount)}', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: color)),
+        AmountText.fromText(
+          '$prefix${formatXof(amount)}',
+          size: AmountTextSize.small,
+          color: color,
+        ),
       ],
     );
   }

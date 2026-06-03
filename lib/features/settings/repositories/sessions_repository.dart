@@ -11,29 +11,47 @@ class SessionsRepository {
 
   /// Get all active sessions
   Future<List<Session>> getSessions() async {
-    final response = await _dio.get('/sessions');
-    final raw = response.data;
-    final List items;
-    if (raw is Map<String, dynamic>) {
-      items = (raw['sessions'] ?? raw['data'] ?? []) as List;
-    } else if (raw is List) {
-      items = raw;
-    } else {
-      items = [];
+    try {
+      final response = await _dio.get('/sessions');
+      final raw = response.data;
+      final List items;
+      if (raw is Map<String, dynamic>) {
+        items = (raw['sessions'] ?? raw['data'] ?? []) as List;
+      } else if (raw is List) {
+        items = raw;
+      } else {
+        items = [];
+      }
+      return items
+          .map((json) => Session.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
     }
-    return items
-        .map((json) => Session.fromJson(json as Map<String, dynamic>))
-        .toList();
   }
 
   /// Revoke a specific session
   Future<void> revokeSession(String sessionId) async {
-    await _dio.delete('/sessions/$sessionId');
+    try {
+      await _dio.delete(
+        '/sessions/$sessionId',
+        data: const {'reason': 'user_revoke_device'},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 
   /// Logout from all devices (revoke all sessions)
   Future<void> logoutAllDevices() async {
-    await _dio.delete('/sessions');
+    try {
+      await _dio.delete(
+        '/sessions',
+        data: const {'reason': 'user_logout_all_devices'},
+      );
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
   }
 }
 

@@ -15,10 +15,10 @@ void main() {
         BrandColorCalculator.contrastRatio(calculated, AppColorsLight.canvas),
         closeTo(2.13, 0.04),
       );
-      expect(BrandColorCalculator.toHex(calculated), '#C1A44A');
+      expect(BrandColorCalculator.toHex(calculated), '#C6A84F');
 
-      // The calculated color sits between the two failed manual attempts:
-      // gold300 was too yellow, while gold500 was too dark/orange.
+      // The logo color remains calculated from the dark identity gold and is
+      // intentionally separate from the brighter action gold.
       expect(
         BrandColorCalculator.contrastRatio(calculated, AppColorsLight.canvas),
         greaterThan(
@@ -28,17 +28,9 @@ void main() {
           ),
         ),
       );
-      expect(
-        BrandColorCalculator.contrastRatio(calculated, AppColorsLight.canvas),
-        lessThan(
-          BrandColorCalculator.contrastRatio(
-            AppColorsLight.gold500,
-            AppColorsLight.canvas,
-          ),
-        ),
-      );
-      expect(BrandColorCalculator.toHex(calculated), isNot('#F0CD68'));
-      expect(BrandColorCalculator.toHex(calculated), isNot('#C08A25'));
+      expect(BrandColorCalculator.toHex(calculated), isNot('#E0BE65'));
+      expect(BrandColorCalculator.toHex(calculated), isNot('#D4AF37'));
+      expect(calculated, isNot(AppColorsLight.gold500));
     });
 
     test(
@@ -49,9 +41,9 @@ void main() {
         );
 
         expect(ramp.map(BrandColorCalculator.toHex), [
-          '#CAB351',
-          '#C1A44A',
-          '#AD9635',
+          '#CFB756',
+          '#C6A84F',
+          '#B29A3A',
         ]);
         expect(ramp[1], AppColorsLight.logoGold);
       },

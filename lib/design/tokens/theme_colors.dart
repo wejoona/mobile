@@ -70,7 +70,7 @@ class ThemeColors {
 
   /// Text color for gold/champagne fills.
   Color get onGold =>
-      isDark ? AppColors.textInverse : AppColorsLight.textOnGold;
+      isDark ? AppColors.textInverse : AppColorsLight.textInverse;
 
   /// Text color for deep ink/obsidian fills.
   Color get onDark =>
@@ -93,7 +93,7 @@ class ThemeColors {
   /// Gold gradient for decorative elements
   List<Color> get goldGradient => isDark
       ? AppColors.goldGradient
-      : [AppColorsLight.logoGold, AppColorsLight.logoGold];
+      : [AppColorsLight.gold500, AppColorsLight.gold500];
 
   // ════════════════════════════════════════════════════════════════════════════
   // SEMANTIC

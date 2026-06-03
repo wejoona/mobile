@@ -37,12 +37,15 @@ class MockConfigState {
     mockApi: false,
   );
 
-  /// State for simulator
+  /// State for simulator.
+  ///
+  /// Simulators need camera fallbacks, but API mocking remains an explicit
+  /// compile-time/runtime choice handled by the static mock configuration.
   factory MockConfigState.simulator() => const MockConfigState(
     isSimulator: true,
-    useMocks: true,
+    useMocks: false,
     mockCamera: true,
-    mockApi: true,
+    mockApi: false,
   );
 
   final bool isSimulator;
@@ -134,11 +137,7 @@ class MockConfigNotifier extends Notifier<MockConfigState> {
   }
 
   void setUseMocks({required bool enabled}) {
-    state = state.copyWith(
-      useMocks: enabled,
-      mockCamera: enabled,
-      mockApi: enabled,
-    );
+    state = state.copyWith(useMocks: enabled, mockApi: enabled);
   }
 }
 

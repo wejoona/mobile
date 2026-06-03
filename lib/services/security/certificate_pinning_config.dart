@@ -21,18 +21,20 @@ class CertificatePinningConfig {
 class CertificatePinRegistry {
   static const List<CertificatePinningConfig> productionPins = [
     CertificatePinningConfig(
-      host: 'api.korido.app',
+      host: 'api.joonapay.com',
       sha256Pins: [
-        // Pin primaire et de secours — à remplacer par les vrais hashes
-        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
+        // Leaf SPKI SHA-256 for api.joonapay.com, generated 2026-06-03.
+        'DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=',
+        // Google Trust Services WE1 intermediate SPKI backup pin.
+        'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
       ],
     ),
     CertificatePinningConfig(
-      host: 'auth.korido.app',
+      host: 'joonapay.com',
       sha256Pins: [
-        'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-        'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
+        // Leaf SPKI SHA-256 for joonapay.com, generated 2026-06-03.
+        'vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=',
+        'kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=',
       ],
     ),
   ];
@@ -40,9 +42,7 @@ class CertificatePinRegistry {
   static const List<CertificatePinningConfig> stagingPins = [
     CertificatePinningConfig(
       host: 'api-staging.korido.app',
-      sha256Pins: [
-        'CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=',
-      ],
+      sha256Pins: ['CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC='],
     ),
   ];
 
@@ -50,10 +50,15 @@ class CertificatePinRegistry {
     return isProduction ? productionPins : stagingPins;
   }
 
-  static bool validatePin(String host, String pinHash, {required bool isProduction}) {
+  static bool validatePin(
+    String host,
+    String pinHash, {
+    required bool isProduction,
+  }) {
     final pins = getPins(isProduction: isProduction);
     final config = pins.where((p) => host.endsWith(p.host)).firstOrNull;
-    if (config == null || config.isExpired) return true; // Pas de pin = accepter
+    if (config == null || config.isExpired)
+      return true; // Pas de pin = accepter
     return config.sha256Pins.contains(pinHash);
   }
 }

@@ -285,9 +285,9 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
-                  child: AppText(
+                  child: AmountText.fromText(
                     formatUsdc(convertedAmount),
-                    variant: AppTextVariant.titleMedium,
+                    size: AmountTextSize.small,
                     color: colors.gold,
                   ),
                 ),

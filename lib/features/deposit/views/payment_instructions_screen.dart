@@ -668,9 +668,9 @@ class _AmountSummaryColumn extends StatelessWidget {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: alignEnd ? Alignment.centerRight : Alignment.centerLeft,
-            child: AppText(
+            child: AmountText.fromText(
               value,
-              variant: AppTextVariant.headlineSmall,
+              size: AmountTextSize.medium,
               color: valueColor,
             ),
           ),

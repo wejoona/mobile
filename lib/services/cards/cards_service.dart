@@ -41,12 +41,22 @@ class CardsService {
     String? cardholderName,
     double? spendingLimit,
   }) async {
+    final effectiveCardholderName = cardholderName?.trim();
+    if (effectiveCardholderName == null || effectiveCardholderName.isEmpty) {
+      throw ArgumentError('cardholderName is required to create a card');
+    }
+    if (spendingLimit == null || spendingLimit <= 0) {
+      throw ArgumentError('spendingLimit is required to create a card');
+    }
+
     final response = await _dio.post(
       '/cards',
       data: {
-        'cardholderName': cardholderName ?? nickname ?? 'Korido User',
-        'spendingLimit': spendingLimit ?? 500,
+        'cardholderName': effectiveCardholderName,
+        'spendingLimit': spendingLimit,
         'cardType': cardType,
+        if (currency != null) 'currency': currency,
+        if (nickname != null && nickname.isNotEmpty) 'nickname': nickname,
       },
     );
     return response.data as Map<String, dynamic>;

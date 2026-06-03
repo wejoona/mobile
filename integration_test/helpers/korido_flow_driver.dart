@@ -240,14 +240,24 @@ class KoridoFlowDriver {
       reason: 'deposit provider options',
     );
 
-    final orangeProvider = find.byKey(const ValueKey('deposit_provider_OMCI'));
-    await tester.ensureVisible(orangeProvider);
-    await tester.tap(orangeProvider);
+    final orangeProvider = find.byKey(
+      const ValueKey('deposit_provider_orange_money_ci'),
+    );
+    final legacyOrangeProvider = find.byKey(
+      const ValueKey('deposit_provider_OMCI'),
+    );
+    final providerFinder = orangeProvider.evaluate().isNotEmpty
+        ? orangeProvider
+        : legacyOrangeProvider;
+    await tester.ensureVisible(providerFinder);
+    await tester.tap(providerFinder);
     await tester.pump(const Duration(milliseconds: 350));
 
     await pumpUntil(
       () =>
           hasAnyText(['Instructions de paiement', 'Payment Instructions']) ||
+          hasAnyText(['Payment', 'Paiement']) ||
+          hasAnyText(['Waiting for approval', 'En attente']) ||
           hasAnyText(['Enter OTP', 'Entrer OTP']) ||
           hasAnyText(['Deposit Successful', 'Dépôt réussi']),
       reason: 'deposit instructions, OTP prompt, or success status',
@@ -281,7 +291,7 @@ class KoridoFlowDriver {
       if (closeButton.evaluate().isNotEmpty) {
         await tester.tap(closeButton.first);
       } else {
-        await tester.pageBack();
+        await goToRoute('/home');
       }
     }
     await tester.pump(const Duration(milliseconds: 350));

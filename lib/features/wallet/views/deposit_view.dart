@@ -132,7 +132,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
             const SizedBox(height: AppSpacing.md),
 
             channelsAsync.when(
-              data: (channels) => _buildGroupedChannels(channels, colors),
+              data: (channels) => _buildGroupedChannels(channels, colors, l10n),
               loading: () => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xxl),
@@ -308,6 +308,7 @@ class _DepositViewState extends ConsumerState<DepositView> {
   Widget _buildGroupedChannels(
     List<DepositChannel> channels,
     ThemeColors colors,
+    AppLocalizations l10n,
   ) {
     // Group channels by type/universe
     final grouped = <PaymentUniverse, List<DepositChannel>>{};
@@ -317,15 +318,12 @@ class _DepositViewState extends ConsumerState<DepositView> {
       grouped.putIfAbsent(universe, () => []).add(channel);
     }
 
-    // If no channels, show mock data for demo
     if (grouped.isEmpty) {
-      grouped[PaymentUniverse.mobileMoney] = [];
-      grouped[PaymentUniverse.bankTransfer] = [];
-      grouped[PaymentUniverse.card] = [];
+      return _buildNoChannelsState(colors, l10n);
     }
 
     return Column(
-      children: PaymentUniverse.values.map((universe) {
+      children: grouped.keys.map((universe) {
         final universeChannels = grouped[universe] ?? [];
         final isExpanded = _expandedUniverse == universe;
 
@@ -341,12 +339,49 @@ class _DepositViewState extends ConsumerState<DepositView> {
             });
           },
           onChannelSelected: (channelId) {
+            final channel = universeChannels.firstWhere(
+              (candidate) => candidate.id == channelId,
+            );
             setState(() {
               _selectedChannelId = channelId;
+              _minAmount = channel.minAmount;
+              _maxAmount = channel.maxAmount;
             });
+            _validateAmount();
           },
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildNoChannelsState(ThemeColors colors, AppLocalizations l10n) {
+    return AppCard(
+      variant: AppCardVariant.elevated,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.payments_outlined, color: colors.textTertiary, size: 32),
+          const SizedBox(height: AppSpacing.md),
+          AppText(
+            'No deposit methods available',
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          AppText(
+            'We could not find active deposit options for $_selectedCurrency right now. Try another currency or check again later.',
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppButton(
+            label: l10n.action_retry,
+            onPressed: () =>
+                ref.invalidate(depositChannelsProvider(_selectedCurrency)),
+            variant: AppButtonVariant.secondary,
+          ),
+        ],
+      ),
     );
   }
 
@@ -649,20 +684,18 @@ class _PaymentUniverseSection extends StatelessWidget {
             Divider(color: colors.borderSubtle, height: 1),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
-              child: channels.isEmpty
-                  ? _buildMockChannels()
-                  : Column(
-                      children: channels
-                          .map(
-                            (channel) => _ChannelOption(
-                              channel: channel,
-                              isSelected: selectedChannelId == channel.id,
-                              onTap: () => onChannelSelected(channel.id),
-                              colors: colors,
-                            ),
-                          )
-                          .toList(),
-                    ),
+              child: Column(
+                children: channels
+                    .map(
+                      (channel) => _ChannelOption(
+                        channel: channel,
+                        isSelected: selectedChannelId == channel.id,
+                        onTap: () => onChannelSelected(channel.id),
+                        colors: colors,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ],
         ],
@@ -671,64 +704,7 @@ class _PaymentUniverseSection extends StatelessWidget {
   }
 
   String _getProvidersList() {
-    if (channels.isEmpty) {
-      switch (universe) {
-        case PaymentUniverse.mobileMoney:
-          return 'Orange Money, MTN, Wave';
-        case PaymentUniverse.bankTransfer:
-          return 'Local bank transfers';
-        case PaymentUniverse.card:
-          return 'Visa, Mastercard';
-        case PaymentUniverse.crypto:
-          return 'USDC';
-      }
-    }
     return channels.map((c) => c.provider).take(3).join(', ');
-  }
-
-  Widget _buildMockChannels() {
-    // Mock channels for demo
-    final mockChannels = <Map<String, dynamic>>[];
-
-    switch (universe) {
-      case PaymentUniverse.mobileMoney:
-        mockChannels.addAll([
-          {'id': 'om_ci', 'name': 'Orange Money', 'fee': '1.5%'},
-          {'id': 'mtn_ci', 'name': 'MTN Mobile Money', 'fee': '1.5%'},
-          {'id': 'wave_ci', 'name': 'Wave', 'fee': '0%'},
-        ]);
-        break;
-      case PaymentUniverse.bankTransfer:
-        mockChannels.addAll([
-          {'id': 'bank_ci', 'name': 'Bank Transfer', 'fee': '0%'},
-        ]);
-        break;
-      case PaymentUniverse.card:
-        mockChannels.addAll([
-          {'id': 'card_visa', 'name': 'Visa/Mastercard', 'fee': '2.9%'},
-        ]);
-        break;
-      case PaymentUniverse.crypto:
-        mockChannels.addAll([
-          {'id': 'crypto_usdc', 'name': 'USDC', 'fee': '0%'},
-        ]);
-        break;
-    }
-
-    return Column(
-      children: mockChannels
-          .map(
-            (m) => _MockChannelOption(
-              id: m['id'] as String,
-              name: m['name'] as String,
-              fee: m['fee'] as String,
-              isSelected: selectedChannelId == m['id'],
-              onTap: () => onChannelSelected(m['id'] as String),
-              colors: colors,
-            ),
-          )
-          .toList(),
-    );
   }
 }
 
@@ -772,64 +748,6 @@ class _ChannelOption extends StatelessWidget {
             ),
             AppText(
               '${channel.fee}% fee',
-              variant: AppTextVariant.bodySmall,
-              color: colors.textTertiary,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: AppSpacing.sm),
-              Icon(Icons.check_circle, color: colors.gold, size: 20),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MockChannelOption extends StatelessWidget {
-  const _MockChannelOption({
-    required this.id,
-    required this.name,
-    required this.fee,
-    required this.isSelected,
-    required this.onTap,
-    required this.colors,
-  });
-
-  final String id;
-  final String name;
-  final String fee;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final ThemeColors colors;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colors.gold.withValues(alpha: 0.1)
-              : colors.elevated,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(
-            color: isSelected ? colors.gold : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: AppText(
-                name,
-                variant: AppTextVariant.bodyMedium,
-                color: colors.textPrimary,
-              ),
-            ),
-            AppText(
-              '$fee fee',
               variant: AppTextVariant.bodySmall,
               color: colors.textTertiary,
             ),

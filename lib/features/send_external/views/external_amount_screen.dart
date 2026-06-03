@@ -14,7 +14,8 @@ class ExternalAmountScreen extends ConsumerStatefulWidget {
   const ExternalAmountScreen({super.key});
 
   @override
-  ConsumerState<ExternalAmountScreen> createState() => _ExternalAmountScreenState();
+  ConsumerState<ExternalAmountScreen> createState() =>
+      _ExternalAmountScreenState();
 }
 
 class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
@@ -62,7 +63,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                       child: Row(
                         children: [
                           CircleAvatar(
-                            backgroundColor: context.colors.gold.withValues(alpha: 0.2),
+                            backgroundColor: context.colors.gold.withValues(
+                              alpha: 0.2,
+                            ),
                             child: Icon(
                               Icons.account_balance_wallet_outlined,
                               color: context.colors.gold,
@@ -106,10 +109,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        AppText(
+                        AmountText.fromText(
                           '\$${Formatters.formatCurrency(state.availableBalance)}',
-                          variant: AppTextVariant.bodyLarge,
-                          fontWeight: FontWeight.w600,
+                          size: AmountTextSize.small,
                           color: context.colors.gold,
                         ),
                       ],
@@ -125,7 +127,10 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                       ),
                       prefix: Padding(
                         padding: EdgeInsets.only(left: AppSpacing.sm),
-                        child: AppText('\$ ', variant: AppTextVariant.bodyLarge),
+                        child: AppText(
+                          '\$ ',
+                          variant: AppTextVariant.bodyLarge,
+                        ),
                       ),
                       validator: _validateAmount,
                       onChanged: _onAmountChanged,
@@ -170,9 +175,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                   variant: AppTextVariant.bodyMedium,
                                   color: context.colors.textSecondary,
                                 ),
-                                AppText(
+                                AmountText.fromText(
                                   '\$${Formatters.formatCurrency(state.amount!)}',
-                                  variant: AppTextVariant.bodyMedium,
+                                  size: AmountTextSize.small,
                                 ),
                               ],
                             ),
@@ -200,15 +205,17 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                     ],
                                   ],
                                 ),
-                                AppText(
+                                AmountText.fromText(
                                   '\$${Formatters.formatCurrency(state.estimatedFee)}',
-                                  variant: AppTextVariant.bodyMedium,
+                                  size: AmountTextSize.small,
                                 ),
                               ],
                             ),
                             Divider(
                               height: AppSpacing.lg * 2,
-                              color: context.colors.textSecondary.withValues(alpha: 0.2),
+                              color: context.colors.textSecondary.withValues(
+                                alpha: 0.2,
+                              ),
                             ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,10 +225,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                                   variant: AppTextVariant.bodyLarge,
                                   fontWeight: FontWeight.w600,
                                 ),
-                                AppText(
+                                AmountText.fromText(
                                   '\$${Formatters.formatCurrency(state.total)}',
-                                  variant: AppTextVariant.bodyLarge,
-                                  fontWeight: FontWeight.w600,
+                                  size: AmountTextSize.medium,
                                   color: context.colors.gold,
                                 ),
                               ],
@@ -272,7 +278,8 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                 padding: EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
                   label: l10n.action_continue,
-                  onPressed: state.canProceedToConfirm && state.hasSufficientBalance
+                  onPressed:
+                      state.canProceedToConfirm && state.hasSufficientBalance
                       ? _handleContinue
                       : null,
                   isLoading: _isLoading,
@@ -291,22 +298,31 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
     final isSelected = state.selectedNetwork == network;
 
     return GestureDetector(
-      onTap: () => ref.read(externalTransferProvider.notifier).setNetwork(network),
+      onTap: () =>
+          ref.read(externalTransferProvider.notifier).setNetwork(network),
       child: Container(
         padding: EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: isSelected ? context.colors.gold.withValues(alpha: 0.1) : context.colors.container,
+          color: isSelected
+              ? context.colors.gold.withValues(alpha: 0.1)
+              : context.colors.container,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: isSelected ? context.colors.gold.withValues(alpha: 0.3) : context.colors.border,
+            color: isSelected
+                ? context.colors.gold.withValues(alpha: 0.3)
+                : context.colors.border,
             width: 1,
           ),
         ),
         child: Row(
           children: [
             Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: isSelected ? context.colors.gold : context.colors.textSecondary,
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: isSelected
+                  ? context.colors.gold
+                  : context.colors.textSecondary,
             ),
             SizedBox(width: AppSpacing.lg),
             Expanded(
@@ -328,7 +344,9 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: context.colors.success.withValues(alpha: 0.2),
+                            color: context.colors.success.withValues(
+                              alpha: 0.2,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: AppText(
@@ -385,7 +403,10 @@ class _ExternalAmountScreenState extends ConsumerState<ExternalAmountScreen> {
   void _setMaxAmount() {
     final state = ref.read(externalTransferProvider);
     // Max amount is balance minus estimated fee
-    final maxAmount = (state.availableBalance - state.estimatedFee).clamp(0.0, double.infinity);
+    final maxAmount = (state.availableBalance - state.estimatedFee).clamp(
+      0.0,
+      double.infinity,
+    );
     setState(() {
       _amountController.text = maxAmount.toStringAsFixed(2);
     });

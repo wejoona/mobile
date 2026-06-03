@@ -111,7 +111,9 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           // Title and description
           Text(
             _getTitle(),
-            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+            style: AppTypography.titleMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -135,7 +137,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: context.colors.error,
+                color: context.colors.errorBg,
                 borderRadius: BorderRadius.circular(AppSpacing.sm),
               ),
               child: Row(
@@ -145,7 +147,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
                   Expanded(
                     child: Text(
                       _error!,
-                      style: TextStyle(color: context.colors.error),
+                      style: TextStyle(color: context.colors.errorText),
                     ),
                   ),
                 ],
@@ -175,11 +177,7 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         color: color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        size: 40,
-        color: color,
-      ),
+      child: Icon(icon, size: 40, color: color),
     );
   }
 
@@ -252,23 +250,29 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          ...displayFactors.map((factor) => Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                child: Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 14, color: context.colors.textSecondary),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        _formatFactor(factor),
-                        style: AppTypography.cardLabel.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
+          ...displayFactors.map(
+            (factor) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 14,
+                    color: context.colors.textSecondary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      _formatFactor(factor),
+                      style: AppTypography.cardLabel.copyWith(
+                        color: context.colors.textSecondary,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -277,7 +281,8 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   String _formatFactor(String factor) {
     // Convert technical factors to user-friendly text
     if (factor.contains('high_value')) return 'High-value transaction';
-    if (factor.contains('first_external')) return 'First transfer to this recipient';
+    if (factor.contains('first_external'))
+      return 'First transfer to this recipient';
     if (factor.contains('cross_border')) return 'International transfer';
     if (factor.contains('external_transfer')) return 'External wallet transfer';
     if (factor.contains('new_device')) return 'New device detected';
@@ -383,9 +388,10 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   Future<void> _sendOtp() async {
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('/step-up/send-otp', data: {
-        'challengeToken': widget.decision.challengeToken,
-      });
+      await dio.post(
+        '/step-up/send-otp',
+        data: {'challengeToken': widget.decision.challengeToken},
+      );
       _startResendCountdown();
     } catch (e) {
       if (mounted) setState(() => _error = 'Failed to send OTP: $e');
@@ -396,7 +402,10 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
     setState(() => _resendCountdown = 60);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) { timer.cancel(); return; }
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       setState(() {
         _resendCountdown--;
         if (_resendCountdown <= 0) timer.cancel();
@@ -405,15 +414,24 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
   }
 
   Future<void> _verifyOtp(String code) async {
-    setState(() { _isProcessing = true; _error = null; });
+    setState(() {
+      _isProcessing = true;
+      _error = null;
+    });
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.post('/step-up/verify-otp', data: {
-        'challengeToken': widget.decision.challengeToken,
-        'code': code,
-      });
-      // ignore: avoid_dynamic_calls
-      if (response.data['success'] == true && response.data['data']['valid'] == true) {
+      final response = await dio.post(
+        '/step-up/verify-otp',
+        data: {'challengeToken': widget.decision.challengeToken, 'code': code},
+      );
+      final body = response.data is Map
+          ? Map<String, dynamic>.from(response.data as Map)
+          : const <String, dynamic>{};
+      final data = body['data'] is Map
+          ? Map<String, dynamic>.from(body['data'] as Map)
+          : const <String, dynamic>{};
+
+      if (body['success'] == true && data['valid'] == true) {
         widget.onSuccess();
       } else {
         setState(() => _error = 'Invalid OTP code');
@@ -436,7 +454,8 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 40, height: 4,
+            width: 40,
+            height: 4,
             decoration: BoxDecoration(
               color: context.colors.textSecondary.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
@@ -447,7 +466,9 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
           const SizedBox(height: AppSpacing.lg),
           Text(
             AppLocalizations.of(context)!.bankLinking_enterCode,
-            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+            style: AppTypography.titleMedium.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
@@ -462,11 +483,14 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
             children: List.generate(6, (index) {
               final hasChar = _otpController.text.length > index;
               return Container(
-                width: 44, height: 52,
+                width: 44,
+                height: 52,
                 margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: hasChar ? context.colors.warning : context.colors.textSecondary.withValues(alpha: 0.3),
+                    color: hasChar
+                        ? context.colors.warning
+                        : context.colors.textSecondary.withValues(alpha: 0.3),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(AppSpacing.sm),
@@ -474,7 +498,9 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
                 alignment: Alignment.center,
                 child: Text(
                   hasChar ? _otpController.text[index] : '',
-                  style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+                  style: AppTypography.headlineSmall.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               );
             }),
@@ -487,7 +513,10 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
               controller: _otpController,
               autofocus: true,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(6),
+              ],
               onChanged: (value) {
                 setState(() {});
                 if (value.length == 6) {
@@ -559,7 +588,8 @@ class _RiskStepUpDialogState extends ConsumerState<RiskStepUpDialog> {
         final validated = await securityService.validateStepUp(
           challengeToken: widget.decision.challengeToken!,
           livenessSessionId: result.sessionId,
-          biometricVerified: widget.decision.stepUpType == StepUpType.biometricAndLiveness,
+          biometricVerified:
+              widget.decision.stepUpType == StepUpType.biometricAndLiveness,
         );
 
         if (validated) {

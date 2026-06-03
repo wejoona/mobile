@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/bill_payments/views/bill_payments_view.dart';
+import 'package:usdc_wallet/features/cards/views/cards_list_view.dart';
 import 'package:usdc_wallet/features/contacts/views/contacts_list_screen.dart';
 import 'package:usdc_wallet/features/contacts/views/contacts_permission_screen.dart';
 import 'package:usdc_wallet/features/insights/views/insights_view.dart';
@@ -13,7 +14,6 @@ import 'package:usdc_wallet/features/wallet/views/currency_converter_view.dart';
 import 'package:usdc_wallet/features/wallet/views/saved_recipients_view.dart';
 import 'package:usdc_wallet/features/wallet/views/savings_goals_view.dart';
 import 'package:usdc_wallet/features/wallet/views/split_bill_view.dart';
-import 'package:usdc_wallet/features/wallet/views/virtual_card_view.dart';
 import 'package:usdc_wallet/router/page_transitions.dart';
 
 List<RouteBase> featureOverviewRoutes() => [
@@ -106,7 +106,7 @@ List<RouteBase> featureOverviewRoutes() => [
   GoRoute(
     path: '/card',
     pageBuilder: (context, state) =>
-        AppPageTransitions.fade(state: state, child: const VirtualCardView()),
+        AppPageTransitions.fade(state: state, child: const CardsListView()),
   ),
   GoRoute(
     path: '/split',

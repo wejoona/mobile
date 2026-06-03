@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Sessions State
 class SessionsState {
@@ -45,8 +46,9 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
       // Identify current session (most recent activity)
       final currentSession = sessions.isNotEmpty
-          ? sessions.reduce((a, b) =>
-              a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b)
+          ? sessions.reduce(
+              (a, b) => a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b,
+            )
           : null;
 
       state = state.copyWith(
@@ -54,10 +56,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
         sessions: sessions,
         currentSessionId: currentSession?.id,
       );
-    } catch (e) {
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, error: _friendlyError(e));
+    } catch (_) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: 'Unable to load active sessions. Please try again.',
       );
     }
   }
@@ -71,8 +75,13 @@ class SessionsNotifier extends Notifier<SessionsState> {
       // Reload sessions after revoke
       await loadSessions();
       return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
+    } on ApiException catch (e) {
+      state = state.copyWith(error: _friendlyError(e));
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        error: 'Unable to revoke this device. Please try again.',
+      );
       return false;
     }
   }
@@ -86,10 +95,25 @@ class SessionsNotifier extends Notifier<SessionsState> {
       // Clear sessions
       state = state.copyWith(sessions: []);
       return true;
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
+    } on ApiException catch (e) {
+      state = state.copyWith(error: _friendlyError(e));
+      return false;
+    } catch (_) {
+      state = state.copyWith(
+        error: 'Unable to log out other devices. Please try again.',
+      );
       return false;
     }
+  }
+
+  String _friendlyError(ApiException error) {
+    if (error.statusCode == 401) {
+      return 'Your session has expired. Please sign in again.';
+    }
+    if (error.statusCode == 403) {
+      return 'You do not have permission to manage sessions right now.';
+    }
+    return error.message;
   }
 }
 

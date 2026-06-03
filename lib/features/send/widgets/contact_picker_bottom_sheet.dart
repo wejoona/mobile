@@ -7,7 +7,6 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
@@ -45,9 +44,7 @@ class _ContactPickerBottomSheetState
   Future<void> _loadContacts() async {
     setState(() => _isLoading = true);
     try {
-      final contacts = MockConfig.useMocks
-          ? await _loadMockContacts()
-          : await _loadDeviceContacts();
+      final contacts = await _loadDeviceContacts();
 
       if (mounted) {
         setState(() {
@@ -61,15 +58,6 @@ class _ContactPickerBottomSheetState
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  Future<List<SyncedContact>> _loadMockContacts() async {
-    final response = await ref.read(dioProvider).get('/contacts');
-    final contacts = _extractContactList(
-      response.data,
-    ).map(SyncedContact.fromJson).toList();
-    _sortContacts(contacts);
-    return contacts;
   }
 
   Future<List<SyncedContact>> _loadDeviceContacts() async {
@@ -90,21 +78,6 @@ class _ContactPickerBottomSheetState
 
     _sortContacts(contacts);
     return contacts;
-  }
-
-  List<Map<String, dynamic>> _extractContactList(Object? data) {
-    final raw = switch (data) {
-      {'contacts': final List contacts} => contacts,
-      {'data': final List contacts} => contacts,
-      {'items': final List contacts} => contacts,
-      final List contacts => contacts,
-      _ => const <Object?>[],
-    };
-
-    return raw
-        .whereType<Map>()
-        .map((contact) => Map<String, dynamic>.from(contact))
-        .toList();
   }
 
   void _sortContacts(List<SyncedContact> contacts) {
@@ -262,7 +235,7 @@ class _ContactPickerBottomSheetState
                         _buildLookupSection(colors),
                       if (_filteredContacts.isNotEmpty) ...[
                         if (_searchController.text.trim().length >= 3)
-                          _buildSectionLabel('Your contacts', colors),
+                          _buildSectionLabel(l10n.contacts_allContacts, colors),
                         ..._filteredContacts.map(
                           (contact) => _buildContactItem(contact, colors),
                         ),
@@ -276,6 +249,8 @@ class _ContactPickerBottomSheetState
   }
 
   Widget _buildLookupSection(ThemeColors colors) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLookupLoading) {
       return Padding(
         padding: EdgeInsets.only(bottom: AppSpacing.md),
@@ -291,7 +266,10 @@ class _ContactPickerBottomSheetState
             ),
             SizedBox(width: AppSpacing.sm),
             AppText(
-              'Searching Korido accounts',
+              _localizedText(
+                en: 'Searching Korido accounts',
+                fr: 'Recherche de comptes Korido',
+              ),
               variant: AppTextVariant.bodySmall,
               color: colors.textSecondary,
             ),
@@ -310,7 +288,7 @@ class _ContactPickerBottomSheetState
               SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppText(
-                  'No Korido account found for this search',
+                  l10n.contacts_no_results,
                   variant: AppTextVariant.bodySmall,
                   color: colors.textSecondary,
                 ),
@@ -324,7 +302,7 @@ class _ContactPickerBottomSheetState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionLabel('Korido accounts', colors),
+        _buildSectionLabel(l10n.contacts_on_joonapay, colors),
         ..._lookupResults.map(
           (contact) => _buildContactItem(contact, colors, fromLookup: true),
         ),
@@ -350,6 +328,11 @@ class _ContactPickerBottomSheetState
     ThemeColors colors, {
     bool fromLookup = false,
   }) {
+    final verifiedAccount = _localizedText(
+      en: 'Verified Korido account',
+      fr: 'Compte Korido vérifié',
+    );
+
     return GestureDetector(
       key: ValueKey(
         fromLookup
@@ -406,7 +389,7 @@ class _ContactPickerBottomSheetState
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
-                    fromLookup ? 'Verified Korido account' : contact.phone,
+                    fromLookup ? verifiedAccount : contact.phone,
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -418,5 +401,10 @@ class _ContactPickerBottomSheetState
         ),
       ),
     );
+  }
+
+  String _localizedText({required String en, required String fr}) {
+    final locale = Localizations.localeOf(context).languageCode.toLowerCase();
+    return locale == 'fr' ? fr : en;
   }
 }

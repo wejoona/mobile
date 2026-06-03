@@ -81,13 +81,12 @@ class DepositStatusScreen extends ConsumerWidget {
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
                                             alignment: Alignment.centerLeft,
-                                            child: AppText(
+                                            child: AmountText.fromText(
                                               formatXof(
                                                 state.amountXOF ??
                                                     response.amount,
                                               ),
-                                              variant:
-                                                  AppTextVariant.titleMedium,
+                                              size: AmountTextSize.small,
                                               color: colors.textPrimary,
                                             ),
                                           ),
@@ -119,14 +118,13 @@ class DepositStatusScreen extends ConsumerWidget {
                                           child: FittedBox(
                                             fit: BoxFit.scaleDown,
                                             alignment: Alignment.centerRight,
-                                            child: AppText(
+                                            child: AmountText.fromText(
                                               formatUsdc(
                                                 state.amountUSD ??
                                                     response.convertedAmount ??
                                                     0,
                                               ),
-                                              variant:
-                                                  AppTextVariant.titleMedium,
+                                              size: AmountTextSize.small,
                                               color: colors.gold,
                                             ),
                                           ),

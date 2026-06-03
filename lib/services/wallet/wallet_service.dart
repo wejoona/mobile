@@ -15,7 +15,20 @@ class WalletService {
   /// GET /wallet
   Future<WalletBalanceResponse> getBalance() async {
     try {
-      final response = await _dio.get('/wallet');
+      final response = await _dio.get(
+        '/wallet',
+        options: Options(
+          validateStatus: (status) =>
+              status != null && (status < 400 || status == 404),
+        ),
+      );
+      if (response.statusCode == 404) {
+        throw ApiException(
+          message: _messageFromPayload(response.data, 'Wallet not found'),
+          statusCode: 404,
+          data: response.data,
+        );
+      }
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -32,10 +45,20 @@ class WalletService {
     }
   }
 
-  /// GET /deposits/providers
+  String _messageFromPayload(dynamic payload, String fallback) {
+    if (payload is Map && payload['message'] != null) {
+      return payload['message'].toString();
+    }
+    return fallback;
+  }
+
+  /// GET /wallet/deposit/channels
   Future<List<DepositChannel>> getDepositChannels({String? currency}) async {
     try {
-      final response = await _dio.get('/deposits/providers');
+      final response = await _dio.get(
+        '/wallet/deposit/channels',
+        queryParameters: currency == null ? null : {'currency': currency},
+      );
       final data = response.data;
       final List<dynamic> channels = data is List
           ? data
@@ -53,7 +76,7 @@ class WalletService {
     }
   }
 
-  /// POST /deposits/initiate
+  /// POST /wallet/deposit
   Future<DepositResponse> initiateDeposit({
     required double amount,
     required String sourceCurrency,
@@ -62,13 +85,11 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.post(
-        '/deposits/initiate',
+        '/wallet/deposit',
         data: {
           'amount': amount.round(),
-          'currency': sourceCurrency,
-          'providerCode': _mobileMoneyProviderCode(channelId),
-          if (phoneNumber.trim().isNotEmpty)
-            'phoneNumber': _normalizePhoneNumber(phoneNumber, sourceCurrency),
+          'sourceCurrency': sourceCurrency,
+          'channelId': _mobileMoneyChannelId(channelId),
         },
         options: Options(
           headers: {'X-Idempotency-Key': generateIdempotencyKey()},
@@ -571,41 +592,30 @@ Map<String, String> _transactionHeaders({
   };
 }
 
-String _mobileMoneyProviderCode(String value) {
+String _mobileMoneyChannelId(String value) {
   switch (value.replaceAll('-', '_').toLowerCase()) {
+    case 'orange_money_ci':
     case 'omci':
     case 'orange':
     case 'orange_money':
     case 'mobile_money':
-      return 'OMCI';
+      return 'orange_money_ci';
+    case 'mtn_momo_ci':
     case 'mtnci':
     case 'mtn':
     case 'mtn_momo':
     case 'mtn_mobile_money':
-      return 'MTNCI';
+      return 'mtn_momo_ci';
+    case 'moov_money_ci':
     case 'moovci':
     case 'moov':
     case 'moov_money':
-      return 'MOOVCI';
+      return 'moov_money_ci';
+    case 'wave_ci':
     case 'waveci':
     case 'wave':
-      return 'WAVECI';
+      return 'wave_ci';
     default:
-      return value.toUpperCase();
+      return value;
   }
-}
-
-String _normalizePhoneNumber(String value, String currency) {
-  var phone = value.replaceAll(RegExp(r'[\s\-().]'), '');
-  if (phone.startsWith('+')) return phone;
-
-  if (currency.toUpperCase() == 'XOF') {
-    if (phone.startsWith('225')) return '+$phone';
-    if (phone.length == 10) return '+225$phone';
-  }
-
-  if (phone.startsWith('1') && phone.length == 11) return '+$phone';
-  if (phone.length == 10) return '+1$phone';
-
-  return phone;
 }

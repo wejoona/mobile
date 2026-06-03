@@ -1,20 +1,16 @@
-import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Auth Service - mirrors backend AuthController
 class AuthService {
   final Dio _dio;
-  final DeviceFingerprintService _fingerprintService;
   final FlutterSecureStorage _storage;
 
-  AuthService(this._dio, this._fingerprintService, this._storage);
+  AuthService(this._dio, this._storage);
 
   /// POST /auth/register
   Future<OtpResponse> register({
@@ -52,29 +48,9 @@ class AuthService {
         '/auth/verify-otp',
         data: {'phone': phone, 'otp': otp},
       );
-      final authResponse = AuthResponse.fromJson(response.data);
-
-      // Register device fingerprint after successful auth
-      unawaited(_registerDeviceInBackground());
-
-      return authResponse;
+      return AuthResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
-    }
-  }
-
-  /// Register device fingerprint with backend (fire-and-forget).
-  Future<void> _registerDeviceInBackground() async {
-    try {
-      final fingerprint = await _fingerprintService.collect();
-      await _dio.post(
-        '/devices/register',
-        data: fingerprint.toDeviceRegistrationJson(),
-      );
-      const AppLogger('Auth').info('Device registered successfully');
-    } on Object catch (e) {
-      // Non-critical — don't block auth flow
-      const AppLogger('Auth').error('Device registration failed', e);
     }
   }
 
@@ -185,9 +161,5 @@ class RefreshResponse {
 
 /// Auth Service Provider
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(
-    ref.watch(dioProvider),
-    ref.watch(deviceFingerprintServiceProvider),
-    ref.watch(secureStorageProvider),
-  );
+  return AuthService(ref.watch(dioProvider), ref.watch(secureStorageProvider));
 });

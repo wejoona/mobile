@@ -120,7 +120,7 @@ class DepositResult {
   });
 
   factory DepositResult.fromJson(Map<String, dynamic> json) => DepositResult(
-    // Backend returns { depositId, token, paymentMethodType, instructions, expiresAt }
+    // Backend returns wallet deposit instructions and status metadata.
     id: json['depositId'] as String? ?? json['id'] as String? ?? '',
     status: json['status'] as String? ?? 'pending',
     paymentUrl: json['deepLinkUrl'] as String? ?? json['paymentUrl'] as String?,
@@ -131,7 +131,9 @@ class DepositResult {
   );
 
   factory DepositResult.fromResponse(DepositResponse response) => DepositResult(
-    id: response.depositId,
+    id: response.transactionId.isNotEmpty
+        ? response.transactionId
+        : response.depositId,
     status: response.status.value,
     paymentUrl: response.deepLinkUrl,
     instructions: response.instructions,
@@ -369,9 +371,9 @@ class DepositNotifier extends Notifier<DepositState> {
   void selectProviderData(dynamic data) {
     final code = data is ProviderData ? data.id : data.toString();
     state = state.copyWith(
-      selectedProviderCode: _normalizeProviderCode(code),
+      selectedProviderCode: code,
       selectedProviderMethodType: data is ProviderData
-          ? data.paymentMethodType
+          ? data.paymentMethodType ?? data.enumProvider
           : null,
       selectedMethod: _providerCodeToMethod(code),
     );
@@ -412,18 +414,22 @@ class DepositNotifier extends Notifier<DepositState> {
 
   static String _normalizeProviderCode(String value) {
     switch (value.toUpperCase()) {
+      case 'ORANGE_MONEY_CI':
       case 'ORANGE_MONEY':
       case 'ORANGE':
       case 'OMCI':
         return 'OMCI';
+      case 'MTN_MOMO_CI':
       case 'MTN_MOMO':
       case 'MTN':
       case 'MTNCI':
         return 'MTNCI';
+      case 'MOOV_MONEY_CI':
       case 'MOOV_MONEY':
       case 'MOOV':
       case 'MOOVCI':
         return 'MOOVCI';
+      case 'WAVE_CI':
       case 'WAVE':
       case 'WAVECI':
         return 'WAVECI';
@@ -437,7 +443,12 @@ class DepositNotifier extends Notifier<DepositState> {
     if (method == 'CARD' || method == 'BANK_TRANSFER' || method == 'ACH') {
       return false;
     }
-    return providerCode.endsWith('CI') ||
+    final provider = providerCode.toLowerCase();
+    return provider.endsWith('ci') ||
+        provider.endsWith('_ci') ||
+        provider.contains('money') ||
+        provider.contains('wave') ||
+        method == 'MOBILE_MONEY' ||
         method == 'OTP' ||
         method == 'PUSH' ||
         method == 'QR_LINK';

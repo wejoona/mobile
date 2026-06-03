@@ -32,15 +32,16 @@
     </domain-config>
 
     <!-- Production API domain with certificate pinning -->
-    <!-- DEPLOYMENT: Update pins with actual certificate pins before production release -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">api.joonapay.com</domain>
         <domain includeSubdomains="true">joonapay.com</domain>
-        <pin-set expiration="2027-01-25">
-            <!-- Primary certificate pin - TODO: Replace with actual pin before production -->
-            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
-            <!-- Backup certificate pin for rotation - TODO: Replace with actual pin -->
-            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        <pin-set expiration="2026-08-04">
+            <!-- Leaf SPKI SHA-256 for api.joonapay.com, generated 2026-06-03. -->
+            <pin digest="SHA-256">DcXImxqsw11wXDKaem3Be3mcFibKSosQGkPpNOw9Zuw=</pin>
+            <!-- Leaf SPKI SHA-256 for joonapay.com, generated 2026-06-03. -->
+            <pin digest="SHA-256">vz/Oj4HDd7i5iGnOiGk+BAZa/i62MKNdA74TWH/6pew=</pin>
+            <!-- Google Trust Services WE1 intermediate SPKI backup pin. -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
         </pin-set>
         <trust-anchors>
             <certificates src="system" />

@@ -18,12 +18,12 @@ class AppTheme {
 
       colorScheme: const ColorScheme.light(
         primary: AppColorsLight.gold500,
-        onPrimary: AppColorsLight.textOnGold,
+        onPrimary: AppColorsLight.textInverse,
         primaryContainer: AppColorsLight.gold100,
         onPrimaryContainer: AppColorsLight.textPrimary,
-        secondary: AppColorsLight.container,
+        secondary: AppColorsLight.surface,
         onSecondary: AppColorsLight.textPrimary,
-        secondaryContainer: AppColorsLight.elevated,
+        secondaryContainer: AppColorsLight.container,
         onSecondaryContainer: AppColorsLight.textPrimary,
         tertiary: AppColorsLight.successBase,
         onTertiary: AppColorsLight.textInverse,
@@ -72,7 +72,7 @@ class AppTheme {
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColorsLight.container,
-        indicatorColor: AppColorsLight.gold100,
+        indicatorColor: AppColorsLight.gold500.withValues(alpha: 0.13),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -114,7 +114,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColorsLight.gold500,
-          foregroundColor: AppColorsLight.textOnGold,
+          foregroundColor: AppColorsLight.textInverse,
           disabledBackgroundColor: AppColorsLight.elevated,
           disabledForegroundColor: AppColorsLight.textDisabled,
           elevation: 0,
@@ -161,22 +161,25 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColorsLight.elevated,
+        fillColor: AppColorsLight.container,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColorsLight.borderDefault),
+          borderSide: const BorderSide(color: AppColorsLight.borderSubtle),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColorsLight.borderDefault),
+          borderSide: const BorderSide(color: AppColorsLight.borderSubtle),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: const BorderSide(color: AppColorsLight.gold500, width: 2),
+          borderSide: const BorderSide(
+            color: AppColorsLight.gold500,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -16,8 +17,9 @@ void main() {
       final driver = KoridoFlowDriver(tester);
       await driver.launchApp();
       await driver.startRegistrationFromIntro();
-      await driver.submitPhone(_uniqueIvorianPhone());
-      await driver.enterOtp('123456');
+      final phone = _uniqueIvorianPhone();
+      await driver.submitPhone(phone);
+      await driver.enterOtp(await _resolveOtp(phone));
 
       await driver.pumpUntil(
         () => driver.hasAnyText([
@@ -58,6 +60,7 @@ void main() {
         'Commencer à utiliser Korido',
       ]);
       await driver.waitForHome();
+      await driver.exerciseDepositFromHome();
       await _openLiveSecondarySurfaces(driver);
     },
   );
@@ -68,12 +71,45 @@ String _uniqueIvorianPhone() {
   return '07${seed.substring(seed.length - 8)}';
 }
 
+Future<String> _resolveOtp(String localPhone) async {
+  // ignore: do_not_use_environment
+  const baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://api.joonapay.com/api/v1',
+  );
+  final e164Phone = '+225${localPhone.replaceAll(RegExp(r'\D'), '')}';
+
+  try {
+    final response = await Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        validateStatus: (_) => true,
+        connectTimeout: const Duration(seconds: 3),
+        receiveTimeout: const Duration(seconds: 3),
+      ),
+    ).get<Map<String, dynamic>>('/dev/otp/$e164Phone');
+    final data = response.data?['data'];
+    if (response.statusCode == 200 &&
+        data is Map<String, dynamic> &&
+        data['otp'] != null) {
+      return data['otp'].toString();
+    }
+  } on Object {
+    // VerifyHQ dev stacks can be configured with a fixed OTP and no /dev/otp.
+  }
+
+  return '123456';
+}
+
 Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
   await driver.goToRoute('/transactions');
   await driver.pumpUntil(
     () =>
         driver.hasAnyText(['Transactions']) &&
         driver.hasAnyText([
+          'Deposit',
+          'Dépôt',
+          'Mobile Money Deposit',
           'No Transactions Yet',
           'No Transactions',
           'Aucune Transaction',

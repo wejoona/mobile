@@ -447,12 +447,12 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
   /// Light theme gradients
   static final light = AppGradientsExtension(
     goldGradient: LinearGradient(
-      colors: [AppColorsLight.logoGold, AppColorsLight.logoGold],
+      colors: [AppColorsLight.gold500, AppColorsLight.gold500],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     goldGradientVertical: LinearGradient(
-      colors: [AppColorsLight.logoGold, AppColorsLight.logoGold],
+      colors: [AppColorsLight.gold500, AppColorsLight.gold500],
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
     ),
@@ -468,11 +468,11 @@ class AppGradientsExtension extends ThemeExtension<AppGradientsExtension> {
       end: Alignment.bottomRight,
     ),
     goldRadialGradient: RadialGradient(
-      colors: [AppColorsLight.logoGold, AppColorsLight.logoGold],
+      colors: [AppColorsLight.gold500, AppColorsLight.gold500],
       stops: [0.0, 1.0],
     ),
     goldSweepGradient: SweepGradient(
-      colors: [AppColorsLight.logoGold, AppColorsLight.logoGold],
+      colors: [AppColorsLight.gold500, AppColorsLight.gold500],
       stops: [0.0, 1.0],
     ),
   );

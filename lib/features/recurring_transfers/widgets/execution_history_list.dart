@@ -3,12 +3,10 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/recurring_transfers/models/execution_history.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 class ExecutionHistoryList extends StatelessWidget {
-  const ExecutionHistoryList({
-    super.key,
-    required this.history,
-  });
+  const ExecutionHistoryList({super.key, required this.history});
 
   final List<ExecutionHistory> history;
 
@@ -56,12 +54,13 @@ class ExecutionHistoryList extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                         SizedBox(height: AppSpacing.xs),
-                        AppText(
-                          '${execution.amount.toStringAsFixed(0)} ${execution.currency}',
-                          variant: AppTextVariant.bodySmall,
+                        AmountText.fromText(
+                          formatCurrency(execution.amount, execution.currency),
+                          size: AmountTextSize.small,
                           color: context.colors.textSecondary,
                         ),
-                        if (!execution.success && execution.errorMessage != null)
+                        if (!execution.success &&
+                            execution.errorMessage != null)
                           AppText(
                             execution.errorMessage!,
                             variant: AppTextVariant.bodySmall,

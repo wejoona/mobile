@@ -132,8 +132,14 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         // Amount
                         _buildDetailRow(
                           l10n.sendExternal_amount,
-                          '\$${Formatters.formatCurrency(state.amount!)}',
+                          '',
                           isHighlighted: true,
+                          valueWidget: AmountText.fromText(
+                            '\$${Formatters.formatCurrency(state.amount!)}',
+                            size: AmountTextSize.small,
+                            color: context.colors.gold,
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
@@ -145,7 +151,12 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         // Network fee
                         _buildDetailRow(
                           l10n.sendExternal_networkFee,
-                          '\$${Formatters.formatCurrency(state.estimatedFee)}',
+                          '',
+                          valueWidget: AmountText.fromText(
+                            '\$${Formatters.formatCurrency(state.estimatedFee)}',
+                            size: AmountTextSize.small,
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                         Divider(
                           height: AppSpacing.lg * 2,
@@ -157,9 +168,15 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
                         // Total
                         _buildDetailRow(
                           l10n.sendExternal_totalDeducted,
-                          '\$${Formatters.formatCurrency(state.total)}',
+                          '',
                           isHighlighted: true,
                           isLarge: true,
+                          valueWidget: AmountText.fromText(
+                            '\$${Formatters.formatCurrency(state.total)}',
+                            size: AmountTextSize.medium,
+                            color: context.colors.gold,
+                            textAlign: TextAlign.right,
+                          ),
                         ),
                       ],
                     ),
@@ -256,6 +273,7 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
     bool isLarge = false,
     bool isCopyable = false,
     bool isMonospace = false,
+    Widget? valueWidget,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,23 +293,25 @@ class _ExternalConfirmScreenState extends ConsumerState<ExternalConfirmScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Flexible(
-                child: AppText(
-                  value,
-                  variant: isMonospace
-                      ? (isLarge
-                            ? AppTextVariant.monoLarge
-                            : AppTextVariant.monoMedium)
-                      : (isLarge
-                            ? AppTextVariant.bodyLarge
-                            : AppTextVariant.bodyMedium),
-                  fontWeight: isHighlighted || isLarge
-                      ? FontWeight.w600
-                      : FontWeight.normal,
-                  color: isHighlighted
-                      ? context.colors.gold
-                      : context.colors.textPrimary,
-                  textAlign: TextAlign.right,
-                ),
+                child:
+                    valueWidget ??
+                    AppText(
+                      value,
+                      variant: isMonospace
+                          ? (isLarge
+                                ? AppTextVariant.monoLarge
+                                : AppTextVariant.monoMedium)
+                          : (isLarge
+                                ? AppTextVariant.bodyLarge
+                                : AppTextVariant.bodyMedium),
+                      fontWeight: isHighlighted || isLarge
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                      color: isHighlighted
+                          ? context.colors.gold
+                          : context.colors.textPrimary,
+                      textAlign: TextAlign.right,
+                    ),
               ),
               if (isCopyable) ...[
                 SizedBox(width: AppSpacing.xs),

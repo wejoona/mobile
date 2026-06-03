@@ -133,6 +133,12 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(status: AuthStatus.authenticated);
       // Proactively refresh token after unlock — session may have expired while locked
       _refreshTokenOnUnlock();
+      ref.read(appFsmProvider.notifier).hydrateAuthenticatedSession();
+      unawaited(
+        ref
+            .read(userStateMachineProvider.notifier)
+            .hydrateAuthenticatedSession(fetchRelated: false),
+      );
       // Start real-time sync (WebSocket + polling fallback)
       ref.read(realtimeServiceProvider).start();
     }
@@ -302,6 +308,14 @@ class AuthNotifier extends Notifier<AuthState> {
             avatarThumb: response.user.avatarBase64,
           );
 
+      // Ensure legacy profile/cache state is fully hydrated without duplicating
+      // wallet/KYC fetches already driven by the app FSM.
+      unawaited(
+        ref
+            .read(userStateMachineProvider.notifier)
+            .hydrateAuthenticatedSession(fetchRelated: false),
+      );
+
       // Analytics: login success
       _analytics.trackLogin(method: 'otp');
       _analytics.setUserProperties(userId: response.user.id);
@@ -366,6 +380,23 @@ class AuthNotifier extends Notifier<AuthState> {
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: response.user,
+      );
+
+      if (response.user != null) {
+        ref
+            .read(userStateMachineProvider.notifier)
+            .updateProfile(
+              firstName: response.user!.firstName,
+              lastName: response.user!.lastName,
+              email: response.user!.email,
+              avatarUrl: response.user!.avatarUrl,
+              avatarThumb: response.user!.avatarBase64,
+            );
+      }
+      unawaited(
+        ref
+            .read(userStateMachineProvider.notifier)
+            .hydrateAuthenticatedSession(fetchRelated: false),
       );
 
       return true;

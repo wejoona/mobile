@@ -4,17 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/config/environment_config.dart';
-import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
-import 'package:usdc_wallet/services/biometric/biometric_service.dart';
-import 'package:usdc_wallet/services/api/api_client.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/auth/views/legal_document_view.dart';
 import 'package:usdc_wallet/features/auth/widgets/auth_screen_chrome.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/legal/legal_documents_service.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Login screen with two modes:
 /// 1. Returning user with biometric → full-screen biometric prompt
@@ -660,13 +660,16 @@ class _LoginViewState extends ConsumerState<LoginView>
   }
 
   bool _isPhoneValid() {
-    final phone = _phoneController.text.replaceAll(RegExp(r'\s+'), '');
+    final phone = digitsOnly(_phoneController.text);
     return _selectedCountry.isValidLength(phone);
   }
 
   void _submit() {
     if (!_isPhoneValid()) return;
-    final phone = '${_selectedCountry.fullPrefix}${_phoneController.text}';
+    final phone = normalizePhoneE164(
+      dialCode: _selectedCountry.fullPrefix,
+      localNumber: _phoneController.text,
+    );
     ref.read(selectedCountryProvider.notifier).select(_selectedCountry);
     if (_isRegistering) {
       ref.read(authProvider.notifier).register(phone, _selectedCountry.code);

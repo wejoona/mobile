@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart' as app_config;
 import 'package:usdc_wallet/design/components/primitives/index.dart';
@@ -12,6 +11,8 @@ import 'package:usdc_wallet/features/onboarding/models/country_data.dart';
 import 'package:usdc_wallet/features/onboarding/providers/onboarding_provider.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/country_picker_widget.dart';
 import 'package:usdc_wallet/features/onboarding/widgets/onboarding_progress.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 /// Phone input screen for registration
 class PhoneInputView extends ConsumerStatefulWidget {
@@ -188,7 +189,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   bool get _canSubmit {
-    final digits = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    final digits = digitsOnly(_phoneController.text);
     return digits.length == _selectedCountry.phoneLength && _termsAccepted;
   }
 
@@ -205,7 +206,7 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
         onCountrySelected: (country) {
           setState(() {
             _selectedCountry = country;
-            if (_phoneController.text.replaceAll(RegExp(r'\D'), '').length >
+            if (digitsOnly(_phoneController.text).length >
                 country.phoneLength) {
               _phoneController.clear();
             }
@@ -223,8 +224,10 @@ class _PhoneInputViewState extends ConsumerState<PhoneInputView> {
   }
 
   Future<void> _handleSubmit() async {
-    final phoneNumber = _phoneController.text.replaceAll(' ', '');
-    final fullPhoneNumber = '${_selectedCountry.dialCode}$phoneNumber';
+    final fullPhoneNumber = normalizePhoneE164(
+      dialCode: _selectedCountry.dialCode,
+      localNumber: _phoneController.text,
+    );
     final configCountry = app_config.SupportedCountries.findByCode(
       _selectedCountry.code,
     );
