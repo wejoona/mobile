@@ -225,11 +225,11 @@ Feature: Confirm Send Transfer
       | Fee          | $1.00              |
       | Total        | $101.00            |
     And I should see note if entered
-    And I should see "Confirm & Send" button
+    And I should see "Continue to PIN" button
 
   @send @confirm @proceed
   Scenario: Proceed to PIN verification
-    When I tap "Confirm & Send"
+    When I tap "Continue to PIN"
     Then I should navigate to "/send/pin"
 ```
 

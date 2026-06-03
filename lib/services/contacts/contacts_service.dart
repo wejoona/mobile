@@ -417,6 +417,34 @@ class KoridoContactsService {
         .toList();
   }
 
+  /// Lookup discoverable Korido users for recipient search.
+  Future<List<SyncedContact>> lookupKoridoUsers(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) return const [];
+
+    final response = await _dio.get(
+      '/contacts/lookup',
+      queryParameters: {'query': trimmed},
+    );
+    final data = response.data as Map<String, dynamic>;
+    final users = data['users'] as List<dynamic>? ?? const [];
+
+    return users
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (user) => SyncedContact(
+            id: user['id'] as String? ?? '',
+            name: user['name'] as String? ?? user['phone'] as String? ?? '',
+            phone: user['phone'] as String? ?? '',
+            isKoridoUser: user['isKoridoUser'] as bool? ?? true,
+            joonaPayUserId: user['id'] as String?,
+            avatarUrl: user['avatarUrl'] as String?,
+          ),
+        )
+        .where((user) => user.id.isNotEmpty && user.phone.isNotEmpty)
+        .toList();
+  }
+
   /// Create a new contact
   Future<domain.Contact> createContact({
     required String name,

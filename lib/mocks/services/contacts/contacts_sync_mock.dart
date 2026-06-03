@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
-import 'package:usdc_wallet/mocks/base/api_contract.dart';
 import 'package:usdc_wallet/mocks/base/mock_interceptor.dart';
 
 /// Mock data for contact sync feature
@@ -12,6 +11,13 @@ class ContactsSyncMock {
       method: 'POST',
       path: '/contacts/sync',
       handler: _handleContactsSync,
+    );
+
+    // GET /contacts/lookup
+    interceptor.register(
+      method: 'GET',
+      path: '/contacts/lookup',
+      handler: _handleContactsLookup,
     );
 
     // POST /contacts/invite
@@ -29,7 +35,7 @@ class ContactsSyncMock {
     final data = options.data as Map<String, dynamic>;
     final phoneHashes = (data['phoneHashes'] as List).cast<String>();
 
-    // Simulate matching against known JoonaPay users
+    // Simulate matching against known Korido users
     final matches = _getMatchingUsers(phoneHashes);
 
     return MockResponse.success({
@@ -49,7 +55,47 @@ class ContactsSyncMock {
     });
   }
 
-  /// Mock JoonaPay users database
+  /// Handle GET /contacts/lookup
+  static Future<MockResponse> _handleContactsLookup(
+    RequestOptions options,
+  ) async {
+    final query = (options.queryParameters['query'] as String? ?? '')
+        .trim()
+        .toLowerCase();
+
+    if (query.length < 3) {
+      return MockResponse.success({
+        'users': <Map<String, dynamic>>[],
+        'total': 0,
+      });
+    }
+
+    final queryDigits = query.replaceAll(RegExp(r'\D'), '');
+    final users = _mockJoonaPayUsers
+        .where((user) {
+          final name = (user['name'] as String).toLowerCase();
+          final phone = user['phone'] as String;
+          final phoneDigits = phone.replaceAll(RegExp(r'\D'), '');
+          return name.contains(query) ||
+              (queryDigits.length >= 3 && phoneDigits.contains(queryDigits));
+        })
+        .map((user) {
+          return {
+            'id': user['userId'],
+            'name': user['name'],
+            'phone': user['phone'],
+            'username': null,
+            'avatarUrl': user['avatarUrl'],
+            'isKoridoUser': true,
+          };
+        })
+        .take(10)
+        .toList();
+
+    return MockResponse.success({'users': users, 'total': users.length});
+  }
+
+  /// Mock Korido users database
   /// In production, these would be real users in the backend
   static final List<Map<String, dynamic>> _mockJoonaPayUsers = [
     {
@@ -68,6 +114,24 @@ class ContactsSyncMock {
       'phone': '+2250711223344',
       'userId': 'usr_mariam',
       'name': 'Mariam Bamba',
+      'avatarUrl': null,
+    },
+    {
+      'phone': '+2250712345678',
+      'userId': 'user-amadou',
+      'name': 'Amadou Diallo',
+      'avatarUrl': 'https://i.pravatar.cc/150?img=12',
+    },
+    {
+      'phone': '+2250587654321',
+      'userId': 'user-fatou',
+      'name': 'Fatou Touré',
+      'avatarUrl': 'https://i.pravatar.cc/150?img=5',
+    },
+    {
+      'phone': '+2250799887766',
+      'userId': 'user-awa',
+      'name': 'Awa Traoré',
       'avatarUrl': null,
     },
   ];
@@ -113,12 +177,12 @@ class ContactsSyncMock {
 /// Mock device contacts for testing
 class MockDeviceContacts {
   static final List<Map<String, String>> contacts = [
-    // JoonaPay users (will match)
+    // Korido users (will match)
     {'name': 'Amadou Diallo', 'phone': '+225 07 08 09 10 11'},
     {'name': 'Fatou Koné', 'phone': '+225 05 06 07 08 09'},
     {'name': 'Mariam Bamba', 'phone': '+225 07 11 22 33 44'},
 
-    // Non-JoonaPay users (won't match)
+    // Non-Korido users (won't match)
     {'name': 'Yao N\'Guessan', 'phone': '+225 07 11 11 11 11'},
     {'name': 'Aissata Koné', 'phone': '+225 07 22 22 22 22'},
     {'name': 'Mamadou Coulibaly', 'phone': '+225 07 33 33 33 33'},

@@ -1,13 +1,16 @@
 import 'dart:async';
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Service d'analytics utilisant Firebase Analytics.
+/// Lightweight analytics facade.
 ///
 /// Règles :
 /// - Pas de PII (pas de numéros de téléphone, pas de montants exacts)
 /// - Uniquement des compteurs et catégories
+///
+/// Firebase Analytics is intentionally not wired in the MVP mobile build. Core
+/// wallet QA and privacy posture are more important than ad/measurement SDK
+/// weight during team dogfood.
 class AnalyticsService {
   static final AnalyticsService _instance = AnalyticsService._();
   factory AnalyticsService() => _instance;
@@ -15,22 +18,14 @@ class AnalyticsService {
 
   bool _initialized = false;
   final List<AnalyticsEvent> _pendingEvents = [];
-  FirebaseAnalytics? _firebase;
 
   Future<void> initialize() async {
-    try {
-      _firebase = FirebaseAnalytics.instance;
-      _initialized = true;
-      // Flush pending events
-      for (final event in _pendingEvents) {
-        await _sendEvent(event);
-      }
-      _pendingEvents.clear();
-      if (kDebugMode) debugPrint('[Analytics] Initialized with Firebase');
-    } catch (e) {
-      if (kDebugMode) debugPrint('[Analytics] Firebase init failed: $e');
-      _initialized = true; // Continue without Firebase
+    _initialized = true;
+    for (final event in _pendingEvents) {
+      await _sendEvent(event);
     }
+    _pendingEvents.clear();
+    if (kDebugMode) debugPrint('[Analytics] Initialized local analytics');
   }
 
   // ============================================================
@@ -38,7 +33,6 @@ class AnalyticsService {
   // ============================================================
 
   void trackScreen(String screenName, {Map<String, dynamic>? properties}) {
-    _firebase?.logScreenView(screenName: screenName);
     _track(
       AnalyticsEvent(
         name: 'screen_view',
@@ -266,13 +260,10 @@ class AnalyticsService {
     return Future<void>.value();
   }
 
-  Future<void> setUserId(String? userId) async {
-    await _firebase?.setUserId(id: userId);
-  }
+  Future<void> setUserId(String? userId) async {}
 
   Future<void> reset() async {
     _pendingEvents.clear();
-    await _firebase?.setUserId(id: null);
   }
 
   void trackAction(String action, {Map<String, dynamic>? properties}) {
@@ -344,18 +335,14 @@ class AnalyticsService {
     String? country,
     String? locale,
   }) {
-    if (userId != null) _firebase?.setUserId(id: userId);
-    if (kycStatus != null)
-      _firebase?.setUserProperty(name: 'kyc_status', value: kycStatus);
-    if (country != null)
-      _firebase?.setUserProperty(name: 'country', value: country);
-    if (locale != null)
-      _firebase?.setUserProperty(name: 'locale', value: locale);
+    if (kDebugMode) {
+      debugPrint(
+        '[Analytics] user_properties ${{if (userId != null) 'user_id_hash': userId.hashCode.toString(), if (kycStatus != null) 'kyc_status': kycStatus, if (country != null) 'country': country, if (locale != null) 'locale': locale}}',
+      );
+    }
   }
 
-  Future<void> setUserProperty(String name, dynamic value) async {
-    await _firebase?.setUserProperty(name: name, value: value?.toString());
-  }
+  Future<void> setUserProperty(String name, dynamic value) async {}
 
   // ============================================================
   // Internals
@@ -382,7 +369,7 @@ class AnalyticsService {
         }
       }
 
-      await _firebase?.logEvent(name: event.name, parameters: params);
+      if (kDebugMode) debugPrint('[Analytics] ${event.name} $params');
     } catch (e) {
       if (kDebugMode) debugPrint('[Analytics] Failed to send event: $e');
     }

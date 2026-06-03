@@ -23,7 +23,7 @@ void main() {
       () =>
           driver.hasAnyText(['Transactions']) &&
           driver.hasAnyText(['Transfer Sent', 'Transfert envoyé']) &&
-          driver.hasAnyText([r'- $1.00']),
+          driver.hasAnyText(['-1.00 USDC', r'- $1.00']),
       reason: 'transactions list with the completed transfer amount',
     );
 

@@ -9,8 +9,8 @@ import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart'
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/send/widgets/pin_input_widget.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/features/send/views/offline_queue_dialog.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/services/offline/offline_queue_interceptor.dart';
 
 class PinVerificationScreen extends ConsumerStatefulWidget {
@@ -77,34 +77,16 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                       height: isKeyboardOpen ? AppSpacing.sm : AppSpacing.xl,
                     ),
 
-                    if (!isKeyboardOpen) ...[
-                      Container(
-                        padding: EdgeInsets.all(AppSpacing.lg),
-                        decoration: BoxDecoration(
-                          color: context.colors.gold.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: context.colors.gold,
-                        ),
+                    SendFlowHeader(
+                      icon: Icons.lock_outline,
+                      title: l10n.send_enterPinToConfirm,
+                      subtitle: localizedSendCopy(
+                        context,
+                        en: 'This is the final authorization. Confirm only after reviewing the amount and recipient.',
+                        fr: 'C’est l’autorisation finale. Confirmez seulement après avoir vérifié le montant et le destinataire.',
                       ),
-                      SizedBox(height: AppSpacing.lg),
-                    ],
-
-                    AppText(
-                      l10n.send_enterPinToConfirm,
-                      variant: AppTextVariant.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: AppSpacing.sm),
-
-                    AppText(
-                      l10n.send_pinVerificationDescription,
-                      variant: AppTextVariant.bodyMedium,
-                      color: context.colors.textSecondary,
-                      textAlign: TextAlign.center,
+                      currentStep: 3,
+                      metaLabel: sendStepLabel(context, 4),
                     ),
                     SizedBox(
                       height: isKeyboardOpen ? AppSpacing.md : AppSpacing.xl,
@@ -117,25 +99,24 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
                       ),
                     ],
 
-                    PinInputWidget(
-                      length: 6,
-                      onChanged: (pin) {
-                        setState(() {
-                          _error = null;
-                        });
-                      },
-                      onCompleted: _handlePinComplete,
-                      error: _error,
+                    AppCard(
+                      variant: AppCardVariant.elevated,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.xl,
+                      ),
+                      child: PinInputWidget(
+                        length: 6,
+                        onChanged: (pin) {
+                          setState(() {
+                            _error = null;
+                          });
+                        },
+                        onCompleted: _handlePinComplete,
+                        error: _error,
+                      ),
                     ),
                     SizedBox(height: AppSpacing.lg),
-
-                    if (_error != null)
-                      AppText(
-                        _error!,
-                        variant: AppTextVariant.bodySmall,
-                        color: context.colors.error,
-                        textAlign: TextAlign.center,
-                      ),
 
                     if (_biometricAvailable) ...[
                       SizedBox(height: AppSpacing.md),
@@ -179,7 +160,8 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
     final colors = context.colors;
 
     return AppCard(
-      variant: AppCardVariant.subtle,
+      variant: AppCardVariant.flat,
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
           _summaryRow(
@@ -193,36 +175,37 @@ class _PinVerificationScreenState extends ConsumerState<PinVerificationScreen> {
           SizedBox(height: AppSpacing.sm),
           _summaryRow(
             l10n.send_amount,
-            '\$${Formatters.formatCurrency(state.amount ?? 0)}',
+            '${Formatters.formatCurrency(state.amount ?? 0)} USDC',
             colors,
             isAmount: true,
           ),
           SizedBox(height: AppSpacing.sm),
           _summaryRow(
             l10n.send_fee,
-            '\$${Formatters.formatCurrency(state.fee)}',
+            '${Formatters.formatCurrency(state.fee)} USDC',
             colors,
           ),
           Divider(height: AppSpacing.lg, color: colors.borderSubtle),
           _summaryRow(
             l10n.send_total,
-            '\$${Formatters.formatCurrency(state.total)}',
+            '${Formatters.formatCurrency(state.total)} USDC',
             colors,
             isAmount: true,
           ),
           SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Icon(Icons.info_outline, size: 18, color: colors.warningText),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: AppText(
-                  'Transfers cannot be reversed after confirmation.',
-                  variant: AppTextVariant.bodySmall,
-                  color: colors.textSecondary,
-                ),
-              ),
-            ],
+          SendCallout(
+            icon: Icons.warning_amber_outlined,
+            title: localizedSendCopy(
+              context,
+              en: 'Final authorization',
+              fr: 'Autorisation finale',
+            ),
+            body: localizedSendCopy(
+              context,
+              en: 'Transfers cannot be reversed after PIN confirmation.',
+              fr: 'Les transferts ne peuvent pas être annulés après confirmation du PIN.',
+            ),
+            tone: SendCalloutTone.warning,
           ),
         ],
       ),

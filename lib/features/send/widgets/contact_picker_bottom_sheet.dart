@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
@@ -22,16 +24,20 @@ class _ContactPickerBottomSheetState
   final _searchController = TextEditingController();
   List<SyncedContact> _contacts = [];
   List<SyncedContact> _filteredContacts = [];
+  List<SyncedContact> _lookupResults = [];
   bool _isLoading = true;
+  bool _isLookupLoading = false;
+  Timer? _lookupDebounce;
 
   @override
   void initState() {
     super.initState();
-    _loadContacts();
+    unawaited(_loadContacts());
   }
 
   @override
   void dispose() {
+    _lookupDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -103,13 +109,18 @@ class _ContactPickerBottomSheetState
 
   void _sortContacts(List<SyncedContact> contacts) {
     contacts.sort((a, b) {
-      if (a.isKoridoUser && !b.isKoridoUser) return -1;
-      if (!a.isKoridoUser && b.isKoridoUser) return 1;
+      if (a.isKoridoUser && !b.isKoridoUser) {
+        return -1;
+      }
+      if (!a.isKoridoUser && b.isKoridoUser) {
+        return 1;
+      }
       return a.name.compareTo(b.name);
     });
   }
 
   void _filterContacts(String query) {
+    _lookupDebounce?.cancel();
     setState(() {
       if (query.isEmpty) {
         _filteredContacts = _contacts;
@@ -123,6 +134,52 @@ class _ContactPickerBottomSheetState
             .toList();
       }
     });
+
+    _lookupDebounce = Timer(
+      const Duration(milliseconds: 280),
+      () => _lookupKoridoUsers(query),
+    );
+  }
+
+  Future<void> _lookupKoridoUsers(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) {
+      if (mounted) {
+        setState(() {
+          _lookupResults = [];
+          _isLookupLoading = false;
+        });
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() => _isLookupLoading = true);
+    }
+
+    try {
+      final results = await ref
+          .read(joonaPayContactsServiceProvider)
+          .lookupKoridoUsers(trimmed);
+      final localPhones = _contacts.map((contact) => contact.phone).toSet();
+      final filteredResults = results
+          .where((result) => !localPhones.contains(result.phone))
+          .toList();
+
+      if (mounted && _searchController.text.trim() == trimmed) {
+        setState(() {
+          _lookupResults = filteredResults;
+          _isLookupLoading = false;
+        });
+      }
+    } on Object {
+      if (mounted && _searchController.text.trim() == trimmed) {
+        setState(() {
+          _lookupResults = [];
+          _isLookupLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -190,7 +247,7 @@ class _ContactPickerBottomSheetState
                       valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
                     ),
                   )
-                : _filteredContacts.isEmpty
+                : _filteredContacts.isEmpty && _lookupResults.isEmpty
                 ? Center(
                     child: AppText(
                       l10n.send_noContactsFound,
@@ -198,13 +255,19 @@ class _ContactPickerBottomSheetState
                       color: colors.textSecondary,
                     ),
                   )
-                : ListView.builder(
+                : ListView(
                     padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    itemCount: _filteredContacts.length,
-                    itemBuilder: (context, index) {
-                      final contact = _filteredContacts[index];
-                      return _buildContactItem(contact, colors);
-                    },
+                    children: [
+                      if (_searchController.text.trim().length >= 3)
+                        _buildLookupSection(colors),
+                      if (_filteredContacts.isNotEmpty) ...[
+                        if (_searchController.text.trim().length >= 3)
+                          _buildSectionLabel('Your contacts', colors),
+                        ..._filteredContacts.map(
+                          (contact) => _buildContactItem(contact, colors),
+                        ),
+                      ],
+                    ],
                   ),
           ),
         ],
@@ -212,9 +275,87 @@ class _ContactPickerBottomSheetState
     );
   }
 
-  Widget _buildContactItem(SyncedContact contact, ThemeColors colors) {
+  Widget _buildLookupSection(ThemeColors colors) {
+    if (_isLookupLoading) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.md),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(colors.gold),
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            AppText(
+              'Searching Korido accounts',
+              variant: AppTextVariant.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_lookupResults.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.md),
+        child: AppCard(
+          child: Row(
+            children: [
+              Icon(Icons.verified_user_outlined, color: colors.textSecondary),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: AppText(
+                  'No Korido account found for this search',
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionLabel('Korido accounts', colors),
+        ..._lookupResults.map(
+          (contact) => _buildContactItem(contact, colors, fromLookup: true),
+        ),
+        SizedBox(height: AppSpacing.sm),
+      ],
+    );
+  }
+
+  Widget _buildSectionLabel(String label, ThemeColors colors) {
+    return Padding(
+      padding: EdgeInsets.only(top: AppSpacing.xs, bottom: AppSpacing.sm),
+      child: AppText(
+        label,
+        variant: AppTextVariant.labelMedium,
+        color: colors.textSecondary,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _buildContactItem(
+    SyncedContact contact,
+    ThemeColors colors, {
+    bool fromLookup = false,
+  }) {
     return GestureDetector(
-      key: ValueKey('contact_picker_${contact.id}'),
+      key: ValueKey(
+        fromLookup
+            ? 'contact_lookup_${contact.joonaPayUserId ?? contact.id}'
+            : 'contact_picker_${contact.id}',
+      ),
       behavior: HitTestBehavior.opaque,
       onTap: () => Navigator.pop(context, contact),
       child: Padding(
@@ -265,7 +406,7 @@ class _ContactPickerBottomSheetState
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
-                    contact.phone,
+                    fromLookup ? 'Verified Korido account' : contact.phone,
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),

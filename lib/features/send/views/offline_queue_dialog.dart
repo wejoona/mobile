@@ -1,4 +1,3 @@
-import 'package:usdc_wallet/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +5,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
-
-/// Helper function to format currency
-String formatCurrency(double amount) => Formatters.formatCurrency(amount);
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Dialog shown when queuing a transfer while offline
 class OfflineQueueDialog extends ConsumerWidget {
@@ -52,7 +50,11 @@ class OfflineQueueDialog extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            l10n.offline_transferQueuedDesc,
+            localizedSendCopy(
+              context,
+              en: 'Draft saved. Authorize it from pending transfers when you are back online.',
+              fr: 'Brouillon enregistré. Autorisez-le depuis les transferts en attente quand vous êtes de nouveau en ligne.',
+            ),
             variant: AppTextVariant.bodyMedium,
             color: colors.textSecondary,
           ),
@@ -74,7 +76,7 @@ class OfflineQueueDialog extends ConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 _buildRow(
                   l10n.send_amount,
-                  '\$${formatCurrency(amount)}',
+                  formatUsdc(amount),
                   colors,
                   isAmount: true,
                 ),

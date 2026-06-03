@@ -52,9 +52,9 @@ void main() {
     });
 
     test('should apply correct TTL for different endpoints', () {
-      // Test wallet balance TTL (30s)
+      // Test wallet balance TTL (fresh financial state, no generic cache)
       final walletTTL = interceptor.getTTL('/wallet/balance');
-      expect(walletTTL, equals(const Duration(seconds: 30)));
+      expect(walletTTL, equals(Duration.zero));
 
       // Test deposit channels TTL (30m)
       final channelsTTL = interceptor.getTTL('/deposit/channels');

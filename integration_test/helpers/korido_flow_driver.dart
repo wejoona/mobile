@@ -312,7 +312,12 @@ class KoridoFlowDriver {
       reason: 'send confirmation screen',
     );
 
-    await tapText(['Confirm & Send', 'Confirmer & Envoyer']);
+    await tapText([
+      'Continue to PIN',
+      'Continuer vers le PIN',
+      'Confirm & Send',
+      'Confirmer & Envoyer',
+    ]);
 
     await pumpUntil(
       () => hasAnyText(['Verify PIN', 'Vérifier le code PIN']),
@@ -355,9 +360,24 @@ class KoridoFlowDriver {
 
   Future<void> enterPinTextFields(String pin) async {
     await pumpUntil(
-      () => find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty,
+      () =>
+          find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty ||
+          find
+              .byKey(const ValueKey('security_code_input'))
+              .evaluate()
+              .isNotEmpty,
       reason: 'PIN input fields',
     );
+
+    final securityCodeInput = find.byKey(const ValueKey('security_code_input'));
+    if (securityCodeInput.evaluate().isNotEmpty) {
+      await tester.ensureVisible(securityCodeInput);
+      await tester.tap(securityCodeInput);
+      await tester.enterText(securityCodeInput, pin);
+      await tester.pump(const Duration(milliseconds: 250));
+      await dismissKeyboard();
+      return;
+    }
 
     for (var i = 0; i < pin.length; i++) {
       final field = find.byKey(ValueKey('pin_digit_$i'));

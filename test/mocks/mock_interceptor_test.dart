@@ -214,6 +214,26 @@ void main() {
     },
   );
 
+  test('serves Korido user lookup results for recipient search', () async {
+    MockRegistry.initialize();
+    MockRegistry.reset();
+
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.korido.test/api/v1'));
+    dio.interceptors.add(MockRegistry.interceptor);
+
+    final response = await dio.get(
+      '/contacts/lookup',
+      queryParameters: {'query': 'ama'},
+    );
+    final data = response.data as Map<String, dynamic>;
+    final users = (data['users'] as List<dynamic>).cast<Map<String, dynamic>>();
+
+    expect(users, isNotEmpty);
+    expect(users.first['name'], contains('Amadou'));
+    expect(users.first['phone'], startsWith('+'));
+    expect(users.first['isKoridoUser'], isTrue);
+  });
+
   test(
     'persists profile updates against the authenticated mock user',
     () async {
@@ -320,6 +340,7 @@ void main() {
           'phoneHashes': ['mock_hash_amadou', 'mock_hash_invitee'],
         },
       ),
+      (method: 'GET', path: '/contacts/lookup', data: null),
       (method: 'GET', path: '/beneficiaries', data: null),
       (method: 'GET', path: '/devices', data: null),
       (method: 'GET', path: '/user/notification-preferences', data: null),
@@ -429,6 +450,11 @@ void _expectParseableRoute(String path, Object? data) {
       final sync = _expectMap(path, data);
       expect(sync['matches'], isA<List<dynamic>>());
       expect(sync['totalChecked'], isA<int>());
+      return;
+    case '/contacts/lookup':
+      final lookup = _expectMap(path, data);
+      expect(lookup['users'], isA<List<dynamic>>());
+      expect(lookup['total'], isA<int>());
       return;
     case '/beneficiaries':
       final beneficiaries = _extractList(path, data, [

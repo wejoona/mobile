@@ -52,8 +52,8 @@ void main() {
     await driver.pumpUntil(
       () =>
           driver.hasAnyText(['Devices', 'Appareils']) &&
-          driver.hasAnyText(['CET APPAREIL']) &&
-          driver.hasAnyText(['AUTRES APPAREILS']) &&
+          driver.hasAnyText(['THIS DEVICE', 'CET APPAREIL']) &&
+          driver.hasAnyText(['OTHER DEVICES', 'AUTRES APPAREILS']) &&
           driver.hasAnyText(['iPhone 15 Pro', 'MacBook Pro', 'Galaxy S23']),
       reason: 'registered devices loaded from the mock API',
     );

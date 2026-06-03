@@ -12,6 +12,7 @@ import 'package:usdc_wallet/features/beneficiaries/models/beneficiary.dart';
 import 'package:usdc_wallet/features/beneficiaries/providers/beneficiaries_provider.dart';
 import 'package:usdc_wallet/features/contacts/widgets/korido_account_badge.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
+import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/core/utils/formatters.dart';
@@ -86,10 +87,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -131,16 +128,24 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       ScaleTransition(
         scale: _scaleAnimation,
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.xl),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            color: (isSuccess ? colors.success : colors.error).withValues(
-              alpha: 0.1,
+            color: Color.alphaBlend(
+              (isSuccess ? colors.success : colors.error).withValues(
+                alpha: colors.isDark ? 0.16 : 0.10,
+              ),
+              colors.container,
             ),
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(AppRadius.xxxl),
+            border: Border.all(
+              color: (isSuccess ? colors.success : colors.error).withValues(
+                alpha: 0.28,
+              ),
+            ),
           ),
           child: Icon(
             isSuccess ? Icons.check_circle : Icons.error,
-            size: 80,
+            size: 56,
             color: isSuccess ? colors.success : colors.error,
           ),
         ),
@@ -167,13 +172,23 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       const SizedBox(height: AppSpacing.xl),
       if (isSuccess && state.result != null) ...[
         AppCard(
-          variant: AppCardVariant.flat,
+          variant: AppCardVariant.elevated,
+          padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             children: [
-              AmountText.fromText(
-                formatUsdc(state.result!.amount),
-                size: AmountTextSize.display,
-                color: colors.gold,
+              AppText(
+                l10n.send_amount,
+                variant: AppTextVariant.bodySmall,
+                color: colors.textSecondary,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: AmountText.fromText(
+                  formatUsdc(state.result!.amount),
+                  size: AmountTextSize.large,
+                  color: colors.gold,
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
               AppText(
@@ -211,24 +226,61 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
                 ),
               ],
               const SizedBox(height: AppSpacing.md),
-              Divider(color: colors.textSecondary.withValues(alpha: 0.2)),
+              Divider(color: colors.borderSubtle),
               const SizedBox(height: AppSpacing.md),
-              _buildDetailRow(
-                l10n.send_reference,
-                state.result!.reference,
-                colors,
-                canCopy: true,
+              SendDetailRow(
+                label: l10n.send_reference,
+                value: state.result!.reference,
+                valueWidget: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        state.result!.reference,
+                        textAlign: TextAlign.right,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: l10n.common_copy,
+                      icon: Icon(
+                        Icons.copy_rounded,
+                        size: 18,
+                        color: colors.infoText,
+                      ),
+                      onPressed: () =>
+                          _copyToClipboard(state.result!.reference, colors),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.sm),
-              _buildDetailRow(
-                l10n.send_date,
-                Formatters.formatDateTime(state.result!.createdAt),
-                colors,
+              SendDetailRow(
+                label: l10n.send_date,
+                value: Formatters.formatDateTime(state.result!.createdAt),
               ),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.md),
+      ],
+      if (!isSuccess) ...[
+        const SizedBox(height: AppSpacing.md),
+        SendCallout(
+          icon: Icons.support_agent_outlined,
+          title: localizedSendCopy(
+            context,
+            en: 'No money left your wallet',
+            fr: 'Aucun argent n’a quitté votre wallet',
+          ),
+          body: localizedSendCopy(
+            context,
+            en: 'Please retry once the connection is stable. If the issue continues, share the error with support.',
+            fr: 'Réessayez quand la connexion est stable. Si le problème continue, partagez l’erreur avec le support.',
+          ),
+          tone: SendCalloutTone.info,
+        ),
       ],
     ],
   );
@@ -280,40 +332,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen>
       ],
     );
   }
-
-  Widget _buildDetailRow(
-    String label,
-    String value,
-    ThemeColors colors, {
-    bool canCopy = false,
-  }) => Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      AppText(label, color: colors.textSecondary),
-      Flexible(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: AppText(
-                value,
-                textAlign: TextAlign.right,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (canCopy) ...[
-              const SizedBox(width: AppSpacing.xs),
-              InkWell(
-                onTap: () => _copyToClipboard(value, colors),
-                child: Icon(Icons.copy, size: 16, color: colors.gold),
-              ),
-            ],
-          ],
-        ),
-      ),
-    ],
-  );
 
   Future<void> _copyToClipboard(String text, ThemeColors colors) async {
     final l10n = AppLocalizations.of(context)!;

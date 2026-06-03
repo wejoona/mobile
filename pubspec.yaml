@@ -82,8 +82,6 @@ dependencies:
   # Firebase for push notifications
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.6
-  # Firebase Analytics
-  firebase_analytics: ^11.3.6
   # Firebase Crashlytics
   firebase_crashlytics: ^4.1.6
   # Device info for push notification registration

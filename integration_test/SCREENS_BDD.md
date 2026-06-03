@@ -476,8 +476,8 @@ THEN show recipient details
 AND show amount in USDC and XOF
 AND show fee breakdown
 AND show total deduction
-AND show "Confirm & Send" button
-WHEN user taps "Confirm & Send"
+AND show "Continue to PIN" button
+WHEN user taps "Continue to PIN"
 THEN navigate to PIN verification
 ```
 

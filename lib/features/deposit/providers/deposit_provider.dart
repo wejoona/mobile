@@ -355,6 +355,7 @@ class DepositNotifier extends Notifier<DepositState> {
         step: DepositFlowStep.processing,
       );
       _startPolling(confirmed.depositId);
+      await _pollStatus(confirmed.depositId);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,

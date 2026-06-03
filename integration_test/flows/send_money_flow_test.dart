@@ -60,7 +60,7 @@ void main() {
         '0708091011',
       );
 
-      await flow.tapText(['Continue', 'Continuer']);
+      await _tapRecipientContinue(tester);
       await flow.pumpUntil(
         () => flow.hasAnyText(['Enter Amount', 'Entrer le montant']),
         reason: 'amount from contact',
@@ -95,7 +95,7 @@ void main() {
         '0587654321',
       );
 
-      await flow.tapText(['Continue', 'Continuer']);
+      await _tapRecipientContinue(tester);
       await flow.pumpUntil(
         () => flow.hasAnyText(['Enter Amount', 'Entrer le montant']),
         reason: 'amount from beneficiary',
@@ -112,4 +112,12 @@ Future<void> _tapPickerItem(WidgetTester tester, Key key) async {
   await tester.ensureVisible(row);
   await tester.pump(const Duration(milliseconds: 250));
   await tester.tap(row);
+}
+
+Future<void> _tapRecipientContinue(WidgetTester tester) async {
+  final button = find.byKey(const ValueKey('send_recipient_continue_button'));
+  await tester.ensureVisible(button);
+  await tester.pump(const Duration(milliseconds: 250));
+  await tester.tap(button);
+  await tester.pump(const Duration(milliseconds: 350));
 }
