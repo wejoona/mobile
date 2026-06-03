@@ -102,8 +102,7 @@ class AppButton extends StatelessWidget {
       button: true,
       enabled: !isDisabled,
       excludeSemantics: true,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+      child: Container(
         width: isFullWidth ? double.infinity : null,
         constraints: isFullWidth
             ? const BoxConstraints(minHeight: 48)
