@@ -432,7 +432,11 @@ class KoridoFlowDriver {
         break;
       }
 
-      await tester.drag(scrollables.last, const Offset(0, -360));
+      await tester.drag(
+        scrollables.last,
+        const Offset(0, -360),
+        warnIfMissed: false,
+      );
       await tester.pump(const Duration(milliseconds: 250));
     }
 
