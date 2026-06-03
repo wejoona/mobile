@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
+import 'package:usdc_wallet/features/transactions/views/transaction_detail_view.dart';
 
 import '../helpers/golden_test_helper.dart';
 
@@ -19,19 +19,21 @@ void main() {
     await GoldenTestUtils.init();
   });
 
+  final fixedNow = DateTime(2026, 5, 27, 19, 15);
+
   // Sample transactions for testing
   final completedDeposit = Transaction(
     id: 'tx_001',
     walletId: 'wallet_123',
     type: TransactionType.deposit,
     status: TransactionStatus.completed,
-    amount: 100.00,
+    amount: 100,
     currency: 'USD',
     fee: 2.50,
     description: 'Mobile Money Deposit',
     externalReference: 'MM-2024-001',
-    createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    completedAt: DateTime.now().subtract(const Duration(hours: 1)),
+    createdAt: fixedNow.subtract(const Duration(hours: 2)),
+    completedAt: fixedNow.subtract(const Duration(hours: 1)),
   );
 
   final pendingTransfer = Transaction(
@@ -39,12 +41,12 @@ void main() {
     walletId: 'wallet_123',
     type: TransactionType.transferInternal,
     status: TransactionStatus.pending,
-    amount: 200.00,
+    amount: 200,
     currency: 'USD',
-    fee: 2.00,
+    fee: 2,
     description: 'Transfer from Bob',
     recipientPhone: '+2250712345678',
-    createdAt: DateTime.now().subtract(const Duration(hours: 30)),
+    createdAt: fixedNow.subtract(const Duration(hours: 30)),
   );
 
   final failedWithdrawal = Transaction(
@@ -52,12 +54,12 @@ void main() {
     walletId: 'wallet_123',
     type: TransactionType.withdrawal,
     status: TransactionStatus.failed,
-    amount: -75.00,
+    amount: -75,
     currency: 'USD',
     fee: 1.50,
     description: 'Withdrawal to bank',
     failureReason: 'Insufficient balance',
-    createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    createdAt: fixedNow.subtract(const Duration(days: 3)),
   );
 
   goldenGroup('TransactionDetailView Golden Tests', () {
@@ -68,7 +70,6 @@ void main() {
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
-            isDarkMode: false,
             child: TransactionDetailView(transaction: completedDeposit),
           ),
           pumpDuration: const Duration(milliseconds: 500),
@@ -88,7 +89,6 @@ void main() {
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
-            isDarkMode: false,
             child: TransactionDetailView(transaction: pendingTransfer),
           ),
           pumpDuration: const Duration(milliseconds: 500),
@@ -108,7 +108,6 @@ void main() {
         await pumpGoldenTolerant(
           tester,
           GoldenTestWrapper(
-            isDarkMode: false,
             child: TransactionDetailView(transaction: failedWithdrawal),
           ),
           pumpDuration: const Duration(milliseconds: 500),
