@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
 
 import '../helpers/korido_flow_driver.dart';
 
@@ -62,6 +63,7 @@ void main() {
       await driver.waitForHome();
       await driver.exerciseDepositFromHome();
       await _openLiveSecondarySurfaces(driver);
+      await _logoutFromLiveSession(driver);
     },
   );
 }
@@ -154,6 +156,51 @@ Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
           'Unknown Device',
         ]),
     reason: 'live active sessions screen',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+
+  await driver.goToRoute('/settings/notifications');
+  await driver.pumpUntil(
+    () =>
+        driver.hasAnyText(['Notifications']) &&
+        driver.hasAnyText([
+          'Transactions',
+          'Transaction Alerts',
+          'Alertes transaction',
+          'Toutes les alertes de transaction',
+          'Alertes de transaction',
+        ]),
+    reason: 'live notification preferences screen',
+    timeout: const Duration(seconds: 25),
+  );
+  _expectNoAuthError(driver);
+}
+
+Future<void> _logoutFromLiveSession(KoridoFlowDriver driver) async {
+  await driver.goToRoute('/settings');
+  await driver.tapTextAfterScroll(['Logout', 'Déconnexion'], maxScrolls: 12);
+
+  await driver.pumpUntil(
+    () => driver.hasAnyText([
+      'Are you sure you want to logout?',
+      'Êtes-vous sûr de vouloir vous déconnecter?',
+    ]),
+    reason: 'logout confirmation dialog',
+    timeout: const Duration(seconds: 10),
+  );
+
+  await driver.tester.tap(find.byType(AppButton).last);
+  await driver.tester.pump(const Duration(milliseconds: 500));
+
+  await driver.pumpUntil(
+    () => driver.hasAnyText([
+      'Enter your phone number',
+      'Entrez votre numéro',
+      'Welcome back',
+      'Bon retour',
+    ]),
+    reason: 'login screen after logout',
     timeout: const Duration(seconds: 25),
   );
   _expectNoAuthError(driver);
