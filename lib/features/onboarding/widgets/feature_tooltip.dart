@@ -44,10 +44,7 @@ class FeatureTooltip extends StatelessWidget {
                   builder: (context, value, child) {
                     return Transform.scale(
                       scale: 0.8 + (0.2 * value),
-                      child: Opacity(
-                        opacity: value,
-                        child: child,
-                      ),
+                      child: Opacity(opacity: value, child: child),
                     );
                   },
                   child: Container(
@@ -79,7 +76,7 @@ class FeatureTooltip extends StatelessWidget {
                               ),
                               child: Icon(
                                 Icons.lightbulb_rounded,
-                                color: colors.textInverse,
+                                color: colors.onGold,
                                 size: 18,
                               ),
                             ),

@@ -19,8 +19,8 @@ class LightColors {
   /// Darker gold for active states and borders
   static const Color primaryDark = Color(0xFF7E5515);
 
-  /// Text on primary color surfaces
-  static const Color onPrimary = Color(0xFF1A1A1F); // Near black on gold
+  /// Text on primary gold surfaces
+  static const Color onPrimary = Color(0xFFFAFAF8); // Warm white on gold
 
   /// Secondary brand color - Obsidian
   static const Color secondary = Color(0xFF1A1A1F); // Dark charcoal

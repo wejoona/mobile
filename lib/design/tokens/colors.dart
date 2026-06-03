@@ -33,8 +33,8 @@ class AppColors {
   static const Color textTertiary = Color(0xFF6E6E73); // Low emphasis - hints
   static const Color textDisabled = Color(0xFF555559); // Disabled states
   static const Color textInverse = Color(
-    0xFF0A0A0C,
-  ); // On gold/light backgrounds
+    0xFFFFFEFA,
+  ); // On gold/dark accent backgrounds
 
   // ═══════════════════════════════════════════════════════════════════════════
   // GOLD ACCENT SYSTEM (5% of UI - High Impact)
@@ -158,7 +158,7 @@ class AppColorsLight {
   static const Color textDisabled = Color(0xFFA9A196); // Disabled states
   static const Color textInverse = Color(0xFFFFFEFA); // On dark backgrounds
   static const Color textOnGold = Color(
-    0xFF141007,
+    0xFFFFFEFA,
   ); // On gold/champagne surfaces
 
   // ═══════════════════════════════════════════════════════════════════════════

@@ -14,6 +14,7 @@ class FirstDepositPrompt extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.colors;
+    final onGold = colors.onGold;
     final l10n = AppLocalizations.of(context)!;
     final progress = ref.watch(onboardingProgressProvider);
 
@@ -46,11 +47,7 @@ class FirstDepositPrompt extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: Icon(
-                  Icons.add_card_rounded,
-                  color: colors.textInverse,
-                  size: 24,
-                ),
+                child: Icon(Icons.add_card_rounded, color: onGold, size: 24),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -60,13 +57,13 @@ class FirstDepositPrompt extends ConsumerWidget {
                     AppText(
                       l10n.onboarding_deposit_prompt_title,
                       variant: AppTextVariant.titleMedium,
-                      color: colors.textInverse,
+                      color: onGold,
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     AppText(
                       l10n.onboarding_deposit_prompt_subtitle,
                       variant: AppTextVariant.bodySmall,
-                      color: colors.textInverse.withValues(alpha: 0.9),
+                      color: onGold.withValues(alpha: 0.9),
                     ),
                   ],
                 ),
@@ -82,11 +79,7 @@ class FirstDepositPrompt extends ConsumerWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.close_rounded,
-                    color: colors.textInverse,
-                    size: 16,
-                  ),
+                  child: Icon(Icons.close_rounded, color: onGold, size: 16),
                 ),
               ),
             ],
@@ -133,13 +126,13 @@ class FirstDepositPrompt extends ConsumerWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: colors.textInverse, size: 16),
+          Icon(icon, color: colors.onGold, size: 16),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: AppText(
               text,
               variant: AppTextVariant.bodySmall,
-              color: colors.textInverse.withValues(alpha: 0.95),
+              color: colors.onGold.withValues(alpha: 0.95),
             ),
           ),
         ],

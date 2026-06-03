@@ -101,7 +101,7 @@ class WalletCreatingState extends StatelessWidget {
             ),
             child: Icon(
               Icons.account_balance_wallet_outlined,
-              color: _colors.textInverse,
+              color: _colors.onGold,
               size: 36,
             ),
           ),
