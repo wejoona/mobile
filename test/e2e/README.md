@@ -46,6 +46,9 @@ Start Korido API with the returned key:
 ```bash
 cd /Users/macbook/JoonaPay/USDC-Wallet/usdc-wallet
 PORT=3401 \
+JWT_SECRET=dev-local-jwt-secret-for-simulator-only-32 \
+JWT_REFRESH_SECRET=dev-local-refresh-secret-for-simulator-only-32 \
+VAULT_MASTER_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef \
 BILL_PAY_BASE_URL=http://localhost:3400 \
 BILL_PAY_API_KEY=<bill-pay-api-key> \
 VERIFICATION_STRATEGY=verifyhq \
@@ -53,6 +56,7 @@ VERIFYHQ_BASE_URL=http://localhost:3300 \
 VERIFYHQ_API_KEY=dev-test-key \
 VERIFYHQ_OTP_LENGTH=6 \
 CIRCLE_USE_MOCK=true \
+YELLOW_CARD_ENABLED=true \
 YELLOW_CARD_USE_MOCK=true \
 STELLAR_USE_MOCK=true \
 NTM_USE_MOCK=true \
@@ -90,7 +94,9 @@ RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e
 ## Notes
 
 - **Production** runs `NODE_ENV=production` — `/dev/otp` is disabled, so provide `AUTH_TOKEN`.
-- **Local/dev** uses Korido API -> VerifyHQ with dev OTP `123456`.
+- **Local/dev** uses Korido API -> VerifyHQ with dev OTP `123456`; Circle, Yellow Card, Stellar, and NTM are mocked at the dependency boundary.
+- `YELLOW_CARD_ENABLED=true` is required with `YELLOW_CARD_USE_MOCK=true`; otherwise deposit routes use the no-op adapter and return provider-unavailable errors.
+- `VAULT_MASTER_KEY` must be 64 hex characters for local encrypted PIN and deposit payload flows.
 - Run the full folder with `-j 1`. OTP verification is intentionally stateful and VerifyHQ enforces request/attempt limits, so parallel runs can trip legitimate throttles.
 - Tests are independent per file but each file may create authenticated users through `loginFlow()`.
 

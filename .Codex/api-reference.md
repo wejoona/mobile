@@ -86,9 +86,42 @@ cd /Users/macbook/Ainotek/Projects/JoonaPay/verify-hq
 DB_PORT=5432 PORT=3300 NODE_ENV=development VERIFYHQ_DEV_OTP=123456 VERIFYHQ_DEV_API_KEY=dev-test-key DISPATCH_MOCK=true npm run start:api
 ```
 
+Start Bill Pay if testing bill-payment or full simulator flows:
+
+```bash
+cd /Users/macbook/Ainotek/Projects/JoonaPay/bill-pay
+PORT=3400 NODE_ENV=development ADMIN_SECRET=dev-admin-secret BILL_PAY_PROVIDER=mock BILL_PAY_PROVIDER_WEBHOOK_SECRET=dev-secret VERIFYHQ_BASE_URL=http://localhost:3300 VERIFYHQ_API_KEY=dev-test-key npm run start
+```
+
+Create a local Bill Pay API key and use the returned `apiKey` below:
+
+```bash
+curl -fsS -X POST http://127.0.0.1:3400/admin/api-clients \
+  -H 'Content-Type: application/json' \
+  -H 'X-Admin-Secret: dev-admin-secret' \
+  -d '{"name":"Korido local E2E","permissions":["bills:read","bills:write"],"rateLimit":1000}'
+```
+
 Start Korido API:
 
 ```bash
 cd /Users/macbook/JoonaPay/USDC-Wallet/usdc-wallet
-PORT=3401 VERIFICATION_STRATEGY=verifyhq VERIFYHQ_BASE_URL=http://localhost:3300 VERIFYHQ_API_KEY=dev-test-key VERIFYHQ_OTP_LENGTH=6 CIRCLE_USE_MOCK=true YELLOW_CARD_USE_MOCK=true STELLAR_USE_MOCK=true NTM_USE_MOCK=true npm run start
+PORT=3401 \
+JWT_SECRET=dev-local-jwt-secret-for-simulator-only-32 \
+JWT_REFRESH_SECRET=dev-local-refresh-secret-for-simulator-only-32 \
+VAULT_MASTER_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef \
+BILL_PAY_BASE_URL=http://localhost:3400 \
+BILL_PAY_API_KEY=<bill-pay-api-key> \
+VERIFICATION_STRATEGY=verifyhq \
+VERIFYHQ_BASE_URL=http://localhost:3300 \
+VERIFYHQ_API_KEY=dev-test-key \
+VERIFYHQ_OTP_LENGTH=6 \
+CIRCLE_USE_MOCK=true \
+YELLOW_CARD_ENABLED=true \
+YELLOW_CARD_USE_MOCK=true \
+STELLAR_USE_MOCK=true \
+NTM_USE_MOCK=true \
+npm run start
 ```
+
+`YELLOW_CARD_ENABLED=true` is required with the mock flag for deposit screens. Without it, the API starts with the no-op payment adapter and deposit initiation fails.
