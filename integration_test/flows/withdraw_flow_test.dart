@@ -25,7 +25,7 @@ void main() {
     });
 
     Future<void> loginAndNavigateToWithdraw(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);
@@ -84,10 +84,7 @@ void main() {
         await TestHelpers.waitForLoadingToComplete(tester);
 
         // Verify success or pending
-        expect(
-          find.textContaining('Withdraw'),
-          findsWidgets,
-        );
+        expect(find.textContaining('Withdraw'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'withdraw_orange_error');
         rethrow;
@@ -117,12 +114,12 @@ void main() {
         await tester.pumpAndSettle();
 
         // Should see error
-        expect(
-          find.textContaining('Insufficient'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('Insufficient'), findsOneWidget);
       } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'withdraw_insufficient_error');
+        await TestHelpers.takeScreenshot(
+          binding,
+          'withdraw_insufficient_error',
+        );
         rethrow;
       }
     });

@@ -31,7 +31,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -87,7 +87,8 @@ void main() {
 
       final bulkScreen = find.textContaining('Bulk');
       final batchScreen = find.textContaining('Batch');
-      if (bulkScreen.evaluate().isNotEmpty || batchScreen.evaluate().isNotEmpty) {
+      if (bulkScreen.evaluate().isNotEmpty ||
+          batchScreen.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/bulk/16.1_bulk_payments.png'),
@@ -158,7 +159,11 @@ void main() {
       /// AND "Confirm" button should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Bulk preview screen exists at /bulk-payments/preview');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bulk preview screen exists at /bulk-payments/preview',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -172,7 +177,11 @@ void main() {
       /// AND summary (successful/failed count) should be displayed
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Bulk status screen exists at /bulk-payments/status/:batchId');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bulk status screen exists at /bulk-payments/status/:batchId',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -185,7 +194,11 @@ void main() {
       /// AND download report option should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Bulk completed state exists in status screen');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bulk completed state exists in status screen',
+      );
     });
   });
 }

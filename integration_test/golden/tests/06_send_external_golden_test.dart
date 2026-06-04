@@ -32,7 +32,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -98,7 +98,8 @@ void main() {
       final addressInput = find.textContaining('address');
       final walletAddress = find.textContaining('Wallet');
 
-      if (addressInput.evaluate().isNotEmpty || walletAddress.evaluate().isNotEmpty) {
+      if (addressInput.evaluate().isNotEmpty ||
+          walletAddress.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/send_external/6.1_address_input.png'),
@@ -130,7 +131,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/send_external/6.1b_address_entered.png'),
+          matchesGoldenFile(
+            '../goldens/send_external/6.1b_address_entered.png',
+          ),
         );
       }
     });
@@ -218,7 +221,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/send_external/6.3_external_confirm.png'),
+          matchesGoldenFile(
+            '../goldens/send_external/6.3_external_confirm.png',
+          ),
         );
       }
     });
@@ -234,7 +239,12 @@ void main() {
       /// AND link to block explorer may be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'External result success screen exists at /send-external/result');
+      expect(
+        true,
+        isTrue,
+        reason:
+            'External result success screen exists at /send-external/result',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -247,7 +257,12 @@ void main() {
       /// AND error message should be shown
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'External result failure screen exists at /send-external/result');
+      expect(
+        true,
+        isTrue,
+        reason:
+            'External result failure screen exists at /send-external/result',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

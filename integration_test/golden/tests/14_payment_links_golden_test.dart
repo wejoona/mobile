@@ -32,7 +32,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -220,7 +220,11 @@ void main() {
       /// AND "Copy Link" and "Share" options should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Link created screen exists at /payment-links/created/:id');
+      expect(
+        true,
+        isTrue,
+        reason: 'Link created screen exists at /payment-links/created/:id',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

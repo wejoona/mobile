@@ -35,7 +35,7 @@ void main() {
       // Set KYC status to verified to skip KYC screen
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

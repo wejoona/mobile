@@ -19,8 +19,10 @@ class UserStateMachine extends Notifier<UserState> {
 
   @override
   UserState build() {
+    final storage = ref.read(secureStorageProvider);
+
     // Schedule auth check after provider is fully initialized
-    Future.delayed(Duration.zero, _checkStoredAuth);
+    Future.delayed(Duration.zero, () => _checkStoredAuth(storage));
     return const UserState();
   }
 
@@ -29,8 +31,9 @@ class UserStateMachine extends Notifier<UserState> {
   UserService get _userService => ref.read(userServiceProvider);
 
   /// Check for stored authentication on app start
-  Future<void> _checkStoredAuth() async {
+  Future<void> _checkStoredAuth(FlutterSecureStorage storage) async {
     // Safety check - ensure we're mounted
+    if (!ref.mounted) return;
     try {
       // First update to loading
       state = const UserState(status: AuthStatus.loading);
@@ -44,15 +47,16 @@ class UserStateMachine extends Notifier<UserState> {
       const debugToken = String.fromEnvironment('DEBUG_TOKEN');
       const debugPhone = String.fromEnvironment('DEBUG_PHONE');
       if (debugToken.isNotEmpty) {
-        await _storage.write(key: _tokenKey, value: debugToken);
+        await storage.write(key: _tokenKey, value: debugToken);
         if (debugPhone.isNotEmpty) {
-          await _storage.write(key: _phoneKey, value: debugPhone);
+          await storage.write(key: _phoneKey, value: debugPhone);
         }
         debugPrint('[DEBUG] Auto-login token injected');
       }
 
-      final token = await _storage.read(key: _tokenKey);
-      final phone = await _storage.read(key: _phoneKey);
+      final token = await storage.read(key: _tokenKey);
+      final phone = await storage.read(key: _phoneKey);
+      if (!ref.mounted) return;
 
       if (token != null && token.isNotEmpty) {
         _loadCachedProfile();
@@ -65,6 +69,7 @@ class UserStateMachine extends Notifier<UserState> {
         state = const UserState(status: AuthStatus.unauthenticated);
       }
     } catch (e) {
+      if (!ref.mounted) return;
       state = const UserState(status: AuthStatus.unauthenticated);
     }
   }

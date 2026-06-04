@@ -49,7 +49,7 @@ void main() {
 
     /// Helper to login and navigate to bank linking
     Future<void> navigateToBankLinking(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -88,10 +88,16 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/bank_linking/27.1_linked_accounts_empty.png'),
+          matchesGoldenFile(
+            '../goldens/bank_linking/27.1_linked_accounts_empty.png',
+          ),
         );
       } else {
-        expect(true, isTrue, reason: 'Bank linking screen exists at /bank-linking');
+        expect(
+          true,
+          isTrue,
+          reason: 'Bank linking screen exists at /bank-linking',
+        );
       }
     });
 
@@ -106,7 +112,11 @@ void main() {
       await navigateToBankLinking(tester);
 
       // This requires mock setup for existing linked accounts
-      expect(true, isTrue, reason: 'Bank linking with accounts at /bank-linking');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bank linking with accounts at /bank-linking',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -120,7 +130,11 @@ void main() {
       await navigateToBankLinking(tester);
 
       // This screen shows available banks to link
-      expect(true, isTrue, reason: 'Bank selection screen exists at /bank-linking/select');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bank selection screen exists at /bank-linking/select',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -134,7 +148,11 @@ void main() {
       await navigateToBankLinking(tester);
 
       // This screen shows bank login credentials form
-      expect(true, isTrue, reason: 'Link bank screen exists at /bank-linking/link');
+      expect(
+        true,
+        isTrue,
+        reason: 'Link bank screen exists at /bank-linking/link',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -148,7 +166,11 @@ void main() {
       await navigateToBankLinking(tester);
 
       // This screen shows bank OTP verification
-      expect(true, isTrue, reason: 'Bank verification screen exists at /bank-linking/verify');
+      expect(
+        true,
+        isTrue,
+        reason: 'Bank verification screen exists at /bank-linking/verify',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -162,7 +184,12 @@ void main() {
       await navigateToBankLinking(tester);
 
       // This screen shows bank transfer form
-      expect(true, isTrue, reason: 'Bank transfer screen exists at /bank-linking/transfer/:accountId');
+      expect(
+        true,
+        isTrue,
+        reason:
+            'Bank transfer screen exists at /bank-linking/transfer/:accountId',
+      );
     });
   });
 }

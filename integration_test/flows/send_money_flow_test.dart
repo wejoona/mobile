@@ -43,13 +43,18 @@ void main() {
 
       await flow.tapText(['Contacts']);
       await flow.pumpUntil(
+        () => flow.hasAnyText(['Select Contact', 'Sélectionner le contact']),
+        reason: 'contact picker opened',
+      );
+      await tester.enterText(find.byType(TextField).last, 'Amadou');
+      await flow.pumpUntil(
         () => find
-            .byKey(const ValueKey('contact_picker_ct_001'))
+            .byKey(const ValueKey('contact_lookup_usr_amadou'))
             .evaluate()
             .isNotEmpty,
-        reason: 'mock contact picker loaded',
+        reason: 'Korido contact lookup loaded',
       );
-      await _tapPickerItem(tester, const ValueKey('contact_picker_ct_001'));
+      await _tapPickerItem(tester, const ValueKey('contact_lookup_usr_amadou'));
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(

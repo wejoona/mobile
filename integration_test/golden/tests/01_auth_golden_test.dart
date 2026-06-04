@@ -41,7 +41,7 @@ void main() {
       /// WHEN the splash screen displays
       /// THEN the JoonaPay logo should be visible
 
-      app.main();
+      await app.main();
       await tester.pump(const Duration(milliseconds: 500));
 
       await expectLater(
@@ -59,11 +59,12 @@ void main() {
       /// THEN feature highlights should be visible
       /// AND "Skip" and "Get Started" buttons should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Should show onboarding for new users
-      final hasOnboarding = find.text('Skip').evaluate().isNotEmpty ||
+      final hasOnboarding =
+          find.text('Skip').evaluate().isNotEmpty ||
           find.text('Get Started').evaluate().isNotEmpty;
 
       if (hasOnboarding) {
@@ -84,7 +85,7 @@ void main() {
       /// AND country code selector (+225) should be visible
       /// AND "Continue" button should be visible
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Skip onboarding if present
@@ -110,7 +111,7 @@ void main() {
       /// AND custom PinPad with digits 0-9 should be visible
       /// AND "Resend Code" option should be visible
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -136,7 +137,7 @@ void main() {
       /// WHEN user enters some digits
       /// THEN the entered digits should show as filled dots
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -173,7 +174,7 @@ void main() {
       /// THEN 6-digit PIN entry should be shown
       /// NOTE: This screen may not appear in mock flow
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

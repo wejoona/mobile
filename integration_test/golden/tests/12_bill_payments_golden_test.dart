@@ -31,7 +31,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -202,7 +202,12 @@ void main() {
       /// AND receipt reference should be displayed
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Bill payment success screen exists at /bill-payments/success/:paymentId');
+      expect(
+        true,
+        isTrue,
+        reason:
+            'Bill payment success screen exists at /bill-payments/success/:paymentId',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

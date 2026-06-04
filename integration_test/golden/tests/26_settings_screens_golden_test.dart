@@ -49,7 +49,7 @@ void main() {
 
     /// Helper to login and navigate to settings
     Future<void> navigateToSettings(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

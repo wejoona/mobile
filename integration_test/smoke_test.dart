@@ -7,7 +7,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Login screen renders correctly', (tester) async {
-    app.main();
+    await app.main();
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // Should show login screen (expired token redirects here)
@@ -23,7 +23,7 @@ void main() {
   });
 
   testWidgets('Phone number input enables Continue button', (tester) async {
-    app.main();
+    await app.main();
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // Find the phone input field and type a number

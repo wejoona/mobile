@@ -23,7 +23,7 @@ void main() {
     });
 
     testWidgets('1. Login Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       final skip = find.text('Skip');
@@ -39,7 +39,7 @@ void main() {
     });
 
     testWidgets('2. OTP Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -61,7 +61,7 @@ void main() {
     });
 
     testWidgets('3. Identity Verification Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -82,7 +82,7 @@ void main() {
     });
 
     testWidgets('4. After Start Verification', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

@@ -33,7 +33,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -186,7 +186,11 @@ void main() {
       /// AND copy buttons should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Card reveal screen exists after PIN verification');
+      expect(
+        true,
+        isTrue,
+        reason: 'Card reveal screen exists after PIN verification',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

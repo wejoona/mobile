@@ -31,7 +31,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -90,7 +90,8 @@ void main() {
 
       final subBusinessScreen = find.textContaining('Sub-Business');
       final branchScreen = find.textContaining('Branch');
-      if (subBusinessScreen.evaluate().isNotEmpty || branchScreen.evaluate().isNotEmpty) {
+      if (subBusinessScreen.evaluate().isNotEmpty ||
+          branchScreen.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/sub_business/20.1_sub_businesses.png'),

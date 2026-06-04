@@ -23,7 +23,7 @@ void main() {
     });
 
     testWidgets('01 - Login Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Skip onboarding if present
@@ -40,7 +40,7 @@ void main() {
     });
 
     testWidgets('02 - OTP Screen (Secure Login)', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -63,7 +63,7 @@ void main() {
     });
 
     testWidgets('03 - Identity Verification Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -95,7 +95,7 @@ void main() {
     });
 
     testWidgets('04 - Document Type Selection Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -117,7 +117,10 @@ void main() {
 
       // Find "Start Verification" button - it's in an AppButton at the bottom
       // The text appears twice: once as heading, once in button
-      final startVerificationBtn = find.widgetWithText(ElevatedButton, 'Start Verification');
+      final startVerificationBtn = find.widgetWithText(
+        ElevatedButton,
+        'Start Verification',
+      );
       if (startVerificationBtn.evaluate().isEmpty) {
         // Fallback: find by text and tap last occurrence (the button)
         final startText = find.text('Start Verification');
@@ -136,7 +139,7 @@ void main() {
     });
 
     testWidgets('05 - Document Type Selected (National ID)', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -175,7 +178,7 @@ void main() {
     });
 
     testWidgets('06 - Personal Info Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -221,7 +224,7 @@ void main() {
     });
 
     testWidgets('07 - Personal Info Filled', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -287,7 +290,7 @@ void main() {
     });
 
     testWidgets('08 - Document Capture Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -358,7 +361,7 @@ void main() {
     });
 
     testWidgets('09 - Document Capture Camera/Gallery', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -438,7 +441,7 @@ void main() {
     });
 
     testWidgets('10 - Home Screen (after skip KYC)', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -487,7 +490,7 @@ void main() {
     });
 
     testWidgets('08 - Settings Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

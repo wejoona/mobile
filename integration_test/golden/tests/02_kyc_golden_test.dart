@@ -41,7 +41,7 @@ void main() {
 
     /// Helper to login and reach KYC screen
     Future<void> loginToKyc(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -349,7 +349,11 @@ void main() {
       /// THEN document upload options should be visible
 
       await loginToKyc(tester);
-      expect(true, isTrue, reason: 'Additional docs screen exists at /kyc/additional-docs');
+      expect(
+        true,
+        isTrue,
+        reason: 'Additional docs screen exists at /kyc/additional-docs',
+      );
     });
   });
 }

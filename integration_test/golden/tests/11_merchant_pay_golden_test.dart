@@ -34,7 +34,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -109,7 +109,11 @@ void main() {
       /// AND "Pay" button should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Payment confirm screen exists after QR scan');
+      expect(
+        true,
+        isTrue,
+        reason: 'Payment confirm screen exists after QR scan',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -123,7 +127,11 @@ void main() {
       /// AND "Share Receipt" option should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Payment receipt screen exists at /payment-receipt');
+      expect(
+        true,
+        isTrue,
+        reason: 'Payment receipt screen exists at /payment-receipt',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -244,7 +252,9 @@ void main() {
 
           await expectLater(
             find.byType(MaterialApp),
-            matchesGoldenFile('../goldens/merchant/11.7_merchant_transactions.png'),
+            matchesGoldenFile(
+              '../goldens/merchant/11.7_merchant_transactions.png',
+            ),
           );
         }
       }

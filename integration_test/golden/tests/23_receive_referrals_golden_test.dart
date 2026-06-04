@@ -39,7 +39,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -280,7 +280,11 @@ void main() {
       /// AND "Done" button should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Transfer success screen exists at /transfer/success');
+      expect(
+        true,
+        isTrue,
+        reason: 'Transfer success screen exists at /transfer/success',
+      );
     });
   });
 }

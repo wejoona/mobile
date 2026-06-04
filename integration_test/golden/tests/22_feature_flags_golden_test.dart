@@ -39,7 +39,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -348,7 +348,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/feature_flags/22.10_saved_recipients.png'),
+          matchesGoldenFile(
+            '../goldens/feature_flags/22.10_saved_recipients.png',
+          ),
         );
       }
     });

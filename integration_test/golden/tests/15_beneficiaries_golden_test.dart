@@ -30,7 +30,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -89,7 +89,8 @@ void main() {
 
       final beneficiariesScreen = find.textContaining('Beneficiar');
       final recipientsScreen = find.textContaining('Recipient');
-      if (beneficiariesScreen.evaluate().isNotEmpty || recipientsScreen.evaluate().isNotEmpty) {
+      if (beneficiariesScreen.evaluate().isNotEmpty ||
+          recipientsScreen.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/beneficiaries/15.1_beneficiaries.png'),
@@ -133,7 +134,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/beneficiaries/15.2_add_beneficiary.png'),
+          matchesGoldenFile(
+            '../goldens/beneficiaries/15.2_add_beneficiary.png',
+          ),
         );
       } else if (addIcon.evaluate().isNotEmpty) {
         await tester.tap(addIcon.first);
@@ -143,7 +146,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/beneficiaries/15.2_add_beneficiary.png'),
+          matchesGoldenFile(
+            '../goldens/beneficiaries/15.2_add_beneficiary.png',
+          ),
         );
       }
     });

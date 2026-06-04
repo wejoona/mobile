@@ -27,7 +27,7 @@ void main() {
     });
 
     Future<void> loginUser(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);
@@ -63,12 +63,12 @@ void main() {
           await sendRobot.tapContinueFromAmount();
 
           // Should show insufficient balance error
-          expect(
-            find.textContaining('Insufficient'),
-            findsWidgets,
-          );
+          expect(find.textContaining('Insufficient'), findsWidgets);
         } catch (e) {
-          await TestHelpers.takeScreenshot(binding, 'insufficient_balance_error');
+          await TestHelpers.takeScreenshot(
+            binding,
+            'insufficient_balance_error',
+          );
           rethrow;
         }
       });
@@ -81,14 +81,13 @@ void main() {
           await walletRobot.tapSendAction();
 
           // Enter own phone number
-          await sendRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+          await sendRobot.enterPhoneNumber(
+            TestData.defaultUser['phone'] as String,
+          );
           await sendRobot.tapContinueFromRecipient();
 
           // Should show error
-          expect(
-            find.textContaining('cannot send to yourself'),
-            findsWidgets,
-          );
+          expect(find.textContaining('cannot send to yourself'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'transfer_self_error');
           rethrow;
@@ -107,10 +106,7 @@ void main() {
           await sendRobot.tapContinueFromRecipient();
 
           // Should show error
-          expect(
-            find.textContaining('Invalid'),
-            findsWidgets,
-          );
+          expect(find.textContaining('Invalid'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'invalid_phone_error');
           rethrow;
@@ -131,7 +127,10 @@ void main() {
           // Might show error or allow proceed depending on implementation
           await tester.pump(const Duration(seconds: 2));
         } catch (e) {
-          await TestHelpers.takeScreenshot(binding, 'recipient_not_found_error');
+          await TestHelpers.takeScreenshot(
+            binding,
+            'recipient_not_found_error',
+          );
           rethrow;
         }
       });
@@ -152,10 +151,7 @@ void main() {
           await sendRobot.tapContinueFromAmount();
 
           // Should show error or button disabled
-          expect(
-            find.textContaining('amount'),
-            findsWidgets,
-          );
+          expect(find.textContaining('amount'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'zero_amount_error');
           rethrow;
@@ -179,10 +175,7 @@ void main() {
           await sendRobot.tapContinueFromAmount();
 
           // Should show limit exceeded error
-          expect(
-            find.textContaining('limit'),
-            findsWidgets,
-          );
+          expect(find.textContaining('limit'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'exceeds_limit_error');
           rethrow;
@@ -193,7 +186,7 @@ void main() {
     group('Authentication Errors', () {
       testWidgets('Invalid OTP code', (tester) async {
         try {
-          app.main();
+          await app.main();
           await tester.pumpAndSettle();
 
           authRobot = AuthRobot(tester);
@@ -206,7 +199,9 @@ void main() {
           }
 
           // Enter phone
-          await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+          await authRobot.enterPhoneNumber(
+            TestData.defaultUser['phone'] as String,
+          );
           await authRobot.tapContinue();
 
           // Enter invalid OTP
@@ -217,10 +212,7 @@ void main() {
           await tester.pump(const Duration(seconds: 2));
 
           // Should show error
-          expect(
-            find.textContaining('Invalid'),
-            findsWidgets,
-          );
+          expect(find.textContaining('Invalid'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'invalid_otp_error');
           rethrow;
@@ -229,7 +221,7 @@ void main() {
 
       testWidgets('Expired OTP code', (tester) async {
         try {
-          app.main();
+          await app.main();
           await tester.pumpAndSettle();
 
           authRobot = AuthRobot(tester);
@@ -242,7 +234,9 @@ void main() {
           }
 
           // Enter phone
-          await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+          await authRobot.enterPhoneNumber(
+            TestData.defaultUser['phone'] as String,
+          );
           await authRobot.tapContinue();
 
           // Wait for OTP screen
@@ -255,10 +249,7 @@ void main() {
           await tester.pump(const Duration(seconds: 2));
 
           // Should show expired error
-          expect(
-            find.textContaining('expired'),
-            findsWidgets,
-          );
+          expect(find.textContaining('expired'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'expired_otp_error');
           rethrow;
@@ -283,10 +274,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // Should show minimum amount error
-          expect(
-            find.textContaining('minimum'),
-            findsWidgets,
-          );
+          expect(find.textContaining('minimum'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'min_deposit_error');
           rethrow;
@@ -312,10 +300,7 @@ void main() {
           await tester.pumpAndSettle();
 
           // Should show maximum amount error
-          expect(
-            find.textContaining('maximum'),
-            findsWidgets,
-          );
+          expect(find.textContaining('maximum'), findsWidgets);
         } catch (e) {
           await TestHelpers.takeScreenshot(binding, 'max_deposit_error');
           rethrow;

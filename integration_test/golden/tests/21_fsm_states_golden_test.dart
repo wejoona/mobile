@@ -43,7 +43,7 @@ void main() {
       /// THEN a loading indicator should be visible
       /// AND progress message may be shown
 
-      app.main();
+      await app.main();
       // Capture during initial load before navigation
       await tester.pump(const Duration(milliseconds: 100));
 
@@ -67,7 +67,7 @@ void main() {
       /// AND "Resend OTP" option should be available
       /// NOTE: Requires mock setup for expired OTP state
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       expect(true, isTrue, reason: 'OTP expired screen exists at /otp-expired');
     });
@@ -82,7 +82,7 @@ void main() {
       /// AND unlock time remaining may be shown
       /// AND support contact option may be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       expect(true, isTrue, reason: 'Auth locked screen exists at /auth-locked');
     });
@@ -97,9 +97,13 @@ void main() {
       /// AND reason may be shown
       /// AND support contact should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Auth suspended screen exists at /auth-suspended');
+      expect(
+        true,
+        isTrue,
+        reason: 'Auth suspended screen exists at /auth-suspended',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -111,9 +115,13 @@ void main() {
       /// THEN lock screen should be visible
       /// AND PIN or biometric unlock option should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Session locked screen exists at /session-locked');
+      expect(
+        true,
+        isTrue,
+        reason: 'Session locked screen exists at /session-locked',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -125,9 +133,13 @@ void main() {
       /// THEN biometric prompt UI should be visible
       /// AND fallback to PIN should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Biometric prompt screen exists at /biometric-prompt');
+      expect(
+        true,
+        isTrue,
+        reason: 'Biometric prompt screen exists at /biometric-prompt',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -140,9 +152,13 @@ void main() {
       /// AND OTP verification may be required
       /// AND "This is my device" option should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Device verification screen exists at /device-verification');
+      expect(
+        true,
+        isTrue,
+        reason: 'Device verification screen exists at /device-verification',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -154,9 +170,13 @@ void main() {
       /// THEN conflict message should be visible
       /// AND "Continue here" and "Cancel" options should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Session conflict screen exists at /session-conflict');
+      expect(
+        true,
+        isTrue,
+        reason: 'Session conflict screen exists at /session-conflict',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -169,9 +189,13 @@ void main() {
       /// AND reason may be shown
       /// AND support contact should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Wallet frozen screen exists at /wallet-frozen');
+      expect(
+        true,
+        isTrue,
+        reason: 'Wallet frozen screen exists at /wallet-frozen',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -184,9 +208,13 @@ void main() {
       /// AND expected timeline may be shown
       /// AND limited functionality notice should be visible
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Wallet under review screen exists at /wallet-under-review');
+      expect(
+        true,
+        isTrue,
+        reason: 'Wallet under review screen exists at /wallet-under-review',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -198,7 +226,7 @@ void main() {
       /// THEN expiry message should be visible
       /// AND "Re-verify" option should be available
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       expect(true, isTrue, reason: 'KYC expired screen exists at /kyc-expired');
     });

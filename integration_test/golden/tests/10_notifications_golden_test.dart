@@ -30,7 +30,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -116,7 +116,12 @@ void main() {
 
       // This screen typically appears during onboarding or first launch
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Notification permission screen exists at /notifications/permission');
+      expect(
+        true,
+        isTrue,
+        reason:
+            'Notification permission screen exists at /notifications/permission',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

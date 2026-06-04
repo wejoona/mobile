@@ -26,7 +26,7 @@ void main() {
 
     testWidgets('Complete registration flow', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -59,7 +59,7 @@ void main() {
 
     testWidgets('Complete login flow', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -91,7 +91,7 @@ void main() {
 
     testWidgets('Login with invalid OTP', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -104,7 +104,9 @@ void main() {
         }
 
         // Enter phone
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
         await authRobot.tapContinue();
 
         // Enter invalid OTP
@@ -119,14 +121,19 @@ void main() {
         // - Should show error message, OR
         // - Stay on OTP screen, OR
         // - Redirect to login (for failed attempts)
-        final hasError = find.textContaining('Invalid').evaluate().isNotEmpty ||
+        final hasError =
+            find.textContaining('Invalid').evaluate().isNotEmpty ||
             find.textContaining('invalid').evaluate().isNotEmpty ||
             find.textContaining('expired').evaluate().isNotEmpty ||
             find.textContaining('wrong').evaluate().isNotEmpty ||
             find.textContaining('incorrect').evaluate().isNotEmpty ||
             find.textContaining('error').evaluate().isNotEmpty;
-        final stillOnOtpScreen = find.text('Secure Login').evaluate().isNotEmpty;
-        final redirectedToLogin = find.text('Continue').evaluate().isNotEmpty ||
+        final stillOnOtpScreen = find
+            .text('Secure Login')
+            .evaluate()
+            .isNotEmpty;
+        final redirectedToLogin =
+            find.text('Continue').evaluate().isNotEmpty ||
             find.byType(TextField).evaluate().isNotEmpty;
 
         // Any of these outcomes is acceptable for invalid OTP
@@ -143,7 +150,7 @@ void main() {
 
     testWidgets('Login with invalid PIN', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -156,7 +163,9 @@ void main() {
         }
 
         // Enter phone
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
         await authRobot.tapContinue();
 
         // Enter OTP
@@ -177,7 +186,8 @@ void main() {
           await tester.pump(const Duration(seconds: 2));
 
           // Verify error or still on PIN screen
-          final hasError = find.textContaining('Invalid').evaluate().isNotEmpty ||
+          final hasError =
+              find.textContaining('Invalid').evaluate().isNotEmpty ||
               find.textContaining('incorrect').evaluate().isNotEmpty ||
               find.textContaining('wrong').evaluate().isNotEmpty;
           final stillOnPinScreen = find.text('Enter PIN').evaluate().isNotEmpty;
@@ -200,7 +210,7 @@ void main() {
 
     testWidgets('Resend OTP code', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -213,7 +223,9 @@ void main() {
         }
 
         // Enter phone
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
         await authRobot.tapContinue();
 
         // Wait for OTP screen
@@ -226,10 +238,7 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
 
         // Verify success message
-        expect(
-          find.textContaining('sent'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('sent'), findsOneWidget);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'resend_otp_error');
         rethrow;
@@ -238,7 +247,7 @@ void main() {
 
     testWidgets('Logout flow', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -316,7 +325,7 @@ void main() {
 
     testWidgets('Country selection during registration', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -352,10 +361,7 @@ void main() {
         await authRobot.enterPhoneNumber('77 123 45 67');
 
         // Verify phone was entered
-        expect(
-          find.textContaining('77'),
-          findsWidgets,
-        );
+        expect(find.textContaining('77'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'country_selection_error');
         rethrow;

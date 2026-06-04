@@ -32,7 +32,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -154,7 +154,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/deposit/4.2b_deposit_amount_entered.png'),
+          matchesGoldenFile(
+            '../goldens/deposit/4.2b_deposit_amount_entered.png',
+          ),
         );
       }
     });
@@ -171,7 +173,8 @@ void main() {
       await navigateToDeposit(tester);
 
       // This may vary based on app flow - could be initial screen
-      final hasProviders = find.textContaining('Orange').evaluate().isNotEmpty ||
+      final hasProviders =
+          find.textContaining('Orange').evaluate().isNotEmpty ||
           find.textContaining('MTN').evaluate().isNotEmpty ||
           find.textContaining('Wave').evaluate().isNotEmpty;
 
@@ -262,7 +265,9 @@ void main() {
         if (statusIndicator.evaluate().isNotEmpty) {
           await expectLater(
             find.byType(MaterialApp),
-            matchesGoldenFile('../goldens/deposit/4.5_deposit_status_pending.png'),
+            matchesGoldenFile(
+              '../goldens/deposit/4.5_deposit_status_pending.png',
+            ),
           );
         }
       }
@@ -282,7 +287,11 @@ void main() {
 
       // Check if there's a way to reach success screen
       // Might need specific mock setup
-      expect(true, isTrue, reason: 'Deposit success screen exists at /deposit/status');
+      expect(
+        true,
+        isTrue,
+        reason: 'Deposit success screen exists at /deposit/status',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -295,7 +304,11 @@ void main() {
       /// AND retry option should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Deposit failure screen exists at /deposit/status');
+      expect(
+        true,
+        isTrue,
+        reason: 'Deposit failure screen exists at /deposit/status',
+      );
     });
   });
 }

@@ -32,7 +32,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -91,7 +91,8 @@ void main() {
 
       final potsScreen = find.textContaining('Pot');
       final savingsScreen = find.textContaining('Saving');
-      if (potsScreen.evaluate().isNotEmpty || savingsScreen.evaluate().isNotEmpty) {
+      if (potsScreen.evaluate().isNotEmpty ||
+          savingsScreen.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/savings_pots/17.1_pots_list.png'),

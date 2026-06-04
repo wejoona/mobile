@@ -24,7 +24,7 @@ void main() {
 
     testWidgets('Complete onboarding tutorial pages', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -65,7 +65,7 @@ void main() {
 
     testWidgets('Skip onboarding tutorial', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -87,7 +87,7 @@ void main() {
 
     testWidgets('Complete registration with all fields', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -132,10 +132,7 @@ void main() {
         await TestHelpers.waitForLoadingToComplete(tester);
 
         // Should show home or success
-        expect(
-          find.textContaining('Welcome'),
-          findsWidgets,
-        );
+        expect(find.textContaining('Welcome'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'full_registration_error');
         rethrow;
@@ -144,7 +141,7 @@ void main() {
 
     testWidgets('Terms and conditions are required', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -160,7 +157,9 @@ void main() {
         await authRobot.tapRegisterTab();
 
         // Enter phone number
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
 
         // Try to continue without accepting terms
         await authRobot.tapContinue();
@@ -176,7 +175,7 @@ void main() {
 
     testWidgets('View terms and conditions', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -211,7 +210,7 @@ void main() {
 
     testWidgets('View privacy policy', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -246,7 +245,7 @@ void main() {
 
     testWidgets('PIN creation with confirmation', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -260,7 +259,9 @@ void main() {
 
         // Go through registration to PIN creation
         await authRobot.tapRegisterTab();
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
         await authRobot.acceptTermsAndConditions();
         await authRobot.tapContinue();
 
@@ -291,7 +292,7 @@ void main() {
 
     testWidgets('PIN confirmation mismatch shows error', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         authRobot = AuthRobot(tester);
@@ -305,7 +306,9 @@ void main() {
 
         // Go through registration to PIN creation
         await authRobot.tapRegisterTab();
-        await authRobot.enterPhoneNumber(TestData.defaultUser['phone'] as String);
+        await authRobot.enterPhoneNumber(
+          TestData.defaultUser['phone'] as String,
+        );
         await authRobot.acceptTermsAndConditions();
         await authRobot.tapContinue();
 
@@ -327,12 +330,12 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
 
         // Should show mismatch error
-        expect(
-          find.textContaining('match'),
-          findsWidgets,
-        );
+        expect(find.textContaining('match'), findsWidgets);
       } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'pin_mismatch_onboarding_error');
+        await TestHelpers.takeScreenshot(
+          binding,
+          'pin_mismatch_onboarding_error',
+        );
         rethrow;
       }
     });

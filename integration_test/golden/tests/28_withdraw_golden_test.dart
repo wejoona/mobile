@@ -42,7 +42,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -95,7 +95,12 @@ void main() {
           matchesGoldenFile('../goldens/withdraw/28.1_withdraw_view.png'),
         );
       } else {
-        expect(true, isTrue, reason: 'Withdraw screen exists at /withdraw (feature flag may be disabled)');
+        expect(
+          true,
+          isTrue,
+          reason:
+              'Withdraw screen exists at /withdraw (feature flag may be disabled)',
+        );
       }
     });
 

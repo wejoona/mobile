@@ -40,7 +40,7 @@ void main() {
     });
 
     testWidgets('1.1 Splash Screen', (tester) async {
-      app.main();
+      await app.main();
       // Capture immediately before navigation
       await tester.pump(const Duration(milliseconds: 500));
 
@@ -51,7 +51,7 @@ void main() {
     });
 
     testWidgets('1.2 Login Screen', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Skip onboarding
@@ -68,7 +68,7 @@ void main() {
     });
 
     testWidgets('1.3 OTP Screen (Secure Login)', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -102,7 +102,7 @@ void main() {
     });
 
     Future<void> loginToKycScreen(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 

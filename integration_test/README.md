@@ -176,7 +176,7 @@ void main() {
 
     testWidgets('Test case description', (tester) async {
       try {
-        app.main();
+        await app.main();
         await tester.pumpAndSettle();
 
         // Test logic here

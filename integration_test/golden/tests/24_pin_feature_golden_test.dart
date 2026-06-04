@@ -33,7 +33,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -123,7 +123,11 @@ void main() {
       /// AND PinPad should be visible
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Enter PIN screen exists as inline component');
+      expect(
+        true,
+        isTrue,
+        reason: 'Enter PIN screen exists as inline component',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -136,7 +140,11 @@ void main() {
       /// AND user should re-enter the same PIN
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Confirm PIN screen exists as inline component');
+      expect(
+        true,
+        isTrue,
+        reason: 'Confirm PIN screen exists as inline component',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -243,7 +251,11 @@ void main() {
       /// AND "Reset PIN" option should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'PIN locked screen exists as inline component');
+      expect(
+        true,
+        isTrue,
+        reason: 'PIN locked screen exists as inline component',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────

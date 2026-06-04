@@ -31,7 +31,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -129,7 +129,9 @@ void main() {
 
         await expectLater(
           find.byType(MaterialApp),
-          matchesGoldenFile('../goldens/transactions/8.2_transaction_detail.png'),
+          matchesGoldenFile(
+            '../goldens/transactions/8.2_transaction_detail.png',
+          ),
         );
       }
     });
@@ -263,7 +265,9 @@ void main() {
       final filterIcon = find.byIcon(Icons.filter_list);
 
       if (filterBtn.evaluate().isNotEmpty || filterIcon.evaluate().isNotEmpty) {
-        await tester.tap(filterBtn.evaluate().isNotEmpty ? filterBtn.first : filterIcon.first);
+        await tester.tap(
+          filterBtn.evaluate().isNotEmpty ? filterBtn.first : filterIcon.first,
+        );
         await tester.pumpAndSettle();
 
         // Select a filter option (e.g., Deposits)
@@ -281,7 +285,9 @@ void main() {
 
             await expectLater(
               find.byType(MaterialApp),
-              matchesGoldenFile('../goldens/transactions/8.4b_filters_applied.png'),
+              matchesGoldenFile(
+                '../goldens/transactions/8.4b_filters_applied.png',
+              ),
             );
           }
         }

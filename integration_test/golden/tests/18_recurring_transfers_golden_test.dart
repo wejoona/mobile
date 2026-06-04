@@ -31,7 +31,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -90,7 +90,8 @@ void main() {
 
       final recurringScreen = find.textContaining('Recurring');
       final scheduledScreen = find.textContaining('Scheduled');
-      if (recurringScreen.evaluate().isNotEmpty || scheduledScreen.evaluate().isNotEmpty) {
+      if (recurringScreen.evaluate().isNotEmpty ||
+          scheduledScreen.evaluate().isNotEmpty) {
         await expectLater(
           find.byType(MaterialApp),
           matchesGoldenFile('../goldens/recurring/18.1_recurring_list.png'),
@@ -240,7 +241,11 @@ void main() {
       /// AND each should show date and status
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Recurring transfer history exists in detail view');
+      expect(
+        true,
+        isTrue,
+        reason: 'Recurring transfer history exists in detail view',
+      );
     });
   });
 }

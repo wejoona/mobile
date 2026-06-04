@@ -28,7 +28,7 @@ void main() {
     });
 
     testWidgets('Login screen golden', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // Skip onboarding if present
@@ -46,7 +46,7 @@ void main() {
     });
 
     testWidgets('OTP screen golden', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);
@@ -73,7 +73,7 @@ void main() {
     });
 
     testWidgets('Identity Verification screen golden', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);
@@ -99,7 +99,7 @@ void main() {
     });
 
     testWidgets('KYC document type selection golden', (tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);

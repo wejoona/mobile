@@ -52,7 +52,7 @@ void main() {
       /// AND show "Request New OTP" button
       /// NOTE: Requires mock setup for expired OTP state
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       // This screen requires specific FSM state setup
@@ -69,7 +69,7 @@ void main() {
       /// THEN show lock message with countdown timer
       /// AND show support contact option
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       expect(true, isTrue, reason: 'Auth locked screen exists at /auth-locked');
     });
@@ -83,9 +83,13 @@ void main() {
       /// THEN show suspension reason
       /// AND show "Contact Support" button
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Auth suspended screen exists at /auth-suspended');
+      expect(
+        true,
+        isTrue,
+        reason: 'Auth suspended screen exists at /auth-suspended',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -97,9 +101,13 @@ void main() {
       /// THEN show PIN prompt
       /// AND show "Logout" button
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Session locked screen exists at /session-locked');
+      expect(
+        true,
+        isTrue,
+        reason: 'Session locked screen exists at /session-locked',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -111,9 +119,13 @@ void main() {
       /// THEN show fingerprint/face icon
       /// AND show "Use PIN instead" fallback option
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Biometric prompt screen exists at /biometric-prompt');
+      expect(
+        true,
+        isTrue,
+        reason: 'Biometric prompt screen exists at /biometric-prompt',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -125,9 +137,13 @@ void main() {
       /// THEN show device information
       /// AND show verification code input
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Device verification screen exists at /device-verification');
+      expect(
+        true,
+        isTrue,
+        reason: 'Device verification screen exists at /device-verification',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -139,9 +155,13 @@ void main() {
       /// THEN show warning message
       /// AND show "Continue Here" and "Logout" options
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Session conflict screen exists at /session-conflict');
+      expect(
+        true,
+        isTrue,
+        reason: 'Session conflict screen exists at /session-conflict',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -154,9 +174,13 @@ void main() {
       /// AND show balance (read-only)
       /// AND show "Contact Support" button
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Wallet frozen screen exists at /wallet-frozen');
+      expect(
+        true,
+        isTrue,
+        reason: 'Wallet frozen screen exists at /wallet-frozen',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -168,9 +192,13 @@ void main() {
       /// THEN show review status message
       /// AND show estimated review time
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
-      expect(true, isTrue, reason: 'Wallet under review screen exists at /wallet-under-review');
+      expect(
+        true,
+        isTrue,
+        reason: 'Wallet under review screen exists at /wallet-under-review',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -182,7 +210,7 @@ void main() {
       /// THEN show expiry message
       /// AND show "Reverify Identity" button
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       expect(true, isTrue, reason: 'KYC expired screen exists at /kyc-expired');
     });
@@ -195,7 +223,7 @@ void main() {
       /// WHEN loading screen is displayed
       /// THEN show loading animation
 
-      app.main();
+      await app.main();
       // Don't pumpAndSettle - loading animation won't settle
       await tester.pump(const Duration(milliseconds: 100));
 

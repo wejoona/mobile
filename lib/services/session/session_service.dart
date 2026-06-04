@@ -109,8 +109,11 @@ class SessionService extends Notifier<SessionState> {
 
   @override
   SessionState build() {
+    final storage = ref.read(secureStorageProvider);
+    ref.onDispose(_cancelAllTimers);
+
     // Check for existing session on startup
-    _checkExistingSession();
+    unawaited(_checkExistingSession(storage));
     return const SessionState();
   }
 
@@ -268,10 +271,11 @@ class SessionService extends Notifier<SessionState> {
 
   // Private methods
 
-  Future<void> _checkExistingSession() async {
-    final token = await _storage.read(key: _accessTokenKey);
-    final expiryStr = await _storage.read(key: _tokenExpiryKey);
-    final sessionStartStr = await _storage.read(key: _sessionStartKey);
+  Future<void> _checkExistingSession(FlutterSecureStorage storage) async {
+    final token = await storage.read(key: _accessTokenKey);
+    final expiryStr = await storage.read(key: _tokenExpiryKey);
+    final sessionStartStr = await storage.read(key: _sessionStartKey);
+    if (!ref.mounted) return;
 
     if (token != null) {
       DateTime? expiresAt;
@@ -281,23 +285,27 @@ class SessionService extends Notifier<SessionState> {
         expiresAt = DateTime.tryParse(expiryStr);
         // Check if token is expired - try to refresh before giving up
         if (expiresAt != null && DateTime.now().isAfter(expiresAt)) {
-          final refreshToken = await _storage.read(key: _refreshTokenKey);
+          final refreshToken = await storage.read(key: _refreshTokenKey);
+          if (!ref.mounted) return;
           if (refreshToken != null) {
             // Attempt to refresh the token
             final refreshed = await _refreshToken();
+            if (!ref.mounted) return;
             if (!refreshed) {
               await _invalidateLocalSession();
               return;
             }
             // Re-read to check if refresh succeeded
-            final newToken = await _storage.read(key: _accessTokenKey);
+            final newToken = await storage.read(key: _accessTokenKey);
+            if (!ref.mounted) return;
             if (newToken == null || newToken == token) {
               // Refresh failed, end session
               await _invalidateLocalSession();
               return;
             }
             // Refresh succeeded, update expiry
-            final newExpiryStr = await _storage.read(key: _tokenExpiryKey);
+            final newExpiryStr = await storage.read(key: _tokenExpiryKey);
+            if (!ref.mounted) return;
             if (newExpiryStr != null) {
               expiresAt = DateTime.tryParse(newExpiryStr);
             }

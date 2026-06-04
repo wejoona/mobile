@@ -33,7 +33,7 @@ void main() {
     Future<void> loginToHome(WidgetTester tester) async {
       TestHelpers.setKycStatus('verified');
 
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
       authRobot = AuthRobot(tester);
 
@@ -330,7 +330,11 @@ void main() {
       /// AND "Done" button should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Send result success screen exists at /send/result');
+      expect(
+        true,
+        isTrue,
+        reason: 'Send result success screen exists at /send/result',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -344,7 +348,11 @@ void main() {
       /// AND retry option may be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Send result failure screen exists at /send/result');
+      expect(
+        true,
+        isTrue,
+        reason: 'Send result failure screen exists at /send/result',
+      );
     });
 
     // ─────────────────────────────────────────────────────────────
@@ -357,7 +365,11 @@ void main() {
       /// AND option to queue transaction should be available
 
       await loginToHome(tester);
-      expect(true, isTrue, reason: 'Offline queue dialog exists as modal component');
+      expect(
+        true,
+        isTrue,
+        reason: 'Offline queue dialog exists as modal component',
+      );
     });
   });
 }

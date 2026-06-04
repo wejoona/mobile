@@ -23,7 +23,7 @@ void main() {
     });
 
     Future<void> loginAndNavigateToKyc(WidgetTester tester) async {
-      app.main();
+      await app.main();
       await tester.pumpAndSettle();
 
       authRobot = AuthRobot(tester);
@@ -48,7 +48,9 @@ void main() {
 
     // ====== IDENTITY VERIFICATION SCREEN TESTS ======
 
-    testWidgets('Identity Verification - screen title displayed', (tester) async {
+    testWidgets('Identity Verification - screen title displayed', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -60,7 +62,9 @@ void main() {
       }
     });
 
-    testWidgets('Identity Verification - Start Verification button shown', (tester) async {
+    testWidgets('Identity Verification - Start Verification button shown', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -86,7 +90,9 @@ void main() {
       }
     });
 
-    testWidgets('Identity Verification - description text shown', (tester) async {
+    testWidgets('Identity Verification - description text shown', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -95,10 +101,7 @@ void main() {
           find.textContaining('Complete your identity verification'),
           findsOneWidget,
         );
-        expect(
-          find.textContaining('higher limits'),
-          findsOneWidget,
-        );
+        expect(find.textContaining('higher limits'), findsOneWidget);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'kyc_description_error');
         rethrow;
@@ -107,26 +110,31 @@ void main() {
 
     // ====== DOCUMENT TYPE SELECTION SCREEN TESTS ======
 
-    testWidgets('Document Type Selection - navigate from Identity Verification', (tester) async {
-      try {
-        await loginAndNavigateToKyc(tester);
+    testWidgets(
+      'Document Type Selection - navigate from Identity Verification',
+      (tester) async {
+        try {
+          await loginAndNavigateToKyc(tester);
 
-        // Tap "Start Verification" button
-        final startBtn = find.text('Start Verification');
-        await tester.tap(startBtn.last);
-        await tester.pumpAndSettle();
-        await tester.pump(const Duration(seconds: 2));
-        await tester.pumpAndSettle();
+          // Tap "Start Verification" button
+          final startBtn = find.text('Start Verification');
+          await tester.tap(startBtn.last);
+          await tester.pumpAndSettle();
+          await tester.pump(const Duration(seconds: 2));
+          await tester.pumpAndSettle();
 
-        // From golden: 04_document_type_selection.png
-        expect(find.text('Select Document Type'), findsOneWidget);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'kyc_doc_type_nav_error');
-        rethrow;
-      }
-    });
+          // From golden: 04_document_type_selection.png
+          expect(find.text('Select Document Type'), findsOneWidget);
+        } catch (e) {
+          await TestHelpers.takeScreenshot(binding, 'kyc_doc_type_nav_error');
+          rethrow;
+        }
+      },
+    );
 
-    testWidgets('Document Type Selection - three document options shown', (tester) async {
+    testWidgets('Document Type Selection - three document options shown', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -147,26 +155,31 @@ void main() {
       }
     });
 
-    testWidgets('Document Type Selection - Continue button disabled initially', (tester) async {
-      try {
-        await loginAndNavigateToKyc(tester);
+    testWidgets(
+      'Document Type Selection - Continue button disabled initially',
+      (tester) async {
+        try {
+          await loginAndNavigateToKyc(tester);
 
-        // Navigate to document type selection
-        final startBtn = find.text('Start Verification');
-        await tester.tap(startBtn.last);
-        await tester.pumpAndSettle();
-        await tester.pump(const Duration(seconds: 2));
-        await tester.pumpAndSettle();
+          // Navigate to document type selection
+          final startBtn = find.text('Start Verification');
+          await tester.tap(startBtn.last);
+          await tester.pumpAndSettle();
+          await tester.pump(const Duration(seconds: 2));
+          await tester.pumpAndSettle();
 
-        // From golden: Continue button exists
-        expect(find.text('Continue'), findsOneWidget);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'kyc_continue_btn_error');
-        rethrow;
-      }
-    });
+          // From golden: Continue button exists
+          expect(find.text('Continue'), findsOneWidget);
+        } catch (e) {
+          await TestHelpers.takeScreenshot(binding, 'kyc_continue_btn_error');
+          rethrow;
+        }
+      },
+    );
 
-    testWidgets('Document Type Selection - select National ID Card', (tester) async {
+    testWidgets('Document Type Selection - select National ID Card', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -191,7 +204,9 @@ void main() {
 
     // ====== PERSONAL INFORMATION SCREEN TESTS ======
 
-    testWidgets('Personal Information - navigate from Document Type', (tester) async {
+    testWidgets('Personal Information - navigate from Document Type', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -215,7 +230,10 @@ void main() {
         // From golden: 06_personal_info.png
         expect(find.text('Personal Information'), findsOneWidget);
       } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'kyc_personal_info_nav_error');
+        await TestHelpers.takeScreenshot(
+          binding,
+          'kyc_personal_info_nav_error',
+        );
         rethrow;
       }
     });
@@ -279,7 +297,9 @@ void main() {
       }
     });
 
-    testWidgets('Personal Information - description text shown', (tester) async {
+    testWidgets('Personal Information - description text shown', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
@@ -356,7 +376,9 @@ void main() {
       }
     });
 
-    testWidgets('Document Capture - camera fallback shows gallery option', (tester) async {
+    testWidgets('Document Capture - camera fallback shows gallery option', (
+      tester,
+    ) async {
       try {
         await loginAndNavigateToKyc(tester);
 
