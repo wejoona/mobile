@@ -149,10 +149,6 @@ Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
         driver.hasAnyText([
           'Current session',
           'Session actuelle',
-          'No Active Sessions',
-          'No active sessions',
-          'Aucune session active',
-          "You don't have any active sessions",
           'Unknown Device',
         ]),
     reason: 'live active sessions screen',

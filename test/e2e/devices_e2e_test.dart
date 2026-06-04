@@ -1,6 +1,8 @@
 /// E2E: Devices — register, list, sessions
 library;
 
+import 'dart:convert';
+
 import 'package:test/test.dart';
 import 'e2e_test_client.dart';
 
@@ -51,6 +53,11 @@ void main() {
     test('GET /sessions — list active sessions', () async {
       final res = await client.get('/sessions');
       res.expectOk();
+      final sessions = jsonDecode(res.body);
+      expect(sessions, isA<List<dynamic>>());
+      expect(sessions as List<dynamic>, isNotEmpty);
+      expect(sessions.first, isA<Map<String, dynamic>>());
+      expect((sessions.first as Map<String, dynamic>)['isActive'], isTrue);
     });
   });
 }
