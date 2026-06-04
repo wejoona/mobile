@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
-import '../helpers/test_helpers.dart';
+
 import '../helpers/test_data.dart';
+import '../helpers/test_helpers.dart';
 
 /// Enable mocks for integration tests
 void enableTestMocks() {
@@ -11,15 +12,51 @@ void enableTestMocks() {
 
 /// Robot for authentication flows
 class AuthRobot {
-  final WidgetTester tester;
-
   AuthRobot(this.tester);
+
+  final WidgetTester tester;
 
   // Login flow
   Future<void> enterPhoneNumber(String phone) async {
-    final phoneField = find.byType(TextField).first;
+    await _advanceToPhoneEntry();
+
+    final phoneField = _textInputFinder().first;
     await tester.enterText(phoneField, phone);
     await tester.pumpAndSettle();
+  }
+
+  Future<void> _advanceToPhoneEntry() async {
+    for (var i = 0; i < 8; i++) {
+      if (_textInputFinder().evaluate().isNotEmpty) {
+        return;
+      }
+
+      final getStarted = find.text('Get Started');
+      if (getStarted.evaluate().isNotEmpty) {
+        await tester.tap(getStarted.first);
+        await tester.pumpAndSettle();
+        continue;
+      }
+
+      final continueButton = find.text('Continue');
+      if (continueButton.evaluate().isNotEmpty) {
+        await tester.tap(continueButton.first);
+        await tester.pumpAndSettle();
+        continue;
+      }
+
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    expect(_textInputFinder(), findsWidgets);
+  }
+
+  Finder _textInputFinder() {
+    final textFields = find.byType(TextField);
+    if (textFields.evaluate().isNotEmpty) {
+      return textFields;
+    }
+    return find.byType(TextFormField);
   }
 
   Future<void> selectCountry(String countryCode) async {
@@ -57,13 +94,15 @@ class AuthRobot {
   Future<void> enterOtp(String otp) async {
     // OTP screen uses custom PinPad with tappable digit buttons
     // Tap each digit button on the numeric keyboard
-    for (int i = 0; i < otp.length; i++) {
+    for (var i = 0; i < otp.length; i++) {
       final digit = otp[i];
       // Find the digit button text and tap it (use .last to get the keypad button, not any other text)
       final digitFinder = find.text(digit);
       if (digitFinder.evaluate().isEmpty) {
         // PinPad not visible - OTP screen may not have loaded or we're on a different screen
-        debugPrint('Warning: Could not find digit "$digit" on PinPad. Screen state may be unexpected.');
+        debugPrint(
+          'Warning: Could not find digit "$digit" on PinPad. Screen state may be unexpected.',
+        );
         return;
       }
       await tester.tap(digitFinder.last);
@@ -237,12 +276,21 @@ class AuthRobot {
     final hasSignUp = find.text('Sign up').evaluate().isNotEmpty;
     final hasRegister = find.text('Register').evaluate().isNotEmpty;
     final hasWelcome = find.text('Welcome back').evaluate().isNotEmpty;
-    final hasCreateWallet = find.text('Create your USDC wallet').evaluate().isNotEmpty;
+    final hasCreateWallet = find
+        .text('Create your USDC wallet')
+        .evaluate()
+        .isNotEmpty;
     final hasContinue = find.text('Continue').evaluate().isNotEmpty;
 
     // Should have at least one indicator we're on login/auth screen
     expect(
-      hasSignIn || hasLogin || hasSignUp || hasRegister || hasWelcome || hasCreateWallet || hasContinue,
+      hasSignIn ||
+          hasLogin ||
+          hasSignUp ||
+          hasRegister ||
+          hasWelcome ||
+          hasCreateWallet ||
+          hasContinue,
       isTrue,
       reason: 'Expected to be on login/auth screen',
     );
@@ -263,15 +311,31 @@ class AuthRobot {
     final hasWallet = find.textContaining('Wallet').evaluate().isNotEmpty;
     final hasKYC = find.textContaining('KYC').evaluate().isNotEmpty;
     final hasVerify = find.textContaining('Verify').evaluate().isNotEmpty;
-    final hasVerifyIdentity = find.text('Verify your identity').evaluate().isNotEmpty;
-    final hasStartVerification = find.text('Start Verification').evaluate().isNotEmpty;
-    final hasIdentityVerification = find.text('Identity Verification').evaluate().isNotEmpty;
+    final hasVerifyIdentity = find
+        .text('Verify your identity')
+        .evaluate()
+        .isNotEmpty;
+    final hasStartVerification = find
+        .text('Start Verification')
+        .evaluate()
+        .isNotEmpty;
+    final hasIdentityVerification = find
+        .text('Identity Verification')
+        .evaluate()
+        .isNotEmpty;
     final hasHome = find.textContaining('Home').evaluate().isNotEmpty;
     final hasIdentity = find.textContaining('identity').evaluate().isNotEmpty;
 
     expect(
-      hasBalance || hasWallet || hasKYC || hasVerify || hasVerifyIdentity ||
-      hasStartVerification || hasIdentityVerification || hasHome || hasIdentity,
+      hasBalance ||
+          hasWallet ||
+          hasKYC ||
+          hasVerify ||
+          hasVerifyIdentity ||
+          hasStartVerification ||
+          hasIdentityVerification ||
+          hasHome ||
+          hasIdentity,
       isTrue,
       reason: 'Expected to be on an authenticated screen (Home, KYC, etc.)',
     );

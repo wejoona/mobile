@@ -47,7 +47,7 @@ class KoridoFlowDriver {
       ErrorWidget.builder = originalErrorBuilder;
     });
 
-    app.main();
+    await app.main();
     await tester.pump(const Duration(milliseconds: 750));
     FlutterError.onError = originalOnError;
     ErrorWidget.builder = originalErrorBuilder;
@@ -194,7 +194,12 @@ class KoridoFlowDriver {
   Future<void> waitForHome() async {
     await pumpUntil(
       () =>
-          hasAnyText(['Total Balance', 'Solde total']) &&
+          hasAnyText([
+            'Available Balance',
+            'Total Balance',
+            'Solde disponible',
+            'Solde total',
+          ]) &&
           hasAnyText(['USDC']) &&
           hasAnyText(['Send', 'Envoyer']) &&
           hasAnyText(['Deposit', 'Dépôt']),

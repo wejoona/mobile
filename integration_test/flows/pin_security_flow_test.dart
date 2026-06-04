@@ -1,19 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:usdc_wallet/main.dart' as app;
 import 'package:usdc_wallet/mocks/mock_config.dart';
-import '../helpers/test_helpers.dart';
+
 import '../helpers/test_data.dart';
+import '../helpers/test_helpers.dart';
 import '../robots/auth_robot.dart';
-import '../robots/wallet_robot.dart';
 import '../robots/send_robot.dart';
+import '../robots/wallet_robot.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
-    MockConfig.enableAllMocks();
-  });
+  setUpAll(MockConfig.enableAllMocks);
 
   group('PIN Security Flow Tests', () {
     late AuthRobot authRobot;
@@ -26,8 +26,17 @@ void main() {
     });
 
     Future<void> loginUser(WidgetTester tester) async {
-      app.main();
+      final originalOnError = FlutterError.onError;
+      final originalErrorBuilder = ErrorWidget.builder;
+      addTearDown(() {
+        FlutterError.onError = originalOnError;
+        ErrorWidget.builder = originalErrorBuilder;
+      });
+
+      await app.main();
       await tester.pumpAndSettle();
+      FlutterError.onError = originalOnError;
+      ErrorWidget.builder = originalErrorBuilder;
 
       authRobot = AuthRobot(tester);
       walletRobot = WalletRobot(tester);
@@ -53,7 +62,7 @@ void main() {
 
         // Enter recipient and amount
         final recipient = TestData.testBeneficiaries[0];
-        await sendRobot.enterPhoneNumber(recipient['phone'] as String);
+        await sendRobot.enterPhoneNumber(recipient['phone']! as String);
         await sendRobot.tapContinueFromRecipient();
         await sendRobot.enterAmount(TestData.smallAmount);
         await sendRobot.tapContinueFromAmount();
@@ -83,7 +92,7 @@ void main() {
 
         // Enter recipient and amount
         final recipient = TestData.testBeneficiaries[0];
-        await sendRobot.enterPhoneNumber(recipient['phone'] as String);
+        await sendRobot.enterPhoneNumber(recipient['phone']! as String);
         await sendRobot.tapContinueFromRecipient();
         await sendRobot.enterAmount(TestData.smallAmount);
         await sendRobot.tapContinueFromAmount();
@@ -113,7 +122,7 @@ void main() {
 
         // Enter recipient and amount
         final recipient = TestData.testBeneficiaries[0];
-        await sendRobot.enterPhoneNumber(recipient['phone'] as String);
+        await sendRobot.enterPhoneNumber(recipient['phone']! as String);
         await sendRobot.tapContinueFromRecipient();
         await sendRobot.enterAmount(TestData.smallAmount);
         await sendRobot.tapContinueFromAmount();
@@ -128,10 +137,7 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
 
         // Should show attempts remaining
-        expect(
-          find.textContaining('attempt'),
-          findsWidgets,
-        );
+        expect(find.textContaining('attempt'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'pin_lockout_warning_error');
         rethrow;
@@ -154,16 +160,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Enter wrong current PIN 3 times
-        for (int i = 0; i < 3; i++) {
+        for (var i = 0; i < 3; i++) {
           await TestHelpers.enterPin(tester, '000000');
           await tester.pump(const Duration(seconds: 2));
         }
 
         // Should be locked
-        expect(
-          find.textContaining('locked'),
-          findsWidgets,
-        );
+        expect(find.textContaining('locked'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'pin_lockout_error');
         rethrow;
@@ -229,10 +232,7 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
 
         // Should show error
-        expect(
-          find.textContaining('different'),
-          findsWidgets,
-        );
+        expect(find.textContaining('different'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'same_pin_error');
         rethrow;
@@ -267,10 +267,7 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
 
         // Should show mismatch error
-        expect(
-          find.textContaining('match'),
-          findsWidgets,
-        );
+        expect(find.textContaining('match'), findsWidgets);
       } catch (e) {
         await TestHelpers.takeScreenshot(binding, 'pin_mismatch_error');
         rethrow;

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
 import 'package:usdc_wallet/mocks/services/kyc/kyc_mock.dart';
 import 'dart:io';
@@ -232,8 +234,15 @@ class TestHelpers {
 
   /// Clear app data (for fresh test runs)
   static Future<void> clearAppData() async {
-    // This would clear SharedPreferences, SecureStorage, etc.
-    // Implementation depends on having access to those services
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    const storage = FlutterSecureStorage();
+    try {
+      await storage.deleteAll();
+    } on Object catch (_) {
+      // Keychain-backed storage is not always available on every test host.
+    }
   }
 
   /// Generate realistic West African test data

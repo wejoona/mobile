@@ -25,7 +25,7 @@ import 'package:usdc_wallet/utils/logger.dart';
 
 const _mainLogger = AppLogger('Main');
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MockConfig.configureFromEnvironment();
 
