@@ -7,6 +7,8 @@ import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
+import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
+import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
@@ -389,6 +391,80 @@ void main() {
       expect(dio.requestHistory.single.path, '/cards/card_1/transactions');
       expect(dio.requestHistory.single.method, 'GET');
     });
+
+    test(
+      'devices repository accepts backend device fields used by screen',
+      () async {
+        final dio = MockDio()
+          ..queueResponse([
+            {
+              'id': 'device_1',
+              'userId': 'user_1',
+              'deviceIdentifier': 'ios-vendor-id',
+              'displayName': 'iPhone 17',
+              'brand': 'Apple',
+              'model': 'iPhone17,2',
+              'os': 'iOS',
+              'osVersion': '26.0',
+              'appVersion': '1.2.3',
+              'platform': 'ios',
+              'isTrusted': true,
+              'trustedAt': '2026-06-04T08:00:00.000Z',
+              'isActive': true,
+              'lastLoginAt': '2026-06-04T10:00:00.000Z',
+              'lastIpAddress': '127.0.0.1',
+              'loginCount': 4,
+              'createdAt': '2026-06-03T10:00:00.000Z',
+            },
+          ]);
+        final repository = DevicesRepository(dio);
+
+        final devices = await repository.getDevices();
+
+        expect(dio.requestHistory.single.path, '/devices');
+        expect(devices.single.id, 'device_1');
+        expect(devices.single.userId, 'user_1');
+        expect(devices.single.deviceIdentifier, 'ios-vendor-id');
+        expect(devices.single.deviceName, 'iPhone 17');
+        expect(devices.single.appVersion, '1.2.3');
+        expect(devices.single.isTrusted, isTrue);
+        expect(devices.single.loginCount, 4);
+      },
+    );
+
+    test(
+      'session repository sends revoke reasons and parses active sessions',
+      () async {
+        final dio = MockDio()
+          ..queueResponse([
+            {
+              'id': 'session_1',
+              'userId': 'user_1',
+              'deviceId': 'device_1',
+              'ipAddress': '127.0.0.1',
+              'userAgent': 'Korido iOS',
+              'location': null,
+              'isActive': true,
+              'lastActivityAt': '2026-06-04T10:00:00.000Z',
+              'expiresAt': '2026-06-11T10:00:00.000Z',
+              'createdAt': '2026-06-04T09:00:00.000Z',
+            },
+          ])
+          ..queueResponse({'success': true});
+        final repository = SessionsRepository(dio);
+
+        final sessions = await repository.getSessions();
+        await repository.revokeSession('session_1');
+
+        expect(dio.requestHistory[0].path, '/sessions');
+        expect(sessions.single.id, 'session_1');
+        expect(sessions.single.deviceId, 'device_1');
+        expect(sessions.single.userAgent, 'Korido iOS');
+        expect(dio.requestHistory[1].method, 'DELETE');
+        expect(dio.requestHistory[1].path, '/sessions/session_1');
+        expect(dio.requestHistory[1].data, {'reason': 'user_revoke_device'});
+      },
+    );
 
     test('contact sync accepts backend nested match envelope', () async {
       final service = ContactsService(MockSecureStorage());
