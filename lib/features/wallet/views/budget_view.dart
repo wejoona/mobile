@@ -122,13 +122,11 @@ class _BudgetViewState extends ConsumerState<BudgetView> {
               source: 'budget_view',
               phone: user?.phone ?? authState.phone,
               email: user?.email,
-              metadata: {
-                'surface': 'wallet_budget',
-                'featureName': 'Budget controls',
-                if (user?.countryCode != null) 'countryCode': user!.countryCode,
-                if (user?.preferredLocale != null)
-                  'locale': user!.preferredLocale,
-              },
+              featureName: 'Budget controls',
+              requestedFeature: 'budget_controls_launch',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: {'surface': 'wallet_budget'},
             ),
           );
 

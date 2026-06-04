@@ -192,13 +192,11 @@ class VirtualCardView extends ConsumerWidget {
               source: 'wallet_virtual_card_view',
               phone: user?.phone ?? authState.phone,
               email: user?.email,
-              metadata: {
-                'surface': 'wallet_virtual_card',
-                'featureName': 'Korido virtual card',
-                if (user?.countryCode != null) 'countryCode': user!.countryCode,
-                if (user?.preferredLocale != null)
-                  'locale': user!.preferredLocale,
-              },
+              featureName: 'Korido virtual card',
+              requestedFeature: 'virtual_card_launch',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: {'surface': 'wallet_virtual_card'},
             ),
           );
 

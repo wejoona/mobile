@@ -292,7 +292,11 @@ void main() {
           featureKey: 'virtual_card',
           source: 'cards_screen',
           phone: '+2250748805663',
-          metadata: {'surface': 'cards', 'countryCode': 'CI'},
+          featureName: 'Korido virtual card',
+          requestedFeature: 'virtual_card_launch',
+          countryCode: 'CI',
+          locale: 'fr-CI',
+          metadata: {'surface': 'cards'},
         ),
       );
 
@@ -304,7 +308,11 @@ void main() {
         'source': 'cards_screen',
         'status': 'subscribed',
         'phone': '+2250748805663',
-        'metadata': {'surface': 'cards', 'countryCode': 'CI'},
+        'featureName': 'Korido virtual card',
+        'requestedFeature': 'virtual_card_launch',
+        'countryCode': 'CI',
+        'locale': 'fr-CI',
+        'metadata': {'surface': 'cards'},
       });
       expect(subscription.featureKey, 'virtual_card');
       expect(subscription.isActive, isTrue);

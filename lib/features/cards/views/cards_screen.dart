@@ -320,14 +320,11 @@ class CardsScreen extends ConsumerWidget {
                         source: 'cards_screen',
                         phone: user?.phone ?? authState.phone,
                         email: user?.email,
-                        metadata: {
-                          'surface': 'cards',
-                          'featureName': 'Korido virtual card',
-                          if (user?.countryCode != null)
-                            'countryCode': user!.countryCode,
-                          if (user?.preferredLocale != null)
-                            'locale': user!.preferredLocale,
-                        },
+                        featureName: 'Korido virtual card',
+                        requestedFeature: 'virtual_card_launch',
+                        countryCode: user?.countryCode,
+                        locale: user?.preferredLocale,
+                        metadata: {'surface': 'cards'},
                       ),
                     );
               } catch (e) {
