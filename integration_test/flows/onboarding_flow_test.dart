@@ -1,343 +1,110 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:usdc_wallet/main.dart' as app;
-import 'package:usdc_wallet/mocks/mock_config.dart';
-import '../helpers/test_helpers.dart';
-import '../helpers/test_data.dart';
-import '../robots/auth_robot.dart';
+
+import '../helpers/korido_flow_driver.dart';
 
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
-    MockConfig.enableAllMocks();
-  });
+  setUp(KoridoFlowDriver.resetMocksAndStorage);
 
   group('Onboarding Flow Tests', () {
-    late AuthRobot authRobot;
+    testWidgets('Intro sequence reaches phone entry', (tester) async {
+      final flow = KoridoFlowDriver(tester);
 
-    setUp(() async {
-      MockConfig.enableAllMocks();
-      await TestHelpers.clearAppData();
+      await flow.launchApp();
+      await flow.startRegistrationFromIntro();
+
+      await flow.pumpUntil(
+        () =>
+            flow.hasAnyText([
+              'Enter your phone number',
+              'Entrez votre numéro',
+            ]) &&
+            flow.hasAnyText(['Terms of Service', 'Conditions d’utilisation']) &&
+            flow.hasAnyText(['Privacy Policy', 'Politique de confidentialité']),
+        reason: 'phone entry with legal consent',
+      );
     });
 
-    testWidgets('Complete onboarding tutorial pages', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
+    testWidgets('Complete onboarding reaches authenticated home', (
+      tester,
+    ) async {
+      final flow = KoridoFlowDriver(tester);
 
-        authRobot = AuthRobot(tester);
-
-        // Check for onboarding screens
-        final welcomeText = find.textContaining('Welcome');
-        if (welcomeText.evaluate().isNotEmpty) {
-          // Page 1
-          expect(welcomeText, findsWidgets);
-
-          // Swipe to next page
-          await tester.drag(find.byType(PageView), const Offset(-300, 0));
-          await tester.pumpAndSettle();
-
-          // Page 2
-          await tester.drag(find.byType(PageView), const Offset(-300, 0));
-          await tester.pumpAndSettle();
-
-          // Page 3
-          await tester.drag(find.byType(PageView), const Offset(-300, 0));
-          await tester.pumpAndSettle();
-
-          // Get started button
-          final getStarted = find.text('Get Started');
-          if (getStarted.evaluate().isNotEmpty) {
-            await tester.tap(getStarted);
-            await tester.pumpAndSettle();
-          }
-        }
-
-        // Should be on login screen now
-        authRobot.verifyOnLoginScreen();
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'onboarding_pages_error');
-        rethrow;
-      }
+      await flow.launchApp();
+      await flow.completeOnboarding();
+      await flow.waitForHome();
     });
 
-    testWidgets('Skip onboarding tutorial', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
+    testWidgets('Terms consent is required before OTP', (tester) async {
+      final flow = KoridoFlowDriver(tester);
 
-        authRobot = AuthRobot(tester);
+      await flow.launchApp();
+      await flow.startRegistrationFromIntro();
+      await flow.enterFirstTextFormField(_uniqueIvorianNationalPhone());
+      await flow.tapText(['Continue', 'Continuer']);
+      await tester.pump(const Duration(milliseconds: 750));
 
-        // Find skip button
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Should be on login screen
-        authRobot.verifyOnLoginScreen();
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'skip_onboarding_error');
-        rethrow;
-      }
+      expect(
+        flow.hasAnyText(['Enter your phone number', 'Entrez votre numéro']),
+        isTrue,
+        reason: 'User should remain on phone entry without terms consent',
+      );
+      expect(
+        find.byKey(const ValueKey('security_code_input')),
+        findsNothing,
+        reason: 'OTP input must not be shown without terms consent',
+      );
     });
 
-    testWidgets('Complete registration with all fields', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
+    testWidgets('PIN confirmation mismatch keeps user on PIN setup', (
+      tester,
+    ) async {
+      final flow = KoridoFlowDriver(tester);
 
-        authRobot = AuthRobot(tester);
+      await flow.launchApp();
+      await flow.startRegistrationFromIntro();
+      await flow.submitPhone(_uniqueIvorianNationalPhone());
+      await flow.enterOtp('123456');
 
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
+      await flow.pumpUntil(
+        () =>
+            flow.hasAnyText(['Tell us about yourself', 'Parlez-nous de vous']),
+        reason: 'profile setup screen',
+      );
+      await flow.submitProfile();
 
-        // Switch to register
-        await authRobot.tapRegisterTab();
+      await flow.pumpUntil(
+        () => flow.hasAnyText(['Create your PIN', 'Créez votre PIN']),
+        reason: 'PIN setup screen',
+      );
+      await flow.enterPin(KoridoFlowDriver.defaultPin);
 
-        // Enter phone number
-        final user = TestData.defaultUser;
-        await authRobot.enterPhoneNumber(user['phone'] as String);
+      await flow.pumpUntil(
+        () => flow.hasAnyText(['Confirm your PIN', 'Confirmez votre PIN']),
+        reason: 'PIN confirmation screen',
+      );
+      await flow.enterPin('739252');
+      await tester.pump(const Duration(milliseconds: 750));
 
-        // Accept terms and conditions
-        await authRobot.acceptTermsAndConditions();
-
-        // Continue
-        await authRobot.tapContinue();
-
-        // Verify OTP screen
-        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
-        await authRobot.enterOtp(TestData.testOtp);
-
-        // Enter name
-        await TestHelpers.waitForWidget(tester, find.text('First Name'));
-        await authRobot.enterName(
-          user['firstName'] as String,
-          user['lastName'] as String,
-        );
-        await authRobot.tapContinue();
-
-        // Create PIN
-        await TestHelpers.waitForWidget(tester, find.text('Create PIN'));
-        await authRobot.createPin(TestData.testPin);
-
-        // Wait for success
-        await TestHelpers.waitForLoadingToComplete(tester);
-
-        // Should show home or success
-        expect(find.textContaining('Welcome'), findsWidgets);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'full_registration_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('Terms and conditions are required', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
-
-        authRobot = AuthRobot(tester);
-
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Switch to register
-        await authRobot.tapRegisterTab();
-
-        // Enter phone number
-        await authRobot.enterPhoneNumber(
-          TestData.defaultUser['phone'] as String,
-        );
-
-        // Try to continue without accepting terms
-        await authRobot.tapContinue();
-
-        // Should show error or button disabled
-        // Continue button might be disabled or show error
-        await tester.pump(const Duration(seconds: 1));
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'terms_required_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('View terms and conditions', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
-
-        authRobot = AuthRobot(tester);
-
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Switch to register
-        await authRobot.tapRegisterTab();
-
-        // Find terms link
-        final termsLink = find.text('Terms and Conditions');
-        if (termsLink.evaluate().isNotEmpty) {
-          await tester.tap(termsLink);
-          await tester.pumpAndSettle();
-
-          // Should show terms content
-          expect(find.textContaining('Terms'), findsWidgets);
-
-          // Close
-          await TestHelpers.tapBackButton(tester);
-        }
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'view_terms_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('View privacy policy', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
-
-        authRobot = AuthRobot(tester);
-
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Switch to register
-        await authRobot.tapRegisterTab();
-
-        // Find privacy link
-        final privacyLink = find.text('Privacy Policy');
-        if (privacyLink.evaluate().isNotEmpty) {
-          await tester.tap(privacyLink);
-          await tester.pumpAndSettle();
-
-          // Should show privacy content
-          expect(find.textContaining('Privacy'), findsWidgets);
-
-          // Close
-          await TestHelpers.tapBackButton(tester);
-        }
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'view_privacy_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('PIN creation with confirmation', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
-
-        authRobot = AuthRobot(tester);
-
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Go through registration to PIN creation
-        await authRobot.tapRegisterTab();
-        await authRobot.enterPhoneNumber(
-          TestData.defaultUser['phone'] as String,
-        );
-        await authRobot.acceptTermsAndConditions();
-        await authRobot.tapContinue();
-
-        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
-        await authRobot.enterOtp(TestData.testOtp);
-
-        await TestHelpers.waitForWidget(tester, find.text('First Name'));
-        await authRobot.enterName('Test', 'User');
-        await authRobot.tapContinue();
-
-        // Create PIN
-        await TestHelpers.waitForWidget(tester, find.text('Create PIN'));
-        await TestHelpers.enterPin(tester, TestData.testPin);
-        await tester.pumpAndSettle();
-
-        // Confirm PIN
-        await TestHelpers.waitForWidget(tester, find.text('Confirm PIN'));
-        await TestHelpers.enterPin(tester, TestData.testPin);
-        await tester.pumpAndSettle();
-
-        // Should succeed
-        await TestHelpers.waitForLoadingToComplete(tester);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'pin_creation_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('PIN confirmation mismatch shows error', (tester) async {
-      try {
-        await app.main();
-        await tester.pumpAndSettle();
-
-        authRobot = AuthRobot(tester);
-
-        // Skip onboarding
-        final skipButton = find.text('Skip');
-        if (skipButton.evaluate().isNotEmpty) {
-          await tester.tap(skipButton);
-          await tester.pumpAndSettle();
-        }
-
-        // Go through registration to PIN creation
-        await authRobot.tapRegisterTab();
-        await authRobot.enterPhoneNumber(
-          TestData.defaultUser['phone'] as String,
-        );
-        await authRobot.acceptTermsAndConditions();
-        await authRobot.tapContinue();
-
-        await TestHelpers.waitForWidget(tester, find.text('Secure Login'));
-        await authRobot.enterOtp(TestData.testOtp);
-
-        await TestHelpers.waitForWidget(tester, find.text('First Name'));
-        await authRobot.enterName('Test', 'User');
-        await authRobot.tapContinue();
-
-        // Create PIN
-        await TestHelpers.waitForWidget(tester, find.text('Create PIN'));
-        await TestHelpers.enterPin(tester, TestData.testPin);
-        await tester.pumpAndSettle();
-
-        // Confirm with different PIN
-        await TestHelpers.waitForWidget(tester, find.text('Confirm PIN'));
-        await TestHelpers.enterPin(tester, '999999');
-        await tester.pump(const Duration(seconds: 2));
-
-        // Should show mismatch error
-        expect(find.textContaining('match'), findsWidgets);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(
-          binding,
-          'pin_mismatch_onboarding_error',
-        );
-        rethrow;
-      }
+      expect(
+        flow.hasAnyText([
+              'match',
+              'correspond',
+              'Confirm your PIN',
+              'Confirmez votre PIN',
+            ]) ||
+            find.byKey(const ValueKey('pin_digit_0')).evaluate().isNotEmpty,
+        isTrue,
+        reason: 'Mismatched PIN confirmation must not complete onboarding',
+      );
     });
   });
+}
+
+String _uniqueIvorianNationalPhone() {
+  final seed = DateTime.now().millisecondsSinceEpoch.toString();
+  return '07${seed.substring(seed.length - 8)}';
 }

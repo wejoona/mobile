@@ -144,6 +144,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     try {
       final service = ref.read(kycServiceProvider);
       final data = await service.getKycStatus();
+      if (!ref.mounted) return;
       final profile = KycProfile.fromJson({
         'status': data.status.name,
         'rejectionReason': data.rejectionReason,
@@ -153,6 +154,7 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         verificationStatus: _mapStatus(profile),
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -167,7 +169,8 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     }
 
     state = state.copyWith(isLoading: true);
-    ref.read(analyticsServiceProvider).trackKycStarted();
+    final analytics = ref.read(analyticsServiceProvider);
+    analytics.trackKycStarted();
     try {
       final service = ref.read(kycServiceProvider);
       // Include documents and selfie — not just personalInfo
@@ -190,11 +193,13 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         selfiePath: state.selfiePath ?? '',
         idNumber: state.personalInfo['documentNumber'],
       );
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false);
-      ref.read(analyticsServiceProvider).trackKycCompleted(success: true);
+      analytics.trackKycCompleted(success: true);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
-      ref.read(analyticsServiceProvider).trackKycCompleted(success: false);
+      analytics.trackKycCompleted(success: false);
     }
   }
 
@@ -212,8 +217,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         documentType: address['documentType'] ?? '',
         documentPath: address['documentPath'] ?? '',
       );
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -230,8 +237,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
         sourceDetails: '',
         supportingDocuments: paths,
       );
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -241,8 +250,10 @@ class KycFlowNotifier extends Notifier<KycFlowState> {
     try {
       final service = ref.read(kycServiceProvider);
       await service.submitKycFromData(data: state.personalInfo);
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

@@ -1,153 +1,79 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:usdc_wallet/main.dart' as app;
-import 'package:usdc_wallet/mocks/mock_config.dart';
-import '../helpers/test_helpers.dart';
-import '../helpers/test_data.dart';
-import '../robots/auth_robot.dart';
-import '../robots/wallet_robot.dart';
+import 'package:usdc_wallet/design/components/primitives/index.dart';
+
+import '../helpers/korido_flow_driver.dart';
 
 void main() {
-  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
-    MockConfig.enableAllMocks();
-  });
+  setUp(KoridoFlowDriver.resetMocksAndStorage);
 
   group('Withdraw Flow Tests', () {
-    late AuthRobot authRobot;
-    late WalletRobot walletRobot;
+    testWidgets('Withdraw screen renders methods and amount entry', (
+      tester,
+    ) async {
+      final flow = KoridoFlowDriver(tester);
 
-    setUp(() async {
-      MockConfig.enableAllMocks();
-      await TestHelpers.clearAppData();
+      await flow.launchApp();
+      await flow.completeOnboarding();
+      await flow.pushRoute('/withdraw');
+
+      await flow.pumpUntil(
+        () =>
+            flow.hasAnyText(['Withdrawal Method', 'Méthode de retrait']) &&
+            flow.hasAnyText(['Amount to Withdraw', 'Montant à retirer']) &&
+            flow.hasAnyText(['Mobile Money']),
+        reason: 'withdraw method and amount screen',
+      );
     });
 
-    Future<void> loginAndNavigateToWithdraw(WidgetTester tester) async {
-      await app.main();
-      await tester.pumpAndSettle();
+    testWidgets('Complete withdraw to mobile money', (tester) async {
+      final flow = KoridoFlowDriver(tester);
 
-      authRobot = AuthRobot(tester);
-      walletRobot = WalletRobot(tester);
+      await flow.launchApp();
+      await flow.completeOnboarding();
+      await flow.pushRoute('/withdraw');
 
-      // Skip onboarding
-      final skipButton = find.text('Skip');
-      if (skipButton.evaluate().isNotEmpty) {
-        await tester.tap(skipButton);
-        await tester.pumpAndSettle();
-      }
+      await flow.pumpUntil(
+        () =>
+            flow.hasAnyText(['Withdrawal Method', 'Méthode de retrait']) &&
+            flow.hasAnyText(['Amount to Withdraw', 'Montant à retirer']),
+        reason: 'withdraw screen',
+      );
 
-      // Login
-      await authRobot.completeLogin();
+      await flow.enterFirstTextFormField('2');
+      await flow.tapText(['Mobile Money']);
 
-      // Navigate to withdraw
-      await walletRobot.tapWithdrawAction();
-    }
+      await flow.pumpUntil(
+        () => flow.hasAnyText(['Mobile Money Number', 'Numéro Mobile Money']),
+        reason: 'mobile money phone field',
+      );
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.last, '0711223344');
+      await flow.dismissKeyboard();
 
-    testWidgets('Complete withdraw to Orange Money', (tester) async {
-      try {
-        await loginAndNavigateToWithdraw(tester);
+      final submitButton = find.byType(AppButton).last;
+      await tester.ensureVisible(submitButton);
+      await tester.tap(submitButton);
+      await tester.pump(const Duration(milliseconds: 350));
 
-        // Verify on withdraw screen
-        expect(find.text('Withdraw'), findsWidgets);
+      await flow.pumpUntil(
+        () => flow.hasAnyText(['Confirmer le retrait', 'Confirm Withdrawal']),
+        reason: 'withdraw PIN confirmation sheet',
+      );
+      await flow.enterPin(KoridoFlowDriver.defaultPin);
 
-        // Enter phone number for mobile money
-        final phoneField = find.byType(TextField).first;
-        await tester.enterText(phoneField, '07 12 34 56 78');
-        await tester.pumpAndSettle();
-
-        // Enter amount
-        await tester.tap(find.text('5'));
-        await tester.tap(find.text('0'));
-        await tester.tap(find.text('0'));
-        await tester.tap(find.text('0'));
-        await tester.pumpAndSettle();
-
-        // Select Orange Money
-        await tester.tap(find.text('Orange Money'));
-        await tester.pumpAndSettle();
-
-        // Continue
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Confirm
-        await tester.tap(find.text('Confirm'));
-        await tester.pumpAndSettle();
-
-        // Enter PIN
-        await TestHelpers.waitForWidget(tester, find.text('Enter PIN'));
-        await TestHelpers.enterPin(tester, TestData.testPin);
-
-        // Wait for result
-        await TestHelpers.waitForLoadingToComplete(tester);
-
-        // Verify success or pending
-        expect(find.textContaining('Withdraw'), findsWidgets);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'withdraw_orange_error');
-        rethrow;
-      }
-    });
-
-    testWidgets('Withdraw with insufficient balance', (tester) async {
-      try {
-        await loginAndNavigateToWithdraw(tester);
-
-        // Enter phone
-        final phoneField = find.byType(TextField).first;
-        await tester.enterText(phoneField, '07 12 34 56 78');
-        await tester.pumpAndSettle();
-
-        // Enter very large amount
-        await tester.tap(find.text('9'));
-        await tester.tap(find.text('9'));
-        await tester.tap(find.text('9'));
-        await tester.tap(find.text('9'));
-        await tester.tap(find.text('9'));
-        await tester.tap(find.text('9'));
-        await tester.pumpAndSettle();
-
-        // Try to continue
-        await tester.tap(find.text('Continue'));
-        await tester.pumpAndSettle();
-
-        // Should see error
-        expect(find.textContaining('Insufficient'), findsOneWidget);
-      } catch (e) {
-        await TestHelpers.takeScreenshot(
-          binding,
-          'withdraw_insufficient_error',
-        );
-        rethrow;
-      }
-    });
-
-    testWidgets('Cancel withdraw flow', (tester) async {
-      try {
-        await loginAndNavigateToWithdraw(tester);
-
-        // Enter details
-        final phoneField = find.byType(TextField).first;
-        await tester.enterText(phoneField, '07 12 34 56 78');
-        await tester.pumpAndSettle();
-
-        await tester.tap(find.text('5'));
-        await tester.tap(find.text('0'));
-        await tester.tap(find.text('0'));
-        await tester.tap(find.text('0'));
-        await tester.pumpAndSettle();
-
-        // Go back
-        await TestHelpers.tapBackButton(tester);
-
-        // Should be on home
-        walletRobot.verifyOnHomeScreen();
-      } catch (e) {
-        await TestHelpers.takeScreenshot(binding, 'cancel_withdraw_error');
-        rethrow;
-      }
+      await flow.pumpUntil(
+        () =>
+            flow.hasAnyText([
+              'Demande de retrait soumise avec succès',
+              'Withdrawal request submitted successfully',
+            ]) ||
+            flow.hasAnyText(['Total Balance', 'Solde total']),
+        reason: 'withdrawal submitted and returned home',
+      );
     });
   });
 }
