@@ -103,7 +103,16 @@ class NotificationsService {
     try {
       await _dio.post(
         '/notifications/device-token',
-        data: {'token': token, 'platform': platform},
+        data: {
+          'token': token,
+          'platform': platform,
+          if (deviceId != null && deviceId.isNotEmpty) 'deviceId': deviceId,
+          if (deviceName != null && deviceName.isNotEmpty)
+            'deviceName': deviceName,
+          if (appVersion != null && appVersion.isNotEmpty)
+            'appVersion': appVersion,
+          if (osVersion != null && osVersion.isNotEmpty) 'osVersion': osVersion,
+        },
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

@@ -140,6 +140,7 @@ class PushNotificationService {
         data: {
           'token': _currentToken,
           'platform': Platform.isIOS ? 'ios' : 'android',
+          'osVersion': Platform.operatingSystemVersion,
         },
       );
 
