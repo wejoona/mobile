@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/deposit/views/payment_instructions_screen.d
 import 'package:usdc_wallet/features/kyc/views/kyc_status_view.dart';
 import 'package:usdc_wallet/features/notifications/views/notifications_view.dart';
 import 'package:usdc_wallet/features/pin/views/confirm_pin_view.dart';
+import 'package:usdc_wallet/features/pin/views/enter_pin_view.dart';
+import 'package:usdc_wallet/features/pin/views/pin_locked_view.dart';
 import 'package:usdc_wallet/features/pin/views/reset_pin_view.dart';
 import 'package:usdc_wallet/features/pin/views/set_pin_view.dart';
 import 'package:usdc_wallet/features/qr_payment/views/receive_qr_screen.dart';
@@ -98,6 +100,21 @@ List<RouteBase> cardAccountRoutes() => [
     },
   ),
   GoRoute(
+    path: '/transfer-success',
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      return createSuccessTransition(
+        state: state,
+        child: TransferSuccessView(
+          amount: extra?['amount'] as double? ?? 0,
+          recipient: extra?['recipient'] as String? ?? 'Unknown',
+          transactionId: extra?['transactionId'] as String? ?? 'N/A',
+          note: extra?['note'] as String?,
+        ),
+      );
+    },
+  ),
+  GoRoute(
     path: '/notifications',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
       state: state,
@@ -134,6 +151,7 @@ List<RouteBase> cardAccountRoutes() => [
         AppPageTransitions.fade(state: state, child: const ChangePinView()),
   ),
   // PIN Setup (post-registration)
+  GoRoute(path: '/pin/set', redirect: (_, _) => '/pin/setup'),
   GoRoute(
     path: '/pin/setup',
     pageBuilder: (context, state) => AppPageTransitions.verticalSlide(
@@ -155,6 +173,26 @@ List<RouteBase> cardAccountRoutes() => [
       return AppPageTransitions.horizontalSlide(
         state: state,
         child: ConfirmPinView(originalPin: originalPin),
+      );
+    },
+  ),
+  GoRoute(path: '/pin/change', redirect: (_, _) => '/settings/pin'),
+  GoRoute(
+    path: '/pin/locked',
+    pageBuilder: (context, state) =>
+        AppPageTransitions.fade(state: state, child: const PinLockedView()),
+  ),
+  GoRoute(
+    path: '/pin/enter',
+    pageBuilder: (context, state) {
+      final query = state.uri.queryParameters;
+      return AppPageTransitions.fade(
+        state: state,
+        child: EnterPinView(
+          title: query['title'] ?? 'Enter PIN',
+          subtitle: query['subtitle'],
+          showBiometric: query['biometric'] == 'true',
+        ),
       );
     },
   ),

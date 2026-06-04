@@ -42,6 +42,7 @@ List<RouteBase> kycSettingsRoutes() => [
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const KycStatusView()),
   ),
+  GoRoute(path: '/kyc/start', redirect: (_, _) => '/kyc/document-type'),
   GoRoute(
     path: '/kyc/document-type',
     pageBuilder: (context, state) => AppPageTransitions.horizontalSlide(
@@ -244,6 +245,12 @@ List<RouteBase> kycSettingsRoutes() => [
     pageBuilder: (context, state) =>
         AppPageTransitions.fade(state: state, child: const CookiePolicyView()),
   ),
+  GoRoute(
+    path: '/settings/cookies',
+    redirect: (_, _) => '/settings/legal/cookies',
+  ),
+  GoRoute(path: '/settings/terms', redirect: (_, _) => '/settings/help'),
+  GoRoute(path: '/settings/privacy', redirect: (_, _) => '/settings/help'),
 
   // Referrals Page - moved out of bottom nav (fade)
   GoRoute(

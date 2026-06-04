@@ -112,7 +112,7 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
                   label: l10n.subBusiness_transactions,
                   icon: Icons.receipt_long,
                   variant: AppButtonVariant.secondary,
-                  onPressed: () => _showTransactions(context),
+                  onPressed: null,
                 ),
               ),
             ],
@@ -378,14 +378,6 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.edit),
-              title: Text(l10n.action_edit),
-              onTap: () {
-                Navigator.pop(ctx);
-                context.push('/sub-businesses/${widget.subBusinessId}/edit');
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.people),
               title: Text(l10n.subBusiness_manageStaff),
               onTap: () {
@@ -397,9 +389,5 @@ class _SubBusinessDetailViewState extends ConsumerState<SubBusinessDetailView> {
         ),
       ),
     );
-  }
-
-  void _showTransactions(BuildContext context) {
-    context.push('/sub-businesses/${widget.subBusinessId}/transactions');
   }
 }

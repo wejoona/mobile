@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/router/app_router.dart';
 import 'package:usdc_wallet/state/app_state.dart' hide AuthStatus;
@@ -44,17 +43,15 @@ class _TestWalletStateMachine extends WalletStateMachine {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  ProviderContainer buildContainer() {
-    return ProviderContainer(
-      overrides: [
-        authProvider.overrideWith(_TestAuthNotifier.new),
-        appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
-        kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
-        userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
-        walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
-      ],
-    );
-  }
+  ProviderContainer buildContainer() => ProviderContainer(
+    overrides: [
+      authProvider.overrideWith(_TestAuthNotifier.new),
+      appFsmProvider.overrideWith(_TestAppFsmNotifier.new),
+      kycStateMachineProvider.overrideWith(_TestKycStateMachine.new),
+      userStateMachineProvider.overrideWith(_TestUserStateMachine.new),
+      walletStateMachineProvider.overrideWith(_TestWalletStateMachine.new),
+    ],
+  );
 
   group('App route inventory', () {
     test('every GoRoute path declared in router modules is matchable', () {
@@ -105,37 +102,191 @@ void main() {
 
       expect(routePaths, containsAllInOrder(onboardingFlow));
     });
+
+    test(
+      'production navigation literals resolve through the assembled router',
+      () {
+        final container = buildContainer();
+        addTearDown(container.dispose);
+
+        final router = container.read(routerProvider);
+        final failures = <String>[];
+
+        for (final literal in _productionNavigationLiterals()) {
+          final samplePath = _sampleNavigationPath(literal.path);
+          final match = router.configuration.findMatch(Uri.parse(samplePath));
+          if (match.isError) {
+            failures.add('${literal.source}: ${literal.path} -> $samplePath');
+          }
+        }
+
+        expect(
+          failures,
+          isEmpty,
+          reason:
+              'Visible navigation calls should not point to missing routes. '
+              'Failures are shown as source: literal -> sample path.',
+        );
+      },
+    );
   });
 }
 
 List<String> _declaredRoutePaths() {
-  final routeSources = Directory('lib/router/routes')
-      .listSync()
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.dart'))
-      .toList()
-    ..sort((left, right) => left.path.compareTo(right.path));
+  final routeSources =
+      Directory('lib/router/routes')
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.dart'))
+          .toList()
+        ..sort((left, right) => left.path.compareTo(right.path));
 
-  return routeSources
-      .expand((file) {
-        final source = file.readAsStringSync();
-        return RegExp(
-          r"path:\s*'([^']+)'",
-        ).allMatches(source).map((match) => match.group(1)!);
-      })
-      .toList();
+  return routeSources.expand((file) {
+    final source = file.readAsStringSync();
+    return RegExp(
+      r"path:\s*'([^']+)'",
+    ).allMatches(source).map((match) => match.group(1)!);
+  }).toList();
 }
 
-String _sampleConcretePath(String routePath) {
-  return routePath.replaceAllMapped(RegExp(r':([A-Za-z0-9_]+)'), (match) {
-    final name = match.group(1)!;
-    return switch (name) {
-      'accountId' => 'bank-account-123',
-      'batchId' => 'batch-123',
-      'code' => 'KORIDO123',
-      'paymentId' => 'payment-123',
-      'providerId' => 'orange-money',
-      _ => 'sample-id',
-    };
-  });
+String _sampleConcretePath(String routePath) =>
+    routePath.replaceAllMapped(RegExp(':([A-Za-z0-9_]+)'), (match) {
+      final name = match.group(1)!;
+      return switch (name) {
+        'accountId' => 'bank-account-123',
+        'batchId' => 'batch-123',
+        'code' => 'KORIDO123',
+        'paymentId' => 'payment-123',
+        'providerId' => 'orange-money',
+        _ => 'sample-id',
+      };
+    });
+
+List<_NavigationLiteral> _productionNavigationLiterals() {
+  final sourceRoot = Directory('lib');
+  final files =
+      sourceRoot
+          .listSync(recursive: true)
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.dart'))
+          .where((file) => !file.path.contains('/l10n/'))
+          .where((file) => !file.path.contains('/mocks/'))
+          .where((file) => !file.path.contains('/test_utils/'))
+          .where((file) => !file.path.endsWith('/ROUTES.dart'))
+          .toList()
+        ..sort((left, right) => left.path.compareTo(right.path));
+
+  final literals = <_NavigationLiteral>[];
+  for (final file in files) {
+    final source = _stripDartComments(file.readAsStringSync());
+    final relativePath = file.path.replaceFirst(
+      '${Directory.current.path}/',
+      '',
+    );
+
+    final patterns = [
+      RegExp(
+        r"(?:context|context\.mounted\s*\?\s*context|Navigator(?:\.of\([^)]*\))?)\.(?:push|go|replace|pushNamed|pushReplacementNamed)\(\s*'([^']+)'",
+      ),
+      RegExp(
+        r"Navigator\.(?:pushNamed|pushReplacementNamed)\([^,]+,\s*'([^']+)'",
+      ),
+    ];
+
+    for (final pattern in patterns) {
+      for (final match in pattern.allMatches(source)) {
+        final path = match.group(1)!;
+        if (path.startsWith('/')) {
+          literals.add(_NavigationLiteral(relativePath, path));
+        }
+      }
+    }
+  }
+
+  return literals;
+}
+
+String _sampleNavigationPath(String path) {
+  final withInterpolations = path
+      .replaceAll(RegExp(r'\$\{[^}]+\}'), 'sample-id')
+      .replaceAll(RegExp(r'\$[A-Za-z_][A-Za-z0-9_]*'), 'sample-id');
+  final uri = Uri.parse(withInterpolations);
+  final sampledPath = _sampleConcretePath(uri.path);
+  return uri.hasQuery ? '$sampledPath?${uri.query}' : sampledPath;
+}
+
+String _stripDartComments(String source) {
+  final buffer = StringBuffer();
+  var index = 0;
+  var inSingle = false;
+  var inDouble = false;
+  var inLineComment = false;
+  var inBlockComment = false;
+
+  while (index < source.length) {
+    final char = source[index];
+    final next = index + 1 < source.length ? source[index + 1] : '';
+
+    if (inLineComment) {
+      if (char == '\n') {
+        inLineComment = false;
+        buffer.write(char);
+      }
+      index++;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char == '*' && next == '/') {
+        inBlockComment = false;
+        index += 2;
+      } else {
+        if (char == '\n') {
+          buffer.write(char);
+        }
+        index++;
+      }
+      continue;
+    }
+
+    if (!inSingle && !inDouble && char == '/' && next == '/') {
+      inLineComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (!inSingle && !inDouble && char == '/' && next == '*') {
+      inBlockComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (!inDouble && char == "'" && !_isEscaped(source, index)) {
+      inSingle = !inSingle;
+    } else if (!inSingle && char == '"' && !_isEscaped(source, index)) {
+      inDouble = !inDouble;
+    }
+
+    buffer.write(char);
+    index++;
+  }
+
+  return buffer.toString();
+}
+
+bool _isEscaped(String source, int index) {
+  var slashCount = 0;
+  var cursor = index - 1;
+  while (cursor >= 0 && source[cursor] == r'\') {
+    slashCount++;
+    cursor--;
+  }
+  return slashCount.isOdd;
+}
+
+class _NavigationLiteral {
+  const _NavigationLiteral(this.source, this.path);
+
+  final String source;
+  final String path;
 }
