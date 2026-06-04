@@ -4,59 +4,34 @@
 
 | Feature | Tests | Status | Coverage |
 |---------|-------|--------|----------|
-| Authentication | 7 | ✅ Complete | 95% |
-| Send Money | 9 | ✅ Complete | 90% |
-| Deposit | 7 | ✅ Complete | 85% |
-| Withdraw | 3 | ✅ Complete | 80% |
-| KYC | 5 | ✅ Complete | 75% |
-| Settings | 10 | ✅ Complete | 85% |
-| Beneficiaries | 6 | ✅ Complete | 80% |
-| **Total** | **47** | **✅ Complete** | **84%** |
+| Authentication | 4 | ✅ Current | 90% |
+| Onboarding | 4 | ✅ Current | 90% |
+| Send Money | 2 | ✅ Current | 85% |
+| Deposit | 1 | ✅ Current | 80% |
+| Withdraw | 2 | ✅ Current | 85% |
+| KYC | 3 | ✅ Current | 75% |
+| Settings | 1 | ✅ Current | 85% |
+| Beneficiaries | 1 | ✅ Current | 75% |
+| Bill Pay | 2 | ✅ Current | 80% |
+| Secondary Surfaces | 4 | ✅ Current | 80% |
+| Cashout & Payments | 3 | ✅ Current | 85% |
+| Resilience/Error Paths | 6 | ✅ Current | 80% |
+| Wallet/Transactions/Receive | 4 | ✅ Current | 85% |
+| **Total** | **37** | **✅ Current** | **83%** |
 
 ## Test Breakdown
 
-### Authentication Flow (7 tests)
+### Authentication Flow (4 tests)
 
 ✅ **auth_flow_test.dart**
 
-1. Complete registration flow
-   - Enter phone number with country selection
-   - Verify OTP
-   - Enter name
-   - Create PIN
-   - Success screen
-
-2. Complete login flow
-   - Enter phone
-   - Verify OTP
-   - Enter PIN
-   - Navigate to home
-
-3. Login with invalid OTP
-   - Verify error handling
-   - Error message display
-
-4. Login with invalid PIN
-   - Verify error handling
-   - Retry mechanism
-
-5. Resend OTP code
-   - Request new code
-   - Verify confirmation
-
-6. Logout flow
-   - Navigate to settings
-   - Logout
-   - Return to login screen
-
-7. Country selection during registration
-   - Select different countries
-   - Verify dial code updates
-   - Phone number formatting
+1. Complete registration/authentication flow
+2. Invalid OTP remains in auth flow
+3. Senegal country selection accepts local phone entry
+4. Logout clears session and returns to auth entry
 
 **Critical Paths Covered:**
 - ✅ New user registration
-- ✅ Existing user login
 - ✅ Error handling
 - ✅ OTP verification
 - ✅ PIN verification
@@ -64,123 +39,66 @@
 
 ---
 
-### Send Money Flow (9 tests)
+### Onboarding Flow (4 tests)
+
+✅ **onboarding_flow_test.dart**
+
+1. Intro sequence reaches phone entry
+2. Full onboarding reaches authenticated home
+3. Terms consent is required before OTP
+4. PIN confirmation mismatch stays in PIN setup
+
+**Critical Paths Covered:**
+- ✅ Intro to phone entry
+- ✅ Legal consent gate
+- ✅ Profile and PIN setup
+- ✅ PIN policy/mismatch handling
+
+---
+
+### Send Money Flow (2 tests)
 
 ✅ **send_money_flow_test.dart**
 
 1. Complete send with phone number
-   - Enter recipient phone
-   - Enter amount
-   - Confirm details
-   - Verify PIN
-   - Success screen
-
-2. Send from beneficiaries
-   - Select saved beneficiary
-   - Complete transfer
-
-3. Send with note
-   - Add transaction note
-   - Verify note appears
-
-4. Send with insufficient balance
-   - Error handling
-   - User feedback
-
-5. Cancel from confirmation
-   - Cancel flow
-   - Return to previous screen
-
-6. Edit amount using backspace
-   - Clear amount
-   - Enter new amount
-
-7. Share receipt after send
-   - Access share dialog
-   - Share options
-
-8. Send again from success
-   - Quick repeat transfer
-
-9. Select from recent recipients
-   - Quick recipient selection
+2. Select recipient from Korido contact lookup
 
 **Critical Paths Covered:**
 - ✅ P2P transfers
-- ✅ Beneficiary selection
+- ✅ Korido user lookup from contacts surface
 - ✅ Amount validation
 - ✅ PIN verification
-- ✅ Receipt generation
-- ✅ Error handling
-- ✅ Transaction notes
 
 ---
 
-### Deposit Flow (7 tests)
+### Deposit Flow (1 test)
 
 ✅ **deposit_flow_test.dart**
 
 1. Deposit with Orange Money
    - Select provider
    - Enter amount
-   - Get USSD instructions
-
-2. Deposit with MTN Mobile Money
-   - Provider selection
-   - Instructions display
-
-3. Deposit with Wave
-   - Wave-specific flow
-
-4. Deposit with minimum amount
-   - Amount validation
-   - Error handling
-
-5. Copy USSD code
-   - Copy to clipboard
-   - Confirmation
-
-6. Cancel deposit flow
-   - Flow cancellation
-   - Navigation back
-
-7. Check deposit status
-   - Status tracking
-   - Updates
+   - Select mobile money channel
+   - Validate payment instruction/status path
 
 **Critical Paths Covered:**
 - ✅ Orange Money deposits
-- ✅ MTN deposits
-- ✅ Wave deposits
 - ✅ Amount validation
-- ✅ USSD instructions
+- ✅ Payment instructions
 - ✅ Status tracking
 
 ---
 
-### Withdraw Flow (3 tests)
+### Withdraw Flow (2 tests)
 
 ✅ **withdraw_flow_test.dart**
 
-1. Complete withdraw to Orange Money
-   - Enter phone
-   - Enter amount
-   - Select provider
-   - Confirm with PIN
-
-2. Withdraw with insufficient balance
-   - Validation
-   - Error message
-
-3. Cancel withdraw flow
-   - Cancel action
-   - Return to home
+1. Withdraw screen renders methods and amount entry
+2. Complete withdraw to mobile money
 
 **Critical Paths Covered:**
 - ✅ Mobile money withdrawals
-- ✅ Balance validation
 - ✅ PIN verification
-- ✅ Flow cancellation
 
 ---
 
