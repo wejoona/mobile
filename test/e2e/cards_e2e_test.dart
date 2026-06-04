@@ -11,6 +11,7 @@ void main() {
   setUpAll(() async {
     client = E2EClient();
     await client.loginFlow(uniqueE2EPhone());
+    await client.ensureWallet();
   });
 
   e2eGroup('Cards E2E', () {
@@ -21,12 +22,11 @@ void main() {
 
     test('POST /cards — create virtual card', () async {
       final res = await client.post('/cards', {
-        'type': 'virtual',
-        'currency': 'USD',
-        'label': 'E2E Test Card',
+        'cardholderName': 'E2E Test User',
+        'spendingLimit': 250,
+        'cardType': 'virtual',
       });
-      // 201 created, 200, or 400 if not eligible
-      expect(res.statusCode, anyOf(200, 201, 400, 403));
+      expect(res.statusCode, anyOf(200, 201));
       if (res.isOk) {
         final data = res.data?['data'] ?? res.data;
         createdCardId = data?['id']?.toString();
@@ -39,15 +39,15 @@ void main() {
       res.expectOk();
     });
 
-    test('POST /cards/:id/freeze — freeze card', () async {
+    test('PUT /cards/:id/freeze — freeze card', () async {
       if (createdCardId == null) return;
-      final res = await client.post('/cards/$createdCardId/freeze');
+      final res = await client.put('/cards/$createdCardId/freeze');
       expect(res.statusCode, anyOf(200, 204));
     });
 
-    test('POST /cards/:id/unfreeze — unfreeze card', () async {
+    test('PUT /cards/:id/unfreeze — unfreeze card', () async {
       if (createdCardId == null) return;
-      final res = await client.post('/cards/$createdCardId/unfreeze');
+      final res = await client.put('/cards/$createdCardId/unfreeze');
       expect(res.statusCode, anyOf(200, 204));
     });
 
