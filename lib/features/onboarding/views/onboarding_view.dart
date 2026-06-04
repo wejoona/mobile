@@ -436,6 +436,15 @@ class _WalletIllustration extends StatelessWidget {
   final Color accent;
   final ThemeColors colors;
 
+  Color get _coinSurface =>
+      colors.isDark ? AppColors.gold50 : AppColorsLight.container;
+
+  Color get _coinBorder =>
+      colors.isDark ? AppColors.gold200 : AppColorsLight.borderGold;
+
+  Color get _coinSymbol =>
+      colors.isDark ? AppColors.gold700 : AppColorsLight.gold600;
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -472,10 +481,14 @@ class _WalletIllustration extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: colors.canvas,
+              color: _coinSurface,
               shape: BoxShape.circle,
+              border: Border.all(color: _coinBorder.withValues(alpha: 0.55)),
               boxShadow: [
-                BoxShadow(color: accent.withValues(alpha: 0.3), blurRadius: 20),
+                BoxShadow(
+                  color: accent.withValues(alpha: 0.24),
+                  blurRadius: 20,
+                ),
               ],
             ),
             child: Center(
@@ -484,7 +497,7 @@ class _WalletIllustration extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w800,
-                  color: accent,
+                  color: _coinSymbol,
                 ),
               ),
             ),
