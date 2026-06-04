@@ -17,6 +17,7 @@ import 'package:usdc_wallet/services/cards/cards_service.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/deposit/deposit_service.dart';
 import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
+import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -84,6 +85,28 @@ void main() {
         'amount': 1000.0,
         'direction': 'buy',
       });
+    });
+
+    test('refresh response accepts root and envelope token payloads', () {
+      final root = RefreshResponse.fromJson({
+        'accessToken': 'access-root',
+        'refreshToken': 'refresh-root',
+        'expiresIn': 900,
+      });
+      final enveloped = RefreshResponse.fromJson({
+        'data': {
+          'accessToken': 'access-envelope',
+          'refreshToken': 'refresh-envelope',
+          'expiresIn': 1200,
+        },
+      });
+
+      expect(root.accessToken, 'access-root');
+      expect(root.refreshToken, 'refresh-root');
+      expect(root.expiresIn, 900);
+      expect(enveloped.accessToken, 'access-envelope');
+      expect(enveloped.refreshToken, 'refresh-envelope');
+      expect(enveloped.expiresIn, 1200);
     });
 
     test('transaction stats accepts backend aggregate names', () {

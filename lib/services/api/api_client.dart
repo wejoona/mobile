@@ -407,20 +407,26 @@ class AuthInterceptor extends Interceptor {
       );
 
       if (response.statusCode == 200) {
-        final data = response.data;
-        if (data is! Map<String, dynamic>) {
+        final data = _responsePayload(response.data);
+        if (data.isEmpty) {
           _refreshCompleter!.complete(false);
           return false;
         }
 
-        await storage.write(
-          key: StorageKeys.accessToken,
-          value: data['accessToken'] as String?,
-        );
-        await storage.write(
-          key: StorageKeys.refreshToken,
-          value: data['refreshToken'] as String?,
-        );
+        final accessToken = data['accessToken'] as String?;
+        if (accessToken == null || accessToken.isEmpty) {
+          _refreshCompleter!.complete(false);
+          return false;
+        }
+
+        await storage.write(key: StorageKeys.accessToken, value: accessToken);
+        final nextRefreshToken = data['refreshToken'] as String?;
+        if (nextRefreshToken != null && nextRefreshToken.isNotEmpty) {
+          await storage.write(
+            key: StorageKeys.refreshToken,
+            value: nextRefreshToken,
+          );
+        }
         _refreshCompleter!.complete(true);
         return true;
       }
@@ -437,6 +443,21 @@ class AuthInterceptor extends Interceptor {
       });
     }
   }
+}
+
+Map<String, dynamic> _responsePayload(Object? raw) {
+  if (raw is Map<String, dynamic>) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) return data;
+    return raw;
+  }
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return map;
+  }
+  return const <String, dynamic>{};
 }
 
 /// API Exception

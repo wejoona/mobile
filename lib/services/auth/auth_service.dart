@@ -148,13 +148,16 @@ class RefreshResponse {
   });
 
   factory RefreshResponse.fromJson(Map<String, dynamic> json) {
+    final payload = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
     return RefreshResponse(
-      accessToken: json['accessToken'] as String,
-      refreshToken: json['refreshToken'] as String?,
-      user: json['user'] != null
-          ? User.fromJson(json['user'] as Map<String, dynamic>)
+      accessToken: payload['accessToken'] as String,
+      refreshToken: payload['refreshToken'] as String?,
+      user: payload['user'] != null
+          ? User.fromJson(payload['user'] as Map<String, dynamic>)
           : null,
-      expiresIn: json['expiresIn'] as int? ?? 900, // Default 15 minutes
+      expiresIn: payload['expiresIn'] as int? ?? 900, // Default 15 minutes
     );
   }
 }

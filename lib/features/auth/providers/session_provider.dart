@@ -56,8 +56,11 @@ class SessionNotifier extends Notifier<AuthState> {
         data: {'refreshToken': refreshToken},
       );
 
-      final data = response.data as Map<String, dynamic>;
-      await storage.write(key: _tokenKey, value: data['accessToken'] as String);
+      final data = _authPayload(response.data);
+      final accessToken = data['accessToken'] as String?;
+      if (accessToken == null || accessToken.isEmpty) return false;
+
+      await storage.write(key: _tokenKey, value: accessToken);
       final nextRefreshToken = data['refreshToken'] as String?;
       if (nextRefreshToken != null && nextRefreshToken.isNotEmpty) {
         await storage.write(key: _refreshKey, value: nextRefreshToken);
@@ -110,6 +113,21 @@ class SessionNotifier extends Notifier<AuthState> {
     await storage.delete(key: _expiryKey);
     state = AuthState.unauthenticated;
   }
+}
+
+Map<String, dynamic> _authPayload(Object? raw) {
+  if (raw is Map<String, dynamic>) {
+    final data = raw['data'];
+    if (data is Map<String, dynamic>) return data;
+    return raw;
+  }
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) return Map<String, dynamic>.from(data);
+    return map;
+  }
+  return const <String, dynamic>{};
 }
 
 final sessionProvider = NotifierProvider<SessionNotifier, AuthState>(
