@@ -77,6 +77,33 @@ Use with local API:
 | Subscribe | POST | `/feature-subscriptions` | Include `featureKey`, `source`, locale/region when available. |
 | List mine | GET | `/feature-subscriptions` | Authenticated. |
 
+## Secondary Features
+
+Capability responses use:
+
+```json
+{
+  "feature": "payment_links",
+  "available": true,
+  "status": "available",
+  "reason": null,
+  "featureReason": null,
+  "provider": null,
+  "retryable": false,
+  "supportReviewRequired": false
+}
+```
+
+| Feature | Capability | Primary routes | Notes |
+| --- | --- | --- | --- |
+| Cards | GET `/cards` metadata | GET `/cards`, POST `/cards`, PUT `/cards/:id/freeze`, PUT `/cards/:id/unfreeze`, PUT `/cards/:id/limit`, DELETE `/cards/:id` | List response includes `available/status/reason/featureReason/provider`. |
+| Bank linking | GET `/banks`, GET `/bank-accounts` metadata | POST `/bank-accounts`, POST `/bank-accounts/:id/verify`, POST `/bank-accounts/:id/deposit`, POST `/bank-accounts/:id/withdraw`, DELETE `/bank-accounts/:id` | Disabled providers return `BANK_LINKING_UNAVAILABLE`. |
+| Bill payments | GET `/bill-payments/providers` | GET `/bill-payments/categories`, POST `/bill-payments/validate`, POST `/bill-payments/pay`, GET `/bill-payments/history`, GET `/bill-payments/:id` | Network/downstream 5xx returns `BILL_PAYMENTS_UNAVAILABLE`. |
+| Payment links | GET `/payment-links/capability` | GET `/payment-links`, POST `/payment-links`, GET `/payment-links/:id`, GET `/payment-links/code/:code`, POST `/payment-links/code/:code/pay`, DELETE `/payment-links/:id` | Existing list response remains `{ links, total }`. |
+| Savings pots | GET `/savings-pots/capability` | GET `/savings-pots`, GET `/savings-pots/:id`, POST `/savings-pots`, PUT `/savings-pots/:id`, POST `/savings-pots/:id/deposit`, POST `/savings-pots/:id/withdraw`, DELETE `/savings-pots/:id` | List response remains an array for current mobile parsers. |
+| Recurring transfers | GET `/recurring-transfers/capability` | GET `/recurring-transfers`, GET `/recurring-transfers/upcoming`, GET `/recurring-transfers/:id`, POST `/recurring-transfers`, PATCH `/recurring-transfers/:id`, POST `/recurring-transfers/:id/pause`, POST `/recurring-transfers/:id/resume`, DELETE `/recurring-transfers/:id` | List response includes `transfers` and `data` aliases. |
+| Referrals | GET `/referrals/capability` | GET `/referrals`, GET `/referrals/history`, GET `/referrals/code`, GET `/referrals/stats`, POST `/referrals/apply` | `/referrals` returns mobile summary object; `/history` returns raw referral array. |
+
 ## Local OTP Stack
 
 Start VerifyHQ:
