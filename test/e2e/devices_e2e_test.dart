@@ -8,6 +8,7 @@ import 'e2e_test_client.dart';
 
 void main() {
   late E2EClient client;
+  String? registeredDeviceId;
 
   setUpAll(() async {
     client = E2EClient();
@@ -24,6 +25,9 @@ void main() {
         'appVersion': '1.0.0',
       });
       expect(res.statusCode, anyOf(200, 201));
+      final device = jsonDecode(res.body) as Map<String, dynamic>;
+      registeredDeviceId = device['id'] as String?;
+      expect(registeredDeviceId, isNotNull);
     });
 
     test('GET /devices — list devices', () async {
@@ -58,6 +62,16 @@ void main() {
       expect(sessions as List<dynamic>, isNotEmpty);
       expect(sessions.first, isA<Map<String, dynamic>>());
       expect((sessions.first as Map<String, dynamic>)['isActive'], isTrue);
+      expect(
+        sessions,
+        contains(
+          predicate<dynamic>(
+            (session) =>
+                session is Map<String, dynamic> &&
+                session['deviceId'] == registeredDeviceId,
+          ),
+        ),
+      );
     });
 
     test('GET /sessions — no auth returns 401', () async {
