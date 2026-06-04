@@ -27,6 +27,31 @@ void main() {
       res.expectOk();
     });
 
+    test('GET /contacts/lookup — search discoverable Korido users', () async {
+      final res = await client.get('/contacts/lookup?query=awa');
+      res.expectOk();
+
+      final data = res.data;
+      expect(data, isNotNull);
+      final nestedData = data?['data'];
+      final users =
+          data?['users'] ??
+          (nestedData is Map<String, dynamic> ? nestedData['users'] : null);
+      expect(users, isA<List<dynamic>>());
+    });
+
+    test('POST /contacts/invite — invite non-Korido contact', () async {
+      final res = await client.post('/contacts/invite', {
+        'phone': '+2250701234567',
+      });
+      res.expectOk();
+
+      final data = res.data;
+      expect(data, isNotNull);
+      expect(data?['success'], isA<bool>());
+      expect(data?['message'], isA<String>());
+    });
+
     test('GET /contacts — no auth returns 401', () async {
       final noAuth = E2EClient();
       final res = await noAuth.get('/contacts');

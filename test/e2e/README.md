@@ -48,7 +48,7 @@ dart test test/e2e/auth_e2e_test.dart -r expanded \
 | `user_e2e_test.dart` | `/user/profile`, `/user/locale`, `/user/pin/*`, `/user/search`, `/user/limits` |
 | `wallet_e2e_test.dart` | `/wallet`, `/wallet/limits`, `/deposits/*`, `/transfers/*`, `/withdrawals/*`, `/wallet/pin/*` |
 | `transfers_e2e_test.dart` | `/transfers`, `/transfers/internal`, `/transfers/external` |
-| `contacts_e2e_test.dart` | `/contacts`, `/contacts/sync` |
+| `contacts_e2e_test.dart` | `/contacts`, `/contacts/sync`, `/contacts/lookup`, `/contacts/invite` |
 | `payment_links_e2e_test.dart` | `/payment-links` CRUD + deactivate |
 | `savings_pots_e2e_test.dart` | `/savings-pots` CRUD + deposit/withdraw |
 | `cards_e2e_test.dart` | `/cards` CRUD + freeze/unfreeze |
