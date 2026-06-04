@@ -106,7 +106,7 @@ class _ExportDataViewState extends ConsumerState<ExportDataView> {
     setState(() => _isExporting = true);
     try {
       final dio = ref.read(dioProvider);
-      await dio.post('/account/export', data: {
+      await dio.get('/user/data-export', queryParameters: {
         'includeTransactions': _includeTransactions,
         'includeProfile': _includeProfile,
         'includeContacts': _includeContacts,
