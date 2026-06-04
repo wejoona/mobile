@@ -379,6 +379,31 @@ void main() {
       expect(contacts.single.avatarUrl, 'https://cdn.example/avatar.png');
     });
 
+    test('passive contact reads do not request iOS permission', () {
+      final contactsServiceSource = File(
+        'lib/services/contacts/contacts_service.dart',
+      ).readAsStringSync();
+      final getDeviceContactsBody = RegExp(
+        r'Future<List<Contact>> getDeviceContacts\(\) async \{([\s\S]*?)\n  \}',
+      ).firstMatch(contactsServiceSource)!.group(1)!;
+      final contactSyncProviderSource = File(
+        'lib/features/contacts/providers/contact_sync_provider.dart',
+      ).readAsStringSync();
+      final syncContactsBody = RegExp(
+        r'Future<void> syncContacts\(\) async \{([\s\S]*?)\n  Future<void> syncIfNeeded',
+      ).firstMatch(contactSyncProviderSource)!.group(1)!;
+
+      expect(getDeviceContactsBody, contains('Permission.contacts.status'));
+      expect(getDeviceContactsBody, isNot(contains('requestPermission')));
+      expect(
+        getDeviceContactsBody,
+        isNot(contains('Permission.contacts.request')),
+      );
+      expect(syncContactsBody, contains('Permission.contacts.status'));
+      expect(syncContactsBody, isNot(contains('await requestPermission')));
+      expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
+    });
+
     test('contact lookup accepts backend nested user envelope', () async {
       final dio = MockDio()
         ..queueResponse({

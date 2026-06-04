@@ -140,9 +140,14 @@ class ContactsService {
 
   ContactsService(this._storage);
 
-  /// Request permission and get device contacts
+  /// Get device contacts only when permission is already granted.
+  ///
+  /// Do not request permission here: callers must ask from an explicit user
+  /// action so unrelated app startup or background reads cannot trigger the
+  /// iOS Contacts system prompt.
   Future<List<Contact>> getDeviceContacts() async {
-    if (!await FlutterContacts.requestPermission(readonly: true)) {
+    final status = await Permission.contacts.status;
+    if (!status.isGranted) {
       return [];
     }
     return FlutterContacts.getContacts(withProperties: true, withPhoto: false);

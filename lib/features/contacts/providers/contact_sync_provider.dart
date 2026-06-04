@@ -92,11 +92,12 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
   Future<void> syncContacts() async {
     if (state.status == ContactSyncStatus.syncing) return;
 
-    // Check permission first
+    // Passive sync must not trigger the iOS Contacts prompt. Permission should
+    // only be requested from an explicit user action.
     final permissionStatus = await Permission.contacts.status;
     if (!permissionStatus.isGranted) {
-      final granted = await requestPermission();
-      if (!granted) return;
+      state = state.copyWith(status: ContactSyncStatus.permissionDenied);
+      return;
     }
 
     state = state.copyWith(status: ContactSyncStatus.syncing, error: null);
