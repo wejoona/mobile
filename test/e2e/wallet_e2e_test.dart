@@ -35,15 +35,18 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /wallet/deposit/channels — returns mobile deposit channels', () async {
-      final res = await client.get('/wallet/deposit/channels');
-      res.expectOk();
+    test(
+      'GET /wallet/deposit/channels — returns mobile deposit channels',
+      () async {
+        final res = await client.get('/wallet/deposit/channels');
+        res.expectOk();
 
-      final raw = res.data?['data'] ?? res.data;
-      expect(raw, isA<Map<String, dynamic>>());
-      final data = raw! as Map<String, dynamic>;
-      expect(data['channels'], isA<List<dynamic>>());
-    });
+        final raw = res.data?['data'] ?? res.data;
+        expect(raw, isA<Map<String, dynamic>>());
+        final data = raw! as Map<String, dynamic>;
+        expect(data['channels'], isA<List<dynamic>>());
+      },
+    );
 
     test('GET /wallet/deposit/providers — returns provider alias', () async {
       final res = await client.get('/wallet/deposit/providers');
@@ -55,11 +58,11 @@ void main() {
       expect(data['providers'], isA<List<dynamic>>());
     });
 
-    test('GET /wallet/rate — returns rate', () async {
+    test('GET /wallet/exchange-rate — returns rate', () async {
       final res = await client.get(
-        '/wallet/rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
+        '/wallet/exchange-rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
       );
-      expect(res.statusCode, anyOf(200, 400, 404, 501));
+      res.expectOk();
     });
 
     test('GET /wallet/kyc/status — returns KYC status', () async {
@@ -163,15 +166,11 @@ void main() {
 
   e2eGroup('Withdrawal E2E', () {
     test('POST /wallet/withdraw — missing auth factors is rejected', () async {
-      final res = await client.post(
-        '/wallet/withdraw',
-        {
-          'amount': 10,
-          'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
-          'network': 'polygon',
-        },
-        _idempotencyHeaders(),
-      );
+      final res = await client.post('/wallet/withdraw', {
+        'amount': 10,
+        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+        'network': 'polygon',
+      }, _idempotencyHeaders());
       expect(res.statusCode, anyOf(400, 401, 403));
     });
 

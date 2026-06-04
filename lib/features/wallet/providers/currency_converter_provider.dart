@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 
-/// Currency converter state management — fetches live rates from GET /wallet/rate.
+/// Currency converter state management — fetches live rates from GET /wallet/exchange-rate.
 class CurrencyConversionState {
   final String fromCurrency;
   final String toCurrency;
@@ -79,7 +79,7 @@ class CurrencyConverterNotifier extends StateNotifier<CurrencyConversionState> {
     fetchRate();
   }
 
-  /// Fetch live exchange rate from backend GET /wallet/rate.
+  /// Fetch live exchange rate from backend GET /wallet/exchange-rate.
   Future<void> fetchRate() async {
     state = state.copyWith(isLoading: true, error: null);
     try {

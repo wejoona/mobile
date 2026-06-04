@@ -116,7 +116,7 @@ class DepositService {
     double amount = 10000,
   }) async {
     final response = await _dio.get(
-      '/wallet/rate',
+      '/wallet/exchange-rate',
       queryParameters: {
         'sourceCurrency': from,
         'targetCurrency': to,

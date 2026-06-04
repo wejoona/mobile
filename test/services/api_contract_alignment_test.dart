@@ -59,6 +59,33 @@ void main() {
       });
     });
 
+    test('wallet exchange rate facade uses deployed alias route', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'fromCurrency': 'XOF',
+          'toCurrency': 'USD',
+          'rate': 600,
+          'timestamp': '2026-06-04T00:00:00.000Z',
+        });
+      final api = WalletApi(dio);
+
+      await api.getRate(
+        sourceCurrency: 'XOF',
+        targetCurrency: 'USD',
+        amount: 1000,
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'GET');
+      expect(request.path, '/wallet/exchange-rate');
+      expect(request.queryParameters, {
+        'sourceCurrency': 'XOF',
+        'targetCurrency': 'USD',
+        'amount': 1000.0,
+        'direction': 'buy',
+      });
+    });
+
     test('transaction stats accepts backend aggregate names', () {
       final stats = TransactionStats.fromJson({
         'totalTransactions': 7,

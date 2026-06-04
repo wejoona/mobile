@@ -94,11 +94,34 @@ class WalletApi {
 
   // ── Exchange Rate ──
 
-  /// GET /wallet/rate
-  Future<Response> getExchangeRate() => _dio.get('/wallet/rate');
+  /// GET /wallet/exchange-rate
+  Future<Response> getExchangeRate({
+    String sourceCurrency = 'XOF',
+    String targetCurrency = 'USD',
+    double amount = 10000,
+    String direction = 'buy',
+  }) => _dio.get(
+    '/wallet/exchange-rate',
+    queryParameters: {
+      'sourceCurrency': sourceCurrency,
+      'targetCurrency': targetCurrency,
+      'amount': amount,
+      'direction': direction,
+    },
+  );
 
-  /// GET /wallet/rate
-  Future<Response> getRate() => _dio.get('/wallet/rate');
+  /// GET /wallet/exchange-rate
+  Future<Response> getRate({
+    String sourceCurrency = 'XOF',
+    String targetCurrency = 'USD',
+    double amount = 10000,
+    String direction = 'buy',
+  }) => getExchangeRate(
+    sourceCurrency: sourceCurrency,
+    targetCurrency: targetCurrency,
+    amount: amount,
+    direction: direction,
+  );
 
   // ── KYC ──
 

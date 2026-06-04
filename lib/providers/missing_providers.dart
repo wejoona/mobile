@@ -107,7 +107,7 @@ class FilteredPaginatedTransactionsNotifier
   }
 }
 
-/// Exchange rate provider — wired to GET /wallet/rate.
+/// Exchange rate provider — wired to GET /wallet/exchange-rate.
 final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   ref,
 ) async {

@@ -165,7 +165,7 @@ class WalletService {
     }
   }
 
-  /// GET /wallet/rate
+  /// GET /wallet/exchange-rate
   Future<ExchangeRate> getRate({
     required String sourceCurrency,
     required String targetCurrency,
@@ -174,7 +174,7 @@ class WalletService {
   }) async {
     try {
       final response = await _dio.get(
-        '/wallet/rate',
+        '/wallet/exchange-rate',
         queryParameters: {
           'sourceCurrency': sourceCurrency,
           'targetCurrency': targetCurrency,
@@ -182,7 +182,12 @@ class WalletService {
           'direction': direction,
         },
       );
-      return ExchangeRate.fromJson(response.data);
+      return _exchangeRateFromPayload(
+        response.data,
+        sourceCurrency: sourceCurrency,
+        targetCurrency: targetCurrency,
+        amount: amount,
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -269,6 +274,48 @@ class WalletService {
       throw ApiException.fromDioError(e);
     }
   }
+}
+
+ExchangeRate _exchangeRateFromPayload(
+  Object? payload, {
+  required String sourceCurrency,
+  required String targetCurrency,
+  required double amount,
+}) {
+  final data = _asStringMap(payload);
+  final rate = (data['rate'] as num?)?.toDouble() ?? 0;
+  final safeRate = rate > 0 ? rate : 1.0;
+  final sourceAmount =
+      (data['sourceAmount'] as num?)?.toDouble() ??
+      (data['fromAmount'] as num?)?.toDouble() ??
+      amount;
+  final targetAmount =
+      (data['targetAmount'] as num?)?.toDouble() ??
+      (data['toAmount'] as num?)?.toDouble() ??
+      (sourceAmount / safeRate);
+
+  return ExchangeRate(
+    sourceCurrency:
+        data['sourceCurrency'] as String? ??
+        data['fromCurrency'] as String? ??
+        sourceCurrency,
+    targetCurrency:
+        data['targetCurrency'] as String? ??
+        data['toCurrency'] as String? ??
+        targetCurrency,
+    rate: safeRate,
+    sourceAmount: sourceAmount,
+    targetAmount: targetAmount,
+    fee: (data['fee'] as num?)?.toDouble() ?? 0,
+    expiresAt:
+        DateTime.tryParse(
+          data['expiresAt'] as String? ??
+              data['timestamp'] as String? ??
+              data['updatedAt'] as String? ??
+              '',
+        ) ??
+        DateTime.now(),
+  );
 }
 
 /// Wallet Balance Response
@@ -590,6 +637,12 @@ Map<String, String> _transactionHeaders({
     if (pinToken != null) 'X-Pin-Token': pinToken,
     'X-Idempotency-Key': idempotencyKey ?? generateIdempotencyKey(),
   };
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  return const <String, dynamic>{};
 }
 
 String _mobileMoneyChannelId(String value) {

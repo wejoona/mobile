@@ -103,14 +103,7 @@ class WalletMock {
       handler: _handleGetBalance,
     );
 
-    // GET /wallet/rate
-    interceptor.register(
-      method: 'GET',
-      path: '/wallet/rate',
-      handler: _handleGetRate,
-    );
-
-    // GET /wallet/exchange-rate - legacy alias
+    // GET /wallet/exchange-rate
     interceptor.register(
       method: 'GET',
       path: '/wallet/exchange-rate',
