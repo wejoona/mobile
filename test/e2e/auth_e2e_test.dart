@@ -92,7 +92,7 @@ void main() {
     });
 
     test('Re-login for subsequent tests', () async {
-      await client.loginFlow(authPhone);
+      await client.loginFlow(uniqueE2EPhone());
       expect(client.accessToken, isNotNull);
     });
   });

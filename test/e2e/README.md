@@ -4,27 +4,82 @@ These tests run against the **real backend API** (no mocks).
 
 ## Usage
 
-### Option 1: Local backend (recommended — has /dev/otp for auto-login)
+### Option 1: Local stack
+
+Start the in-stack dependencies first:
+
 ```bash
-# Start backend locally first, then:
-dart test test/e2e/ -r expanded --dart-define=API_URL=http://localhost:3000/api/v1
+cd /Users/macbook/Ainotek/Projects/JoonaPay/verify-hq
+DB_PORT=5432 \
+PORT=3300 \
+NODE_ENV=development \
+VERIFYHQ_DEV_OTP=123456 \
+VERIFYHQ_DEV_API_KEY=dev-test-key \
+VERIFYHQ_VERIFICATION_RATE_LIMIT_PER_MINUTE=1000 \
+DISPATCH_MOCK=true \
+npm run start:api
+```
+
+```bash
+cd /Users/macbook/Ainotek/Projects/JoonaPay/bill-pay
+PORT=3400 \
+NODE_ENV=development \
+ADMIN_SECRET=dev-admin-secret \
+BILL_PAY_PROVIDER=mock \
+BILL_PAY_PROVIDER_WEBHOOK_SECRET=dev-secret \
+VERIFYHQ_BASE_URL=http://localhost:3300 \
+VERIFYHQ_API_KEY=dev-test-key \
+npm run start
+```
+
+Create a local Bill Pay API client and keep the returned `apiKey` out of git:
+
+```bash
+curl -fsS -X POST http://127.0.0.1:3400/admin/api-clients \
+  -H 'Content-Type: application/json' \
+  -H 'X-Admin-Secret: dev-admin-secret' \
+  -d '{"name":"Korido local E2E","permissions":["bills:read","bills:write"],"rateLimit":1000}'
+```
+
+Start Korido API with the returned key:
+
+```bash
+cd /Users/macbook/JoonaPay/USDC-Wallet/usdc-wallet
+PORT=3401 \
+BILL_PAY_BASE_URL=http://localhost:3400 \
+BILL_PAY_API_KEY=<bill-pay-api-key> \
+VERIFICATION_STRATEGY=verifyhq \
+VERIFYHQ_BASE_URL=http://localhost:3300 \
+VERIFYHQ_API_KEY=dev-test-key \
+VERIFYHQ_OTP_LENGTH=6 \
+CIRCLE_USE_MOCK=true \
+YELLOW_CARD_USE_MOCK=true \
+STELLAR_USE_MOCK=true \
+NTM_USE_MOCK=true \
+npm run start
+```
+
+Then run the E2E tests from the mobile repo:
+
+```bash
+RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e --no-pub -j 1
 ```
 
 ### Option 2: Production with pre-auth token
 ```bash
 # Get a token first (login via mobile app, then extract from secure storage)
-dart test test/e2e/ -r expanded \
-  --dart-define=API_URL=https://api.joonapay.com/api/v1 \
-  --dart-define=AUTH_TOKEN=eyJhbGci...
+RUN_E2E=true \
+API_URL=https://api.joonapay.com/api/v1 \
+AUTH_TOKEN=eyJhbGci... \
+flutter test test/e2e --no-pub -j 1
 ```
 
 ### Option 3: Specific test file
 ```bash
-dart test test/e2e/auth_e2e_test.dart -r expanded \
-  --dart-define=API_URL=http://localhost:3000/api/v1
+RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e_test.dart --no-pub
 ```
 
-## Configuration (--dart-define)
+## Configuration
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -34,10 +89,10 @@ dart test test/e2e/auth_e2e_test.dart -r expanded \
 
 ## Notes
 
-- **Production** runs `NODE_ENV=production` — `/dev/otp` is disabled, so you MUST provide `AUTH_TOKEN`
-- **Local/dev** runs `NODE_ENV=development` — auto-login works via `/dev/otp/:phone`
-- Rate limiting: prod has throttle guards, tests may hit 429 if run too fast
-- Tests are independent per file but share the `loginFlow()` setup
+- **Production** runs `NODE_ENV=production` — `/dev/otp` is disabled, so provide `AUTH_TOKEN`.
+- **Local/dev** uses Korido API -> VerifyHQ with dev OTP `123456`.
+- Run the full folder with `-j 1`. OTP verification is intentionally stateful and VerifyHQ enforces request/attempt limits, so parallel runs can trip legitimate throttles.
+- Tests are independent per file but each file may create authenticated users through `loginFlow()`.
 
 ## Test Coverage
 
