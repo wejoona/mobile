@@ -281,16 +281,14 @@ GET /api/v1/feature-flags/me
 
 Response:
 {
-  "flags": {
-    "merchant_qr": true,
-    "payment_links": true,
-    "referral_program": true,
-    "recurring_transfers": false,
-    "savings_pots": false,
-    "external_transfers": true,
-    "bill_payments": true,
-    ...
-  }
+  "merchant_qr": true,
+  "payment_links": true,
+  "referral_program": true,
+  "recurring_transfers": false,
+  "savings_pots": false,
+  "external_transfers": true,
+  "bill_payments": true,
+  ...
 }
 ```
 

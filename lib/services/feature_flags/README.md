@@ -162,14 +162,12 @@ GET /api/v1/feature-flags/me
 Response:
 ```json
 {
-  "flags": {
-    "two_factor_auth": false,
-    "external_transfers": true,
-    "bill_payments": true,
-    "savings_pots": false,
-    "biometric_auth": true,
-    "mobile_money_withdrawals": true
-  }
+  "two_factor_auth": false,
+  "external_transfers": true,
+  "bill_payments": true,
+  "savings_pots": false,
+  "biometric_auth": true,
+  "mobile_money_withdrawals": true
 }
 ```
 

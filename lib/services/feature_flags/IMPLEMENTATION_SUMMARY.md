@@ -278,18 +278,16 @@ Authorization: Bearer {token}
 ### Response
 ```json
 {
-  "flags": {
-    "two_factor_auth": false,
-    "external_transfers": true,
-    "bill_payments": true,
-    "savings_pots": false,
-    "biometric_auth": true,
-    "mobile_money_withdrawals": true,
-    "merchant_qr": true,
-    "payment_links": true,
-    "referral_program": true,
-    "recurring_transfers": false
-  }
+  "two_factor_auth": false,
+  "external_transfers": true,
+  "bill_payments": true,
+  "savings_pots": false,
+  "biometric_auth": true,
+  "mobile_money_withdrawals": true,
+  "merchant_qr": true,
+  "payment_links": true,
+  "referral_program": true,
+  "recurring_transfers": false
 }
 ```
 

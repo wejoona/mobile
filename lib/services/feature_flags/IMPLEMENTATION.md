@@ -279,12 +279,10 @@ Authorization: Bearer {token}
 
 Response:
 {
-  "flags": {
-    "two_factor_auth": false,
-    "external_transfers": true,
-    "bill_payments": true,
-    ...
-  }
+  "two_factor_auth": false,
+  "external_transfers": true,
+  "bill_payments": true,
+  ...
 }
 ```
 
