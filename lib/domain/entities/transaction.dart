@@ -15,6 +15,7 @@ class Transaction {
   final String? recipientPhone;
   final String? recipientAddress;
   final String? recipientWalletId;
+  final String? direction;
   final Map<String, dynamic>? metadata;
   final DateTime createdAt;
   final DateTime? completedAt;
@@ -33,19 +34,26 @@ class Transaction {
     this.recipientPhone,
     this.recipientAddress,
     this.recipientWalletId,
+    this.direction,
     this.metadata,
     required this.createdAt,
     this.completedAt,
   });
 
-  bool get isDebit =>
-      type == TransactionType.withdrawal ||
-      type == TransactionType.transferExternal ||
-      (type == TransactionType.transferInternal && amount < 0);
+  bool get isDebit {
+    if (direction == 'debit') return true;
+    if (direction == 'credit') return false;
+    return type == TransactionType.withdrawal ||
+        type == TransactionType.transferExternal ||
+        (type == TransactionType.transferInternal && amount < 0);
+  }
 
-  bool get isCredit =>
-      type == TransactionType.deposit ||
-      (type == TransactionType.transferInternal && amount >= 0);
+  bool get isCredit {
+    if (direction == 'credit') return true;
+    if (direction == 'debit') return false;
+    return type == TransactionType.deposit ||
+        (type == TransactionType.transferInternal && amount >= 0);
+  }
 
   bool get isPending =>
       status == TransactionStatus.pending ||
@@ -75,6 +83,7 @@ class Transaction {
       recipientPhone: json['recipientPhone'] as String?,
       recipientAddress: json['recipientAddress'] as String?,
       recipientWalletId: json['recipientWalletId'] as String?,
+      direction: json['direction'] as String?,
       metadata: json['metadata'] is Map
           ? Map<String, dynamic>.from(json['metadata'] as Map)
           : null,
@@ -88,12 +97,17 @@ class Transaction {
   static TransactionType _parseTransactionType(String type) {
     switch (type) {
       case 'deposit':
+      case 'mobile_money_deposit':
         return TransactionType.deposit;
       case 'withdrawal':
+      case 'mobile_money_withdrawal':
         return TransactionType.withdrawal;
       case 'transfer_internal':
+      case 'internal_transfer_sent':
+      case 'internal_transfer_received':
         return TransactionType.transferInternal;
       case 'transfer_external':
+      case 'external_transfer':
         return TransactionType.transferExternal;
       default:
         return TransactionType.deposit;
@@ -112,6 +126,7 @@ class Transaction {
       'description': description,
       'externalReference': externalReference,
       'failureReason': failureReason,
+      'direction': direction,
       'createdAt': createdAt.toIso8601String(),
       'completedAt': completedAt?.toIso8601String(),
     };

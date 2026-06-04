@@ -95,6 +95,7 @@ class TransactionItem {
   final String? description;
   final String? counterpartyName;
   final String? counterpartyPhone;
+  final String? direction;
   final DateTime createdAt;
 
   const TransactionItem({
@@ -106,23 +107,33 @@ class TransactionItem {
     this.description,
     this.counterpartyName,
     this.counterpartyPhone,
+    this.direction,
     required this.createdAt,
   });
 
   /// Whether this transaction is a credit (money in).
-  /// Backend types: deposit, transfer_internal (with positive amount)
-  bool get isCredit =>
-      type == 'deposit' ||
-      type == 'received' ||
-      (type == 'transfer_internal' && amount > 0);
+  bool get isCredit {
+    if (direction == 'credit') return true;
+    if (direction == 'debit') return false;
+    return type == 'deposit' ||
+        type == 'mobile_money_deposit' ||
+        type == 'received' ||
+        type == 'internal_transfer_received' ||
+        (type == 'transfer_internal' && amount > 0);
+  }
 
   /// Whether this transaction is a debit (money out).
-  /// Backend types: withdrawal, transfer_internal (with negative amount), transfer_external
-  bool get isDebit =>
-      type == 'withdrawal' ||
-      type == 'sent' ||
-      type == 'transfer_external' ||
-      (type == 'transfer_internal' && amount < 0);
+  bool get isDebit {
+    if (direction == 'debit') return true;
+    if (direction == 'credit') return false;
+    return type == 'withdrawal' ||
+        type == 'mobile_money_withdrawal' ||
+        type == 'sent' ||
+        type == 'internal_transfer_sent' ||
+        type == 'transfer_external' ||
+        type == 'external_transfer' ||
+        (type == 'transfer_internal' && amount < 0);
+  }
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) =>
       TransactionItem(
@@ -134,6 +145,7 @@ class TransactionItem {
         description: json['description'] as String?,
         counterpartyName: json['counterpartyName'] as String?,
         counterpartyPhone: json['counterpartyPhone'] as String?,
+        direction: json['direction'] as String?,
         createdAt: DateTime.parse(json['createdAt'] as String),
       );
 }

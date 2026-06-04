@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
+import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
@@ -416,6 +418,97 @@ void main() {
       expect(result['offset'], 0);
       expect(dio.requestHistory.single.path, '/cards/card_1/transactions');
       expect(dio.requestHistory.single.method, 'GET');
+    });
+
+    test('transaction parser accepts backend type aliases and direction', () {
+      final sent = wallet_tx.Transaction.fromJson({
+        'id': 'tx_sent',
+        'walletId': 'wallet_1',
+        'type': 'internal_transfer_sent',
+        'status': 'completed',
+        'amount': 25,
+        'currency': 'USDC',
+        'direction': 'debit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final received = wallet_tx.Transaction.fromJson({
+        'id': 'tx_received',
+        'walletId': 'wallet_1',
+        'type': 'internal_transfer_received',
+        'status': 'completed',
+        'amount': 25,
+        'currency': 'USDC',
+        'direction': 'credit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final external = wallet_tx.Transaction.fromJson({
+        'id': 'tx_external',
+        'walletId': 'wallet_1',
+        'type': 'external_transfer',
+        'status': 'completed',
+        'amount': 25,
+        'currency': 'USDC',
+        'direction': 'debit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final deposit = wallet_tx.Transaction.fromJson({
+        'id': 'tx_deposit',
+        'walletId': 'wallet_1',
+        'type': 'mobile_money_deposit',
+        'status': 'completed',
+        'amount': 25,
+        'currency': 'USDC',
+        'direction': 'credit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final withdrawal = wallet_tx.Transaction.fromJson({
+        'id': 'tx_withdrawal',
+        'walletId': 'wallet_1',
+        'type': 'mobile_money_withdrawal',
+        'status': 'completed',
+        'amount': 25,
+        'currency': 'USDC',
+        'direction': 'debit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+
+      expect(sent.type, TransactionType.transferInternal);
+      expect(sent.isDebit, isTrue);
+      expect(sent.isCredit, isFalse);
+      expect(received.type, TransactionType.transferInternal);
+      expect(received.isCredit, isTrue);
+      expect(external.type, TransactionType.transferExternal);
+      expect(external.isDebit, isTrue);
+      expect(deposit.type, TransactionType.deposit);
+      expect(deposit.isCredit, isTrue);
+      expect(withdrawal.type, TransactionType.withdrawal);
+      expect(withdrawal.isDebit, isTrue);
+    });
+
+    test('transaction list item honors backend direction aliases', () {
+      final sent = TransactionItem.fromJson({
+        'id': 'tx_sent',
+        'type': 'internal_transfer_sent',
+        'amount': 25,
+        'currency': 'USDC',
+        'status': 'completed',
+        'direction': 'debit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+      final received = TransactionItem.fromJson({
+        'id': 'tx_received',
+        'type': 'internal_transfer_received',
+        'amount': 25,
+        'currency': 'USDC',
+        'status': 'completed',
+        'direction': 'credit',
+        'createdAt': '2026-06-04T12:00:00.000Z',
+      });
+
+      expect(sent.isDebit, isTrue);
+      expect(sent.isCredit, isFalse);
+      expect(received.isCredit, isTrue);
+      expect(received.isDebit, isFalse);
     });
 
     test(
