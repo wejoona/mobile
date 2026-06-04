@@ -28,3 +28,10 @@ Do not reopen these unless new evidence changes them.
 - Production is GitOps-owned.
 - Do not mutate live k3s resources for ordinary deploys.
 - Read CI and GitOps repo before touching deployment behavior.
+
+## Dependencies
+
+- Release-build dependency warnings are not automatically a release blocker.
+- Do not bulk-upgrade FlutterFire, camera, contacts, permissions, local auth, or notification plugins during product hardening without a dedicated upgrade branch and full simulator/API regression pass.
+- Patch-level lockfile upgrades are acceptable only when tied to a concrete bug, security fix, or build failure.
+- The current Swift Package Manager warnings are future Flutter compatibility warnings; CocoaPods remains the active iOS integration path.
