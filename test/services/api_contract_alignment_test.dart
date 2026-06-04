@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
+import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
@@ -245,6 +246,31 @@ void main() {
         expect(dio.requestHistory[1].data, {'pushEnabled': false});
       },
     );
+
+    test('notification preferences full save sends flat backend DTO keys', () {
+      final preferences = UserNotificationPreferences.defaults().copyWith(
+        pushEnabled: false,
+        pushMarketing: true,
+        emailMarketing: true,
+        lowBalanceThreshold: 25,
+      );
+
+      expect(preferences.toUpdateJson(), {
+        'pushEnabled': false,
+        'pushTransactions': true,
+        'pushSecurity': true,
+        'pushMarketing': true,
+        'emailEnabled': true,
+        'emailTransactions': true,
+        'emailMonthlyStatement': true,
+        'emailMarketing': true,
+        'smsEnabled': true,
+        'smsTransactions': true,
+        'smsSecurity': true,
+        'largeTransactionThreshold': 1000.0,
+        'lowBalanceThreshold': 25.0,
+      });
+    });
 
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
