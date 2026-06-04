@@ -35,6 +35,26 @@ void main() {
       res.expectOk();
     });
 
+    test('GET /wallet/deposit/channels — returns mobile deposit channels', () async {
+      final res = await client.get('/wallet/deposit/channels');
+      res.expectOk();
+
+      final raw = res.data?['data'] ?? res.data;
+      expect(raw, isA<Map<String, dynamic>>());
+      final data = raw! as Map<String, dynamic>;
+      expect(data['channels'], isA<List<dynamic>>());
+    });
+
+    test('GET /wallet/deposit/providers — returns provider alias', () async {
+      final res = await client.get('/wallet/deposit/providers');
+      res.expectOk();
+
+      final raw = res.data?['data'] ?? res.data;
+      expect(raw, isA<Map<String, dynamic>>());
+      final data = raw! as Map<String, dynamic>;
+      expect(data['providers'], isA<List<dynamic>>());
+    });
+
     test('GET /wallet/rate — returns rate', () async {
       final res = await client.get(
         '/wallet/rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
@@ -81,6 +101,24 @@ void main() {
   });
 
   e2eGroup('Deposit E2E', () {
+    test('POST /wallet/deposit — missing fields returns 400', () async {
+      final res = await client.post(
+        '/wallet/deposit',
+        {},
+        _idempotencyHeaders(),
+      );
+      expect(res.statusCode, 400);
+    });
+
+    test('POST /wallet/deposit — invalid amount returns 400', () async {
+      final res = await client.post('/wallet/deposit', {
+        'amount': -100,
+        'sourceCurrency': 'XOF',
+        'channelId': 'orange_money_ci',
+      }, _idempotencyHeaders());
+      expect(res.statusCode, 400);
+    });
+
     test('POST /deposits/initiate — missing fields returns 400', () async {
       final res = await client.post(
         '/deposits/initiate',
@@ -124,6 +162,19 @@ void main() {
   });
 
   e2eGroup('Withdrawal E2E', () {
+    test('POST /wallet/withdraw — missing auth factors is rejected', () async {
+      final res = await client.post(
+        '/wallet/withdraw',
+        {
+          'amount': 10,
+          'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+          'network': 'polygon',
+        },
+        _idempotencyHeaders(),
+      );
+      expect(res.statusCode, anyOf(400, 401, 403));
+    });
+
     test('POST /withdrawals/initiate — missing fields is rejected', () async {
       final res = await client.post(
         '/withdrawals/initiate',
