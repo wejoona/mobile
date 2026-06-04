@@ -33,9 +33,11 @@ Flutter currently warns that these plugins do not support Swift Package Manager 
 
 The app already has `flutter.config.enable-swift-package-manager: false` in `pubspec.yaml`, so this is a future-compatibility warning, not the current build blocker. Do not switch iOS package mode during a release-hardening pass without a dedicated branch and simulator/device verification.
 
+`safe_device 1.3.10` was tested on the iPhone 17 simulator and failed Objective-C compilation in `SafeDeviceJailbreakDetection.m` with "Initializer element is not a compile-time constant". Keep `safe_device` locked at `1.3.8` until the plugin is fixed or replaced.
+
 ## Recommended Upgrade Order
 
-1. Patch-only upgrades first: `dio`, `flutter_secure_storage`, `flutter_svg`, `image_picker`, `mobile_scanner`, `shared_preferences`, `uuid`, `in_app_review`, `safe_device`.
+1. Patch-only upgrades first: `dio`, `flutter_secure_storage`, `flutter_svg`, `image_picker`, `mobile_scanner`, `shared_preferences`, `uuid`, `in_app_review`. Do not include `safe_device` until the iOS compile failure above is resolved.
 2. Native permission/contact stack together: `permission_handler`, `flutter_contacts`, `device_info_plus`.
 3. Notification stack together: `firebase_core`, `firebase_messaging`, `flutter_local_notifications`, `firebase_crashlytics`.
 4. KYC/media stack together: `camera`, `image_gallery_saver_plus`, `flutter_image_compress`, `file_picker`.
