@@ -118,6 +118,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
       );
       final options = Options(headers: headers);
       final amountCents = toCents(amount);
+      final transferAmount = amount;
 
       // data.type is a String? — match against string values, not enum
       switch (data.type) {
@@ -134,7 +135,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
             '/transfers/internal',
             data: {
               'recipientPhone': recipientPhone,
-              'amount': amountCents,
+              'amount': transferAmount,
               'currency': 'USDC',
               if (data.note != null) 'note': data.note,
             },
@@ -169,7 +170,7 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
               '/transfers/internal',
               data: {
                 'recipientPhone': recipientPhone,
-                'amount': amountCents,
+                'amount': transferAmount,
                 'currency': 'USDC',
                 if (data.note != null) 'note': data.note,
               },
