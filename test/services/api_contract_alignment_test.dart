@@ -8,6 +8,7 @@ import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
+import 'package:usdc_wallet/services/api/providers/notifications_api.dart';
 import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
 import 'package:usdc_wallet/services/cards/cards_service.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
@@ -148,9 +149,54 @@ void main() {
       final count = await service.getUnreadCount();
 
       final request = dio.requestHistory.single;
-      expect(request.path, '/notifications/unread-count');
+      expect(request.path, '/notifications/unread/count');
       expect(count, 4);
     });
+
+    test('push token registration uses deployed mobile SDK route', () async {
+      final dio = MockDio()..queueResponse({'message': 'ok'});
+      final service = NotificationsService(dio);
+
+      await service.registerFcmToken(
+        token: 'fcm-token-1',
+        platform: 'ios',
+        deviceId: 'device-1',
+        deviceName: 'iPhone 17',
+        appVersion: '1.0.0',
+        osVersion: 'iOS 26.0',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/notifications/push/token');
+      expect(request.data, {
+        'token': 'fcm-token-1',
+        'platform': 'ios',
+        'deviceId': 'device-1',
+        'deviceName': 'iPhone 17',
+        'appVersion': '1.0.0',
+        'osVersion': 'iOS 26.0',
+      });
+    });
+
+    test(
+      'notification facade preferences use user preferences route',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({'pushEnabled': true})
+          ..queueResponse({'pushEnabled': false});
+        final api = NotificationsApi(dio);
+
+        await api.getPreferences();
+        await api.updatePreferences({'pushEnabled': false});
+
+        expect(dio.requestHistory[0].method, 'GET');
+        expect(dio.requestHistory[0].path, '/user/notification-preferences');
+        expect(dio.requestHistory[1].method, 'PUT');
+        expect(dio.requestHistory[1].path, '/user/notification-preferences');
+        expect(dio.requestHistory[1].data, {'pushEnabled': false});
+      },
+    );
 
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()

@@ -46,10 +46,10 @@ class NotificationsService {
     }
   }
 
-  /// GET /notifications/unread-count
+  /// GET /notifications/unread/count
   Future<int> getUnreadCount() async {
     try {
-      final response = await _dio.get('/notifications/unread-count');
+      final response = await _dio.get('/notifications/unread/count');
       final countData = response.data as Map<String, dynamic>?;
       final data = countData?['data'];
       if (data is Map<String, dynamic>) {
