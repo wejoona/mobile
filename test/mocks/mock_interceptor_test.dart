@@ -163,24 +163,24 @@ void main() {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.korido.test/api/v1'));
     dio.interceptors.add(MockRegistry.interceptor);
 
-    final initialResponse = await dio.get('/user/notification-preferences');
+    final initialResponse = await dio.get('/notifications/preferences');
     final initialPrefs = initialResponse.data as Map<String, dynamic>;
     expect(initialPrefs['pushMarketing'], isFalse);
 
     final updateResponse = await dio.put(
-      '/user/notification-preferences',
+      '/notifications/preferences',
       data: {'pushMarketing': true},
     );
     final updatedPrefs = updateResponse.data as Map<String, dynamic>;
     expect(updatedPrefs['pushMarketing'], isTrue);
 
-    final persistedResponse = await dio.get('/user/notification-preferences');
+    final persistedResponse = await dio.get('/notifications/preferences');
     final persistedPrefs = persistedResponse.data as Map<String, dynamic>;
     expect(persistedPrefs['pushMarketing'], isTrue);
 
     MockRegistry.reset();
 
-    final resetResponse = await dio.get('/user/notification-preferences');
+    final resetResponse = await dio.get('/notifications/preferences');
     final resetPrefs = resetResponse.data as Map<String, dynamic>;
     expect(resetPrefs['pushMarketing'], isFalse);
   });
@@ -343,7 +343,7 @@ void main() {
       (method: 'GET', path: '/contacts/lookup', data: null),
       (method: 'GET', path: '/beneficiaries', data: null),
       (method: 'GET', path: '/devices', data: null),
-      (method: 'GET', path: '/user/notification-preferences', data: null),
+      (method: 'GET', path: '/notifications/preferences', data: null),
       (method: 'GET', path: '/user/profile', data: null),
     ];
 
@@ -471,7 +471,7 @@ void _expectParseableRoute(String path, Object? data) {
         isNotEmpty,
       );
       return;
-    case '/user/notification-preferences':
+    case '/notifications/preferences':
       final prefs = _expectMap(path, data);
       expect(prefs['pushMarketing'], isA<bool>());
       return;

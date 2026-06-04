@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:dio/dio.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
@@ -42,7 +40,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 class PushNotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final Dio _dio;
-  final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
 
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   StreamSubscription<String>? _tokenRefreshSubscription;
@@ -74,16 +71,19 @@ class PushNotificationService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional) {
-
       // Get initial token
       _currentToken = await _messaging.getToken();
       _logger.debug('FCM Token obtained', _currentToken);
 
       // Listen for token refresh
-      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(_handleTokenRefresh);
+      _tokenRefreshSubscription = _messaging.onTokenRefresh.listen(
+        _handleTokenRefresh,
+      );
 
       // Handle foreground messages
-      _foregroundSubscription = FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      _foregroundSubscription = FirebaseMessaging.onMessage.listen(
+        _handleForegroundMessage,
+      );
 
       // Handle notification tap when app was in background
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
@@ -96,7 +96,10 @@ class PushNotificationService {
 
       _isInitialized = true;
     } else {
-      _logger.warn('Push notifications not authorized', settings.authorizationStatus);
+      _logger.warn(
+        'Push notifications not authorized',
+        settings.authorizationStatus,
+      );
     }
   }
 
@@ -120,7 +123,7 @@ class PushNotificationService {
   Future<bool> get isEnabled async {
     final settings = await _messaging.getNotificationSettings();
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
-           settings.authorizationStatus == AuthorizationStatus.provisional;
+        settings.authorizationStatus == AuthorizationStatus.provisional;
   }
 
   /// Register FCM token with backend
@@ -132,16 +135,13 @@ class PushNotificationService {
     }
 
     try {
-      final deviceInfo = await _getDeviceInfo();
-
-      await _dio.post('/notifications/push/token', data: {
-        'token': _currentToken,
-        'platform': Platform.isIOS ? 'ios' : 'android',
-        'deviceId': deviceInfo['deviceId'],
-        'deviceName': deviceInfo['deviceName'],
-        'appVersion': deviceInfo['appVersion'],
-        'osVersion': deviceInfo['osVersion'],
-      });
+      await _dio.post(
+        '/notifications/device-token',
+        data: {
+          'token': _currentToken,
+          'platform': Platform.isIOS ? 'ios' : 'android',
+        },
+      );
 
       _logger.info('FCM token registered with backend');
     } on DioException catch (e) {
@@ -156,9 +156,7 @@ class PushNotificationService {
     if (_currentToken == null) return;
 
     try {
-      await _dio.delete('/notifications/push/token', data: {
-        'token': _currentToken,
-      });
+      await _dio.delete('/notifications/device-token/$_currentToken');
 
       _logger.info('FCM token unregistered from backend');
     } on DioException catch (e) {
@@ -244,41 +242,6 @@ class PushNotificationService {
     // }
   }
 
-  /// Get device information
-  Future<Map<String, String>> _getDeviceInfo() async {
-    try {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final appVersion = packageInfo.version;
-
-      if (Platform.isAndroid) {
-        final androidInfo = await _deviceInfo.androidInfo;
-        return {
-          'deviceId': androidInfo.id,
-          'deviceName': '${androidInfo.brand} ${androidInfo.model}',
-          'osVersion': 'Android ${androidInfo.version.release}',
-          'appVersion': appVersion,
-        };
-      } else if (Platform.isIOS) {
-        final iosInfo = await _deviceInfo.iosInfo;
-        return {
-          'deviceId': iosInfo.identifierForVendor ?? '',
-          'deviceName': iosInfo.name,
-          'osVersion': 'iOS ${iosInfo.systemVersion}',
-          'appVersion': appVersion,
-        };
-      }
-    } catch (e) {
-      _logger.error('Failed to get device info', e);
-    }
-
-    return {
-      'deviceId': '',
-      'deviceName': 'Unknown Device',
-      'osVersion': '',
-      'appVersion': '1.0.0',
-    };
-  }
-
   /// Subscribe to a topic
   Future<void> subscribeToTopic(String topic) async {
     await _messaging.subscribeToTopic(topic);
@@ -299,7 +262,9 @@ class PushNotificationService {
 }
 
 /// Push Notification Service Provider
-final pushNotificationServiceProvider = Provider<PushNotificationService>((ref) {
+final pushNotificationServiceProvider = Provider<PushNotificationService>((
+  ref,
+) {
   final dio = ref.watch(dioProvider);
   return PushNotificationService(dio);
 });

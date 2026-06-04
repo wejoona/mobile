@@ -15,6 +15,17 @@ class NotificationsMockState {
     return {
       'id': 'notif_pref_001',
       'userId': 'user-123',
+      'channels': {'push': true, 'sms': true, 'email': true, 'inApp': true},
+      'categories': {
+        'transaction': true,
+        'kyc': true,
+        'security': true,
+        'marketing': false,
+        'system': true,
+        'risk': true,
+        'referral': true,
+      },
+      'language': 'en',
       'pushEnabled': true,
       'pushTransactions': true,
       'pushSecurity': true,
@@ -43,32 +54,22 @@ class NotificationsMock {
       handler: _handleGetAll,
     );
 
-    for (final path in const [
-      '/notifications/unread-count',
-      '/notifications/unread/count',
-    ]) {
-      interceptor.register(
-        method: 'GET',
-        path: path,
-        handler: _handleGetUnreadCount,
-      );
-    }
+    interceptor.register(
+      method: 'GET',
+      path: '/notifications/unread-count',
+      handler: _handleGetUnreadCount,
+    );
 
-    for (final path in const [
-      '/user/notification-preferences',
-      '/notifications/preferences',
-    ]) {
-      interceptor.register(
-        method: 'GET',
-        path: path,
-        handler: _handleGetPreferences,
-      );
-      interceptor.register(
-        method: 'PUT',
-        path: path,
-        handler: _handleUpdatePreferences,
-      );
-    }
+    interceptor.register(
+      method: 'GET',
+      path: '/notifications/preferences',
+      handler: _handleGetPreferences,
+    );
+    interceptor.register(
+      method: 'PUT',
+      path: '/notifications/preferences',
+      handler: _handleUpdatePreferences,
+    );
 
     // PUT /notifications/:id/read - Mark notification as read
     interceptor.register(
@@ -84,25 +85,16 @@ class NotificationsMock {
       handler: _handleMarkAllAsRead,
     );
 
-    // POST /notifications/push/token - Register FCM token
     interceptor.register(
       method: 'POST',
-      path: '/notifications/push/token',
+      path: '/notifications/device-token',
       handler: _handleRegisterToken,
     );
 
-    // DELETE /notifications/push/token - Remove FCM token
     interceptor.register(
       method: 'DELETE',
-      path: '/notifications/push/token',
+      path: '/notifications/device-token/:token',
       handler: _handleRemoveToken,
-    );
-
-    // DELETE /notifications/push/tokens - Remove all FCM tokens
-    interceptor.register(
-      method: 'DELETE',
-      path: '/notifications/push/tokens',
-      handler: _handleRemoveAllTokens,
     );
   }
 
@@ -243,15 +235,6 @@ class NotificationsMock {
     return MockResponse.success({
       'success': true,
       'message': 'Token removed successfully',
-    });
-  }
-
-  static Future<MockResponse> _handleRemoveAllTokens(
-    RequestOptions options,
-  ) async {
-    return MockResponse.success({
-      'success': true,
-      'message': 'All tokens removed successfully',
     });
   }
 }

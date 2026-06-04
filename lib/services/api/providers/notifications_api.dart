@@ -16,14 +16,21 @@ class NotificationsApi {
     },
   );
 
-  /// GET /notifications/:id
-  Future<Response> getById(String id) => _dio.get('/notifications/$id');
+  /// GET /notifications/unread-count
+  Future<Response> unreadCount() => _dio.get('/notifications/unread-count');
 
-  /// GET /user/notification-preferences
-  Future<Response> getPreferences() =>
-      _dio.get('/user/notification-preferences');
+  /// GET /notifications/preferences
+  Future<Response> getPreferences() => _dio.get('/notifications/preferences');
 
-  /// PUT /user/notification-preferences
+  /// PUT /notifications/preferences
   Future<Response> updatePreferences(Map<String, dynamic> data) =>
-      _dio.put('/user/notification-preferences', data: data);
+      _dio.put('/notifications/preferences', data: data);
+
+  /// POST /notifications/device-token
+  Future<Response> registerDeviceToken(Map<String, dynamic> data) =>
+      _dio.post('/notifications/device-token', data: data);
+
+  /// DELETE /notifications/device-token/:token
+  Future<Response> unregisterDeviceToken(String token) =>
+      _dio.delete('/notifications/device-token/$token');
 }

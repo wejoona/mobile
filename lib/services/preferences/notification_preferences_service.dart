@@ -9,11 +9,11 @@ class NotificationPreferencesApiService {
 
   NotificationPreferencesApiService(this._dio);
 
-  /// GET /user/notification-preferences
+  /// GET /notifications/preferences
   /// Fetches the current user's notification preferences from the backend
   Future<UserNotificationPreferences> getPreferences() async {
     try {
-      final response = await _dio.get('/user/notification-preferences');
+      final response = await _dio.get('/notifications/preferences');
       return UserNotificationPreferences.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -22,14 +22,14 @@ class NotificationPreferencesApiService {
     }
   }
 
-  /// PUT /user/notification-preferences
+  /// PUT /notifications/preferences
   /// Updates the current user's notification preferences
   Future<UserNotificationPreferences> updatePreferences(
     UserNotificationPreferences preferences,
   ) async {
     try {
       final response = await _dio.put(
-        '/user/notification-preferences',
+        '/notifications/preferences',
         data: preferences.toUpdateJson(),
       );
       return UserNotificationPreferences.fromJson(
@@ -82,10 +82,7 @@ class NotificationPreferencesApiService {
         data['lowBalanceThreshold'] = lowBalanceThreshold;
       }
 
-      final response = await _dio.put(
-        '/user/notification-preferences',
-        data: data,
-      );
+      final response = await _dio.put('/notifications/preferences', data: data);
       return UserNotificationPreferences.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -98,5 +95,5 @@ class NotificationPreferencesApiService {
 /// Notification Preferences API Service Provider
 final notificationPreferencesApiServiceProvider =
     Provider<NotificationPreferencesApiService>((ref) {
-  return NotificationPreferencesApiService(ref.watch(dioProvider));
-});
+      return NotificationPreferencesApiService(ref.watch(dioProvider));
+    });

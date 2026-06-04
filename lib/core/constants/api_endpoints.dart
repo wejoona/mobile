@@ -110,7 +110,7 @@ abstract final class ApiEndpoints {
   // Notifications
   static const notifications = '/notifications';
   static String notificationById(String id) => '/notifications/$id';
-  static const notificationPreferences = '/user/notification-preferences';
+  static const notificationPreferences = '/notifications/preferences';
 
   // Limits
   static const limits = '/limits';

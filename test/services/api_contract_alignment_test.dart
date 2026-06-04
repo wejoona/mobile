@@ -152,7 +152,7 @@ void main() {
       final count = await service.getUnreadCount();
 
       final request = dio.requestHistory.single;
-      expect(request.path, '/notifications/unread/count');
+      expect(request.path, '/notifications/unread-count');
       expect(count, 4);
     });
 
@@ -171,15 +171,8 @@ void main() {
 
       final request = dio.requestHistory.single;
       expect(request.method, 'POST');
-      expect(request.path, '/notifications/push/token');
-      expect(request.data, {
-        'token': 'fcm-token-1',
-        'platform': 'ios',
-        'deviceId': 'device-1',
-        'deviceName': 'iPhone 17',
-        'appVersion': '1.0.0',
-        'osVersion': 'iOS 26.0',
-      });
+      expect(request.path, '/notifications/device-token');
+      expect(request.data, {'token': 'fcm-token-1', 'platform': 'ios'});
     });
 
     test(
@@ -194,9 +187,9 @@ void main() {
         await api.updatePreferences({'pushEnabled': false});
 
         expect(dio.requestHistory[0].method, 'GET');
-        expect(dio.requestHistory[0].path, '/user/notification-preferences');
+        expect(dio.requestHistory[0].path, '/notifications/preferences');
         expect(dio.requestHistory[1].method, 'PUT');
-        expect(dio.requestHistory[1].path, '/user/notification-preferences');
+        expect(dio.requestHistory[1].path, '/notifications/preferences');
         expect(dio.requestHistory[1].data, {'pushEnabled': false});
       },
     );

@@ -46,10 +46,10 @@ class NotificationsService {
     }
   }
 
-  /// GET /notifications/unread/count
+  /// GET /notifications/unread-count
   Future<int> getUnreadCount() async {
     try {
-      final response = await _dio.get('/notifications/unread/count');
+      final response = await _dio.get('/notifications/unread-count');
       final countData = response.data as Map<String, dynamic>?;
       final data = countData?['data'];
       if (data is Map<String, dynamic>) {
@@ -80,16 +80,18 @@ class NotificationsService {
   }
 
   /// POST /notifications/device-token
-  /// Legacy method - use PushNotificationService.registerWithBackend() instead
   Future<void> registerDeviceToken(String token) async {
     try {
-      await _dio.post('/notifications/device-token', data: {'token': token});
+      await _dio.post(
+        '/notifications/device-token',
+        data: {'token': token, 'platform': 'ios'},
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// POST /notifications/push/token - Full FCM token registration
+  /// POST /notifications/device-token - FCM/APNs token registration.
   Future<void> registerFcmToken({
     required String token,
     required String platform,
@@ -100,37 +102,26 @@ class NotificationsService {
   }) async {
     try {
       await _dio.post(
-        '/notifications/push/token',
-        data: {
-          'token': token,
-          'platform': platform,
-          if (deviceId != null) 'deviceId': deviceId,
-          if (deviceName != null) 'deviceName': deviceName,
-          if (appVersion != null) 'appVersion': appVersion,
-          if (osVersion != null) 'osVersion': osVersion,
-        },
+        '/notifications/device-token',
+        data: {'token': token, 'platform': platform},
       );
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// DELETE /notifications/push/token - Remove FCM token
+  /// DELETE /notifications/device-token/:token - Remove FCM/APNs token
   Future<void> removeFcmToken(String token) async {
     try {
-      await _dio.delete('/notifications/push/token', data: {'token': token});
+      await _dio.delete('/notifications/device-token/$token');
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
   }
 
-  /// DELETE /notifications/push/tokens - Remove all FCM tokens for user
+  /// Backend does not expose bulk token removal. Token-specific removal is used.
   Future<void> removeAllFcmTokens() async {
-    try {
-      await _dio.delete('/notifications/push/tokens');
-    } on DioException catch (e) {
-      throw ApiException.fromDioError(e);
-    }
+    return;
   }
 
   /// DELETE /notifications/device-token/:token

@@ -18,8 +18,8 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /notifications/unread/count — returns count contract', () async {
-      final res = await client.get('/notifications/unread/count');
+    test('GET /notifications/unread-count — returns count contract', () async {
+      final res = await client.get('/notifications/unread-count');
       res.expectOk();
 
       final data = res.data;
@@ -32,48 +32,44 @@ void main() {
     });
 
     test(
-      'POST and DELETE /notifications/push/token — manages push token',
+      'POST and DELETE /notifications/device-token — manages push token',
       () async {
         const token = 'e2e-fcm-token-notifications-001';
-        final registerRes = await client.post('/notifications/push/token', {
+        final registerRes = await client.post('/notifications/device-token', {
           'token': token,
           'platform': 'ios',
-          'deviceId': 'e2e-test-device-001',
-          'deviceName': 'E2E iPhone',
-          'appVersion': '1.0.0',
-          'osVersion': '26.5',
         });
         expect(registerRes.statusCode, anyOf(200, 201));
 
         final removeRes = await client.delete(
-          '/notifications/push/token',
+          '/notifications/device-token/$token',
           null,
-          {'token': token},
+          null,
         );
         expect(removeRes.statusCode, anyOf(200, 204));
       },
     );
 
-    test('GET and PUT /user/notification-preferences', () async {
-      final getRes = await client.get('/user/notification-preferences');
+    test('GET and PUT /notifications/preferences', () async {
+      final getRes = await client.get('/notifications/preferences');
       getRes.expectOk();
 
-      final current = getRes.data!;
-      expect(current['pushEnabled'], isA<bool>());
-      expect(current['smsSecurity'], true);
+      final current =
+          (getRes.data?['data'] ?? getRes.data)! as Map<String, dynamic>;
+      expect(current['channels'], isA<Map<String, dynamic>>());
+      expect(current['categories'], isA<Map<String, dynamic>>());
 
-      final nextPushMarketing = !(current['pushMarketing'] as bool? ?? false);
-      final updateRes = await client.put('/user/notification-preferences', {
-        'pushMarketing': nextPushMarketing,
-        'largeTransactionThreshold': 1250,
-        'lowBalanceThreshold': 75,
+      final categories = current['categories'] as Map<String, dynamic>;
+      final nextMarketing = !(categories['marketing'] as bool? ?? false);
+      final updateRes = await client.put('/notifications/preferences', {
+        'channels': current['channels'],
+        'categories': {...categories, 'marketing': nextMarketing},
       });
       updateRes.expectOk();
 
-      expect(updateRes.data?['pushMarketing'], nextPushMarketing);
-      expect(updateRes.data?['largeTransactionThreshold'], 1250);
-      expect(updateRes.data?['lowBalanceThreshold'], 75);
-      expect(updateRes.data?['smsSecurity'], true);
+      final updated =
+          (updateRes.data?['data'] ?? updateRes.data)! as Map<String, dynamic>;
+      expect(updated['categories']?['marketing'], nextMarketing);
     });
 
     test('GET /notifications — no auth returns 401', () async {

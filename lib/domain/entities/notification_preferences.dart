@@ -69,29 +69,68 @@ class UserNotificationPreferences {
   }
 
   factory UserNotificationPreferences.fromJson(Map<String, dynamic> json) {
+    final payload = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
+    final channels = payload['channels'] is Map<String, dynamic>
+        ? payload['channels'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final categories = payload['categories'] is Map<String, dynamic>
+        ? payload['categories'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+
     return UserNotificationPreferences(
-      id: json['id'] as String? ?? '',
-      userId: json['userId'] as String? ?? '',
-      pushEnabled: json['pushEnabled'] as bool? ?? true,
-      pushTransactions: json['pushTransactions'] as bool? ?? true,
-      pushSecurity: json['pushSecurity'] as bool? ?? true,
-      pushMarketing: json['pushMarketing'] as bool? ?? false,
-      emailEnabled: json['emailEnabled'] as bool? ?? true,
-      emailTransactions: json['emailTransactions'] as bool? ?? true,
-      emailMonthlyStatement: json['emailMonthlyStatement'] as bool? ?? true,
-      emailMarketing: json['emailMarketing'] as bool? ?? false,
-      smsEnabled: json['smsEnabled'] as bool? ?? true,
-      smsTransactions: json['smsTransactions'] as bool? ?? true,
-      smsSecurity: json['smsSecurity'] as bool? ?? true,
+      id: payload['id'] as String? ?? '',
+      userId: payload['userId'] as String? ?? '',
+      pushEnabled:
+          payload['pushEnabled'] as bool? ?? channels['push'] as bool? ?? true,
+      pushTransactions:
+          payload['pushTransactions'] as bool? ??
+          categories['transaction'] as bool? ??
+          true,
+      pushSecurity:
+          payload['pushSecurity'] as bool? ??
+          categories['security'] as bool? ??
+          true,
+      pushMarketing:
+          payload['pushMarketing'] as bool? ??
+          categories['marketing'] as bool? ??
+          false,
+      emailEnabled:
+          payload['emailEnabled'] as bool? ??
+          channels['email'] as bool? ??
+          true,
+      emailTransactions:
+          payload['emailTransactions'] as bool? ??
+          categories['transaction'] as bool? ??
+          true,
+      emailMonthlyStatement:
+          payload['emailMonthlyStatement'] as bool? ??
+          categories['system'] as bool? ??
+          true,
+      emailMarketing:
+          payload['emailMarketing'] as bool? ??
+          categories['marketing'] as bool? ??
+          false,
+      smsEnabled:
+          payload['smsEnabled'] as bool? ?? channels['sms'] as bool? ?? true,
+      smsTransactions:
+          payload['smsTransactions'] as bool? ??
+          categories['transaction'] as bool? ??
+          true,
+      smsSecurity:
+          payload['smsSecurity'] as bool? ??
+          categories['security'] as bool? ??
+          true,
       largeTransactionThreshold:
-          (json['largeTransactionThreshold'] as num?)?.toDouble() ?? 1000,
+          (payload['largeTransactionThreshold'] as num?)?.toDouble() ?? 1000,
       lowBalanceThreshold:
-          (json['lowBalanceThreshold'] as num?)?.toDouble() ?? 100,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'] as String)
+          (payload['lowBalanceThreshold'] as num?)?.toDouble() ?? 100,
+      createdAt: payload['createdAt'] != null
+          ? DateTime.parse(payload['createdAt'] as String)
           : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
+      updatedAt: payload['updatedAt'] != null
+          ? DateTime.parse(payload['updatedAt'] as String)
           : DateTime.now(),
     );
   }
@@ -121,19 +160,21 @@ class UserNotificationPreferences {
   /// Returns a map suitable for API update requests (excludes id, userId, timestamps)
   Map<String, dynamic> toUpdateJson() {
     return {
-      'pushEnabled': pushEnabled,
-      'pushTransactions': pushTransactions,
-      'pushSecurity': pushSecurity,
-      'pushMarketing': pushMarketing,
-      'emailEnabled': emailEnabled,
-      'emailTransactions': emailTransactions,
-      'emailMonthlyStatement': emailMonthlyStatement,
-      'emailMarketing': emailMarketing,
-      'smsEnabled': smsEnabled,
-      'smsTransactions': smsTransactions,
-      'smsSecurity': smsSecurity,
-      'largeTransactionThreshold': largeTransactionThreshold,
-      'lowBalanceThreshold': lowBalanceThreshold,
+      'channels': {
+        'push': pushEnabled,
+        'email': emailEnabled,
+        'sms': smsEnabled,
+        'inApp': true,
+      },
+      'categories': {
+        'transaction': pushTransactions || emailTransactions || smsTransactions,
+        'security': pushSecurity || smsSecurity,
+        'marketing': pushMarketing || emailMarketing,
+        'system': emailMonthlyStatement,
+        'kyc': true,
+        'risk': true,
+        'referral': true,
+      },
     };
   }
 
@@ -165,7 +206,8 @@ class UserNotificationPreferences {
       pushMarketing: pushMarketing ?? this.pushMarketing,
       emailEnabled: emailEnabled ?? this.emailEnabled,
       emailTransactions: emailTransactions ?? this.emailTransactions,
-      emailMonthlyStatement: emailMonthlyStatement ?? this.emailMonthlyStatement,
+      emailMonthlyStatement:
+          emailMonthlyStatement ?? this.emailMonthlyStatement,
       emailMarketing: emailMarketing ?? this.emailMarketing,
       smsEnabled: smsEnabled ?? this.smsEnabled,
       smsTransactions: smsTransactions ?? this.smsTransactions,

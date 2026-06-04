@@ -100,17 +100,13 @@ Custom routes can be included in notification `data` payload:
 
 ### Register FCM Token
 ```http
-POST /notifications/push/token
+POST /notifications/device-token
 Content-Type: application/json
 Authorization: Bearer <token>
 
 {
   "token": "FCM_TOKEN_HERE",
-  "platform": "ios" | "android",
-  "deviceId": "device-uuid",
-  "deviceName": "iPhone 15 Pro",
-  "appVersion": "1.0.0",
-  "osVersion": "iOS 17.0"
+  "platform": "ios" | "android"
 }
 ```
 
