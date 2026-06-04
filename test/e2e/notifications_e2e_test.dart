@@ -18,8 +18,8 @@ void main() {
       res.expectOk();
     });
 
-    test('GET /notifications/unread-count — returns count contract', () async {
-      final res = await client.get('/notifications/unread-count');
+    test('GET /notifications/unread/count — returns count contract', () async {
+      final res = await client.get('/notifications/unread/count');
       res.expectOk();
 
       final data = res.data;
@@ -30,6 +30,29 @@ void main() {
 
       expect(count, isA<int>());
     });
+
+    test(
+      'POST and DELETE /notifications/push/token — manages push token',
+      () async {
+        const token = 'e2e-fcm-token-notifications-001';
+        final registerRes = await client.post('/notifications/push/token', {
+          'token': token,
+          'platform': 'ios',
+          'deviceId': 'e2e-test-device-001',
+          'deviceName': 'E2E iPhone',
+          'appVersion': '1.0.0',
+          'osVersion': '26.5',
+        });
+        expect(registerRes.statusCode, anyOf(200, 201));
+
+        final removeRes = await client.delete(
+          '/notifications/push/token',
+          null,
+          {'token': token},
+        );
+        expect(removeRes.statusCode, anyOf(200, 204));
+      },
+    );
 
     test('GET and PUT /user/notification-preferences', () async {
       final getRes = await client.get('/user/notification-preferences');

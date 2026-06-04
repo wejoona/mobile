@@ -112,10 +112,12 @@ class E2EClient {
   Future<E2EResponse> delete(
     String path, [
     Map<String, String>? headers,
+    Map<String, dynamic>? body,
   ]) async {
     final res = await http.delete(
       Uri.parse('$baseUrl$path'),
       headers: {..._headers, ...?headers},
+      body: body != null ? jsonEncode(body) : null,
     );
     return E2EResponse(res);
   }
