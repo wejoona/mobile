@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 
 /// Fully wired deposit screen.
 class DepositScreenWired extends ConsumerStatefulWidget {
@@ -28,10 +28,13 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
     final notifier = ref.read(depositProvider.notifier);
 
     if (state.result != null) {
-      return _ResultScreen(result: state.result!, onDone: () {
-        notifier.reset();
-        Navigator.pop(context);
-      });
+      return _ResultScreen(
+        result: state.result!,
+        onDone: () {
+          notifier.reset();
+          Navigator.pop(context);
+        },
+      );
     }
 
     return Scaffold(
@@ -41,32 +44,44 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(AppStrings.selectProvider, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              AppStrings.selectProvider,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: AppSpacing.md),
 
             // Provider selection
-            ...DepositMethod.values.map((method) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: ListTile(
-                leading: Icon(
-                  method == DepositMethod.bankTransfer ? Icons.account_balance : Icons.phone_android,
-                ),
-                title: Text(method.label),
-                trailing: state.selectedMethod == method
-                    ? Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary)
-                    : null,
-                selected: state.selectedMethod == method,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: state.selectedMethod == method
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+            ...DepositMethod.values.map(
+              (method) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: ListTile(
+                  leading: Icon(
+                    method == DepositMethod.bankTransfer
+                        ? Icons.account_balance
+                        : Icons.phone_android,
                   ),
+                  title: Text(method.label),
+                  trailing: state.selectedMethod == method
+                      ? Icon(
+                          Icons.check_circle,
+                          color: Theme.of(context).colorScheme.primary,
+                        )
+                      : null,
+                  selected: state.selectedMethod == method,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: state.selectedMethod == method
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  onTap: () => notifier.selectMethod(method),
                 ),
-                onTap: () => notifier.selectMethod(method),
               ),
-            )),
+            ),
 
             const SizedBox(height: AppSpacing.lg),
 
@@ -74,16 +89,20 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
             if (state.selectedMethod != null) ...[
               TextField(
                 controller: _amountController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: AppStrings.depositAmount,
                   hintText: '0.00',
-                  prefixIcon: const Icon(Icons.attach_money),
+                  prefixIcon: Icon(Icons.attach_money),
                   suffixText: 'USDC',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 onChanged: (v) {
                   final amount = double.tryParse(v);
-                  if (amount != null) notifier.setAmount(amount);
+                  if (amount != null) {
+                    notifier.setAmount(amount);
+                  }
                 },
               ),
             ],
@@ -93,13 +112,19 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
             if (state.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Text(state.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                child: Text(
+                  state.error!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
 
             AppButton(
               label: AppStrings.deposit,
-              onPressed: state.selectedMethod != null && state.amount != null && !state.isLoading
-                  ? () => notifier.initiate()
+              onPressed:
+                  state.selectedMethod != null &&
+                      state.amount != null &&
+                      !state.isLoading
+                  ? notifier.initiate
                   : null,
               isLoading: state.isLoading,
             ),
@@ -111,50 +136,67 @@ class _DepositScreenWiredState extends ConsumerState<DepositScreenWired> {
 }
 
 class _ResultScreen extends StatelessWidget {
-  final DepositResult result;
-  final VoidCallback onDone;
+  const _ResultScreen({
+    required DepositResult result,
+    required VoidCallback onDone,
+  }) : _result = result,
+       _onDone = onDone;
 
-  const _ResultScreen({required this.result, required this.onDone});
+  final DepositResult _result;
+  final VoidCallback _onDone;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.deposit)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                result.status == 'pending' ? Icons.hourglass_top : Icons.check_circle_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.primary,
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text(AppStrings.deposit)),
+    body: SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: AppSpacing.xl),
+            Icon(
+              _result.status == 'pending'
+                  ? Icons.hourglass_top
+                  : Icons.check_circle_outline,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              _result.status == 'pending'
+                  ? 'Depot en cours de traitement'
+                  : AppStrings.success,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            if (_result.reference != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              SelectableText(
+                'Référence : ${_result.reference}',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(
-                result.status == 'pending' ? 'Depot en cours de traitement' : AppStrings.success,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              if (result.reference != null) ...[
-                const SizedBox(height: AppSpacing.sm),
-                Text('Référence : ${result.reference}', style: Theme.of(context).textTheme.bodySmall),
-              ],
-              if (result.instructions != null) ...[
-                const SizedBox(height: AppSpacing.md),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Text(result.instructions!),
-                  ),
-                ),
-              ],
-              const SizedBox(height: AppSpacing.xl),
-              AppButton(label: AppStrings.done, onPressed: onDone),
             ],
-          ),
+            if (_result.instructions != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  child: SelectableText(_result.instructions!),
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.xl),
+            AppButton(
+              label: AppStrings.done,
+              onPressed: _onDone,
+              isFullWidth: true,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }

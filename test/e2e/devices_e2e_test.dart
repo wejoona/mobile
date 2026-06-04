@@ -57,9 +57,15 @@ void main() {
     test('GET /sessions — list active sessions', () async {
       final res = await client.get('/sessions');
       res.expectOk();
-      final sessions = jsonDecode(res.body);
+      final payload = jsonDecode(res.body);
+      final sessions = switch (payload) {
+        {'sessions': final List<dynamic> items} => items,
+        {'items': final List<dynamic> items} => items,
+        final List<dynamic> items => items,
+        _ => <dynamic>[],
+      };
       expect(sessions, isA<List<dynamic>>());
-      expect(sessions as List<dynamic>, isNotEmpty);
+      expect(sessions, isNotEmpty);
       expect(sessions.first, isA<Map<String, dynamic>>());
       expect((sessions.first as Map<String, dynamic>)['isActive'], isTrue);
       expect(

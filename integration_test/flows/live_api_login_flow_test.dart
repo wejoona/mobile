@@ -126,7 +126,12 @@ Future<void> _openLiveSecondarySurfaces(KoridoFlowDriver driver) async {
   await driver.pumpUntil(
     () =>
         driver.hasAnyText(['Notifications']) &&
-        driver.hasAnyText(['PIN Changed', 'Aucune notification']),
+        driver.hasAnyText([
+          'PIN Changed',
+          'No Notifications',
+          "You're all caught up",
+          'Aucune notification',
+        ]),
     reason: 'live notifications screen',
     timeout: const Duration(seconds: 25),
   );
