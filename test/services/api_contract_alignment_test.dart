@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
+import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
 import 'package:usdc_wallet/services/api/providers/notifications_api.dart';
 import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
@@ -378,6 +381,46 @@ void main() {
       expect(contacts.single.name, 'Awa Korido');
       expect(contacts.single.avatarUrl, 'https://cdn.example/avatar.png');
     });
+
+    test(
+      'send recipient validation accepts nested contact sync matches',
+      () async {
+        final contactsService = ContactsService(MockSecureStorage());
+        final phoneHash = contactsService.hashPhone('+2250748805663');
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'matches': [
+                {
+                  'phoneHash': phoneHash,
+                  'userId': 'user_123',
+                  'displayName': 'Awa Korido',
+                },
+              ],
+            },
+          });
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            contactsServiceProvider.overrideWithValue(contactsService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setRecipient('+2250748805663');
+
+        final recipient = container.read(sendMoneyProvider).recipient;
+        expect(dio.requestHistory.single.path, '/contacts/sync');
+        expect(dio.requestHistory.single.data, {
+          'phoneHashes': [phoneHash],
+        });
+        expect(recipient?.isKoridoUser, isTrue);
+        expect(recipient?.userId, 'user_123');
+        expect(recipient?.name, 'Awa Korido');
+      },
+    );
 
     test('passive contact reads do not request iOS permission', () {
       final contactsServiceSource = File(

@@ -154,13 +154,13 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       );
 
       final syncData = response.data as Map<String, dynamic>;
-      final matches = (syncData['matches'] as List?) ?? [];
+      final matches = _extractContactSyncMatches(syncData);
       final isKoridoUser = matches.isNotEmpty;
 
       String? userId;
       String? displayName = name;
       if (isKoridoUser) {
-        final match = matches.first as Map<String, dynamic>;
+        final match = matches.first;
         userId = match['userId'] as String?;
         displayName =
             displayName ??
@@ -356,6 +356,25 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   void clearError() {
     state = state.clearError();
   }
+}
+
+List<Map<String, dynamic>> _extractContactSyncMatches(Object? payload) {
+  Object? readKey(Object? source, String key) {
+    if (source is Map) {
+      return source[key];
+    }
+    return null;
+  }
+
+  var raw = readKey(payload, 'matches');
+  raw ??= readKey(readKey(payload, 'data'), 'matches');
+  raw ??= readKey(payload, 'users');
+  raw ??= readKey(readKey(payload, 'data'), 'users');
+
+  if (raw is! List) {
+    return const [];
+  }
+  return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
 }
 
 /// Send Money Provider
