@@ -65,6 +65,11 @@ class MockUserStateMachine extends UserStateMachine {
   UserState build() => const UserState();
 
   @override
+  Future<void> hydrateAuthenticatedSession({bool fetchRelated = true}) async {
+    // No-op
+  }
+
+  @override
   Future<void> logout() async {
     // No-op
   }
@@ -491,6 +496,71 @@ void main() {
         expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
       },
     );
+
+    test(
+      'should clear local session when unlock refresh token is rejected',
+      () async {
+        // Arrange
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'expired.token',
+        );
+
+        final notifier = container.read(authProvider.notifier);
+        await notifier.checkAuth();
+        expect(container.read(authProvider).status, equals(AuthStatus.locked));
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'expired.refresh',
+        );
+        when(
+          () => mockAuthService.refreshToken(refreshToken: 'expired.refresh'),
+        ).thenThrow(
+          ApiException(message: 'Invalid refresh token', statusCode: 401),
+        );
+
+        // Act
+        notifier.unlock();
+        await Future<void>.delayed(Duration.zero);
+
+        // Assert
+        final state = container.read(authProvider);
+        expect(state.status, equals(AuthStatus.unauthenticated));
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
+
+    test(
+      'should clear access and refresh tokens when biometric refresh fails',
+      () async {
+        // Arrange
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'expired.token',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'expired.refresh',
+        );
+        when(
+          () => mockAuthService.refreshToken(refreshToken: 'expired.refresh'),
+        ).thenThrow(
+          ApiException(message: 'Invalid refresh token', statusCode: 401),
+        );
+
+        final notifier = container.read(authProvider.notifier);
+
+        // Act
+        final result = await notifier.loginWithBiometric('expired.refresh');
+
+        // Assert
+        expect(result, isFalse);
+        expect(container.read(authProvider).status, equals(AuthStatus.error));
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
   });
 
   group('Check stored auth restores session', () {
@@ -510,6 +580,35 @@ void main() {
       final state = container.read(authProvider);
       expect(state.status, equals(AuthStatus.locked));
     });
+
+    test(
+      'should clear stale stored session when startup refresh is unauthorized',
+      () async {
+        // Arrange
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'existing.token',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'rejected.refresh',
+        );
+        when(
+          () => mockAuthService.refreshToken(refreshToken: 'rejected.refresh'),
+        ).thenThrow(ApiException(message: 'Unauthorized', statusCode: 401));
+
+        final notifier = container.read(authProvider.notifier);
+
+        // Act
+        await notifier.checkAuth();
+
+        // Assert
+        final state = container.read(authProvider);
+        expect(state.status, equals(AuthStatus.unauthenticated));
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
 
     test('should transition to unauthenticated when no token', () async {
       // Arrange - no token stored

@@ -32,12 +32,16 @@ class SessionConfig {
 enum SessionStatus {
   /// No active session
   inactive,
+
   /// Session is active
   active,
+
   /// Session is about to expire (warning shown)
   expiring,
+
   /// Session has expired
   expired,
+
   /// Session is locked (requires PIN/biometric)
   locked,
 }
@@ -90,7 +94,6 @@ class SessionService extends Notifier<SessionState> {
   static const _tokenExpiryKey = 'token_expiry';
   static const _sessionStartKey = 'session_start';
 
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final SessionConfig _config;
 
   Timer? _inactivityTimer;
@@ -99,7 +102,10 @@ class SessionService extends Notifier<SessionState> {
   Timer? _tokenRefreshTimer;
   DateTime? _backgroundEnteredAt;
 
-  SessionService({SessionConfig? config}) : _config = config ?? const SessionConfig();
+  SessionService({SessionConfig? config})
+    : _config = config ?? const SessionConfig();
+
+  FlutterSecureStorage get _storage => ref.read(secureStorageProvider);
 
   @override
   SessionState build() {
@@ -123,7 +129,10 @@ class SessionService extends Notifier<SessionState> {
       await _storage.write(key: _refreshTokenKey, value: refreshToken);
     }
     if (expiresAt != null) {
-      await _storage.write(key: _tokenExpiryKey, value: expiresAt.toIso8601String());
+      await _storage.write(
+        key: _tokenExpiryKey,
+        value: expiresAt.toIso8601String(),
+      );
     }
     await _storage.write(key: _sessionStartKey, value: now.toIso8601String());
 
@@ -140,7 +149,8 @@ class SessionService extends Notifier<SessionState> {
 
   /// Record user activity to reset inactivity timer
   void recordActivity() {
-    if (state.status == SessionStatus.inactive || state.status == SessionStatus.expired) {
+    if (state.status == SessionStatus.inactive ||
+        state.status == SessionStatus.expired) {
       return;
     }
 
@@ -274,12 +284,16 @@ class SessionService extends Notifier<SessionState> {
           final refreshToken = await _storage.read(key: _refreshTokenKey);
           if (refreshToken != null) {
             // Attempt to refresh the token
-            await _refreshToken();
+            final refreshed = await _refreshToken();
+            if (!refreshed) {
+              await _invalidateLocalSession();
+              return;
+            }
             // Re-read to check if refresh succeeded
             final newToken = await _storage.read(key: _accessTokenKey);
             if (newToken == null || newToken == token) {
               // Refresh failed, end session
-              await endSession();
+              await _invalidateLocalSession();
               return;
             }
             // Refresh succeeded, update expiry
@@ -371,28 +385,31 @@ class SessionService extends Notifier<SessionState> {
     if (refreshAt.isAfter(now)) {
       final delay = refreshAt.difference(now);
       _tokenRefreshTimer = Timer(delay, () {
-        _refreshToken();
+        unawaited(_refreshToken());
       });
     } else if (expiresAt.isAfter(now)) {
       // Already past refresh threshold but not expired, refresh now
-      _refreshToken();
+      unawaited(_refreshToken());
     }
   }
 
-  Future<void> _refreshToken() async {
+  Future<bool> _refreshToken() async {
     final refreshToken = await getRefreshToken();
-    if (refreshToken == null) return;
+    if (refreshToken == null) return false;
 
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        connectTimeout: ApiConfig.connectTimeout,
-        receiveTimeout: ApiConfig.receiveTimeout,
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: ApiConfig.baseUrl,
+          connectTimeout: ApiConfig.connectTimeout,
+          receiveTimeout: ApiConfig.receiveTimeout,
+        ),
+      );
 
-      final response = await dio.post('/auth/refresh', data: {
-        'refreshToken': refreshToken,
-      });
+      final response = await dio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
 
       if (response.statusCode == 200) {
         // ignore: avoid_dynamic_calls
@@ -407,17 +424,30 @@ class SessionService extends Notifier<SessionState> {
 
         if (expiresIn != null) {
           final expiresAt = DateTime.now().add(Duration(seconds: expiresIn));
-          await _storage.write(key: _tokenExpiryKey, value: expiresAt.toIso8601String());
+          await _storage.write(
+            key: _tokenExpiryKey,
+            value: expiresAt.toIso8601String(),
+          );
           state = state.copyWith(tokenExpiresAt: expiresAt);
         }
 
         AppLogger('Debug').debug('Token refreshed successfully');
         _startTokenRefreshTimer();
+        return true;
       }
+      return false;
     } catch (e) {
       AppLogger('Token refresh failed').error('Token refresh failed', e);
-      // If refresh fails, session will eventually expire
+      return false;
     }
+  }
+
+  Future<void> _invalidateLocalSession() async {
+    await endSession();
+    try {
+      final signal = ref.read(authSessionInvalidatedProvider.notifier);
+      signal.state = signal.state + 1;
+    } catch (_) {}
   }
 
   void _cancelWarningTimer() {

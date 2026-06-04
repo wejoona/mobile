@@ -93,13 +93,21 @@ class AuthNotifier extends Notifier<AuthState> {
       if (!ref.mounted) return;
 
       if (token != null) {
+        final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
+        if (refreshToken != null && refreshToken.isNotEmpty) {
+          final canRestore = await _refreshStoredSession(refreshToken);
+          if (!ref.mounted) return;
+          if (!canRestore) {
+            return;
+          }
+        }
+
         // Token exists — go to locked state (require PIN/biometric to unlock)
         // This ensures returning users always see the lock screen first
         state = state.copyWith(status: AuthStatus.locked);
 
         // Sync FSM: restore auth state and trigger data fetches in background
         final userId = await _storage.read(key: 'user_id');
-        final refreshToken = await _storage.read(key: 'refresh_token');
         if (!ref.mounted) return;
         ref
             .read(appFsmProvider.notifier)
@@ -117,6 +125,33 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.unauthenticated,
         error: e.toString(),
       );
+    }
+  }
+
+  Future<bool> _refreshStoredSession(String refreshToken) async {
+    try {
+      final response = await _authService.refreshToken(
+        refreshToken: refreshToken,
+      );
+      await _storage.write(
+        key: StorageKeys.accessToken,
+        value: response.accessToken,
+      );
+      if (response.refreshToken != null) {
+        await _storage.write(
+          key: StorageKeys.refreshToken,
+          value: response.refreshToken!,
+        );
+      }
+      return true;
+    } on ApiException catch (e) {
+      if (_isRefreshRejected(e)) {
+        await clearLocalSession();
+        return false;
+      }
+      return true;
+    } catch (_) {
+      return true;
     }
   }
 
@@ -163,8 +198,16 @@ class AuthNotifier extends Notifier<AuthState> {
           value: response.refreshToken!,
         );
       }
+    } on ApiException catch (e) {
+      // Stored refresh tokens can survive app reinstall on iOS keychain.
+      // If the backend rejects them, clear local state immediately instead of
+      // leaving the user trapped behind a PIN screen with an invalid session.
+      if (_isRefreshRejected(e)) {
+        await clearLocalSession();
+      }
     } catch (_) {
-      // Token refresh failed — the 401 interceptor will handle it on next API call
+      // Keep the locked state on transient/local failures. The next API call can
+      // still retry through the interceptor.
     }
   }
 
@@ -400,9 +443,16 @@ class AuthNotifier extends Notifier<AuthState> {
       );
 
       return true;
+    } on ApiException catch (e) {
+      if (_isRefreshRejected(e)) {
+        await clearLocalSession();
+      }
+      state = state.copyWith(
+        status: AuthStatus.error,
+        error: 'Biometric login failed. Please log in again.',
+      );
+      return false;
     } catch (e) {
-      // Clear invalid refresh token
-      await _storage.delete(key: StorageKeys.refreshToken);
       state = state.copyWith(
         status: AuthStatus.error,
         error: 'Biometric login failed. Please log in again.',
@@ -410,6 +460,9 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
   }
+
+  bool _isRefreshRejected(ApiException e) =>
+      e.statusCode == 400 || e.statusCode == 401 || e.statusCode == 403;
 
   /// Logout
   Future<void> logout() async {
