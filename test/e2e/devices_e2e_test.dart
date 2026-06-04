@@ -59,5 +59,11 @@ void main() {
       expect(sessions.first, isA<Map<String, dynamic>>());
       expect((sessions.first as Map<String, dynamic>)['isActive'], isTrue);
     });
+
+    test('GET /sessions — no auth returns 401', () async {
+      final noAuth = E2EClient();
+      final res = await noAuth.get('/sessions');
+      expect(res.statusCode, 401);
+    });
   });
 }
