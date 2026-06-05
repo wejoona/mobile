@@ -59,11 +59,7 @@ class KycInstructionScreen extends StatelessWidget {
                           color: colors.gold.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(
-                          icon,
-                          size: 48,
-                          color: colors.gold,
-                        ),
+                        child: Icon(icon, size: 48, color: colors.gold),
                       ),
                       const SizedBox(height: AppSpacing.xxl),
                       // Title
@@ -83,11 +79,10 @@ class KycInstructionScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: AppSpacing.xxl),
                       // Instructions list
-                      ...instructions.map((instruction) => _buildInstructionRow(
-                            context,
-                            instruction,
-                            colors,
-                          )),
+                      ...instructions.map(
+                        (instruction) =>
+                            _buildInstructionRow(context, instruction, colors),
+                      ),
                     ],
                   ),
                 ),
@@ -176,75 +171,103 @@ class KycInstruction {
 
 /// Pre-built instruction configurations for each KYC step
 class KycInstructions {
-  static List<KycInstruction> get documentCapture => const [
+  static List<KycInstruction> documentCaptureFor(Locale locale) {
+    if (locale.languageCode == 'fr') {
+      return const [
         KycInstruction(
           icon: Icons.badge_outlined,
-          title: 'Use your original document',
-          subtitle: 'No photocopies or photos of photos',
+          title: 'Utilisez le document original',
+          subtitle: 'Pas de photocopie ni de photo de photo',
         ),
         KycInstruction(
           icon: Icons.lightbulb_outline,
-          title: 'Find good lighting',
-          subtitle: 'Avoid shadows and reflections',
+          title: 'Cherchez une bonne lumière',
+          subtitle: 'Évitez les ombres et les reflets',
         ),
         KycInstruction(
           icon: Icons.crop_free,
-          title: 'Fit document in frame',
-          subtitle: 'All corners should be visible',
+          title: 'Cadrez tout le document',
+          subtitle: 'Les quatre coins doivent être visibles',
         ),
         KycInstruction(
           icon: Icons.blur_off,
-          title: 'Keep steady',
-          subtitle: 'Hold still to avoid blur',
+          title: 'Gardez le téléphone stable',
+          subtitle: 'Restez immobile pour éviter le flou',
           isWarning: true,
         ),
       ];
+    }
+
+    return const [
+      KycInstruction(
+        icon: Icons.badge_outlined,
+        title: 'Use your original document',
+        subtitle: 'No photocopies or photos of photos',
+      ),
+      KycInstruction(
+        icon: Icons.lightbulb_outline,
+        title: 'Find good lighting',
+        subtitle: 'Avoid shadows and reflections',
+      ),
+      KycInstruction(
+        icon: Icons.crop_free,
+        title: 'Fit document in frame',
+        subtitle: 'All corners should be visible',
+      ),
+      KycInstruction(
+        icon: Icons.blur_off,
+        title: 'Keep steady',
+        subtitle: 'Hold still to avoid blur',
+        isWarning: true,
+      ),
+    ];
+  }
 
   static List<KycInstruction> get selfie => const [
-        KycInstruction(
-          icon: Icons.face,
-          title: 'Face the camera directly',
-          subtitle: 'Look straight at the camera',
-        ),
-        KycInstruction(
-          icon: Icons.wb_sunny_outlined,
-          title: 'Good lighting on your face',
-          subtitle: 'Avoid backlighting or harsh shadows',
-        ),
-        KycInstruction(
-          icon: Icons.visibility_off_outlined,
-          title: 'Remove accessories',
-          subtitle: 'Take off glasses, hats, or face coverings',
-          isWarning: true,
-        ),
-        KycInstruction(
-          icon: Icons.sentiment_satisfied_outlined,
-          title: 'Neutral expression',
-          subtitle: 'Keep a natural, relaxed face',
-        ),
-      ];
+    KycInstruction(
+      icon: Icons.face,
+      title: 'Face the camera directly',
+      subtitle: 'Look straight at the camera',
+    ),
+    KycInstruction(
+      icon: Icons.wb_sunny_outlined,
+      title: 'Good lighting on your face',
+      subtitle: 'Avoid backlighting or harsh shadows',
+    ),
+    KycInstruction(
+      icon: Icons.visibility_off_outlined,
+      title: 'Remove accessories',
+      subtitle: 'Take off glasses, hats, or face coverings',
+      isWarning: true,
+    ),
+    KycInstruction(
+      icon: Icons.sentiment_satisfied_outlined,
+      title: 'Neutral expression',
+      subtitle: 'Keep a natural, relaxed face',
+    ),
+  ];
 
   static List<KycInstruction> get liveness => const [
-        KycInstruction(
-          icon: Icons.videocam_outlined,
-          title: 'Vérification vidéo',
-          subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
-        ),
-        KycInstruction(
-          icon: Icons.rotate_left,
-          title: 'Suivez les instructions',
-          subtitle: 'Tournez la tête ou clignez des yeux quand demandé',
-        ),
-        KycInstruction(
-          icon: Icons.timer_outlined,
-          title: 'Environ 30 secondes',
-          subtitle: 'Restez dans le cadre pendant toute la durée',
-        ),
-        KycInstruction(
-          icon: Icons.block,
-          title: 'Pas de photos de photos',
-          subtitle: 'Cela vérifie que vous êtes une vraie personne',
-          isWarning: true,
-        ),
-      ];
+    KycInstruction(
+      icon: Icons.videocam_outlined,
+      title: 'Vérification vidéo',
+      subtitle: 'Nous vous demanderons d\'effectuer des actions simples',
+    ),
+    KycInstruction(
+      icon: Icons.rotate_left,
+      title: 'Suivez les instructions',
+      subtitle: 'Tournez la tête ou clignez des yeux quand demandé',
+    ),
+    KycInstruction(
+      icon: Icons.timer_outlined,
+      title: 'Environ 30 secondes',
+      subtitle: 'Restez dans le cadre pendant toute la durée',
+    ),
+    KycInstruction(
+      icon: Icons.block,
+      title: 'Pas de photos de photos',
+      subtitle: 'Cela vérifie que vous êtes une vraie personne',
+      isWarning: true,
+    ),
+  ];
 }

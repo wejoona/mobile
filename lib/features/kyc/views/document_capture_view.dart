@@ -27,7 +27,8 @@ class DocumentCaptureView extends ConsumerStatefulWidget {
   const DocumentCaptureView({super.key});
 
   @override
-  ConsumerState<DocumentCaptureView> createState() => _DocumentCaptureViewState();
+  ConsumerState<DocumentCaptureView> createState() =>
+      _DocumentCaptureViewState();
 }
 
 class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
@@ -58,7 +59,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     // Skip camera initialization if running on simulator (auto-detected)
     final mockCamera = ref.read(mockCameraProvider);
     if (mockCamera) {
-      debugPrint('[DocumentCapture] Simulator detected - showing gallery picker');
+      debugPrint(
+        '[DocumentCapture] Simulator detected - showing gallery picker',
+      );
       if (mounted) {
         setState(() {
           _cameraError = 'Caméra simulée pour les tests';
@@ -104,16 +107,22 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       }
     } catch (e) {
       debugPrint('[DocumentCapture] Camera initialization error: $e');
-      AppLogger('Camera initialization error').error('Camera initialization error', e);
+      AppLogger(
+        'Camera initialization error',
+      ).error('Camera initialization error', e);
       if (mounted) {
         setState(() {
-          _cameraError = 'Camera initialization failed: ${e.toString().split('\n').first}';
+          _cameraError =
+              'Camera initialization failed: ${e.toString().split('\n').first}';
         });
       }
     }
   }
 
-  Future<void> _pickFromGallery(BuildContext context, KycFlowState state) async {
+  Future<void> _pickFromGallery(
+    BuildContext context,
+    KycFlowState state,
+  ) async {
     try {
       final picker = ImagePicker();
       debugPrint('[DocumentCapture] Opening gallery picker...');
@@ -182,7 +191,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     // Show error if camera failed - with gallery option
     if (_cameraError != null) {
       final documentType = state.selectedDocumentType;
-      final isBackSide = documentType?.requiresBackSide == true && state.capturedDocuments.isNotEmpty;
+      final isBackSide =
+          documentType?.requiresBackSide == true &&
+          state.capturedDocuments.isNotEmpty;
       final documentName = _getDocumentTypeName(l10n, documentType);
       final sideLabel = isBackSide ? 'Back Side' : 'Front Side';
 
@@ -204,7 +215,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   decoration: BoxDecoration(
                     color: colors.gold.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(color: colors.gold.withValues(alpha: 0.2)),
+                    border: Border.all(
+                      color: colors.gold.withValues(alpha: 0.2),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -247,7 +260,11 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.camera_alt_outlined, size: 48, color: colors.textTertiary),
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        size: 48,
+                        color: colors.textTertiary,
+                      ),
                       SizedBox(height: AppSpacing.md),
                       AppText(
                         l10n.kyc_camera_unavailable,
@@ -334,15 +351,18 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
   ) {
     final documentType = state.selectedDocumentType;
     final documentName = _getDocumentTypeName(l10n, documentType);
-    final isBackSide = documentType?.requiresBackSide == true && state.capturedDocuments.isNotEmpty;
+    final isBackSide =
+        documentType?.requiresBackSide == true &&
+        state.capturedDocuments.isNotEmpty;
+    final locale = Localizations.localeOf(context);
 
     return KycInstructionScreen(
-      title: isBackSide ? 'Capturer le verso' : 'Capturer $documentName',
+      title: _captureInstructionTitle(locale, documentName, isBackSide),
       description: isBackSide
-          ? 'Retournez votre document et capturez le verso.'
-          : 'Positionnez votre document dans le cadre et prenez une photo nette.',
+          ? l10n.kyc_capture_backInstructions
+          : _captureInstructionDescription(l10n, documentType),
       icon: Icons.badge_outlined,
-      instructions: KycInstructions.documentCapture,
+      instructions: KycInstructions.documentCaptureFor(locale),
       buttonLabel: l10n.common_continue,
       onContinue: () {
         setState(() => _showInstructions = false);
@@ -350,6 +370,34 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       },
       onBack: () => context.safePop(),
     );
+  }
+
+  String _captureInstructionTitle(
+    Locale locale,
+    String documentName,
+    bool isBackSide,
+  ) {
+    if (locale.languageCode == 'fr') {
+      return isBackSide ? 'Capturer le verso' : 'Capturer $documentName';
+    }
+
+    return isBackSide ? 'Capture back side' : 'Capture $documentName';
+  }
+
+  String _captureInstructionDescription(
+    AppLocalizations l10n,
+    DocumentType? documentType,
+  ) {
+    switch (documentType) {
+      case DocumentType.nationalId:
+        return l10n.kyc_capture_nationalIdInstructions;
+      case DocumentType.passport:
+        return l10n.kyc_capture_passportInstructions;
+      case DocumentType.driversLicense:
+        return l10n.kyc_capture_driversLicenseInstructions;
+      case null:
+        return l10n.kyc_capture_frontSide_guidance;
+    }
   }
 
   Widget _buildCaptureScreen(
@@ -371,15 +419,11 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
         child: Stack(
           children: [
             // Camera preview
-            Positioned.fill(
-              child: CameraPreview(_controller!),
-            ),
+            Positioned.fill(child: CameraPreview(_controller!)),
             // Document frame overlay
             Positioned.fill(
               child: CustomPaint(
-                painter: DocumentFramePainter(
-                  documentType: documentType,
-                ),
+                painter: DocumentFramePainter(documentType: documentType),
               ),
             ),
             // Top controls
@@ -402,7 +446,11 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      icon: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                       onPressed: () => context.safePop(),
                     ),
                     const Spacer(),
@@ -433,7 +481,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
                   color: Colors.black.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                   border: Border.all(
-                    color: context.colors.gold.withValues(alpha: 0.3), // Keep gold for visibility
+                    color: context.colors.gold.withValues(
+                      alpha: 0.3,
+                    ), // Keep gold for visibility
                     width: 1,
                   ),
                 ),
@@ -513,7 +563,10 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.kyc_reviewImage, variant: AppTextVariant.headlineSmall),
+        title: AppText(
+          l10n.kyc_reviewImage,
+          variant: AppTextVariant.headlineSmall,
+        ),
         backgroundColor: Colors.transparent,
         leading: Container(),
       ),
@@ -700,7 +753,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     final isBackSide = documentType.requiresBackSide && existingDocCount > 0;
     final side = isBackSide ? DocumentSide.back : DocumentSide.front;
 
-    debugPrint('[DocumentCapture] Accepting photo as ${side.name} side (existing docs: $existingDocCount)');
+    debugPrint(
+      '[DocumentCapture] Accepting photo as ${side.name} side (existing docs: $existingDocCount)',
+    );
 
     final document = KycDocument(
       type: documentType,
@@ -711,11 +766,14 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
     ref.read(kycProvider.notifier).addDocument(document);
 
     // Check if we need to capture the back side (check based on count BEFORE adding)
-    final needsBackSide = documentType.requiresBackSide && existingDocCount == 0;
+    final needsBackSide =
+        documentType.requiresBackSide && existingDocCount == 0;
 
     if (needsBackSide) {
       // Reset for back side capture - show instructions again
-      debugPrint('[DocumentCapture] Need back side - showing instructions for back side');
+      debugPrint(
+        '[DocumentCapture] Need back side - showing instructions for back side',
+      );
       setState(() {
         _capturedImagePath = null;
         _currentSide = DocumentSide.back;
@@ -723,7 +781,9 @@ class _DocumentCaptureViewState extends ConsumerState<DocumentCaptureView> {
       });
     } else {
       // Move to selfie
-      debugPrint('[DocumentCapture] All documents captured - navigating to /kyc/selfie');
+      debugPrint(
+        '[DocumentCapture] All documents captured - navigating to /kyc/selfie',
+      );
       context.go('/kyc/selfie');
     }
   }
@@ -737,7 +797,8 @@ class DocumentFramePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.7) // Always black for camera overlay
+      ..color = Colors.black
+          .withValues(alpha: 0.7) // Always black for camera overlay
       ..style = PaintingStyle.fill;
 
     final framePaint = Paint()
@@ -746,7 +807,9 @@ class DocumentFramePainter extends CustomPainter {
       ..strokeWidth = 3;
 
     // Document frame dimensions
-    final aspectRatio = documentType == DocumentType.passport ? 0.707 : 1.586; // ID card ratio
+    final aspectRatio = documentType == DocumentType.passport
+        ? 0.707
+        : 1.586; // ID card ratio
     final frameWidth = size.width * 0.85;
     final frameHeight = frameWidth / aspectRatio;
 
