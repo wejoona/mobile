@@ -1,6 +1,9 @@
+import 'dart:io' show Platform;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/utils/app_info.dart';
 
 class FeatureSubscriptionRequest {
   const FeatureSubscriptionRequest({
@@ -48,6 +51,22 @@ class FeatureSubscriptionRequest {
     if (appVersion != null && appVersion!.isNotEmpty) 'appVersion': appVersion,
     if (metadata != null && metadata!.isNotEmpty) 'metadata': metadata,
   };
+
+  FeatureSubscriptionRequest copyWith({String? platform, String? appVersion}) =>
+      FeatureSubscriptionRequest(
+        featureKey: featureKey,
+        source: source,
+        status: status,
+        phone: phone,
+        email: email,
+        featureName: featureName,
+        requestedFeature: requestedFeature,
+        countryCode: countryCode,
+        locale: locale,
+        platform: platform ?? this.platform,
+        appVersion: appVersion ?? this.appVersion,
+        metadata: metadata,
+      );
 }
 
 class FeatureSubscription {
@@ -62,6 +81,20 @@ class FeatureSubscription {
     this.metadata,
   });
 
+  factory FeatureSubscription.fromJson(Map<String, dynamic> json) =>
+      FeatureSubscription(
+        id: json['id'] as String,
+        featureKey: json['featureKey'] as String,
+        source: json['source'] as String,
+        status: json['status'] as String? ?? 'subscribed',
+        isActive: json['isActive'] as bool? ?? true,
+        phone: json['phone'] as String?,
+        email: json['email'] as String?,
+        metadata: json['metadata'] is Map
+            ? Map<String, dynamic>.from(json['metadata'] as Map)
+            : null,
+      );
+
   final String id;
   final String featureKey;
   final String source;
@@ -70,21 +103,6 @@ class FeatureSubscription {
   final String? phone;
   final String? email;
   final Map<String, dynamic>? metadata;
-
-  factory FeatureSubscription.fromJson(Map<String, dynamic> json) {
-    return FeatureSubscription(
-      id: json['id'] as String,
-      featureKey: json['featureKey'] as String,
-      source: json['source'] as String,
-      status: json['status'] as String? ?? 'subscribed',
-      isActive: json['isActive'] as bool? ?? true,
-      phone: json['phone'] as String?,
-      email: json['email'] as String?,
-      metadata: json['metadata'] is Map
-          ? Map<String, dynamic>.from(json['metadata'] as Map)
-          : null,
-    );
-  }
 }
 
 class FeatureSubscriptionService {
@@ -95,9 +113,10 @@ class FeatureSubscriptionService {
   Future<FeatureSubscription> subscribe(
     FeatureSubscriptionRequest request,
   ) async {
+    final enrichedRequest = await _withRuntimeContext(request);
     final response = await _dio.post(
       '/feature-subscriptions',
-      data: request.toJson(),
+      data: enrichedRequest.toJson(),
     );
     return FeatureSubscription.fromJson(
       Map<String, dynamic>.from(response.data as Map),
@@ -131,10 +150,37 @@ class FeatureSubscriptionService {
         )
         .toList();
   }
+
+  Future<FeatureSubscriptionRequest> _withRuntimeContext(
+    FeatureSubscriptionRequest request,
+  ) async {
+    final platform = request.platform ?? _mobilePlatform();
+    final appVersion = request.appVersion ?? await _safeAppVersion();
+    if (platform == null && appVersion == null) {
+      return request;
+    }
+    return request.copyWith(platform: platform, appVersion: appVersion);
+  }
+
+  String? _mobilePlatform() {
+    if (Platform.isIOS) {
+      return 'ios';
+    }
+    if (Platform.isAndroid) {
+      return 'android';
+    }
+    return null;
+  }
+
+  Future<String?> _safeAppVersion() async {
+    try {
+      return await AppInfo.getVersion();
+    } on Object {
+      return null;
+    }
+  }
 }
 
 final featureSubscriptionServiceProvider = Provider<FeatureSubscriptionService>(
-  (ref) {
-    return FeatureSubscriptionService(ref.watch(dioProvider));
-  },
+  (ref) => FeatureSubscriptionService(ref.watch(dioProvider)),
 );

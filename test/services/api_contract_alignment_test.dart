@@ -303,6 +303,8 @@ void main() {
           requestedFeature: 'virtual_card_launch',
           countryCode: 'CI',
           locale: 'fr-CI',
+          platform: 'ios',
+          appVersion: '1.0.0+1',
           metadata: {'surface': 'cards'},
         ),
       );
@@ -319,6 +321,8 @@ void main() {
         'requestedFeature': 'virtual_card_launch',
         'countryCode': 'CI',
         'locale': 'fr-CI',
+        'platform': 'ios',
+        'appVersion': '1.0.0+1',
         'metadata': {'surface': 'cards'},
       });
       expect(subscription.featureKey, 'virtual_card');
