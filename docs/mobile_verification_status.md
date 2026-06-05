@@ -25,6 +25,9 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 live API extended product sweep:
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/user_e2e_test.dart test/e2e/beneficiaries_e2e_test.dart test/e2e/bill_payments_e2e_test.dart test/e2e/cards_e2e_test.dart test/e2e/payment_links_e2e_test.dart test/e2e/savings_pots_e2e_test.dart test/e2e/recurring_transfers_e2e_test.dart test/e2e/bank_linking_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart` passed 66 live API tests.
+  - Covered profile updates, locale, profile photo upload/persist/fetch/delete, PIN set/verify/change, user search/limits, beneficiaries CRUD, bill pay providers/categories/history/validation/errors, cards CRUD/freeze/unfreeze/transactions, payment links CRUD/cancel/errors, savings pots CRUD/deposit/withdraw, recurring transfers CRUD/pause/resume, bank linking CRUD, and feature subscriptions with feature context.
 - 2026-06-05 iPhone 17 simulator live API flow:
   - `flutter test -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 integration_test/flows/live_api_login_flow_test.dart --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on the booted iPhone 17 simulator.
   - Flow registered a fresh user, verified OTP, created wallet, completed profile and PIN setup, skipped KYC into home, opened deposit/rate/channels, transactions, notifications, devices, active sessions, notification preferences, and completed logout.
