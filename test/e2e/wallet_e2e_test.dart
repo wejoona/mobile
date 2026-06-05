@@ -62,12 +62,15 @@ void main() {
       final res = await client.get(
         '/wallet/exchange-rate?sourceCurrency=XOF&targetCurrency=USD&amount=1000',
       );
-      expect(res.statusCode, anyOf(200, 400));
-      if (res.statusCode == 400) {
-        final error = res.data?['error'] as Map<String, dynamic>?;
-        expect(error?['code'], 'E4001');
-        expect(error?['featureReason'], 'yellow_card_disabled');
-      }
+      res.expectOk();
+      final raw = res.data?['data'] ?? res.data;
+      expect(raw, isA<Map<String, dynamic>>());
+      final data = raw! as Map<String, dynamic>;
+      expect(data['fromCurrency'], 'XOF');
+      expect(data['toCurrency'], 'USD');
+      expect(data['rate'], isA<num>());
+      expect(data['rate'] as num, greaterThan(0));
+      expect(data['timestamp'], isA<String>());
     });
 
     test('GET /wallet/kyc/status — returns KYC status', () async {
