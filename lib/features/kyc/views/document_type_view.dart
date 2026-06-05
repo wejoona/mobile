@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/components/primitives/app_card.dart';
-import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
 import 'package:usdc_wallet/features/kyc/models/document_type.dart';
+import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class DocumentTypeView extends ConsumerStatefulWidget {
   const DocumentTypeView({super.key});
@@ -28,42 +30,41 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.kyc_selectDocumentType, variant: AppTextVariant.headlineSmall),
+        title: AppText(
+          l10n.kyc_selectDocumentType,
+          variant: AppTextVariant.titleLarge,
+        ),
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AppText(
                 l10n.kyc_selectDocumentType_description,
-                variant: AppTextVariant.bodyLarge,
                 color: colors.textSecondary,
               ),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xl),
               _buildDocumentTypeCard(
                 context,
-                l10n,
                 DocumentType.nationalId,
                 Icons.badge,
                 l10n.kyc_documentType_nationalId,
                 l10n.kyc_documentType_nationalId_description,
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
               _buildDocumentTypeCard(
                 context,
-                l10n,
                 DocumentType.passport,
                 Icons.menu_book,
                 l10n.kyc_documentType_passport,
                 l10n.kyc_documentType_passport_description,
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.md),
               _buildDocumentTypeCard(
                 context,
-                l10n,
                 DocumentType.driversLicense,
                 Icons.credit_card,
                 l10n.kyc_documentType_driversLicense,
@@ -72,7 +73,9 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
               const Spacer(),
               AppButton(
                 label: l10n.common_continue,
-                onPressed: _selectedType != null ? () => _handleContinue(context) : null,
+                onPressed: _selectedType != null
+                    ? () => _handleContinue(context)
+                    : null,
                 isFullWidth: true,
               ),
             ],
@@ -84,7 +87,6 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
 
   Widget _buildDocumentTypeCard(
     BuildContext context,
-    AppLocalizations l10n,
     DocumentType type,
     IconData icon,
     String title,
@@ -93,71 +95,57 @@ class _DocumentTypeViewState extends ConsumerState<DocumentTypeView> {
     final colors = context.colors;
     final isSelected = _selectedType == type;
 
-    return GestureDetector(
+    return AppCard(
+      variant: isSelected ? AppCardVariant.goldAccent : AppCardVariant.flat,
+      isSelected: isSelected,
       onTap: () => setState(() => _selectedType = type),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(
-            color: isSelected ? colors.gold : colors.border,
-            width: isSelected ? 2 : 1,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.lg,
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: colors.gold.withValues(alpha: isSelected ? 0.14 : 0.08),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, size: 28, color: colors.gold),
           ),
-        ),
-        child: AppCard(
-          variant: isSelected ? AppCardVariant.goldAccent : AppCardVariant.elevated,
-          padding: EdgeInsets.all(AppSpacing.lg),
-          child: Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: (isSelected ? colors.gold : colors.textSecondary)
-                      .withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  variant: AppTextVariant.titleSmall,
+                  color: isSelected ? colors.gold : colors.textPrimary,
                 ),
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: isSelected ? colors.gold : colors.textSecondary,
+                const SizedBox(height: AppSpacing.xxs),
+                AppText(
+                  description,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
                 ),
-              ),
-              SizedBox(width: AppSpacing.lg),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      title,
-                      variant: AppTextVariant.labelLarge,
-                      color: isSelected ? colors.gold : colors.textPrimary,
-                    ),
-                    SizedBox(height: AppSpacing.xs),
-                    AppText(
-                      description,
-                      variant: AppTextVariant.bodySmall,
-                      color: colors.textSecondary,
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: colors.gold,
-                  size: 24,
-                ),
-            ],
+              ],
+            ),
           ),
-        ),
+          if (isSelected) ...[
+            const SizedBox(width: AppSpacing.sm),
+            Icon(Icons.check_circle, color: colors.gold, size: 22),
+          ],
+        ],
       ),
     );
   }
 
   void _handleContinue(BuildContext context) {
-    if (_selectedType == null) return;
+    if (_selectedType == null) {
+      return;
+    }
 
     ref.read(kycProvider.notifier).selectDocumentType(_selectedType!);
-    context.push('/kyc/personal-info');
+    unawaited(context.push('/kyc/personal-info'));
   }
 }
