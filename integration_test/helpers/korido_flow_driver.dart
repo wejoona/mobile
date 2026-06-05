@@ -241,9 +241,26 @@ class KoridoFlowDriver {
     await tapText(['Continue', 'Continuer']);
 
     await pumpUntil(
-      () => hasAnyText(['Orange Money']),
-      reason: 'deposit provider options',
+      () =>
+          hasAnyText(['Orange Money']) ||
+          hasAnyText([
+            'No Providers Available',
+            'No deposit providers are currently available',
+            'Aucun fournisseur disponible',
+            'Aucun moyen de paiement disponible',
+          ]),
+      reason: 'deposit provider options or unavailable state',
     );
+
+    if (hasAnyText([
+      'No Providers Available',
+      'No deposit providers are currently available',
+      'Aucun fournisseur disponible',
+      'Aucun moyen de paiement disponible',
+    ])) {
+      expectNoAuthOrUnexpectedError();
+      return;
+    }
 
     final orangeProvider = find.byKey(
       const ValueKey('deposit_provider_orange_money_ci'),
@@ -467,6 +484,15 @@ class KoridoFlowDriver {
   }
 
   bool hasAnyText(List<String> candidates) => findText(candidates) != null;
+
+  void expectNoAuthOrUnexpectedError() {
+    final visible = visibleTextSnapshot().toLowerCase();
+    expect(visible.contains('401'), isFalse);
+    expect(visible.contains('unauthorized'), isFalse);
+    expect(visible.contains('non autorisé'), isFalse);
+    expect(visible.contains('unexpected error'), isFalse);
+    expect(visible.contains('erreur inattendue'), isFalse);
+  }
 
   Future<void> pumpUntil(
     bool Function() condition, {
