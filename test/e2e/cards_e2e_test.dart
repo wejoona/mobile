@@ -18,6 +18,11 @@ void main() {
     test('GET /cards — list cards', () async {
       final res = await client.get('/cards');
       res.expectOk();
+      final data = _payload(res);
+      expect(data['available'], isFalse);
+      expect(data['status'], 'unavailable');
+      expect(data['reason'], 'provider_or_feature_disabled');
+      expect(data['featureReason'], 'card_issuing_unavailable');
     });
 
     test('POST /cards — create virtual card', () async {
@@ -26,33 +31,48 @@ void main() {
         'spendingLimit': 250,
         'cardType': 'virtual',
       });
-      expect(res.statusCode, anyOf(200, 201));
+      expect(res.statusCode, anyOf(200, 201, 400));
       if (res.isOk) {
-        final data = res.data?['data'] ?? res.data;
-        createdCardId = data?['id']?.toString();
+        final data = _payload(res);
+        createdCardId = data['id']?.toString();
+      } else {
+        final error = res.data?['error'] as Map<String, dynamic>?;
+        expect(error?['code'], 'E8006');
+        expect(
+          error?['message']?.toString(),
+          contains('Virtual card issuing is not available yet'),
+        );
       }
     });
 
     test('GET /cards/:id — get card details', () async {
-      if (createdCardId == null) return;
+      if (createdCardId == null) {
+        return;
+      }
       final res = await client.get('/cards/$createdCardId');
       res.expectOk();
     });
 
     test('PUT /cards/:id/freeze — freeze card', () async {
-      if (createdCardId == null) return;
+      if (createdCardId == null) {
+        return;
+      }
       final res = await client.put('/cards/$createdCardId/freeze');
       expect(res.statusCode, anyOf(200, 204));
     });
 
     test('PUT /cards/:id/unfreeze — unfreeze card', () async {
-      if (createdCardId == null) return;
+      if (createdCardId == null) {
+        return;
+      }
       final res = await client.put('/cards/$createdCardId/unfreeze');
       expect(res.statusCode, anyOf(200, 204));
     });
 
     test('GET /cards/:id/transactions — card transactions', () async {
-      if (createdCardId == null) return;
+      if (createdCardId == null) {
+        return;
+      }
       final res = await client.get('/cards/$createdCardId/transactions');
       res.expectOk();
     });
@@ -63,4 +83,10 @@ void main() {
       expect(res.statusCode, 401);
     });
   });
+}
+
+Map<String, dynamic> _payload(E2EResponse res) {
+  final body = res.data ?? <String, dynamic>{};
+  final data = body['data'];
+  return data is Map<String, dynamic> ? data : body;
 }
