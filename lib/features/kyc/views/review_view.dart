@@ -1,15 +1,14 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class ReviewView extends ConsumerWidget {
   const ReviewView({super.key});
@@ -23,12 +22,15 @@ class ReviewView extends ConsumerWidget {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.kyc_reviewDocuments, variant: AppTextVariant.headlineSmall),
+        title: AppText(
+          l10n.kyc_reviewDocuments,
+          variant: AppTextVariant.headlineSmall,
+        ),
         backgroundColor: Colors.transparent,
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -37,22 +39,24 @@ class ReviewView extends ConsumerWidget {
                 variant: AppTextVariant.bodyLarge,
                 color: colors.textSecondary,
               ),
-              SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxl),
               Expanded(
                 child: ListView(
                   children: [
+                    _buildReadinessSummary(context, state),
+                    const SizedBox(height: AppSpacing.xxl),
                     // Documents section
                     AppText(
                       l10n.kyc_review_documents,
                       variant: AppTextVariant.titleMedium,
                       color: colors.gold,
                     ),
-                    SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.lg),
                     ...state.capturedDocuments.asMap().entries.map((entry) {
                       final index = entry.key;
                       final document = entry.value;
                       return Padding(
-                        padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                         child: _buildImageCard(
                           context,
                           l10n,
@@ -65,14 +69,35 @@ class ReviewView extends ConsumerWidget {
                         ),
                       );
                     }),
-                    SizedBox(height: AppSpacing.lg),
+                    if (state.capturedDocuments.isEmpty)
+                      _buildMissingCard(
+                        context,
+                        title: _copy(
+                          context,
+                          'Document photo',
+                          'Photo du document',
+                        ),
+                        subtitle: _copy(
+                          context,
+                          'Add a clear photo of your ID document.',
+                          'Ajoutez une photo nette de votre pièce d’identité.',
+                        ),
+                        icon: Icons.badge_outlined,
+                        actionLabel: _copy(
+                          context,
+                          'Add document',
+                          'Ajouter le document',
+                        ),
+                        onAction: () => _handleEditDocument(context, 0),
+                      ),
+                    const SizedBox(height: AppSpacing.lg),
                     // Selfie section
                     AppText(
                       l10n.kyc_review_selfie,
                       variant: AppTextVariant.titleMedium,
                       color: colors.gold,
                     ),
-                    SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.lg),
                     if (state.selfiePath != null)
                       _buildImageCard(
                         context,
@@ -82,10 +107,27 @@ class ReviewView extends ConsumerWidget {
                         l10n.kyc_review_yourSelfie,
                         () => _handleEditSelfie(context),
                       ),
+                    if (state.selfiePath == null)
+                      _buildMissingCard(
+                        context,
+                        title: l10n.kyc_review_yourSelfie,
+                        subtitle: _copy(
+                          context,
+                          'Take a selfie so we can match you to your document.',
+                          'Prenez un selfie pour confirmer qu’il correspond au document.',
+                        ),
+                        icon: Icons.face_retouching_natural_outlined,
+                        actionLabel: _copy(
+                          context,
+                          'Add selfie',
+                          'Ajouter le selfie',
+                        ),
+                        onAction: () => _handleEditSelfie(context),
+                      ),
                   ],
                 ),
               ),
-              SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
               AppButton(
                 label: l10n.kyc_submitForVerification,
                 onPressed: state.canSubmit
@@ -101,6 +143,131 @@ class ReviewView extends ConsumerWidget {
     );
   }
 
+  Widget _buildReadinessSummary(BuildContext context, KycFlowState state) {
+    final colors = context.colors;
+    final completedCount =
+        (state.capturedDocuments.isNotEmpty ? 1 : 0) +
+        (state.selfiePath != null ? 1 : 0) +
+        (state.hasRequiredPersonalInfo ? 1 : 0);
+    final isReady = state.canSubmit;
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: isReady ? colors.goldSubtle : colors.elevated,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(
+                color: isReady ? colors.borderGold : colors.borderSubtle,
+              ),
+            ),
+            child: Icon(
+              isReady ? Icons.verified_outlined : Icons.fact_check_outlined,
+              color: isReady ? colors.gold : colors.textSecondary,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  isReady
+                      ? _copy(context, 'Ready to submit', 'Prêt à soumettre')
+                      : _copy(
+                          context,
+                          'Complete your verification',
+                          'Complétez votre vérification',
+                        ),
+                  variant: AppTextVariant.bodyLarge,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                AppText(
+                  isReady
+                      ? _copy(
+                          context,
+                          'Everything needed for review is attached.',
+                          'Tous les éléments nécessaires sont joints.',
+                        )
+                      : _copy(
+                          context,
+                          '$completedCount of 3 required items are ready.',
+                          '$completedCount élément(s) sur 3 sont prêts.',
+                        ),
+                  variant: AppTextVariant.bodyMedium,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMissingCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String actionLabel,
+    required VoidCallback onAction,
+  }) {
+    final colors = context.colors;
+
+    return AppCard(
+      variant: AppCardVariant.flat,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderColor: colors.borderSubtle,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: colors.elevated,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: colors.textSecondary),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  variant: AppTextVariant.bodyLarge,
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                AppText(
+                  subtitle,
+                  variant: AppTextVariant.bodySmall,
+                  color: colors.textSecondary,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          IconButton(
+            tooltip: actionLabel,
+            icon: Icon(Icons.add_circle_outline, color: colors.gold),
+            onPressed: onAction,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImageCard(
     BuildContext context,
     AppLocalizations l10n,
@@ -110,9 +277,10 @@ class ReviewView extends ConsumerWidget {
     VoidCallback onEdit,
   ) {
     final colors = context.colors;
+    final file = File(imagePath);
     return AppCard(
       variant: AppCardVariant.elevated,
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
           Container(
@@ -122,21 +290,21 @@ class ReviewView extends ConsumerWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              child: Image.file(
-                File(imagePath),
-                width: 80,
-                height: 80,
-                fit: BoxFit.cover,
-              ),
+              child: file.existsSync()
+                  ? Image.file(file, width: 80, height: 80, fit: BoxFit.cover)
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      color: colors.elevated,
+                      child: Icon(
+                        Icons.image_not_supported_outlined,
+                        color: colors.textTertiary,
+                      ),
+                    ),
             ),
           ),
-          SizedBox(width: AppSpacing.lg),
-          Expanded(
-            child: AppText(
-              label,
-              variant: AppTextVariant.bodyLarge,
-            ),
-          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(child: AppText(label, variant: AppTextVariant.bodyLarge)),
           IconButton(
             icon: Icon(Icons.edit, color: colors.gold, size: 24),
             onPressed: onEdit,
@@ -178,11 +346,18 @@ class ReviewView extends ConsumerWidget {
       await ref.read(kycProvider.notifier).submitDocumentForVerification();
     } catch (_) {
       // Don't block the flow if verification submission fails
-      debugPrint('[KYC Review] Document verification submission failed (non-blocking)');
+      debugPrint(
+        '[KYC Review] Document verification submission failed (non-blocking)',
+      );
     }
 
     if (context.mounted) {
       context.go('/kyc/submitted');
     }
+  }
+
+  String _copy(BuildContext context, String en, String fr) {
+    final locale = Localizations.localeOf(context);
+    return locale.languageCode == 'fr' ? fr : en;
   }
 }
