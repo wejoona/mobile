@@ -15,7 +15,7 @@
 - Secondary product surfaces: payment links, savings pots, recurring transfers, cards
 
 ## Next Flow
-- Design continuity/accessibility sweep, then live API readiness.
+- Simulator visual pass on iPhone 16 Pro with the live API, focused on cards, send, deposit, notifications, and settings child screens.
 
 ## Known Non-Blocking Noise
 - Firebase not initialized in mock/dev simulator runs
@@ -24,6 +24,17 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 live API readiness:
+  - Pushed `008a9aa fix: polish session device display` to `origin/main`.
+    - Session timeout warning actions are stacked full-width to avoid translated button truncation.
+    - Mobile sends Korido device-aware `User-Agent` headers with security/device headers.
+    - Active Sessions recognizes iOS user agents and strips IPv6-mapped IPv4 prefixes such as `::ffff:`.
+  - Pushed `2fcc906 fix: localize empty states` to `origin/main`.
+    - Cards, deposit, notifications, and transactions empty states now use existing localization keys instead of hardcoded French.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/cards_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/wallet_e2e_test.dart test/e2e/transfers_e2e_test.dart` passed 47 live API tests.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e` passed 123 live API tests.
+  - `flutter test test/services/api_contract_alignment_test.dart test/features/settings/device_contract_test.dart` passed 29 focused contract tests.
+  - Focused analyzer on the localized empty-state widgets reports only info-level existing diagnostics (`diagnostic_describe_all_properties`), no errors.
 - 2026-05-26 secondary surfaces:
   - `flutter test integration_test/flows/secondary_surfaces_flow_test.dart -d D4B4BD57-0447-4B96-A4F0-084F2C6ABF12 --dart-define=USE_MOCKS=true` passed 4 simulator tests.
   - `flutter test integration_test/flows/secondary_surfaces_flow_test.dart --plain-name "requests a virtual card and opens its details" -d D4B4BD57-0447-4B96-A4F0-084F2C6ABF12 --dart-define=USE_MOCKS=true` passed 1 simulator test.
