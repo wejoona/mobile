@@ -25,6 +25,10 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 iPhone 17 simulator live API flow:
+  - `flutter test -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 integration_test/flows/live_api_login_flow_test.dart --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on the booted iPhone 17 simulator.
+  - Flow registered a fresh user, verified OTP, created wallet, completed profile and PIN setup, skipped KYC into home, opened deposit/rate/channels, transactions, notifications, devices, active sessions, notification preferences, and completed logout.
+  - Live endpoints observed included `/auth/register`, `/auth/verify-otp`, `/wallet`, `/wallet/create`, `/user/profile`, `/user/pin/set`, `/wallet/exchange-rate`, `/wallet/deposit/channels`, `/wallet/transactions`, `/notifications`, `/devices`, `/sessions`, `/notifications/preferences`, `/auth/logout`, and `/config/countries`.
 - 2026-06-05 live API focused screen sweep:
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
   - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/health_e2e_test.dart test/e2e/auth_e2e_test.dart test/e2e/wallet_e2e_test.dart test/e2e/transactions_e2e_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/devices_e2e_test.dart` passed 51 live API tests.
