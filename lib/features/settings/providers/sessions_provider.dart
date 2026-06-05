@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/settings/models/session.dart';
+import 'package:usdc_wallet/features/settings/providers/devices_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 
 /// Sessions State
 class SessionsState {
-  final bool isLoading;
-  final String? error;
-  final List<Session> sessions;
-  final String? currentSessionId;
-
   const SessionsState({
     this.isLoading = false,
     this.error,
@@ -17,19 +14,22 @@ class SessionsState {
     this.currentSessionId,
   });
 
+  final bool isLoading;
+  final String? error;
+  final List<Session> sessions;
+  final String? currentSessionId;
+
   SessionsState copyWith({
     bool? isLoading,
     String? error,
     List<Session>? sessions,
     String? currentSessionId,
-  }) {
-    return SessionsState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error,
-      sessions: sessions ?? this.sessions,
-      currentSessionId: currentSessionId ?? this.currentSessionId,
-    );
-  }
+  }) => SessionsState(
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    sessions: sessions ?? this.sessions,
+    currentSessionId: currentSessionId ?? this.currentSessionId,
+  );
 }
 
 /// Sessions Notifier
@@ -39,17 +39,12 @@ class SessionsNotifier extends Notifier<SessionsState> {
 
   /// Load all active sessions
   Future<void> loadSessions() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true);
     try {
       final repository = ref.read(sessionsRepositoryProvider);
       final sessions = await repository.getSessions();
 
-      // Identify current session (most recent activity)
-      final currentSession = sessions.isNotEmpty
-          ? sessions.reduce(
-              (a, b) => a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b,
-            )
-          : null;
+      final currentSession = _resolveCurrentSession(sessions);
 
       state = state.copyWith(
         isLoading: false,
@@ -58,7 +53,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
       );
     } on ApiException catch (e) {
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
-    } catch (_) {
+    } on Object {
       state = state.copyWith(
         isLoading: false,
         error: 'Unable to load active sessions. Please try again.',
@@ -78,7 +73,7 @@ class SessionsNotifier extends Notifier<SessionsState> {
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
       return false;
-    } catch (_) {
+    } on Object {
       state = state.copyWith(
         error: 'Unable to revoke this device. Please try again.',
       );
@@ -92,13 +87,13 @@ class SessionsNotifier extends Notifier<SessionsState> {
       final repository = ref.read(sessionsRepositoryProvider);
       await repository.logoutAllDevices();
 
-      // Clear sessions
+      await ref.read(authProvider.notifier).clearLocalSession();
       state = state.copyWith(sessions: []);
       return true;
     } on ApiException catch (e) {
       state = state.copyWith(error: _friendlyError(e));
       return false;
-    } catch (_) {
+    } on Object {
       state = state.copyWith(
         error: 'Unable to log out other devices. Please try again.',
       );
@@ -114,6 +109,26 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return 'You do not have permission to manage sessions right now.';
     }
     return error.message;
+  }
+
+  Session? _resolveCurrentSession(List<Session> sessions) {
+    if (sessions.isEmpty) {
+      return null;
+    }
+
+    final currentDevice = ref.read(currentDeviceProvider);
+    final currentDeviceId = currentDevice?.id;
+    if (currentDeviceId != null && currentDeviceId.isNotEmpty) {
+      for (final session in sessions) {
+        if (session.deviceId == currentDeviceId) {
+          return session;
+        }
+      }
+    }
+
+    return sessions.reduce(
+      (a, b) => a.lastActivityAt.isAfter(b.lastActivityAt) ? a : b,
+    );
   }
 }
 
