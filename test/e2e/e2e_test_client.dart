@@ -1,4 +1,9 @@
 /// Shared HTTP client for E2E tests — calls the real backend API.
+// ignore_for_file: do_not_use_environment, avoid_dynamic_calls, avoid_slow_async_io
+// ignore_for_file: avoid_catches_without_on_clauses
+// ignore_for_file: always_put_control_body_on_new_line
+// ignore_for_file: avoid_redundant_argument_values
+
 library;
 
 import 'dart:convert';
@@ -32,6 +37,10 @@ final bool runE2E =
 final String? e2eSkipReason = runE2E
     ? null
     : 'Set RUN_E2E=true or --dart-define=RUN_E2E=true to run live E2E tests';
+
+final File _tokenCacheFile = File(
+  '${Directory.systemTemp.path}/korido_live_e2e_token_cache.json',
+);
 
 void e2eGroup(String description, void Function() body) {
   group(description, body, skip: e2eSkipReason);
@@ -147,6 +156,16 @@ class E2EClient {
       _accessToken = _envAuthToken;
       return;
     }
+
+    if (await _loadCachedTokens()) {
+      final sessionProbe = await get('/sessions');
+      if (sessionProbe.statusCode != 401) {
+        return;
+      }
+      await _clearTokenCache();
+      clearTokens();
+    }
+
     // Step 1: Register is idempotent and sends an OTP for both new and
     // existing users, so avoid a second OTP request through /auth/login.
     final registerRes = await post('/auth/register', {
@@ -202,6 +221,8 @@ class E2EClient {
         'Session probe: ${sessionProbe.statusCode} ${sessionProbe.body}',
       );
     }
+
+    await _saveCachedTokens();
   }
 
   void _expectAuthStepOk(String step, E2EResponse response) {
@@ -223,6 +244,7 @@ class E2EClient {
       _accessToken = data?['accessToken'] ?? data?['access_token'];
       _refreshToken =
           data?['refreshToken'] ?? data?['refresh_token'] ?? _refreshToken;
+      await _saveCachedTokens();
       return true;
     }
     return false;
@@ -239,6 +261,45 @@ class E2EClient {
       'Status: ${res.statusCode}\n'
       'Body: ${res.body}',
     );
+  }
+
+  Future<bool> _loadCachedTokens() async {
+    if (!await _tokenCacheFile.exists()) return false;
+    try {
+      final cached =
+          jsonDecode(await _tokenCacheFile.readAsString())
+              as Map<String, dynamic>;
+      if (cached['baseUrl'] != baseUrl) return false;
+      final access = cached['accessToken']?.toString();
+      final refresh = cached['refreshToken']?.toString();
+      if (access == null || access.isEmpty) return false;
+      _accessToken = access;
+      if (refresh != null && refresh.isNotEmpty) {
+        _refreshToken = refresh;
+      }
+      return true;
+    } catch (_) {
+      await _clearTokenCache();
+      return false;
+    }
+  }
+
+  Future<void> _saveCachedTokens() async {
+    if (_accessToken == null || _accessToken!.isEmpty) return;
+    await _tokenCacheFile.writeAsString(
+      jsonEncode({
+        'baseUrl': baseUrl,
+        'accessToken': _accessToken,
+        'refreshToken': _refreshToken,
+        'createdAt': DateTime.now().toIso8601String(),
+      }),
+    );
+  }
+
+  Future<void> _clearTokenCache() async {
+    if (await _tokenCacheFile.exists()) {
+      await _tokenCacheFile.delete();
+    }
   }
 }
 
