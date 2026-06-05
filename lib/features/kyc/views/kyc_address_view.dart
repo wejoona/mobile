@@ -1,17 +1,16 @@
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 enum AddressDocumentType {
   utilityBill,
@@ -77,36 +76,39 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
         ),
         backgroundColor: Colors.transparent,
       ),
+      bottomNavigationBar: _buildBottomBar(context, l10n),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  children: [
-                    AppText(
-                      l10n.kyc_address_description,
-                      variant: AppTextVariant.bodyLarge,
-                      color: context.colors.textSecondary,
-                    ),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildAddressForm(l10n),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildDocumentTypeSelector(l10n),
-                    if (_selectedDocumentType != null) ...[
-                      SizedBox(height: AppSpacing.lg),
-                      _buildDocumentUpload(l10n),
-                    ],
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildInfoCard(l10n),
-                  ],
-                ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 128),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.md,
+                AppSpacing.xxl,
               ),
+              children: [
+                AppText(
+                  l10n.kyc_address_description,
+                  variant: AppTextVariant.bodyLarge,
+                  color: context.colors.textSecondary,
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                _buildAddressForm(l10n),
+                const SizedBox(height: AppSpacing.xxl),
+                _buildDocumentTypeSelector(l10n),
+                if (_selectedDocumentType != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  _buildDocumentUpload(l10n),
+                ],
+                const SizedBox(height: AppSpacing.xxl),
+                _buildInfoCard(l10n),
+              ],
             ),
-            _buildBottomBar(context, l10n),
-          ],
+          ),
         ),
       ),
     );
@@ -120,10 +122,11 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
           l10n.kyc_address_form_title,
           variant: AppTextVariant.headlineSmall,
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         AppInput(
           label: l10n.kyc_address_addressLine1,
           controller: _addressLine1Controller,
+          onChanged: (_) => setState(() {}),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return l10n.error_required;
@@ -131,12 +134,12 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
             return null;
           },
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         AppInput(
           label: l10n.kyc_address_addressLine2,
           controller: _addressLine2Controller,
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         Row(
           children: [
             Expanded(
@@ -144,6 +147,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
               child: AppInput(
                 label: l10n.kyc_address_city,
                 controller: _cityController,
+                onChanged: (_) => setState(() {}),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return l10n.error_required;
@@ -152,7 +156,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                 },
               ),
             ),
-            SizedBox(width: AppSpacing.md),
+            const SizedBox(width: AppSpacing.md),
             Expanded(
               child: AppInput(
                 label: l10n.kyc_address_postalCode,
@@ -161,22 +165,31 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
             ),
           ],
         ),
-        SizedBox(height: AppSpacing.md),
-        AppInput(
-          label: l10n.kyc_address_state,
-          controller: _stateController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return l10n.error_required;
-            }
-            return null;
-          },
-        ),
-        SizedBox(height: AppSpacing.md),
-        AppInput(
-          label: l10n.kyc_address_country,
-          controller: _countryController,
-          enabled: false,
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: AppInput(
+                label: l10n.kyc_address_state,
+                controller: _stateController,
+                onChanged: (_) => setState(() {}),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return l10n.error_required;
+                  }
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppInput(
+                label: l10n.kyc_address_country,
+                controller: _countryController,
+                enabled: false,
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -190,25 +203,29 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
           l10n.kyc_address_proofDocument_title,
           variant: AppTextVariant.headlineSmall,
         ),
-        SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.sm),
         AppText(
           l10n.kyc_address_proofDocument_description,
           variant: AppTextVariant.bodyMedium,
           color: context.colors.textSecondary,
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         ...AddressDocumentType.values.map((type) {
           final isSelected = _selectedDocumentType == type;
           return Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.sm),
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: GestureDetector(
               onTap: () => setState(() => _selectedDocumentType = type),
               child: Container(
-                padding: EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: isSelected ? context.colors.elevated : Colors.transparent,
+                  color: isSelected
+                      ? context.colors.elevated
+                      : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? context.colors.gold : context.colors.border,
+                    color: isSelected
+                        ? context.colors.gold
+                        : context.colors.border,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(AppRadius.md),
@@ -216,10 +233,14 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                 child: Row(
                   children: [
                     Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? context.colors.gold : context.colors.textSecondary,
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_off,
+                      color: isSelected
+                          ? context.colors.gold
+                          : context.colors.textSecondary,
                     ),
-                    SizedBox(width: AppSpacing.md),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +249,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                             _getDocumentTypeLabel(l10n, type),
                             variant: AppTextVariant.labelLarge,
                           ),
-                          SizedBox(height: AppSpacing.xs),
+                          const SizedBox(height: AppSpacing.xs),
                           AppText(
                             _getDocumentTypeDescription(l10n, type),
                             variant: AppTextVariant.bodySmall,
@@ -257,10 +278,10 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
             l10n.kyc_address_uploadDocument,
             variant: AppTextVariant.labelLarge,
           ),
-          SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.md),
           if (_uploadedDocumentPath != null) ...[
             _buildDocumentPreview(l10n),
-            SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.md),
           ],
           Row(
             children: [
@@ -274,7 +295,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                   icon: Icons.camera_alt,
                 ),
               ),
-              SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: AppButton(
                   label: _uploadedDocumentPath == null
@@ -327,7 +348,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.info_outline, color: context.colors.gold),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,7 +357,7 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
                   l10n.kyc_address_info_title,
                   variant: AppTextVariant.labelMedium,
                 ),
-                SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xs),
                 AppText(
                   l10n.kyc_address_info_description,
                   variant: AppTextVariant.bodySmall,
@@ -351,17 +372,19 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
   }
 
   Widget _buildBottomBar(BuildContext context, AppLocalizations l10n) {
-    final canSubmit = _formKey.currentState?.validate() == true &&
+    final canSubmit =
+        _addressLine1Controller.text.trim().isNotEmpty &&
+        _cityController.text.trim().isNotEmpty &&
+        _stateController.text.trim().isNotEmpty &&
         _selectedDocumentType != null &&
         _uploadedDocumentPath != null;
 
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      height: 128,
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: context.colors.elevated,
-        border: Border(
-          top: BorderSide(color: context.colors.border),
-        ),
+        border: Border(top: BorderSide(color: context.colors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -403,7 +426,10 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
     }
   }
 
-  Future<void> _handleSubmit(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _handleSubmit(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDocumentType == null || _uploadedDocumentPath == null) return;
 
@@ -411,15 +437,15 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
 
     try {
       await ref.read(kycProvider.notifier).submitAddressVerification({
-            'addressLine1': _addressLine1Controller.text,
-            'addressLine2': _addressLine2Controller.text,
-            'city': _cityController.text,
-            'state': _stateController.text,
-            'postalCode': _postalCodeController.text,
-            'country': _countryController.text,
-            'documentType': _selectedDocumentType!.toApiString(),
-            'documentPath': _uploadedDocumentPath!,
-          });
+        'addressLine1': _addressLine1Controller.text,
+        'addressLine2': _addressLine2Controller.text,
+        'city': _cityController.text,
+        'state': _stateController.text,
+        'postalCode': _postalCodeController.text,
+        'country': _countryController.text,
+        'documentType': _selectedDocumentType!.toApiString(),
+        'documentPath': _uploadedDocumentPath!,
+      });
 
       if (!mounted) return;
 
@@ -443,7 +469,10 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
     }
   }
 
-  String _getDocumentTypeLabel(AppLocalizations l10n, AddressDocumentType type) {
+  String _getDocumentTypeLabel(
+    AppLocalizations l10n,
+    AddressDocumentType type,
+  ) {
     switch (type) {
       case AddressDocumentType.utilityBill:
         return l10n.kyc_address_docType_utilityBill;
@@ -456,7 +485,10 @@ class _KycAddressViewState extends ConsumerState<KycAddressView> {
     }
   }
 
-  String _getDocumentTypeDescription(AppLocalizations l10n, AddressDocumentType type) {
+  String _getDocumentTypeDescription(
+    AppLocalizations l10n,
+    AddressDocumentType type,
+  ) {
     switch (type) {
       case AddressDocumentType.utilityBill:
         return l10n.kyc_address_docType_utilityBill_description;
