@@ -29,6 +29,8 @@
   - Current mobile head verified: `4925898 fix: clean up korido brand links`.
   - `flutter test` passed 672 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
   - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - `flutter test -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 integration_test/flows/live_api_login_flow_test.dart --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17 against the live API.
+  - The live simulator flow covered register, OTP, wallet create, profile/PIN, home loads, deposit rate/channels, transaction history, devices, active sessions, notification preferences, logout, and countries config.
   - Build emitted known non-blocking Flutter warnings for plugins without Swift Package Manager support and the expected no-codesign warning.
 - 2026-06-05 brand/link release cleanup:
   - Replaced stale JoonaPay visible text in Android balance widgets with Korido.
