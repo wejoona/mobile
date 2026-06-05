@@ -75,7 +75,7 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Korido needs access to save your QR code to the photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Korido needs access to your photo library to save QR codes</string>
+	<string>Korido needs photo library access to choose a profile photo and save QR codes</string>
 	<!-- SECURITY: Enforce HTTPS for all network connections -->
 	<key>NSAppTransportSecurity</key>
 	<dict>

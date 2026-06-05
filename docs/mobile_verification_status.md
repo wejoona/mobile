@@ -25,6 +25,11 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 iOS metadata readiness:
+  - Confirmed app display name `Korido`, bundle id `com.joonapay.korido`, URL scheme `korido`, and required camera/contacts/photo/Face ID permission usage descriptions in `ios/Runner/Info.plist`.
+  - Updated `NSPhotoLibraryUsageDescription` so it truthfully covers choosing a profile photo as well as saving QR codes.
+  - `plutil -lint ios/Runner/Info.plist` passed.
+  - `flutter build ios --release --no-codesign --dart-define=API_URL=https://api.joonapay.com/api/v1` passed after the metadata update.
 - 2026-06-05 release evidence refresh:
   - Mobile main latest verified commit: `d623f86 fix: preserve flat api error codes`.
   - API main latest verified commit: `2d64d4b3 fix: declare bullmq runtime dependencies`.
