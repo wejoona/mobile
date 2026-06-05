@@ -48,13 +48,13 @@
   - `plutil -lint ios/Runner/Info.plist` passed.
   - `flutter build ios --release --no-codesign --dart-define=API_URL=https://api.joonapay.com/api/v1` passed after the metadata update.
 - 2026-06-05 release evidence refresh:
-  - Mobile main latest verified commit: `d623f86 fix: preserve flat api error codes`.
+  - Mobile main latest verified commit before this evidence update: `668e440 docs: record extended live api sweep`.
   - API main latest verified commit: `2d64d4b3 fix: declare bullmq runtime dependencies`.
   - iPhone 17 simulator `C796EC5E-0EBE-4E08-BF64-4DCDC84753D3` against `https://api.joonapay.com/api/v1` passed `integration_test/flows/live_api_login_flow_test.dart`.
     - Flow covered register, OTP `123456`, wallet 404 envelope, wallet auto-create, profile completion, PIN setup, Home, notifications, transaction history, deposit rate/channels, devices, active sessions, notification preferences, and logout.
   - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e` passed 124 live API tests.
     - Includes profile avatar upload, profile persistence, avatar image fetch, avatar delete, and profile clear.
-  - `flutter test` passed 670 tests with 419 golden/snapshot tests skipped by design.
+  - `flutter test` passed 672 tests with 419 golden/snapshot/live-E2E tests skipped by design on the current mobile tree.
   - `npm run build` passed in `usdc-wallet`.
   - `npm test -- --runInBand` passed 96 backend suites / 1197 tests in `usdc-wallet`.
   - Focused backend session/logout/device-blacklist tests passed:
