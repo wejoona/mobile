@@ -132,7 +132,7 @@ flutter test integration_test/golden/tests/01_auth_golden_test.dart --update-gol
 flutter test integration_test/golden/tests/ --dart-define=USE_MOCKS=false
 
 # Check test phone rate limit on backend
-curl -X POST https://usdc-wallet-api.wejoona.com/api/v1/auth/login \
+curl -X POST https://api.joonapay.com/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"phone": "+2250700000000"}'
 ```

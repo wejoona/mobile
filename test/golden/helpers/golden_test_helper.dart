@@ -33,7 +33,7 @@ class GoldenTestConfig {
   static const String goldenBasePath = 'goldens';
 
   /// Real backend URL
-  static const String backendUrl = 'https://usdc-wallet-api.wejoona.com/api/v1';
+  static const String backendUrl = 'https://api.joonapay.com/api/v1';
 }
 
 /// Golden test utilities

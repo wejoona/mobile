@@ -20,11 +20,11 @@ The API client uses a configurable base URL with the following priority:
 
 | Environment | Base URL |
 |-------------|----------|
-| Development | `http://192.168.1.115:3000/api/v1` |
+| Development | `http://127.0.0.1:3401/api/v1` |
 | Staging | `https://staging-api.joonapay.com/api/v1` |
 | Production | `https://api.joonapay.com/api/v1` |
 
-**Note:** iOS simulator cannot connect to `localhost` - use your machine's IP address.
+**Note:** iOS Simulator can use `127.0.0.1` for services running on this Mac. Use your machine's LAN IP for a physical iPhone.
 
 ## Usage
 
@@ -39,7 +39,7 @@ Content of `env.dev.json`:
 ```json
 {
   "ENV": "development",
-  "API_URL": "http://192.168.1.115:3000/api/v1"
+  "API_URL": "http://127.0.0.1:3401/api/v1"
 }
 ```
 
@@ -62,7 +62,7 @@ Create `env.prod.json` (do NOT commit):
 
 ```bash
 # Development
-flutter run --dart-define=API_URL=http://192.168.1.115:3000/api/v1
+flutter run --dart-define=API_URL=http://127.0.0.1:3401/api/v1
 
 # Production
 flutter run --dart-define=ENV=production --dart-define=API_URL=https://api.joonapay.com/api/v1

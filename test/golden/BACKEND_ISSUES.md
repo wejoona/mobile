@@ -71,7 +71,7 @@
 #### NET-001: pumpAndSettle Timeout on Network-Dependent Screens
 - **Screens Affected:** WalletHomeScreen, TransactionsView
 - **Issue:** Tests timeout waiting for network calls to complete
-- **Cause:** Screens make real API calls to https://usdc-wallet-api.wejoona.com/api/v1
+- **Cause:** Screens make real API calls to https://api.joonapay.com/api/v1
 - **Impact:** Cannot generate golden files for these screens without mocking or backend connectivity
 - **Fix Options:**
   1. Add provider overrides to mock network calls in tests

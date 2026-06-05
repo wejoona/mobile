@@ -25,6 +25,12 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 API configuration readiness:
+  - Updated tracked mobile define files so `env.prod.json` points to `https://api.joonapay.com/api/v1` and `env.dev.json` points to the local simulator API at `http://127.0.0.1:3401/api/v1`.
+  - Aligned stale mobile config/docs/golden helper references away from the legacy Wejoona API host.
+  - `rg -n "usdc-wallet-api\.wejoona\.com|API_URL=http://172\.20\.10\.3|API_URL=http://192\.168\.1\.115" mobile -g '!**/build/**'` returned no matches.
+  - `flutter test test/config/api_configuration_test.dart` passed.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app`.
 - 2026-06-05 iOS metadata readiness:
   - Confirmed app display name `Korido`, bundle id `com.joonapay.korido`, URL scheme `korido`, and required camera/contacts/photo/Face ID permission usage descriptions in `ios/Runner/Info.plist`.
   - Updated `NSPhotoLibraryUsageDescription` so it truthfully covers choosing a profile photo as well as saving QR codes.
