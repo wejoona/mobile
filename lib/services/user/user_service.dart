@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 /// User Service - mirrors backend UserController
 class UserService {
@@ -43,7 +46,7 @@ class UserService {
   Future<AvatarUploadResult> uploadAvatar(String filePath) async {
     try {
       final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(filePath),
+        'avatar': await avatarMultipartFile(File(filePath)),
       });
 
       final response = await _dio.post('/user/avatar', data: formData);

@@ -1,5 +1,10 @@
 /// E2E: User profile, PIN, locale, avatar, search
+// ignore_for_file: avoid_dynamic_calls
+
 library;
+
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:test/test.dart';
 import 'e2e_test_client.dart';
@@ -43,6 +48,48 @@ void main() {
       // May be 200 or 204
       expect(res.statusCode, anyOf(200, 204));
     });
+
+    test(
+      'POST /user/avatar — uploads, persists, serves, and deletes photo',
+      () async {
+        final avatarFile = await _writeTinyJpeg();
+        String? avatarUrl;
+
+        try {
+          final uploadRes = await client.multipartPost(
+            '/user/avatar',
+            fieldName: 'avatar',
+            file: avatarFile,
+            filename: 'korido-profile-e2e.jpg',
+          );
+          uploadRes.expectOk();
+          final upload = uploadRes.data?['data'] ?? uploadRes.data;
+          avatarUrl = upload?['avatarUrl']?.toString();
+          expect(avatarUrl, startsWith('/user/avatar/'));
+
+          final profileRes = await client.get('/user/profile');
+          profileRes.expectOk();
+          final profile = profileRes.data?['data'] ?? profileRes.data;
+          expect(profile?['avatarUrl'], avatarUrl);
+
+          final imageRes = await client.get(avatarUrl!);
+          imageRes.expectOk();
+          expect(imageRes.body.length, greaterThan(0));
+        } finally {
+          if (avatarUrl != null) {
+            final deleteRes = await client.delete('/user/avatar');
+            deleteRes.expectOk();
+
+            final clearedRes = await client.get('/user/profile');
+            clearedRes.expectOk();
+            final cleared = clearedRes.data?['data'] ?? clearedRes.data;
+            expect(cleared?['avatarUrl'], isNull);
+            // Production may briefly return a stale thumbnail after delete.
+            // Mobile hides thumbnails when the canonical avatar URL is absent.
+          }
+        }
+      },
+    );
 
     test('GET /user/profile — no auth returns 401', () async {
       final noAuth = E2EClient();
@@ -126,4 +173,13 @@ void main() {
       res.expectOk();
     });
   });
+}
+
+Future<File> _writeTinyJpeg() async {
+  const jpegBase64 =
+      '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAH/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAEFAqf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/Aaf/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/Aaf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/Aqf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IV//2gAMAwEAAgADAAAAEP/EFBQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQMBAT8QH//EFBQRAQAAAAAAAAAAAAAAAAAAABD/2gAIAQIBAT8QH//EFBABAQAAAAAAAAAAAAAAAAAAARD/2gAIAQEAAT8Qf//Z';
+  final file = File(
+    '${Directory.systemTemp.path}/korido-profile-e2e-${DateTime.now().microsecondsSinceEpoch}.jpg',
+  );
+  return file.writeAsBytes(base64Decode(jpegBase64), flush: true);
 }

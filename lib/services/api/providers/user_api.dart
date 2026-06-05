@@ -3,6 +3,7 @@ library;
 
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 
 class UserApi {
   UserApi(this._dio);
@@ -28,7 +29,7 @@ class UserApi {
   /// POST /user/avatar — upload avatar image
   Future<Response> uploadAvatar(File file) async {
     final formData = FormData.fromMap({
-      'avatar': await MultipartFile.fromFile(file.path),
+      'avatar': await avatarMultipartFile(file),
     });
     return _dio.post('/user/avatar', data: formData);
   }

@@ -8,6 +8,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
@@ -142,6 +143,44 @@ class E2EClient {
       body: body != null ? jsonEncode(body) : null,
     );
     return E2EResponse(res);
+  }
+
+  Future<E2EResponse> multipartPost(
+    String path, {
+    required String fieldName,
+    required File file,
+    String? filename,
+    Map<String, String>? fields,
+    Map<String, String>? headers,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$path'));
+    request.headers.addAll({
+      'X-Test-Bypass': _testBypassSecret,
+      if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
+      ...?headers,
+    });
+    if (fields != null) request.fields.addAll(fields);
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        fieldName,
+        file.path,
+        filename: filename ?? file.uri.pathSegments.last,
+        contentType: _contentTypeForPath(filename ?? file.path),
+      ),
+    );
+
+    final streamed = await request.send();
+    return E2EResponse(await http.Response.fromStream(streamed));
+  }
+
+  MediaType _contentTypeForPath(String path) {
+    final extension = path.split('.').last.toLowerCase();
+    return switch (extension) {
+      'png' => MediaType('image', 'png'),
+      'webp' => MediaType('image', 'webp'),
+      'jpg' || 'jpeg' => MediaType('image', 'jpeg'),
+      _ => MediaType('application', 'octet-stream'),
+    };
   }
 
   // ── Auth helpers ──

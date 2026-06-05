@@ -4,6 +4,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/user/avatar_multipart.dart';
 import 'package:usdc_wallet/services/user/user_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -71,10 +72,7 @@ class ProfilePictureService {
 
       final fileName = imageFile.path.split('/').last;
       final formData = FormData.fromMap({
-        'avatar': await MultipartFile.fromFile(
-          imageFile.path,
-          filename: fileName,
-        ),
+        'avatar': await avatarMultipartFile(imageFile, filename: fileName),
       });
 
       final response = await _dio.post(
@@ -115,14 +113,15 @@ class ProfilePictureService {
   /// Target: max 500KB, 80% quality, max 1024px dimension.
   Future<File> compressImage(File file, {int maxSizeBytes = 500 * 1024}) async {
     final fileSize = await file.length();
+    final shouldConvertToJpeg = !_hasUploadFriendlyExtension(file.path);
 
-    if (fileSize <= maxSizeBytes) {
+    if (fileSize <= maxSizeBytes && !shouldConvertToJpeg) {
       _logger.info('Image size OK: $fileSize bytes');
       return file;
     }
 
     _logger.info(
-      'Compressing image: $fileSize bytes -> target $maxSizeBytes bytes',
+      'Preparing image: $fileSize bytes -> target $maxSizeBytes bytes',
     );
 
     try {
@@ -150,16 +149,14 @@ class ProfilePictureService {
           format: CompressFormat.jpeg,
         );
         if (retry != null && retry.length < result.length) {
-          final outPath =
-              '${file.parent.path}/compressed_${file.path.split('/').last}';
+          final outPath = _compressedJpegPath(file);
           final outFile = File(outPath)..writeAsBytesSync(retry);
           _logger.info('Compressed to ${retry.length} bytes');
           return outFile;
         }
       }
 
-      final outPath =
-          '${file.parent.path}/compressed_${file.path.split('/').last}';
+      final outPath = _compressedJpegPath(file);
       final outFile = File(outPath)..writeAsBytesSync(result);
       _logger.info('Compressed to ${result.length} bytes');
       return outFile;
@@ -167,6 +164,21 @@ class ProfilePictureService {
       _logger.error('Compression failed: $e, using original');
       return file;
     }
+  }
+
+  bool _hasUploadFriendlyExtension(String path) {
+    final extension = path.split('.').last.toLowerCase();
+    return extension == 'jpg' ||
+        extension == 'jpeg' ||
+        extension == 'png' ||
+        extension == 'webp';
+  }
+
+  String _compressedJpegPath(File file) {
+    final name = file.uri.pathSegments.last;
+    final dotIndex = name.lastIndexOf('.');
+    final baseName = dotIndex > 0 ? name.substring(0, dotIndex) : name;
+    return '${file.parent.path}/compressed_$baseName.jpg';
   }
 }
 
