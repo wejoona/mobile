@@ -15,7 +15,8 @@
 - Secondary product surfaces: payment links, savings pots, recurring transfers, cards
 
 ## Next Flow
-- Simulator visual pass on iPhone 16 Pro with the live API, focused on cards, send, deposit, notifications, and settings child screens.
+- Keep using iPhone 17 for Korido simulator verification when the user has iPhone 16 Pro open for another app.
+- Remaining useful pre-pilot checks are human visual review on latest TestFlight, golden refresh if design settles, and operational monitoring after the next automatic deploy.
 
 ## Known Non-Blocking Noise
 - Firebase not initialized in mock/dev simulator runs
@@ -24,6 +25,24 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 release evidence refresh:
+  - Mobile main latest verified commit: `d623f86 fix: preserve flat api error codes`.
+  - API main latest verified commit: `2d64d4b3 fix: declare bullmq runtime dependencies`.
+  - iPhone 17 simulator `C796EC5E-0EBE-4E08-BF64-4DCDC84753D3` against `https://api.joonapay.com/api/v1` passed `integration_test/flows/live_api_login_flow_test.dart`.
+    - Flow covered register, OTP `123456`, wallet 404 envelope, wallet auto-create, profile completion, PIN setup, Home, notifications, transaction history, deposit rate/channels, devices, active sessions, notification preferences, and logout.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e` passed 124 live API tests.
+    - Includes profile avatar upload, profile persistence, avatar image fetch, avatar delete, and profile clear.
+  - `flutter test` passed 670 tests with 419 golden/snapshot tests skipped by design.
+  - `npm run build` passed in `usdc-wallet`.
+  - `npm test -- --runInBand` passed 96 backend suites / 1197 tests in `usdc-wallet`.
+  - Focused backend session/logout/device-blacklist tests passed:
+    - `src/modules/session/application/services/session.service.spec.ts`
+    - `src/modules/user/application/domain/usecases/logout.usecase.spec.ts`
+    - `src/modules/user/application/domain/usecases/logout-all.usecase.spec.ts`
+    - `src/modules/security/application/guards/device-blacklist.guard.spec.ts`
+  - `flutter build ios --release --no-codesign --dart-define=API_URL=https://api.joonapay.com/api/v1` passed and produced `build/ios/iphoneos/Runner.app`.
+  - `flutter analyze --no-fatal-infos` exits 0. Plain `flutter analyze` still reports existing info-level style debt and exits nonzero because infos are fatal in the current analyzer config.
+  - Worktrees were clean after verification; no deployment or Kubernetes mutation was performed.
 - 2026-06-05 live API readiness:
   - Pushed `008a9aa fix: polish session device display` to `origin/main`.
     - Session timeout warning actions are stacked full-width to avoid translated button truncation.
