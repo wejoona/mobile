@@ -1,32 +1,22 @@
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:async';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:camera/camera.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:path_provider/path_provider.dart';
+
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
-enum VideoStep {
-  instructions,
-  recording,
-  preview;
-}
+enum VideoStep { instructions, recording, preview }
 
-enum LivenessAction {
-  lookStraight,
-  turnLeft,
-  turnRight,
-  smile,
-  blink;
-}
+enum LivenessAction { lookStraight, turnLeft, turnRight, smile, blink }
 
 class KycVideoView extends ConsumerStatefulWidget {
   const KycVideoView({super.key});
@@ -64,9 +54,11 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
   }
 
   void _generateRandomActions() {
-    // Generate 3-4 random liveness actions
-    final allActions = LivenessAction.values.toList()..shuffle();
-    _actions = allActions.take(3).toList();
+    _actions = const [
+      LivenessAction.lookStraight,
+      LivenessAction.turnLeft,
+      LivenessAction.smile,
+    ];
   }
 
   Future<void> _initializeCamera() async {
@@ -89,7 +81,9 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
       await _controller!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      AppLogger('Camera initialization error').error('Camera initialization error', e);
+      AppLogger(
+        'Camera initialization error',
+      ).error('Camera initialization error', e);
     }
   }
 
@@ -108,9 +102,10 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
               backgroundColor: Colors.transparent,
             )
           : null,
-      body: SafeArea(
-        child: _buildCurrentStep(l10n),
-      ),
+      bottomNavigationBar: _currentStep == VideoStep.instructions
+          ? _buildInstructionsBottomBar(l10n)
+          : null,
+      body: SafeArea(child: _buildCurrentStep(l10n)),
     );
   }
 
@@ -126,161 +121,211 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
   }
 
   Widget _buildInstructions(AppLocalizations l10n) {
-    return Padding(
-      padding: EdgeInsets.all(AppSpacing.md),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.colors.gold.withValues(alpha: 0.1),
-                  ),
-                  child: Icon(
-                    Icons.videocam,
-                    size: 64,
-                    color: context.colors.gold,
-                  ),
-                ),
-                SizedBox(height: AppSpacing.xxl),
-                AppText(
-                  l10n.kyc_video_instructions_title,
-                  variant: AppTextVariant.headlineMedium,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppSpacing.md),
-                AppText(
-                  l10n.kyc_video_instructions_description,
-                  variant: AppTextVariant.bodyLarge,
-                  color: context.colors.textSecondary,
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: AppSpacing.xxl),
-                _buildInstructionCard(
-                  Icons.light_mode,
-                  l10n.kyc_video_instruction_lighting_title,
-                  l10n.kyc_video_instruction_lighting_description,
-                ),
-                SizedBox(height: AppSpacing.md),
-                _buildInstructionCard(
-                  Icons.face,
-                  l10n.kyc_video_instruction_position_title,
-                  l10n.kyc_video_instruction_position_description,
-                ),
-                SizedBox(height: AppSpacing.md),
-                _buildInstructionCard(
-                  Icons.volume_off,
-                  l10n.kyc_video_instruction_quiet_title,
-                  l10n.kyc_video_instruction_quiet_description,
-                ),
-                SizedBox(height: AppSpacing.md),
-                _buildInstructionCard(
-                  Icons.person,
-                  l10n.kyc_video_instruction_solo_title,
-                  l10n.kyc_video_instruction_solo_description,
-                ),
-                SizedBox(height: AppSpacing.xxl),
-                AppCard(
-                  variant: AppCardVariant.elevated,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        l10n.kyc_video_actions_title,
-                        variant: AppTextVariant.labelLarge,
-                      ),
-                      SizedBox(height: AppSpacing.sm),
-                      AppText(
-                        l10n.kyc_video_actions_description,
-                        variant: AppTextVariant.bodySmall,
-                        color: context.colors.textSecondary,
-                      ),
-                      SizedBox(height: AppSpacing.md),
-                      ..._actions.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final action = entry.value;
-                        return Padding(
-                          padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: context.colors.gold.withValues(alpha: 0.1),
-                                ),
-                                child: Center(
-                                  child: AppText(
-                                    '${index + 1}',
-                                    variant: AppTextVariant.labelSmall,
-                                    color: context.colors.gold,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.md),
-                              AppText(
-                                _getActionLabel(l10n, action),
-                                variant: AppTextVariant.bodyMedium,
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ],
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        152,
+      ),
+      children: [
+        Center(
+          child: Container(
+            width: 104,
+            height: 104,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: context.colors.gold.withValues(alpha: 0.12),
+              border: Border.all(
+                color: context.colors.gold.withValues(alpha: 0.24),
+              ),
+            ),
+            child: Icon(
+              Icons.videocam_rounded,
+              size: 56,
+              color: context.colors.gold,
             ),
           ),
-          SizedBox(height: AppSpacing.lg),
-          AppButton(
-            label: l10n.kyc_video_startRecording,
-            onPressed: () => _startRecordingFlow(context),
-            isFullWidth: true,
+        ),
+        SizedBox(height: AppSpacing.xl),
+        AppText(
+          l10n.kyc_video_instructions_title,
+          variant: AppTextVariant.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: AppSpacing.sm),
+        AppText(
+          l10n.kyc_video_instructions_description,
+          variant: AppTextVariant.bodyLarge,
+          color: context.colors.textSecondary,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: AppSpacing.xl),
+        _buildInstructionGrid(l10n),
+        const SizedBox(height: 72),
+        _buildActionsCard(l10n),
+      ],
+    );
+  }
+
+  Widget _buildInstructionsBottomBar(AppLocalizations l10n) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: 112,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.md,
+          AppSpacing.lg,
+        ),
+        decoration: BoxDecoration(
+          color: context.colors.canvas,
+          border: Border(
+            top: BorderSide(
+              color: context.colors.border.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+        child: AppButton(
+          label: l10n.kyc_video_startRecording,
+          onPressed: () => _startRecordingFlow(context),
+          isFullWidth: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInstructionGrid(AppLocalizations l10n) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildInstructionCard(
+                Icons.light_mode_rounded,
+                l10n.kyc_video_instruction_lighting_title,
+                l10n.kyc_video_instruction_lighting_description,
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _buildInstructionCard(
+                Icons.face_rounded,
+                l10n.kyc_video_instruction_position_title,
+                l10n.kyc_video_instruction_position_description,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.sm),
+        Row(
+          children: [
+            Expanded(
+              child: _buildInstructionCard(
+                Icons.volume_off_rounded,
+                l10n.kyc_video_instruction_quiet_title,
+                l10n.kyc_video_instruction_quiet_description,
+              ),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: _buildInstructionCard(
+                Icons.person_rounded,
+                l10n.kyc_video_instruction_solo_title,
+                l10n.kyc_video_instruction_solo_description,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInstructionCard(
+    IconData icon,
+    String title,
+    String description,
+  ) {
+    return AppCard(
+      variant: AppCardVariant.subtle,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: context.colors.gold.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: context.colors.gold, size: 24),
+          ),
+          SizedBox(height: AppSpacing.md),
+          AppText(title, variant: AppTextVariant.labelLarge),
+          SizedBox(height: AppSpacing.xs),
+          AppText(
+            description,
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textSecondary,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInstructionCard(IconData icon, String title, String description) {
+  Widget _buildActionsCard(AppLocalizations l10n) {
     return AppCard(
-      variant: AppCardVariant.subtle,
-      child: Row(
+      variant: AppCardVariant.elevated,
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: context.colors.gold.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: Icon(icon, color: context.colors.gold),
+          AppText(
+            l10n.kyc_video_actions_title,
+            variant: AppTextVariant.labelLarge,
           ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  title,
-                  variant: AppTextVariant.labelLarge,
-                ),
-                SizedBox(height: AppSpacing.xs),
-                AppText(
-                  description,
-                  variant: AppTextVariant.bodySmall,
-                  color: context.colors.textSecondary,
-                ),
-              ],
-            ),
+          SizedBox(height: AppSpacing.sm),
+          AppText(
+            l10n.kyc_video_actions_description,
+            variant: AppTextVariant.bodySmall,
+            color: context.colors.textSecondary,
           ),
+          SizedBox(height: AppSpacing.md),
+          ..._actions.asMap().entries.map((entry) {
+            final index = entry.key;
+            final action = entry.value;
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index == _actions.length - 1 ? 0 : AppSpacing.sm,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.gold.withValues(alpha: 0.12),
+                    ),
+                    child: Center(
+                      child: AppText(
+                        '${index + 1}',
+                        variant: AppTextVariant.labelSmall,
+                        color: context.colors.gold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: AppText(
+                      _getActionLabel(l10n, action),
+                      variant: AppTextVariant.bodyMedium,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -298,9 +343,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
     return Stack(
       children: [
         // Camera preview
-        SizedBox.expand(
-          child: CameraPreview(_controller!),
-        ),
+        SizedBox.expand(child: CameraPreview(_controller!)),
         // Face oval guide
         Center(
           child: Container(
@@ -308,10 +351,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
             height: 360,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: context.colors.gold,
-                width: 3,
-              ),
+              border: Border.all(color: context.colors.gold, width: 3),
             ),
           ),
         ),
@@ -395,11 +435,7 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
                   color: context.colors.error,
                   border: Border.all(color: Colors.white, width: 4),
                 ),
-                child: const Icon(
-                  Icons.stop,
-                  color: Colors.white,
-                  size: 36,
-                ),
+                child: const Icon(Icons.stop, color: Colors.white, size: 36),
               ),
             ),
           ),
@@ -489,7 +525,9 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
     if (_controller == null || !_controller!.value.isInitialized) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.kyc_cameraInitFailed)),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.kyc_cameraInitFailed),
+        ),
       );
       return;
     }
@@ -521,7 +559,8 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
         setState(() => _recordingDuration++);
 
         // Auto-advance actions every 3 seconds
-        if (_recordingDuration % 3 == 0 && _currentActionIndex < _actions.length - 1) {
+        if (_recordingDuration % 3 == 0 &&
+            _currentActionIndex < _actions.length - 1) {
           setState(() => _currentActionIndex++);
         }
 
@@ -533,7 +572,9 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
 
       setState(() => _videoPath = filePath);
     } catch (e) {
-      AppLogger('Error starting recording').error('Error starting recording', e);
+      AppLogger(
+        'Error starting recording',
+      ).error('Error starting recording', e);
     }
   }
 
@@ -550,7 +591,9 @@ class _KycVideoViewState extends ConsumerState<KycVideoView> {
         _currentStep = VideoStep.preview;
       });
     } catch (e) {
-      AppLogger('Error stopping recording').error('Error stopping recording', e);
+      AppLogger(
+        'Error stopping recording',
+      ).error('Error stopping recording', e);
     }
   }
 

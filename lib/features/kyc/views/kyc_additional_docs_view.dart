@@ -1,17 +1,17 @@
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
+
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 enum SourceOfFundsType {
   salary,
@@ -46,7 +46,8 @@ class KycAdditionalDocsView extends ConsumerStatefulWidget {
   const KycAdditionalDocsView({super.key});
 
   @override
-  ConsumerState<KycAdditionalDocsView> createState() => _KycAdditionalDocsViewState();
+  ConsumerState<KycAdditionalDocsView> createState() =>
+      _KycAdditionalDocsViewState();
 }
 
 class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
@@ -82,34 +83,34 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
         ),
         backgroundColor: Colors.transparent,
       ),
+      bottomNavigationBar: _buildBottomBar(context, l10n),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  children: [
-                    AppText(
-                      l10n.kyc_additionalDocs_description,
-                      variant: AppTextVariant.bodyLarge,
-                      color: context.colors.textSecondary,
-                    ),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildEmploymentSection(l10n),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildSourceOfFundsSection(l10n),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildSupportingDocuments(l10n),
-                    SizedBox(height: AppSpacing.xxl),
-                    _buildInfoCard(l10n),
-                  ],
-                ),
-              ),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.md,
+              AppSpacing.md,
+              AppSpacing.md,
+              152,
             ),
-            _buildBottomBar(context, l10n),
-          ],
+            children: [
+              AppText(
+                l10n.kyc_additionalDocs_description,
+                variant: AppTextVariant.bodyLarge,
+                color: context.colors.textSecondary,
+              ),
+              SizedBox(height: AppSpacing.xxl),
+              _buildEmploymentSection(l10n),
+              SizedBox(height: AppSpacing.xxl),
+              _buildSourceOfFundsSection(l10n),
+              SizedBox(height: AppSpacing.xxl),
+              _buildSupportingDocuments(l10n),
+              SizedBox(height: AppSpacing.xxl),
+              _buildInfoCard(l10n),
+            ],
+          ),
         ),
       ),
     );
@@ -127,6 +128,7 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
         AppInput(
           label: l10n.kyc_additionalDocs_occupation,
           controller: _occupationController,
+          onChanged: (_) => setState(() {}),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return l10n.error_required;
@@ -135,30 +137,40 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
           },
         ),
         SizedBox(height: AppSpacing.md),
-        AppInput(
-          label: l10n.kyc_additionalDocs_employer,
-          controller: _employerController,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return l10n.error_required;
-            }
-            return null;
-          },
-        ),
-        SizedBox(height: AppSpacing.md),
-        AppInput(
-          label: l10n.kyc_additionalDocs_monthlyIncome,
-          controller: _monthlyIncomeController,
-          keyboardType: TextInputType.number,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return l10n.error_required;
-            }
-            if (double.tryParse(value) == null) {
-              return l10n.error_invalidNumber;
-            }
-            return null;
-          },
+        Row(
+          children: [
+            Expanded(
+              child: AppInput(
+                label: l10n.kyc_additionalDocs_employer,
+                controller: _employerController,
+                onChanged: (_) => setState(() {}),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return l10n.error_required;
+                  }
+                  return null;
+                },
+              ),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: AppInput(
+                label: l10n.kyc_additionalDocs_monthlyIncome,
+                controller: _monthlyIncomeController,
+                onChanged: (_) => setState(() {}),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return l10n.error_required;
+                  }
+                  if (double.tryParse(value) == null) {
+                    return l10n.error_invalidNumber;
+                  }
+                  return null;
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -179,43 +191,12 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
           color: context.colors.textSecondary,
         ),
         SizedBox(height: AppSpacing.md),
-        ...SourceOfFundsType.values.map((type) {
-          final isSelected = _selectedSourceType == type;
-          return Padding(
-            padding: EdgeInsets.only(bottom: AppSpacing.sm),
-            child: GestureDetector(
-              onTap: () => setState(() => _selectedSourceType = type),
-              child: Container(
-                padding: EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isSelected ? context.colors.elevated : Colors.transparent,
-                  border: Border.all(
-                    color: isSelected ? context.colors.gold : context.colors.border,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? context.colors.gold : context.colors.textSecondary,
-                    ),
-                    SizedBox(width: AppSpacing.md),
-                    AppText(
-                      _getSourceTypeLabel(l10n, type),
-                      variant: AppTextVariant.labelLarge,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
+        _buildSourceTypeGrid(l10n),
         SizedBox(height: AppSpacing.md),
         AppInput(
           label: l10n.kyc_additionalDocs_sourceDetails,
           controller: _sourceDetailsController,
+          onChanged: (_) => setState(() {}),
           maxLines: 3,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -225,6 +206,71 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildSourceTypeGrid(AppLocalizations l10n) {
+    final types = SourceOfFundsType.values;
+
+    return Column(
+      children: [
+        for (var index = 0; index < types.length; index += 2) ...[
+          Row(
+            children: [
+              Expanded(child: _buildSourceTypeOption(l10n, types[index])),
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: index + 1 < types.length
+                    ? _buildSourceTypeOption(l10n, types[index + 1])
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+          if (index + 2 < types.length) SizedBox(height: AppSpacing.sm),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSourceTypeOption(AppLocalizations l10n, SourceOfFundsType type) {
+    final isSelected = _selectedSourceType == type;
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedSourceType = type),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 72),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? context.colors.elevated : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? context.colors.gold : context.colors.border,
+            width: isSelected ? 2 : 1,
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+              color: isSelected
+                  ? context.colors.gold
+                  : context.colors.textSecondary,
+              size: 22,
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: AppText(
+                _getSourceTypeLabel(l10n, type),
+                variant: AppTextVariant.labelMedium,
+                color: context.colors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -335,7 +381,8 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
               top: AppSpacing.sm,
               right: AppSpacing.sm,
               child: IconButton(
-                onPressed: () => setState(() => _uploadedDocuments.removeAt(index)),
+                onPressed: () =>
+                    setState(() => _uploadedDocuments.removeAt(index)),
                 icon: const Icon(Icons.close),
                 style: IconButton.styleFrom(
                   backgroundColor: context.colors.canvas.withValues(alpha: 0.8),
@@ -380,16 +427,20 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
   }
 
   Widget _buildBottomBar(BuildContext context, AppLocalizations l10n) {
-    final canSubmit = _formKey.currentState?.validate() == true &&
-        _selectedSourceType != null &&
-        _uploadedDocuments.isNotEmpty;
+    final canSubmit = _canSubmit;
 
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      height: 112,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.md,
+        AppSpacing.lg,
+      ),
       decoration: BoxDecoration(
-        color: context.colors.elevated,
+        color: context.colors.canvas,
         border: Border(
-          top: BorderSide(color: context.colors.border),
+          top: BorderSide(color: context.colors.border.withValues(alpha: 0.6)),
         ),
       ),
       child: SafeArea(
@@ -402,6 +453,17 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
         ),
       ),
     );
+  }
+
+  bool get _canSubmit {
+    final monthlyIncome = double.tryParse(_monthlyIncomeController.text.trim());
+    return _occupationController.text.trim().isNotEmpty &&
+        _employerController.text.trim().isNotEmpty &&
+        monthlyIncome != null &&
+        monthlyIncome > 0 &&
+        _selectedSourceType != null &&
+        _sourceDetailsController.text.trim().isNotEmpty &&
+        _uploadedDocuments.isNotEmpty;
   }
 
   Future<void> _handleTakePhoto() async {
@@ -432,16 +494,19 @@ class _KycAdditionalDocsViewState extends ConsumerState<KycAdditionalDocsView> {
     }
   }
 
-  Future<void> _handleSubmit(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _handleSubmit(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSourceType == null || _uploadedDocuments.isEmpty) return;
 
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(kycProvider.notifier).submitAdditionalDocuments(
-            _uploadedDocuments,
-          );
+      await ref
+          .read(kycProvider.notifier)
+          .submitAdditionalDocuments(_uploadedDocuments);
 
       if (!mounted) return;
       context.go('/kyc/submitted');
