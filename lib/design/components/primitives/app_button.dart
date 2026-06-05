@@ -150,12 +150,13 @@ class AppButton extends StatelessWidget {
             boxShadow: AppShadows.goldGlow,
           );
         } else {
-          // Light mode: solid clean gold.
+          // Light mode: brighter clean gold with ivory text, avoiding the
+          // brown warning-amber feel reserved for non-CTA states.
           return BoxDecoration(
-            color: colors.gold,
+            color: AppColorsLight.gold400,
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: AppColorsLight.gold600.withValues(alpha: 0.18),
+              color: AppColorsLight.gold500.withValues(alpha: 0.22),
             ),
             boxShadow: AppShadows.lightGoldGlow,
           );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +10,6 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/services/feature_flags/feature_flags_provider.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
-import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Widget that manages session lifecycle and shows timeout warnings
@@ -112,10 +113,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
                 onExtend: () {
                   ref.read(sessionServiceProvider.notifier).extendSession();
                 },
-                onLogout: () {
-                  ref.read(sessionServiceProvider.notifier).endSession();
-                  context.go('/login');
-                },
+                onLogout: () => unawaited(_logoutFromSessionWarning()),
               ),
           ],
         ),
@@ -142,27 +140,45 @@ class _SessionManagerState extends ConsumerState<SessionManager>
     }
   }
 
+  Future<void> _logoutFromSessionWarning() async {
+    try {
+      await ref.read(authProvider.notifier).clearLocalSession();
+      if (!mounted) return;
+      context.go('/login');
+    } catch (e) {
+      AppLogger('SessionManager').warn('Could not log out from warning', e);
+    }
+  }
+
   void _handleSessionExpired() {
-    // Use FSM logout instead of context.go to avoid GoRouter context issues
+    // Schedule logout after the state change so navigation and providers are ready.
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          try {
-            ref.read(userStateMachineProvider.notifier).logout();
-            final colors = context.colors;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Session expired. Please log in again.'),
-                backgroundColor: colors.warning,
-              ),
-            );
-          } catch (e) {
-            AppLogger(
-              'SessionManager',
-            ).warn('Could not handle session expiry', e);
-          }
+          unawaited(_expireSession());
         }
       });
+    }
+  }
+
+  Future<void> _expireSession() async {
+    try {
+      await ref.read(authProvider.notifier).clearLocalSession();
+      if (!mounted) return;
+
+      final colors = context.colors;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Session expired. Please log in again.',
+            style: TextStyle(color: colors.onDark),
+          ),
+          backgroundColor: colors.error,
+        ),
+      );
+      context.go('/login');
+    } catch (e) {
+      AppLogger('SessionManager').warn('Could not handle session expiry', e);
     }
   }
 
@@ -209,6 +225,10 @@ class _SessionExpiringOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
+    final timerColor = remainingSeconds <= 10 ? colors.error : colors.info;
+    final timerBackground = remainingSeconds <= 10
+        ? colors.errorBg
+        : colors.infoBg;
 
     return Material(
       color: Colors.black54,
@@ -227,10 +247,10 @@ class _SessionExpiringOverlay extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: colors.warning.withValues(alpha: 0.1),
+                  color: timerBackground,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.timer, color: colors.warning, size: 40),
+                child: Icon(Icons.timer, color: timerColor, size: 40),
               ),
               const SizedBox(height: AppSpacing.xl),
               AppText(
@@ -260,19 +280,13 @@ class _SessionExpiringOverlay extends StatelessWidget {
                         value: remainingSeconds / 30, // Assuming 30s warning
                         strokeWidth: 6,
                         backgroundColor: colors.borderSubtle,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          remainingSeconds <= 10
-                              ? colors.error
-                              : colors.warning,
-                        ),
+                        valueColor: AlwaysStoppedAnimation<Color>(timerColor),
                       ),
                     ),
                     AppText(
                       '$remainingSeconds',
                       variant: AppTextVariant.headlineSmall,
-                      color: remainingSeconds <= 10
-                          ? colors.error
-                          : colors.warning,
+                      color: timerColor,
                     ),
                   ],
                 ),
