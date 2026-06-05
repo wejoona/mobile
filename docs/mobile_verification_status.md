@@ -25,6 +25,13 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 brand/link release cleanup:
+  - Replaced stale JoonaPay visible text in Android balance widgets with Korido.
+  - Replaced stale contact invite download links with `https://korido.app/download` and regenerated Flutter localizations.
+  - `rg -n "joonapay\.com/app|android:text=\"JoonaPay\"|View your JoonaPay balance|i'm using joonapay|using joonapay|within joonapay|joonapay users|joonapay app|Welcome to joonapay|Rate joonapay|Enjoying joonapay|Your joonapay|your joonapay|on joonapay|to joonapay|join joonapay" mobile/lib/l10n mobile/android/app/src/main -g '!**/build/**'` returned no matches.
+  - `flutter analyze --no-fatal-infos lib/l10n integration_test/flows/live_api_login_flow_test.dart` passed with no issues.
+  - `flutter test test/services/localization/language_service_test.dart test/e2e/contacts_e2e_test.dart` passed 6 tests with 5 live-E2E tests skipped by design.
+  - `flutter build apk --debug --dart-define-from-file=env.dev.json` passed and produced `build/app/outputs/flutter-apk/app-debug.apk`.
 - 2026-06-05 backend API regression refresh:
   - API main latest verified commit: `2d64d4b3 fix: declare bullmq runtime dependencies`.
   - `npm run build` passed in `usdc-wallet`.

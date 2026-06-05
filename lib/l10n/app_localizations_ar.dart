@@ -3145,7 +3145,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contacts_invite_message =>
-      'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app';
+      'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://korido.app/download';
 
   @override
   String get recurringTransfers_title => 'Recurring Transfers';

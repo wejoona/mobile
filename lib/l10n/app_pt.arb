@@ -1613,7 +1613,7 @@
   "@qr_howToReceive": {
     "description": "Instructions title"
   },
-  "qr_receiveInstructions": "Partilhar this qr code with the remetente. they can scan it with their joonapay app to enviar you money instantly.",
+  "qr_receiveInstructions": "Partilhar this qr code with the remetente. they can scan it with their Korido app to enviar you money instantly.",
   "@qr_receiveInstructions": {
     "description": "Instructions for receiving payment"
   },
@@ -1629,7 +1629,7 @@
   "@qr_initializingCamera": {
     "description": "Loading message for camera"
   },
-  "qr_scanInstruction": "Scan a joonapay qr code",
+  "qr_scanInstruction": "Scan a Korido qr code",
   "@qr_scanInstruction": {
     "description": "Main scanner instruction"
   },
@@ -1645,7 +1645,7 @@
   "@qr_invalidCode": {
     "description": "Error title for invalid QR"
   },
-  "qr_invalidCodeMessage": "This qr code is not a válido joonapay payment code.",
+  "qr_invalidCodeMessage": "This qr code is not a válido Korido payment code.",
   "@qr_invalidCodeMessage": {
     "description": "Error message for invalid QR"
   },
@@ -2670,7 +2670,7 @@
   "@onboarding_kyc_later": {
     "description": "Skip KYC button"
   },
-  "onboarding_success_title": "Welcome to joonapay!",
+  "onboarding_success_title": "Welcome to Korido!",
   "@onboarding_success_title": {
     "description": "Success screen title"
   },
@@ -2691,7 +2691,7 @@
   "@onboarding_success_walletMessage": {
     "description": "Wallet ready message"
   },
-  "onboarding_success_continue": "Começar using joonapay",
+  "onboarding_success_continue": "Começar using Korido",
   "@onboarding_success_continue": {
     "description": "Continue to app button"
   },
@@ -3545,7 +3545,7 @@
   "@insights_empty_title": {
     "description": "Empty state title"
   },
-  "insights_empty_description": "Começar using joonapay to see your spending insights and analytics",
+  "insights_empty_description": "Começar using Korido to see your spending insights and analytics",
   "@insights_empty_description": {
     "description": "Empty state description"
   },
@@ -3585,11 +3585,11 @@
   "@contacts_search": {
     "description": "Search contacts placeholder"
   },
-  "contacts_on_joonapay": "On joonapay",
+  "contacts_on_joonapay": "On Korido",
   "@contacts_on_joonapay": {
     "description": "Korido users section title"
   },
-  "contacts_invite_to_joonapay": "Invite to joonapay",
+  "contacts_invite_to_joonapay": "Invite to Korido",
   "@contacts_invite_to_joonapay": {
     "description": "Non-users section title"
   },
@@ -3601,7 +3601,7 @@
   "@contacts_no_results": {
     "description": "No search results message"
   },
-  "contacts_sync_success": "Found {count} joonapay users!",
+  "contacts_sync_success": "Found {count} Korido users!",
   "@contacts_sync_success": {
     "description": "Sync success message",
     "placeholders": {
@@ -3645,7 +3645,7 @@
   "@contacts_permission_title": {
     "description": "Permission screen title"
   },
-  "contacts_permission_subtitle": "See which of your contacts are already on joonapay",
+  "contacts_permission_subtitle": "See which of your contacts are already on Korido",
   "@contacts_permission_subtitle": {
     "description": "Permission screen subtitle"
   },
@@ -3653,7 +3653,7 @@
   "@contacts_permission_benefit1_title": {
     "description": "Permission benefit 1 title"
   },
-  "contacts_permission_benefit1_desc": "See which contacts are on joonapay and enviar money instantly",
+  "contacts_permission_benefit1_desc": "See which contacts are on Korido and enviar money instantly",
   "@contacts_permission_benefit1_desc": {
     "description": "Permission benefit 1 description"
   },
@@ -3669,7 +3669,7 @@
   "@contacts_permission_benefit3_title": {
     "description": "Permission benefit 3 title"
   },
-  "contacts_permission_benefit3_desc": "Automatically sync when new contacts join joonapay",
+  "contacts_permission_benefit3_desc": "Automatically sync when new contacts join Korido",
   "@contacts_permission_benefit3_desc": {
     "description": "Permission benefit 3 description"
   },
@@ -3685,11 +3685,11 @@
   "@contacts_permission_denied_title": {
     "description": "Permission denied dialog title"
   },
-  "contacts_permission_denied_message": "To find your friends on joonapay, please allow contacto access in definições.",
+  "contacts_permission_denied_message": "To find your friends on Korido, please allow contacto access in definições.",
   "@contacts_permission_denied_message": {
     "description": "Permission denied dialog message"
   },
-  "contacts_invite_title": "Invite {name} to joonapay",
+  "contacts_invite_title": "Invite {name} to Korido",
   "@contacts_invite_title": {
     "description": "Invite sheet title",
     "placeholders": {
@@ -3698,7 +3698,7 @@
       }
     }
   },
-  "contacts_invite_subtitle": "Enviar money to friends instantly with joonapay",
+  "contacts_invite_subtitle": "Enviar money to friends instantly with Korido",
   "@contacts_invite_subtitle": {
     "description": "Invite sheet subtitle"
   },
@@ -3726,7 +3726,7 @@
   "@contacts_invite_copy_link_desc": {
     "description": "Copy invite link description"
   },
-  "contacts_invite_message": "Hey! i'm using joonapay to enviar money instantly. join me and get your first transferir free! transferir: https://joonapay.com/app",
+  "contacts_invite_message": "Hey! i'm using Korido to enviar money instantly. join me and get your first transferir free! transferir: https://korido.app/download",
   "@contacts_invite_message": {
     "description": "Default invite message"
   },
@@ -6962,11 +6962,11 @@
   "@settings_help": {
     "description": "Help and support settings option"
   },
-  "settings_rateApp": "Rate joonapay",
+  "settings_rateApp": "Rate Korido",
   "@settings_rateApp": {
     "description": "Rate app option in settings"
   },
-  "settings_rateAppDescription": "Enjoying joonapay? rate us on the app store",
+  "settings_rateAppDescription": "Enjoying Korido? rate us on the app store",
   "@settings_rateAppDescription": {
     "description": "Description for rate app option"
   },
@@ -7380,7 +7380,7 @@
   "@onboarding_page2_description": {
     "description": "Onboarding page 2 description"
   },
-  "onboarding_page2_feature1": "Instant transfers within joonapay",
+  "onboarding_page2_feature1": "Instant transfers within Korido",
   "@onboarding_page2_feature1": {
     "description": "Onboarding page 2 feature 1"
   },
@@ -7441,7 +7441,7 @@
       }
     }
   },
-  "welcome_subtitle": "Your joonapay carteira is ready. começar sending and receiving money hoje!",
+  "welcome_subtitle": "Your Korido carteira is ready. começar sending and receiving money hoje!",
   "@welcome_subtitle": {
     "description": "Welcome subtitle"
   },
@@ -7581,7 +7581,7 @@
   "@help_deposits_header": {
     "description": "Deposits guide header"
   },
-  "help_deposits_intro": "Depositing funds into your joonapay carteira is quick and easy using mobile money serviços disponível across west africa.",
+  "help_deposits_intro": "Depositing funds into your Korido carteira is quick and easy using mobile money serviços disponível across west africa.",
   "@help_deposits_intro": {
     "description": "Deposits guide intro"
   },
@@ -7677,7 +7677,7 @@
   "@help_fees_breakdown_title": {
     "description": "Fee breakdown title"
   },
-  "help_fees_internal_transfers": "Transfers to joonapay users",
+  "help_fees_internal_transfers": "Transfers to Korido users",
   "@help_fees_internal_transfers": {
     "description": "Internal transfers label"
   },
@@ -7685,7 +7685,7 @@
   "@help_fees_free": {
     "description": "Free fee label"
   },
-  "help_fees_internal_description": "Enviar money to outro joonapay users with zero taxas",
+  "help_fees_internal_description": "Enviar money to outro Korido users with zero taxas",
   "@help_fees_internal_description": {
     "description": "Internal transfers description"
   },

@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="JoonaPay"
+        android:text="Korido"
         android:textColor="#C9A962"
         android:textSize="11sp"
         android:fontFamily="sans-serif-medium"

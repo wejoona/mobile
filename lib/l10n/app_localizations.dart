@@ -5913,7 +5913,7 @@ abstract class AppLocalizations {
   /// Default invite message
   ///
   /// In en, this message translates to:
-  /// **'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app'**
+  /// **'Hey! I\'m using Korido to send money instantly. Join me and get your first transfer free! Download: https://korido.app/download'**
   String get contacts_invite_message;
 
   /// Recurring transfers screen title

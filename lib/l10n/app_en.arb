@@ -3927,7 +3927,7 @@
   "@contacts_invite_copy_link_desc": {
     "description": "Copy invite link description"
   },
-  "contacts_invite_message": "Hey! I'm using Korido to send money instantly. Join me and get your first transfer free! Download: https://joonapay.com/app",
+  "contacts_invite_message": "Hey! I'm using Korido to send money instantly. Join me and get your first transfer free! Download: https://korido.app/download",
   "@contacts_invite_message": {
     "description": "Default invite message"
   },

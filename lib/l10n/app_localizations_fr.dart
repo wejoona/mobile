@@ -3212,7 +3212,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get contacts_invite_message =>
-      'Salut! J\'utilise Korido pour envoyer de l\'argent instantanément. Rejoins-moi et obtiens ton premier transfert gratuit! Télécharger: https://joonapay.com/app';
+      'Salut! J\'utilise Korido pour envoyer de l\'argent instantanément. Rejoins-moi et obtiens ton premier transfert gratuit! Télécharger: https://korido.app/download';
 
   @override
   String get recurringTransfers_title => 'Transferts récurrents';
