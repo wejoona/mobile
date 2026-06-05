@@ -249,6 +249,11 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
+    if (_isDeviceBlacklistedError(err)) {
+      await _invalidateLocalSession();
+      return handler.next(err);
+    }
+
     // Handle connection errors on authenticated endpoints - may be server rejecting expired token
     // Connection reset can happen when server sends 401 but connection closes before response arrives
     if (!isPublicEndpoint &&
@@ -372,6 +377,16 @@ class AuthInterceptor extends Interceptor {
     } catch (_) {}
   }
 
+  bool _isDeviceBlacklistedError(DioException error) {
+    final data = error.response?.data;
+    if (error.response?.statusCode != 403 || data is! Map) {
+      return false;
+    }
+
+    return data['error'] == 'DEVICE_BLACKLISTED' ||
+        data['code'] == 'DEVICE_BLACKLISTED';
+  }
+
   /// Refresh token with race condition protection
   /// SECURITY: Use Completer to queue concurrent refresh requests
   Future<bool> _refreshToken(RequestOptions failedRequest) async {
@@ -465,8 +480,9 @@ class ApiException implements Exception {
   final String message;
   final int? statusCode;
   final dynamic data;
+  final String? code;
 
-  ApiException({required this.message, this.statusCode, this.data});
+  ApiException({required this.message, this.statusCode, this.data, this.code});
 
   factory ApiException.fromDioError(DioException error) {
     String message = 'An unexpected error occurred';
@@ -482,6 +498,15 @@ class ApiException implements Exception {
 
     if (error.response?.data != null) {
       final data = error.response?.data;
+      final code = _errorCode(data);
+      if (code == 'DEVICE_BLACKLISTED') {
+        return ApiException(
+          message: 'This device has been blocked. Contact Korido support.',
+          statusCode: statusCode,
+          data: data,
+          code: code,
+        );
+      }
       if (data is Map && data['message'] != null) {
         message = data['message'].toString();
       } else {
@@ -509,7 +534,18 @@ class ApiException implements Exception {
       message: message,
       statusCode: statusCode,
       data: error.response?.data,
+      code: _errorCode(error.response?.data),
     );
+  }
+
+  bool get isDeviceBlacklisted => code == 'DEVICE_BLACKLISTED';
+
+  static String? _errorCode(Object? data) {
+    if (data is Map) {
+      final value = data['error'] ?? data['code'];
+      return value?.toString();
+    }
+    return null;
   }
 
   static String _getMessageFromStatusCode(int? code) {

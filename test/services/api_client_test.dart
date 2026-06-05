@@ -77,6 +77,35 @@ void main() {
       expect(exception.message, equals('Access denied'));
     });
 
+    test('should map device blacklist errors to blocked-device message', () {
+      // Arrange
+      final dioError = DioException(
+        requestOptions: RequestOptions(path: '/wallet/balance'),
+        response: Response(
+          statusCode: 403,
+          data: {
+            'statusCode': 403,
+            'message': 'Access denied. This device has been blocked.',
+            'error': 'DEVICE_BLACKLISTED',
+          },
+          requestOptions: RequestOptions(path: '/wallet/balance'),
+        ),
+        type: DioExceptionType.badResponse,
+      );
+
+      // Act
+      final exception = ApiException.fromDioError(dioError);
+
+      // Assert
+      expect(exception.statusCode, equals(403));
+      expect(exception.code, equals('DEVICE_BLACKLISTED'));
+      expect(exception.isDeviceBlacklisted, isTrue);
+      expect(
+        exception.message,
+        equals('This device has been blocked. Contact Korido support.'),
+      );
+    });
+
     test('should map 404 to Not found', () {
       // Arrange
       final dioError = DioException(
