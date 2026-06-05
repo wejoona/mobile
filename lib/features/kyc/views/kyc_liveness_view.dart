@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/features/liveness/widgets/liveness_check_widget.dart';
 import 'package:usdc_wallet/services/liveness/liveness_service.dart';
+
 /// Écran de vérification de présence (liveness) — défi caméra uniquement.
 /// Les instructions sont affichées sur un écran séparé (KycLivenessInstructionsView)
 /// avant la navigation vers cet écran.
@@ -22,27 +25,37 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   bool _isComplete = false;
   bool _hasFailed = false;
   String? _errorMessage;
+  Timer? _navigationTimer;
 
   LivenessDecision? _decision;
 
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
+  }
+
   void _onLivenessComplete(LivenessResult result) {
-    debugPrint('[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}, decision=${result.decision}');
+    debugPrint(
+      '[KYC Liveness] Complete: isLive=${result.isLive}, confidence=${result.confidence}, decision=${result.decision}',
+    );
 
     final decision = result.decision;
     _decision = decision;
+    _navigationTimer?.cancel();
 
     switch (decision) {
       case LivenessDecision.autoApprove:
         // High score — auto-approve, proceed to review
         setState(() => _isComplete = true);
-        Future.delayed(const Duration(seconds: 2), () {
+        _navigationTimer = Timer(const Duration(seconds: 2), () {
           if (mounted) context.go('/kyc/review');
         });
 
       case LivenessDecision.manualReview:
         // Medium score — submit for manual review, show pending screen
         setState(() => _isComplete = true);
-        Future.delayed(const Duration(seconds: 2), () {
+        _navigationTimer = Timer(const Duration(seconds: 2), () {
           if (mounted) context.go('/kyc/submitted');
         });
 
@@ -50,7 +63,9 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
         // Low score — decline, allow retry
         setState(() {
           _hasFailed = true;
-          _errorMessage = result.failureReason ?? AppLocalizations.of(context)!.liveness_failed;
+          _errorMessage =
+              result.failureReason ??
+              AppLocalizations.of(context)!.liveness_failed;
         });
     }
   }
@@ -61,6 +76,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
   }
 
   void _retry() {
+    _navigationTimer?.cancel();
     setState(() {
       _hasFailed = false;
       _errorMessage = null;
@@ -85,10 +101,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
       return Scaffold(
         backgroundColor: colors.canvas,
         appBar: AppBar(
-          title: AppText(
-            l10n.kyc_title,
-            variant: AppTextVariant.headlineSmall,
-          ),
+          title: AppText(l10n.kyc_title, variant: AppTextVariant.headlineSmall),
           backgroundColor: Colors.transparent,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -101,11 +114,7 @@ class _KycLivenessViewState extends ConsumerState<KycLivenessView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.face_retouching_off,
-                  size: 80,
-                  color: colors.error,
-                ),
+                Icon(Icons.face_retouching_off, size: 80, color: colors.error),
                 const SizedBox(height: AppSpacing.xxl),
                 AppText(
                   l10n.liveness_verificationFailed,

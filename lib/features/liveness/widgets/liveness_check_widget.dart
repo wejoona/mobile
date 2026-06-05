@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -65,17 +66,7 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     final mockCamera = ref.read(mockCameraProvider);
 
     if (isSimulator || mockCamera) {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      if (mounted) {
-        widget.onComplete?.call(
-          LivenessResult(
-            sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
-            isLive: true,
-            confidence: 0.99,
-            completedAt: DateTime.now(),
-          ),
-        );
-      }
+      await _completeMockLiveness();
       return;
     }
 
@@ -91,6 +82,10 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
+        if (!kReleaseMode) {
+          await _completeMockLiveness();
+          return;
+        }
         _fail('No cameras available');
         return;
       }
@@ -112,6 +107,19 @@ class _LivenessCheckWidgetState extends ConsumerState<LivenessCheckWidget> {
     } catch (e) {
       _fail('Camera initialization failed: $e');
     }
+  }
+
+  Future<void> _completeMockLiveness() async {
+    if (!mounted) return;
+
+    widget.onComplete?.call(
+      LivenessResult(
+        sessionId: 'mock-session-${DateTime.now().millisecondsSinceEpoch}',
+        isLive: true,
+        confidence: 0.99,
+        completedAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> _createSession() async {
