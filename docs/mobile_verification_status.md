@@ -25,6 +25,11 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 post-brand release gates:
+  - Current mobile head verified: `4925898 fix: clean up korido brand links`.
+  - `flutter test` passed 672 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - Build emitted known non-blocking Flutter warnings for plugins without Swift Package Manager support and the expected no-codesign warning.
 - 2026-06-05 brand/link release cleanup:
   - Replaced stale JoonaPay visible text in Android balance widgets with Korido.
   - Replaced stale contact invite download links with `https://korido.app/download` and regenerated Flutter localizations.
