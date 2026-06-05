@@ -25,6 +25,10 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 live API focused screen sweep:
+  - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/health_e2e_test.dart test/e2e/auth_e2e_test.dart test/e2e/wallet_e2e_test.dart test/e2e/transactions_e2e_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/devices_e2e_test.dart` passed 51 live API tests.
+  - Covered health, feature flags, register/login/OTP/refresh/logout, wallet/balance/limits/deposit channels/rates/KYC status/PIN validation, transfer and withdrawal validation, transaction history/stats, contact sync/lookup/invite, notifications/preferences/device token, device registration/listing, and active sessions.
 - 2026-06-05 API configuration readiness:
   - Updated tracked mobile define files so `env.prod.json` points to `https://api.joonapay.com/api/v1` and `env.dev.json` points to the local simulator API at `http://127.0.0.1:3401/api/v1`.
   - Aligned stale mobile config/docs/golden helper references away from the legacy Wejoona API host.
