@@ -45,9 +45,15 @@ class WalletService {
     }
   }
 
-  String _messageFromPayload(dynamic payload, String fallback) {
+  String _messageFromPayload(Object? payload, String fallback) {
     if (payload is Map && payload['message'] != null) {
       return payload['message'].toString();
+    }
+    if (payload is Map) {
+      final error = payload['error'];
+      if (error is Map && error['message'] != null) {
+        return error['message'].toString();
+      }
     }
     return fallback;
   }

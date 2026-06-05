@@ -42,7 +42,7 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             dioProvider.overrideWithValue(dio),
-            appFsmProvider.overrideWith(() => _NoopAppFsmNotifier()),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
           ],
         );
         addTearDown(container.dispose);
@@ -60,6 +60,50 @@ void main() {
         expect(state.status, WalletStatus.loaded);
         expect(state.walletId, 'wallet-1');
         expect(state.usdcBalance, 0);
+      },
+    );
+
+    test(
+      'creates a wallet automatically from live API error envelope',
+      () async {
+        final dio = MockDio()
+          ..queueErrorResponse(
+            statusCode: 404,
+            data: {
+              'success': false,
+              'error': {'code': 'NOT_FOUND', 'message': 'Wallet not found'},
+              'meta': {'path': '/api/v1/wallet', 'method': 'GET'},
+            },
+          )
+          ..queueResponse({
+            'id': 'wallet-live-envelope',
+            'userId': 'user-1',
+            'circleWalletId': null,
+            'circleWalletAddress': null,
+            'currency': 'USDC',
+            'balance': 0,
+            'balanceDecimal': '0.000000',
+            'status': 'active',
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).fetch();
+
+        expect(dio.requestHistory.map((request) => request.path), [
+          '/wallet',
+          '/wallet/create',
+        ]);
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.walletId, 'wallet-live-envelope');
       },
     );
   });

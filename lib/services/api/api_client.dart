@@ -509,6 +509,10 @@ class ApiException implements Exception {
       }
       if (data is Map && data['message'] != null) {
         message = data['message'].toString();
+      } else if (data is Map &&
+          data['error'] is Map &&
+          (data['error'] as Map)['message'] != null) {
+        message = (data['error'] as Map)['message'].toString();
       } else {
         message = _getMessageFromStatusCode(statusCode);
       }
@@ -542,7 +546,11 @@ class ApiException implements Exception {
 
   static String? _errorCode(Object? data) {
     if (data is Map) {
-      final value = data['error'] ?? data['code'];
+      final error = data['error'];
+      if (error is Map && error['code'] != null) {
+        return error['code'].toString();
+      }
+      final value = data['code'];
       return value?.toString();
     }
     return null;
