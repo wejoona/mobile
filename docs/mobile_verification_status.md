@@ -25,6 +25,13 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 live visual screenshot sweep:
+  - Added `integration_test/flows/live_api_visual_sweep_test.dart` plus `integration_test/test_driver/screenshot_driver.dart` to produce repeatable live-API simulator PNG evidence.
+  - `flutter analyze --no-fatal-infos integration_test/test_driver/screenshot_driver.dart integration_test/flows/live_api_visual_sweep_test.dart` passed with no issues.
+  - `flutter drive --driver=integration_test/test_driver/screenshot_driver.dart --target=integration_test/flows/live_api_visual_sweep_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - The visual sweep captured 19 non-empty screenshots under `build/screenshots/korido_live_visual_sweep/`: onboarding intro, phone, OTP, profile, PIN, KYC prompt, onboarding success, home balance, send recipient, deposit amount/provider state, transactions, notifications, contacts permission/list, settings, profile, devices, and active sessions.
+  - Live endpoints observed included auth register/OTP, wallet create, profile, PIN, notifications, limits, transactions, contacts recents/sync, exchange rate, deposit channels, devices, and sessions.
+  - Visual notes: home balance and send CTA are coherent; contacts and notifications loaded real empty states but still have sparse lower-page space worth later polish.
 - 2026-06-05 post-brand release gates:
   - Current mobile head verified: `4925898 fix: clean up korido brand links`.
   - `flutter test` passed 672 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
