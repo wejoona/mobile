@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:usdc_wallet/design/components/states/empty_state.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Empty state for deposit methods when none are available.
 class DepositEmptyState extends StatelessWidget {
@@ -7,11 +8,12 @@ class DepositEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const EmptyState(
+    final l10n = AppLocalizations.of(context)!;
+
+    return EmptyState(
       icon: Icons.account_balance_wallet_outlined,
-      title: 'Aucune méthode de dépôt disponible',
-      description:
-          'Les méthodes de dépôt seront disponibles une fois votre compte vérifié.',
+      title: l10n.deposit_noProvidersAvailable,
+      description: l10n.deposit_noProvidersAvailableDesc,
     );
   }
 }
