@@ -1,8 +1,10 @@
-import 'package:google_fonts/google_fonts.dart';
+// ignore_for_file: prefer_int_literals, prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/design/components/composed/balance_card.dart';
 
+import '../golden/helpers/golden_test_helper.dart' show GoldenTestUtils;
 import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
 
@@ -11,8 +13,8 @@ import '../helpers/test_wrapper.dart';
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/balance_card_snapshot_test.dart
 void main() {
-  setUpAll(() {
-    GoogleFonts.config.allowRuntimeFetching = false;
+  setUpAll(() async {
+    await GoldenTestUtils.init();
   });
   goldenGroup('BalanceCard Snapshot Tests', () {
     goldenGroup('Basic States', () {

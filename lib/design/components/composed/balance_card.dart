@@ -1,14 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 
 /// Balance Display Card
 /// Shows total balance with change percentage
 class BalanceCard extends StatelessWidget {
   const BalanceCard({
-    super.key,
     required this.balance,
     required this.currency,
+    super.key,
     this.changePercent,
     this.changeAmount,
     this.onDepositTap,
@@ -31,6 +32,7 @@ class BalanceCard extends StatelessWidget {
       variant: AppCardVariant.elevated,
       padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
@@ -80,7 +82,6 @@ class BalanceCard extends StatelessWidget {
             AppButton(
               label: 'Deposit Funds',
               onPressed: onDepositTap,
-              variant: AppButtonVariant.primary,
               isFullWidth: true,
             ),
         ],
@@ -88,26 +89,20 @@ class BalanceCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBalance(ThemeColors colors) {
-    return AmountText(
-      amount: balance,
-      currencyCode: currency,
-      showCurrencyCode: false,
-      size: AmountTextSize.large,
-      color: colors.textPrimary,
-    );
-  }
+  Widget _buildBalance(ThemeColors colors) => AmountText(
+    amount: balance,
+    currencyCode: currency,
+    color: colors.textPrimary,
+  );
 
-  Widget _buildLoadingBalance(ThemeColors colors) {
-    return Container(
-      width: 200,
-      height: 42,
-      decoration: BoxDecoration(
-        color: colors.elevated,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-      ),
-    );
-  }
+  Widget _buildLoadingBalance(ThemeColors colors) => Container(
+    width: 200,
+    height: 42,
+    decoration: BoxDecoration(
+      color: colors.elevated,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+    ),
+  );
 
   Widget _buildChangeIndicator(ThemeColors colors) {
     final isPositive = (changePercent ?? 0) >= 0;
@@ -134,5 +129,20 @@ class BalanceCard extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('balance', balance))
+      ..add(StringProperty('currency', currency))
+      ..add(DoubleProperty('changePercent', changePercent))
+      ..add(DoubleProperty('changeAmount', changeAmount))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDepositTap', onDepositTap))
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has('onWithdrawTap', onWithdrawTap),
+      )
+      ..add(FlagProperty('isLoading', value: isLoading, ifTrue: 'loading'));
   }
 }
