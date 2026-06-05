@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/spacing.dart';
+import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/state/index.dart';
 
 class KycPersonalInfoView extends ConsumerStatefulWidget {
@@ -61,7 +63,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       appBar: AppBar(
         title: AppText(
           l10n.kyc_personalInfo_title,
-          variant: AppTextVariant.headlineSmall,
+          variant: AppTextVariant.titleLarge,
         ),
         backgroundColor: Colors.transparent,
       ),
@@ -72,16 +74,20 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.all(AppSpacing.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                    AppSpacing.huge,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
                         l10n.kyc_personalInfo_subtitle,
-                        variant: AppTextVariant.bodyLarge,
                         color: colors.textSecondary,
                       ),
-                      SizedBox(height: AppSpacing.xxl),
+                      const SizedBox(height: AppSpacing.xl),
                       AppInput(
                         label: l10n.kyc_personalInfo_firstName,
                         controller: _firstNameController,
@@ -93,7 +99,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                           return null;
                         },
                       ),
-                      SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.lg),
                       AppInput(
                         label: l10n.kyc_personalInfo_lastName,
                         controller: _lastNameController,
@@ -105,9 +111,9 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                           return null;
                         },
                       ),
-                      SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.lg),
                       _buildDateOfBirthField(context, l10n),
-                      SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.lg),
                       AppSelect<String>(
                         label: l10n.profile_country,
                         value: _country,
@@ -127,6 +133,11 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                             label: 'Mali',
                             subtitle: '+223',
                           ),
+                          const AppSelectItem(
+                            value: 'US',
+                            label: 'United States',
+                            subtitle: '+1',
+                          ),
                         ],
                         onChanged: (value) {
                           if (value != null) {
@@ -134,7 +145,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                           }
                         },
                       ),
-                      SizedBox(height: AppSpacing.lg),
+                      const SizedBox(height: AppSpacing.lg),
                       AppInput(
                         label: 'Document number',
                         controller: _documentNumberController,
@@ -149,14 +160,14 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
                           return null;
                         },
                       ),
-                      SizedBox(height: AppSpacing.xxl),
+                      const SizedBox(height: AppSpacing.xl),
                       _buildInfoCard(context, l10n),
                     ],
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(AppSpacing.lg),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 child: AppButton(
                   label: l10n.common_continue,
                   onPressed: _handleContinue,
@@ -182,12 +193,12 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
           variant: AppTextVariant.labelMedium,
           color: colors.textSecondary,
         ),
-        SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.sm),
         GestureDetector(
           onTap: () => _selectDate(context),
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
               vertical: AppSpacing.md,
             ),
@@ -226,7 +237,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
     final colors = context.colors;
 
     return Container(
-      padding: EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: colors.gold.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -235,7 +246,7 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       child: Row(
         children: [
           Icon(Icons.info_outline, color: colors.gold, size: 24),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppText(
               l10n.kyc_personalInfo_matchIdHint,
@@ -267,7 +278,9 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
   }
 
   void _handleContinue() {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     if (_dateOfBirth == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -288,6 +301,6 @@ class _KycPersonalInfoViewState extends ConsumerState<KycPersonalInfoView> {
       'documentNumber': _documentNumberController.text.trim(),
     });
 
-    context.push('/kyc/document-capture');
+    unawaited(context.push('/kyc/document-capture'));
   }
 }
