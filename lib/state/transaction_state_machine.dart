@@ -15,23 +15,10 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
   static const _logger = AppLogger('TransactionState');
 
   @override
-  TransactionListState build() {
-    _autoFetch();
-    return const TransactionListState();
-  }
+  TransactionListState build() => const TransactionListState();
 
   TransactionsService get _service => ref.read(transactionsServiceProvider);
   TransactionFilter get _filter => const TransactionFilter();
-
-  void _autoFetch() {
-    unawaited(
-      Future.microtask(() {
-        if (ref.mounted) {
-          unawaited(fetch());
-        }
-      }),
-    );
-  }
 
   /// Fetch initial transactions
   Future<void> fetch() async {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sms_autofill/sms_autofill.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
@@ -196,6 +197,20 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
 
                         // Resend code with timer
                         _buildResendButton(colors, authState, l10n),
+
+                        if (EnvironmentConfig.showDevOtpShortcut) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          AppButton(
+                            label: 'Use dev OTP',
+                            onPressed: authState.isLoading
+                                ? null
+                                : () {
+                                    setState(() => _otp = '123456');
+                                    unawaited(_verifyOtp());
+                                  },
+                            variant: AppButtonVariant.ghost,
+                          ),
+                        ],
 
                         // Biometric quick-login option
                         if (showBiometricOption) ...[
