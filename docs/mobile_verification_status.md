@@ -25,6 +25,12 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-05 backend API regression refresh:
+  - API main latest verified commit: `2d64d4b3 fix: declare bullmq runtime dependencies`.
+  - `npm run build` passed in `usdc-wallet`.
+  - `npm test -- --runInBand` passed 96 backend suites / 1197 tests in `usdc-wallet`.
+  - `npm run test:contracts` passed 17 mobile-facing contract suites / 197 tests.
+  - Remaining test noise: expected negative-path error logs, `ts-jest` deprecated globals warning in contract config, Node localStorage experimental warning, and Jest open-handle warning after the full unit suite completes.
 - 2026-06-05 live API extended product sweep:
   - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/user_e2e_test.dart test/e2e/beneficiaries_e2e_test.dart test/e2e/bill_payments_e2e_test.dart test/e2e/cards_e2e_test.dart test/e2e/payment_links_e2e_test.dart test/e2e/savings_pots_e2e_test.dart test/e2e/recurring_transfers_e2e_test.dart test/e2e/bank_linking_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart` passed 66 live API tests.
   - Covered profile updates, locale, profile photo upload/persist/fetch/delete, PIN set/verify/change, user search/limits, beneficiaries CRUD, bill pay providers/categories/history/validation/errors, cards CRUD/freeze/unfreeze/transactions, payment links CRUD/cancel/errors, savings pots CRUD/deposit/withdraw, recurring transfers CRUD/pause/resume, bank linking CRUD, and feature subscriptions with feature context.
