@@ -223,29 +223,57 @@ class KycInstructions {
     ];
   }
 
-  static List<KycInstruction> get selfie => const [
-    KycInstruction(
-      icon: Icons.face,
-      title: 'Face the camera directly',
-      subtitle: 'Look straight at the camera',
-    ),
-    KycInstruction(
-      icon: Icons.wb_sunny_outlined,
-      title: 'Good lighting on your face',
-      subtitle: 'Avoid backlighting or harsh shadows',
-    ),
-    KycInstruction(
-      icon: Icons.visibility_off_outlined,
-      title: 'Remove accessories',
-      subtitle: 'Take off glasses, hats, or face coverings',
-      isWarning: true,
-    ),
-    KycInstruction(
-      icon: Icons.sentiment_satisfied_outlined,
-      title: 'Neutral expression',
-      subtitle: 'Keep a natural, relaxed face',
-    ),
-  ];
+  static List<KycInstruction> selfieFor(Locale locale) {
+    if (locale.languageCode == 'fr') {
+      return const [
+        KycInstruction(
+          icon: Icons.face,
+          title: 'Regardez la caméra',
+          subtitle: 'Gardez le visage bien face à l’objectif',
+        ),
+        KycInstruction(
+          icon: Icons.wb_sunny_outlined,
+          title: 'Éclairez bien votre visage',
+          subtitle: 'Évitez les contre-jours et les ombres fortes',
+        ),
+        KycInstruction(
+          icon: Icons.visibility_off_outlined,
+          title: 'Retirez les accessoires',
+          subtitle: 'Enlevez lunettes, chapeaux ou couvre-visages',
+          isWarning: true,
+        ),
+        KycInstruction(
+          icon: Icons.sentiment_satisfied_outlined,
+          title: 'Expression neutre',
+          subtitle: 'Gardez un visage naturel et détendu',
+        ),
+      ];
+    }
+
+    return const [
+      KycInstruction(
+        icon: Icons.face,
+        title: 'Face the camera directly',
+        subtitle: 'Look straight at the camera',
+      ),
+      KycInstruction(
+        icon: Icons.wb_sunny_outlined,
+        title: 'Good lighting on your face',
+        subtitle: 'Avoid backlighting or harsh shadows',
+      ),
+      KycInstruction(
+        icon: Icons.visibility_off_outlined,
+        title: 'Remove accessories',
+        subtitle: 'Take off glasses, hats, or face coverings',
+        isWarning: true,
+      ),
+      KycInstruction(
+        icon: Icons.sentiment_satisfied_outlined,
+        title: 'Neutral expression',
+        subtitle: 'Keep a natural, relaxed face',
+      ),
+    ];
+  }
 
   static List<KycInstruction> get liveness => const [
     KycInstruction(

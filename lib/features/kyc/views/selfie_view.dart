@@ -85,7 +85,9 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       // Log all available cameras
       for (int i = 0; i < _cameras!.length; i++) {
         final cam = _cameras![i];
-        debugPrint('[Selfie] Camera $i: ${cam.name}, direction: ${cam.lensDirection}');
+        debugPrint(
+          '[Selfie] Camera $i: ${cam.name}, direction: ${cam.lensDirection}',
+        );
       }
 
       // Find front camera - MUST use front camera for selfie
@@ -150,15 +152,25 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
   }
 
   Widget _buildInstructionScreen(BuildContext context, AppLocalizations l10n) {
+    final locale = Localizations.localeOf(context);
+
     return KycInstructionScreen(
       title: l10n.kyc_selfie_title,
-      description: "Nous avons besoin d'une photo claire de votre visage pour vérifier votre identité.",
+      description: _selfieInstructionDescription(locale),
       icon: Icons.face,
-      instructions: KycInstructions.selfie,
+      instructions: KycInstructions.selfieFor(locale),
       buttonLabel: l10n.common_continue,
       onContinue: _initializeCamera,
       onBack: () => context.safePop(),
     );
+  }
+
+  String _selfieInstructionDescription(Locale locale) {
+    if (locale.languageCode == 'fr') {
+      return 'Nous avons besoin d’une photo claire de votre visage pour vérifier votre identité.';
+    }
+
+    return 'We need a clear photo of your face to verify your identity.';
   }
 
   Widget _buildLoadingScreen(BuildContext context, AppLocalizations l10n) {
@@ -193,15 +205,9 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
         child: Stack(
           children: [
             // Camera preview - full screen
-            Positioned.fill(
-              child: CameraPreview(_controller!),
-            ),
+            Positioned.fill(child: CameraPreview(_controller!)),
             // Face oval overlay
-            Positioned.fill(
-              child: CustomPaint(
-                painter: FaceOvalPainter(),
-              ),
-            ),
+            Positioned.fill(child: CustomPaint(painter: FaceOvalPainter())),
             // Top controls
             Positioned(
               top: 0,
@@ -222,11 +228,17 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
                 child: Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                       onPressed: () {
                         _controller?.dispose();
                         _controller = null;
-                        setState(() => _viewState = _SelfieViewState.instructions);
+                        setState(
+                          () => _viewState = _SelfieViewState.instructions,
+                        );
                       },
                     ),
                     Expanded(
@@ -343,7 +355,10 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.kyc_reviewSelfie, variant: AppTextVariant.headlineSmall),
+        title: AppText(
+          l10n.kyc_reviewSelfie,
+          variant: AppTextVariant.headlineSmall,
+        ),
         backgroundColor: Colors.transparent,
         leading: Container(),
       ),
@@ -414,12 +429,18 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
     );
   }
 
-  Widget _buildGalleryFallbackScreen(BuildContext context, AppLocalizations l10n) {
+  Widget _buildGalleryFallbackScreen(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     final colors = context.colors;
     return Scaffold(
       backgroundColor: colors.canvas,
       appBar: AppBar(
-        title: AppText(l10n.kyc_selfie_title, variant: AppTextVariant.headlineSmall),
+        title: AppText(
+          l10n.kyc_selfie_title,
+          variant: AppTextVariant.headlineSmall,
+        ),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -519,13 +540,14 @@ class _SelfieViewState2 extends ConsumerState<SelfieView> {
       setState(() => _isCheckingQuality = true);
 
       final isSimulator = ref.read(isSimulatorProvider);
-      final qualityResult = await ImageQualityChecker.checkQuality(
-        image.path,
-        skipStrictChecks: isSimulator,
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () => ImageQualityResult.acceptable(),
-      );
+      final qualityResult =
+          await ImageQualityChecker.checkQuality(
+            image.path,
+            skipStrictChecks: isSimulator,
+          ).timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => ImageQualityResult.acceptable(),
+          );
 
       if (!qualityResult.isAcceptable) {
         if (mounted) {
