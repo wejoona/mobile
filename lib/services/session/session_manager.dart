@@ -79,10 +79,11 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       // Only handle state changes, not initial state
       if (previous == null) return;
 
-      if (next.status == SessionStatus.expired && previous.status != SessionStatus.expired) {
+      if (next.status == SessionStatus.expired &&
+          previous.status != SessionStatus.expired) {
         _handleSessionExpired();
-      } else if (next.status == SessionStatus.locked && 
-                 previous.status == SessionStatus.active) {
+      } else if (next.status == SessionStatus.locked &&
+          previous.status == SessionStatus.active) {
         // Only show lock screen if transitioning FROM active (not on initial restore)
         _handleSessionLocked();
       }
@@ -156,7 +157,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
               ),
             );
           } catch (e) {
-            AppLogger('SessionManager').warn('Could not handle session expiry', e);
+            AppLogger(
+              'SessionManager',
+            ).warn('Could not handle session expiry', e);
           }
         }
       });
@@ -183,7 +186,9 @@ class _SessionManagerState extends ConsumerState<SessionManager>
       context.go('/session-locked');
     } catch (e) {
       // Navigator not ready yet, ignore
-      AppLogger('Could not show lock screen').error('Could not show lock screen', e);
+      AppLogger(
+        'Could not show lock screen',
+      ).error('Could not show lock screen', e);
     }
   }
 }
@@ -225,11 +230,7 @@ class _SessionExpiringOverlay extends StatelessWidget {
                   color: colors.warning.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.timer,
-                  color: colors.warning,
-                  size: 40,
-                ),
+                child: Icon(Icons.timer, color: colors.warning, size: 40),
               ),
               const SizedBox(height: AppSpacing.xl),
               AppText(
@@ -277,22 +278,19 @@ class _SessionExpiringOverlay extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: AppButton(
-                      label: l10n.common_logout,
-                      onPressed: onLogout,
-                      variant: AppButtonVariant.secondary,
-                    ),
+                  AppButton(
+                    label: l10n.session_stayLoggedIn,
+                    onPressed: onExtend,
+                    variant: AppButtonVariant.primary,
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: AppButton(
-                      label: l10n.session_stayLoggedIn,
-                      onPressed: onExtend,
-                      variant: AppButtonVariant.primary,
-                    ),
+                  const SizedBox(height: AppSpacing.sm),
+                  AppButton(
+                    label: l10n.common_logout,
+                    onPressed: onLogout,
+                    variant: AppButtonVariant.secondary,
                   ),
                 ],
               ),

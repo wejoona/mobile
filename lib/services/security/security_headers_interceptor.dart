@@ -63,12 +63,19 @@ class SecurityHeadersInterceptor extends Interceptor {
 
       final deviceId = _fingerprintService.cachedDeviceId;
       final fingerprint = _fingerprintService.cachedFingerprintHash;
+      final device = _fingerprintService.cachedFingerprint;
 
       if (deviceId != null) {
         options.headers['X-Device-Id'] = deviceId;
       }
       if (fingerprint != null) {
         options.headers['X-Device-Fingerprint'] = fingerprint;
+      }
+      if (device != null && !options.headers.containsKey('User-Agent')) {
+        options.headers['User-Agent'] =
+            'Korido/${device.appVersion} '
+            '(${device.os}; ${device.model ?? device.platform}; '
+            '${device.osVersion ?? 'unknown'})';
       }
 
       // Attach session risk token if available

@@ -576,8 +576,8 @@ void main() {
                 'id': 'session_1',
                 'userId': 'user_1',
                 'deviceId': 'device_1',
-                'ipAddress': '127.0.0.1',
-                'userAgent': 'Korido iOS',
+                'ipAddress': '::ffff:10.42.0.248',
+                'userAgent': 'Korido/1.0.0 (iOS; iPhone17,2; 26.2)',
                 'location': null,
                 'isActive': true,
                 'lastActivityAt': '2026-06-04T10:00:00.000Z',
@@ -597,7 +597,9 @@ void main() {
         expect(dio.requestHistory[0].path, '/sessions');
         expect(sessions.single.id, 'session_1');
         expect(sessions.single.deviceId, 'device_1');
-        expect(sessions.single.userAgent, 'Korido iOS');
+        expect(sessions.single.userAgent, contains('iPhone17,2'));
+        expect(sessions.single.deviceDescription, 'iPhone');
+        expect(sessions.single.displayIpAddress, '10.42.0.248');
         expect(dio.requestHistory[1].method, 'DELETE');
         expect(dio.requestHistory[1].path, '/sessions/session_1');
         expect(dio.requestHistory[1].data, {'reason': 'user_revoke_device'});

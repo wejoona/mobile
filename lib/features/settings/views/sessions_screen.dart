@@ -40,13 +40,15 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: SafeArea(
-        child: _buildBody(context, l10n, state),
-      ),
+      body: SafeArea(child: _buildBody(context, l10n, state)),
     );
   }
 
-  Widget _buildBody(BuildContext context, AppLocalizations l10n, SessionsState state) {
+  Widget _buildBody(
+    BuildContext context,
+    AppLocalizations l10n,
+    SessionsState state,
+  ) {
     if (state.isLoading && state.sessions.isEmpty) {
       return _buildLoading();
     }
@@ -69,11 +71,17 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             child: ListView.separated(
               padding: EdgeInsets.all(AppSpacing.md),
               itemCount: state.sessions.length,
-              separatorBuilder: (context, index) => SizedBox(height: AppSpacing.md),
+              separatorBuilder: (context, index) =>
+                  SizedBox(height: AppSpacing.md),
               itemBuilder: (context, index) {
                 final session = state.sessions[index];
                 final isCurrentSession = session.id == state.currentSessionId;
-                return _buildSessionCard(context, l10n, session, isCurrentSession);
+                return _buildSessionCard(
+                  context,
+                  l10n,
+                  session,
+                  isCurrentSession,
+                );
               },
             ),
           ),
@@ -92,7 +100,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final dateFormat = DateFormat('MMM d, yyyy • HH:mm');
 
     return AppCard(
-      variant: isCurrentSession ? AppCardVariant.goldAccent : AppCardVariant.elevated,
+      variant: isCurrentSession
+          ? AppCardVariant.goldAccent
+          : AppCardVariant.elevated,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -101,7 +111,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             children: [
               Icon(
                 _getDeviceIcon(session.deviceDescription),
-                color: isCurrentSession ? context.colors.gold : context.colors.textSecondary,
+                color: isCurrentSession
+                    ? context.colors.gold
+                    : context.colors.textSecondary,
                 size: 24,
               ),
               SizedBox(width: AppSpacing.sm),
@@ -123,7 +135,10 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: context.colors.gold.withValues(alpha: 0.1),
-                          border: Border.all(color: context.colors.gold, width: 1),
+                          border: Border.all(
+                            color: context.colors.gold,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         child: AppText(
@@ -138,7 +153,11 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
               ),
               if (!isCurrentSession)
                 IconButton(
-                  icon: Icon(Icons.close, color: context.colors.error, size: 20),
+                  icon: Icon(
+                    Icons.close,
+                    color: context.colors.error,
+                    size: 20,
+                  ),
                   onPressed: () => _showRevokeDialog(context, l10n, session),
                   padding: EdgeInsets.zero,
                   constraints: BoxConstraints(),
@@ -156,7 +175,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
           SizedBox(height: AppSpacing.sm),
           _buildInfoRow(
             Icons.public,
-            session.ipAddress ?? l10n.sessions_unknownIP,
+            session.ipAddress == null
+                ? l10n.sessions_unknownIP
+                : session.displayIpAddress,
           ),
           SizedBox(height: AppSpacing.sm),
           _buildInfoRow(
@@ -245,7 +266,8 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
             SizedBox(height: AppSpacing.lg),
             AppButton(
               label: l10n.action_retry,
-              onPressed: () => ref.read(sessionsProvider.notifier).loadSessions(),
+              onPressed: () =>
+                  ref.read(sessionsProvider.notifier).loadSessions(),
               variant: AppButtonVariant.secondary,
             ),
           ],
@@ -261,7 +283,11 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.devices_other, size: 64, color: context.colors.textSecondary),
+            Icon(
+              Icons.devices_other,
+              size: 64,
+              color: context.colors.textSecondary,
+            ),
             SizedBox(height: AppSpacing.md),
             AppText(
               l10n.sessions_noActiveSessions,
@@ -322,7 +348,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     if (confirmed != true) return;
     if (!mounted) return;
 
-    final success = await ref.read(sessionsProvider.notifier).revokeSession(session.id);
+    final success = await ref
+        .read(sessionsProvider.notifier)
+        .revokeSession(session.id);
     if (!success || !mounted) return;
 
     // ignore: use_build_context_synchronously
@@ -334,7 +362,10 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     );
   }
 
-  Future<void> _showLogoutAllDialog(BuildContext context, AppLocalizations l10n) async {
+  Future<void> _showLogoutAllDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -365,7 +396,11 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning_amber_rounded, color: context.colors.error, size: 20),
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    color: context.colors.error,
+                    size: 20,
+                  ),
                   SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: AppText(
@@ -399,7 +434,9 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     if (confirmed != true) return;
     if (!mounted) return;
 
-    final success = await ref.read(sessionsProvider.notifier).logoutAllDevices();
+    final success = await ref
+        .read(sessionsProvider.notifier)
+        .logoutAllDevices();
     if (!success || !mounted) return;
 
     // ignore: use_build_context_synchronously

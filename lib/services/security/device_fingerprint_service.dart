@@ -181,6 +181,9 @@ class DeviceFingerprintService {
   /// Get cached fingerprint hash quickly.
   String? get cachedFingerprintHash => _cached?.fingerprintHash;
 
+  /// Get cached fingerprint data quickly.
+  DeviceFingerprint? get cachedFingerprint => _cached;
+
   /// Clear cache (e.g. on logout).
   void clearCache() => _cached = null;
 }

@@ -89,6 +89,7 @@ class Session {
     // Mobile devices
     if (ua.contains('iphone')) return 'iPhone';
     if (ua.contains('ipad')) return 'iPad';
+    if (ua.contains('ios')) return 'iOS Device';
     if (ua.contains('android')) return 'Android Device';
 
     // Desktop browsers
@@ -98,5 +99,12 @@ class Session {
     if (ua.contains('edge')) return 'Edge Browser';
 
     return 'Unknown Device';
+  }
+
+  String get displayIpAddress {
+    final ip = ipAddress;
+    if (ip == null || ip.isEmpty) return 'Unknown IP';
+    if (ip.startsWith('::ffff:')) return ip.substring(7);
+    return ip;
   }
 }
