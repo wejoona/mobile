@@ -550,6 +550,9 @@ class ApiException implements Exception {
       if (error is Map && error['code'] != null) {
         return error['code'].toString();
       }
+      if (error is String) {
+        return error;
+      }
       final value = data['code'];
       return value?.toString();
     }
