@@ -1,29 +1,41 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_card.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/tokens/spacing.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
-import 'package:usdc_wallet/design/components/primitives/app_card.dart';
 import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import 'package:usdc_wallet/features/kyc/providers/kyc_provider.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 class KycUpgradeView extends ConsumerStatefulWidget {
+  const KycUpgradeView({
+    required this.currentTier,
+    required this.targetTier,
+    super.key,
+    this.reason,
+  });
+
   final KycTier currentTier;
   final KycTier targetTier;
   final String? reason;
 
-  const KycUpgradeView({
-    super.key,
-    required this.currentTier,
-    required this.targetTier,
-    this.reason,
-  });
-
   @override
   ConsumerState<KycUpgradeView> createState() => _KycUpgradeViewState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<KycTier>('currentTier', currentTier))
+      ..add(EnumProperty<KycTier>('targetTier', targetTier))
+      ..add(StringProperty('reason', reason));
+  }
 }
 
 class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
@@ -54,7 +66,9 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
     _selectedTierIndex = _availableTiers.indexWhere(
       (tier) => tier.tier == widget.targetTier,
     );
-    if (_selectedTierIndex == -1) _selectedTierIndex = 0;
+    if (_selectedTierIndex == -1) {
+      _selectedTierIndex = 0;
+    }
   }
 
   @override
@@ -67,7 +81,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
       appBar: AppBar(
         title: AppText(
           l10n.kyc_upgrade_title,
-          variant: AppTextVariant.headlineSmall,
+          variant: AppTextVariant.titleLarge,
         ),
         backgroundColor: Colors.transparent,
       ),
@@ -76,28 +90,28 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
           children: [
             Expanded(
               child: ListView(
-                padding: EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 children: [
                   if (widget.reason != null) ...[
                     _buildReasonCard(l10n),
-                    SizedBox(height: AppSpacing.lg),
+                    const SizedBox(height: AppSpacing.lg),
                   ],
                   _buildCurrentTierCard(l10n),
-                  SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xl),
                   AppText(
                     l10n.kyc_upgrade_selectTier,
-                    variant: AppTextVariant.headlineSmall,
+                    variant: AppTextVariant.titleLarge,
                   ),
-                  SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.xs),
                   AppText(
                     l10n.kyc_upgrade_selectTier_description,
-                    variant: AppTextVariant.bodyMedium,
                     color: colors.textSecondary,
                   ),
-                  SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.lg),
                   ..._buildTierCards(l10n),
-                  SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xxl),
                   _buildRequirementsList(l10n),
+                  const SizedBox(height: AppSpacing.huge),
                 ],
               ),
             ),
@@ -123,7 +137,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
             ),
             child: Icon(Icons.info_outline, color: colors.warning),
           ),
-          SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,11 +147,8 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                   variant: AppTextVariant.labelLarge,
                   color: colors.warningText,
                 ),
-                SizedBox(height: AppSpacing.xs),
-                AppText(
-                  widget.reason!,
-                  variant: AppTextVariant.bodyMedium,
-                ),
+                const SizedBox(height: AppSpacing.xs),
+                AppText(widget.reason!),
               ],
             ),
           ),
@@ -152,6 +163,8 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
 
     return AppCard(
       variant: AppCardVariant.subtle,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -164,7 +177,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
               ),
               const Spacer(),
               Container(
-                padding: EdgeInsets.symmetric(
+                padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.sm,
                   vertical: AppSpacing.xs,
                 ),
@@ -180,10 +193,10 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.sm),
           AppText(
             _formatLimit(currentBenefits.limits.dailyLimit, 'XOF'),
-            variant: AppTextVariant.headlineMedium,
+            variant: AppTextVariant.moneyMedium,
           ),
           AppText(
             l10n.kyc_upgrade_dailyLimit,
@@ -203,7 +216,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
       final isSelected = index == _selectedTierIndex;
 
       return Padding(
-        padding: EdgeInsets.only(bottom: AppSpacing.md),
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
         child: GestureDetector(
           onTap: () => setState(() => _selectedTierIndex = index),
           child: AnimatedContainer(
@@ -214,79 +227,72 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
                 color: isSelected ? colors.gold : colors.border,
                 width: isSelected ? 2 : 1,
               ),
-              borderRadius: BorderRadius.circular(AppRadius.md),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
             ),
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                      color: isSelected ? colors.gold : colors.textSecondary,
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    AppText(
-                      tier.name,
-                      variant: AppTextVariant.headlineSmall,
-                    ),
-                    const Spacer(),
-                    if (tier.tier == widget.targetTier)
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colors.success.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                        ),
-                        child: AppText(
-                          l10n.kyc_upgrade_recommended,
-                          variant: AppTextVariant.labelSmall,
-                          color: colors.successText,
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_off,
+                        color: isSelected ? colors.gold : colors.textSecondary,
                       ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: AppText(
+                        tier.name,
+                        variant: AppTextVariant.titleLarge,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (tier.tier == widget.targetTier) ...[
+                      const SizedBox(width: AppSpacing.sm),
+                      _buildRecommendedBadge(l10n),
+                    ],
                   ],
                 ),
-                SizedBox(height: AppSpacing.sm),
-                AppText(
-                  tier.description,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.textSecondary,
-                ),
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
+                AppText(tier.description, color: colors.textSecondary),
+                const SizedBox(height: AppSpacing.md),
                 _buildLimitRow(
                   Icons.today,
                   l10n.kyc_upgrade_dailyLimit,
                   _formatLimit(tier.limits.dailyLimit, 'XOF'),
                 ),
-                SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xs),
                 _buildLimitRow(
                   Icons.calendar_month,
                   l10n.kyc_upgrade_monthlyLimit,
                   _formatLimit(tier.limits.monthlyLimit, 'XOF'),
                 ),
-                SizedBox(height: AppSpacing.xs),
+                const SizedBox(height: AppSpacing.xs),
                 _buildLimitRow(
                   Icons.swap_horiz,
                   l10n.kyc_upgrade_perTransaction,
                   _formatLimit(tier.limits.perTransactionLimit, 'XOF'),
                 ),
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
                 Wrap(
                   spacing: AppSpacing.xs,
                   runSpacing: AppSpacing.xs,
                   children: tier.features
-                      .take(4)
-                      .map((feature) => _buildFeatureChip(feature))
+                      .take(3)
+                      .map(_buildFeatureChip)
                       .toList(),
                 ),
-                if (tier.features.length > 4) ...[
-                  SizedBox(height: AppSpacing.xs),
+                if (tier.features.length > 3) ...[
+                  const SizedBox(height: AppSpacing.xs),
                   AppText(
-                    '+${tier.features.length - 4} ${l10n.kyc_upgrade_andMore}',
+                    '+${tier.features.length - 3} ${l10n.kyc_upgrade_andMore}',
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -304,17 +310,14 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
     return Row(
       children: [
         Icon(icon, size: 16, color: colors.textSecondary),
-        SizedBox(width: AppSpacing.xs),
+        const SizedBox(width: AppSpacing.xs),
         AppText(
           label,
           variant: AppTextVariant.bodySmall,
           color: colors.textSecondary,
         ),
         const Spacer(),
-        AppText(
-          value,
-          variant: AppTextVariant.labelMedium,
-        ),
+        AppText(value, variant: AppTextVariant.labelMedium),
       ],
     );
   }
@@ -322,18 +325,39 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   Widget _buildFeatureChip(String feature) {
     final colors = context.colors;
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs + 2,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: colors.gold.withValues(alpha: 0.1),
+        color: colors.gold.withValues(alpha: colors.isDark ? 0.14 : 0.09),
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: AppText(
         feature,
-        variant: AppTextVariant.bodySmall,
+        variant: AppTextVariant.labelSmall,
         color: colors.gold,
+      ),
+    );
+  }
+
+  Widget _buildRecommendedBadge(AppLocalizations l10n) {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: colors.success.withValues(alpha: colors.isDark ? 0.12 : 0.1),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: AppText(
+        l10n.kyc_upgrade_recommended,
+        variant: AppTextVariant.labelSmall,
+        color: colors.successText,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -341,12 +365,13 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   Widget _buildRequirementsList(AppLocalizations l10n) {
     final selectedTier = _availableTiers[_selectedTierIndex];
     final colors = context.colors;
-    final requirements = <String>[];
+    final requirements = <String>[
+      if (selectedTier.tier.level >= 1) ...[
+        l10n.kyc_upgrade_requirement_idDocument,
+        l10n.kyc_upgrade_requirement_selfie,
+      ],
+    ];
 
-    if (selectedTier.tier.level >= 1) {
-      requirements.add(l10n.kyc_upgrade_requirement_idDocument);
-      requirements.add(l10n.kyc_upgrade_requirement_selfie);
-    }
     if (selectedTier.requiresAddressProof) {
       requirements.add(l10n.kyc_upgrade_requirement_addressProof);
     }
@@ -359,6 +384,8 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
 
     return AppCard(
       variant: AppCardVariant.elevated,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      borderRadius: AppRadius.lg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -366,27 +393,24 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
             l10n.kyc_upgrade_requirements_title,
             variant: AppTextVariant.headlineSmall,
           ),
-          SizedBox(height: AppSpacing.md),
-          ...requirements.map((req) => Padding(
-                padding: EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 20,
-                      color: colors.gold,
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: AppText(
-                        req,
-                        variant: AppTextVariant.bodyMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+          const SizedBox(height: AppSpacing.md),
+          ...requirements.map(
+            (req) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 20,
+                    color: colors.gold,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(child: AppText(req)),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -395,12 +419,10 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
   Widget _buildBottomBar(BuildContext context, AppLocalizations l10n) {
     final colors = context.colors;
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: colors.surface,
-        border: Border(
-          top: BorderSide(color: colors.border),
-        ),
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -412,7 +434,7 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
               onPressed: () => _handleStartUpgrade(context),
               isFullWidth: true,
             ),
-            SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.sm),
             TextButton(
               onPressed: () => context.pop(),
               child: AppText(
@@ -436,13 +458,14 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
     // Navigate based on requirements
     if (selectedTier.tier.level == 1) {
       // Standard KYC flow
-      context.push('/kyc/document-type');
-    } else if (selectedTier.requiresAddressProof && !selectedTier.requiresVideoVerification) {
+      unawaited(context.push('/kyc/document-type'));
+    } else if (selectedTier.requiresAddressProof &&
+        !selectedTier.requiresVideoVerification) {
       // Tier 2 - Address verification
-      context.push('/kyc/address');
+      unawaited(context.push('/kyc/address'));
     } else {
       // Tier 3 - Full verification
-      context.push('/kyc/address');
+      unawaited(context.push('/kyc/address'));
     }
   }
 
@@ -463,7 +486,8 @@ class _KycUpgradeViewState extends ConsumerState<KycUpgradeView> {
     final numAmount = int.tryParse(amount) ?? 0;
     if (numAmount >= 1000000) {
       return '${(numAmount / 1000000).toStringAsFixed(1)}M $currency';
-    } else if (numAmount >= 1000) {
+    }
+    if (numAmount >= 1000) {
       return '${(numAmount / 1000).toStringAsFixed(0)}K $currency';
     }
     return '$numAmount $currency';
