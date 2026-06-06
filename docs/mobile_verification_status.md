@@ -25,8 +25,8 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
-- 2026-06-06 current-main release gate after profile-photo/API fixes:
-  - Current mobile main verified commit: `291d798 fix: stabilize live profile photo verifier`.
+- 2026-06-06 current-main release gate after profile-photo/API/router fixes:
+  - Current mobile main verified commit: `f83a9d7 fix: hide catalog route in production`.
   - Current API main verified commit: `f716ab22 fix: serve avatar thumbnail fallback`.
   - API GitLab pipeline #2808 passed build and deploy, updating GitOps image tag to `f716ab22`.
   - `flutter test integration_test/flows/live_api_profile_photo_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
