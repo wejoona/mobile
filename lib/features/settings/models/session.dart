@@ -25,19 +25,38 @@ class Session {
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
+    final lastActivityAt =
+        _readDateTime(json, const [
+          'lastActivityAt',
+          'last_activity_at',
+          'lastSeenAt',
+          'last_seen_at',
+          'lastActiveAt',
+          'last_active_at',
+          'updatedAt',
+          'updated_at',
+          'createdAt',
+          'created_at',
+        ]) ??
+        DateTime.now();
+
     return Session(
-      id: json['id'] as String,
-      deviceId: json['deviceId'] as String?,
-      ipAddress: json['ipAddress'] as String?,
-      userAgent: json['userAgent'] as String?,
-      location: json['location'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      lastActivityAt: DateTime.parse(json['lastActivityAt'] as String),
-      expiresAt: DateTime.parse(json['expiresAt'] as String),
-      revokedAt: json['revokedAt'] != null
-          ? DateTime.parse(json['revokedAt'] as String)
-          : null,
-      revokedReason: json['revokedReason'] as String?,
+      id: _readString(json, const ['id', 'sessionId', 'session_id']) ?? '',
+      deviceId: _readString(json, const ['deviceId', 'device_id']),
+      ipAddress: _readString(json, const ['ipAddress', 'ip_address', 'ip']),
+      userAgent: _readString(json, const ['userAgent', 'user_agent']),
+      location: _readString(json, const ['location']),
+      isActive:
+          _readBool(json, const ['isActive', 'is_active', 'active']) ?? true,
+      lastActivityAt: lastActivityAt,
+      expiresAt:
+          _readDateTime(json, const ['expiresAt', 'expires_at']) ??
+          lastActivityAt.add(const Duration(days: 7)),
+      revokedAt: _readDateTime(json, const ['revokedAt', 'revoked_at']),
+      revokedReason: _readString(json, const [
+        'revokedReason',
+        'revoked_reason',
+      ]),
     );
   }
 
@@ -106,5 +125,39 @@ class Session {
     if (ip == null || ip.isEmpty) return 'Unknown IP';
     if (ip.startsWith('::ffff:')) return ip.substring(7);
     return ip;
+  }
+
+  static String? _readString(Map<String, dynamic> json, List<String> keys) {
+    for (final key in keys) {
+      final value = json[key];
+      if (value == null) continue;
+      final stringValue = value.toString().trim();
+      if (stringValue.isNotEmpty) return stringValue;
+    }
+    return null;
+  }
+
+  static bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+    for (final key in keys) {
+      final value = json[key];
+      if (value is bool) return value;
+      if (value is String) {
+        final normalized = value.toLowerCase();
+        if (normalized == 'true') return true;
+        if (normalized == 'false') return false;
+      }
+    }
+    return null;
+  }
+
+  static DateTime? _readDateTime(Map<String, dynamic> json, List<String> keys) {
+    for (final key in keys) {
+      final value = json[key];
+      if (value is DateTime) return value;
+      if (value == null) continue;
+      final parsed = DateTime.tryParse(value.toString());
+      if (parsed != null) return parsed;
+    }
+    return null;
   }
 }

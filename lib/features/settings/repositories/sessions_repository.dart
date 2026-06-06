@@ -15,15 +15,15 @@ class SessionsRepository {
       final response = await _dio.get('/sessions');
       final raw = response.data;
       final List items;
-      if (raw is Map<String, dynamic>) {
-        items = (raw['sessions'] ?? raw['data'] ?? []) as List;
+      if (raw is Map) {
+        items = (raw['sessions'] ?? raw['items'] ?? raw['data'] ?? []) as List;
       } else if (raw is List) {
         items = raw;
       } else {
         items = [];
       }
       return items
-          .map((json) => Session.fromJson(json as Map<String, dynamic>))
+          .map((json) => Session.fromJson(Map<String, dynamic>.from(json)))
           .toList();
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);

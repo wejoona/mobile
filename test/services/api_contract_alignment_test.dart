@@ -703,6 +703,45 @@ void main() {
       },
     );
 
+    test(
+      'session repository accepts mobile-safe item aliases without failing screen',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'items': [
+              {
+                'sessionId': 'session_alias_1',
+                'device_id': 'device_alias_1',
+                'ip_address': '192.168.1.24',
+                'user_agent': 'Korido/1.0.0 (Android; Pixel 9)',
+                'is_active': 'true',
+                'lastSeenAt': '2026-06-04T11:30:00.000Z',
+                'revoked_reason': null,
+              },
+            ],
+            'total': 1,
+          });
+        final repository = SessionsRepository(dio);
+
+        final sessions = await repository.getSessions();
+
+        expect(dio.requestHistory.single.path, '/sessions');
+        expect(sessions.single.id, 'session_alias_1');
+        expect(sessions.single.deviceId, 'device_alias_1');
+        expect(sessions.single.displayIpAddress, '192.168.1.24');
+        expect(sessions.single.deviceDescription, 'Android Device');
+        expect(sessions.single.isActive, isTrue);
+        expect(
+          sessions.single.lastActivityAt.toIso8601String(),
+          '2026-06-04T11:30:00.000Z',
+        );
+        expect(
+          sessions.single.expiresAt,
+          sessions.single.lastActivityAt.add(const Duration(days: 7)),
+        );
+      },
+    );
+
     test('contact sync accepts backend nested match envelope', () async {
       final service = ContactsService(MockSecureStorage());
       final contact = SyncedContact(
