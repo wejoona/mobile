@@ -1,15 +1,44 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:usdc_wallet/services/api/api_client.dart';
 import '../helpers/test_utils.dart';
 
+final _authInterceptorTestProvider = Provider<AuthInterceptor>(
+  AuthInterceptor.new,
+);
+
+class _DeviceBlacklistedAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromString(
+    jsonEncode({
+      'statusCode': 403,
+      'message': 'Access denied. This device has been blocked.',
+      'error': 'DEVICE_BLACKLISTED',
+    }),
+    403,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   late MockSecureStorage mockStorage;
 
-  setUpAll(() {
-    registerFallbackValues();
-  });
+  setUpAll(registerFallbackValues);
 
   setUp(() {
     mockStorage = MockSecureStorage();
@@ -17,6 +46,46 @@ void main() {
 
   tearDown(() {
     mockStorage.clear();
+  });
+
+  group('AuthInterceptor session invalidation', () {
+    test(
+      'clears local session and emits invalidation when device is blacklisted',
+      () async {
+        final container = ProviderContainer(
+          overrides: [secureStorageProvider.overrideWithValue(mockStorage)],
+        );
+        addTearDown(container.dispose);
+
+        await mockStorage.write(
+          key: StorageKeys.accessToken,
+          value: 'blocked.access',
+        );
+        await mockStorage.write(
+          key: StorageKeys.refreshToken,
+          value: 'blocked.refresh',
+        );
+
+        final dio = Dio(BaseOptions(baseUrl: 'https://api.test/api/v1'))
+          ..httpClientAdapter = _DeviceBlacklistedAdapter()
+          ..interceptors.add(container.read(_authInterceptorTestProvider));
+
+        await expectLater(
+          dio.get('/wallet'),
+          throwsA(
+            isA<DioException>().having(
+              (error) => error.response?.statusCode,
+              'statusCode',
+              403,
+            ),
+          ),
+        );
+
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+        expect(container.read(authSessionInvalidatedProvider), equals(1));
+      },
+    );
   });
 
   group('ApiException mapping from status codes', () {
@@ -289,7 +358,6 @@ void main() {
       // Arrange
       final dioError = DioException(
         requestOptions: RequestOptions(path: '/test'),
-        type: DioExceptionType.unknown,
       );
 
       // Act
