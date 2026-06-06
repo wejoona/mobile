@@ -702,6 +702,62 @@ void main() {
       },
     );
 
+    test('devices repository uses deployed action routes', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'id': 'device_1',
+          'deviceIdentifier': 'ios-vendor-id',
+          'platform': 'ios',
+        })
+        ..queueResponse({'success': true})
+        ..queueResponse({'success': true})
+        ..queueResponse({'success': true})
+        ..queueResponse({'success': true});
+      final repository = DevicesRepository(dio);
+
+      await repository.registerDevice(
+        deviceId: 'ios-vendor-id',
+        platform: 'ios',
+        model: 'iPhone17,2',
+        brand: 'Apple',
+        os: 'iOS',
+        deviceName: 'Ben iPhone',
+        osVersion: '26.0',
+        appVersion: '1.2.3',
+        fcmToken: 'fcm-token',
+        locale: 'fr_CI',
+        metadata: {'fingerprintHash': 'fp_123'},
+      );
+      await repository.trustDevice('device_1');
+      await repository.untrustDevice('device_1');
+      await repository.renameDevice('device_1', 'Travel iPhone');
+      await repository.revokeDevice('device_1');
+
+      expect(dio.requestHistory[0].method, 'POST');
+      expect(dio.requestHistory[0].path, '/devices/register');
+      expect(dio.requestHistory[0].data, {
+        'deviceIdentifier': 'ios-vendor-id',
+        'platform': 'ios',
+        'deviceName': 'Ben iPhone',
+        'model': 'iPhone17,2',
+        'brand': 'Apple',
+        'os': 'iOS',
+        'osVersion': '26.0',
+        'appVersion': '1.2.3',
+        'fcmToken': 'fcm-token',
+        'metadata': {'locale': 'fr_CI', 'fingerprintHash': 'fp_123'},
+      });
+      expect(dio.requestHistory[1].method, 'POST');
+      expect(dio.requestHistory[1].path, '/devices/device_1/trust');
+      expect(dio.requestHistory[2].method, 'POST');
+      expect(dio.requestHistory[2].path, '/devices/device_1/untrust');
+      expect(dio.requestHistory[3].method, 'POST');
+      expect(dio.requestHistory[3].path, '/devices/device_1/rename');
+      expect(dio.requestHistory[3].data, {'name': 'Travel iPhone'});
+      expect(dio.requestHistory[4].method, 'DELETE');
+      expect(dio.requestHistory[4].path, '/devices/device_1');
+    });
+
     test(
       'session repository sends revoke reasons and parses active sessions',
       () async {
