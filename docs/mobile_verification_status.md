@@ -25,6 +25,12 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 current-main production build after lifecycle fix:
+  - Current mobile main verified commit: `b52ed76 fix: guard transaction refresh after dispose`.
+  - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed on the current main commit and produced `build/ios/iphoneos/Runner.app` (46-47MB).
+  - Built app metadata: bundle id `com.joonapay.korido`, version `1.0.0`, build `2`.
+  - This build follows the passing iPhone 17 live visual sweep and transaction-provider lifecycle regression test recorded below.
 - 2026-06-06 live visual sweep lifecycle fix:
   - Fixed `FilteredPaginatedTransactionsNotifier` so in-flight `refresh()` and `loadMore()` calls do not write state after the auto-disposed provider is unmounted during fast route changes.
   - Added `test/providers/filtered_transactions_lifecycle_test.dart` to reproduce the disposed-provider race with a delayed Dio response and verify no late state write escapes.
