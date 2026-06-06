@@ -504,6 +504,45 @@ void main() {
       expect(withdrawal.isDebit, isTrue);
     });
 
+    test(
+      'transaction parser normalizes backend status and transfer aliases',
+      () {
+        final settledTransfer = wallet_tx.Transaction.fromJson({
+          'transactionId': 'tx_settled',
+          'walletId': 'wallet_1',
+          'type': 'internal',
+          'status': 'SETTLED',
+          'amount': 12.5,
+          'currency': 'USDC',
+          'direction': 'DEBIT',
+          'reference': 'INT-TXSETTLED',
+          'note': 'Lunch',
+          'toPhone': '+2250748805663',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        });
+        final failedTransfer = wallet_tx.Transaction.fromJson({
+          'id': 'tx_failed',
+          'type': 'transfer_out',
+          'status': 'timeout',
+          'amount': 12.5,
+          'currency': 'USDC',
+          'errorMessage': 'Recipient unavailable',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        });
+
+        expect(settledTransfer.id, 'tx_settled');
+        expect(settledTransfer.type, TransactionType.transferInternal);
+        expect(settledTransfer.status, TransactionStatus.completed);
+        expect(settledTransfer.isDebit, isTrue);
+        expect(settledTransfer.reference, 'INT-TXSETTLED');
+        expect(settledTransfer.description, 'Lunch');
+        expect(settledTransfer.recipientPhone, '+2250748805663');
+        expect(failedTransfer.type, TransactionType.transferInternal);
+        expect(failedTransfer.status, TransactionStatus.failed);
+        expect(failedTransfer.failureReason, 'Recipient unavailable');
+      },
+    );
+
     test('transaction list item honors backend direction aliases', () {
       final sent = TransactionItem.fromJson({
         'id': 'tx_sent',
@@ -529,6 +568,31 @@ void main() {
       expect(received.isCredit, isTrue);
       expect(received.isDebit, isFalse);
     });
+
+    test(
+      'transaction list item normalizes status and counterparty aliases',
+      () {
+        final item = TransactionItem.fromJson({
+          'transactionId': 'tx_1',
+          'type': 'transfer_in',
+          'amount': 25,
+          'currency': 'USDC',
+          'status': 'SUCCESS',
+          'note': 'Dinner',
+          'recipientPhone': '+2250748805663',
+          'recipientName': 'Awa Korido',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        });
+
+        expect(item.id, 'tx_1');
+        expect(item.type, 'transfer_in');
+        expect(item.status, 'completed');
+        expect(item.description, 'Dinner');
+        expect(item.counterpartyName, 'Awa Korido');
+        expect(item.counterpartyPhone, '+2250748805663');
+        expect(item.isCredit, isTrue);
+      },
+    );
 
     test(
       'devices repository accepts backend device fields used by screen',

@@ -67,23 +67,25 @@ class Transaction {
 
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
       walletId: json['walletId'] as String? ?? '',
-      type: _parseTransactionType(json['type'] as String),
-      status: TransactionStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => TransactionStatus.pending,
-      ),
+      type: _parseTransactionType(json['type'] as String?),
+      status: _parseTransactionStatus(json['status'] as String?),
       amount: (json['amount'] as num).toDouble(),
       currency: json['currency'] as String? ?? 'USD',
       fee: (json['fee'] as num?)?.toDouble(),
-      description: json['description'] as String?,
-      externalReference: json['externalReference'] as String?,
-      failureReason: json['failureReason'] as String?,
-      recipientPhone: json['recipientPhone'] as String?,
+      description: json['description'] as String? ?? json['note'] as String?,
+      externalReference:
+          json['externalReference'] as String? ??
+          json['reference'] as String? ??
+          json['supportReference'] as String?,
+      failureReason:
+          json['failureReason'] as String? ?? json['errorMessage'] as String?,
+      recipientPhone:
+          json['recipientPhone'] as String? ?? json['toPhone'] as String?,
       recipientAddress: json['recipientAddress'] as String?,
       recipientWalletId: json['recipientWalletId'] as String?,
-      direction: json['direction'] as String?,
+      direction: (json['direction'] as String?)?.toLowerCase(),
       metadata: json['metadata'] is Map
           ? Map<String, dynamic>.from(json['metadata'] as Map)
           : null,
@@ -94,8 +96,8 @@ class Transaction {
     );
   }
 
-  static TransactionType _parseTransactionType(String type) {
-    switch (type) {
+  static TransactionType _parseTransactionType(String? type) {
+    switch (type?.toLowerCase()) {
       case 'deposit':
       case 'mobile_money_deposit':
         return TransactionType.deposit;
@@ -105,12 +107,44 @@ class Transaction {
       case 'transfer_internal':
       case 'internal_transfer_sent':
       case 'internal_transfer_received':
+      case 'transfer_in':
+      case 'transfer_out':
+      case 'internal':
         return TransactionType.transferInternal;
       case 'transfer_external':
       case 'external_transfer':
+      case 'external':
         return TransactionType.transferExternal;
       default:
         return TransactionType.deposit;
+    }
+  }
+
+  static TransactionStatus _parseTransactionStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case 'initiated':
+        return TransactionStatus.pending;
+      case 'processing':
+      case 'in_progress':
+        return TransactionStatus.processing;
+      case 'completed':
+      case 'complete':
+      case 'success':
+      case 'succeeded':
+      case 'settled':
+        return TransactionStatus.completed;
+      case 'failed':
+      case 'failure':
+      case 'error':
+      case 'timeout':
+      case 'expired':
+        return TransactionStatus.failed;
+      case 'cancelled':
+      case 'canceled':
+        return TransactionStatus.cancelled;
+      default:
+        return TransactionStatus.pending;
     }
   }
 

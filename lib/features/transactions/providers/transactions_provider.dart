@@ -118,6 +118,7 @@ class TransactionItem {
     return type == 'deposit' ||
         type == 'mobile_money_deposit' ||
         type == 'received' ||
+        type == 'transfer_in' ||
         type == 'internal_transfer_received' ||
         (type == 'transfer_internal' && amount > 0);
   }
@@ -129,6 +130,7 @@ class TransactionItem {
     return type == 'withdrawal' ||
         type == 'mobile_money_withdrawal' ||
         type == 'sent' ||
+        type == 'transfer_out' ||
         type == 'internal_transfer_sent' ||
         type == 'transfer_external' ||
         type == 'external_transfer' ||
@@ -137,17 +139,50 @@ class TransactionItem {
 
   factory TransactionItem.fromJson(Map<String, dynamic> json) =>
       TransactionItem(
-        id: json['id'] as String,
-        type: json['type'] as String,
+        id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
+        type: (json['type'] as String? ?? 'deposit').toLowerCase(),
         amount: (json['amount'] as num).toDouble(),
         currency: json['currency'] as String? ?? 'USDC',
-        status: json['status'] as String? ?? 'completed',
-        description: json['description'] as String?,
-        counterpartyName: json['counterpartyName'] as String?,
-        counterpartyPhone: json['counterpartyPhone'] as String?,
-        direction: json['direction'] as String?,
+        status: _normalizeTransactionStatus(json['status'] as String?),
+        description: json['description'] as String? ?? json['note'] as String?,
+        counterpartyName:
+            json['counterpartyName'] as String? ??
+            json['recipientName'] as String?,
+        counterpartyPhone:
+            json['counterpartyPhone'] as String? ??
+            json['recipientPhone'] as String? ??
+            json['toPhone'] as String?,
+        direction: (json['direction'] as String?)?.toLowerCase(),
         createdAt: DateTime.parse(json['createdAt'] as String),
       );
+}
+
+String _normalizeTransactionStatus(String? status) {
+  switch (status?.toLowerCase()) {
+    case 'pending':
+    case 'initiated':
+      return 'pending';
+    case 'processing':
+    case 'in_progress':
+      return 'processing';
+    case 'completed':
+    case 'complete':
+    case 'success':
+    case 'succeeded':
+    case 'settled':
+      return 'completed';
+    case 'failed':
+    case 'failure':
+    case 'error':
+    case 'timeout':
+    case 'expired':
+      return 'failed';
+    case 'cancelled':
+    case 'canceled':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
 }
 
 Map<String, dynamic> _asStringMap(Object? value) {
