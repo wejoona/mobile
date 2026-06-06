@@ -25,6 +25,11 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 broad local and expanded live API readiness gate:
+  - `flutter test` passed 677 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
+  - `flutter analyze --no-fatal-infos` exited 0; it reported 13,082 info-level style findings, mostly existing lint debt in integration/golden tests and utility files.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/health_e2e_test.dart test/e2e/auth_e2e_test.dart test/e2e/wallet_e2e_test.dart test/e2e/transactions_e2e_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/devices_e2e_test.dart test/e2e/user_e2e_test.dart test/e2e/beneficiaries_e2e_test.dart test/e2e/bill_payments_e2e_test.dart test/e2e/cards_e2e_test.dart test/e2e/payment_links_e2e_test.dart test/e2e/savings_pots_e2e_test.dart test/e2e/recurring_transfers_e2e_test.dart test/e2e/bank_linking_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart test/e2e/transfers_e2e_test.dart` passed 124 live API tests.
+  - The expanded live API gate covered health, feature flags, auth register/login/OTP/refresh/logout, wallet/balance/limits/deposit channels/rates/KYC/PIN validation, transfer/withdrawal validation, transaction history/stats, contact sync/lookup/invite, notifications/preferences/device token, devices/sessions, profile update/photo upload-persist-serve-delete, beneficiaries, bill payments, cards, payment links, savings pots, recurring transfers, bank linking, feature subscriptions, and transfers negative-path validation.
 - 2026-06-06 live API device/session and visual sweep refresh:
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
   - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e/devices_e2e_test.dart` passed 6 live API tests, covering device register/list/idempotency, active sessions, and unauthenticated 401 checks.
