@@ -25,6 +25,12 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 live iPhone 17 session/logout verification:
+  - Current mobile main verified commit: `5ab19d4 fix: revoke backend session on timeout logout`.
+  - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
+  - `flutter test integration_test/flows/live_api_login_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - The live simulator flow registered a fresh user, verified OTP, registered the device, created a wallet, updated profile, set PIN through `/security/public-key` and `/user/pin/set`, reached Home, opened deposit, transactions, notifications, devices, active sessions, notification preferences, and completed settings logout.
+  - The observed logout path called `POST /auth/logout`, confirming the backend session-revocation contract remains intact after the timeout logout hardening.
 - 2026-06-06 current-main production build after lifecycle fix:
   - Current mobile main verified commit: `b52ed76 fix: guard transaction refresh after dispose`.
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
