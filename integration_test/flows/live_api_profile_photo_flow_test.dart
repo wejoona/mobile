@@ -111,15 +111,14 @@ void main() {
       await tester.tap(find.byType(AppButton).last);
 
       await driver.pumpUntil(
-        () =>
-            driver.hasAnyText([
-              'Profile updated successfully',
-              'Profil mis à jour avec succès',
-            ]) ||
-            driver.hasAnyText(['Profile', 'Profil']),
+        () => driver.hasAnyText([
+          'Profile updated successfully',
+          'Profil mis à jour avec succès',
+        ]),
         reason: 'profile photo upload confirmation',
-        timeout: const Duration(seconds: 30),
+        timeout: const Duration(seconds: 60),
       );
+      await tester.pump(const Duration(seconds: 1));
 
       final api = await _authenticatedLiveApi(tester);
       String? avatarUrl;
@@ -131,12 +130,13 @@ void main() {
         debugPrint('Live avatar profile payload: $profileData');
         expect(avatarUrl, startsWith('/user/avatar/'));
 
+        final resolvedAvatarUrl = _resolveApiUrl(avatarUrl!);
         final image = await api.get<List<int>>(
-          avatarUrl!,
+          resolvedAvatarUrl,
           options: Options(responseType: ResponseType.bytes),
         );
         debugPrint(
-          'Live avatar fetch: url=$avatarUrl status=${image.statusCode} '
+          'Live avatar fetch: url=$resolvedAvatarUrl status=${image.statusCode} '
           'bytes=${image.data?.length ?? 0}',
         );
         expect(
@@ -225,6 +225,23 @@ Map<String, dynamic> _payload(Map<String, dynamic>? data) {
   final raw = data?['data'] ?? data;
   expect(raw, isA<Map<String, dynamic>>());
   return raw! as Map<String, dynamic>;
+}
+
+String _resolveApiUrl(String url) {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // ignore: do_not_use_environment
+  const baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://api.joonapay.com/api/v1',
+  );
+  final normalizedBase = baseUrl.endsWith('/')
+      ? baseUrl.substring(0, baseUrl.length - 1)
+      : baseUrl;
+  final normalizedPath = url.startsWith('/') ? url : '/$url';
+  return '$normalizedBase$normalizedPath';
 }
 
 void _setupMockIosImagePicker(String imagePath) {

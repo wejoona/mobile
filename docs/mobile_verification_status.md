@@ -132,6 +132,14 @@
   - `flutter test -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 integration_test/flows/live_api_login_flow_test.dart --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17 against the live API.
   - The live simulator flow covered register, OTP, wallet create, profile/PIN, home loads, deposit rate/channels, transaction history, devices, active sessions, notification preferences, logout, and countries config.
   - Build emitted known non-blocking Flutter warnings for plugins without Swift Package Manager support and the expected no-codesign warning.
+- 2026-06-06 live profile photo readiness:
+  - API main `f716ab22 fix: serve avatar thumbnail fallback` pushed to `origin/main`; GitLab pipeline #2808 passed build and deploy, updating GitOps image tag to `f716ab22`.
+  - Mobile main `8b40c8f test: verify live profile photo flow` pushed to `origin/main`; follow-up verifier fix records the same API-base URL resolution used by the app.
+  - `npm run test:e2e -- --testPathPatterns=user-profile.controller` passed 11 backend controller tests, including avatar thumbnail fallback when storage object reads miss.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e/user_e2e_test.dart` passed 14 live API tests, including avatar upload, profile persistence, image fetch, delete, and profile clear.
+  - `flutter test integration_test/flows/live_api_profile_photo_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17 simulator.
+    - Flow registered a fresh user, verified OTP, created wallet, completed profile and PIN setup, skipped KYC into Home, opened profile edit, selected a mocked gallery image through the iOS image picker channel, uploaded it via `/user/avatar`, saved profile, fetched `https://api.joonapay.com/api/v1/user/avatar/<userId>` with status 200, opened the profile screen, and deleted the avatar.
+  - `dart analyze integration_test/flows/live_api_profile_photo_flow_test.dart` passed with no issues.
 - 2026-06-05 brand/link release cleanup:
   - Replaced stale JoonaPay visible text in Android balance widgets with Korido.
   - Replaced stale contact invite download links with `https://korido.app/download` and regenerated Flutter localizations.
