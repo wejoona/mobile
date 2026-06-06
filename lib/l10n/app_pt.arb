@@ -3593,7 +3593,7 @@
   "@contacts_invite_to_joonapay": {
     "description": "Non-users section title"
   },
-  "contacts_empty": "No contacts found. pull down to atualizar.",
+  "contacts_empty": "Connect your contacts to find Korido users.",
   "@contacts_empty": {
     "description": "Empty state message"
   },

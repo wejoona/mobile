@@ -25,6 +25,18 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 empty-state polish and live visual refresh:
+  - Contacts and notifications empty states now use gold-accent action cards, brighter gold filled CTAs with light text, and trust-focused copy.
+  - Contacts empty copy changed from the stale pull-to-refresh message to `Connect your contacts to find Korido users.`; French copy was updated and generated localizations refreshed.
+  - Updated `integration_test/flows/live_api_visual_sweep_test.dart` so the contacts screen assertion verifies the new copy.
+  - After `flutter clean`, `flutter pub get`, `flutter gen-l10n`, and uninstalling `com.joonapay.korido` from iPhone 17, the live visual sweep passed:
+    - `flutter drive --driver=integration_test/test_driver/screenshot_driver.dart --target=integration_test/flows/live_api_visual_sweep_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1`
+    - Captures refreshed at `build/screenshots/korido_live_visual_sweep/13_notifications.png` and `build/screenshots/korido_live_visual_sweep/15_contacts_list.png`.
+    - Live endpoints observed included auth register/OTP, wallet create, profile, PIN, notifications, limits, transactions, contacts recents/sync, exchange rate, deposit channels, devices, and sessions.
+  - `flutter test test/services/localization/language_service_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart` passed 6 active tests with 10 live-E2E tests skipped by design.
+  - `flutter test` passed 672 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
+  - `flutter analyze --no-fatal-infos lib/features/contacts/views/contacts_list_screen.dart lib/features/notifications/views/notifications_view.dart lib/l10n integration_test/flows/live_api_visual_sweep_test.dart` exited 0 with info-level style debt only.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed unsandboxed and produced `build/ios/iphoneos/Runner.app` (47.0MB). The same build failed under the managed sandbox because CocoaPods `Pods-Runner-frameworks.sh` was killed with `Killed: 9`; no source, Podfile, or lockfile changes were involved.
 - 2026-06-05 live visual screenshot sweep:
   - Added `integration_test/flows/live_api_visual_sweep_test.dart` plus `integration_test/test_driver/screenshot_driver.dart` to produce repeatable live-API simulator PNG evidence.
   - `flutter analyze --no-fatal-infos integration_test/test_driver/screenshot_driver.dart integration_test/flows/live_api_visual_sweep_test.dart` passed with no issues.

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -92,10 +93,25 @@ class NotificationsView extends ConsumerWidget {
         ),
         data: (notifications) {
           if (notifications.isEmpty) {
-            return EmptyState(
-              icon: Icons.notifications_none_rounded,
-              title: l10n.notifications_emptyTitle,
-              subtitle: l10n.notifications_emptyMessage,
+            return RefreshIndicator(
+              color: colors.gold,
+              onRefresh: () => ref.refresh(notificationsProvider.future),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenPadding,
+                  AppSpacing.xxl,
+                  AppSpacing.screenPadding,
+                  AppSpacing.xxl,
+                ),
+                children: [
+                  _NotificationsEmptyState(
+                    title: l10n.notifications_emptyTitle,
+                    subtitle: l10n.notifications_emptyMessage,
+                    onPreferences: () =>
+                        context.push('/settings/notifications'),
+                  ),
+                ],
+              ),
             );
           }
           return RefreshIndicator(
@@ -138,6 +154,69 @@ class NotificationsView extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _NotificationsEmptyState extends StatelessWidget {
+  const _NotificationsEmptyState({
+    required this.title,
+    required this.subtitle,
+    required this.onPreferences,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onPreferences;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
+    return AppCard(
+      variant: AppCardVariant.goldAccent,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: colors.goldSubtle,
+              shape: BoxShape.circle,
+              border: Border.all(color: colors.borderGold),
+            ),
+            child: Icon(
+              Icons.notifications_none_rounded,
+              color: colors.gold,
+              size: 34,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          AppText(
+            title,
+            variant: AppTextVariant.titleMedium,
+            color: colors.textPrimary,
+            textAlign: TextAlign.center,
+            fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          AppText(
+            subtitle,
+            variant: AppTextVariant.bodyMedium,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            label: l10n.notifications_preferences_title,
+            icon: Icons.tune_rounded,
+            isFullWidth: true,
+            onPressed: onPreferences,
+          ),
+        ],
       ),
     );
   }

@@ -3060,7 +3060,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get contacts_invite_to_joonapay => 'Invite to Korido';
 
   @override
-  String get contacts_empty => 'No contacts found. pull down to atualizar.';
+  String get contacts_empty => 'Connect your contacts to find Korido users.';
 
   @override
   String get contacts_no_results => 'No contacts match your pesquisar';

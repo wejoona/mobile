@@ -3109,7 +3109,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get contacts_empty =>
-      'Aucun contact trouvé. Tirez vers le bas pour actualiser.';
+      'Connectez vos contacts pour trouver les utilisateurs Korido.';
 
   @override
   String get contacts_no_results =>

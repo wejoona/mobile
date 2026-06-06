@@ -944,7 +944,7 @@
   "contacts_search": "Rechercher des contacts",
   "contacts_on_joonapay": "Sur Korido",
   "contacts_invite_to_joonapay": "Inviter sur Korido",
-  "contacts_empty": "Aucun contact trouvé. Tirez vers le bas pour actualiser.",
+  "contacts_empty": "Connectez vos contacts pour trouver les utilisateurs Korido.",
   "contacts_no_results": "Aucun contact ne correspond à votre recherche",
   "contacts_sync_success": "{count} utilisateurs Korido trouvés!",
   "contacts_synced_just_now": "À l'instant",

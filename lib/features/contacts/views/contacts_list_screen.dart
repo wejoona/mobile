@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/contacts/providers/contacts_provider.dart';
 import 'package:usdc_wallet/features/contacts/widgets/contact_card.dart';
 import 'package:usdc_wallet/features/contacts/widgets/invite_sheet.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 
 /// Contacts List Screen
 ///
@@ -182,28 +181,17 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 
                         // Empty state
                         if (filteredContacts.isEmpty && !state.isLoading)
-                          Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(AppSpacing.xxl),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.contacts_outlined,
-                                    size: 64,
-                                    color: context.colors.textTertiary,
-                                  ),
-                                  SizedBox(height: AppSpacing.md),
-                                  AppText(
-                                    _searchQuery.isNotEmpty
-                                        ? l10n.contacts_no_results
-                                        : l10n.contacts_empty,
-                                    variant: AppTextVariant.bodyLarge,
-                                    color: context.colors.textSecondary,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
+                          _ContactsEmptyState(
+                            title: _searchQuery.isNotEmpty
+                                ? l10n.contacts_no_results
+                                : l10n.contacts_empty,
+                            showAction: _searchQuery.isEmpty,
+                            onAction: () async {
+                              final notifier = ref.read(
+                                contactsProvider.notifier,
+                              );
+                              await notifier.requestPermission();
+                            },
                           ),
                       ],
                     ),
@@ -288,5 +276,78 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
     } else {
       return l10n.contacts_synced_days_ago(diff.inDays);
     }
+  }
+}
+
+class _ContactsEmptyState extends StatelessWidget {
+  const _ContactsEmptyState({
+    required this.title,
+    required this.showAction,
+    required this.onAction,
+  });
+
+  final String title;
+  final bool showAction;
+  final Future<void> Function() onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    return Padding(
+      padding: const EdgeInsets.only(
+        top: AppSpacing.lg,
+        bottom: AppSpacing.xxl,
+      ),
+      child: AppCard(
+        variant: AppCardVariant.goldAccent,
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: colors.goldSubtle,
+                shape: BoxShape.circle,
+                border: Border.all(color: colors.borderGold),
+              ),
+              child: Icon(
+                Icons.contacts_outlined,
+                size: 34,
+                color: colors.gold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppText(
+              title,
+              variant: AppTextVariant.titleMedium,
+              color: colors.textPrimary,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.w700,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            AppText(
+              l10n.contacts_permission_benefit2_desc,
+              variant: AppTextVariant.bodyMedium,
+              color: colors.textSecondary,
+              textAlign: TextAlign.center,
+            ),
+            if (showAction) ...[
+              const SizedBox(height: AppSpacing.xl),
+              AppButton(
+                label: l10n.contacts_permission_allow,
+                icon: Icons.person_search_rounded,
+                isFullWidth: true,
+                onPressed: () {
+                  unawaited(onAction());
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -5751,7 +5751,7 @@ abstract class AppLocalizations {
   /// Empty state message
   ///
   /// In en, this message translates to:
-  /// **'No contacts found. Pull down to refresh.'**
+  /// **'Connect your contacts to find Korido users.'**
   String get contacts_empty;
 
   /// No search results message
