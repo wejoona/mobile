@@ -36,6 +36,12 @@
   - `flutter build ios --release --no-codesign --dart-define=ENV=production --dart-define=API_URL=https://api.joonapay.com/api/v1` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
   - Built app metadata: bundle id `com.joonapay.korido`, version `1.0.0`, build `1`.
   - Known non-blocking build warnings remain: plugins without Swift Package Manager support, LocalAuth UIScene lifecycle warning in simulator/debug runs, and expected no-codesign warning for local release build.
+- 2026-06-06 TestFlight build-number readiness:
+  - Bumped Flutter app version from `1.0.0+1` to `1.0.0+2` so the next automatic TestFlight upload does not reuse build `1`.
+  - `flutter test test/config/api_configuration_test.dart` passed.
+  - `dart analyze pubspec.yaml` passed with no issues.
+  - `flutter build ios --release --no-codesign --dart-define=ENV=production --dart-define=API_URL=https://api.joonapay.com/api/v1` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - Built app metadata after the bump: bundle id `com.joonapay.korido`, version `1.0.0`, build `2`.
 - 2026-06-06 broad local and expanded live API readiness gate:
   - `flutter test` passed 677 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
   - `flutter analyze --no-fatal-infos` exited 0; it reported 13,082 info-level style findings, mostly existing lint debt in integration/golden tests and utility files.
