@@ -25,8 +25,17 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 production define-file release guard:
+  - Current mobile main head before this guard: `ec2226a docs: align release gate head`.
+  - Latest verified app-code commit remains: `f83a9d7 fix: hide catalog route in production`.
+  - Confirmed `env.prod.json` sets `ENV=production` and `API_URL=https://api.joonapay.com/api/v1`, with no localhost or mock flag.
+  - Added a Codemagic release config test that pins the production define file content, not just the CI command line.
+  - `flutter test test/config/codemagic_release_config_test.dart test/config/api_configuration_test.dart` passed 5 tests.
+  - `flutter test test/router/app_routes_structure_test.dart --dart-define=ENV=production` passed 4 tests and confirmed default route assembly excludes `/catalog` in production.
+  - `dart analyze test/config/codemagic_release_config_test.dart env.prod.json codemagic.yaml` passed with no issues.
 - 2026-06-06 current-main release gate after profile-photo/API/router fixes:
-  - Current mobile main verified commit: `f83a9d7 fix: hide catalog route in production`.
+  - Current mobile main head after doc-only alignment: `ec2226a docs: align release gate head`.
+  - Latest verified app-code commit: `f83a9d7 fix: hide catalog route in production`.
   - Current API main verified commit: `f716ab22 fix: serve avatar thumbnail fallback`.
   - API GitLab pipeline #2808 passed build and deploy, updating GitOps image tag to `f716ab22`.
   - `flutter test integration_test/flows/live_api_profile_photo_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
