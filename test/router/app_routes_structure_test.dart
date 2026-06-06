@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/router/app_routes.dart';
 
 void main() {
@@ -54,6 +55,28 @@ void main() {
       topLevelPaths.indexOf('/savings-pots'),
       lessThan(topLevelPaths.indexOf('/scan-to-pay')),
     );
+  });
+
+  test('development-only catalog route is excluded from production routes', () {
+    final productionPaths = _flattenPaths(
+      buildAppRoutes(includeDevelopmentRoutes: false),
+    );
+    final developmentPaths = _flattenPaths(
+      buildAppRoutes(includeDevelopmentRoutes: true),
+    );
+
+    expect(productionPaths, isNot(contains('/catalog')));
+    expect(developmentPaths, contains('/catalog'));
+  });
+
+  test('default route assembly follows the configured environment', () {
+    final paths = _flattenPaths(buildAppRoutes());
+
+    if (EnvironmentConfig.isProduction) {
+      expect(paths, isNot(contains('/catalog')));
+    } else {
+      expect(paths, contains('/catalog'));
+    }
   });
 }
 

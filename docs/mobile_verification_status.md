@@ -39,6 +39,12 @@
   - Added backup/broken/reject/temp file patterns to `.gitignore` so these do not return.
   - `flutter test test/services/localization/language_service_test.dart test/config/api_configuration_test.dart` passed 8 tests.
   - `dart analyze .gitignore l10n.yaml lib/features/receipts/views/share_receipt_sheet.dart` exited 0 with existing info-level style findings only.
+- 2026-06-06 production router hardening:
+  - Gated the design-system `/catalog` route behind development route assembly so it is not reachable in production route sets.
+  - `flutter test test/router/app_routes_structure_test.dart test/router/app_route_inventory_test.dart test/config/api_configuration_test.dart` passed 9 route/config tests.
+  - `flutter test test/router/app_routes_structure_test.dart --dart-define=ENV=production` passed 4 tests and confirmed default route assembly excludes `/catalog` in production.
+  - `dart analyze lib/router/app_routes.dart lib/router/routes/business_utility_routes.dart test/router/app_routes_structure_test.dart` passed with no issues.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
 - 2026-06-06 live iPhone 17 session/logout verification:
   - Current mobile main verified commit: `5ab19d4 fix: revoke backend session on timeout logout`.
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
