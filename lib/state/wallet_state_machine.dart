@@ -189,6 +189,20 @@ class WalletStateMachine extends Notifier<WalletState> {
         lastUpdated: DateTime.now(),
         error: null,
       );
+    } on ApiException catch (e) {
+      if (!ref.mounted) return;
+
+      // A fresh user may not have a wallet provisioned yet. Mirror fetch():
+      // create it instead of silently completing with an empty balance the
+      // home screen can never render.
+      if (e.statusCode == 404 && e.message.contains('Wallet not found')) {
+        state = state.copyWith(status: WalletStatus.initial, error: null);
+        await createWallet();
+      } else {
+        // Other errors: keep whatever balance we already had, just clear the
+        // refreshing flag. Don't surface an error on a background refresh.
+        state = state.copyWith(status: WalletStatus.loaded, error: null);
+      }
     } catch (e) {
       if (!ref.mounted) return;
 

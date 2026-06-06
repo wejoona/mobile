@@ -1778,6 +1778,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'La permission des contacts est requise pour sélectionner un contact';
 
   @override
+  String get send_contactsPermissionSettingsTitle =>
+      'Accès aux contacts requis';
+
+  @override
+  String get send_contactsPermissionSettingsMessage =>
+      'L\'accès aux contacts est désactivé. Activez-le dans les Réglages pour choisir un destinataire parmi vos contacts.';
+
+  @override
   String get send_noContactsFound => 'Aucun contact trouvé';
 
   @override

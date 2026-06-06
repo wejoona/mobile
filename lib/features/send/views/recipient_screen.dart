@@ -283,17 +283,31 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
     final colors = context.colors;
 
     if (!MockConfig.useMocks) {
-      final status = await Permission.contacts.request();
+      var status = await Permission.contacts.status;
       if (!status.isGranted) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.send_contactsPermissionDenied),
-              backgroundColor: colors.error,
-            ),
-          );
+        // Permission.request() only surfaces the OS dialog the first time.
+        // Once the user has permanently denied it, request() returns
+        // immediately without prompting — so send them to app settings
+        // instead of repeating a dead-end error.
+        if (status.isPermanentlyDenied || status.isRestricted) {
+          if (mounted) await _showContactsSettingsDialog(l10n);
+          return;
         }
-        return;
+        status = await Permission.contacts.request();
+        if (!status.isGranted) {
+          if (!mounted) return;
+          if (status.isPermanentlyDenied) {
+            await _showContactsSettingsDialog(l10n);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.send_contactsPermissionDenied),
+                backgroundColor: colors.error,
+              ),
+            );
+          }
+          return;
+        }
       }
     }
 
@@ -309,6 +323,31 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       if (contact != null) {
         _selectRecipient(contact.phone, contact.name);
       }
+    }
+  }
+
+  /// Shown when contacts permission is permanently denied — request() can no
+  /// longer prompt, so guide the user to the system settings page.
+  Future<void> _showContactsSettingsDialog(AppLocalizations l10n) async {
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.send_contactsPermissionSettingsTitle),
+        content: Text(l10n.send_contactsPermissionSettingsMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.action_cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.action_open_settings),
+          ),
+        ],
+      ),
+    );
+    if (shouldOpen == true) {
+      await openAppSettings();
     }
   }
 

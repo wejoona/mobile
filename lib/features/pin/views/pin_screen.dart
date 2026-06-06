@@ -45,7 +45,8 @@ class PinScreen extends ConsumerStatefulWidget {
   ConsumerState<PinScreen> createState() => _PinScreenState();
 }
 
-class _PinScreenState extends ConsumerState<PinScreen> {
+class _PinScreenState extends ConsumerState<PinScreen>
+    with WidgetsBindingObserver {
   String _pin = '';
   bool _hasError = false;
   String? _errorMessage;
@@ -59,7 +60,24 @@ class _PinScreenState extends ConsumerState<PinScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _checkBiometric();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Returning from the OS biometric sheet or a device unlock can change
+    // biometric availability. Re-check on resume so the unlock button
+    // reappears without forcing the user to close and reopen the app.
+    if (state == AppLifecycleState.resumed && !_showUnlockTransition) {
+      _checkBiometric();
+    }
   }
 
   Future<void> _checkBiometric() async {
@@ -78,47 +96,36 @@ class _PinScreenState extends ConsumerState<PinScreen> {
   }
 
   /// What happens after successful verification — depends on context.
+  ///
+  /// IMPORTANT: the unlock state mutations (which flip the FSM/auth state and
+  /// trigger a router refresh) are deferred until *after* the transition,
+  /// alongside the navigation call. Doing them up-front rebuilds the
+  /// `/session-locked` page mid-animation, disposing this State and dropping
+  /// the pending navigation — leaving the unlock overlay stuck on screen.
   void _onSuccess() {
     switch (widget.pinContext) {
       case PinContext.login:
-        // Unlock auth + session, show brief transition, navigate to home
-        try {
-          ref.read(authProvider.notifier).unlock();
-        } catch (_) {}
-        try {
-          ref.read(sessionServiceProvider.notifier).unlockSession();
-        } catch (_) {}
-        try {
-          ref.read(appFsmProvider.notifier).unlockSession();
-        } catch (_) {}
-        if (mounted)
-          _transitionThen(() => context.go(widget.successRoute ?? '/home'));
-
-      case PinContext.sessionLock:
-        // Unlock session, show brief transition, return to previous screen
-        try {
-          ref.read(authProvider.notifier).unlock();
-        } catch (_) {}
-        try {
-          ref.read(sessionServiceProvider.notifier).unlockSession();
-        } catch (_) {}
-        try {
-          ref.read(appFsmProvider.notifier).unlockSession();
-        } catch (_) {}
-        // Trigger background refresh of wallet and transactions after unlock
-        Future.microtask(() {
-          try {
-            ref.read(walletStateMachineProvider.notifier).refresh();
-            ref.read(transactionStateMachineProvider.notifier).refresh();
-          } catch (_) {}
-        });
+        // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
           _transitionThen(() {
-            if (widget.successRoute != null) {
-              context.go(widget.successRoute!);
-            } else {
-              context.pop(true);
-            }
+            _applyUnlock();
+            context.go(widget.successRoute ?? '/home');
+          });
+        }
+
+      case PinContext.sessionLock:
+        // Show brief transition, then unlock + navigate together.
+        if (mounted) {
+          _transitionThen(() {
+            _applyUnlock();
+            // Refresh wallet and transactions in the background after unlock.
+            Future.microtask(() {
+              try {
+                ref.read(walletStateMachineProvider.notifier).refresh();
+                ref.read(transactionStateMachineProvider.notifier).refresh();
+              } catch (_) {}
+            });
+            context.go(widget.successRoute ?? '/home');
           });
         }
 
@@ -126,6 +133,20 @@ class _PinScreenState extends ConsumerState<PinScreen> {
         // Just pop with true — caller decides what to do
         if (mounted) context.pop(true);
     }
+  }
+
+  /// Unlock auth + session state. Kept separate so callers can run it in the
+  /// same frame as navigation (see [_onSuccess]).
+  void _applyUnlock() {
+    try {
+      ref.read(authProvider.notifier).unlock();
+    } catch (_) {}
+    try {
+      ref.read(sessionServiceProvider.notifier).unlockSession();
+    } catch (_) {}
+    try {
+      ref.read(appFsmProvider.notifier).unlockSession();
+    } catch (_) {}
   }
 
   /// Brief unlock animation before navigating away

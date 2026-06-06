@@ -2246,6 +2246,14 @@
   "@send_contactsPermissionDenied": {
     "description": "Contacts permission denied message"
   },
+  "send_contactsPermissionSettingsTitle": "Contacts access needed",
+  "@send_contactsPermissionSettingsTitle": {
+    "description": "Title of dialog directing user to settings when contacts permission is permanently denied"
+  },
+  "send_contactsPermissionSettingsMessage": "Contacts access is turned off. Enable it in Settings to pick a recipient from your contacts.",
+  "@send_contactsPermissionSettingsMessage": {
+    "description": "Body of dialog directing user to settings when contacts permission is permanently denied"
+  },
   "send_noContactsFound": "No contacts found",
   "@send_noContactsFound": {
     "description": "No contacts found message"

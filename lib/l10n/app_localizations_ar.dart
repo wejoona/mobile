@@ -1740,6 +1740,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'إذن الوصول إلى جهات الاتصال مطلوب لاختيار جهة اتصال';
 
   @override
+  String get send_contactsPermissionSettingsTitle => 'Contacts access needed';
+
+  @override
+  String get send_contactsPermissionSettingsMessage =>
+      'Contacts access is turned off. Enable it in Settings to pick a recipient from your contacts.';
+
+  @override
   String get send_noContactsFound => 'لم يتم العثور على جهات اتصال';
 
   @override

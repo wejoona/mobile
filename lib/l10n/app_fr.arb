@@ -547,6 +547,8 @@
   "send_fromBeneficiaries": "Bénéficiaires",
   "send_recentRecipients": "Destinataires récents",
   "send_contactsPermissionDenied": "La permission des contacts est requise pour sélectionner un contact",
+  "send_contactsPermissionSettingsTitle": "Accès aux contacts requis",
+  "send_contactsPermissionSettingsMessage": "L'accès aux contacts est désactivé. Activez-le dans les Réglages pour choisir un destinataire parmi vos contacts.",
   "send_noContactsFound": "Aucun contact trouvé",
   "send_selectBeneficiary": "Sélectionner un bénéficiaire",
   "send_searchBeneficiaries": "Rechercher des bénéficiaires",

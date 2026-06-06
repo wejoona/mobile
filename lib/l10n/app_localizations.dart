@@ -3312,6 +3312,18 @@ abstract class AppLocalizations {
   /// **'Contacts permission is required to select a contact'**
   String get send_contactsPermissionDenied;
 
+  /// Title of dialog directing user to settings when contacts permission is permanently denied
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts access needed'**
+  String get send_contactsPermissionSettingsTitle;
+
+  /// Body of dialog directing user to settings when contacts permission is permanently denied
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts access is turned off. Enable it in Settings to pick a recipient from your contacts.'**
+  String get send_contactsPermissionSettingsMessage;
+
   /// No contacts found message
   ///
   /// In en, this message translates to:

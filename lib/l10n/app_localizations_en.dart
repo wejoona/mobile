@@ -1738,6 +1738,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Contacts permission is required to select a contact';
 
   @override
+  String get send_contactsPermissionSettingsTitle => 'Contacts access needed';
+
+  @override
+  String get send_contactsPermissionSettingsMessage =>
+      'Contacts access is turned off. Enable it in Settings to pick a recipient from your contacts.';
+
+  @override
   String get send_noContactsFound => 'No contacts found';
 
   @override
