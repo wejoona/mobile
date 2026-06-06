@@ -25,6 +25,15 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 current-main release gate after profile-photo/API fixes:
+  - Current mobile main verified commit: `291d798 fix: stabilize live profile photo verifier`.
+  - Current API main verified commit: `f716ab22 fix: serve avatar thumbnail fallback`.
+  - API GitLab pipeline #2808 passed build and deploy, updating GitOps image tag to `f716ab22`.
+  - `flutter test integration_test/flows/live_api_profile_photo_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e/user_e2e_test.dart` passed 14 live API tests, including profile photo upload, persistence, image fetch, delete, and profile clear.
+  - `npm run test:e2e -- --testPathPatterns=user-profile.controller` passed 11 backend controller tests, including avatar thumbnail fallback when storage object reads miss.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - Built app metadata: display name `Korido`, bundle id `com.joonapay.korido`, version `1.0.0`, build `2`.
 - 2026-06-06 live iPhone 17 session/logout verification:
   - Current mobile main verified commit: `5ab19d4 fix: revoke backend session on timeout logout`.
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
