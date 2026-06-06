@@ -244,6 +244,9 @@ class KoridoFlowDriver {
       () =>
           hasAnyText(['Orange Money']) ||
           hasAnyText([
+            'Account review needed',
+            'Deposits for CI may need an account review',
+            'Reason: no deposit channels available',
             'No Providers Available',
             'No deposit providers are currently available',
             'Aucun fournisseur disponible',
@@ -253,6 +256,9 @@ class KoridoFlowDriver {
     );
 
     if (hasAnyText([
+      'Account review needed',
+      'Deposits for CI may need an account review',
+      'Reason: no deposit channels available',
       'No Providers Available',
       'No deposit providers are currently available',
       'Aucun fournisseur disponible',
