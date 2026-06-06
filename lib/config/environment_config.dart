@@ -35,6 +35,12 @@ class EnvironmentConfig {
 
   static const String _debugSkipPin = String.fromEnvironment('DEBUG_SKIP_PIN');
 
+  /// Access token injected for simulator dogfood verification.
+  static const String debugToken = String.fromEnvironment('DEBUG_TOKEN');
+
+  /// Phone number paired with [debugToken] for simulator verification.
+  static const String debugPhone = String.fromEnvironment('DEBUG_PHONE');
+
   /// Show simulator-only OTP helpers during explicit dogfood debug runs.
   static bool get showDevOtpShortcut => isDevelopment && _showDevOtpShortcut;
 

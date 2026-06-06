@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:usdc_wallet/config/environment_config.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
@@ -89,6 +90,15 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading);
 
     try {
+      const debugToken = EnvironmentConfig.debugToken;
+      const debugPhone = EnvironmentConfig.debugPhone;
+      if (debugToken.isNotEmpty) {
+        await _storage.write(key: StorageKeys.accessToken, value: debugToken);
+        if (debugPhone.isNotEmpty) {
+          await _storage.write(key: 'user_phone', value: debugPhone);
+        }
+      }
+
       final token = await _storage.read(key: StorageKeys.accessToken);
       if (!ref.mounted) return;
 
@@ -100,6 +110,28 @@ class AuthNotifier extends Notifier<AuthState> {
           if (!canRestore) {
             return;
           }
+        }
+
+        if (debugToken.isNotEmpty && EnvironmentConfig.debugSkipPin) {
+          final userId = await _storage.read(key: 'user_id');
+          if (!ref.mounted) return;
+          ref
+              .read(appFsmProvider.notifier)
+              .restoreSession(
+                userId: userId ?? '',
+                accessToken: token,
+                refreshToken: refreshToken,
+              );
+          state = state.copyWith(
+            status: AuthStatus.authenticated,
+            phone: debugPhone.isNotEmpty ? debugPhone : null,
+          );
+          unawaited(
+            ref
+                .read(userStateMachineProvider.notifier)
+                .hydrateAuthenticatedSession(fetchRelated: false),
+          );
+          return;
         }
 
         // Token exists — go to locked state (require PIN/biometric to unlock)
