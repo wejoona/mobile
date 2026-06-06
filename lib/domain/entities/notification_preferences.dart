@@ -160,19 +160,18 @@ class UserNotificationPreferences {
   /// Returns a map suitable for API update requests (excludes id, userId, timestamps)
   Map<String, dynamic> toUpdateJson() {
     return {
-      'pushEnabled': pushEnabled,
-      'pushTransactions': pushTransactions,
-      'pushSecurity': pushSecurity,
-      'pushMarketing': pushMarketing,
-      'emailEnabled': emailEnabled,
-      'emailTransactions': emailTransactions,
-      'emailMonthlyStatement': emailMonthlyStatement,
-      'emailMarketing': emailMarketing,
-      'smsEnabled': smsEnabled,
-      'smsTransactions': smsTransactions,
-      'smsSecurity': smsSecurity,
-      'largeTransactionThreshold': largeTransactionThreshold,
-      'lowBalanceThreshold': lowBalanceThreshold,
+      'channels': {
+        'push': pushEnabled,
+        'email': emailEnabled,
+        'sms': smsEnabled,
+        'inApp': true,
+      },
+      'categories': {
+        'transaction': pushTransactions || emailTransactions || smsTransactions,
+        'security': pushSecurity || smsSecurity,
+        'marketing': pushMarketing || emailMarketing,
+        'system': emailMonthlyStatement,
+      },
     };
   }
 

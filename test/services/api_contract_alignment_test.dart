@@ -270,45 +270,61 @@ void main() {
       'notification facade preferences use user preferences route',
       () async {
         final dio = MockDio()
-          ..queueResponse({'pushEnabled': true})
-          ..queueResponse({'pushEnabled': false});
+          ..queueResponse({
+            'data': {
+              'channels': {'push': true, 'email': true, 'sms': true},
+              'categories': {'marketing': false},
+            },
+          })
+          ..queueResponse({
+            'data': {
+              'channels': {'push': true, 'email': true, 'sms': true},
+              'categories': {'marketing': true},
+            },
+          });
         final api = NotificationsApi(dio);
 
         await api.getPreferences();
-        await api.updatePreferences({'pushEnabled': false});
+        await api.updatePreferences({
+          'categories': {'marketing': true},
+        });
 
         expect(dio.requestHistory[0].method, 'GET');
         expect(dio.requestHistory[0].path, '/notifications/preferences');
         expect(dio.requestHistory[1].method, 'PUT');
         expect(dio.requestHistory[1].path, '/notifications/preferences');
-        expect(dio.requestHistory[1].data, {'pushEnabled': false});
+        expect(dio.requestHistory[1].data, {
+          'categories': {'marketing': true},
+        });
       },
     );
 
-    test('notification preferences full save sends flat backend DTO keys', () {
-      final preferences = UserNotificationPreferences.defaults().copyWith(
-        pushEnabled: false,
-        pushMarketing: true,
-        emailMarketing: true,
-        lowBalanceThreshold: 25,
-      );
+    test(
+      'notification preferences full save sends nested backend DTO keys',
+      () {
+        final preferences = UserNotificationPreferences.defaults().copyWith(
+          pushEnabled: false,
+          pushMarketing: true,
+          emailMarketing: true,
+          lowBalanceThreshold: 25,
+        );
 
-      expect(preferences.toUpdateJson(), {
-        'pushEnabled': false,
-        'pushTransactions': true,
-        'pushSecurity': true,
-        'pushMarketing': true,
-        'emailEnabled': true,
-        'emailTransactions': true,
-        'emailMonthlyStatement': true,
-        'emailMarketing': true,
-        'smsEnabled': true,
-        'smsTransactions': true,
-        'smsSecurity': true,
-        'largeTransactionThreshold': 1000.0,
-        'lowBalanceThreshold': 25.0,
-      });
-    });
+        expect(preferences.toUpdateJson(), {
+          'channels': {
+            'push': false,
+            'email': true,
+            'sms': true,
+            'inApp': true,
+          },
+          'categories': {
+            'transaction': true,
+            'security': true,
+            'marketing': true,
+            'system': true,
+          },
+        });
+      },
+    );
 
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()

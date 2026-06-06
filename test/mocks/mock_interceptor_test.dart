@@ -169,14 +169,18 @@ void main() {
 
     final updateResponse = await dio.put(
       '/notifications/preferences',
-      data: {'pushMarketing': true},
+      data: {
+        'categories': {'marketing': true},
+      },
     );
     final updatedPrefs = updateResponse.data as Map<String, dynamic>;
     expect(updatedPrefs['pushMarketing'], isTrue);
+    expect(updatedPrefs['categories'], containsPair('marketing', true));
 
     final persistedResponse = await dio.get('/notifications/preferences');
     final persistedPrefs = persistedResponse.data as Map<String, dynamic>;
     expect(persistedPrefs['pushMarketing'], isTrue);
+    expect(persistedPrefs['categories'], containsPair('marketing', true));
 
     MockRegistry.reset();
 
@@ -473,7 +477,8 @@ void _expectParseableRoute(String path, Object? data) {
       return;
     case '/notifications/preferences':
       final prefs = _expectMap(path, data);
-      expect(prefs['pushMarketing'], isA<bool>());
+      expect(prefs['channels'], isA<Map<String, dynamic>>());
+      expect(prefs['categories'], isA<Map<String, dynamic>>());
       return;
     case '/user/profile':
       final profile = _expectMap(path, data);

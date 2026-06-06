@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
@@ -154,43 +153,6 @@ class NotificationPreferencesScreen extends ConsumerWidget {
         ),
 
         const SizedBox(height: AppSpacing.xxl),
-
-        // Threshold Settings
-        AppText(
-          l10n.notifications_pref_thresholds_title,
-          variant: AppTextVariant.titleMedium,
-          color: colors.textPrimary,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        AppText(
-          l10n.notifications_pref_thresholds_description,
-          variant: AppTextVariant.bodyMedium,
-          color: colors.textSecondary,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-
-        _ThresholdCard(
-          label: l10n.notifications_pref_large_transaction_threshold,
-          value: preferences.largeTransactionThreshold,
-          unit: 'USDC',
-          onChanged: (value) {
-            ref
-                .read(notificationPreferencesProvider.notifier)
-                .setLargeTransactionThreshold(value);
-          },
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _ThresholdCard(
-          label: l10n.notifications_pref_low_balance_threshold,
-          value: preferences.lowBalanceThreshold,
-          unit: 'USDC',
-          onChanged: (value) {
-            ref
-                .read(notificationPreferencesProvider.notifier)
-                .setLowBalanceThreshold(value);
-          },
-        ),
-        const SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
@@ -281,95 +243,6 @@ class _PreferenceSwitch extends StatelessWidget {
             activeTrackColor: colors.gold.withValues(alpha: 0.5),
             inactiveThumbColor: colors.textTertiary,
             inactiveTrackColor: colors.elevated,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ThresholdCard extends StatefulWidget {
-  const _ThresholdCard({
-    required this.label,
-    required this.value,
-    required this.unit,
-    required this.onChanged,
-  });
-  final String label;
-  final double value;
-  final String unit;
-  final ValueChanged<double> onChanged;
-
-  @override
-  State<_ThresholdCard> createState() => _ThresholdCardState();
-}
-
-class _ThresholdCardState extends State<_ThresholdCard> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.value.toStringAsFixed(0));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: colors.container,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.borderSubtle),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            widget.label,
-            variant: AppTextVariant.bodyLarge,
-            color: colors.textPrimary,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: AppInput(
-                  controller: _controller,
-                  keyboardType: TextInputType.number,
-                  hint: '0',
-                  prefixIcon: Icons.tune_rounded,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  onChanged: (value) {
-                    final parsed = double.tryParse(value);
-                    if (parsed != null) widget.onChanged(parsed);
-                  },
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.goldSubtle,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: AppText(
-                  widget.unit,
-                  variant: AppTextVariant.bodyMedium,
-                  color: colors.gold,
-                ),
-              ),
-            ],
           ),
         ],
       ),

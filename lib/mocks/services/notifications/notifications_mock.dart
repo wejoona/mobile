@@ -198,9 +198,39 @@ class NotificationsMock {
     final data = options.data is Map<String, dynamic>
         ? options.data as Map<String, dynamic>
         : const <String, dynamic>{};
+    final channels = data['channels'] is Map<String, dynamic>
+        ? data['channels'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final categories = data['categories'] is Map<String, dynamic>
+        ? data['categories'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final existingChannels =
+        NotificationsMockState.preferences['channels'] is Map<String, dynamic>
+        ? NotificationsMockState.preferences['channels'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final existingCategories =
+        NotificationsMockState.preferences['categories'] is Map<String, dynamic>
+        ? NotificationsMockState.preferences['categories']
+              as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final updatedChannels = {...existingChannels, ...channels};
+    final updatedCategories = {...existingCategories, ...categories};
     NotificationsMockState.preferences = {
       ...NotificationsMockState.preferences,
       ...data,
+      'channels': updatedChannels,
+      'categories': updatedCategories,
+      'pushEnabled': updatedChannels['push'] as bool? ?? true,
+      'pushTransactions': updatedCategories['transaction'] as bool? ?? true,
+      'pushSecurity': updatedCategories['security'] as bool? ?? true,
+      'pushMarketing': updatedCategories['marketing'] as bool? ?? false,
+      'emailEnabled': updatedChannels['email'] as bool? ?? true,
+      'emailTransactions': updatedCategories['transaction'] as bool? ?? true,
+      'emailMonthlyStatement': updatedCategories['system'] as bool? ?? true,
+      'emailMarketing': updatedCategories['marketing'] as bool? ?? false,
+      'smsEnabled': updatedChannels['sms'] as bool? ?? true,
+      'smsTransactions': updatedCategories['transaction'] as bool? ?? true,
+      'smsSecurity': updatedCategories['security'] as bool? ?? true,
       'updatedAt': DateTime.now().toIso8601String(),
     };
     return MockResponse.success(NotificationsMockState.preferences);

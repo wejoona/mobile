@@ -59,28 +59,30 @@ class NotificationPreferencesApiService {
   }) async {
     try {
       final data = <String, dynamic>{};
+      final channels = <String, dynamic>{};
+      final categories = <String, dynamic>{};
 
-      if (pushEnabled != null) data['pushEnabled'] = pushEnabled;
-      if (pushTransactions != null) data['pushTransactions'] = pushTransactions;
-      if (pushSecurity != null) data['pushSecurity'] = pushSecurity;
-      if (pushMarketing != null) data['pushMarketing'] = pushMarketing;
-      if (emailEnabled != null) data['emailEnabled'] = emailEnabled;
+      if (pushEnabled != null) channels['push'] = pushEnabled;
+      if (pushTransactions != null) {
+        categories['transaction'] = pushTransactions;
+      }
+      if (pushSecurity != null) categories['security'] = pushSecurity;
+      if (pushMarketing != null) categories['marketing'] = pushMarketing;
+      if (emailEnabled != null) channels['email'] = emailEnabled;
       if (emailTransactions != null) {
-        data['emailTransactions'] = emailTransactions;
+        categories['transaction'] = emailTransactions;
       }
       if (emailMonthlyStatement != null) {
-        data['emailMonthlyStatement'] = emailMonthlyStatement;
+        categories['system'] = emailMonthlyStatement;
       }
-      if (emailMarketing != null) data['emailMarketing'] = emailMarketing;
-      if (smsEnabled != null) data['smsEnabled'] = smsEnabled;
-      if (smsTransactions != null) data['smsTransactions'] = smsTransactions;
-      if (smsSecurity != null) data['smsSecurity'] = smsSecurity;
-      if (largeTransactionThreshold != null) {
-        data['largeTransactionThreshold'] = largeTransactionThreshold;
+      if (emailMarketing != null) categories['marketing'] = emailMarketing;
+      if (smsEnabled != null) channels['sms'] = smsEnabled;
+      if (smsTransactions != null) {
+        categories['transaction'] = smsTransactions;
       }
-      if (lowBalanceThreshold != null) {
-        data['lowBalanceThreshold'] = lowBalanceThreshold;
-      }
+      if (smsSecurity != null) categories['security'] = smsSecurity;
+      if (channels.isNotEmpty) data['channels'] = channels;
+      if (categories.isNotEmpty) data['categories'] = categories;
 
       final response = await _dio.put('/notifications/preferences', data: data);
       return UserNotificationPreferences.fromJson(
