@@ -87,7 +87,7 @@ class ProfilePictureService {
         },
       );
 
-      final data = response.data as Map<String, dynamic>;
+      final data = _readPayload(response.data);
       _logger.info('Avatar uploaded successfully');
       return AvatarUploadResult.fromJson(data);
     } catch (e) {
@@ -185,3 +185,15 @@ class ProfilePictureService {
 final profilePictureServiceProvider = Provider<ProfilePictureService>((ref) {
   return ProfilePictureService(ref.watch(dioProvider));
 });
+
+Map<String, dynamic> _readPayload(Object? raw) {
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return map;
+  }
+  return const {};
+}
