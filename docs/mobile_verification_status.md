@@ -25,6 +25,17 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 live iPhone 17 release evidence refresh:
+  - Current mobile main verified commit: `370f33b test: accept live deposit review state`.
+  - `flutter test integration_test/flows/live_api_login_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17 against the live API.
+  - The live flow registered a fresh user, verified OTP, created a wallet, saved profile, set PIN, skipped KYC into home, handled the current deposit unavailable/account-review state, opened transactions, notifications, devices, active sessions, notification preferences, and completed logout.
+  - `flutter test integration_test/flows/live_api_visual_sweep_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - The visual sweep generated 19 live-API screenshots under `build/screenshots/korido_live_visual_sweep/`: onboarding intro, phone, OTP, profile, PIN, KYC prompt, onboarding success, home balance, send recipient, deposit amount/provider state, transactions, notifications, contacts permission/list, settings, profile, devices, and active sessions.
+  - Live endpoints observed included auth register/OTP/logout, countries config, wallet create/balance/transactions/exchange-rate/deposit channels, user profile/PIN/limits, contacts recents/sync, notifications/preferences, devices, and sessions.
+  - `dart analyze integration_test/helpers/korido_flow_driver.dart integration_test/flows/live_api_visual_sweep_test.dart` passed with no issues.
+  - `flutter build ios --release --no-codesign --dart-define=ENV=production --dart-define=API_URL=https://api.joonapay.com/api/v1` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - Built app metadata: bundle id `com.joonapay.korido`, version `1.0.0`, build `1`.
+  - Known non-blocking build warnings remain: plugins without Swift Package Manager support, LocalAuth UIScene lifecycle warning in simulator/debug runs, and expected no-codesign warning for local release build.
 - 2026-06-06 broad local and expanded live API readiness gate:
   - `flutter test` passed 677 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
   - `flutter analyze --no-fatal-infos` exited 0; it reported 13,082 info-level style findings, mostly existing lint debt in integration/golden tests and utility files.
