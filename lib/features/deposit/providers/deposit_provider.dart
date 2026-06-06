@@ -336,37 +336,6 @@ class DepositNotifier extends Notifier<DepositState> {
     state = state.copyWith();
   }
 
-  // === Stub methods for views ===
-  Future<void> confirmDeposit() async {
-    final response = state.response;
-    if (response == null || response.token.isEmpty) {
-      state = state.copyWith(error: 'Missing deposit token.');
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final service = ref.read(depositServiceProvider);
-      final confirmed = await service.confirmDeposit(
-        ConfirmDepositRequest(token: response.token, otp: state.otpInput),
-      );
-      state = state.copyWith(
-        isLoading: false,
-        response: confirmed,
-        result: DepositResult.fromResponse(confirmed),
-        step: DepositFlowStep.processing,
-      );
-      _startPolling(confirmed.depositId);
-      await _pollStatus(confirmed.depositId);
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-        step: DepositFlowStep.failed,
-      );
-    }
-  }
-
   Future<void> initiateDeposit() async => initiate();
   void selectProviderData(dynamic data) {
     final code = data is ProviderData ? data.id : data.toString();

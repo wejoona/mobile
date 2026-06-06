@@ -104,18 +104,5 @@ String _normalizePhoneNumber(String phoneNumber, String currency) {
   return '+$digits';
 }
 
-/// Confirm Deposit Request
-class ConfirmDepositRequest {
-  final String token;
-  final String? otp;
-
-  const ConfirmDepositRequest({required this.token, this.otp});
-
-  Map<String, dynamic> toJson() => {
-    'token': token,
-    if (otp != null) 'otp': otp,
-  };
-}
-
 /// Legacy DepositRequest (keeping for backward compatibility)
 typedef DepositRequest = InitiateDepositRequest;

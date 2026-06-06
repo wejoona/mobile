@@ -52,15 +52,6 @@ class DepositService {
     return DepositResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Confirm a deposit (submit OTP or trigger PUSH)
-  Future<DepositResponse> confirmDeposit(ConfirmDepositRequest request) async {
-    final response = await _dio.post(
-      '/deposits/confirm',
-      data: request.toJson(),
-    );
-    return DepositResponse.fromJson(response.data as Map<String, dynamic>);
-  }
-
   /// Get deposit status (for polling)
   Future<DepositResponse> getDepositStatus(String depositId) async {
     final response = await _dio.get('/wallet/deposit/$depositId');

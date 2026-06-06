@@ -18,7 +18,7 @@ import 'package:usdc_wallet/utils/currency_utils.dart';
 /// Payment Instructions Screen
 ///
 /// Receives DepositResponse with token + paymentMethodType:
-/// - OTP flow: Shows "Dial #144*82# on your phone" + OTP input field + Confirm button
+/// - OTP flow: Shows provider instructions + lets the user refresh status
 /// - PUSH flow: Shows "Approve the payment on your phone" + waiting spinner + auto-polls status
 /// - QR_LINK flow: Shows QR code + "Open in Wave" deep link button + auto-polls status
 class PaymentInstructionsScreen extends ConsumerStatefulWidget {
@@ -31,18 +31,10 @@ class PaymentInstructionsScreen extends ConsumerStatefulWidget {
 
 class _PaymentInstructionsScreenState
     extends ConsumerState<PaymentInstructionsScreen> {
-  final _otpController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
-    // Polling starts in DepositNotifier after /deposits/initiate or /confirm.
-  }
-
-  @override
-  void dispose() {
-    _otpController.dispose();
-    super.dispose();
+    // Polling starts in DepositNotifier after /wallet/deposit.
   }
 
   @override
@@ -270,7 +262,7 @@ class _PaymentInstructionsScreenState
     }
   }
 
-  /// OTP flow: Shows "Dial #144*82# on your phone" + OTP input field + Confirm button
+  /// OTP flow: provider action happens outside Korido; mobile checks status.
   Widget _buildOtpContent(
     DepositState state,
     ThemeColors colors,
@@ -286,53 +278,17 @@ class _PaymentInstructionsScreenState
               Icon(Icons.dialpad, size: 48, color: colors.gold),
               const SizedBox(height: AppSpacing.md),
               AppText(
-                l10n.deposit_dialUSSD,
+                state.response?.instructions.isNotEmpty == true
+                    ? state.response!.instructions
+                    : l10n.deposit_dialUSSD,
                 variant: AppTextVariant.titleMedium,
                 color: colors.textPrimary,
                 textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.elevated,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: AppText(
-                  '#144*82#',
-                  variant: AppTextVariant.headlineSmall,
-                  color: colors.gold,
-                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.xl),
-
-        // OTP Input
-        AppText(
-          l10n.deposit_enterOTP,
-          variant: AppTextVariant.titleMedium,
-          color: colors.textPrimary,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: AppSpacing.lg),
-        AppInput(
-          key: const ValueKey('deposit_otp_input'),
-          controller: _otpController,
-          label: l10n.deposit_enterOTP,
-          hint: '------',
-          variant: AppInputVariant.pin,
-          keyboardType: TextInputType.number,
-          maxLength: 8,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (value) {
-            ref.read(depositProvider.notifier).setOtp(value);
-          },
-        ),
       ],
     );
   }
@@ -511,13 +467,16 @@ class _PaymentInstructionsScreenState
     ThemeColors colors,
     AppLocalizations l10n,
   ) {
-    final canSubmit = (state.otpInput?.length ?? 0) >= 4;
+    final canCheckStatus =
+        state.response?.transactionId.isNotEmpty == true ||
+        state.response?.depositId.isNotEmpty == true ||
+        state.result?.id.isNotEmpty == true;
 
     return AppButton(
-      label: l10n.deposit_submitOTP,
-      onPressed: state.isLoading || !canSubmit
+      label: l10n.deposit_completedPayment,
+      onPressed: state.isLoading || !canCheckStatus
           ? null
-          : () => ref.read(depositProvider.notifier).confirmDeposit(),
+          : () => ref.read(depositProvider.notifier).checkStatus(),
       isLoading: state.isLoading,
       isFullWidth: true,
     );

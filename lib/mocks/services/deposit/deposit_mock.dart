@@ -26,13 +26,6 @@ class DepositMock {
       handler: _handleInitiateDeposit,
     );
 
-    // POST /deposits/confirm - Confirm canonical deposit flow
-    interceptor.register(
-      method: 'POST',
-      path: '/deposits/confirm',
-      handler: _handleConfirmDeposit,
-    );
-
     // GET /deposits - List deposits
     interceptor.register(
       method: 'GET',
@@ -267,39 +260,6 @@ class DepositMock {
     };
     DepositMockState.deposits.insert(0, deposit);
     return MockResponse.created(deposit);
-  }
-
-  static Future<MockResponse> _handleConfirmDeposit(
-    RequestOptions options,
-  ) async {
-    final data = options.data as Map<String, dynamic>;
-    final token = data['token'] as String?;
-    final depositId = token?.replaceFirst('mock_deposit_token_', '');
-    final deposit = DepositMockState.deposits.firstWhere(
-      (item) => item['depositId'] == depositId,
-      orElse: () => const <String, dynamic>{},
-    );
-    final confirmed = {
-      'id': 'dep_confirmed_${DateTime.now().millisecondsSinceEpoch}',
-      'depositId': depositId?.isNotEmpty == true
-          ? depositId
-          : 'dep_confirmed_${DateTime.now().millisecondsSinceEpoch}',
-      'status': 'processing',
-      'amount': deposit['amount'] as num? ?? 6000,
-      'usdcAmount': deposit['usdcAmount'] as num? ?? 10,
-      'exchangeRate': 600,
-      'currency': deposit['currency'] as String? ?? 'XOF',
-      'providerCode': deposit['providerCode'] as String? ?? 'OMCI',
-      'paymentMethodType':
-          deposit['paymentMethodType'] as String? ??
-          (data['otp'] == null ? 'PUSH' : 'OTP'),
-      'updatedAt': DateTime.now().toIso8601String(),
-    };
-    if (deposit.isNotEmpty) {
-      final index = DepositMockState.deposits.indexOf(deposit);
-      DepositMockState.deposits[index] = {...deposit, ...confirmed};
-    }
-    return MockResponse.success(confirmed);
   }
 
   static Future<MockResponse> _handleDepositStatus(
