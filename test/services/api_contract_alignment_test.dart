@@ -924,5 +924,31 @@ void main() {
       expect(users.single.phone, '+2250748805663');
       expect(users.single.avatarUrl, 'https://cdn.example/avatar.png');
     });
+
+    test('contact lookup keeps masked backend users discoverable', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'users': [
+            {
+              'userId': 'user_masked',
+              'displayName': 'Awa Masked',
+              'phone': '+22507****63',
+              'avatarUrl': null,
+              'isKoridoUser': true,
+            },
+          ],
+          'total': 1,
+        });
+      final service = KoridoContactsService(dio);
+
+      final users = await service.lookupKoridoUsers('awa');
+
+      expect(dio.requestHistory.single.path, '/contacts/lookup');
+      expect(users.single.id, 'user_masked');
+      expect(users.single.joonaPayUserId, 'user_masked');
+      expect(users.single.name, 'Awa Masked');
+      expect(users.single.phone, isEmpty);
+      expect(users.single.isKoridoUser, isTrue);
+    });
   });
 }

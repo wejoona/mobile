@@ -136,7 +136,10 @@ class _ContactPickerBottomSheetState
           .lookupKoridoUsers(trimmed);
       final localPhones = _contacts.map((contact) => contact.phone).toSet();
       final filteredResults = results
-          .where((result) => !localPhones.contains(result.phone))
+          .where(
+            (result) =>
+                result.phone.isEmpty || !localPhones.contains(result.phone),
+          )
           .toList();
 
       if (mounted && _searchController.text.trim() == trimmed) {
@@ -332,6 +335,7 @@ class _ContactPickerBottomSheetState
       en: 'Verified Korido account',
       fr: 'Compte Korido vérifié',
     );
+    final canSelect = !fromLookup || contact.phone.isNotEmpty;
 
     return GestureDetector(
       key: ValueKey(
@@ -340,7 +344,9 @@ class _ContactPickerBottomSheetState
             : 'contact_picker_${contact.id}',
       ),
       behavior: HitTestBehavior.opaque,
-      onTap: () => Navigator.pop(context, contact),
+      onTap: canSelect
+          ? () => Navigator.pop(context, contact)
+          : () => _showLookupNeedsPhoneMessage(),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         child: Row(
@@ -389,7 +395,14 @@ class _ContactPickerBottomSheetState
                   ),
                   SizedBox(height: AppSpacing.xs),
                   AppText(
-                    fromLookup ? verifiedAccount : contact.phone,
+                    fromLookup && contact.phone.isEmpty
+                        ? _localizedText(
+                            en: 'Korido account found',
+                            fr: 'Compte Korido trouvé',
+                          )
+                        : fromLookup
+                        ? verifiedAccount
+                        : contact.phone,
                     variant: AppTextVariant.bodySmall,
                     color: colors.textSecondary,
                   ),
@@ -398,6 +411,19 @@ class _ContactPickerBottomSheetState
             ),
             Icon(Icons.chevron_right, color: colors.textSecondary),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showLookupNeedsPhoneMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _localizedText(
+            en: 'This account is discoverable, but a phone number is required to send for now.',
+            fr: 'Ce compte est visible, mais un numéro de téléphone est requis pour envoyer pour le moment.',
+          ),
         ),
       ),
     );

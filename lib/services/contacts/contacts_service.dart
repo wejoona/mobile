@@ -481,21 +481,35 @@ class KoridoContactsService {
       queryParameters: {'query': trimmed},
     );
     return _extractMapList(response.data, ['users', 'contacts', 'items'])
-        .map(
-          (user) => SyncedContact(
-            id: _stringField(user, ['id', 'userId', 'koridoUserId']),
-            name: _stringField(user, ['name', 'displayName', 'phone']),
-            phone: _stringField(user, ['phone', 'phoneNumber']),
+        .map((user) {
+          final userId = _stringField(user, ['id', 'userId', 'koridoUserId']);
+          final rawPhone = _stringField(user, ['phoneNumber', 'phone']);
+          final maskedPhone = _stringField(user, ['maskedPhone']);
+          final safePhone = _isMaskedPhone(rawPhone) ? '' : rawPhone;
+          final name = _stringField(user, [
+            'name',
+            'displayName',
+            'username',
+            'firstName',
+            'phoneNumber',
+            'maskedPhone',
+            'phone',
+          ]);
+
+          return SyncedContact(
+            id: userId,
+            name: name.isNotEmpty
+                ? name
+                : maskedPhone.isNotEmpty
+                ? maskedPhone
+                : 'Korido user',
+            phone: safePhone,
             isKoridoUser: user['isKoridoUser'] as bool? ?? true,
-            joonaPayUserId: _stringField(user, [
-              'id',
-              'userId',
-              'koridoUserId',
-            ]),
+            joonaPayUserId: userId,
             avatarUrl: _stringField(user, ['avatarUrl', 'photoUrl']),
-          ),
-        )
-        .where((user) => user.id.isNotEmpty && user.phone.isNotEmpty)
+          );
+        })
+        .where((user) => user.id.isNotEmpty)
         .toList();
   }
 
@@ -544,6 +558,14 @@ class KoridoContactsService {
   Future<void> deleteContact(String contactId) async {
     await _dio.delete('/contacts/$contactId');
   }
+}
+
+bool _isMaskedPhone(String value) {
+  if (value.isEmpty) return false;
+  final normalized = value.toLowerCase();
+  return normalized.contains('*') ||
+      normalized.contains('•') ||
+      normalized.contains('x');
 }
 
 /// Korido Contacts Service Provider
