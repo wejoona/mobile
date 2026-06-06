@@ -25,6 +25,13 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 current-main post-hardening release gate:
+  - Current mobile main verified commit: `0ddaaaf fix: remove placeholder attestation export`.
+  - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
+  - `flutter test integration_test/flows/live_api_login_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on the booted iPhone 17 simulator.
+  - The live flow registered a fresh user, verified OTP, registered the device, created a wallet, updated profile, set PIN through the JWE/public-key path, reached Home, opened deposit rate/channels, transactions, notifications, devices, active sessions, notification preferences, completed logout, and fetched country config.
+  - Live endpoints observed included `/auth/register`, `/auth/verify-otp`, `/devices/register`, `/wallet`, `/wallet/create`, `/kyc/status`, `/user/profile`, `/security/public-key`, `/user/pin/set`, `/notifications/unread-count`, `/user/limits`, `/wallet/transactions`, `/wallet/exchange-rate`, `/wallet/deposit/channels`, `/notifications`, `/devices`, `/sessions`, `/notifications/preferences`, `/auth/logout`, and `/config/countries`.
 - 2026-06-06 mobile security export hardening:
   - Removed the unused `lib/services/security/auth/device_attestation_service.dart` placeholder implementation and stopped exporting it from `lib/services/security/auth/index.dart`.
   - The active attestation implementation remains `lib/services/security/device_attestation.dart`, backed by the native iOS App Attest and Android Play Integrity method channel.
