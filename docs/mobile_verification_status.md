@@ -25,6 +25,14 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 live API device/session and visual sweep refresh:
+  - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e/devices_e2e_test.dart` passed 6 live API tests, covering device register/list/idempotency, active sessions, and unauthenticated 401 checks.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test test/e2e/user_e2e_test.dart test/e2e/transactions_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart` passed 25 live API tests, covering profile update, profile photo upload/persist/serve/delete, PIN, user search/limits, transaction history/stats, notifications/preferences/device token, and feature subscriptions with feature context.
+  - `flutter test --no-pub -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 integration_test/flows/live_api_visual_sweep_test.dart --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on the booted iPhone 17 simulator after a warm-build retry.
+  - The live simulator sweep registered a fresh user, verified OTP, created a wallet, completed profile and PIN setup, skipped KYC into home, and opened send, deposit, transactions, notifications, contacts permission/list, settings, profile, devices, and active sessions.
+  - Live endpoints observed included auth register/OTP, wallet create, profile, PIN, notifications, limits, transactions, contacts recents/sync, exchange rate, deposit channels, devices, and sessions.
+  - The first simulator attempt failed before app launch when Xcode killed `Pods-Runner-frameworks.sh` with signal 9; the immediate warm retry passed without source changes.
 - 2026-06-06 production network security hardening:
   - Fixed mobile certificate pinning enforcement: Dio now uses `IOHttpClientAdapter.validateCertificate` after normal platform TLS validation, instead of relying on `badCertificateCallback` which only runs for certificates the platform already rejected.
   - Verified the current live `api.joonapay.com` leaf DER SHA-256 fingerprint is `gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=`, matching the pinned production value.
