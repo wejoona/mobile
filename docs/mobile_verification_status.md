@@ -25,6 +25,14 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 live visual sweep lifecycle fix:
+  - Fixed `FilteredPaginatedTransactionsNotifier` so in-flight `refresh()` and `loadMore()` calls do not write state after the auto-disposed provider is unmounted during fast route changes.
+  - Added `test/providers/filtered_transactions_lifecycle_test.dart` to reproduce the disposed-provider race with a delayed Dio response and verify no late state write escapes.
+  - `flutter test test/providers/filtered_transactions_lifecycle_test.dart` passed.
+  - `flutter analyze --no-fatal-infos lib/providers/missing_providers.dart test/providers/filtered_transactions_lifecycle_test.dart` exited 0 with existing info-level style findings only.
+  - First live visual sweep attempt exposed the race while navigating from transactions to notifications; after the fix, `flutter test integration_test/flows/live_api_visual_sweep_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - The passing sweep generated 19 screenshots under `build/screenshots/korido_live_visual_sweep/`, all at 1206x2622: onboarding intro, phone, OTP, profile, PIN, KYC prompt, onboarding success, home balance, send recipient, deposit amount/provider state, transactions, notifications, contacts permission/list, settings, profile, devices, and active sessions.
+  - Live endpoints observed included auth register/OTP, device registration, wallet create, KYC status, profile update, public-key/PIN, notifications, limits, transactions, contacts recents/sync, exchange rate, deposit channels, devices, and sessions.
 - 2026-06-06 current-main post-hardening release gate:
   - Current mobile main verified commit: `0ddaaaf fix: remove placeholder attestation export`.
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.

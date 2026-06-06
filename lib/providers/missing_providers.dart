@@ -36,7 +36,7 @@ class FilteredPaginatedTransactionsNotifier
   FilteredPaginatedTransactionsNotifier(this._ref)
     : super(const FilteredPaginatedTransactionsState()) {
     // Auto-load on creation
-    refresh();
+    unawaited(refresh());
   }
 
   final Ref _ref;
@@ -56,6 +56,9 @@ class FilteredPaginatedTransactionsNotifier
         queryParameters: params,
       );
       final data = response.data as Map<String, dynamic>;
+      if (!mounted) {
+        return;
+      }
       final items =
           ((data['transactions'] ?? data['data'] ?? data['items']) as List?)
               ?.map((e) => Transaction.fromJson(e as Map<String, dynamic>))
@@ -69,12 +72,17 @@ class FilteredPaginatedTransactionsNotifier
         page: 1,
       );
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
   Future<void> loadMore() async {
-    if (state.isLoading || !state.hasMore) return;
+    if (state.isLoading || !state.hasMore) {
+      return;
+    }
     final nextPage = state.page + 1;
     state = state.copyWith(isLoading: true);
     try {
@@ -90,6 +98,9 @@ class FilteredPaginatedTransactionsNotifier
         queryParameters: params,
       );
       final data = response.data as Map<String, dynamic>;
+      if (!mounted) {
+        return;
+      }
       final items =
           ((data['transactions'] ?? data['data'] ?? data['items']) as List?)
               ?.map((e) => Transaction.fromJson(e as Map<String, dynamic>))
@@ -103,6 +114,9 @@ class FilteredPaginatedTransactionsNotifier
         page: nextPage,
       );
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
