@@ -86,9 +86,9 @@ class CertificatePinning {
 
   /// Configure Dio client with certificate pinning
   /// Only applies in release mode for production API
-  static void configurePinning(Dio dio) {
+  static void configurePinning(Dio dio, {bool forceForTesting = false}) {
     // Skip pinning in debug mode (localhost doesn't have valid certs)
-    if (kDebugMode) {
+    if (kDebugMode && !forceForTesting) {
       _logger.info('Disabled in debug mode');
       return;
     }
@@ -103,14 +103,8 @@ class CertificatePinning {
     }
 
     dio.httpClientAdapter = IOHttpClientAdapter(
-      createHttpClient: () {
-        final client = HttpClient();
-
-        // Set up certificate validation callback
-        client.badCertificateCallback = _validateCertificate;
-
-        return client;
-      },
+      createHttpClient: HttpClient.new,
+      validateCertificate: _validateTrustedCertificate,
     );
 
     _logger.security(
@@ -120,8 +114,8 @@ class CertificatePinning {
 
   /// Certificate validation callback
   /// Returns true if certificate is valid, false to reject
-  static bool _validateCertificate(
-    X509Certificate cert,
+  static bool _validateTrustedCertificate(
+    X509Certificate? cert,
     String host,
     int port,
   ) {
@@ -131,11 +125,15 @@ class CertificatePinning {
     );
 
     if (!requiresPinning) {
-      // For non-pinned hosts, reject bad certificates (default behavior)
-      // This callback is only called for certificates that failed standard validation
+      // Standard platform TLS validation has already accepted this
+      // certificate chain. Preserve normal behavior for non-pinned hosts.
+      return true;
+    }
+
+    if (cert == null) {
       _logger.security(
-        'Rejecting bad certificate for non-pinned host: $host',
-        level: 'WARN',
+        'SECURITY ALERT - Missing certificate for pinned host $host',
+        level: 'CRITICAL',
       );
       return false;
     }
@@ -222,6 +220,13 @@ class CertificatePinning {
   /// Check if certificate pinning is properly configured
   static bool isConfigured() {
     return !_trustedFingerprints.any((fp) => fp.startsWith('REPLACE_'));
+  }
+
+  @visibleForTesting
+  static bool hostRequiresPinning(String host) {
+    return _pinnedHosts.any(
+      (pinnedHost) => host == pinnedHost || host.endsWith('.$pinnedHost'),
+    );
   }
 
   /// Load trusted certificates from assets

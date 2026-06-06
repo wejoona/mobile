@@ -25,6 +25,16 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 production network security hardening:
+  - Fixed mobile certificate pinning enforcement: Dio now uses `IOHttpClientAdapter.validateCertificate` after normal platform TLS validation, instead of relying on `badCertificateCallback` which only runs for certificates the platform already rejected.
+  - Verified the current live `api.joonapay.com` leaf DER SHA-256 fingerprint is `gvcwFV4jHJrKyc2rrHFNlZbenxWnWywAezu5tpkv7is=`, matching the pinned production value.
+  - Split Android network security config so release/main no longer permits localhost cleartext; debug resources now own localhost, `10.0.2.2`, and `127.0.0.1` cleartext access for local API runs.
+  - Added regression tests for production pin configuration and Android release/debug network-security resource split.
+  - `flutter test test/services/security/certificate_pinning_test.dart test/services/security/certificate_pinning_config_test.dart test/config/android_network_security_config_test.dart test/config/api_configuration_test.dart` passed 9 active tests.
+  - `flutter test` passed 677 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
+  - `flutter analyze --no-fatal-infos lib/services/security/certificate_pinning.dart test/services/security/certificate_pinning_test.dart test/services/security/certificate_pinning_config_test.dart test/config/android_network_security_config_test.dart android/app/src/main/res/xml/network_security_config.xml android/app/src/debug/res/xml/network_security_config.xml` exited 0 with info-level style debt only.
+  - `flutter build apk --release --dart-define-from-file=env.prod.json` passed and produced `build/app/outputs/flutter-apk/app-release.apk` (108.7MB).
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed unsandboxed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
 - 2026-06-06 empty-state polish and live visual refresh:
   - Contacts and notifications empty states now use gold-accent action cards, brighter gold filled CTAs with light text, and trust-focused copy.
   - Contacts empty copy changed from the stale pull-to-refresh message to `Connect your contacts to find Korido users.`; French copy was updated and generated localizations refreshed.
