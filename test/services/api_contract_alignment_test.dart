@@ -8,6 +8,10 @@ import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
+import 'package:usdc_wallet/features/notifications/providers/notification_count_provider.dart'
+    as notification_count;
+import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart'
+    as notification_feed;
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
@@ -210,6 +214,31 @@ void main() {
       expect(request.path, '/notifications/unread-count');
       expect(count, 4);
     });
+
+    test(
+      'home notification badge uses backend unread count provider',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            notification_feed.unreadNotificationCountProvider.overrideWith((
+              ref,
+            ) async {
+              return 7;
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(
+          notification_feed.unreadNotificationCountProvider.future,
+        );
+
+        expect(
+          container.read(notification_count.unreadNotificationCountProvider),
+          7,
+        );
+      },
+    );
 
     test('push token registration uses deployed mobile SDK route', () async {
       final dio = MockDio()..queueResponse({'message': 'ok'});

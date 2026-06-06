@@ -16,14 +16,19 @@ final notificationsProvider = FutureProvider<List<AppNotification>>((
 });
 
 /// Unread notification count.
-final unreadNotificationCountProvider = Provider<int>((ref) {
-  final notifications = ref.watch(notificationsProvider).value ?? [];
-  return notifications.where((n) => !n.isRead).length;
+final unreadNotificationCountProvider = FutureProvider<int>((ref) async {
+  final repository = ref.watch(notificationsRepositoryProvider);
+  final link = ref.keepAlive();
+  final timer = Timer(const Duration(minutes: 1), () => link.close());
+  ref.onDispose(() => timer.cancel());
+
+  return repository.getUnreadCount();
 });
 
 /// Has unread notifications.
 final hasUnreadNotificationsProvider = Provider<bool>((ref) {
-  return ref.watch(unreadNotificationCountProvider) > 0;
+  final unreadCount = ref.watch(unreadNotificationCountProvider).value ?? 0;
+  return unreadCount > 0;
 });
 
 /// Notification actions.

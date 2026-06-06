@@ -15,7 +15,8 @@ class NotificationsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final unreadCountAsync = ref.watch(unreadNotificationCountProvider);
+    final unreadCount = unreadCountAsync.value ?? 0;
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
@@ -40,6 +41,7 @@ class NotificationsView extends ConsumerWidget {
                   final actions = ref.read(notificationActionsProvider);
                   await actions.markAllAsRead();
                   ref.invalidate(notificationsProvider);
+                  ref.invalidate(unreadNotificationCountProvider);
                 },
               ),
             ),
@@ -146,6 +148,7 @@ class NotificationsView extends ConsumerWidget {
                         final actions = ref.read(notificationActionsProvider);
                         await actions.markAsRead(notification.id);
                         ref.invalidate(notificationsProvider);
+                        ref.invalidate(unreadNotificationCountProvider);
                       }
                     },
                   ),
