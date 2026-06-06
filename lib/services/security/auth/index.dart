@@ -4,7 +4,6 @@ export 'package:usdc_wallet/services/security/auth/auth_token_manager.dart';
 export 'package:usdc_wallet/services/security/auth/session_security_service.dart';
 export 'package:usdc_wallet/services/security/auth/login_attempt_tracker.dart';
 export 'package:usdc_wallet/services/security/auth/adaptive_auth_service.dart';
-export 'package:usdc_wallet/services/security/auth/device_attestation_service.dart';
 export 'package:usdc_wallet/services/security/auth/password_policy_service.dart';
 export 'package:usdc_wallet/services/security/auth/brute_force_lockout_service.dart';
 export 'package:usdc_wallet/services/security/auth/pin_strength_validator.dart';
@@ -17,7 +16,8 @@ export 'package:usdc_wallet/services/security/auth/challenge_token_generator.dar
 export 'package:usdc_wallet/services/security/auth/step_up_auth_coordinator.dart';
 export 'package:usdc_wallet/services/security/auth/biometric_config_provider.dart';
 export 'package:usdc_wallet/services/security/auth/pin_hash_service.dart';
-export 'package:usdc_wallet/services/security/auth/lockout_state_store.dart' hide LockoutState;
+export 'package:usdc_wallet/services/security/auth/lockout_state_store.dart'
+    hide LockoutState;
 export 'package:usdc_wallet/services/security/auth/device_binding_service.dart';
 export 'package:usdc_wallet/services/security/auth/session_timeout_manager.dart';
 export 'package:usdc_wallet/services/security/auth/auth_event_logger.dart';

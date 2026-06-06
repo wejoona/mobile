@@ -25,6 +25,13 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 mobile security export hardening:
+  - Removed the unused `lib/services/security/auth/device_attestation_service.dart` placeholder implementation and stopped exporting it from `lib/services/security/auth/index.dart`.
+  - The active attestation implementation remains `lib/services/security/device_attestation.dart`, backed by the native iOS App Attest and Android Play Integrity method channel.
+  - Added `test/services/security/security_export_hardening_test.dart` so future security barrel exports keep using the platform-channel attestation path and do not reintroduce the placeholder service.
+  - `flutter test test/services/security/security_export_hardening_test.dart test/services/security/certificate_pinning_test.dart test/services/security/certificate_pinning_config_test.dart test/config/codemagic_release_config_test.dart test/config/api_configuration_test.dart` passed.
+  - `flutter analyze --no-fatal-infos test/services/security/security_export_hardening_test.dart lib/services/security/auth/index.dart lib/services/security/device_attestation.dart` exited 0 with existing info-level style findings only.
+  - `flutter test` passed 693 active tests with 419 opt-in golden/snapshot/live-E2E tests skipped by design.
 - 2026-06-06 Codemagic release configuration hardening:
   - Updated `codemagic.yaml` so both TestFlight IPA and Android AAB builds pass `--dart-define-from-file="$CM_BUILD_DIR/env.prod.json"`.
   - Removed the Android direct-Gradle fallback because it would bypass Flutter dart-defines and could ship a release artifact without the verified production environment values.
