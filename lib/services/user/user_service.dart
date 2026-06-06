@@ -15,7 +15,7 @@ class UserService {
   Future<UserProfile> getProfile() async {
     try {
       final response = await _dio.get('/user/profile');
-      return UserProfile.fromJson(response.data);
+      return UserProfile.fromJson(_readPayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -36,7 +36,7 @@ class UserService {
           if (email != null) 'email': email,
         },
       );
-      return UserProfile.fromJson(response.data);
+      return UserProfile.fromJson(_readPayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -50,7 +50,7 @@ class UserService {
       });
 
       final response = await _dio.post('/user/avatar', data: formData);
-      return AvatarUploadResult.fromJson(response.data as Map<String, dynamic>);
+      return AvatarUploadResult.fromJson(_readPayload(response.data));
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
     }
@@ -172,29 +172,39 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: (json['id'] ?? json['userId'] ?? '') as String,
+      id: (json['id'] ?? json['userId'] ?? json['user_id'] ?? '') as String,
       phone: json['phone'] as String? ?? '',
-      phoneVerified: json['phoneVerified'] as bool? ?? false,
+      phoneVerified:
+          _readBool(json, const ['phoneVerified', 'phone_verified']) ?? false,
       username: json['username'] as String?,
-      firstName: json['firstName'] as String?,
-      lastName: json['lastName'] as String?,
+      firstName: (json['firstName'] ?? json['first_name']) as String?,
+      lastName: (json['lastName'] ?? json['last_name']) as String?,
       email: json['email'] as String?,
-      emailVerified: json['emailVerified'] as bool? ?? false,
+      emailVerified:
+          _readBool(json, const ['emailVerified', 'email_verified']) ?? false,
       avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
-      avatarThumb: (json['avatarThumb'] ?? json['avatarBase64']) as String?,
-      preferredLocale: json['preferredLocale'] as String? ?? 'fr',
-      countryCode: json['countryCode'] as String? ?? 'CI',
-      kycStatus: json['kycStatus'] as String? ?? 'none',
-      kycRejectionReason: json['kycRejectionReason'] as String?,
-      canTransact: json['canTransact'] as bool? ?? false,
-      canWithdraw: json['canWithdraw'] as bool? ?? false,
-      hasPin: json['hasPin'] as bool? ?? false,
+      avatarThumb:
+          (json['avatarThumb'] ?? json['avatar_thumb'] ?? json['avatarBase64'])
+              as String?,
+      preferredLocale:
+          (json['preferredLocale'] ?? json['preferred_locale']) as String? ??
+          'fr',
+      countryCode:
+          (json['countryCode'] ?? json['country_code']) as String? ?? 'CI',
+      kycStatus: (json['kycStatus'] ?? json['kyc_status']) as String? ?? 'none',
+      kycRejectionReason:
+          (json['kycRejectionReason'] ?? json['kyc_rejection_reason'])
+              as String?,
+      canTransact:
+          _readBool(json, const ['canTransact', 'can_transact']) ?? false,
+      canWithdraw:
+          _readBool(json, const ['canWithdraw', 'can_withdraw']) ?? false,
+      hasPin: _readBool(json, const ['hasPin', 'has_pin']) ?? false,
       role: json['role'] as String? ?? 'user',
       status: json['status'] as String? ?? 'active',
-      createdAt: _parseDate(json['createdAt']) ?? DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? _parseDate(json['updatedAt'])
-          : null,
+      createdAt:
+          _parseDate(json['createdAt'] ?? json['created_at']) ?? DateTime.now(),
+      updatedAt: _parseDate(json['updatedAt'] ?? json['updated_at']),
     );
   }
 
@@ -238,11 +248,42 @@ class AvatarUploadResult {
 
   factory AvatarUploadResult.fromJson(Map<String, dynamic> json) {
     return AvatarUploadResult(
-      avatarUrl: json['avatarUrl'] as String?,
-      avatarThumb: json['avatarThumb'] as String?,
+      avatarUrl: (json['avatarUrl'] ?? json['avatar_url']) as String?,
+      avatarThumb:
+          (json['avatarThumb'] ?? json['avatar_thumb'] ?? json['avatarBase64'])
+              as String?,
       message: json['message'] as String?,
     );
   }
+}
+
+Map<String, dynamic> _readPayload(Object? raw) {
+  if (raw is Map) {
+    final map = Map<String, dynamic>.from(raw);
+    final data = map['data'];
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    final user = map['user'];
+    if (user is Map) {
+      return Map<String, dynamic>.from(user);
+    }
+    return map;
+  }
+  return const {};
+}
+
+bool? _readBool(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true') return true;
+      if (normalized == 'false') return false;
+    }
+  }
+  return null;
 }
 
 /// User Service Provider
