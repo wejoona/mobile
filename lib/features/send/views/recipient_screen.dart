@@ -359,7 +359,25 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
           .read(sendMoneyProvider.notifier)
           .setRecipient(phoneNumber, name: _selectedRecipientName);
 
-      final recipient = ref.read(sendMoneyProvider).recipient;
+      final sendState = ref.read(sendMoneyProvider);
+      if (sendState.error != null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              localizedSendCopy(
+                context,
+                en: 'We could not verify this Korido account. Please try again.',
+                fr: 'Nous n’avons pas pu vérifier ce compte Korido. Veuillez réessayer.',
+              ),
+            ),
+            backgroundColor: context.colors.error,
+          ),
+        );
+        return;
+      }
+
+      final recipient = sendState.recipient;
       if (recipient?.isKoridoUser != true) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(

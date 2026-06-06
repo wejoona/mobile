@@ -685,6 +685,38 @@ void main() {
       },
     );
 
+    test(
+      'send recipient validation fails closed when contact sync is unavailable',
+      () async {
+        final contactsService = ContactsService(MockSecureStorage());
+        final dio = MockDio()
+          ..queueResponse({
+            'matches': [
+              {'userId': 'old_user', 'displayName': 'Old Recipient'},
+            ],
+          })
+          ..queueErrorResponse(statusCode: 503, message: 'unavailable');
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            contactsServiceProvider.overrideWithValue(contactsService),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(sendMoneyProvider.notifier);
+        await notifier.setRecipient('+2250748805663');
+        expect(container.read(sendMoneyProvider).recipient?.isKoridoUser, true);
+
+        await notifier.setRecipient('+2250748805664');
+
+        final state = container.read(sendMoneyProvider);
+        expect(dio.requestHistory.last.path, '/contacts/sync');
+        expect(state.recipient, isNull);
+        expect(state.error, 'recipient_lookup_unavailable');
+      },
+    );
+
     test('passive contact reads do not request iOS permission', () {
       final contactsServiceSource = File(
         'lib/services/contacts/contacts_service.dart',

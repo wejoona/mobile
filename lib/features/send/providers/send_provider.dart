@@ -55,6 +55,7 @@ class SendMoneyState {
     bool? isLoading,
     String? error,
     RecipientInfo? recipient,
+    bool clearRecipient = false,
     double? amount,
     String? note,
     TransferResult? result,
@@ -69,7 +70,7 @@ class SendMoneyState {
     return SendMoneyState(
       isLoading: isLoading ?? this.isLoading,
       error: error,
-      recipient: recipient ?? this.recipient,
+      recipient: clearRecipient ? null : recipient ?? this.recipient,
       amount: amount ?? this.amount,
       note: note ?? this.note,
       result: result ?? this.result,
@@ -140,7 +141,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Validate and set recipient
   /// Uses POST /contacts/sync with hashed phone to check if Korido user
   Future<void> setRecipient(String phoneNumber, {String? name}) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, clearRecipient: true);
     try {
       final dio = ref.read(dioProvider);
       final contactsService = ref.read(contactsServiceProvider);
@@ -177,15 +178,17 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
 
       state = state.copyWith(isLoading: false, recipient: recipient);
     } on DioException {
-      // If sync fails, still allow setting recipient but mark as unknown
-      final recipient = RecipientInfo(
-        phoneNumber: phoneNumber,
-        name: name,
-        isKoridoUser: false,
+      state = state.copyWith(
+        isLoading: false,
+        clearRecipient: true,
+        error: 'recipient_lookup_unavailable',
       );
-      state = state.copyWith(isLoading: false, recipient: recipient);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        clearRecipient: true,
+        error: e.toString(),
+      );
     }
   }
 
