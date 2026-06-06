@@ -13,10 +13,9 @@ void main() {
   testWidgets('phone input row focuses and accepts typed login phone', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      GoldenTestWrapper(isDarkMode: false, child: const LoginView()),
-    );
-    await tester.pumpAndSettle();
+    await _pumpLoginView(tester);
+
+    expect(find.text('By continuing, you agree to our'), findsNothing);
 
     final phoneFieldFinder = find.byType(TextField).first;
     final phoneField = tester.widget<TextField>(phoneFieldFinder);
@@ -41,4 +40,27 @@ void main() {
       isNotNull,
     );
   });
+
+  testWidgets('terms acceptance sentence is only shown during sign-up', (
+    tester,
+  ) async {
+    await _pumpLoginView(tester);
+
+    expect(find.text('By continuing, you agree to our'), findsNothing);
+    expect(find.text('Terms of Service'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
+
+    await tester.tap(find.text('Sign up'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('By continuing, you agree to our'), findsOneWidget);
+  });
+}
+
+Future<void> _pumpLoginView(WidgetTester tester) async {
+  await tester.binding.setSurfaceSize(const Size(944, 2048));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
+  await tester.pumpWidget(GoldenTestWrapper(child: const LoginView()));
+  await tester.pumpAndSettle();
 }

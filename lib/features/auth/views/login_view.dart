@@ -583,13 +583,15 @@ class _LoginViewState extends ConsumerState<LoginView>
     final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
-        AppText(
-          l10n.auth_termsPrompt,
-          variant: AppTextVariant.bodySmall,
-          color: colors.textTertiary,
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 4),
+        if (_isRegistering) ...[
+          AppText(
+            l10n.auth_termsPrompt,
+            variant: AppTextVariant.bodySmall,
+            color: colors.textTertiary,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+        ],
         Wrap(
           alignment: WrapAlignment.center,
           children: [
