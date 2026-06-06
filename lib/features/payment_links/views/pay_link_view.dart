@@ -85,6 +85,14 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
     final usdcBalance = ref.read(usdcBalanceProvider);
     final payableUsdcAmount = _payableUsdcAmount;
 
+    if (!_isUsdcSettledLink) {
+      _showErrorDialog(
+        l10n.common_error,
+        'This payment link currency is not available yet. Ask the sender to create a USDC link.',
+      );
+      return;
+    }
+
     if (payableUsdcAmount == null) {
       _showErrorDialog(
         l10n.common_error,
@@ -131,6 +139,7 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       final service = ref.read(paymentLinksServiceProvider);
       final result = await service.payLink(
         widget.linkCode,
+        amount: payableUsdcAmount,
         pinToken: pinToken!,
         idempotencyKey: idempotencyKey,
       );
@@ -581,6 +590,11 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       default:
         return null;
     }
+  }
+
+  bool get _isUsdcSettledLink {
+    final currency = _link?.currency.toUpperCase();
+    return currency == 'USDC' || currency == 'USD';
   }
 
   String get _paymentEstimateLabel {

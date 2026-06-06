@@ -61,7 +61,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                 label: l10n.paymentLinks_amount,
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                prefix: const Text('CFA '),
+                prefix: const Text('USDC '),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return l10n.common_requiredField;
@@ -70,7 +70,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
                   if (amount == null || amount <= 0) {
                     return l10n.paymentLinks_invalidAmount;
                   }
-                  if (amount < 100) {
+                  if (amount < 0.01) {
                     return l10n.paymentLinks_minimumAmount;
                   }
                   return null;
@@ -205,7 +205,7 @@ class _CreateLinkViewState extends ConsumerState<CreateLinkView> {
 
       final request = CreateLinkRequest(
         amount: amount,
-        currency: 'XOF',
+        currency: 'USDC',
         description: description.isEmpty ? null : description,
         expiryHours: _expiryHours,
       );

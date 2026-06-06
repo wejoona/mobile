@@ -66,11 +66,13 @@ class PaymentLinksService {
   /// Pay a payment link
   Future<PaymentResponse> payLink(
     String shortCode, {
+    double? amount,
     required String pinToken,
     String? idempotencyKey,
   }) async {
     final response = await _dio.post(
       '/payment-links/code/$shortCode/pay',
+      data: {if (amount != null) 'amount': amount},
       options: Options(
         headers: transactionHeaders(
           pinToken: pinToken,

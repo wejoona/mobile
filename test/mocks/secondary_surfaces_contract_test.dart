@@ -66,6 +66,7 @@ void main() {
 
       final payment = await service.payLink(
         link.shortCode,
+        amount: 12000,
         pinToken: 'mock_pin_token_test',
         idempotencyKey: 'payment-link-contract',
       );
