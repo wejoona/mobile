@@ -142,7 +142,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 
   Future<void> _logoutFromSessionWarning() async {
     try {
-      await ref.read(authProvider.notifier).clearLocalSession();
+      await ref.read(authProvider.notifier).logout();
       if (!mounted) return;
       context.go('/login');
     } catch (e) {
@@ -163,7 +163,7 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 
   Future<void> _expireSession() async {
     try {
-      await ref.read(authProvider.notifier).clearLocalSession();
+      await ref.read(authProvider.notifier).logout();
       if (!mounted) return;
 
       final colors = context.colors;
