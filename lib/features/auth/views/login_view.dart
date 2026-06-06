@@ -166,15 +166,12 @@ class _LoginViewState extends ConsumerState<LoginView>
 
     return Scaffold(
       backgroundColor: colors.canvas,
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: _mode == _LoginMode.biometric
-                ? _buildBiometricScreen(colors)
-                : _buildPhoneScreen(colors, authState),
-          ),
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: _mode == _LoginMode.biometric
+              ? _buildBiometricScreen(colors)
+              : _buildPhoneScreen(colors, authState),
         ),
       ),
     );
@@ -494,75 +491,82 @@ class _LoginViewState extends ConsumerState<LoginView>
           color: colors.textSecondary,
         ),
         const SizedBox(height: AppSpacing.sm),
-        Container(
-          decoration: BoxDecoration(
-            color: colors.elevated,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(
-              color: hasText && !isValid
-                  ? colors.error.withValues(alpha: 0.5)
-                  : isValid && hasText
-                  ? colors.success.withValues(alpha: 0.5)
-                  : colors.borderSubtle,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.lg + 2,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(right: BorderSide(color: colors.borderSubtle)),
-                ),
-                child: AppText(
-                  _selectedCountry.fullPrefix,
-                  variant: AppTextVariant.bodyLarge,
-                  color: colors.textSecondary,
-                ),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => _phoneFocusNode.requestFocus(),
+          child: Container(
+            decoration: BoxDecoration(
+              color: colors.elevated,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: hasText && !isValid
+                    ? colors.error.withValues(alpha: 0.5)
+                    : isValid && hasText
+                    ? colors.success.withValues(alpha: 0.5)
+                    : colors.borderSubtle,
               ),
-              Expanded(
-                child: TextField(
-                  controller: _phoneController,
-                  focusNode: _phoneFocusNode,
-                  keyboardType: TextInputType.phone,
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: colors.textPrimary,
-                    letterSpacing: 1.2,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.lg + 2,
                   ),
-                  cursorColor: colors.gold,
-                  decoration: InputDecoration(
-                    hintText: _getFormattedHint(),
-                    hintStyle: AppTypography.bodyLarge.copyWith(
-                      color: colors.textTertiary,
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(color: colors.borderSubtle),
+                    ),
+                  ),
+                  child: AppText(
+                    _selectedCountry.fullPrefix,
+                    variant: AppTextVariant.bodyLarge,
+                    color: colors.textSecondary,
+                  ),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _phoneController,
+                    focusNode: _phoneFocusNode,
+                    keyboardType: TextInputType.phone,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: colors.textPrimary,
                       letterSpacing: 1.2,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.lg,
+                    cursorColor: colors.gold,
+                    decoration: InputDecoration(
+                      hintText: _getFormattedHint(),
+                      hintStyle: AppTypography.bodyLarge.copyWith(
+                        color: colors.textTertiary,
+                        letterSpacing: 1.2,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.lg,
+                      ),
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(
+                        _selectedCountry.phoneLength,
+                      ),
+                    ],
+                    onTapOutside: (_) => _phoneFocusNode.unfocus(),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+                if (hasText)
+                  Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: Icon(
+                      isValid ? Icons.check_circle : Icons.error_outline,
+                      color: isValid ? colors.success : colors.error,
+                      size: 20,
                     ),
                   ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(
-                      _selectedCountry.phoneLength,
-                    ),
-                  ],
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              if (hasText)
-                Padding(
-                  padding: const EdgeInsets.only(right: AppSpacing.md),
-                  child: Icon(
-                    isValid ? Icons.check_circle : Icons.error_outline,
-                    color: isValid ? colors.success : colors.error,
-                    size: 20,
-                  ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),

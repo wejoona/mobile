@@ -25,6 +25,17 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 login focus fix and iPhone 17 live release gate:
+  - Current mobile main head before this fix: `e65fd40 test: pin production define file`.
+  - During mouse-driven iPhone 17 simulator testing, the login phone row was visible but the custom decorated input area was difficult to focus reliably.
+  - Removed the screen-level unfocus wrapper from `LoginView` and made the full phone input row request focus, so tapping the prefix/row focuses the phone field instead of requiring an exact text sub-area hit.
+  - Added `test/features/auth/login_view_interaction_test.dart` covering row tap focus, typing `0748805663`, valid-state icon, and enabled Continue CTA.
+  - `RUN_E2E=true API_URL=https://api.joonapay.com/api/v1 dart test -j 1 test/e2e/health_e2e_test.dart test/e2e/auth_e2e_test.dart test/e2e/wallet_e2e_test.dart test/e2e/transactions_e2e_test.dart test/e2e/contacts_e2e_test.dart test/e2e/notifications_e2e_test.dart test/e2e/devices_e2e_test.dart test/e2e/user_e2e_test.dart test/e2e/feature_subscriptions_e2e_test.dart` passed 68 live API tests.
+  - `flutter test test/features/auth/login_view_interaction_test.dart` passed.
+  - `dart analyze lib/features/auth/views/login_view.dart test/features/auth/login_view_interaction_test.dart` exited 0 with existing info-level style findings only.
+  - `flutter test integration_test/flows/live_api_login_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17.
+  - The live simulator flow registered a fresh user, verified OTP, registered the device, created a wallet, updated profile, set PIN through `/security/public-key` and `/user/pin/set`, reached Home, opened deposit, transactions, notifications, devices, active sessions, notification preferences, completed logout, and fetched country config.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
 - 2026-06-06 production define-file release guard:
   - Current mobile main head before this guard: `ec2226a docs: align release gate head`.
   - Latest verified app-code commit remains: `f83a9d7 fix: hide catalog route in production`.
