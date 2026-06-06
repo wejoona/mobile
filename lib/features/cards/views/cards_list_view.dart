@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/shimmer_loading.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/cards/providers/cards_provider.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_actions_row.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_empty_state.dart';
 import 'package:usdc_wallet/features/cards/widgets/card_visual.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 
 /// Cards list screen with visual card display.
 class CardsListView extends ConsumerWidget {
@@ -32,12 +34,13 @@ class CardsListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cardsAsync = ref.watch(cardsProvider);
+    final cardsAsync = ref.watch(cardsEnvelopeProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: AppText(
-          AppLocalizations.of(context)!.cards_myCards,
+          l10n.cards_myCards,
           variant: AppTextVariant.titleLarge,
           color: context.colors.textPrimary,
         ),
@@ -46,15 +49,23 @@ class CardsListView extends ConsumerWidget {
         loading: _buildLoadingSkeleton,
         error: (e, _) => Center(
           child: AppText(
-            AppLocalizations.of(context)!.cards_error(e.toString()),
+            l10n.cards_error(e.toString()),
             color: context.colors.textSecondary,
             textAlign: TextAlign.center,
           ),
         ),
-        data: (cards) {
+        data: (envelope) {
+          final cards = envelope.cards;
           if (cards.isEmpty) {
             return CardEmptyState(
-              onCreateCard: () => context.push('/cards/request'),
+              canCreateCard: envelope.canRequestCard,
+              reason: envelope.featureReason ?? envelope.reason,
+              onCreateCard: envelope.canRequestCard
+                  ? () => context.push('/cards/request')
+                  : null,
+              onNotifyMe: envelope.canRequestCard
+                  ? null
+                  : () => _subscribeToCards(context, ref, l10n),
             );
           }
           return PageView.builder(
@@ -72,12 +83,12 @@ class CardsListView extends ConsumerWidget {
                     onFreeze: () async {
                       final actions = ref.read(cardActionsProvider);
                       await actions.freeze(card.id);
-                      ref.invalidate(cardsProvider);
+                      ref.invalidate(cardsEnvelopeProvider);
                     },
                     onBlock: () async {
                       final actions = ref.read(cardActionsProvider);
                       await actions.block(card.id);
-                      ref.invalidate(cardsProvider);
+                      ref.invalidate(cardsEnvelopeProvider);
                     },
                     onDetails: () => context.push('/cards/detail/${card.id}'),
                     onSettings: () =>
@@ -88,6 +99,49 @@ class CardsListView extends ConsumerWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Future<void> _subscribeToCards(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: 'virtual_card',
+              source: 'cards_screen',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Korido virtual card',
+              requestedFeature: 'virtual_card_launch',
+              countryCode: user?.countryCode,
+              locale: user?.preferredLocale,
+              metadata: const {'surface': 'cards'},
+            ),
+          );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.common_errorFormat(e.toString())),
+          backgroundColor: context.colors.error,
+        ),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.cards_notifySuccess),
+        backgroundColor: context.colors.success,
       ),
     );
   }

@@ -16,7 +16,7 @@ class CardsService {
     // Normalize: backend returns { cards: [...] }, but callers expect { data: [...] }
     if (data is Map<String, dynamic>) {
       if (data.containsKey('cards') && !data.containsKey('data')) {
-        return {'data': data['cards']};
+        return {...data, 'data': data['cards']};
       }
       return data;
     }

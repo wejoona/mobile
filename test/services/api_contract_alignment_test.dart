@@ -446,6 +446,29 @@ void main() {
       );
     });
 
+    test('cards service preserves backend capability metadata', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'cards': [],
+          'data': [],
+          'available': false,
+          'status': 'unavailable',
+          'reason': 'provider_or_feature_disabled',
+          'featureReason': 'card_issuing_unavailable',
+          'provider': null,
+        });
+      final service = CardsService(dio);
+
+      final result = await service.getCards();
+
+      expect(dio.requestHistory.single.path, '/cards');
+      expect(result['data'], isEmpty);
+      expect(result['available'], isFalse);
+      expect(result['status'], 'unavailable');
+      expect(result['reason'], 'provider_or_feature_disabled');
+      expect(result['featureReason'], 'card_issuing_unavailable');
+    });
+
     test('cards transaction endpoint accepts backend empty response', () async {
       final dio = MockDio()
         ..queueResponse({
