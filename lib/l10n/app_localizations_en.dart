@@ -6787,6 +6787,34 @@ class AppLocalizationsEn extends AppLocalizations {
       'No deposit providers are currently available. Please try again later.';
 
   @override
+  String get deposit_railsUnavailableTitle => 'Deposits are being enabled';
+
+  @override
+  String deposit_railsUnavailableDesc(String countryCode) {
+    return 'Deposit rails for $countryCode are not available on this account yet. We\'ll let you know as soon as they are ready.';
+  }
+
+  @override
+  String get deposit_reviewRequiredTitle => 'Account review needed';
+
+  @override
+  String deposit_reviewRequiredDesc(String countryCode) {
+    return 'Deposits for $countryCode may need an account review before this rail can be enabled.';
+  }
+
+  @override
+  String deposit_capabilityReason(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String get deposit_notifyWhenAvailable => 'Notify me';
+
+  @override
+  String get deposit_notifySuccess =>
+      'We\'ll notify you when deposits are available.';
+
+  @override
   String get deposit_openInWave => 'Open in Wave';
 
   @override

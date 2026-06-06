@@ -23,3 +23,30 @@ class ProviderData {
     this.rails = const [],
   });
 }
+
+class DepositProvidersAvailability {
+  final List<ProviderData> providers;
+  final String? country;
+  final String? currency;
+  final String status;
+  final String? reason;
+  final bool retryable;
+  final bool supportReviewRequired;
+
+  const DepositProvidersAvailability({
+    required this.providers,
+    this.country,
+    this.currency,
+    this.status = 'available',
+    this.reason,
+    this.retryable = false,
+    this.supportReviewRequired = false,
+  });
+
+  bool get hasProviders => providers.isNotEmpty;
+
+  bool get isUnavailable =>
+      status.toLowerCase() == 'unavailable' ||
+      (!hasProviders && reason != null) ||
+      supportReviewRequired;
+}

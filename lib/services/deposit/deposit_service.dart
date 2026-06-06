@@ -16,18 +16,26 @@ class DepositService {
 
   /// Get available deposit providers
   Future<List<Map<String, dynamic>>> getProviders() async {
+    final availability = await getProvidersAvailability();
+    return availability.providers;
+  }
+
+  /// Get available deposit providers plus capability metadata.
+  Future<DepositProvidersPayload> getProvidersAvailability() async {
     final response = await _dio.get('/wallet/deposit/channels');
     final data = response.data;
     if (data is Map<String, dynamic> && data['channels'] != null) {
-      return List<Map<String, dynamic>>.from(data['channels'] as List);
+      return DepositProvidersPayload.fromJson(data, listKey: 'channels');
     }
     if (data is Map<String, dynamic> && data['providers'] != null) {
-      return List<Map<String, dynamic>>.from(data['providers'] as List);
+      return DepositProvidersPayload.fromJson(data, listKey: 'providers');
     }
     if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
+      return DepositProvidersPayload(
+        providers: List<Map<String, dynamic>>.from(data),
+      );
     }
-    return [];
+    return const DepositProvidersPayload(providers: []);
   }
 
   /// Initiate a deposit — returns payment method type + instructions
@@ -144,6 +152,41 @@ class DepositService {
       timestamp:
           DateTime.tryParse(data['expiresAt'] as String? ?? '') ??
           DateTime.now(),
+    );
+  }
+}
+
+class DepositProvidersPayload {
+  final List<Map<String, dynamic>> providers;
+  final String? country;
+  final String? currency;
+  final String status;
+  final String? reason;
+  final bool retryable;
+  final bool supportReviewRequired;
+
+  const DepositProvidersPayload({
+    required this.providers,
+    this.country,
+    this.currency,
+    this.status = 'available',
+    this.reason,
+    this.retryable = false,
+    this.supportReviewRequired = false,
+  });
+
+  factory DepositProvidersPayload.fromJson(
+    Map<String, dynamic> json, {
+    required String listKey,
+  }) {
+    return DepositProvidersPayload(
+      providers: List<Map<String, dynamic>>.from(json[listKey] as List),
+      country: json['country'] as String?,
+      currency: json['currency'] as String?,
+      status: json['status'] as String? ?? 'available',
+      reason: json['reason'] as String?,
+      retryable: json['retryable'] as bool? ?? false,
+      supportReviewRequired: json['supportReviewRequired'] as bool? ?? false,
     );
   }
 }

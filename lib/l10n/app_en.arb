@@ -8423,6 +8423,34 @@
   "deposit_noDepositData": "No deposit data available",
   "deposit_noProvidersAvailable": "No Providers Available",
   "deposit_noProvidersAvailableDesc": "No deposit providers are currently available. Please try again later.",
+  "deposit_railsUnavailableTitle": "Deposits are being enabled",
+  "deposit_railsUnavailableDesc": "Deposit rails for {countryCode} are not available on this account yet. We'll let you know as soon as they are ready.",
+  "@deposit_railsUnavailableDesc": {
+    "placeholders": {
+      "countryCode": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_reviewRequiredTitle": "Account review needed",
+  "deposit_reviewRequiredDesc": "Deposits for {countryCode} may need an account review before this rail can be enabled.",
+  "@deposit_reviewRequiredDesc": {
+    "placeholders": {
+      "countryCode": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_capabilityReason": "Reason: {reason}",
+  "@deposit_capabilityReason": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "deposit_notifyWhenAvailable": "Notify me",
+  "deposit_notifySuccess": "We'll notify you when deposits are available.",
   "deposit_openInWave": "Open in Wave",
   "deposit_openPaymentApp": "Open payment app",
   "deposit_orScanQR": "Or scan the QR code below",

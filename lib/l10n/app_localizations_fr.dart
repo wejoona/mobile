@@ -6922,6 +6922,35 @@ class AppLocalizationsFr extends AppLocalizations {
       'Aucun fournisseur de dépôt n\'est actuellement disponible. Veuillez réessayer plus tard.';
 
   @override
+  String get deposit_railsUnavailableTitle =>
+      'Les dépôts sont en cours d\'activation';
+
+  @override
+  String deposit_railsUnavailableDesc(String countryCode) {
+    return 'Les rails de dépôt pour $countryCode ne sont pas encore disponibles sur ce compte. Nous vous préviendrons dès qu\'ils seront prêts.';
+  }
+
+  @override
+  String get deposit_reviewRequiredTitle => 'Vérification du compte requise';
+
+  @override
+  String deposit_reviewRequiredDesc(String countryCode) {
+    return 'Les dépôts pour $countryCode peuvent nécessiter une vérification du compte avant l\'activation de ce rail.';
+  }
+
+  @override
+  String deposit_capabilityReason(String reason) {
+    return 'Raison : $reason';
+  }
+
+  @override
+  String get deposit_notifyWhenAvailable => 'Me notifier';
+
+  @override
+  String get deposit_notifySuccess =>
+      'Nous vous préviendrons lorsque les dépôts seront disponibles.';
+
+  @override
   String get deposit_openInWave => 'Ouvrir dans Wave';
 
   @override

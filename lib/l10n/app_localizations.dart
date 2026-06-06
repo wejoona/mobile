@@ -12570,6 +12570,48 @@ abstract class AppLocalizations {
   /// **'No deposit providers are currently available. Please try again later.'**
   String get deposit_noProvidersAvailableDesc;
 
+  /// No description provided for @deposit_railsUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits are being enabled'**
+  String get deposit_railsUnavailableTitle;
+
+  /// No description provided for @deposit_railsUnavailableDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposit rails for {countryCode} are not available on this account yet. We\'ll let you know as soon as they are ready.'**
+  String deposit_railsUnavailableDesc(String countryCode);
+
+  /// No description provided for @deposit_reviewRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account review needed'**
+  String get deposit_reviewRequiredTitle;
+
+  /// No description provided for @deposit_reviewRequiredDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Deposits for {countryCode} may need an account review before this rail can be enabled.'**
+  String deposit_reviewRequiredDesc(String countryCode);
+
+  /// No description provided for @deposit_capabilityReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String deposit_capabilityReason(String reason);
+
+  /// No description provided for @deposit_notifyWhenAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify me'**
+  String get deposit_notifyWhenAvailable;
+
+  /// No description provided for @deposit_notifySuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll notify you when deposits are available.'**
+  String get deposit_notifySuccess;
+
   /// No description provided for @deposit_openInWave.
   ///
   /// In en, this message translates to:

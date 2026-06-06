@@ -14,6 +14,7 @@ import 'package:usdc_wallet/features/insights/models/top_recipient.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/deposit/models/provider_data.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
@@ -180,75 +181,88 @@ final profileNotifierProvider =
     });
 
 /// Deposit providers list — wired to GET /wallet/deposit/channels.
+final depositProvidersAvailabilityProvider =
+    FutureProvider<DepositProvidersAvailability>((ref) async {
+      final depositService = ref.watch(depositServiceProvider);
+      final selectedCountry = ref.watch(selectedCountryProvider);
+      final payload = await depositService.getProvidersAvailability();
+      return DepositProvidersAvailability(
+        providers: payload.providers
+            .where((json) => json['available'] as bool? ?? true)
+            .where((json) => _matchesSelectedCountry(json, selectedCountry))
+            .map(_providerDataFromJson)
+            .where((provider) => provider.id.isNotEmpty)
+            .toList(),
+        country: payload.country ?? selectedCountry.code,
+        currency: payload.currency,
+        status: payload.status,
+        reason: payload.reason,
+        retryable: payload.retryable,
+        supportReviewRequired: payload.supportReviewRequired,
+      );
+    });
+
 final providersListProvider = FutureProvider<List<ProviderData>>((ref) async {
-  final depositService = ref.watch(depositServiceProvider);
-  final selectedCountry = ref.watch(selectedCountryProvider);
-  try {
-    final providers = await depositService.getProviders();
-    return providers
-        .where((json) => json['available'] as bool? ?? true)
-        .where((json) {
-          final countries = _stringList(json, const [
-            'countries',
-            'countryCodes',
-            'supportedCountries',
-          ]);
-          final singleCountry = json['country'] ?? json['countryCode'];
-          final countryMatches =
-              countries.isEmpty && singleCountry == null ||
-              countries.contains(selectedCountry.code) ||
-              singleCountry == selectedCountry.code;
-
-          final currencies = _stringList(json, const [
-            'supportedCurrencies',
-            'currencies',
-          ]);
-          final singleCurrency = json['currency'];
-          final currencyMatches =
-              currencies.isEmpty && singleCurrency == null ||
-              currencies.any(
-                selectedCountry.supportedDepositCurrencies.contains,
-              ) ||
-              selectedCountry.supportedDepositCurrencies.contains(
-                singleCurrency,
-              );
-
-          final rail = (json['rail'] ?? json['type'] ?? json['paymentRail'])
-              ?.toString()
-              .toLowerCase();
-          final railMatches =
-              rail == null ||
-              selectedCountry.supportedDepositRails.contains(rail);
-
-          return countryMatches && currencyMatches && railMatches;
-        })
-        .map(
-          (json) => ProviderData(
-            id: json['code'] as String? ?? json['id'] as String? ?? '',
-            name: json['name'] as String? ?? '',
-            paymentMethodType: json['paymentMethodType'] as String?,
-            enumProvider:
-                json['provider'] as String? ?? json['code'] as String?,
-            minAmount: (json['minAmount'] as num?)?.toDouble(),
-            maxAmount: (json['maxAmount'] as num?)?.toDouble(),
-            countries: _stringList(json, const [
-              'countries',
-              'countryCodes',
-              'supportedCountries',
-            ]),
-            supportedCurrencies: _stringList(json, const [
-              'supportedCurrencies',
-              'currencies',
-            ]),
-            rails: _stringList(json, const ['rails', 'type']),
-          ),
-        )
-        .where((provider) => provider.id.isNotEmpty)
-        .toList();
-  } catch (_) {
-    return [];
-  }
+  final availability = await ref.watch(
+    depositProvidersAvailabilityProvider.future,
+  );
+  return availability.providers;
 });
+
+bool _matchesSelectedCountry(
+  Map<String, dynamic> json,
+  CountryConfig selectedCountry,
+) {
+  final countries = _stringList(json, const [
+    'countries',
+    'countryCodes',
+    'supportedCountries',
+  ]);
+  final singleCountry = json['country'] ?? json['countryCode'];
+  final countryMatches =
+      countries.isEmpty && singleCountry == null ||
+      countries.contains(selectedCountry.code) ||
+      singleCountry == selectedCountry.code;
+
+  final currencies = _stringList(json, const [
+    'supportedCurrencies',
+    'currencies',
+  ]);
+  final singleCurrency = json['currency'];
+  final currencyMatches =
+      currencies.isEmpty && singleCurrency == null ||
+      currencies.any(selectedCountry.supportedDepositCurrencies.contains) ||
+      selectedCountry.supportedDepositCurrencies.contains(singleCurrency);
+
+  final rail = (json['rail'] ?? json['type'] ?? json['paymentRail'])
+      ?.toString()
+      .toLowerCase();
+  final railMatches =
+      rail == null || selectedCountry.supportedDepositRails.contains(rail);
+
+  return countryMatches && currencyMatches && railMatches;
+}
+
+ProviderData _providerDataFromJson(Map<String, dynamic> json) {
+  return ProviderData(
+    id: json['code'] as String? ?? json['id'] as String? ?? '',
+    name: json['name'] as String? ?? '',
+    paymentMethodType: json['paymentMethodType'] as String?,
+    enumProvider: json['provider'] as String? ?? json['code'] as String?,
+    minAmount: (json['minAmount'] as num?)?.toDouble(),
+    maxAmount: (json['maxAmount'] as num?)?.toDouble(),
+    countries: _stringList(json, const [
+      'countries',
+      'countryCodes',
+      'supportedCountries',
+    ]),
+    supportedCurrencies: _stringList(json, const [
+      'supportedCurrencies',
+      'currencies',
+    ]),
+    rails: _stringList(json, const ['rails', 'type']),
+  );
+}
 
 List<String> _stringList(Map<String, dynamic> json, List<String> keys) {
   for (final key in keys) {

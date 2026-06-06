@@ -89,6 +89,57 @@ void main() {
       });
     });
 
+    test('preserves unavailable deposit capability metadata', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'country': 'CI',
+          'currency': null,
+          'status': 'unavailable',
+          'reason': 'no_deposit_channels_available',
+          'retryable': false,
+          'supportReviewRequired': true,
+          'channels': <Map<String, dynamic>>[],
+        });
+      final service = DepositService(dio);
+
+      final availability = await service.getProvidersAvailability();
+
+      final request = dio.requestHistory.single;
+      expect(request.path, '/wallet/deposit/channels');
+      expect(availability.providers, isEmpty);
+      expect(availability.country, 'CI');
+      expect(availability.status, 'unavailable');
+      expect(availability.reason, 'no_deposit_channels_available');
+      expect(availability.retryable, isFalse);
+      expect(availability.supportReviewRequired, isTrue);
+    });
+
+    test(
+      'parses available deposit channels from capability response',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'country': 'US',
+            'currency': 'USD',
+            'status': 'available',
+            'channels': [
+              {
+                'id': 'us_ach',
+                'name': 'ACH transfer',
+                'paymentMethodType': 'ACH',
+              },
+            ],
+          });
+        final service = DepositService(dio);
+
+        final availability = await service.getProvidersAvailability();
+
+        expect(availability.country, 'US');
+        expect(availability.status, 'available');
+        expect(availability.providers.single['id'], 'us_ach');
+      },
+    );
+
     test('parses canonical /wallet/deposit response', () {
       final response = DepositResponse.fromJson({
         'depositId': 'dep_123',
