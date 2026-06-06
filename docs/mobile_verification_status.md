@@ -25,6 +25,13 @@
 - Analyzer info-level style lints
 
 ## Latest Verification
+- 2026-06-06 Codemagic release configuration hardening:
+  - Updated `codemagic.yaml` so both TestFlight IPA and Android AAB builds pass `--dart-define-from-file="$CM_BUILD_DIR/env.prod.json"`.
+  - Removed the Android direct-Gradle fallback because it would bypass Flutter dart-defines and could ship a release artifact without the verified production environment values.
+  - Added `test/config/codemagic_release_config_test.dart` to pin production dart-defines in Codemagic release builds and keep the Google Play package lookup aligned with `android/app/build.gradle.kts`.
+  - `flutter test test/config/codemagic_release_config_test.dart test/config/api_configuration_test.dart` passed.
+  - `dart analyze test/config/codemagic_release_config_test.dart codemagic.yaml` passed with no issues.
+  - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
 - 2026-06-06 live iPhone 17 release evidence refresh:
   - Current mobile main verified commit: `370f33b test: accept live deposit review state`.
   - `flutter test integration_test/flows/live_api_login_flow_test.dart -d C796EC5E-0EBE-4E08-BF64-4DCDC84753D3 --dart-define=API_URL=https://api.joonapay.com/api/v1` passed on iPhone 17 against the live API.

@@ -52,6 +52,7 @@ workflows:
           BUILD_NUMBER=$(agvtool what-version -terse)
           echo "Building with number: $BUILD_NUMBER"
           flutter build ipa --release \
+            --dart-define-from-file="$CM_BUILD_DIR/env.prod.json" \
             --build-number=$BUILD_NUMBER \
             --export-options-plist=/Users/builder/export_options.plist
 
@@ -71,10 +72,8 @@ workflows:
             --package-name "com.joonapay.usdc_wallet" \
             --tracks="internal" 2>/dev/null || echo 0) + 1))
           flutter build appbundle --release \
-            --build-number=$BUILD_NUMBER 2>&1 || {
-            echo "Flutter CLI failed, falling back to Gradle directly..."
-            cd android && ./gradlew bundleRelease
-          }
+            --dart-define-from-file="$CM_BUILD_DIR/env.prod.json" \
+            --build-number=$BUILD_NUMBER
 
     artifacts:
       - build/app/outputs/bundle/release/app-release.aab
