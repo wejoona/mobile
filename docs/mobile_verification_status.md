@@ -34,6 +34,11 @@
   - `npm run test:e2e -- --testPathPatterns=user-profile.controller` passed 11 backend controller tests, including avatar thumbnail fallback when storage object reads miss.
   - `flutter build ios --release --no-codesign --dart-define-from-file=env.prod.json` passed and produced `build/ios/iphoneos/Runner.app` (47.0MB).
   - Built app metadata: display name `Korido`, bundle id `com.joonapay.korido`, version `1.0.0`, build `2`.
+- 2026-06-06 release hygiene cleanup:
+  - Removed tracked backup artifacts `l10n.yaml.bak` and `lib/features/receipts/views/share_receipt_sheet.dart.broken`.
+  - Added backup/broken/reject/temp file patterns to `.gitignore` so these do not return.
+  - `flutter test test/services/localization/language_service_test.dart test/config/api_configuration_test.dart` passed 8 tests.
+  - `dart analyze .gitignore l10n.yaml lib/features/receipts/views/share_receipt_sheet.dart` exited 0 with existing info-level style findings only.
 - 2026-06-06 live iPhone 17 session/logout verification:
   - Current mobile main verified commit: `5ab19d4 fix: revoke backend session on timeout logout`.
   - `curl -s https://api.joonapay.com/api/v1/health` returned `{"status":"ok"}`.
