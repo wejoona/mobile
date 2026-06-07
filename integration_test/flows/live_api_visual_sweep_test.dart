@@ -127,20 +127,11 @@ void main() {
 
     await driver.goToRoute('/contacts');
     await driver.pumpUntil(
-      () =>
-          driver.hasAnyText(['Search contacts', 'Rechercher des contacts']) &&
-          driver.hasAnyText([
-            'On Korido',
-            'Sur Korido',
-            'Invite to Korido',
-            'Inviter sur Korido',
-            'Connect your contacts',
-            'Connectez vos contacts',
-          ]),
-      reason: 'loaded contacts list screen',
+      () => _hasContactsList(driver) || _hasContactsPermissionGate(driver),
+      reason: 'contacts list or first-run permission gate',
       timeout: const Duration(seconds: 25),
     );
-    await _capture(binding, tester, '15_contacts_list');
+    await _capture(binding, tester, '15_contacts_state');
 
     await driver.goToRoute('/settings');
     await driver.pumpUntil(
@@ -177,6 +168,25 @@ void main() {
     driver.expectNoAuthOrUnexpectedError();
   });
 }
+
+bool _hasContactsList(KoridoFlowDriver driver) =>
+    driver.hasAnyText(['Search contacts', 'Rechercher des contacts']) &&
+    driver.hasAnyText([
+      'On Korido',
+      'Sur Korido',
+      'Invite to Korido',
+      'Inviter sur Korido',
+      'Connect your contacts',
+      'Connectez vos contacts',
+    ]);
+
+bool _hasContactsPermissionGate(KoridoFlowDriver driver) =>
+    driver.hasAnyText([
+      'Find Your Friends',
+      'Find your friends',
+      'Trouvez Vos Amis',
+    ]) &&
+    driver.hasAnyText(['Allow Access', 'Allow access', "Autoriser l'Accès"]);
 
 Future<void> _capture(
   IntegrationTestWidgetsFlutterBinding binding,
