@@ -44,13 +44,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       _firstNameController.text = userState.firstName ?? '';
       _lastNameController.text = userState.lastName ?? '';
       _emailController.text = userState.email ?? '';
-      // Load existing avatar
-      if (userState.avatarUrl != null && userState.avatarUrl!.startsWith('/')) {
-        final file = File(userState.avatarUrl!);
-        if (file.existsSync()) {
-          setState(() => _selectedImage = file);
-        }
-      }
       _avatarUrl = userState.avatarUrl;
       _avatarThumb = userState.avatarThumb;
     });
