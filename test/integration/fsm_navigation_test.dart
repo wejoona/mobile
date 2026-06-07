@@ -67,6 +67,26 @@ void main() {
       expect(screen.route, equals('/otp-expired'));
     });
 
+    test('OTP verification error should remain on OTP screen', () {
+      // Arrange
+      const appState = AppState(
+        auth: AuthError(
+          errorMessage: 'Invalid or expired OTP',
+          previousState: AuthOtpSent(phone: '+22512345678'),
+        ),
+        wallet: WalletNone(),
+        kyc: KycInitial(),
+        session: SessionNone(),
+      );
+
+      // Act
+      final screen = appState.currentScreen;
+
+      // Assert
+      expect(screen, equals(AppScreen.otp));
+      expect(screen.route, equals('/otp'));
+    });
+
     test('Session locked state should navigate to SessionLocked screen', () {
       // Arrange
       final appState = AppState(

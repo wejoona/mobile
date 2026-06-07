@@ -164,6 +164,13 @@ class DevicesMock {
       );
     }
 
+    // GET /devices/:id - Get a single device
+    interceptor.register(
+      method: 'GET',
+      path: r'/devices/[\w-]+',
+      handler: _handleGetDevice,
+    );
+
     for (final path in const [
       r'/devices/[\w-]+/trust',
       r'/api/v1/devices/[\w-]+/trust',
@@ -196,6 +203,13 @@ class DevicesMock {
         handler: _handleRenameDevice,
       );
     }
+
+    // POST /devices/revoke-others - Revoke all other devices
+    interceptor.register(
+      method: 'POST',
+      path: '/devices/revoke-others',
+      handler: _handleRevokeOthers,
+    );
 
     for (final path in const ['/devices', '/api/v1/devices']) {
       interceptor.register(
@@ -269,12 +283,25 @@ class DevicesMock {
 
   /// Handle get all devices
   static Future<MockResponse> _handleGetDevices(RequestOptions options) async {
-    return MockResponse.success({'devices': DevicesMockState.devices});
+    return MockResponse.success({
+      'devices': DevicesMockState.devices,
+      'data': DevicesMockState.devices,
+    });
+  }
+
+  /// Handle get single device
+  static Future<MockResponse> _handleGetDevice(RequestOptions options) async {
+    final deviceId = _extractId(options.path);
+    final device = DevicesMockState.findDevice(deviceId);
+    if (device == null) {
+      return MockResponse.notFound('Device not found');
+    }
+    return MockResponse.success(device);
   }
 
   /// Handle trust device
   static Future<MockResponse> _handleTrustDevice(RequestOptions options) async {
-    final deviceId = _deviceIdFromPath(options.path);
+    final deviceId = _extractId(options.path);
     final device = DevicesMockState.findDevice(deviceId);
 
     if (device == null) {
@@ -291,7 +318,7 @@ class DevicesMock {
   static Future<MockResponse> _handleUntrustDevice(
     RequestOptions options,
   ) async {
-    final deviceId = _deviceIdFromPath(options.path);
+    final deviceId = _extractId(options.path);
     final device = DevicesMockState.findDevice(deviceId);
 
     if (device == null) {
@@ -304,11 +331,12 @@ class DevicesMock {
     return MockResponse.success(updatedDevice);
   }
 
+
   /// Handle rename device
   static Future<MockResponse> _handleRenameDevice(
     RequestOptions options,
   ) async {
-    final deviceId = _deviceIdFromPath(options.path);
+    final deviceId = _extractId(options.path);
     final device = DevicesMockState.findDevice(deviceId);
     final data = options.data as Map<String, dynamic>? ?? {};
     final name = data['name'] as String?;
@@ -324,6 +352,19 @@ class DevicesMock {
     final updatedDevice = DevicesMockState.findDevice(deviceId);
 
     return MockResponse.success(updatedDevice);
+  }
+
+  /// Handle revoke all other devices
+  static Future<MockResponse> _handleRevokeOthers(
+    RequestOptions options,
+  ) async {
+    DevicesMockState.devices.removeWhere(
+      (device) => device['isCurrent'] != true,
+    );
+    return MockResponse.success({
+      'success': true,
+      'message': 'Other devices revoked successfully',
+    });
   }
 
   /// Handle remove all devices
@@ -342,7 +383,7 @@ class DevicesMock {
   static Future<MockResponse> _handleRemoveDevice(
     RequestOptions options,
   ) async {
-    final deviceId = _deviceIdFromPath(options.path);
+    final deviceId = _extractId(options.path);
     final device = DevicesMockState.findDevice(deviceId);
 
     if (device == null) {
@@ -357,14 +398,14 @@ class DevicesMock {
     });
   }
 
-  static String _deviceIdFromPath(String path) {
+  static String _extractId(String path) {
     final segments = path
         .split('/')
         .where((segment) => segment.isNotEmpty)
         .toList();
     final devicesIndex = segments.indexOf('devices');
     if (devicesIndex == -1 || devicesIndex + 1 >= segments.length) {
-      return '';
+      return segments.length > 1 ? segments[1] : '';
     }
     return segments[devicesIndex + 1];
   }

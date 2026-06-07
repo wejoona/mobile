@@ -172,6 +172,12 @@ class AppState extends FsmState {
       return AppScreen.otpExpired;
     }
 
+    if (auth case AuthError(
+      previousState: final previous,
+    ) when previous is AuthOtpSent || previous is AuthVerifying) {
+      return AppScreen.otp;
+    }
+
     // Session locked - show unlock screen
     if (session is SessionLocked) {
       return AppScreen.sessionLocked;

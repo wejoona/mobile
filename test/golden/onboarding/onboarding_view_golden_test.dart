@@ -4,6 +4,10 @@ import 'package:usdc_wallet/features/onboarding/views/onboarding_view.dart';
 
 import '../helpers/golden_test_helper.dart';
 
+Future<void> _pumpGoldenFrame(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 300));
+}
+
 /// Golden tests for Onboarding View
 ///
 /// Status: ACTIVE (MVP Critical)

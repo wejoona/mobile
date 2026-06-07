@@ -6,9 +6,10 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/router/navigation_extensions.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/domain/entities/index.dart';
-import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
+import 'package:usdc_wallet/state/transaction_state_machine.dart';
 
 /// Payment method universe/category
 enum PaymentUniverse { mobileMoney, bankTransfer, card, crypto }

@@ -49,6 +49,24 @@ class AnalyticsService {
     _track(AnalyticsEvent(name: 'login', properties: {'method': method}));
   }
 
+  Future<void> logLoginSuccess({
+    required String method,
+    String? userId,
+  }) async {
+    trackLogin(method: method);
+    if (userId != null) await setUserId(userId);
+  }
+
+  Future<void> logLoginFailed({
+    required String method,
+    required String reason,
+  }) async {
+    trackAction('login_failed', properties: {
+      'method': method,
+      'reason_hash': reason.hashCode.toString(),
+    });
+  }
+
   void trackRegistration({required String country}) {
     _track(
       AnalyticsEvent(name: 'registration', properties: {'country': country}),
@@ -109,25 +127,6 @@ class AnalyticsService {
   // ============================================================
   // Méthodes génériques (rétrocompatibilité)
   // ============================================================
-
-  Future<void> logLoginSuccess({required String method, String? userId}) {
-    if (userId != null) {
-      setUserProperties(userId: userId);
-    }
-    trackLogin(method: method);
-    return Future<void>.value();
-  }
-
-  Future<void> logLoginFailed({
-    required String method,
-    required String reason,
-  }) {
-    trackAction(
-      'login_failed',
-      properties: {'method': method, 'reason_hash': reason.hashCode.toString()},
-    );
-    return Future<void>.value();
-  }
 
   Future<void> logTransferInitiated({
     required String transferType,
@@ -329,7 +328,7 @@ class AnalyticsService {
     );
   }
 
-  void setUserProperties({
+  Future<void> setUserProperties({
     String? userId,
     String? kycStatus,
     String? country,
@@ -340,6 +339,7 @@ class AnalyticsService {
         '[Analytics] user_properties ${{if (userId != null) 'user_id_hash': userId.hashCode.toString(), if (kycStatus != null) 'kyc_status': kycStatus, if (country != null) 'country': country, if (locale != null) 'locale': locale}}',
       );
     }
+    return Future<void>.value();
   }
 
   Future<void> setUserProperty(String name, dynamic value) async {}

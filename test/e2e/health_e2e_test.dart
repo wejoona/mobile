@@ -12,6 +12,11 @@ void main() {
 
   late E2EClient client;
 
+  if (!runLiveE2E) {
+    test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
+    return;
+  }
+
   setUpAll(() {
     client = E2EClient();
   });

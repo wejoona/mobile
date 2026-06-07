@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:usdc_wallet/services/api/deduplication_interceptor.dart';
@@ -36,10 +37,7 @@ void main() {
     });
 
     test('should generate unique keys for different requests', () {
-      final options1 = RequestOptions(
-        path: '/wallet/balance',
-        method: 'GET',
-      );
+      final options1 = RequestOptions(path: '/wallet/balance', method: 'GET');
 
       final options2 = RequestOptions(
         path: '/wallet/balance',
@@ -83,6 +81,24 @@ void main() {
       expect(stats.containsKey('count'), isTrue);
       expect(stats.containsKey('requests'), isTrue);
     });
+
+    test('failed original GET does not emit unhandled async error', () async {
+      final capturedErrors = <Object>[];
+      final failingDio = Dio(BaseOptions(baseUrl: 'https://api.test.com'))
+        ..httpClientAdapter = _StatusCodeAdapter(521)
+        ..interceptors.add(interceptor);
+
+      await runZonedGuarded<Future<void>>(() async {
+        await expectLater(
+          failingDio.get('/config/countries'),
+          throwsA(isA<DioException>()),
+        );
+        await Future<void>.delayed(Duration.zero);
+      }, (error, _) => capturedErrors.add(error));
+
+      expect(capturedErrors, isEmpty);
+      expect(interceptor.getStats()['count'], equals(0));
+    });
   });
 
   group('InFlightRequest', () {
@@ -105,4 +121,28 @@ void main() {
       expect(inFlight.completer.isCompleted, isFalse);
     });
   });
+}
+
+class _StatusCodeAdapter implements HttpClientAdapter {
+  _StatusCodeAdapter(this.statusCode);
+
+  final int statusCode;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString(
+      '{"message":"origin down"}',
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
 }

@@ -22,7 +22,10 @@ class BulkPaymentsService {
     } else {
       items = [];
     }
-    return items.map((json) => BulkBatch.fromJson(_asMap(json))).toList();
+    return items
+        .whereType<Map>()
+        .map((json) => BulkBatch.fromJson(Map<String, dynamic>.from(json)))
+        .toList();
   }
 
   Future<BulkBatch> submitBatch(
@@ -43,12 +46,12 @@ class BulkPaymentsService {
         ),
       ),
     );
-    return BulkBatch.fromJson(_asMap(response.data));
+    return BulkBatch.fromJson(_batchPayload(response.data));
   }
 
   Future<BulkBatch> getBatchStatus(String batchId) async {
     final response = await _dio.get('/bulk-payments/batches/$batchId');
-    return BulkBatch.fromJson(_asMap(response.data));
+    return BulkBatch.fromJson(_batchPayload(response.data));
   }
 
   Future<String> downloadFailedPayments(String batchId) async {
@@ -88,10 +91,14 @@ class BulkPaymentsService {
     );
   }
 
-  Map<String, dynamic> _asMap(Object? data) {
-    if (data is Map<String, dynamic>) return data;
-    if (data is Map) return Map<String, dynamic>.from(data);
-    throw const FormatException('Invalid bulk payment response');
+  Map<String, dynamic> _batchPayload(dynamic data) {
+    if (data is Map && data['data'] is Map) {
+      return Map<String, dynamic>.from(data['data'] as Map);
+    }
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return <String, dynamic>{};
   }
 }
 

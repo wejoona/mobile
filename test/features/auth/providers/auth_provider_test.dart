@@ -155,6 +155,8 @@ void main() {
       () => mockDeviceRegistrationService.registerCurrentDevice(),
     ).thenAnswer((_) async {});
 
+    when(() => mockAuthService.logout()).thenAnswer((_) async {});
+
     container = ProviderContainer(
       overrides: [
         authServiceProvider.overrideWithValue(mockAuthService),

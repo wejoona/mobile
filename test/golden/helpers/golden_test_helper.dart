@@ -67,7 +67,7 @@ class GoldenTestUtils {
   static Future<void> init() async {
     TestWidgetsFlutterBinding.ensureInitialized();
 
-// Production fonts are bundled; keep tests deterministic and offline.
+    // Production fonts are bundled; keep tests deterministic and offline.
     GoogleFonts.config.allowRuntimeFetching = false;
     await _loadBundledFonts();
 
@@ -900,6 +900,18 @@ class _MockDio extends DioMixin implements Dio {
         'minimumAmount': 100.0,
       };
     }
+    if (path == '/bulk-payments/batches') {
+      return {
+        'batches': [_bulkPaymentBatch()],
+      };
+    }
+    if (path.contains('/bulk-payments/batches/') &&
+        path.contains('/failed-report')) {
+      return {'csv': 'phone,amount,description,error\n'};
+    }
+    if (path.contains('/bulk-payments/batches/')) {
+      return _bulkPaymentBatch();
+    }
     // Default empty response
     return {};
   }
@@ -964,6 +976,43 @@ class _MockDio extends DioMixin implements Dio {
       'isLocked': false,
       'createdAt': DateTime(2026, 5, 1).toIso8601String(),
       'updatedAt': DateTime(2026, 5, 27).toIso8601String(),
+    };
+  }
+
+  Map<String, dynamic> _bulkPaymentBatch() {
+    return {
+      'id': 'batch_1',
+      'name': 'January Salaries.csv',
+      'payments': [
+        {
+          'phone': '+2250701234567',
+          'amount': 500.0,
+          'description': 'Salary - January',
+          'isValid': true,
+          'error': null,
+        },
+        {
+          'phone': '+2250707654321',
+          'amount': 750.0,
+          'description': 'Salary - January',
+          'isValid': true,
+          'error': null,
+        },
+        {
+          'phone': '+2250708888888',
+          'amount': 600.0,
+          'description': 'Salary - January',
+          'isValid': true,
+          'error': null,
+        },
+      ],
+      'status': 'completed',
+      'createdAt': '2026-01-24T10:00:00.000Z',
+      'processedAt': '2026-01-24T10:12:00.000Z',
+      'totalCount': 3,
+      'successCount': 3,
+      'failedCount': 0,
+      'totalAmount': 1850.0,
     };
   }
 }

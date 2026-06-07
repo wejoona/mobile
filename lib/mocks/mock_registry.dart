@@ -19,6 +19,7 @@ import 'package:usdc_wallet/mocks/services/sessions/sessions_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_mock.dart';
 import 'package:usdc_wallet/mocks/services/feature_flags/feature_flags_contract.dart';
 import 'package:usdc_wallet/mocks/services/feature_subscriptions/feature_subscriptions_mock.dart';
+import 'package:usdc_wallet/mocks/services/config/config_mock.dart';
 import 'package:usdc_wallet/mocks/services/devices/devices_mock.dart';
 import 'package:usdc_wallet/mocks/services/kyc/kyc_mock.dart';
 import 'package:usdc_wallet/mocks/services/deposit/deposit_contract.dart';
@@ -75,6 +76,7 @@ class MockRegistry {
     SessionsMock.register(_interceptor);
     FeatureFlagsMock.register(_interceptor);
     FeatureSubscriptionsMock.register(_interceptor);
+    ConfigMock.register(_interceptor);
     DevicesMock.register(_interceptor);
     KycMock.register(_interceptor);
     DepositMock.register(_interceptor);

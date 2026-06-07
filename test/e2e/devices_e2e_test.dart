@@ -15,6 +15,11 @@ void main() {
   late E2EClient client;
   String? registeredDeviceId;
 
+  if (!runLiveE2E) {
+    test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
+    return;
+  }
+
   setUpAll(() async {
     client = E2EClient();
     await client.loginFlow(uniqueE2EPhone());

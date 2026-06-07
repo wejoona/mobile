@@ -15,7 +15,12 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
   static const _logger = AppLogger('TransactionState');
 
   @override
-  TransactionListState build() => const TransactionListState();
+  TransactionListState build() {
+    // Fetches are triggered explicitly after auth/unlock or by transaction views.
+    // Auto-fetching on provider construction causes unauthenticated/background
+    // network calls when the provider is created only to reset state on logout.
+    return const TransactionListState();
+  }
 
   TransactionsService get _service => ref.read(transactionsServiceProvider);
   TransactionFilter get _filter => const TransactionFilter();

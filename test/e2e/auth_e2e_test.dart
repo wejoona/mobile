@@ -13,6 +13,11 @@ void main() {
   late E2EClient client;
   late String authPhone;
 
+  if (!runLiveE2E) {
+    test('Live E2E disabled', () {}, skip: liveE2ESkipReason);
+    return;
+  }
+
   setUpAll(() {
     client = E2EClient();
     authPhone = uniqueE2EPhone();

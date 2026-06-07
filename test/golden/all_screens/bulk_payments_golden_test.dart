@@ -120,7 +120,7 @@ void main() {
       await tester.pumpWidget(
         GoldenTestWrapper(
           isDarkMode: false,
-          child: BulkStatusView(batchId: 'batch_001'),
+          child: BulkStatusView(batchId: 'batch_1'),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));
@@ -136,7 +136,7 @@ void main() {
       await tester.pumpWidget(
         GoldenTestWrapper(
           isDarkMode: true,
-          child: BulkStatusView(batchId: 'batch_001'),
+          child: BulkStatusView(batchId: 'batch_1'),
         ),
       );
       await tester.pump(const Duration(milliseconds: 100));

@@ -79,7 +79,11 @@
       "Bash(xcrun simctl *)",
       "Bash(git merge *)",
       "Bash(flutter analyze *)",
-      "Bash(perl -0pi -e \"s/setUserProperty\\\\\\(name: \\('[^']*'\\), value: \\('[^']*'\\)\\\\\\)/setUserProperty\\(\\\\$1, \\\\$2\\)/g\" lib/services/app_review/app_review_service.dart)"
+      "Bash(perl -0pi -e \"s/setUserProperty\\\\\\(name: \\('[^']*'\\), value: \\('[^']*'\\)\\\\\\)/setUserProperty\\(\\\\$1, \\\\$2\\)/g\" lib/services/app_review/app_review_service.dart)",
+      "Bash(xargs -a /tmp/png_conflicts.txt git checkout --theirs --)",
+      "Bash(xargs -a /tmp/png_conflicts.txt git add --)",
+      "Bash(xargs -0 git checkout --theirs --)",
+      "Bash(xargs -0 git add --)"
     ]
   }
 }

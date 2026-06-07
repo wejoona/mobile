@@ -7,10 +7,12 @@ import 'package:usdc_wallet/utils/logger.dart';
 class InFlightRequest {
   final Completer<Response> completer;
   final DateTime startedAt;
+  int waiters;
 
   InFlightRequest({
     required this.completer,
     required this.startedAt,
+    this.waiters = 0,
   });
 }
 
@@ -46,8 +48,12 @@ class RequestDeduplicationInterceptor extends Interceptor {
 
       if (age < _timeout) {
         if (kDebugMode) {
-          AppLogger('Debug').debug('[DeduplicationInterceptor] Deduplicating request: ${options.path}');
+          AppLogger('Debug').debug(
+            '[DeduplicationInterceptor] Deduplicating request: ${options.path}',
+          );
         }
+
+        inFlight.waiters += 1;
 
         try {
           // Wait for the in-flight request to complete
@@ -68,14 +74,20 @@ class RequestDeduplicationInterceptor extends Interceptor {
         } catch (e) {
           // If the in-flight request failed, proceed with a new request
           if (kDebugMode) {
-            AppLogger('Debug').debug('[DeduplicationInterceptor] In-flight request failed, retrying: ${options.path}');
+            AppLogger('Debug').debug(
+              '[DeduplicationInterceptor] In-flight request failed, retrying: ${options.path}',
+            );
           }
           _inFlightRequests.remove(key);
+        } finally {
+          inFlight.waiters -= 1;
         }
       } else {
         // Request timed out, remove it
         if (kDebugMode) {
-          AppLogger('Debug').debug('[DeduplicationInterceptor] In-flight request timed out: ${options.path}');
+          AppLogger('Debug').debug(
+            '[DeduplicationInterceptor] In-flight request timed out: ${options.path}',
+          );
         }
         _inFlightRequests.remove(key);
       }
@@ -91,10 +103,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(
-    Response response,
-    ResponseInterceptorHandler handler,
-  ) {
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
     // Only handle GET requests
     if (response.requestOptions.method == 'GET') {
       final key = _generateKey(response.requestOptions);
@@ -105,7 +114,9 @@ class RequestDeduplicationInterceptor extends Interceptor {
         inFlight.completer.complete(response);
 
         if (kDebugMode) {
-          AppLogger('Debug').debug('[DeduplicationInterceptor] Request completed: ${response.requestOptions.path}');
+          AppLogger('Debug').debug(
+            '[DeduplicationInterceptor] Request completed: ${response.requestOptions.path}',
+          );
         }
 
         // Clean up after a short delay to allow waiting requests to complete
@@ -119,21 +130,24 @@ class RequestDeduplicationInterceptor extends Interceptor {
   }
 
   @override
-  void onError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     // Only handle GET requests
     if (err.requestOptions.method == 'GET') {
       final key = _generateKey(err.requestOptions);
       final inFlight = _inFlightRequests[key];
 
-      if (inFlight != null && !inFlight.completer.isCompleted) {
-        // Complete the completer with error
-        inFlight.completer.completeError(err);
+      if (inFlight != null) {
+        if (inFlight.waiters > 0 && !inFlight.completer.isCompleted) {
+          // Complete the completer with error only when duplicate requests are
+          // actively waiting for it. Completing an unobserved error creates an
+          // uncaught async exception in Dart.
+          inFlight.completer.completeError(err);
+        }
 
         if (kDebugMode) {
-          AppLogger('Debug').debug('[DeduplicationInterceptor] Request failed: ${err.requestOptions.path}');
+          AppLogger('Debug').debug(
+            '[DeduplicationInterceptor] Request failed: ${err.requestOptions.path}',
+          );
         }
 
         // Clean up immediately on error
@@ -162,7 +176,7 @@ class RequestDeduplicationInterceptor extends Interceptor {
   void clear() {
     // Complete all pending requests with cancellation error
     for (final entry in _inFlightRequests.entries) {
-      if (!entry.value.completer.isCompleted) {
+      if (entry.value.waiters > 0 && !entry.value.completer.isCompleted) {
         entry.value.completer.completeError(
           DioException(
             requestOptions: RequestOptions(path: entry.key),
@@ -176,7 +190,9 @@ class RequestDeduplicationInterceptor extends Interceptor {
     _inFlightRequests.clear();
 
     if (kDebugMode) {
-      AppLogger('Debug').debug('[DeduplicationInterceptor] All in-flight requests cleared');
+      AppLogger(
+        'Debug',
+      ).debug('[DeduplicationInterceptor] All in-flight requests cleared');
     }
   }
 
@@ -186,11 +202,16 @@ class RequestDeduplicationInterceptor extends Interceptor {
 
     return {
       'count': _inFlightRequests.length,
-      'requests': _inFlightRequests.entries.map((e) => {
-        'key': e.key,
-        'age': now.difference(e.value.startedAt).inMilliseconds,
-        'isCompleted': e.value.completer.isCompleted,
-      }).toList(),
+      'requests': _inFlightRequests.entries
+          .map(
+            (e) => {
+              'key': e.key,
+              'age': now.difference(e.value.startedAt).inMilliseconds,
+              'isCompleted': e.value.completer.isCompleted,
+              'waiters': e.value.waiters,
+            },
+          )
+          .toList(),
     };
   }
 }

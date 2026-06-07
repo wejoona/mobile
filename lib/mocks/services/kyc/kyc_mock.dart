@@ -302,11 +302,16 @@ class KycMockState {
   // - 'approved': Manually approved by admin
   // - 'manual_review': Requires manual review
   // - 'rejected': KYC rejected
-  static String kycStatus = 'none';
+  static const String initialStatus = String.fromEnvironment(
+    'MOCK_KYC_STATUS',
+    defaultValue: 'none',
+  );
+
+  static String kycStatus = _normalizeStatus(initialStatus);
   static String? rejectionReason;
 
   static void reset() {
-    kycStatus = 'none';
+    kycStatus = _normalizeStatus(initialStatus);
     rejectionReason = null;
   }
 
@@ -350,10 +355,13 @@ class KycMockState {
   /// Valid values: 'none', 'documents_pending', 'pending_verification',
   ///               'auto_approved', 'approved', 'verified', 'manual_review', 'rejected'
   static void setStatus(String status) {
-    // Map 'verified' to 'approved' for backward compatibility
-    kycStatus = status == 'verified' ? 'approved' : status;
+    kycStatus = _normalizeStatus(status);
     if (status != 'rejected') {
       rejectionReason = null;
     }
+  }
+
+  static String _normalizeStatus(String status) {
+    return status == 'verified' ? 'approved' : status;
   }
 }
