@@ -242,7 +242,20 @@ class ContactsService {
 
   /// Request contacts permission
   Future<bool> requestContactsPermission() async {
-    final status = await Permission.contacts.request();
+    final current = await Permission.contacts.status;
+    if (current.isGranted) {
+      return true;
+    }
+    if (current.isPermanentlyDenied) {
+      return false;
+    }
+
+    final granted = await FlutterContacts.requestPermission(readonly: true);
+    if (granted) {
+      return true;
+    }
+
+    final status = await Permission.contacts.status;
     return status.isGranted;
   }
 
