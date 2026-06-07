@@ -141,13 +141,26 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   }
 
   Future<void> _logoutFromSessionWarning() async {
+    var didClearSession = false;
     try {
       await ref.read(authProvider.notifier).logout();
-      if (!mounted) return;
-      context.go('/login');
+      didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not log out from warning', e);
     }
+
+    if (!didClearSession) {
+      try {
+        await ref.read(authProvider.notifier).clearLocalSession();
+      } catch (e) {
+        AppLogger(
+          'SessionManager',
+        ).warn('Could not clear local session from warning', e);
+      }
+    }
+
+    if (!mounted) return;
+    context.go('/login');
   }
 
   void _handleSessionExpired() {
@@ -162,24 +175,37 @@ class _SessionManagerState extends ConsumerState<SessionManager>
   }
 
   Future<void> _expireSession() async {
+    var didClearSession = false;
     try {
       await ref.read(authProvider.notifier).logout();
-      if (!mounted) return;
-
-      final colors = context.colors;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Session expired. Please log in again.',
-            style: TextStyle(color: colors.onDark),
-          ),
-          backgroundColor: colors.error,
-        ),
-      );
-      context.go('/login');
+      didClearSession = true;
     } catch (e) {
       AppLogger('SessionManager').warn('Could not handle session expiry', e);
     }
+
+    if (!didClearSession) {
+      try {
+        await ref.read(authProvider.notifier).clearLocalSession();
+      } catch (e) {
+        AppLogger(
+          'SessionManager',
+        ).warn('Could not clear local session after expiry', e);
+      }
+    }
+
+    if (!mounted) return;
+
+    final colors = context.colors;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Session expired. Please log in again.',
+          style: TextStyle(color: colors.onDark),
+        ),
+        backgroundColor: colors.error,
+      ),
+    );
+    context.go('/login');
   }
 
   void _handleSessionLocked() {
