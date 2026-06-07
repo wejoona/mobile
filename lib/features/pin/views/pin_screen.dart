@@ -108,8 +108,9 @@ class _PinScreenState extends ConsumerState<PinScreen>
         // Show brief transition, then unlock + navigate to home together.
         if (mounted) {
           _transitionThen(() {
+            final router = GoRouter.of(context);
             _applyUnlock();
-            context.go(widget.successRoute ?? '/home');
+            router.go(widget.successRoute ?? '/home');
           });
         }
 
@@ -117,6 +118,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
         // Show brief transition, then unlock + navigate together.
         if (mounted) {
           _transitionThen(() {
+            final router = GoRouter.of(context);
             _applyUnlock();
             // Refresh wallet and transactions in the background after unlock.
             Future.microtask(() {
@@ -125,7 +127,7 @@ class _PinScreenState extends ConsumerState<PinScreen>
                 ref.read(transactionStateMachineProvider.notifier).refresh();
               } catch (_) {}
             });
-            context.go(widget.successRoute ?? '/home');
+            router.go(widget.successRoute ?? '/home');
           });
         }
 
@@ -191,11 +193,32 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   Future<void> _handleBiometric() async {
+    if (_isVerifying) return;
+    setState(() {
+      _isVerifying = true;
+      _errorMessage = null;
+    });
+
     final bio = ref.read(biometricServiceProvider);
-    final result = await bio.authenticate(
-      localizedReason: AppLocalizations.of(context)!.biometric_reason,
-    );
-    if (result.success && mounted) _onSuccess();
+    try {
+      final result = await bio.authenticate(
+        localizedReason: AppLocalizations.of(context)!.biometric_reason,
+      );
+      if (result.success && mounted) {
+        _onSuccess();
+        return;
+      }
+
+      if (mounted) {
+        setState(() => _isVerifying = false);
+        await _checkBiometric();
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isVerifying = false);
+        await _checkBiometric();
+      }
+    }
   }
 
   String get _title {
@@ -351,8 +374,8 @@ class _PinScreenState extends ConsumerState<PinScreen>
                             });
                           }
                         },
-                        showBiometric: _biometricAvailable,
-                        onBiometricPressed: _biometricAvailable
+                        showBiometric: _biometricAvailable && !_isVerifying,
+                        onBiometricPressed: _biometricAvailable && !_isVerifying
                             ? _handleBiometric
                             : null,
                       ),
