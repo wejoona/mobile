@@ -107,7 +107,7 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
   }
 
   /// Refresh transactions
-  Future<void> refresh() async {
+  Future<void> refresh({bool refreshWallet = true}) async {
     if (state.isLoading) {
       return;
     }
@@ -115,7 +115,9 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
     state = state.copyWith(status: TransactionListStatus.refreshing);
 
     try {
-      final page = await _service.getTransactions(filter: _filter);
+      final page = await _service
+          .getTransactions(filter: _filter)
+          .timeout(const Duration(seconds: 10));
 
       if (!ref.mounted) {
         return;
@@ -129,8 +131,10 @@ class TransactionStateMachine extends Notifier<TransactionListState> {
         hasMore: page.hasMore,
       );
 
-      // Also refresh wallet balance when transactions refresh
-      unawaited(ref.read(walletStateMachineProvider.notifier).refresh());
+      if (refreshWallet) {
+        // Also refresh wallet balance when transactions refresh
+        unawaited(ref.read(walletStateMachineProvider.notifier).refresh());
+      }
     } on Object {
       if (!ref.mounted) {
         return;

@@ -157,10 +157,16 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
             child: SafeArea(
               child: AppRefreshIndicator(
                 onRefresh: () async {
-                  await ref.read(walletStateMachineProvider.notifier).refresh();
-                  await ref
-                      .read(transactionStateMachineProvider.notifier)
-                      .refresh();
+                  await Future.wait([
+                    ref
+                        .read(walletStateMachineProvider.notifier)
+                        .refresh()
+                        .timeout(const Duration(seconds: 15), onTimeout: () {}),
+                    ref
+                        .read(transactionStateMachineProvider.notifier)
+                        .refresh(refreshWallet: false)
+                        .timeout(const Duration(seconds: 12), onTimeout: () {}),
+                  ]);
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),

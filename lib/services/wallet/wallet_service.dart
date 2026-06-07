@@ -18,6 +18,8 @@ class WalletService {
       final response = await _dio.get(
         '/wallet',
         options: Options(
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 10),
           validateStatus: (status) =>
               status != null && (status < 400 || status == 404),
         ),
@@ -38,7 +40,13 @@ class WalletService {
   /// POST /wallet/create - Create a new wallet
   Future<WalletBalanceResponse> createWallet() async {
     try {
-      final response = await _dio.post('/wallet/create');
+      final response = await _dio.post(
+        '/wallet/create',
+        options: Options(
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 10),
+        ),
+      );
       return WalletBalanceResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
