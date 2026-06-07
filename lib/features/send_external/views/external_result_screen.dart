@@ -19,6 +19,7 @@ class ExternalResultScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(externalTransferProvider);
     final result = state.result;
+    final hasTransactionHash = result?.txHash.isNotEmpty == true;
 
     if (result == null) {
       // Navigate back if no result
@@ -103,16 +104,17 @@ class ExternalResultScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: AppSpacing.lg),
 
-                  // Transaction hash
-                  _buildDetailCard(
-                    context,
-                    l10n.sendExternal_transactionHash,
-                    _truncateHash(result.txHash),
-                    fullValue: result.txHash,
-                    isCopyable: true,
-                    icon: Icons.tag,
-                  ),
-                  SizedBox(height: AppSpacing.sm),
+                  if (hasTransactionHash) ...[
+                    _buildDetailCard(
+                      context,
+                      l10n.sendExternal_transactionHash,
+                      _truncateHash(result.txHash),
+                      fullValue: result.txHash,
+                      isCopyable: true,
+                      icon: Icons.tag,
+                    ),
+                    SizedBox(height: AppSpacing.sm),
+                  ],
 
                   // Network
                   _buildDetailCard(
@@ -147,17 +149,17 @@ class ExternalResultScreen extends ConsumerWidget {
                   ),
                   SizedBox(height: AppSpacing.xxl),
 
-                  // View on Explorer button
-                  AppButton(
-                    label: l10n.sendExternal_viewOnExplorer,
-                    variant: AppButtonVariant.secondary,
-                    icon: Icons.open_in_new,
-                    onPressed: () => _viewOnExplorer(
-                      context,
-                      result.txHash,
-                      result.network.value,
+                  if (hasTransactionHash)
+                    AppButton(
+                      label: l10n.sendExternal_viewOnExplorer,
+                      variant: AppButtonVariant.secondary,
+                      icon: Icons.open_in_new,
+                      onPressed: () => _viewOnExplorer(
+                        context,
+                        result.txHash,
+                        result.network.value,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -321,17 +323,17 @@ class ExternalResultScreen extends ConsumerWidget {
     state,
     result,
   ) {
-    final message =
-        '''
-${l10n.sendExternal_transferSuccess}
+    final lines = [
+      l10n.sendExternal_transferSuccess,
+      '',
+      '${l10n.sendExternal_amount}: \$${Formatters.formatCurrency(state.amount!)}',
+      '${l10n.sendExternal_network}: ${result.network.displayName}',
+      if (result.txHash.isNotEmpty)
+        '${l10n.sendExternal_transactionHash}: ${result.txHash}',
+      '${l10n.sendExternal_status}: ${_getStatusDisplay(result.status, l10n)}',
+    ];
 
-${l10n.sendExternal_amount}: \$${Formatters.formatCurrency(state.amount!)}
-${l10n.sendExternal_network}: ${result.network.displayName}
-${l10n.sendExternal_transactionHash}: ${result.txHash}
-${l10n.sendExternal_status}: ${_getStatusDisplay(result.status, l10n)}
-''';
-
-    SharePlus.instance.share(ShareParams(text: message));
+    SharePlus.instance.share(ShareParams(text: lines.join('\n')));
   }
 
   void _handleDone(BuildContext context, WidgetRef ref) {
