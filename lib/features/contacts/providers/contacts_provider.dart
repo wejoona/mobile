@@ -80,12 +80,16 @@ class ContactSyncResult {
 class ContactsState {
   final List<SyncedContact> contacts;
   final bool isLoading;
+  final bool permissionRequired;
+  final String? error;
   final DateTime? lastSyncTime;
   final ContactSyncResult? lastSyncResult;
 
   const ContactsState({
     this.contacts = const [],
     this.isLoading = false,
+    this.permissionRequired = false,
+    this.error,
     this.lastSyncTime,
     this.lastSyncResult,
   });
@@ -104,11 +108,16 @@ class ContactsState {
   ContactsState copyWith({
     List<SyncedContact>? contacts,
     bool? isLoading,
+    bool? permissionRequired,
+    String? error,
+    bool clearError = false,
     DateTime? lastSyncTime,
     ContactSyncResult? lastSyncResult,
   }) => ContactsState(
     contacts: contacts ?? this.contacts,
     isLoading: isLoading ?? this.isLoading,
+    permissionRequired: permissionRequired ?? this.permissionRequired,
+    error: clearError ? null : error ?? this.error,
     lastSyncTime: lastSyncTime ?? this.lastSyncTime,
     lastSyncResult: lastSyncResult ?? this.lastSyncResult,
   );
@@ -118,15 +127,26 @@ class ContactsState {
 class ContactsNotifier extends Notifier<ContactsState> {
   @override
   ContactsState build() {
-    unawaited(Future.microtask(syncContacts));
-    return const ContactsState(isLoading: true);
+    return const ContactsState();
   }
 
   Future<void> syncContacts() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final dio = ref.read(dioProvider);
       final contactsService = ref.read(contactsServiceProvider);
+
+      if (!MockConfig.useMocks &&
+          !await contactsService.hasContactsPermission()) {
+        state = state.copyWith(
+          contacts: const [],
+          isLoading: false,
+          permissionRequired: true,
+          clearError: true,
+        );
+        return;
+      }
+
       final items = MockConfig.useMocks
           ? await _getMockContacts()
           : await _getSyncedDeviceContacts(dio, contactsService);
@@ -137,11 +157,13 @@ class ContactsNotifier extends Notifier<ContactsState> {
       state = state.copyWith(
         contacts: items,
         isLoading: false,
+        permissionRequired: false,
+        clearError: true,
         lastSyncTime: DateTime.now(),
         lastSyncResult: ContactSyncResult(joonaPayUsersFound: joonaPayCount),
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -195,10 +217,22 @@ class ContactsNotifier extends Notifier<ContactsState> {
       return true;
     }
 
+    state = state.copyWith(
+      isLoading: true,
+      permissionRequired: false,
+      clearError: true,
+    );
+
     final contactsService = ref.read(contactsServiceProvider);
     final granted = await contactsService.requestContactsPermission();
     if (granted) {
       await syncContacts();
+    } else {
+      state = state.copyWith(
+        isLoading: false,
+        permissionRequired: true,
+        error: 'contacts_permission_required',
+      );
     }
     return granted;
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
@@ -7,6 +8,7 @@ import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/index.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
@@ -16,7 +18,8 @@ class BiometricPromptView extends ConsumerStatefulWidget {
   const BiometricPromptView({super.key});
 
   @override
-  ConsumerState<BiometricPromptView> createState() => _BiometricPromptViewState();
+  ConsumerState<BiometricPromptView> createState() =>
+      _BiometricPromptViewState();
 }
 
 class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
@@ -50,10 +53,7 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
 
       if (mounted) {
         if (didAuthenticate) {
-          ref.read(authProvider.notifier).unlock();
-          ref.read(appFsmProvider.notifier).dispatch(
-                const AppSessionEvent(SessionBiometricSuccess()),
-              );
+          _completeUnlock();
         } else {
           setState(() => _hasFailed = true);
         }
@@ -66,9 +66,21 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
   }
 
   void _fallbackToPin() {
-    ref.read(appFsmProvider.notifier).dispatch(
+    ref
+        .read(appFsmProvider.notifier)
+        .dispatch(
           const AppSessionEvent(SessionLock(reason: 'Biometric unavailable')),
         );
+    if (mounted) context.go('/session-locked');
+  }
+
+  void _completeUnlock() {
+    ref.read(authProvider.notifier).unlock();
+    ref.read(sessionServiceProvider.notifier).unlockSession();
+    ref
+        .read(appFsmProvider.notifier)
+        .dispatch(const AppSessionEvent(SessionBiometricSuccess()));
+    if (mounted) context.go('/home');
   }
 
   @override
@@ -114,13 +126,8 @@ class _BiometricPromptViewState extends ConsumerState<BiometricPromptView> {
 
             // Greeting
             Text(
-              firstName.isNotEmpty
-                  ? 'Bon retour, $firstName'
-                  : 'Bon retour',
-              style: TextStyle(
-                fontSize: 16,
-                color: colors.textSecondary,
-              ),
+              firstName.isNotEmpty ? 'Bon retour, $firstName' : 'Bon retour',
+              style: TextStyle(fontSize: 16, color: colors.textSecondary),
               textAlign: TextAlign.center,
             ),
 

@@ -8,6 +8,7 @@ import 'package:usdc_wallet/design/components/composed/pin_pad.dart';
 import 'package:usdc_wallet/features/pin/providers/pin_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/biometric/biometric_service.dart';
+import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/state/fsm/app_fsm.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
@@ -35,7 +36,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
   Future<void> _checkBiometric() async {
     final biometricService = ref.read(biometricServiceProvider);
-    final canCheck = await biometricService.canCheckBiometrics();
+    final canCheck = await biometricService.isAvailable();
     final isEnabled = await biometricService.isBiometricEnabled();
 
     if (mounted) {
@@ -50,9 +51,11 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
 
   void _unlock() {
     ref.read(authProvider.notifier).unlock();
-    ref.read(appFsmProvider.notifier).dispatch(
-          const AppSessionEvent(SessionUnlock()),
-        );
+    ref.read(sessionServiceProvider.notifier).unlockSession();
+    ref
+        .read(appFsmProvider.notifier)
+        .dispatch(const AppSessionEvent(SessionUnlock()));
+    if (mounted) context.go('/home');
   }
 
   void _logout() {
@@ -90,9 +93,7 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
             builder: (context, constraints) {
               return SingleChildScrollView(
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
@@ -147,7 +148,9 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
                         // Attempts warning
                         if (pinState.remainingAttempts < 5)
                           AppText(
-                            l10n.pin_attemptsRemaining(pinState.remainingAttempts),
+                            l10n.pin_attemptsRemaining(
+                              pinState.remainingAttempts,
+                            ),
                             variant: AppTextVariant.bodyMedium,
                             color: colors.warningText,
                           ),
@@ -158,8 +161,10 @@ class _SessionLockedViewState extends ConsumerState<SessionLockedView> {
                         PinPad(
                           onDigitPressed: (digit) => _handleDigitPressed(digit),
                           onDeletePressed: _handleDeletePressed,
-                          showBiometric: _biometricSupported && _biometricEnabled,
-                          onBiometricPressed: (_biometricSupported && _biometricEnabled)
+                          showBiometric:
+                              _biometricSupported && _biometricEnabled,
+                          onBiometricPressed:
+                              (_biometricSupported && _biometricEnabled)
                               ? _handleBiometric
                               : null,
                         ),

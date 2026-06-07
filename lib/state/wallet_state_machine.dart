@@ -18,6 +18,47 @@ class WalletStateMachine extends Notifier<WalletState> {
 
   WalletService get _service => ref.read(walletServiceProvider);
 
+  void _applyBalanceResponse(WalletBalanceResponse response) {
+    var usdBalance = 0.0;
+    var usdcBalance = 0.0;
+    var pending = 0.0;
+
+    for (final balance in response.balances) {
+      final currency = balance.currency.toUpperCase();
+      if (currency == 'USD') {
+        usdBalance = balance.available;
+        pending += balance.pending;
+      } else if (currency == 'USDC') {
+        usdcBalance = balance.available;
+        pending += balance.pending;
+      }
+    }
+
+    state = state.copyWith(
+      status: WalletStatus.loaded,
+      walletId: response.walletId,
+      walletAddress: response.walletAddress,
+      blockchain: response.blockchain,
+      usdBalance: usdBalance,
+      usdcBalance: usdcBalance,
+      pendingBalance: pending,
+      lastUpdated: DateTime.now(),
+      isCached: false,
+      error: null,
+    );
+
+    ref.read(localSyncServiceProvider).cacheWalletFromState(state);
+    ref
+        .read(appFsmProvider.notifier)
+        .onWalletLoaded(
+          walletId: response.walletId,
+          walletAddress: response.walletAddress,
+          blockchain: response.blockchain,
+          usdcBalance: usdcBalance,
+          pendingBalance: pending,
+        );
+  }
+
   /// Fetch wallet balance
   Future<void> fetch({bool force = false}) async {
     // Guard against redundant fetches
@@ -76,45 +117,7 @@ class WalletStateMachine extends Notifier<WalletState> {
 
       if (!ref.mounted) return;
 
-      double usdBalance = 0;
-      double usdcBalance = 0;
-      double pending = 0;
-
-      for (final balance in response.balances) {
-        if (balance.currency == 'USD') {
-          usdBalance = balance.available;
-          pending += balance.pending;
-        } else if (balance.currency == 'USDC') {
-          usdcBalance = balance.available;
-          pending += balance.pending;
-        }
-      }
-
-      state = state.copyWith(
-        status: WalletStatus.loaded,
-        walletId: response.walletId,
-        walletAddress: response.walletAddress,
-        blockchain: response.blockchain,
-        usdBalance: usdBalance,
-        usdcBalance: usdcBalance,
-        pendingBalance: pending,
-        lastUpdated: DateTime.now(),
-        error: null,
-      );
-
-      // Cache locally for offline access
-      ref.read(localSyncServiceProvider).cacheWalletFromState(state);
-
-      // Sync with FSM: notify wallet loaded
-      ref
-          .read(appFsmProvider.notifier)
-          .onWalletLoaded(
-            walletId: response.walletId,
-            walletAddress: response.walletAddress,
-            blockchain: response.blockchain,
-            usdcBalance: usdcBalance,
-            pendingBalance: pending,
-          );
+      _applyBalanceResponse(response);
     } on ApiException catch (e) {
       // Fresh users should not be blocked by an internal wallet bootstrap step.
       // If the API says no wallet exists, create the local USDC wallet and
@@ -157,38 +160,14 @@ class WalletStateMachine extends Notifier<WalletState> {
 
   /// Refresh wallet balance (shows refreshing indicator)
   Future<void> refresh() async {
-    if (state.isLoading) return;
+    if (state.status == WalletStatus.refreshing) return;
 
     state = state.copyWith(status: WalletStatus.refreshing);
 
     try {
       final response = await _service.getBalance();
 
-      double usdBalance = 0;
-      double usdcBalance = 0;
-      double pending = 0;
-
-      for (final balance in response.balances) {
-        if (balance.currency == 'USD') {
-          usdBalance = balance.available;
-          pending += balance.pending;
-        } else if (balance.currency == 'USDC') {
-          usdcBalance = balance.available;
-          pending += balance.pending;
-        }
-      }
-
-      state = state.copyWith(
-        status: WalletStatus.loaded,
-        walletId: response.walletId,
-        walletAddress: response.walletAddress,
-        blockchain: response.blockchain,
-        usdBalance: usdBalance,
-        usdcBalance: usdcBalance,
-        pendingBalance: pending,
-        lastUpdated: DateTime.now(),
-        error: null,
-      );
+      _applyBalanceResponse(response);
     } on ApiException catch (e) {
       if (!ref.mounted) return;
 
@@ -245,31 +224,7 @@ class WalletStateMachine extends Notifier<WalletState> {
         );
       }
 
-      double usdBalance = 0;
-      double usdcBalance = 0;
-      double pending = 0;
-
-      for (final balance in response.balances) {
-        if (balance.currency == 'USD') {
-          usdBalance = balance.available;
-          pending += balance.pending;
-        } else if (balance.currency == 'USDC') {
-          usdcBalance = balance.available;
-          pending += balance.pending;
-        }
-      }
-
-      state = state.copyWith(
-        status: WalletStatus.loaded,
-        walletId: response.walletId,
-        walletAddress: response.walletAddress,
-        blockchain: response.blockchain,
-        usdBalance: usdBalance,
-        usdcBalance: usdcBalance,
-        pendingBalance: pending,
-        lastUpdated: DateTime.now(),
-        error: null,
-      );
+      _applyBalanceResponse(response);
 
       // Debug: log the final state
       debugPrint(

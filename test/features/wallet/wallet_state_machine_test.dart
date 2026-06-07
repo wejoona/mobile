@@ -106,5 +106,37 @@ void main() {
         expect(state.walletId, 'wallet-live-envelope');
       },
     );
+
+    test('manual refresh recovers a loading wallet state', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'walletId': 'wallet-refresh',
+          'walletAddress': '0xabc',
+          'blockchain': 'polygon',
+          'balances': [
+            {'currency': 'USDC', 'available': 25, 'pending': 1, 'total': 26},
+          ],
+        });
+
+      final container = ProviderContainer(
+        overrides: [
+          dioProvider.overrideWithValue(dio),
+          appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(walletStateMachineProvider.notifier).state =
+          const WalletState(status: WalletStatus.loading);
+
+      await container.read(walletStateMachineProvider.notifier).refresh();
+
+      expect(dio.requestHistory.map((request) => request.path), ['/wallet']);
+
+      final state = container.read(walletStateMachineProvider);
+      expect(state.status, WalletStatus.loaded);
+      expect(state.walletId, 'wallet-refresh');
+      expect(state.usdcBalance, 25);
+    });
   });
 }

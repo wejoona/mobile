@@ -92,18 +92,18 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
               )
             : Column(
                 children: [
-                  // Search bar
-                  Padding(
-                    padding: EdgeInsets.all(AppSpacing.md),
-                    child: AppInput(
-                      controller: _searchController,
-                      label: l10n.contacts_search,
-                      prefixIcon: Icons.search,
-                      onChanged: (value) {
-                        setState(() => _searchQuery = value);
-                      },
+                  if (!state.permissionRequired)
+                    Padding(
+                      padding: EdgeInsets.all(AppSpacing.md),
+                      child: AppInput(
+                        controller: _searchController,
+                        label: l10n.contacts_search,
+                        prefixIcon: Icons.search,
+                        onChanged: (value) {
+                          setState(() => _searchQuery = value);
+                        },
+                      ),
                     ),
-                  ),
 
                   // Sync status banner
                   if (state.lastSyncResult != null &&
@@ -182,10 +182,14 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
                         // Empty state
                         if (filteredContacts.isEmpty && !state.isLoading)
                           _ContactsEmptyState(
-                            title: _searchQuery.isNotEmpty
+                            title: state.permissionRequired
+                                ? l10n.contacts_permission_title
+                                : _searchQuery.isNotEmpty
                                 ? l10n.contacts_no_results
                                 : l10n.contacts_empty,
-                            showAction: _searchQuery.isEmpty,
+                            showAction:
+                                state.permissionRequired ||
+                                _searchQuery.isEmpty,
                             onAction: () async {
                               final notifier = ref.read(
                                 contactsProvider.notifier,
