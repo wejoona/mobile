@@ -9795,7 +9795,7 @@ abstract class AppLocalizations {
   /// Development OTP hint
   ///
   /// In en, this message translates to:
-  /// **'Dev OTP: 123456'**
+  /// **'Dev OTP: 000000'**
   String get bankLinking_devOtpHint;
 
   /// Direct debit label

@@ -90,7 +90,9 @@ void main() {
     expect(wallet['balances'], isNotEmpty);
 
     final depositProvidersResponse = await dio.get('/deposits/providers');
-    final depositProviders = depositProvidersResponse.data as List<dynamic>;
+    final depositProvidersBody =
+        depositProvidersResponse.data as Map<String, dynamic>;
+    final depositProviders = depositProvidersBody['providers'] as List<dynamic>;
     expect(depositProviders, isNotEmpty);
 
     final transferResponse = await dio.post(

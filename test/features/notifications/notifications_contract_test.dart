@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:usdc_wallet/domain/enums/index.dart';
 import 'package:usdc_wallet/features/notifications/providers/notifications_provider.dart';
+import 'package:usdc_wallet/features/notifications/repositories/notifications_repository.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 
 import '../../helpers/test_utils.dart';
 
@@ -42,7 +44,8 @@ void main() {
     dio
       ..queueResponse(null, statusCode: 204)
       ..queueResponse(null, statusCode: 204);
-    final actions = NotificationActions(dio);
+    final actions =
+        NotificationActions(NotificationsRepository(NotificationsService(dio)));
 
     await actions.markAsRead('notif-1');
     await actions.markAllAsRead();

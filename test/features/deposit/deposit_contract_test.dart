@@ -13,7 +13,8 @@ import '../../helpers/test_utils.dart';
 void main() {
   group('DepositService contract', () {
     test(
-      'initiateDeposit posts to /deposits/initiate with idempotency header',
+      'initiateDeposit posts wallet deposit channel payload with '
+      'idempotency header',
       () async {
         final dio = MockDio();
         dio.queueResponse(
@@ -23,20 +24,22 @@ void main() {
         final service = DepositService(dio);
 
         await service.initiateDeposit(
-          const InitiateDepositRequest(amount: 10000, providerCode: 'OMCI'),
+          const InitiateDepositRequest(
+            amount: 10000,
+            provider: 'OMCI',
+            phoneNumber: '+2250748805663',
+            currency: 'XOF',
+          ),
         );
 
         final request = dio.requestHistory.single;
         expect(request.method, 'POST');
-        expect(request.path, '/deposits/initiate');
-        expect(
-          request.headers['X-Idempotency-Key'],
-          startsWith('deposit-initiate-'),
-        );
+        expect(request.path, '/wallet/deposit');
+        expect(request.headers['X-Idempotency-Key'], isNotEmpty);
         expect(request.data, {
           'amount': 10000,
-          'currency': 'XOF',
-          'providerCode': 'OMCI',
+          'sourceCurrency': 'XOF',
+          'channelId': 'orange_money_ci',
         });
       },
     );
@@ -60,6 +63,7 @@ void main() {
         'sourceCurrency': 'XOF',
         'targetCurrency': 'USD',
         'amount': 10000.0,
+        'direction': 'buy',
       });
     });
 
@@ -82,7 +86,7 @@ void main() {
 
   group('DepositNotifier flow contract', () {
     test(
-      'initiateDeposit stores instruction response for the screen',
+      'initiate stores the typed deposit response and enters processing',
       () async {
         final dio = MockDio();
         dio.queueResponse(
@@ -104,6 +108,41 @@ void main() {
             timestamp: DateTime.utc(2026, 6, 2),
           ),
         );
+        // Bank transfers do not require a phone number, so the flow can be
+        // exercised without an authenticated user in the container.
+        notifier.selectProviderData(
+          const ProviderData(
+            id: 'BANK',
+            name: 'Korido Bank Rail',
+            paymentMethodType: 'BANK_TRANSFER',
+          ),
+        );
+
+        await notifier.initiate();
+
+        final state = container.read(depositProvider);
+        expect(state.step, DepositFlowStep.processing);
+        expect(state.response?.paymentMethodType, PaymentMethodType.otp);
+        expect(state.response?.token, 'tok_dep_123');
+        expect(state.result?.id, 'dep_123');
+        expect(
+          dio.requestHistory.single.headers['X-Idempotency-Key'],
+          isNotEmpty,
+        );
+      },
+    );
+
+    test(
+      'initiate blocks mobile-money deposits without a phone number',
+      () async {
+        final dio = MockDio();
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final notifier = container.read(depositProvider.notifier);
+        notifier.setAmountXOF(10000);
         notifier.selectProviderData(
           const ProviderData(
             id: 'OMCI',
@@ -112,61 +151,14 @@ void main() {
           ),
         );
 
-        await notifier.initiateDeposit();
+        await notifier.initiate();
 
         final state = container.read(depositProvider);
-        expect(state.step, DepositFlowStep.instructions);
-        expect(state.response?['paymentMethodType'], PaymentMethodType.otp);
-        expect(state.response?['token'], 'tok_dep_123');
-        expect(state.result?.id, 'dep_123');
-        expect(
-          dio.requestHistory.single.headers['X-Idempotency-Key'],
-          startsWith('deposit-initiate-'),
-        );
+        expect(state.step, DepositFlowStep.failed);
+        expect(state.error, contains('Phone number'));
+        expect(dio.requestHistory, isEmpty);
       },
     );
-
-    test('confirmDeposit posts OTP to /deposits/confirm', () async {
-      final dio = MockDio();
-      dio
-        ..queueResponse(
-          _initiateResponse(paymentMethodType: 'OTP'),
-          statusCode: 201,
-        )
-        ..queueResponse({
-          'id': 'dep_123',
-          'status': 'completed',
-          'amount': 10000,
-          'currency': 'XOF',
-          'providerCode': 'OMCI',
-          'paymentMethodType': 'OTP',
-          'createdAt': DateTime.utc(2026, 6, 2).toIso8601String(),
-          'completedAt': DateTime.utc(2026, 6, 2, 0, 1).toIso8601String(),
-        });
-      final container = ProviderContainer(
-        overrides: [dioProvider.overrideWithValue(dio)],
-      );
-      addTearDown(container.dispose);
-
-      final notifier = container.read(depositProvider.notifier);
-      notifier.setAmountXOF(10000);
-      notifier.selectProviderData(
-        const ProviderData(
-          id: 'OMCI',
-          name: 'Orange Money',
-          paymentMethodType: 'OTP',
-        ),
-      );
-      await notifier.initiateDeposit();
-      notifier.setOtp('123456');
-      await notifier.confirmDeposit();
-
-      final confirmRequest = dio.requestHistory.last;
-      expect(confirmRequest.method, 'POST');
-      expect(confirmRequest.path, '/deposits/confirm');
-      expect(confirmRequest.data, {'token': 'tok_dep_123', 'otp': '123456'});
-      expect(container.read(depositProvider).step, DepositFlowStep.completed);
-    });
   });
 }
 

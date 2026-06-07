@@ -177,7 +177,14 @@ class DepositMock {
     final data = options.data as Map<String, dynamic>? ?? {};
     final amount = _valueAsDouble(data['amount']) ?? 0;
     final currency = data['currency'] as String? ?? 'XOF';
-    final providerCode = data['providerCode'] as String? ?? 'OMCI';
+    // Mirror backend contract: the canonical initiate route requires
+    // `providerCode`; the stale `provider`-only shape is rejected.
+    final providerCode = data['providerCode'] as String?;
+    if (providerCode == null || providerCode.isEmpty) {
+      return MockResponse.badRequest(
+        'providerCode is required for /deposits/initiate',
+      );
+    }
     final provider = _providerForCode(providerCode);
 
     return MockResponse.success({

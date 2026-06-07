@@ -52,6 +52,6 @@ void main() {
 
     expect(dio.requestHistory.single.path, '/devices');
     expect(devices, hasLength(1));
-    expect(devices.single.displayName, 'Apple iPhone 15 Pro');
+    expect(devices.single.displayLabel, 'Apple iPhone 15 Pro');
   });
 }
