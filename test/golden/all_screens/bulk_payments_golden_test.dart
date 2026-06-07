@@ -12,6 +12,8 @@ import 'package:usdc_wallet/features/bulk_payments/views/bulk_upload_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

@@ -114,6 +114,7 @@ class MockRegistry {
     AuthMockState.reset();
     WalletMockState.reset();
     TransactionsMockState.reset();
+    SessionsMock.reset();
     FeatureSubscriptionsMockState.reset();
     DevicesMockState.reset();
     KycMockState.reset();

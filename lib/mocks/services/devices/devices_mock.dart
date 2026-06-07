@@ -82,6 +82,9 @@ class DevicesMockState {
             .toIso8601String(),
         'lastIpAddress': '102.176.45.123',
         'loginCount': 45,
+        'createdAt': DateTime.now()
+            .subtract(const Duration(days: 30))
+            .toIso8601String(),
       },
       {
         'id': 'device-2',
@@ -105,6 +108,9 @@ class DevicesMockState {
             .toIso8601String(),
         'lastIpAddress': '102.176.45.123',
         'loginCount': 23,
+        'createdAt': DateTime.now()
+            .subtract(const Duration(days: 15))
+            .toIso8601String(),
       },
       {
         'id': 'device-3',
@@ -126,6 +132,9 @@ class DevicesMockState {
             .toIso8601String(),
         'lastIpAddress': '41.85.162.74',
         'loginCount': 8,
+        'createdAt': DateTime.now()
+            .subtract(const Duration(days: 3))
+            .toIso8601String(),
       },
     ];
   }

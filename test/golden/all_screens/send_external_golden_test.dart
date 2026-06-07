@@ -13,8 +13,7 @@ import 'package:usdc_wallet/features/send_external/models/external_transfer_requ
 import '../helpers/golden_test_helper.dart';
 
 /// Mock notifier for ExternalTransferState with pre-set data
-class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
-    implements ExternalTransferNotifier {
+class MockExternalTransferNotifier extends ExternalTransferNotifier {
   final ExternalTransferState initialState;
 
   MockExternalTransferNotifier(this.initialState);
@@ -38,6 +37,9 @@ class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
   Future<void> setNetwork(NetworkOption network) async {}
 
   @override
+  Future<bool> verifyPin(String pin) async => true;
+
+  @override
   Future<bool> executeTransfer() async => true;
 
   @override
@@ -51,6 +53,8 @@ class MockExternalTransferNotifier extends Notifier<ExternalTransferState>
 }
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

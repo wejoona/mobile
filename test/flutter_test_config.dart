@@ -10,7 +10,9 @@ import 'package:google_fonts/google_fonts.dart';
 /// This file is automatically detected by Flutter's test runner.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const runE2E = bool.fromEnvironment('RUN_E2E');
+  final runE2E =
+      Platform.environment['RUN_E2E'] == 'true' ||
+      const bool.fromEnvironment('RUN_E2E');
 
   // Allow Google Fonts to fetch at runtime (needed for tests that use app screens)
   // Tests should use pump() with short duration instead of pumpAndSettle() to avoid
@@ -19,9 +21,11 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 
   // Keep ordinary widget tests fast by failing accidental font/network fetches
   // quickly. Live E2E tests need real API timeouts, so they keep Dart defaults.
-  if (!runE2E) {
-    HttpOverrides.global = _TestHttpOverrides();
-  }
+  HttpOverrides.global = _TestHttpOverrides(
+    connectionTimeout: runE2E
+        ? const Duration(seconds: 10)
+        : const Duration(milliseconds: 100),
+  );
 
   await testMain();
 }
@@ -29,9 +33,14 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 /// HTTP overrides to handle network requests in tests
 /// Uses short connection timeout so font requests fail quickly
 class _TestHttpOverrides extends HttpOverrides {
+  _TestHttpOverrides({required this.connectionTimeout});
+
+  final Duration connectionTimeout;
+
   @override
-  HttpClient createHttpClient(SecurityContext? context) =>
-      super.createHttpClient(context)
-        ..connectionTimeout = const Duration(milliseconds: 100)
-        ..badCertificateCallback = (cert, host, port) => true;
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..connectionTimeout = connectionTimeout
+      ..badCertificateCallback = (cert, host, port) => true;
+  }
 }

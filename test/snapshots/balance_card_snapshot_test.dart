@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/components/composed/balance_card.dart';
 import '../golden/helpers/golden_test_helper.dart' show GoldenTestUtils;
 import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for BalanceCard component
 /// Ensures visual consistency for wallet balance display

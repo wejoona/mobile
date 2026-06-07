@@ -7,9 +7,7 @@ import 'package:usdc_wallet/services/analytics/analytics_service.dart';
 
 /// App Review Service Provider
 final appReviewServiceProvider = Provider<AppReviewService>((ref) {
-  return AppReviewService(
-    analytics: ref.watch(analyticsServiceProvider),
-  );
+  return AppReviewService(analytics: ref.watch(analyticsServiceProvider));
 });
 
 /// App Review State
@@ -79,9 +77,8 @@ class AppReviewService {
 
   AppReviewState? _state;
 
-  AppReviewService({
-    required AnalyticsService analytics,
-  }) : _analytics = analytics;
+  AppReviewService({required AnalyticsService analytics})
+    : _analytics = analytics;
 
   /// Initialize the service and load state
   Future<void> initialize() async {
@@ -90,8 +87,9 @@ class AppReviewService {
 
       // Track first usage if not set
       if (_state?.firstUsageDate == null) {
-        _state = (_state ?? const AppReviewState())
-            .copyWith(firstUsageDate: DateTime.now());
+        _state = (_state ?? const AppReviewState()).copyWith(
+          firstUsageDate: DateTime.now(),
+        );
         await _saveState();
         _logger.info('First usage tracked');
       }
@@ -107,13 +105,13 @@ class AppReviewService {
       await _loadState();
 
       _state = (_state ?? const AppReviewState()).copyWith(
-        successfulTransactions:
-            (_state?.successfulTransactions ?? 0) + 1,
+        successfulTransactions: (_state?.successfulTransactions ?? 0) + 1,
       );
       await _saveState();
 
       _logger.debug(
-          'Successful transactions: ${_state?.successfulTransactions}');
+        'Successful transactions: ${_state?.successfulTransactions}',
+      );
 
       // Check if we should show review prompt
       await _checkAndShowReview();
@@ -146,10 +144,7 @@ class AppReviewService {
       await _saveState();
 
       // Track analytics
-      _analytics.setUserProperty(
-        'review_prompt_shown',
-        'true',
-      );
+      _analytics.setUserProperty('review_prompt_shown', 'true');
 
       _logger.info('App review prompt shown');
     } catch (e) {
@@ -179,8 +174,9 @@ class AppReviewService {
 
     // Check usage duration
     if (state.firstUsageDate != null) {
-      final daysSinceFirstUse =
-          DateTime.now().difference(state.firstUsageDate!).inDays;
+      final daysSinceFirstUse = DateTime.now()
+          .difference(state.firstUsageDate!)
+          .inDays;
       if (daysSinceFirstUse < _usageDaysThreshold) {
         _logger.debug(
           'Usage duration threshold not met: $daysSinceFirstUse/$_usageDaysThreshold days',
@@ -191,8 +187,9 @@ class AppReviewService {
 
     // Check time since last prompt
     if (state.lastReviewPromptDate != null) {
-      final daysSinceLastPrompt =
-          DateTime.now().difference(state.lastReviewPromptDate!).inDays;
+      final daysSinceLastPrompt = DateTime.now()
+          .difference(state.lastReviewPromptDate!)
+          .inDays;
       if (daysSinceLastPrompt < _daysBetweenPrompts) {
         _logger.debug(
           'Too soon since last prompt: $daysSinceLastPrompt/$_daysBetweenPrompts days',
@@ -211,16 +208,11 @@ class AppReviewService {
     try {
       await _loadState();
 
-      _state = (_state ?? const AppReviewState()).copyWith(
-        hasReviewed: true,
-      );
+      _state = (_state ?? const AppReviewState()).copyWith(hasReviewed: true);
       await _saveState();
 
       // Track analytics
-      _analytics.setUserProperty(
-        'user_reviewed',
-        'true',
-      );
+      _analytics.setUserProperty('user_reviewed', 'true');
 
       _logger.info('User marked as reviewed');
     } catch (e) {
@@ -235,10 +227,7 @@ class AppReviewService {
       await _inAppReview.openStoreListing();
 
       // Track analytics
-      _analytics.setUserProperty(
-        'manual_review_opened',
-        'true',
-      );
+      _analytics.setUserProperty('manual_review_opened', 'true');
 
       _logger.info('App store opened for review');
     } catch (e) {

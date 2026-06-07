@@ -5,12 +5,14 @@ import 'package:usdc_wallet/design/components/primitives/app_select.dart';
 
 import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for AppSelect component
 /// Ensures visual consistency across all states
 ///
 /// To update goldens: flutter test --update-goldens test/snapshots/app_select_snapshot_test.dart
 void main() {
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });

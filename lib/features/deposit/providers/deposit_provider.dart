@@ -337,6 +337,7 @@ class DepositNotifier extends Notifier<DepositState> {
   }
 
   Future<void> initiateDeposit() async => initiate();
+
   void selectProviderData(dynamic data) {
     final code = data is ProviderData ? data.id : data.toString();
     state = state.copyWith(

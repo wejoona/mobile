@@ -18,6 +18,8 @@ import 'package:usdc_wallet/features/kyc/models/kyc_tier.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

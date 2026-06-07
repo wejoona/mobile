@@ -25,6 +25,15 @@ class MockAppFsmNotifier extends AppFsmNotifier {
   void handleEffects(List<FsmEffect> effects) {
     // No-op: prevent async side effects in tests
   }
+
+  @override
+  void restoreSession({
+    required String userId,
+    required String accessToken,
+    String? refreshToken,
+  }) {
+    // No-op: prevent wallet/KYC fetch microtasks in tests
+  }
 }
 
 /// Mock KycStateMachine that does nothing
@@ -137,7 +146,7 @@ void main() {
     registerFallbackValues();
   });
 
-  setUp(() {
+  setUp(() async {
     mockAuthService = MockAuthService();
     mockStorage = MockSecureStorage();
     mockDeviceRegistrationService = MockDeviceRegistrationService();
@@ -160,6 +169,9 @@ void main() {
         walletStateMachineProvider.overrideWith(() => MockWalletStateMachine()),
       ],
     );
+
+    container.read(authProvider);
+    await pumpEventQueue(times: 3);
   });
 
   tearDown(() {
@@ -173,7 +185,7 @@ void main() {
       final state = container.read(authProvider);
 
       // Assert
-      expect(state.status, equals(AuthStatus.initial));
+      expect(state.status, equals(AuthStatus.unauthenticated));
       expect(state.user, isNull);
       expect(state.phone, isNull);
       expect(state.error, isNull);

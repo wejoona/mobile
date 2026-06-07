@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 
 import '../../helpers/golden_helpers.dart';
 import '../../helpers/test_wrapper.dart';
+import '../../helpers/golden_helpers.dart';
 
 /// Component Golden Tests for Design Validation
 ///
@@ -20,6 +21,8 @@ import '../../helpers/test_wrapper.dart';
 /// async loading timers. The goldens are still generated. Run tests
 /// twice if needed - failures on second run indicate real issues.
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });

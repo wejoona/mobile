@@ -56,7 +56,9 @@ class DevicesRepository {
     } else {
       devicesJson = [];
     }
-    return devicesJson.map((json) => Device.fromJson(json)).toList();
+    return devicesJson
+        .map((json) => Device.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
   /// Trust a device

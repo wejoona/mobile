@@ -72,7 +72,14 @@
       "Bash(echo:*)",
       "Bash(python3:*)",
       "Bash(git -C /Users/macbook/clawd/openclaw status --short)",
-      "Bash(~/.zshrc)"
+      "Bash(~/.zshrc)",
+      "Bash(git rev-list *)",
+      "Bash(git checkout *)",
+      "Bash(flutter --version)",
+      "Bash(xcrun simctl *)",
+      "Bash(git merge *)",
+      "Bash(flutter analyze *)",
+      "Bash(perl -0pi -e \"s/setUserProperty\\\\\\(name: \\('[^']*'\\), value: \\('[^']*'\\)\\\\\\)/setUserProperty\\(\\\\$1, \\\\$2\\)/g\" lib/services/app_review/app_review_service.dart)"
     ]
   }
 }

@@ -25,11 +25,17 @@ void main() {
     mockStorage = MockFlutterSecureStorage();
   });
 
+  BiometricService service() => BiometricService(mockAuth, mockStorage);
+
+  void stubBiometricAvailable() {
+    when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
+  }
+
   group('Check device biometric support', () {
     test('should return true when device supports biometrics', () async {
       // Arrange
       when(() => mockAuth.isDeviceSupported()).thenAnswer((_) async => true);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.isDeviceSupported();
@@ -43,7 +49,7 @@ void main() {
       () async {
         // Arrange
         when(() => mockAuth.isDeviceSupported()).thenAnswer((_) async => false);
-        final biometricService = BiometricService(mockAuth, mockStorage);
+        final biometricService = service();
 
         // Act
         final result = await biometricService.isDeviceSupported();
@@ -60,7 +66,7 @@ void main() {
       when(
         () => mockAuth.getAvailableBiometrics(),
       ).thenAnswer((_) async => [platform.BiometricType.fingerprint]);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getAvailableBiometrics();
@@ -74,7 +80,7 @@ void main() {
       when(
         () => mockAuth.getAvailableBiometrics(),
       ).thenAnswer((_) async => [platform.BiometricType.face]);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getAvailableBiometrics();
@@ -91,7 +97,7 @@ void main() {
           platform.BiometricType.face,
         ],
       );
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getAvailableBiometrics();
@@ -103,7 +109,7 @@ void main() {
     test('should return empty list when no biometrics available', () async {
       // Arrange
       when(() => mockAuth.getAvailableBiometrics()).thenAnswer((_) async => []);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getAvailableBiometrics();
@@ -117,7 +123,7 @@ void main() {
       when(
         () => mockAuth.getAvailableBiometrics(),
       ).thenThrow(PlatformException(code: 'NotAvailable'));
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getAvailableBiometrics();
@@ -130,6 +136,7 @@ void main() {
   group('Authenticate with fingerprint/face', () {
     test('should return true on successful authentication', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -137,7 +144,7 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) async => true);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.authenticate();
@@ -148,6 +155,7 @@ void main() {
 
     test('should return false when authentication fails', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -155,17 +163,19 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) async => false);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.authenticate();
 
       // Assert
       expect(result.success, isFalse);
+      expect(result.failureReason, BiometricFailureReason.cancelled);
     });
 
     test('should use custom reason when provided', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -173,10 +183,10 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) async => true);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
-      await biometricService.authenticate(reason: 'Custom reason');
+      await biometricService.authenticate(localizedReason: 'Custom reason');
 
       // Assert
       verify(
@@ -192,6 +202,7 @@ void main() {
   group('Handle authentication failure', () {
     test('should handle PlatformException', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -199,17 +210,19 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenThrow(PlatformException(code: 'NotEnrolled'));
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.authenticate();
 
       // Assert
       expect(result.success, isFalse);
+      expect(result.failureReason, BiometricFailureReason.notEnrolled);
     });
 
     test('should handle NotAvailable exception', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -217,13 +230,14 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenThrow(PlatformException(code: 'NotAvailable'));
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.authenticate();
 
       // Assert
       expect(result.success, isFalse);
+      expect(result.failureReason, BiometricFailureReason.notEnrolled);
     });
   });
 
@@ -242,7 +256,7 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async {});
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       await biometricService.enableBiometric();
@@ -276,7 +290,7 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async {});
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       await biometricService.disableBiometric();
@@ -309,7 +323,7 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async => 'true');
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.isBiometricEnabled();
@@ -331,7 +345,7 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async => 'false');
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.isBiometricEnabled();
@@ -353,7 +367,7 @@ void main() {
           wOptions: any(named: 'wOptions'),
         ),
       ).thenAnswer((_) async => null);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.isBiometricEnabled();
@@ -372,7 +386,7 @@ void main() {
           platform.BiometricType.face,
         ],
       );
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getPrimaryBiometricType();
@@ -386,7 +400,7 @@ void main() {
       when(
         () => mockAuth.getAvailableBiometrics(),
       ).thenAnswer((_) async => [platform.BiometricType.fingerprint]);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getPrimaryBiometricType();
@@ -398,7 +412,7 @@ void main() {
     test('should return none when no biometrics available', () async {
       // Arrange
       when(() => mockAuth.getAvailableBiometrics()).thenAnswer((_) async => []);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.getPrimaryBiometricType();
@@ -411,6 +425,7 @@ void main() {
   group('Authenticate sensitive', () {
     test('should call authenticate with sensitive reason', () async {
       // Arrange
+      stubBiometricAvailable();
       when(
         () => mockAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
@@ -418,7 +433,7 @@ void main() {
           options: any(named: 'options'),
         ),
       ).thenAnswer((_) async => true);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.authenticateSensitive();
@@ -439,7 +454,7 @@ void main() {
     test('should return true when biometrics can be checked', () async {
       // Arrange
       when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => true);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.canCheckBiometrics();
@@ -451,7 +466,7 @@ void main() {
     test('should return false when biometrics cannot be checked', () async {
       // Arrange
       when(() => mockAuth.canCheckBiometrics).thenAnswer((_) async => false);
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.canCheckBiometrics();
@@ -465,7 +480,7 @@ void main() {
       when(
         () => mockAuth.canCheckBiometrics,
       ).thenThrow(PlatformException(code: 'NotAvailable'));
-      final biometricService = BiometricService(mockAuth, mockStorage);
+      final biometricService = service();
 
       // Act
       final result = await biometricService.canCheckBiometrics();

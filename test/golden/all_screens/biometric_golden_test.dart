@@ -7,6 +7,8 @@ import 'package:usdc_wallet/features/biometric/views/biometric_settings_view.dar
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

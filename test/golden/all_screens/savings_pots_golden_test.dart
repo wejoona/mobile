@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/savings_pots/views/pot_detail_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

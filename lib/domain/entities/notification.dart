@@ -28,18 +28,29 @@ class AppNotification {
     final data = json['data'] is Map
         ? Map<String, dynamic>.from(json['data'] as Map)
         : null;
+    final referenceType = json['referenceType'] as String?;
+    final referenceId = json['referenceId'] as String?;
+    final isUnread = json['isUnread'] as bool?;
 
     return AppNotification(
       id: json['id'] as String,
-      title: json['title'] as String,
-      body: json['body'] as String,
+      title: json['title'] as String? ?? 'Notification',
+      body: json['body'] as String? ?? '',
       type: _notificationTypeFromJson(json),
-      isRead: json['isRead'] as bool? ?? json['readAt'] != null,
+      isRead:
+          json['isRead'] as bool? ??
+          (isUnread != null ? !isUnread : json['readAt'] != null),
       actionUrl: json['actionUrl'] as String?,
       transactionId:
-          json['transactionId'] as String? ?? data?['transactionId'] as String?,
+          json['transactionId'] as String? ??
+          (referenceType == 'transaction' ? referenceId : null) ??
+          data?['transactionId'] as String?,
       data: data,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: DateTime.parse(
+        json['createdAt'] as String? ??
+            json['sentAt'] as String? ??
+            DateTime.now().toIso8601String(),
+      ),
     );
   }
 }
@@ -59,21 +70,34 @@ NotificationType _notificationTypeFromJson(Map<String, dynamic> json) {
   switch (normalized) {
     case 'transaction':
     case 'transfer':
+    case 'transfer_received':
+    case 'transfer_sent':
       return NotificationType.transfer;
     case 'deposit':
+    case 'deposit_completed':
+    case 'deposit_successful':
       return NotificationType.deposit;
     case 'withdrawal':
+    case 'withdrawal_pending':
       return NotificationType.withdrawal;
     case 'kyc':
+    case 'kyc_status':
     case 'identity':
       return NotificationType.kyc;
     case 'security':
+    case 'security_alert':
     case 'risk':
       return NotificationType.security;
     case 'marketing':
     case 'promotion':
     case 'referral':
       return NotificationType.promotion;
+    case 'low_balance':
+      return NotificationType.lowBalance;
+    case 'transaction_complete':
+      return NotificationType.transactionComplete;
+    case 'transaction_failed':
+      return NotificationType.transactionFailed;
     default:
       return NotificationType.general;
   }

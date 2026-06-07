@@ -16,6 +16,8 @@ import 'package:usdc_wallet/features/fsm_states/views/wallet_under_review_view.d
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

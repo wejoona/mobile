@@ -25,15 +25,28 @@ final String _envAuthToken =
     Platform.environment['AUTH_TOKEN'] ??
     const String.fromEnvironment('AUTH_TOKEN', defaultValue: '');
 
+/// Default OTP used by the test stack when the dev OTP endpoint is unavailable.
+final String defaultTestOtp =
+    Platform.environment['DEFAULT_OTP'] ??
+    const String.fromEnvironment('DEFAULT_OTP', defaultValue: '123456');
+
 /// Test phone
 final String testPhone =
     Platform.environment['TEST_PHONE'] ??
     const String.fromEnvironment('TEST_PHONE', defaultValue: '+2250700000000');
 
+/// Test country for local phone normalization
+final String testCountryCode =
+    Platform.environment['TEST_COUNTRY'] ??
+    const String.fromEnvironment('TEST_COUNTRY', defaultValue: 'CI');
+
 /// Live E2E tests are opt-in because they mutate real backend state.
 final bool runE2E =
     Platform.environment['RUN_E2E'] == 'true' ||
     const bool.fromEnvironment('RUN_E2E');
+
+/// Alias used by test files that check `e2eEnabled` at the top of main().
+bool get e2eEnabled => runE2E;
 
 final String? e2eSkipReason = runE2E
     ? null
@@ -42,6 +55,16 @@ final String? e2eSkipReason = runE2E
 final File _tokenCacheFile = File(
   '${Directory.systemTemp.path}/korido_live_e2e_token_cache.json',
 );
+
+void skipE2ESuite() {
+  group('E2E suite disabled', () {
+    test(
+      'set RUN_E2E=true and API_URL to run real backend checks',
+      () {},
+      skip: 'E2E tests call a real backend and are opt-in.',
+    );
+  });
+}
 
 void e2eGroup(String description, void Function() body) {
   group(description, body, skip: e2eSkipReason);
@@ -272,6 +295,15 @@ class E2EClient {
       'Status: ${response.statusCode}\n'
       'Body: ${response.body}',
     );
+  }
+
+  Future<String> resolveOtp(String phone) async {
+    final otpRes = await get('/dev/otp/${Uri.encodeComponent(phone)}');
+    if (otpRes.statusCode == 200 && otpRes.data?['data']?['otp'] != null) {
+      return otpRes.data!['data']['otp'].toString();
+    }
+
+    return defaultTestOtp;
   }
 
   /// Refresh the access token

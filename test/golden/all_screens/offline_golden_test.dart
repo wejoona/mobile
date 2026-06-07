@@ -6,6 +6,8 @@ import 'package:usdc_wallet/features/offline/views/pending_transfers_screen.dart
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

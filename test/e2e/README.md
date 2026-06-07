@@ -78,7 +78,12 @@ AUTH_TOKEN=eyJhbGci... \
 flutter test test/e2e --no-pub -j 1
 ```
 
-### Option 3: Specific test file
+### Option 3: Production auth smoke with default OTP
+```bash
+RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e_test.dart --no-pub
+```
+
+### Option 4: Specific test file
 ```bash
 RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e_test.dart --no-pub
 ```
@@ -87,9 +92,12 @@ RUN_E2E=true API_URL=http://127.0.0.1:3401/api/v1 flutter test test/e2e/auth_e2e
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `RUN_E2E` | `false` | Must be `true` to run these real-backend tests |
 | `API_URL` | `https://api.joonapay.com/api/v1` | Backend base URL |
 | `AUTH_TOKEN` | (empty) | Pre-configured JWT token (skips login flow) |
+| `DEFAULT_OTP` | `123456` | OTP fallback when `/dev/otp` is unavailable |
 | `TEST_PHONE` | `+2250700000000` | Phone number for test user |
+| `TEST_COUNTRY` | `CI` | Country used to normalize local-format `TEST_PHONE` values |
 
 ## Notes
 

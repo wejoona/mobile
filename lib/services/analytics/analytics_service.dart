@@ -384,6 +384,8 @@ class AnalyticsService {
     if (amount < 1000) return '500_1000';
     return 'over_1000';
   }
+
+  String _safeHash(String value) => value.hashCode.toString();
 }
 
 class AnalyticsEvent {

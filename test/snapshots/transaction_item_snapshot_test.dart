@@ -7,6 +7,7 @@ import 'package:usdc_wallet/design/tokens/index.dart';
 
 import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for Transaction List Item component
 /// Ensures visual consistency for transaction display

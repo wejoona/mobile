@@ -6,6 +6,8 @@ import 'package:usdc_wallet/features/referrals/views/referrals_view.dart';
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });

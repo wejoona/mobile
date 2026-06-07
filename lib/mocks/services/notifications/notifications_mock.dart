@@ -99,11 +99,12 @@ class NotificationsMock {
   }
 
   static Future<MockResponse> _handleGetAll(RequestOptions options) async {
-    return MockResponse.success([
+    final notifications = [
       {
         'id': 'notif-1',
         'userId': 'user-123',
-        'type': 'transactionComplete',
+        'type': 'transfer_received',
+        'status': 'sent',
         'title': 'Money received',
         'body': 'You received \$50.00 from +225 07 12 34 56 78',
         'data': {
@@ -112,6 +113,9 @@ class NotificationsMock {
           'from': '+225 07 12 34 56 78',
         },
         'isRead': false,
+        'isUnread': true,
+        'referenceType': 'transaction',
+        'referenceId': 'txn-001',
         'createdAt': DateTime.now()
             .subtract(const Duration(minutes: 5))
             .toIso8601String(),
@@ -120,7 +124,8 @@ class NotificationsMock {
       {
         'id': 'notif-2',
         'userId': 'user-123',
-        'type': 'securityAlert',
+        'type': 'security_alert',
+        'status': 'sent',
         'title': 'New device login',
         'body': 'Your account was accessed from a new iPhone in Abidjan',
         'data': {
@@ -128,6 +133,7 @@ class NotificationsMock {
           'location': 'Abidjan, Côte d\'Ivoire',
         },
         'isRead': false,
+        'isUnread': true,
         'createdAt': DateTime.now()
             .subtract(const Duration(hours: 2))
             .toIso8601String(),
@@ -136,7 +142,8 @@ class NotificationsMock {
       {
         'id': 'notif-3',
         'userId': 'user-123',
-        'type': 'transactionComplete',
+        'type': 'deposit_completed',
+        'status': 'sent',
         'title': 'Deposit successful',
         'body': 'Your deposit of \$100.00 via Orange Money is complete',
         'data': {
@@ -145,6 +152,7 @@ class NotificationsMock {
           'provider': 'Orange Money',
         },
         'isRead': true,
+        'isUnread': false,
         'createdAt': DateTime.now()
             .subtract(const Duration(days: 1))
             .toIso8601String(),
@@ -160,6 +168,7 @@ class NotificationsMock {
         'body': 'Invite 3 friends and get 500 XOF bonus. Offer ends soon!',
         'data': {'campaignId': 'promo-001', 'route': '/referrals'},
         'isRead': true,
+        'isUnread': false,
         'createdAt': DateTime.now()
             .subtract(const Duration(days: 2))
             .toIso8601String(),
@@ -170,12 +179,14 @@ class NotificationsMock {
       {
         'id': 'notif-5',
         'userId': 'user-123',
-        'type': 'lowBalance',
+        'type': 'low_balance',
+        'status': 'sent',
         'title': 'Low balance alert',
         'body':
             'Your balance is below 100 USDC. Top up to avoid transaction failures.',
         'data': {'currentBalance': 85.50, 'threshold': 100.0},
         'isRead': true,
+        'isUnread': false,
         'createdAt': DateTime.now()
             .subtract(const Duration(days: 3))
             .toIso8601String(),
@@ -183,7 +194,15 @@ class NotificationsMock {
             .subtract(const Duration(days: 3))
             .toIso8601String(),
       },
-    ]);
+    ];
+
+    return MockResponse.success({
+      'notifications': notifications,
+      'total': notifications.length,
+      'unreadCount': 2,
+      'limit': 20,
+      'offset': 0,
+    });
   }
 
   static Future<MockResponse> _handleGetPreferences(

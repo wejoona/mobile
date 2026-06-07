@@ -9,6 +9,11 @@ Map<String, String> _idempotencyHeaders() => {
 };
 
 void main() {
+  if (!e2eEnabled) {
+    skipE2ESuite();
+    return;
+  }
+
   late E2EClient client;
 
   setUpAll(() async {

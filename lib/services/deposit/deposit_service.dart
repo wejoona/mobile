@@ -63,9 +63,10 @@ class DepositService {
     int page = 1,
     int limit = 20,
   }) async {
+    final offset = page <= 1 ? 0 : (page - 1) * limit;
     final response = await _dio.get(
       '/deposits',
-      queryParameters: {'limit': limit, 'offset': (page - 1) * limit},
+      queryParameters: {'limit': limit, 'offset': offset},
     );
     final data = response.data;
     if (data is Map<String, dynamic> && data['deposits'] != null) {
@@ -179,5 +180,10 @@ class DepositProvidersPayload {
       retryable: json['retryable'] as bool? ?? false,
       supportReviewRequired: json['supportReviewRequired'] as bool? ?? false,
     );
+  }
+
+  static String _idempotencyKey(String prefix) {
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    return '$prefix-$timestamp';
   }
 }

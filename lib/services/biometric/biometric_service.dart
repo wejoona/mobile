@@ -51,6 +51,9 @@ class BiometricService {
 
   /// Check if device supports biometric authentication
   Future<bool> isAvailable() async {
+    var canCheckBiometrics = false;
+    var isDeviceSupported = false;
+
     try {
       if (await _localAuth.canCheckBiometrics) return true;
       return await _localAuth.isDeviceSupported();

@@ -36,6 +36,27 @@ class GoldenTestConfig {
   static const String backendUrl = 'https://api.joonapay.com/api/v1';
 }
 
+bool get shouldRunGoldens {
+  return Platform.environment['CI'] == 'true' ||
+      Platform.environment['UPDATE_GOLDENS'] == 'true' ||
+      Platform.environment['RUN_GOLDENS'] == 'true' ||
+      const bool.fromEnvironment('RUN_GOLDENS');
+}
+
+bool skipVisualSuiteIfDisabled() {
+  if (shouldRunGoldens) return false;
+
+  group('visual suite disabled', () {
+    test(
+      'enable golden snapshots explicitly',
+      () {},
+      skip:
+          'Golden/snapshot tests are opt-in. Set RUN_GOLDENS=true or UPDATE_GOLDENS=true.',
+    );
+  });
+  return true;
+}
+
 /// Golden test utilities
 class GoldenTestUtils {
   GoldenTestUtils._();
@@ -46,7 +67,7 @@ class GoldenTestUtils {
   static Future<void> init() async {
     TestWidgetsFlutterBinding.ensureInitialized();
 
-    // Production fonts are bundled; keep tests deterministic and offline.
+// Production fonts are bundled; keep tests deterministic and offline.
     GoogleFonts.config.allowRuntimeFetching = false;
     await _loadBundledFonts();
 

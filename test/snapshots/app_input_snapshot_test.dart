@@ -5,6 +5,7 @@ import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 
 import '../helpers/golden_helpers.dart';
 import '../helpers/test_wrapper.dart';
+import '../helpers/golden_helpers.dart';
 
 /// Golden/Snapshot tests for AppInput component
 /// Ensures visual consistency across all variants and states

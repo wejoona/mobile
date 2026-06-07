@@ -9,6 +9,8 @@ import 'package:usdc_wallet/features/sub_business/views/sub_business_staff_view.
 import '../helpers/golden_test_helper.dart';
 
 void main() {
+  if (skipVisualSuiteIfDisabled()) return;
+
   setUpAll(() async {
     await GoldenTestUtils.init();
   });
