@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
+import 'package:usdc_wallet/state/fsm/app_fsm.dart';
+import 'package:usdc_wallet/state/fsm/session_fsm.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 import 'package:usdc_wallet/services/security/security_headers_interceptor.dart'
     show securityHeadersInterceptorProvider;
@@ -321,21 +323,28 @@ class AuthInterceptor extends Interceptor {
           return handler.next(err);
         }
       } else {
-        // Refresh failed — but DON'T logout immediately.
-        // The token may have been refreshed by a concurrent request.
-        // Only clear tokens if we truly have no valid access token.
+        // Refresh failed — don't logout immediately. A concurrent request may
+        // have already refreshed the token.
         final storage = _ref.read(secureStorageProvider);
         final currentToken = await storage.read(key: StorageKeys.accessToken);
         final originalToken = err.requestOptions.headers['Authorization']
             ?.toString()
             .replaceFirst('Bearer ', '');
 
-        // Only logout if the current token is still the same failed one
-        // (meaning no concurrent refresh succeeded)
+        // No concurrent refresh succeeded — LOCK the session instead of logging
+        // out. The persistent session and cached data stay intact; the user
+        // re-authenticates with PIN/biometric. Only a full session expiry or an
+        // explicit logout clears the session.
         if (currentToken == null || currentToken == originalToken) {
-          await _invalidateLocalSession();
+          try {
+            _ref.read(appFsmProvider.notifier).dispatch(
+              const AppSessionEvent(SessionLock(reason: 'Token refresh failed')),
+            );
+          } catch (_) {
+            // FSM might not be available in all contexts
+          }
         }
-        // Otherwise, retry with the new token from concurrent refresh
+        // Otherwise, retry with the new token from the concurrent refresh.
         else {
           try {
             final options = err.requestOptions;

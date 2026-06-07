@@ -65,6 +65,12 @@ class _LoginViewState extends ConsumerState<LoginView>
     final biometricService = ref.read(biometricServiceProvider);
     final storage = ref.read(secureStorageProvider);
 
+    // Pre-fill remembered phone number
+    final rememberedPhone = await storage.read(key: StorageKeys.rememberedPhone);
+    if (rememberedPhone != null && rememberedPhone.isNotEmpty && mounted) {
+      _phoneController.text = rememberedPhone;
+    }
+
     final isEnabled = await biometricService.isBiometricEnabled();
     final refreshToken = await storage.read(key: StorageKeys.refreshToken);
 

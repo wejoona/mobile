@@ -6388,7 +6388,7 @@
   "@bankLinking_depositSuccess": {
     "description": "Deposit success message"
   },
-  "bankLinking_devOtpHint": "Dev otp: 123456",
+  "bankLinking_devOtpHint": "Dev OTP: 000000",
   "@bankLinking_devOtpHint": {
     "description": "Development OTP hint"
   },

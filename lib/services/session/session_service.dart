@@ -8,23 +8,25 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 
 /// Session configuration
 class SessionConfig {
-  /// Inactivity timeout before auto-logout (default: 5 minutes)
+  /// Inactivity timeout before showing warning (default: 30 minutes)
+  /// This only locks the screen — does NOT log out.
   final Duration inactivityTimeout;
 
-  /// Warning before logout (default: 30 seconds)
+  /// Warning before lock (default: 60 seconds)
   final Duration warningDuration;
 
   /// Token refresh threshold (refresh when less than this time remaining)
   final Duration tokenRefreshThreshold;
 
-  /// Background timeout (auto-logout when app is in background too long)
+  /// Background timeout — lock after this duration in background (default: 5 minutes)
+  /// Short backgrounds (camera, image picker) are handled by grace period.
   final Duration backgroundTimeout;
 
   const SessionConfig({
-    this.inactivityTimeout = const Duration(minutes: 5),
-    this.warningDuration = const Duration(seconds: 30),
+    this.inactivityTimeout = const Duration(minutes: 30),
+    this.warningDuration = const Duration(seconds: 60),
     this.tokenRefreshThreshold = const Duration(minutes: 5),
-    this.backgroundTimeout = const Duration(minutes: 15),
+    this.backgroundTimeout = const Duration(minutes: 5),
   });
 }
 
@@ -220,9 +222,9 @@ class SessionService extends Notifier<SessionState> {
 
     // Don't lock immediately — give a grace period for camera, image picker,
     // biometric prompts, etc. which briefly send the app to background.
-    // Lock after 30 seconds in background.
+    // Lock after 2 minutes in background.
     _backgroundLockTimer?.cancel();
-    _backgroundLockTimer = Timer(const Duration(seconds: 30), () {
+    _backgroundLockTimer = Timer(const Duration(minutes: 2), () {
       if (state.isInBackground && state.status == SessionStatus.active) {
         lockSession();
       }
@@ -241,13 +243,10 @@ class SessionService extends Notifier<SessionState> {
       final backgroundDuration = DateTime.now().difference(wasInBackground);
 
       if (backgroundDuration >= _config.backgroundTimeout) {
-        // Been in background too long, expire session
-        _expireSession();
-      } else if (backgroundDuration >= const Duration(minutes: 1)) {
-        // Been in background for a while, lock session
+        // Been in background too long (>5 min), lock session (NOT expire/logout)
         lockSession();
       } else {
-        // Brief background, just record activity
+        // Brief background (<5 min), just record activity and continue
         recordActivity();
       }
     }
@@ -374,11 +373,11 @@ class SessionService extends Notifier<SessionState> {
   }
 
   void _expireSession() {
-    _cancelAllTimers();
-    state = state.copyWith(
-      status: SessionStatus.expired,
-      remainingSeconds: null,
-    );
+    // Don't actually expire (logout) — just lock the session.
+    // The user has a persistent session stored on device.
+    // True session expiry only happens after 30 days of inactivity
+    // (handled by UserSessionRepository).
+    lockSession();
   }
 
   void _startTokenRefreshTimer() {

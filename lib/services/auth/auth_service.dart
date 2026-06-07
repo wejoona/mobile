@@ -56,12 +56,14 @@ class AuthService {
   Future<AuthResponse> verifyOtp({
     required String phone,
     required String otp,
+    String? verificationId,
   }) async {
     try {
-      final response = await _dio.post(
-        '/auth/verify-otp',
-        data: {'phone': PhoneNormalizer.toE164(phone), 'otp': otp},
-      );
+      final response = await _dio.post('/auth/verify-otp', data: {
+        'phone': PhoneNormalizer.toE164(phone),
+        'otp': otp,
+        if (verificationId != null) 'verificationId': verificationId,
+      });
       return AuthResponse.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDioError(e);
@@ -99,11 +101,13 @@ class OtpResponse {
   final bool success;
   final String message;
   final int expiresIn;
+  final String? verificationId;
 
   const OtpResponse({
     required this.success,
     required this.message,
     required this.expiresIn,
+    this.verificationId,
   });
 
   factory OtpResponse.fromJson(Map<String, dynamic> json) {
@@ -111,6 +115,7 @@ class OtpResponse {
       success: json['success'] as bool? ?? true,
       message: json['message'] as String? ?? 'OTP sent',
       expiresIn: json['expiresIn'] as int? ?? 300,
+      verificationId: json['verificationId'] as String?,
     );
   }
 }
