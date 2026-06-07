@@ -16,13 +16,31 @@ void main() {
       );
       final expireSessionBody = _methodBody(source, '_expireSession');
 
-      expect(warningLogoutBody, contains('.logout()'));
-      expect(warningLogoutBody, isNot(contains('.clearLocalSession()')));
-
-      expect(expireSessionBody, contains('.logout()'));
-      expect(expireSessionBody, isNot(contains('.clearLocalSession()')));
+      // Contract: the backend session must be revoked via logout() first;
+      // clearLocalSession() is only the fallback when backend logout fails,
+      // so the user is never left locally authenticated.
+      _expectBackendRevokeBeforeLocalCleanup(warningLogoutBody);
+      _expectBackendRevokeBeforeLocalCleanup(expireSessionBody);
     },
   );
+}
+
+void _expectBackendRevokeBeforeLocalCleanup(String body) {
+  expect(body, contains('.logout()'));
+  final logoutIndex = body.indexOf('.logout()');
+  final clearIndex = body.indexOf('.clearLocalSession()');
+  if (clearIndex >= 0) {
+    expect(
+      logoutIndex,
+      lessThan(clearIndex),
+      reason: 'backend logout must be attempted before local cleanup',
+    );
+    expect(
+      body,
+      contains('if (!didClearSession)'),
+      reason: 'local cleanup must only run when backend logout failed',
+    );
+  }
 }
 
 String _methodBody(String source, String methodName) {
