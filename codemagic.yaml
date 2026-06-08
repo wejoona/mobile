@@ -27,7 +27,7 @@ workflows:
       events:
         - push
       branch_patterns:
-        - pattern: 'main'
+        - pattern: 'production'
           include: true
 
     scripts:
