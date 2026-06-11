@@ -146,6 +146,48 @@ void main() {
     });
 
     test(
+      'uses the first positive spendable backend balance when USDC row is absent',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-multi-currency',
+            'walletAddress': '0xabc',
+            'blockchain': 'polygon',
+            'currency': 'USD',
+            'balances': [
+              {
+                'currency': 'EUR',
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+              {
+                'currency': 'USD',
+                'availableDecimal': '42.750000',
+                'pendingDecimal': '0.250000',
+                'totalDecimal': '43.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(walletStateMachineProvider.notifier).fetch();
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.usdcBalance, 42.75);
+        expect(state.pendingBalance, 0.25);
+      },
+    );
+
+    test(
       'manual refresh creates a wallet when the API reports no wallet',
       () async {
         final dio = MockDio()

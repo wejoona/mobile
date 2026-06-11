@@ -78,11 +78,11 @@ class WalletStateMachine extends Notifier<WalletState> {
       }
     }
 
-    // Some backend wallet shapes expose a single generic/USD balance for the
-    // omnibus wallet. Home still needs a primary spendable balance instead of
-    // rendering zero when no explicit USDC row exists.
-    if (usdcBalance == 0 && response.availableBalance > 0) {
-      usdcBalance = response.availableBalance;
+    // Some backend wallet shapes expose a generic/USD row or multiple rows
+    // where the spendable value is not first. Home should still render the
+    // best available wallet balance instead of staying at zero.
+    if (usdcBalance == 0) {
+      usdcBalance = _fallbackSpendableBalance(response);
     }
     if (pending == 0 && response.balances.isNotEmpty) {
       pending = response.balances.fold<double>(
@@ -119,6 +119,28 @@ class WalletStateMachine extends Notifier<WalletState> {
           usdcBalance: usdcBalance,
           pendingBalance: pending,
         );
+  }
+
+  double _fallbackSpendableBalance(WalletBalanceResponse response) {
+    final matchingCurrency = response.balances
+        .where(
+          (balance) =>
+              balance.currency.toUpperCase() == response.currency.toUpperCase(),
+        )
+        .map((balance) => balance.available)
+        .where((amount) => amount > 0);
+    if (matchingCurrency.isNotEmpty) {
+      return matchingCurrency.first;
+    }
+
+    final firstPositive = response.balances
+        .map((balance) => balance.available)
+        .where((amount) => amount > 0);
+    if (firstPositive.isNotEmpty) {
+      return firstPositive.first;
+    }
+
+    return response.availableBalance;
   }
 
   /// Fetch wallet balance
