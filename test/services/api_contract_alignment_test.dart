@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:usdc_wallet/domain/entities/expense.dart';
 import 'package:usdc_wallet/domain/entities/notification.dart';
 import 'package:usdc_wallet/domain/entities/notification_preferences.dart';
 import 'package:usdc_wallet/domain/entities/transaction.dart' as wallet_tx;
@@ -134,6 +135,21 @@ void main() {
       expect(stats.withdrawalCount, 1);
       expect(stats.transferCount, 3);
       expect(stats.netFlow, 50);
+    });
+
+    test('expense summaries accept backend category aggregate shape', () {
+      final expense = Expense.fromJson({
+        'categoryId': 'transport',
+        'name': 'Transport',
+        'totalAmount': '42.50',
+        'currency': 'USDC',
+      });
+
+      expect(expense.id, 'transport');
+      expect(expense.category, 'Transport');
+      expect(expense.amount, 42.5);
+      expect(expense.currency, 'USDC');
+      expect(expense.transactionId, isEmpty);
     });
 
     test('transfer history uses limit and offset pagination', () async {

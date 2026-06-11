@@ -33,40 +33,92 @@ class Expense {
   });
 
   factory Expense.fromJson(Map<String, dynamic> json) {
+    final id =
+        _string(json, const ['id', 'categoryId', 'category_id']) ??
+        _string(json, const ['category'], fallback: 'expense');
+    final category = _string(json, const [
+      'category',
+      'name',
+    ], fallback: ExpenseCategory.other)!;
+    final date =
+        _date(json, const ['date', 'createdAt', 'created_at']) ??
+        DateTime.now();
+
     return Expense(
-      id: json['id'] as String,
-      transactionId: json['transactionId'] as String,
-      category: json['category'] as String,
-      subcategory: json['subcategory'] as String?,
-      amount: (json['amount'] as num).toDouble(),
-      currency: json['currency'] as String? ?? 'USDC',
-      merchantName: json['merchantName'] as String?,
-      vendor: json['vendor'] as String?,
-      note: json['note'] as String?,
-      description: json['description'] as String?,
-      receiptImagePath: json['receiptImagePath'] as String?,
-      date: DateTime.parse(json['date'] as String),
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : null,
+      id: id!,
+      transactionId:
+          _string(json, const ['transactionId', 'transaction_id']) ?? '',
+      category: category,
+      subcategory: _string(json, const ['subcategory', 'sub_category']),
+      amount: _amount(json),
+      currency: _string(json, const ['currency'], fallback: 'USDC')!,
+      merchantName: _string(json, const ['merchantName', 'merchant_name']),
+      vendor: _string(json, const ['vendor', 'merchant', 'label', 'name']),
+      note: _string(json, const ['note']),
+      description: _string(json, const ['description']),
+      receiptImagePath: _string(json, const [
+        'receiptImagePath',
+        'receipt_image_path',
+      ]),
+      date: date,
+      createdAt: _date(json, const ['createdAt', 'created_at']),
       tags: (json['tags'] as List?)?.cast<String>(),
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'transactionId': transactionId,
-        'category': category,
-        'subcategory': subcategory,
-        'amount': amount,
-        'currency': currency,
-        'merchantName': merchantName,
-        'vendor': vendor,
-        'note': note,
-        'description': description,
-        'receiptImagePath': receiptImagePath,
-        'date': date.toIso8601String(),
-        'createdAt': createdAt?.toIso8601String(),
-        'tags': tags,
-      };
+    'id': id,
+    'transactionId': transactionId,
+    'category': category,
+    'subcategory': subcategory,
+    'amount': amount,
+    'currency': currency,
+    'merchantName': merchantName,
+    'vendor': vendor,
+    'note': note,
+    'description': description,
+    'receiptImagePath': receiptImagePath,
+    'date': date.toIso8601String(),
+    'createdAt': createdAt?.toIso8601String(),
+    'tags': tags,
+  };
+}
+
+String? _string(
+  Map<String, dynamic> json,
+  List<String> keys, {
+  String? fallback,
+}) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value == null) continue;
+    final string = value.toString().trim();
+    if (string.isNotEmpty) return string;
+  }
+  return fallback;
+}
+
+double _amount(Map<String, dynamic> json) {
+  for (final key in const ['amount', 'totalAmount', 'total_amount', 'value']) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
+}
+
+DateTime? _date(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is DateTime) return value;
+    if (value == null) continue;
+    final parsed = DateTime.tryParse(value.toString());
+    if (parsed != null) return parsed;
+  }
+  return null;
 }
 
 /// Spending summary by category.
@@ -104,7 +156,13 @@ class OcrResult {
   final DateTime? date;
   final String? currency;
 
-  const OcrResult({this.amount, this.vendor, this.category, this.date, this.currency});
+  const OcrResult({
+    this.amount,
+    this.vendor,
+    this.category,
+    this.date,
+    this.currency,
+  });
 }
 
 /// Predefined expense categories for West Africa.
@@ -128,27 +186,55 @@ class ExpenseCategories {
   static const other = 'other';
 
   static const all = [
-    transport, travel, food, meals, utilities, telecom, health, education,
-    shopping, entertainment, transfers, bills, savings, office, other,
+    transport,
+    travel,
+    food,
+    meals,
+    utilities,
+    telecom,
+    health,
+    education,
+    shopping,
+    entertainment,
+    transfers,
+    bills,
+    savings,
+    office,
+    other,
   ];
 
   static String label(String category) {
     switch (category) {
-      case transport: return 'Transport';
-      case food: return 'Food & Drink';
-      case utilities: return 'Utilities';
-      case telecom: return 'Mobile & Internet';
-      case health: return 'Health';
-      case education: return 'Education';
-      case shopping: return 'Shopping';
-      case entertainment: return 'Entertainment';
-      case transfers: return 'Transfers';
-      case bills: return 'Bills';
-      case savings: return 'Savings';
-      case office: return 'Office';
-      case travel: return 'Travel';
-      case meals: return 'Meals';
-      default: return 'Other';
+      case transport:
+        return 'Transport';
+      case food:
+        return 'Food & Drink';
+      case utilities:
+        return 'Utilities';
+      case telecom:
+        return 'Mobile & Internet';
+      case health:
+        return 'Health';
+      case education:
+        return 'Education';
+      case shopping:
+        return 'Shopping';
+      case entertainment:
+        return 'Entertainment';
+      case transfers:
+        return 'Transfers';
+      case bills:
+        return 'Bills';
+      case savings:
+        return 'Savings';
+      case office:
+        return 'Office';
+      case travel:
+        return 'Travel';
+      case meals:
+        return 'Meals';
+      default:
+        return 'Other';
     }
   }
 }
