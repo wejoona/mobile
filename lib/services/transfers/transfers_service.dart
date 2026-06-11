@@ -255,18 +255,29 @@ class TransferResult {
   });
 
   factory TransferResult.fromJson(Map<String, dynamic> json) {
+    final payload = _payloadMap(json);
+    final id = _stringValue(payload, const [
+      'id',
+      'transactionId',
+      'transferId',
+    ]);
     return TransferResult(
-      id: json['id'] as String,
-      reference: json['reference'] as String,
-      type: json['type'] as String,
-      status: json['status'] as String,
-      amount: (json['amount'] as num).toDouble(),
-      fee: (json['fee'] as num?)?.toDouble() ?? 0,
-      currency: json['currency'] as String? ?? 'USDC',
-      recipientPhone: json['recipientPhone'] as String?,
-      recipientAddress: json['recipientAddress'] as String?,
-      txHash: json['txHash'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: id ?? '',
+      reference:
+          _stringValue(payload, const ['reference', 'supportReference']) ??
+          id ??
+          '',
+      type: _stringValue(payload, const ['type', 'transferType']) ?? 'internal',
+      status: _stringValue(payload, const ['status']) ?? 'pending',
+      amount: _numValue(payload, const ['amount', 'amountDecimal']) ?? 0,
+      fee: _numValue(payload, const ['fee', 'feeDecimal']) ?? 0,
+      currency: _stringValue(payload, const ['currency']) ?? 'USDC',
+      recipientPhone: _stringValue(payload, const ['recipientPhone', 'toPhone']),
+      recipientAddress: _stringValue(payload, const ['recipientAddress']),
+      txHash: _stringValue(payload, const ['txHash', 'transactionHash']),
+      createdAt:
+          _dateValue(payload, const ['createdAt', 'created_at', 'timestamp']) ??
+          DateTime.now(),
     );
   }
 }
@@ -288,26 +299,90 @@ class TransferPage {
   });
 
   factory TransferPage.fromJson(Map<String, dynamic> json) {
-    final List<dynamic> itemsData =
-        json['items'] ?? json['data'] ?? json['transfers'] ?? [];
+    final payload = _payloadMap(json);
+    final itemsData = _listValue(payload, const [
+      'items',
+      'transfers',
+      'data',
+    ]);
     final pageSize =
-        json['pageSize'] as int? ?? json['limit'] as int? ?? itemsData.length;
-    final offset = json['offset'] as int? ?? 0;
-    final total = json['total'] as int? ?? 0;
+        _intValue(payload, const ['pageSize', 'page_size', 'limit']) ??
+        itemsData.length;
+    final offset = _intValue(payload, const ['offset']) ?? 0;
+    final total = _intValue(payload, const ['total', 'count']) ?? 0;
     final page =
-        json['page'] as int? ?? (pageSize > 0 ? (offset ~/ pageSize) + 1 : 1);
+        _intValue(payload, const ['page']) ??
+        (pageSize > 0 ? (offset ~/ pageSize) + 1 : 1);
     return TransferPage(
       items: itemsData
-          .map((e) => Transfer.fromJson(e as Map<String, dynamic>))
+          .map((e) => Transfer.fromJson(_asStringMap(e)))
           .toList(),
       total: total,
       page: page,
       pageSize: pageSize,
       totalPages:
-          json['totalPages'] as int? ??
+          _intValue(payload, const ['totalPages', 'total_pages']) ??
           (pageSize > 0 ? (total / pageSize).ceil().clamp(1, 1 << 31) : 1),
     );
   }
+}
+
+Map<String, dynamic> _payloadMap(Map<String, dynamic> json) {
+  final data = json['data'];
+  if (data is Map) {
+    return Map<String, dynamic>.from(data);
+  }
+  return json;
+}
+
+Map<String, dynamic> _asStringMap(Object? value) {
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) return Map<String, dynamic>.from(value);
+  throw const FormatException('Expected transfer JSON object');
+}
+
+List<dynamic> _listValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is List) return value;
+  }
+  return const [];
+}
+
+String? _stringValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.isNotEmpty) return value;
+  }
+  return null;
+}
+
+double? _numValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+int? _intValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+  }
+  return null;
+}
+
+DateTime? _dateValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 /// Exception when security verification fails

@@ -72,32 +72,39 @@ class Transfer {
   double get totalAmount => amount + fee;
 
   factory Transfer.fromJson(Map<String, dynamic> json) {
+    final id = _stringValue(json, const ['id', 'transferId', 'transactionId']);
     return Transfer(
-      id: json['id'] as String,
-      reference: json['reference'] as String,
-      type: _parseTransferType(json['type'] as String),
-      status: _parseTransferStatus(json['status'] as String),
-      senderId: json['senderId'] as String,
-      senderWalletId: json['senderWalletId'] as String,
-      senderPhone: json['senderPhone'] as String?,
-      recipientId: json['recipientId'] as String?,
-      recipientWalletId: json['recipientWalletId'] as String?,
-      recipientPhone: json['recipientPhone'] as String?,
-      recipientAddress: json['recipientAddress'] as String?,
-      recipientBlockchain: json['recipientBlockchain'] as String?,
-      amount: (json['amount'] as num).toDouble(),
-      fee: (json['fee'] as num?)?.toDouble() ?? 0,
-      currency: json['currency'] as String? ?? 'USDC',
-      note: json['note'] as String?,
-      txHash: json['txHash'] as String?,
-      errorMessage: json['errorMessage'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'] as String)
-          : null,
-      completedAt: json['completedAt'] != null
-          ? DateTime.parse(json['completedAt'] as String)
-          : null,
+      id: id ?? '',
+      reference:
+          _stringValue(json, const ['reference', 'supportReference']) ??
+          id ??
+          '',
+      type: _parseTransferType(_stringValue(json, const ['type'])),
+      status: _parseTransferStatus(_stringValue(json, const ['status'])),
+      senderId: _stringValue(json, const ['senderId', 'fromUserId']) ?? '',
+      senderWalletId:
+          _stringValue(json, const ['senderWalletId', 'fromWalletId']) ?? '',
+      senderPhone: _stringValue(json, const ['senderPhone', 'fromPhone']),
+      recipientId: _stringValue(json, const ['recipientId', 'toUserId']),
+      recipientWalletId:
+          _stringValue(json, const ['recipientWalletId', 'toWalletId']),
+      recipientPhone: _stringValue(json, const ['recipientPhone', 'toPhone']),
+      recipientAddress: _stringValue(json, const ['recipientAddress']),
+      recipientBlockchain: _stringValue(json, const [
+        'recipientBlockchain',
+        'network',
+      ]),
+      amount: _numValue(json, const ['amount', 'amountDecimal']) ?? 0,
+      fee: _numValue(json, const ['fee', 'feeDecimal']) ?? 0,
+      currency: _stringValue(json, const ['currency']) ?? 'USDC',
+      note: _stringValue(json, const ['note', 'description']),
+      txHash: _stringValue(json, const ['txHash', 'transactionHash']),
+      errorMessage: _stringValue(json, const ['errorMessage', 'failureReason']),
+      createdAt:
+          _dateValue(json, const ['createdAt', 'created_at', 'timestamp']) ??
+          DateTime.now(),
+      updatedAt: _dateValue(json, const ['updatedAt', 'updated_at']),
+      completedAt: _dateValue(json, const ['completedAt', 'completed_at']),
     );
   }
 
@@ -127,8 +134,8 @@ class Transfer {
     };
   }
 
-  static TransferType _parseTransferType(String type) {
-    switch (type.toLowerCase()) {
+  static TransferType _parseTransferType(String? type) {
+    switch (type?.toLowerCase()) {
       case 'internal':
         return TransferType.internal;
       case 'external':
@@ -138,8 +145,8 @@ class Transfer {
     }
   }
 
-  static TransferStatus _parseTransferStatus(String status) {
-    switch (status.toLowerCase()) {
+  static TransferStatus _parseTransferStatus(String? status) {
+    switch (status?.toLowerCase()) {
       case 'pending':
         return TransferStatus.pending;
       case 'processing':
@@ -154,6 +161,32 @@ class Transfer {
         return TransferStatus.pending;
     }
   }
+}
+
+String? _stringValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.isNotEmpty) return value;
+  }
+  return null;
+}
+
+double? _numValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+DateTime? _dateValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is DateTime) return value;
+    if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  }
+  return null;
 }
 
 /// Transfer type enum

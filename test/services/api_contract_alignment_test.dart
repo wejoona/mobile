@@ -238,6 +238,55 @@ void main() {
       expect(page.totalPages, 3);
     });
 
+    test('transfer result accepts backend envelopes and id aliases', () {
+      final result = TransferResult.fromJson({
+        'data': {
+          'transactionId': 'txn_123',
+          'supportReference': 'SUP-123',
+          'type': 'internal',
+          'status': 'completed',
+          'amountDecimal': '12.50',
+          'feeDecimal': '0',
+          'currency': 'USDC',
+          'recipientPhone': '+2250748805663',
+          'createdAt': '2026-06-04T12:00:00.000Z',
+        },
+      });
+
+      expect(result.id, 'txn_123');
+      expect(result.reference, 'SUP-123');
+      expect(result.amount, 12.5);
+      expect(result.fee, 0);
+      expect(result.recipientPhone, '+2250748805663');
+    });
+
+    test('transfer page accepts nested backend envelopes', () {
+      final page = TransferPage.fromJson({
+        'data': {
+          'transfers': [
+            {
+              'id': 'transfer_1',
+              'reference': 'INT-TRANSFER1',
+              'type': 'internal',
+              'status': 'completed',
+              'amount': 8,
+              'fee': 0,
+              'currency': 'USDC',
+              'createdAt': '2026-06-04T12:00:00.000Z',
+            },
+          ],
+          'total': '1',
+          'limit': '20',
+          'offset': '0',
+        },
+      });
+
+      expect(page.items, hasLength(1));
+      expect(page.total, 1);
+      expect(page.page, 1);
+      expect(page.totalPages, 1);
+    });
+
     test('deposit history uses backend offset pagination', () async {
       final dio = MockDio()
         ..queueResponse({'deposits': [], 'total': 0, 'hasMore': false});
