@@ -113,21 +113,7 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
       final dio = ref.read(dioProvider);
       final response = await dio.get('/contacts/recents');
 
-      final responseData = response.data as Map<String, dynamic>;
-      final contactsJson = (responseData['contacts'] as List?) ?? [];
-      final recipients = contactsJson.map((json) {
-        final c = json as Map<String, dynamic>;
-        return RecentRecipient(
-          phoneNumber: c['phone'] as String? ?? '',
-          name: c['name'] as String? ?? '',
-          lastTransferDate: c['lastTransferDate'] != null
-              ? DateTime.parse(c['lastTransferDate'] as String)
-              : DateTime.now(),
-          lastAmount: (c['lastAmount'] as num?)?.toDouble() ?? 0.0,
-          isKoridoUser:
-              (c['isKoridoUser'] ?? c['isJoonaPayUser']) as bool? ?? false,
-        );
-      }).toList();
+      final recipients = _extractRecentRecipients(response.data);
 
       state = state.copyWith(isLoading: false, recentRecipients: recipients);
     } on DioException {
@@ -378,6 +364,89 @@ List<Map<String, dynamic>> _extractContactSyncMatches(Object? payload) {
     return const [];
   }
   return raw.whereType<Map>().map(Map<String, dynamic>.from).toList();
+}
+
+List<RecentRecipient> _extractRecentRecipients(Object? payload) {
+  Object? readKey(Object? source, String key) {
+    if (source is Map) {
+      return source[key];
+    }
+    return null;
+  }
+
+  Object? raw = payload is List ? payload : null;
+  raw ??= readKey(payload, 'contacts');
+  raw ??= readKey(payload, 'recipients');
+  raw ??= readKey(payload, 'items');
+  raw ??= readKey(readKey(payload, 'data'), 'contacts');
+  raw ??= readKey(readKey(payload, 'data'), 'recipients');
+  raw ??= readKey(readKey(payload, 'data'), 'items');
+  raw ??= readKey(payload, 'data');
+
+  if (raw is! List) return const [];
+
+  return raw.whereType<Map>().map((entry) {
+    final map = Map<String, dynamic>.from(entry);
+    final phone = _stringValue(map, const [
+      'phoneNumber',
+      'phone',
+      'recipientPhone',
+    ]);
+    final name =
+        _stringValue(map, const ['name', 'displayName', 'recipientName']) ??
+        phone;
+    final dateValue = map['lastTransferDate'] ?? map['lastTransactionAt'];
+
+    return RecentRecipient(
+      phoneNumber: phone ?? '',
+      name: name ?? '',
+      lastTransferDate: _parseDate(dateValue) ?? DateTime.now(),
+      lastAmount: _numValue(map, const ['lastAmount', 'amount']) ?? 0.0,
+      isKoridoUser:
+          _boolValue(map, const [
+            'isKoridoUser',
+            'isJoonaPayUser',
+            'matched',
+          ]) ??
+          false,
+    );
+  }).toList();
+}
+
+String? _stringValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is String && value.isNotEmpty) return value;
+  }
+  return null;
+}
+
+double? _numValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+bool? _boolValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is bool) return value;
+    if (value is String) {
+      final normalized = value.toLowerCase();
+      if (normalized == 'true') return true;
+      if (normalized == 'false') return false;
+    }
+  }
+  return null;
+}
+
+DateTime? _parseDate(Object? value) {
+  if (value is DateTime) return value;
+  if (value is String && value.isNotEmpty) return DateTime.tryParse(value);
+  return null;
 }
 
 /// Send Money Provider
