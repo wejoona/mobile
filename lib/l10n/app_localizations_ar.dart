@@ -1296,7 +1296,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'مزود المحفظة الإلكترونية';
 
   @override
-  String get beneficiaries_typeJoonapay => 'مستخدم جونا باي';
+  String get beneficiaries_typeJoonapay => 'مستخدم Korido';
 
   @override
   String get beneficiaries_typeWallet => 'محفظة خارجية';

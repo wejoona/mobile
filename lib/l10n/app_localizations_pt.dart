@@ -1308,7 +1308,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get beneficiaries_fieldMobileMoneyProvider => 'Mobile money provider';
 
   @override
-  String get beneficiaries_typeJoonapay => 'Joonapay user';
+  String get beneficiaries_typeJoonapay => 'Usuário Korido';
 
   @override
   String get beneficiaries_typeWallet => 'External carteira';

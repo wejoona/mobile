@@ -1464,7 +1464,7 @@
   "@beneficiaries_fieldMobileMoneyProvider": {
     "description": "Mobile money provider field label"
   },
-  "beneficiaries_typeJoonapay": "مستخدم جونا باي",
+  "beneficiaries_typeJoonapay": "مستخدم Korido",
   "@beneficiaries_typeJoonapay": {
     "description": "Korido user account type"
   },
