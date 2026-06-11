@@ -23,8 +23,21 @@ void main() {
         body,
         contains('sessionServiceProvider.notifier).unlockSession()'),
       );
-      expect(body, contains("context.go('/home')"));
+      expect(body, contains("router.go('/home')"));
     }
+
+    expect(
+      pinUnlockBody,
+      contains('AppSessionEvent(SessionUnlock())'),
+      reason: 'PIN unlock must clear the FSM lock state before routing home',
+    );
+    expect(pinUnlockBody, contains('addPostFrameCallback'));
+    expect(
+      biometricUnlockBody,
+      contains('appFsmProvider.notifier).unlockSession()'),
+      reason:
+          'biometric unlock must clear the FSM lock state before routing home',
+    );
   });
 
   test('PIN lock screen keeps biometric action available when enabled', () {
@@ -32,16 +45,17 @@ void main() {
       'lib/features/fsm_states/views/session_locked_view.dart',
     ).readAsStringSync();
 
-    expect(sessionLockedSource, contains('biometricService.isAvailable()'));
     expect(
       sessionLockedSource,
       contains('biometricService.isBiometricEnabled()'),
     );
     expect(
       sessionLockedSource,
-      matches(
-        RegExp(r'showBiometric:\s*_biometricSupported && _biometricEnabled'),
-      ),
+      contains('biometricService.getAvailableType()'),
+    );
+    expect(
+      sessionLockedSource,
+      contains('showBiometric: _shouldShowBiometricUnlock'),
     );
   });
 }

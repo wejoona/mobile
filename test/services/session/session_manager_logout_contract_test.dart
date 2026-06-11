@@ -21,6 +21,11 @@ void main() {
       // so the user is never left locally authenticated.
       _expectBackendRevokeBeforeLocalCleanup(warningLogoutBody);
       _expectBackendRevokeBeforeLocalCleanup(expireSessionBody);
+
+      expect(source, contains('isResolving: _isResolvingSessionWarning'));
+      expect(source, isNot(contains('!_isResolvingSessionWarning &&')));
+      expect(source, contains('isLoading: isResolving'));
+      expect(source, contains('onPressed: isResolving ? null : onLogout'));
     },
   );
 }

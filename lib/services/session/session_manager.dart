@@ -120,11 +120,10 @@ class _SessionManagerState extends ConsumerState<SessionManager>
             widget.child,
 
             // Session expiring warning overlay (only on authenticated screens, not PIN/login)
-            if (sessionState.isExpiring &&
-                !_isResolvingSessionWarning &&
-                _shouldShowExpiringOverlay(context))
+            if (sessionState.isExpiring && _shouldShowExpiringOverlay(context))
               _SessionExpiringOverlay(
                 remainingSeconds: sessionState.remainingSeconds ?? 0,
+                isResolving: _isResolvingSessionWarning,
                 onExtend: () {
                   setState(() => _isResolvingSessionWarning = false);
                   ref.read(sessionServiceProvider.notifier).extendSession();
@@ -253,11 +252,13 @@ class _SessionManagerState extends ConsumerState<SessionManager>
 /// Overlay shown when session is about to expire
 class _SessionExpiringOverlay extends StatelessWidget {
   final int remainingSeconds;
+  final bool isResolving;
   final VoidCallback onExtend;
   final VoidCallback onLogout;
 
   const _SessionExpiringOverlay({
     required this.remainingSeconds,
+    required this.isResolving,
     required this.onExtend,
     required this.onLogout,
   });
@@ -348,15 +349,16 @@ class _SessionExpiringOverlay extends StatelessWidget {
                 children: [
                   AppButton(
                     label: l10n.session_stayLoggedIn,
-                    onPressed: onExtend,
+                    onPressed: isResolving ? null : onExtend,
                     variant: AppButtonVariant.primary,
                     isFullWidth: true,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   AppButton(
                     label: l10n.common_logout,
-                    onPressed: onLogout,
+                    onPressed: isResolving ? null : onLogout,
                     variant: AppButtonVariant.secondary,
+                    isLoading: isResolving,
                     isFullWidth: true,
                   ),
                 ],
