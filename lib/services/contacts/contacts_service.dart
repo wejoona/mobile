@@ -65,6 +65,12 @@ List<Map<String, dynamic>> _extractMapList(Object? payload, List<String> keys) {
   return const [];
 }
 
+Map<String, dynamic> _asMap(Object? payload) {
+  if (payload is Map<String, dynamic>) return payload;
+  if (payload is Map) return Map<String, dynamic>.from(payload);
+  return const {};
+}
+
 String _stringField(Map<String, dynamic> source, List<String> keys) {
   for (final key in keys) {
     final value = source[key];
@@ -373,6 +379,26 @@ class ContactsService {
     }
   }
 
+  /// Submit already-normalized phone hashes to the backend in API-safe batches.
+  Future<int> syncPhoneHashes(Dio dio, Iterable<String> phoneHashes) async {
+    final hashes = phoneHashes
+        .map((hash) => hash.trim().toLowerCase())
+        .where((hash) => hash.isNotEmpty)
+        .toSet()
+        .toList();
+
+    var matchCount = 0;
+    for (final batch in _hashBatches(hashes)) {
+      final response = await dio.post(
+        '/contacts/sync',
+        data: {'phoneHashes': batch},
+      );
+      matchCount += _contactSyncMatchCount(response.data);
+    }
+
+    return matchCount;
+  }
+
   /// Sync contacts with Korido server
   Future<ContactSyncResult> syncContactsWithKorido(
     Dio dio,
@@ -381,18 +407,7 @@ class ContactsService {
     final hashes = contacts.map((c) => hashPhone(c.phone)).toSet().toList();
 
     try {
-      var matchCount = 0;
-      for (final batch in _hashBatches(hashes)) {
-        final response = await dio.post(
-          '/contacts/sync',
-          data: {'phoneHashes': batch},
-        );
-        matchCount += _extractMapList(response.data, [
-          'matches',
-          'users',
-          'contacts',
-        ]).length;
-      }
+      final matchCount = await syncPhoneHashes(dio, hashes);
 
       return ContactSyncResult(
         totalContacts: contacts.length,
@@ -408,6 +423,17 @@ class ContactsService {
         error: e.toString(),
       );
     }
+  }
+
+  int _contactSyncMatchCount(Object? data) {
+    final payload = _asMap(data);
+    final dataPayload = _asMap(payload['data']);
+    final root = dataPayload.isNotEmpty ? dataPayload : payload;
+    final matchesFound = root['matchesFound'] ?? root['matches_found'];
+    if (matchesFound is num) return matchesFound.toInt();
+    if (matchesFound is String) return int.tryParse(matchesFound) ?? 0;
+
+    return _extractMapList(root, ['matches', 'users', 'contacts']).length;
   }
 
   Iterable<List<String>> _hashBatches(List<String> hashes) sync* {

@@ -11,8 +11,26 @@ class ContactsApi {
   Future<Response> list() => _dio.get('/contacts');
 
   /// POST /contacts/sync — sync hashed phone numbers.
-  Future<Response> sync(List<String> phoneHashes) =>
-      _dio.post('/contacts/sync', data: {'phoneHashes': phoneHashes});
+  Future<List<Response>> sync(List<String> phoneHashes) async {
+    final hashes = phoneHashes
+        .map((hash) => hash.trim().toLowerCase())
+        .where((hash) => hash.isNotEmpty)
+        .toSet()
+        .toList();
+    final responses = <Response>[];
+
+    for (var start = 0; start < hashes.length; start += 500) {
+      final end = (start + 500).clamp(0, hashes.length);
+      responses.add(
+        await _dio.post(
+          '/contacts/sync',
+          data: {'phoneHashes': hashes.sublist(start, end)},
+        ),
+      );
+    }
+
+    return responses;
+  }
 
   /// POST /contacts/check — check which phone numbers are registered
   Future<Response> checkContacts(List<String> phoneNumbers) =>

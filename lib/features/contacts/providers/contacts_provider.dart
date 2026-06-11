@@ -45,14 +45,13 @@ final contactSearchProvider = Provider.family<List<Contact>, String>((
 
 /// Contact actions.
 class ContactActions {
-  final dynamic _dio;
+  final Dio _dio;
   final ContactsService _contactsService;
   ContactActions(this._dio, this._contactsService);
 
   Future<void> syncPhoneContacts(List<String> phones) async {
     final hashes = phones.map(_contactsService.hashPhone).toList();
-    // ignore: avoid_dynamic_calls
-    await _dio.post('/contacts/sync', data: {'phoneHashes': hashes});
+    await _contactsService.syncPhoneHashes(_dio, hashes);
   }
 
   Future<void> invite(String phone) async {

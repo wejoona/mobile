@@ -24,6 +24,7 @@ import 'package:usdc_wallet/features/send/providers/send_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/transaction_stats_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
+import 'package:usdc_wallet/services/api/providers/contacts_api.dart';
 import 'package:usdc_wallet/services/api/providers/wallet_api.dart';
 import 'package:usdc_wallet/services/api/providers/notifications_api.dart';
 import 'package:usdc_wallet/services/bulk_payments/bulk_payments_service.dart';
@@ -1312,6 +1313,65 @@ void main() {
     });
 
     test(
+      'contact sync batches large phone books for backend max size',
+      () async {
+        final service = ContactsService(MockSecureStorage());
+        final hashes = List.generate(
+          501,
+          (index) => index.toRadixString(16).padLeft(64, '0'),
+        );
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {'matchesFound': 2},
+          })
+          ..queueResponse({
+            'matches': [
+              {'phoneHash': hashes.last, 'userId': 'user_last'},
+            ],
+          });
+
+        final matches = await service.syncPhoneHashes(dio, hashes);
+
+        expect(matches, 3);
+        expect(dio.requestHistory, hasLength(2));
+        expect(dio.requestHistory[0].path, '/contacts/sync');
+        expect(
+          (dio.requestHistory[0].data as Map<String, dynamic>)['phoneHashes'],
+          hasLength(500),
+        );
+        expect(
+          (dio.requestHistory[1].data as Map<String, dynamic>)['phoneHashes'],
+          hasLength(1),
+        );
+      },
+    );
+
+    test('contacts API wrapper batches sync requests', () async {
+      final hashes = List.generate(
+        501,
+        (index) => index.toRadixString(16).padLeft(64, '0'),
+      );
+      final dio = MockDio()
+        ..queueResponse({'matchesFound': 0})
+        ..queueResponse({'matchesFound': 0});
+      final api = ContactsApi(dio);
+
+      final responses = await api.sync(hashes);
+
+      expect(responses, hasLength(2));
+      expect(dio.requestHistory, hasLength(2));
+      expect(dio.requestHistory[0].path, '/contacts/sync');
+      expect(
+        (dio.requestHistory[0].data as Map<String, dynamic>)['phoneHashes'],
+        hasLength(500),
+      );
+      expect(
+        (dio.requestHistory[1].data as Map<String, dynamic>)['phoneHashes'],
+        hasLength(1),
+      );
+    });
+
+    test(
       'send recipient validation accepts nested contact sync matches',
       () async {
         final contactsService = ContactsService(MockSecureStorage());
@@ -1404,6 +1464,8 @@ void main() {
         isNot(contains('Permission.contacts.request')),
       );
       expect(syncContactsBody, contains('Permission.contacts.status'));
+      expect(syncContactsBody, contains('defaultCountryPrefix'));
+      expect(syncContactsBody, contains('syncPhoneHashes'));
       expect(syncContactsBody, isNot(contains('await requestPermission')));
       expect(syncContactsBody, isNot(contains('Permission.contacts.request')));
     });

@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
 /// Contact sync provider - syncs device contacts with Korido backend.
@@ -109,10 +112,16 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
       // Step 2: Hash normalized phone numbers before sending them to the API.
       final phoneHashes = <String>{};
+      final defaultPrefix = _defaultCountryPrefix();
       for (final contact in contacts) {
         for (final phone in contact.phones) {
           if (phone.number.trim().isNotEmpty) {
-            phoneHashes.add(contactsService.hashPhone(phone.number));
+            phoneHashes.add(
+              contactsService.hashPhone(
+                phone.number,
+                defaultCountryPrefix: defaultPrefix,
+              ),
+            );
           }
         }
       }
@@ -133,15 +142,10 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
 
       // Step 3: Send to backend for matching
       final dio = ref.read(dioProvider);
-      final response = await dio.post(
-        '/contacts/sync',
-        data: {'phoneHashes': phoneHashes.toList()},
+      final matchedCount = await contactsService.syncPhoneHashes(
+        dio,
+        phoneHashes,
       );
-
-      final data = response.data as Map<String, dynamic>;
-      final matchedCount =
-          (data['matchesFound'] as int?) ??
-          (data['matches'] as List? ?? []).length;
 
       state = state.copyWith(
         status: ContactSyncStatus.synced,
@@ -158,6 +162,14 @@ class ContactSyncNotifier extends Notifier<ContactSyncState> {
         error: e.toString(),
       );
     }
+  }
+
+  String _defaultCountryPrefix() {
+    final userCountryCode = ref.read(userStateMachineProvider).countryCode;
+    final selectedCountry = ref.read(selectedCountryProvider);
+    final country =
+        SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+    return country.prefix;
   }
 
   Future<void> syncIfNeeded() async {
