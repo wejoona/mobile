@@ -26,6 +26,25 @@ void main() {
       expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
       expect(result.message, 'Avatar uploaded successfully');
     });
+
+    test('unwraps nested user avatar upload envelopes', () async {
+      final file = await _writeTinyJpeg();
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'user': {
+              'avatar_url': '/user/avatar/usr_nested',
+              'avatarBase64': 'data:image/jpeg;base64,/9j/nested',
+            },
+          },
+        });
+      final service = ProfilePictureService(dio);
+
+      final result = await service.uploadAvatar(file, onProgress: (_) {});
+
+      expect(result.avatarUrl, '/user/avatar/usr_nested');
+      expect(result.avatarThumb, startsWith('data:image/jpeg;base64,'));
+    });
   });
 }
 

@@ -421,8 +421,24 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 : _emailController.text.trim(),
           );
 
-      final nextAvatarUrl = avatar?.avatarUrl ?? profile.avatarUrl;
-      final nextAvatarThumb = avatar?.avatarThumb ?? profile.avatarThumb;
+      var nextAvatarUrl = avatar?.avatarUrl ?? profile.avatarUrl;
+      var nextAvatarThumb = avatar?.avatarThumb ?? profile.avatarThumb;
+
+      if (_selectedImage != null &&
+          (nextAvatarUrl == null || nextAvatarUrl.isEmpty) &&
+          (nextAvatarThumb == null || nextAvatarThumb.isEmpty)) {
+        final refreshedProfile = await ref
+            .read(userServiceProvider)
+            .getProfile();
+        nextAvatarUrl = refreshedProfile.avatarUrl;
+        nextAvatarThumb = refreshedProfile.avatarThumb;
+      }
+
+      if (_selectedImage != null &&
+          (nextAvatarUrl == null || nextAvatarUrl.isEmpty) &&
+          (nextAvatarThumb == null || nextAvatarThumb.isEmpty)) {
+        throw StateError('Avatar upload did not return an image reference');
+      }
 
       ref
           .read(userStateMachineProvider.notifier)

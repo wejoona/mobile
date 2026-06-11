@@ -191,7 +191,16 @@ Map<String, dynamic> _readPayload(Object? raw) {
     final map = Map<String, dynamic>.from(raw);
     final data = map['data'];
     if (data is Map) {
-      return Map<String, dynamic>.from(data);
+      final dataMap = Map<String, dynamic>.from(data);
+      final user = dataMap['user'];
+      if (user is Map) {
+        return Map<String, dynamic>.from(user);
+      }
+      return dataMap;
+    }
+    final user = map['user'];
+    if (user is Map) {
+      return Map<String, dynamic>.from(user);
     }
     return map;
   }
