@@ -137,24 +137,28 @@ class TransactionItem {
         (type == 'transfer_internal' && amount < 0);
   }
 
-  factory TransactionItem.fromJson(Map<String, dynamic> json) =>
-      TransactionItem(
-        id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
-        type: (json['type'] as String? ?? 'deposit').toLowerCase(),
-        amount: (json['amount'] as num).toDouble(),
-        currency: json['currency'] as String? ?? 'USDC',
-        status: _normalizeTransactionStatus(json['status'] as String?),
-        description: json['description'] as String? ?? json['note'] as String?,
-        counterpartyName:
-            json['counterpartyName'] as String? ??
-            json['recipientName'] as String?,
-        counterpartyPhone:
-            json['counterpartyPhone'] as String? ??
-            json['recipientPhone'] as String? ??
-            json['toPhone'] as String?,
-        direction: (json['direction'] as String?)?.toLowerCase(),
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+  factory TransactionItem.fromJson(
+    Map<String, dynamic> json,
+  ) => TransactionItem(
+    id: json['id'] as String? ?? json['transactionId'] as String? ?? '',
+    type: (json['type'] as String? ?? 'deposit').toLowerCase(),
+    amount:
+        _numValue(json, const ['amount', 'amountDecimal', 'amount_decimal']) ??
+        0,
+    currency: json['currency'] as String? ?? 'USDC',
+    status: _normalizeTransactionStatus(json['status'] as String?),
+    description: json['description'] as String? ?? json['note'] as String?,
+    counterpartyName:
+        json['counterpartyName'] as String? ?? json['recipientName'] as String?,
+    counterpartyPhone:
+        json['counterpartyPhone'] as String? ??
+        json['recipientPhone'] as String? ??
+        json['toPhone'] as String?,
+    direction: (json['direction'] as String?)?.toLowerCase(),
+    createdAt:
+        _dateValue(json, const ['createdAt', 'created_at', 'timestamp']) ??
+        DateTime.now(),
+  );
 }
 
 String _normalizeTransactionStatus(String? status) {
@@ -189,4 +193,25 @@ Map<String, dynamic> _asStringMap(Object? value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   throw const FormatException('Expected JSON object');
+}
+
+double? _numValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+  }
+  return null;
+}
+
+DateTime? _dateValue(Map<String, dynamic> map, List<String> keys) {
+  for (final key in keys) {
+    final value = map[key];
+    if (value is DateTime) return value;
+    if (value is String) {
+      final parsed = DateTime.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return null;
 }
