@@ -6,6 +6,7 @@ import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/device/device_registration_service.dart';
+import 'package:usdc_wallet/services/notifications/push_notification_service.dart';
 import 'package:usdc_wallet/services/session/session_service.dart';
 import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 import 'package:usdc_wallet/state/fsm/fsm_base.dart';
@@ -87,6 +88,9 @@ class MockUserStateMachine extends UserStateMachine {
 class MockDeviceRegistrationService extends Mock
     implements DeviceRegistrationService {}
 
+class MockPushNotificationService extends Mock
+    implements PushNotificationService {}
+
 /// Mock SessionService for testing
 class MockSessionNotifier extends Notifier<SessionState>
     implements SessionService {
@@ -141,6 +145,7 @@ void main() {
   late MockAuthService mockAuthService;
   late MockSecureStorage mockStorage;
   late MockDeviceRegistrationService mockDeviceRegistrationService;
+  late MockPushNotificationService mockPushNotificationService;
 
   setUpAll(() {
     registerFallbackValues();
@@ -150,12 +155,20 @@ void main() {
     mockAuthService = MockAuthService();
     mockStorage = MockSecureStorage();
     mockDeviceRegistrationService = MockDeviceRegistrationService();
-    when(() => mockAuthService.logout()).thenAnswer((_) async {});
+    mockPushNotificationService = MockPushNotificationService();
     when(
       () => mockDeviceRegistrationService.registerCurrentDevice(),
     ).thenAnswer((_) async {});
 
-    when(() => mockAuthService.logout()).thenAnswer((_) async {});
+    when(
+      () => mockAuthService.logout(
+        accessToken: any(named: 'accessToken'),
+        refreshToken: any(named: 'refreshToken'),
+      ),
+    ).thenAnswer((_) async {});
+    when(
+      () => mockPushNotificationService.unregisterFromBackend(),
+    ).thenAnswer((_) async {});
 
     container = ProviderContainer(
       overrides: [
@@ -169,6 +182,9 @@ void main() {
         kycStateMachineProvider.overrideWith(() => MockKycStateMachine()),
         userStateMachineProvider.overrideWith(() => MockUserStateMachine()),
         walletStateMachineProvider.overrideWith(() => MockWalletStateMachine()),
+        pushNotificationServiceProvider.overrideWithValue(
+          mockPushNotificationService,
+        ),
       ],
     );
 
@@ -519,6 +535,28 @@ void main() {
       // Assert
       expect(mockStorage.storage[StorageKeys.accessToken], isNull);
       expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+    });
+
+    test('should revoke backend session and push token on logout', () async {
+      // Arrange
+      await mockStorage.write(key: StorageKeys.accessToken, value: 'token');
+      await mockStorage.write(key: StorageKeys.refreshToken, value: 'refresh');
+
+      final notifier = container.read(authProvider.notifier);
+
+      // Act
+      await notifier.logout();
+
+      // Assert
+      verify(
+        () => mockAuthService.logout(
+          accessToken: 'token',
+          refreshToken: 'refresh',
+        ),
+      ).called(1);
+      verify(
+        () => mockPushNotificationService.unregisterFromBackend(),
+      ).called(1);
     });
 
     test('should transition to unauthenticated on logout', () async {

@@ -524,7 +524,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final accessToken = await _storage.read(key: StorageKeys.accessToken);
     final refreshToken = await _storage.read(key: StorageKeys.refreshToken);
 
-    unawaited(_cleanupServerSession(accessToken, refreshToken));
+    await _cleanupServerSession(accessToken, refreshToken);
     await clearLocalSession();
   }
 
@@ -532,6 +532,13 @@ class AuthNotifier extends Notifier<AuthState> {
     String? accessToken,
     String? refreshToken,
   ) async {
+    await Future.wait([
+      _unregisterPushTokenForLogout(),
+      _revokeBackendSessionForLogout(accessToken, refreshToken),
+    ]);
+  }
+
+  Future<void> _unregisterPushTokenForLogout() async {
     try {
       await ref
           .read(pushNotificationServiceProvider)
@@ -542,13 +549,20 @@ class AuthNotifier extends Notifier<AuthState> {
         'AuthProvider',
       ).warn('Push token unregister did not complete', e);
     }
+  }
 
+  Future<void> _revokeBackendSessionForLogout(
+    String? accessToken,
+    String? refreshToken,
+  ) async {
     try {
       await _authService
           .logout(accessToken: accessToken, refreshToken: refreshToken)
           .timeout(const Duration(seconds: 4));
     } catch (e) {
-      const AppLogger('AuthProvider').warn('Backend logout did not complete', e);
+      const AppLogger(
+        'AuthProvider',
+      ).warn('Backend logout did not complete', e);
     }
   }
 
