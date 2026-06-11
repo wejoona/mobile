@@ -360,6 +360,20 @@ class AuthNotifier extends Notifier<AuthState> {
             tokenValidity: Duration(seconds: response.expiresIn),
           );
 
+      try {
+        await ref
+            .read(deviceRegistrationServiceProvider)
+            .registerCurrentDevice();
+      } on ApiException catch (e) {
+        if (e.isDeviceBlacklisted) {
+          await clearLocalSession();
+          state = state.copyWith(status: AuthStatus.error, error: e.message);
+          ref.read(appFsmProvider.notifier).onAuthFailed(e.message);
+          return false;
+        }
+        rethrow;
+      }
+
       // Sync with FSM: notify that auth verification succeeded
       // Do this BEFORE setting authenticated status to ensure wallet fetch is queued
       ref
@@ -406,9 +420,6 @@ class AuthNotifier extends Notifier<AuthState> {
       // Analytics: login success
       _analytics.trackLogin(method: 'otp');
       _analytics.setUserProperties(userId: response.user.id);
-
-      // Register device with backend (fire-and-forget)
-      ref.read(deviceRegistrationServiceProvider).registerCurrentDevice();
 
       return true;
     } on ApiException catch (e) {

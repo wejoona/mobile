@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
+import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/security/device_fingerprint_service.dart';
 import 'package:usdc_wallet/utils/logger.dart';
 
@@ -56,6 +57,13 @@ class DeviceRegistrationService {
       );
 
       logger.info('Device registered successfully');
+    } on ApiException catch (error) {
+      if (error.isDeviceBlacklisted) {
+        rethrow;
+      }
+
+      // Don't fail login if device registration fails
+      logger.error('Device registration failed', error);
     } on Object catch (error) {
       // Don't fail login if device registration fails
       logger.error('Device registration failed', error);

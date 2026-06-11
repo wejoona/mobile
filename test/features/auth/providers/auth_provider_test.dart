@@ -410,6 +410,61 @@ void main() {
       final state = container.read(authProvider);
       expect(state.error, equals('Phone number not found'));
     });
+
+    test(
+      'should reject OTP completion when current device is blacklisted',
+      () async {
+        // Arrange
+        final otpResponse = OtpResponse(
+          success: true,
+          message: 'OTP sent',
+          expiresIn: 300,
+        );
+        when(
+          () => mockAuthService.login(phone: any(named: 'phone')),
+        ).thenAnswer((_) async => otpResponse);
+
+        final authResponse = AuthResponse(
+          accessToken: 'test.access.token',
+          refreshToken: 'test.refresh.token',
+          user: createTestUser(),
+          walletCreated: true,
+          expiresIn: 900,
+        );
+        when(
+          () => mockAuthService.verifyOtp(
+            phone: any(named: 'phone'),
+            otp: any(named: 'otp'),
+          ),
+        ).thenAnswer((_) async => authResponse);
+        when(
+          () => mockDeviceRegistrationService.registerCurrentDevice(),
+        ).thenThrow(
+          ApiException(
+            message: 'This device has been blocked. Contact Korido support.',
+            statusCode: 403,
+            code: 'DEVICE_BLACKLISTED',
+          ),
+        );
+
+        final notifier = container.read(authProvider.notifier);
+        await notifier.login('+2250123456789');
+
+        // Act
+        final result = await notifier.verifyOtp('123456');
+
+        // Assert
+        final state = container.read(authProvider);
+        expect(result, isFalse);
+        expect(state.status, equals(AuthStatus.error));
+        expect(
+          state.error,
+          equals('This device has been blocked. Contact Korido support.'),
+        );
+        expect(mockStorage.storage[StorageKeys.accessToken], isNull);
+        expect(mockStorage.storage[StorageKeys.refreshToken], isNull);
+      },
+    );
   });
 
   group('Handle API errors -> error state', () {
