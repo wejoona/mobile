@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/router/navigation_extensions.dart';
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
-import 'package:usdc_wallet/state/index.dart';
-import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/profile/providers/profile_provider.dart';
 import 'package:usdc_wallet/features/profile/services/profile_picture_service.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/router/navigation_extensions.dart';
+import 'package:usdc_wallet/services/user/user_service.dart';
+import 'package:usdc_wallet/state/index.dart';
 
 enum _AvatarAction { camera, gallery, remove }
 
@@ -441,17 +442,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       }
 
       ref
-          .read(userStateMachineProvider.notifier)
-          .updateProfile(
-            firstName: profile.firstName,
-            lastName: profile.lastName,
-            email: profile.email,
-            emailVerified: profile.emailVerified,
+          .read(profileProvider.notifier)
+          .applyProfileSnapshot(
+            profile,
             avatarUrl: nextAvatarUrl,
             avatarThumb: nextAvatarThumb,
-            clearAvatarUrl: nextAvatarUrl == null || nextAvatarUrl.isEmpty,
-            clearAvatarThumb:
-                nextAvatarThumb == null || nextAvatarThumb.isEmpty,
           );
 
       if (mounted) {

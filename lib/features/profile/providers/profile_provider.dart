@@ -89,6 +89,26 @@ class ProfileNotifier extends Notifier<ProfileState> {
     }
   }
 
+  void applyProfileSnapshot(
+    UserProfile profile, {
+    String? avatarUrl,
+    String? avatarThumb,
+  }) {
+    final mergedProfile = UserProfile.fromJson({
+      ...profile.toJson(),
+      'avatarUrl': avatarUrl ?? profile.avatarUrl,
+      'avatarThumb': avatarThumb ?? profile.avatarThumb,
+    });
+
+    _syncUserState(mergedProfile);
+    state = state.copyWith(
+      user: User.fromJson(mergedProfile.toJson()),
+      isLoading: false,
+      isUploading: false,
+      error: null,
+    );
+  }
+
   Future<void> removeAvatar() async {
     try {
       final service = ref.read(userServiceProvider);
