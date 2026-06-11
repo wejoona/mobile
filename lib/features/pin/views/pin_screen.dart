@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -154,9 +156,17 @@ class _PinScreenState extends ConsumerState<PinScreen>
   /// Brief unlock animation before navigating away
   void _transitionThen(VoidCallback navigate) {
     setState(() => _showUnlockTransition = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
+    unawaited(Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) navigate();
-    });
+    }));
+    unawaited(Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted || !_showUnlockTransition) return;
+      setState(() {
+        _showUnlockTransition = false;
+        _isVerifying = false;
+      });
+      unawaited(_checkBiometric());
+    }));
   }
 
   Future<void> _verifyPin() async {

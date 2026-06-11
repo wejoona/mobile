@@ -13,6 +13,7 @@ import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/mocks/mock_config.dart';
+import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({super.key, this.initialPhone, this.initialName});
@@ -293,8 +294,11 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
           if (mounted) await _showContactsSettingsDialog(l10n);
           return;
         }
-        status = await Permission.contacts.request();
-        if (!status.isGranted) {
+        final granted = await ref
+            .read(contactsServiceProvider)
+            .requestContactsPermission();
+        status = await Permission.contacts.status;
+        if (!granted) {
           if (!mounted) return;
           if (status.isPermanentlyDenied) {
             await _showContactsSettingsDialog(l10n);

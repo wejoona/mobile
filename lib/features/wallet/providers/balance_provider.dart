@@ -22,12 +22,19 @@ class WalletBalance {
   factory WalletBalance.fromJson(Map<String, dynamic> json) => WalletBalance(
     available:
         (json['available'] as num?)?.toDouble() ??
+        _amountFromString(json['availableDecimal']) ??
         (json['balance'] as num?)?.toDouble() ??
+        _amountFromString(json['balanceDecimal']) ??
         0,
-    pending: (json['pending'] as num?)?.toDouble() ?? 0,
+    pending:
+        (json['pending'] as num?)?.toDouble() ??
+        _amountFromString(json['pendingDecimal']) ??
+        0,
     total:
         (json['total'] as num?)?.toDouble() ??
+        _amountFromString(json['totalDecimal']) ??
         (json['balance'] as num?)?.toDouble() ??
+        _amountFromString(json['balanceDecimal']) ??
         0,
     currency: json['currency'] as String? ?? 'USDC',
     updatedAt:
@@ -76,11 +83,14 @@ WalletBalance _walletBalanceFromPayload(dynamic payload) {
   // Extract the first balance entry when present, otherwise use root balance.
   final balances = wallet['balances'] as List? ?? [];
   if (balances.isNotEmpty) {
-    final first = balances.first as Map<String, dynamic>;
+    final first = Map<String, dynamic>.from(balances.first as Map);
     return WalletBalance.fromJson({
       'available': first['available'],
+      'availableDecimal': first['availableDecimal'],
       'pending': first['pending'],
+      'pendingDecimal': first['pendingDecimal'],
       'total': first['total'],
+      'totalDecimal': first['totalDecimal'],
       'currency': first['currency'] ?? 'USDC',
       'updatedAt': DateTime.now().toIso8601String(),
     });
@@ -99,6 +109,11 @@ Map<String, dynamic> _asMap(dynamic value) {
   if (value is Map<String, dynamic>) return value;
   if (value is Map) return Map<String, dynamic>.from(value);
   return const {};
+}
+
+double? _amountFromString(Object? value) {
+  if (value is String) return double.tryParse(value);
+  return null;
 }
 
 /// Available balance shortcut.
