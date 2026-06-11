@@ -47,13 +47,15 @@ void main() {
     await _pumpLoginView(tester);
 
     expect(find.text('By continuing, you agree to our'), findsNothing);
-    expect(find.text('Terms of Service'), findsOneWidget);
-    expect(find.text('Privacy Policy'), findsOneWidget);
+    expect(find.text('Terms of Service'), findsNothing);
+    expect(find.text('Privacy Policy'), findsNothing);
 
     await tester.tap(find.text('Sign up'));
     await tester.pumpAndSettle();
 
     expect(find.text('By continuing, you agree to our'), findsOneWidget);
+    expect(find.text('Terms of Service'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
   });
 }
 
