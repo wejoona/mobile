@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/features/contacts/models/synced_contact.dart';
@@ -12,8 +11,6 @@ import 'package:usdc_wallet/features/send/widgets/contact_picker_bottom_sheet.da
 import 'package:usdc_wallet/features/send/widgets/recent_recipient_card.dart';
 import 'package:usdc_wallet/features/send/widgets/send_flow_visuals.dart';
 import 'package:usdc_wallet/l10n/app_localizations.dart';
-import 'package:usdc_wallet/mocks/mock_config.dart';
-import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 
 class RecipientScreen extends ConsumerStatefulWidget {
   const RecipientScreen({super.key, this.initialPhone, this.initialName});
@@ -280,42 +277,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
   }
 
   Future<void> _selectFromContacts() async {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = context.colors;
-
-    if (!MockConfig.useMocks) {
-      var status = await Permission.contacts.status;
-      if (!status.isGranted && !status.isLimited) {
-        // Permission.request() only surfaces the OS dialog the first time.
-        // Once the user has permanently denied it, request() returns
-        // immediately without prompting — so send them to app settings
-        // instead of repeating a dead-end error.
-        if (status.isPermanentlyDenied || status.isRestricted) {
-          if (mounted) await _showContactsSettingsDialog(l10n);
-          return;
-        }
-        final granted = await ref
-            .read(contactsServiceProvider)
-            .requestContactsPermission();
-        status = await Permission.contacts.status;
-        if (!granted) {
-          if (!mounted) return;
-          if (status.isPermanentlyDenied) {
-            await _showContactsSettingsDialog(l10n);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.send_contactsPermissionDenied),
-                backgroundColor: colors.error,
-              ),
-            );
-          }
-          return;
-        }
-      }
-    }
-
-    // Show contact picker
     if (mounted) {
       final contact = await showModalBottomSheet<SyncedContact>(
         context: context,
@@ -327,31 +288,6 @@ class _RecipientScreenState extends ConsumerState<RecipientScreen> {
       if (contact != null) {
         _selectRecipient(contact.phone, contact.name);
       }
-    }
-  }
-
-  /// Shown when contacts permission is permanently denied — request() can no
-  /// longer prompt, so guide the user to the system settings page.
-  Future<void> _showContactsSettingsDialog(AppLocalizations l10n) async {
-    final shouldOpen = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.send_contactsPermissionSettingsTitle),
-        content: Text(l10n.send_contactsPermissionSettingsMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(l10n.action_cancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(l10n.action_open_settings),
-          ),
-        ],
-      ),
-    );
-    if (shouldOpen == true) {
-      await openAppSettings();
     }
   }
 

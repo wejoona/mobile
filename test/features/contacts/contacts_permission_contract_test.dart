@@ -10,6 +10,9 @@ void main() {
     final pickerSource = File(
       'lib/features/send/widgets/contact_picker_bottom_sheet.dart',
     ).readAsStringSync();
+    final recipientSource = File(
+      'lib/features/send/views/recipient_screen.dart',
+    ).readAsStringSync();
 
     final syncContactsBody = _methodBody(providerSource, 'syncContacts');
     final requestPermissionBody = _methodBody(
@@ -40,6 +43,16 @@ void main() {
       pickerPermissionCard,
       isNot(contains('variant: AppButtonVariant.secondary')),
     );
+
+    final recipientContactBody = _methodBody(
+      recipientSource,
+      '_selectFromContacts',
+    );
+
+    expect(recipientSource, isNot(contains('permission_handler')));
+    expect(recipientContactBody, contains('ContactPickerBottomSheet'));
+    expect(recipientContactBody, isNot(contains('requestContactsPermission')));
+    expect(recipientContactBody, isNot(contains('Permission.contacts')));
   });
 }
 
