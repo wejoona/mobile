@@ -156,17 +156,26 @@ class _PinScreenState extends ConsumerState<PinScreen>
   /// Brief unlock animation before navigating away
   void _transitionThen(VoidCallback navigate) {
     setState(() => _showUnlockTransition = true);
-    unawaited(Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) navigate();
-    }));
-    unawaited(Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted || !_showUnlockTransition) return;
-      setState(() {
-        _showUnlockTransition = false;
-        _isVerifying = false;
-      });
-      unawaited(_checkBiometric());
-    }));
+    unawaited(
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) navigate();
+      }),
+    );
+    unawaited(
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (mounted && _showUnlockTransition) navigate();
+      }),
+    );
+    unawaited(
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!mounted || !_showUnlockTransition) return;
+        setState(() {
+          _showUnlockTransition = false;
+          _isVerifying = false;
+        });
+        unawaited(_checkBiometric());
+      }),
+    );
   }
 
   Future<void> _verifyPin() async {
@@ -256,7 +265,11 @@ class _PinScreenState extends ConsumerState<PinScreen>
   }
 
   Future<void> _handleLogout() async {
-    await ref.read(authProvider.notifier).logout();
+    try {
+      await ref.read(authProvider.notifier).logout();
+    } on Object {
+      await ref.read(authProvider.notifier).clearLocalSession();
+    }
     if (mounted) context.go('/login');
   }
 

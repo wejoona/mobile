@@ -40,6 +40,14 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
 
   Future<void> _loadContacts() async {
     final notifier = ref.read(contactsProvider.notifier);
+    final status = await Permission.contacts.status;
+    if (!status.isGranted &&
+        !status.isLimited &&
+        !status.isPermanentlyDenied &&
+        !status.isRestricted) {
+      await notifier.requestPermission();
+      return;
+    }
     await notifier.syncContacts();
   }
 
@@ -54,10 +62,7 @@ class _ContactsListScreenState extends ConsumerState<ContactsListScreen> {
       }
       final granted = await notifier.requestPermission();
       if (!granted && mounted) {
-        final nextStatus = await Permission.contacts.status;
-        if (nextStatus.isPermanentlyDenied || nextStatus.isRestricted) {
-          await _showContactsSettingsDialog(l10n);
-        }
+        await _showContactsSettingsDialog(l10n);
       }
       return;
     }

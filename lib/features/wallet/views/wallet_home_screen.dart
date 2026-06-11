@@ -1112,7 +1112,18 @@ class _WalletHomeScreenState extends ConsumerState<WalletHomeScreen>
     final wallet = ref.read(walletStateMachineProvider);
     if (wallet.status == WalletStatus.initial ||
         (wallet.status == WalletStatus.error && !wallet.hasBalanceData)) {
-      await ref.read(walletStateMachineProvider.notifier).fetch(force: true);
+      try {
+        await ref
+            .read(walletStateMachineProvider.notifier)
+            .fetch(force: true)
+            .timeout(const Duration(seconds: 15));
+      } on Object catch (error, stackTrace) {
+        _logger.error(
+          'Home refresh recovery fetch timed out or failed',
+          error,
+          stackTrace,
+        );
+      }
     }
   }
 
