@@ -423,6 +423,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     );
 
     if (success) {
+      ref.invalidate(recurringTransfersProvider);
       ref.invalidate(recurringTransferDetailProvider(id));
     }
   }
@@ -458,6 +459,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     );
 
     if (success) {
+      ref.invalidate(recurringTransfersProvider);
       ref.invalidate(recurringTransferDetailProvider(id));
     }
   }
@@ -520,6 +522,7 @@ class RecurringTransferDetailView extends ConsumerWidget {
     );
 
     if (success) {
+      ref.invalidate(recurringTransfersProvider);
       context.pop();
     }
   }
