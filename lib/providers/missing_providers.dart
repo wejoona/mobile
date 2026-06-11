@@ -438,11 +438,15 @@ bool _matchesSelectedCountry(
           .any(selectedCurrencies.contains) ||
       selectedCurrencies.contains(singleCurrency?.toString().toUpperCase());
 
-  final rail = (json['rail'] ?? json['type'] ?? json['paymentRail'])
-      ?.toString()
-      .toLowerCase();
+  final rail =
+      (json['rail'] ??
+              json['type'] ??
+              json['paymentRail'] ??
+              json['paymentMethodType'] ??
+              json['provider'])
+          ?.toString();
   final railMatches =
-      rail == null || selectedCountry.supportedDepositRails.contains(rail);
+      rail == null || _railMatchesCountry(rail, selectedCountry);
 
   return countryMatches && currencyMatches && railMatches;
 }
@@ -466,6 +470,54 @@ ProviderData _providerDataFromJson(Map<String, dynamic> json) {
     ]),
     rails: _stringList(json, const ['rails', 'type']),
   );
+}
+
+bool _railMatchesCountry(String rawRail, CountryConfig selectedCountry) {
+  final rail = _normalizeDepositRail(rawRail);
+  final countryRails = selectedCountry.supportedDepositRails
+      .map(_normalizeDepositRail)
+      .toSet();
+  return countryRails.contains(rail);
+}
+
+String _normalizeDepositRail(String value) {
+  final normalized = value.trim().toLowerCase().replaceAll('-', '_');
+  switch (normalized) {
+    case 'usdc':
+    case 'crypto':
+    case 'blockchain':
+    case 'onchain':
+    case 'on_chain':
+    case 'usdc_crypto':
+      return 'crypto';
+    case 'ach':
+    case 'bank':
+    case 'bank_transfer':
+    case 'wire':
+      return 'bank_transfer';
+    case 'card':
+    case 'credit_card':
+    case 'debit_card':
+    case 'visa':
+    case 'mastercard':
+      return 'card';
+    case 'momo':
+    case 'mobile_money':
+    case 'orange_money':
+    case 'mtn_momo':
+    case 'moov_money':
+    case 'wave':
+    case 'omci':
+    case 'mtnci':
+    case 'moovci':
+    case 'waveci':
+    case 'otp':
+    case 'push':
+    case 'qr_link':
+      return 'mobile_money';
+    default:
+      return normalized;
+  }
 }
 
 List<String> _stringList(Map<String, dynamic> json, List<String> keys) {
