@@ -1,23 +1,21 @@
-import 'package:usdc_wallet/design/tokens/index.dart';
 import 'dart:io';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:usdc_wallet/design/tokens/spacing.dart';
-import 'package:usdc_wallet/design/tokens/typography.dart';
-import 'package:usdc_wallet/design/components/primitives/app_button.dart';
-import 'package:usdc_wallet/design/components/primitives/app_text.dart';
 import 'package:usdc_wallet/design/components/primitives/app_input.dart';
 import 'package:usdc_wallet/design/components/primitives/app_select.dart';
-import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
-import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
+import 'package:usdc_wallet/design/components/primitives/app_button.dart';
+import 'package:usdc_wallet/design/components/primitives/app_text.dart';
+import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/domain/entities/expense.dart';
+import 'package:usdc_wallet/features/expenses/providers/expenses_provider.dart';
+import 'package:usdc_wallet/features/expenses/services/expenses_service.dart';
+import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/utils/logger.dart';
-import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class CaptureReceiptView extends ConsumerStatefulWidget {
   const CaptureReceiptView({super.key});
@@ -31,7 +29,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
   final ImagePicker _picker = ImagePicker();
 
   File? _capturedImage;
-  OcrResult? _ocrResult;
   bool _isProcessing = false;
   bool _showEditForm = false;
 
@@ -63,7 +60,9 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       await _cameraController!.initialize();
       if (mounted) setState(() {});
     } catch (e) {
-      AppLogger('Error initializing camera').error('Error initializing camera', e);
+      AppLogger(
+        'Error initializing camera',
+      ).error('Error initializing camera', e);
     }
   }
 
@@ -118,9 +117,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
             children: [
               AppText(
                 l10n.expenses_positionReceipt,
-                style: AppTypography.bodyMedium.copyWith(
-                  color: Colors.white,
-                ),
+                style: AppTypography.bodyMedium.copyWith(color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: AppSpacing.xl),
@@ -158,11 +155,11 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         width: isPrimary ? 72 : 56,
         height: isPrimary ? 72 : 56,
         decoration: BoxDecoration(
-          color: isPrimary ? context.colors.gold : Colors.white.withValues(alpha: 0.3),
+          color: isPrimary
+              ? context.colors.gold
+              : Colors.white.withValues(alpha: 0.3),
           shape: BoxShape.circle,
-          border: isPrimary
-              ? Border.all(color: Colors.white, width: 4)
-              : null,
+          border: isPrimary ? Border.all(color: Colors.white, width: 4) : null,
         ),
         child: Icon(
           icon,
@@ -186,7 +183,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
           icon: const Icon(Icons.close),
           onPressed: () => setState(() {
             _capturedImage = null;
-            _ocrResult = null;
             _isProcessing = false;
           }),
         ),
@@ -207,12 +203,7 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
             )
           : Column(
               children: [
-                Expanded(
-                  child: Center(
-                    child: Image.file(_capturedImage!),
-                  ),
-                ),
-                if (_ocrResult != null) _buildOcrResults(context, l10n),
+                Expanded(child: Center(child: Image.file(_capturedImage!))),
                 Padding(
                   padding: EdgeInsets.all(AppSpacing.md),
                   child: Column(
@@ -226,7 +217,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                         label: l10n.expenses_retake,
                         onPressed: () => setState(() {
                           _capturedImage = null;
-                          _ocrResult = null;
                           _isProcessing = false;
                         }),
                         variant: AppButtonVariant.secondary,
@@ -236,65 +226,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _buildOcrResults(BuildContext context, AppLocalizations l10n) {
-    final currencyFormat = NumberFormat.currency(symbol: 'XOF', decimalDigits: 0);
-    final dateFormat = DateFormat('MMMM dd, yyyy');
-
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      color: context.colors.elevated,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            l10n.expenses_extractedData,
-            style: AppTypography.bodyLarge.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          SizedBox(height: AppSpacing.md),
-          if (_ocrResult!.amount != null)
-            _buildOcrItem(
-              l10n.expenses_amount,
-              currencyFormat.format(_ocrResult!.amount),
-            ),
-          if (_ocrResult!.date != null)
-            _buildOcrItem(
-              l10n.expenses_date,
-              dateFormat.format(_ocrResult!.date!),
-            ),
-          if (_ocrResult!.vendor != null)
-            _buildOcrItem(
-              l10n.expenses_vendor,
-              _ocrResult!.vendor!,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOcrItem(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle, color: context.colors.success, size: 16),
-          SizedBox(width: AppSpacing.xs),
-          AppText(
-            '$label: ',
-            style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
-          ),
-          AppText(
-            value,
-            style: AppTypography.bodyMedium.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -397,7 +328,6 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
       setState(() {
         _capturedImage = File(image.path);
       });
-      await _processReceipt(image.path);
     } catch (e) {
       AppLogger('Error capturing photo').error('Error capturing photo', e);
     }
@@ -410,49 +340,15 @@ class _CaptureReceiptViewState extends ConsumerState<CaptureReceiptView> {
         setState(() {
           _capturedImage = File(image.path);
         });
-        await _processReceipt(image.path);
       }
     } catch (e) {
-      AppLogger('Error picking from gallery').error('Error picking from gallery', e);
-    }
-  }
-
-  Future<void> _processReceipt(String imagePath) async {
-    setState(() => _isProcessing = true);
-
-    try {
-      final result = await ExpensesService.processReceipt(imagePath);
-      setState(() {
-        _ocrResult = result;
-        _isProcessing = false;
-      });
-    } catch (e) {
-      setState(() => _isProcessing = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.expenses_receiptProcessError),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-      AppLogger('Error processing receipt').error('Error processing receipt', e);
+      AppLogger(
+        'Error picking from gallery',
+      ).error('Error picking from gallery', e);
     }
   }
 
   void _showEditFormWithData() {
-    if (_ocrResult != null) {
-      if (_ocrResult!.amount != null) {
-        _amountController.text = _ocrResult!.amount!.toStringAsFixed(0);
-      }
-      if (_ocrResult!.vendor != null) {
-        _vendorController.text = _ocrResult!.vendor!;
-      }
-      if (_ocrResult!.date != null) {
-        _selectedDate = _ocrResult!.date!;
-      }
-    }
-
     setState(() => _showEditForm = true);
   }
 

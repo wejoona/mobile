@@ -31,13 +31,4 @@ class ExpensesService {
     final jsonList = expenses.map((expense) => expense.toJson()).toList();
     await prefs.setString(_storageKey, json.encode(jsonList));
   }
-
-  /// OCR receipt processing
-  /// Currently not available — backend OCR endpoint not yet implemented.
-  /// Throws an UnsupportedError to signal the feature is coming soon.
-  static Future<OcrResult> processReceipt(String imagePath) async {
-    throw Exception(
-      'Receipt scanning is coming soon. Please enter expense details manually.',
-    );
-  }
 }
