@@ -85,20 +85,26 @@ WalletBalance _walletBalanceFromPayload(dynamic payload) {
 
   // GET /wallet returns { walletId, currency, balances: [...] }.
   // POST /wallet/create returns { id, currency, balance }.
-  // Extract the first balance entry when present, otherwise use root balance.
+  // Prefer the spendable USDC row, then the wallet currency row, then the
+  // first positive row. Backend row order is not a UI contract.
   final balances = wallet['balances'] as List? ?? [];
   if (balances.isNotEmpty) {
-    final first = Map<String, dynamic>.from(balances.first as Map);
-    return WalletBalance.fromJson({
-      'available': first['available'],
-      'availableDecimal': first['availableDecimal'],
-      'pending': first['pending'],
-      'pendingDecimal': first['pendingDecimal'],
-      'total': first['total'],
-      'totalDecimal': first['totalDecimal'],
-      'currency': first['currency'] ?? 'USDC',
-      'updatedAt': DateTime.now().toIso8601String(),
-    });
+    final selected = _selectBalanceRow(
+      balances.whereType<Map>().map(Map<String, dynamic>.from).toList(),
+      wallet['currency'] as String?,
+    );
+    if (selected != null) {
+      return WalletBalance.fromJson({
+        'available': selected['available'],
+        'availableDecimal': selected['availableDecimal'],
+        'pending': selected['pending'],
+        'pendingDecimal': selected['pendingDecimal'],
+        'total': selected['total'],
+        'totalDecimal': selected['totalDecimal'],
+        'currency': selected['currency'] ?? wallet['currency'] ?? 'USDC',
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
+    }
   }
 
   return WalletBalance.fromJson({
@@ -108,6 +114,42 @@ WalletBalance _walletBalanceFromPayload(dynamic payload) {
     'currency': wallet['currency'] ?? 'USDC',
     'updatedAt': DateTime.now().toIso8601String(),
   });
+}
+
+Map<String, dynamic>? _selectBalanceRow(
+  List<Map<String, dynamic>> balances,
+  String? walletCurrency,
+) {
+  if (balances.isEmpty) return null;
+
+  Map<String, dynamic>? byCurrency(String currency) {
+    for (final balance in balances) {
+      if ((balance['currency'] as String?)?.toUpperCase() ==
+          currency.toUpperCase()) {
+        return balance;
+      }
+    }
+    return null;
+  }
+
+  final usdc = byCurrency('USDC');
+  if (usdc != null) return usdc;
+
+  if (walletCurrency != null && walletCurrency.trim().isNotEmpty) {
+    final matchingWalletCurrency = byCurrency(walletCurrency);
+    if (matchingWalletCurrency != null) return matchingWalletCurrency;
+  }
+
+  for (final balance in balances) {
+    final amount =
+        _amountFromString(balance['availableDecimal']) ??
+        _amountFromString(balance['available_decimal']) ??
+        (balance['available'] as num?)?.toDouble() ??
+        0;
+    if (amount > 0) return balance;
+  }
+
+  return balances.first;
 }
 
 Map<String, dynamic> _asMap(dynamic value) {

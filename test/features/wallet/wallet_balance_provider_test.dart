@@ -61,5 +61,42 @@ void main() {
       expect(balance.currency, 'USDC');
       expect(dio.requestHistory.single.path, '/wallet');
     });
+
+    test(
+      'selects the spendable USDC row instead of trusting row order',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet_1',
+            'currency': 'USD',
+            'balances': [
+              {
+                'currency': 'EUR',
+                'availableDecimal': '0.000000',
+                'pendingDecimal': '0.000000',
+                'totalDecimal': '0.000000',
+              },
+              {
+                'currency': 'USDC',
+                'availableDecimal': '42.750000',
+                'pendingDecimal': '0.250000',
+                'totalDecimal': '43.000000',
+              },
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [dioProvider.overrideWithValue(dio)],
+        );
+        addTearDown(container.dispose);
+
+        final balance = await container.read(walletBalanceProvider.future);
+
+        expect(balance.available, 42.75);
+        expect(balance.pending, 0.25);
+        expect(balance.total, 43);
+        expect(balance.currency, 'USDC');
+      },
+    );
   });
 }
