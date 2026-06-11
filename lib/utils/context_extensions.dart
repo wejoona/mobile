@@ -134,7 +134,7 @@ _SnackStyle _snackStyle(ThemeColors colors, AppSnackTone tone) {
         background: colors.elevated,
         foreground: colors.textPrimary,
         border: colors.border,
-        iconColor: colors.gold,
+        iconColor: colors.iconSecondary,
         icon: Icons.notifications_none_rounded,
       );
   }
