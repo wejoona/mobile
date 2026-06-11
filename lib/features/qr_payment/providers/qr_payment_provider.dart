@@ -155,10 +155,18 @@ class QrPaymentNotifier extends Notifier<QrPaymentState> {
           );
           break;
         case 'paymentLink':
-          // Backend expects code, not ID
+          final paymentCode = data.paymentLinkId;
+          if (paymentCode == null || paymentCode.isEmpty) {
+            state = state.copyWith(
+              isProcessing: false,
+              error: 'QR payment link requires a payment code',
+            );
+            return;
+          }
+          // Backend expects the short code and a major-unit amount.
           await dio.post(
-            '/payment-links/code/${data.paymentLinkId}/pay',
-            data: {'amount': amountCents},
+            '/payment-links/code/$paymentCode/pay',
+            data: {'amount': transferAmount},
             options: options,
           );
           break;

@@ -16,6 +16,8 @@ import 'package:usdc_wallet/features/notifications/providers/notifications_provi
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/features/payment_links/repositories/payment_links_repository.dart';
 import 'package:usdc_wallet/features/payment_links/providers/pay_link_provider.dart';
+import 'package:usdc_wallet/features/qr_payment/models/qr_data.dart';
+import 'package:usdc_wallet/features/qr_payment/providers/qr_payment_provider.dart';
 import 'package:usdc_wallet/features/settings/repositories/devices_repository.dart';
 import 'package:usdc_wallet/features/settings/repositories/sessions_repository.dart';
 import 'package:usdc_wallet/features/send/providers/send_provider.dart';
@@ -620,6 +622,34 @@ void main() {
         expect(dio.requestHistory[1].data, {'amount': 12.5});
       },
     );
+
+    test('QR payment link route uses major-unit amount', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'transactionId': 'txn_qr_1',
+          'amount': 12.5,
+          'status': 'completed',
+        });
+      final container = ProviderContainer(
+        overrides: [dioProvider.overrideWithValue(dio)],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(qrPaymentProvider.notifier);
+      notifier.state = const QrPaymentState(
+        scannedData: QrPaymentData(
+          type: 'paymentLink',
+          paymentLinkId: 'ABC123',
+        ),
+        pinToken: 'pin_token',
+        idempotencyKey: 'qr-idempotency',
+      );
+      await notifier.pay(12.5);
+
+      expect(dio.requestHistory.single.method, 'POST');
+      expect(dio.requestHistory.single.path, '/payment-links/code/ABC123/pay');
+      expect(dio.requestHistory.single.data, {'amount': 12.5});
+    });
 
     test('PIN client contract stays on user PIN routes', () {
       final walletApiSource = File(
