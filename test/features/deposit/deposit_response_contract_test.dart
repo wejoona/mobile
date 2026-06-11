@@ -37,9 +37,9 @@ void main() {
         'amount': 5000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
+        'phoneNumber': '+2250748805663',
       });
       expect(request.toWalletDepositJson(), isNot(contains('providerCode')));
-      expect(request.toWalletDepositJson(), isNot(contains('phoneNumber')));
     });
 
     test('normalizes marketing provider names to backend enum codes', () {
@@ -86,6 +86,7 @@ void main() {
         'amount': 5000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
+        'phoneNumber': '+2250748805663',
       });
     });
 
@@ -159,10 +160,7 @@ void main() {
 
         final request = dio.requestHistory.single;
         expect(request.path, '/wallet/deposit/channels');
-        expect(request.queryParameters, {
-          'country': 'US',
-          'currency': 'USD',
-        });
+        expect(request.queryParameters, {'country': 'US', 'currency': 'USD'});
       },
     );
 

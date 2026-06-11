@@ -12,37 +12,35 @@ import '../../helpers/test_utils.dart';
 
 void main() {
   group('DepositService contract', () {
-    test(
-      'initiateDeposit posts wallet deposit channel payload with '
-      'idempotency header',
-      () async {
-        final dio = MockDio();
-        dio.queueResponse(
-          _initiateResponse(paymentMethodType: 'OTP'),
-          statusCode: 201,
-        );
-        final service = DepositService(dio);
+    test('initiateDeposit posts wallet deposit channel payload with '
+        'idempotency header', () async {
+      final dio = MockDio();
+      dio.queueResponse(
+        _initiateResponse(paymentMethodType: 'OTP'),
+        statusCode: 201,
+      );
+      final service = DepositService(dio);
 
-        await service.initiateDeposit(
-          const InitiateDepositRequest(
-            amount: 10000,
-            provider: 'OMCI',
-            phoneNumber: '+2250748805663',
-            currency: 'XOF',
-          ),
-        );
+      await service.initiateDeposit(
+        const InitiateDepositRequest(
+          amount: 10000,
+          provider: 'OMCI',
+          phoneNumber: '+2250748805663',
+          currency: 'XOF',
+        ),
+      );
 
-        final request = dio.requestHistory.single;
-        expect(request.method, 'POST');
-        expect(request.path, '/wallet/deposit');
-        expect(request.headers['X-Idempotency-Key'], isNotEmpty);
-        expect(request.data, {
-          'amount': 10000,
-          'sourceCurrency': 'XOF',
-          'channelId': 'orange_money_ci',
-        });
-      },
-    );
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/wallet/deposit');
+      expect(request.headers['X-Idempotency-Key'], isNotEmpty);
+      expect(request.data, {
+        'amount': 10000,
+        'sourceCurrency': 'XOF',
+        'channelId': 'orange_money_ci',
+        'phoneNumber': '+2250748805663',
+      });
+    });
 
     test('getExchangeRate uses wallet exchange-rate mobile alias', () async {
       final dio = MockDio();

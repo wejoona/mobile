@@ -86,6 +86,7 @@ void main() {
         'amount': 12000,
         'sourceCurrency': 'XOF',
         'channelId': 'orange_money_ci',
+        'phoneNumber': '07 01 02 03 04',
       });
     });
 

@@ -105,6 +105,8 @@ class DepositService {
       'amount': data['amount'],
       'sourceCurrency': data['currency'] ?? data['sourceCurrency'] ?? 'XOF',
       'channelId': normalizeDepositChannelId(channelId.toString()),
+      if ((data['phoneNumber'] as String?)?.trim().isNotEmpty == true)
+        'phoneNumber': data['phoneNumber'],
     };
     final response = await _dio.post(
       '/wallet/deposit',

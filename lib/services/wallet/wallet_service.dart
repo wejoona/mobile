@@ -103,6 +103,7 @@ class WalletService {
           'amount': amount.round(),
           'sourceCurrency': sourceCurrency,
           'channelId': _mobileMoneyChannelId(channelId),
+          if (phoneNumber.trim().isNotEmpty) 'phoneNumber': phoneNumber.trim(),
         },
         options: Options(
           headers: {'X-Idempotency-Key': generateIdempotencyKey()},

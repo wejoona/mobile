@@ -26,6 +26,8 @@ class InitiateDepositRequest {
     'amount': amount,
     'sourceCurrency': currency,
     'channelId': normalizeDepositChannelId(provider),
+    if (phoneNumber.isNotEmpty)
+      'phoneNumber': _normalizePhoneNumber(phoneNumber, currency),
   };
 }
 

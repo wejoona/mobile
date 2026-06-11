@@ -168,7 +168,6 @@ Map<String, dynamic> _depositPayload(Map<String, dynamic> data) {
     'sourceCurrency',
     () => payload.remove('currency') ?? 'XOF',
   );
-  payload.remove('phoneNumber');
   return payload;
 }
 
