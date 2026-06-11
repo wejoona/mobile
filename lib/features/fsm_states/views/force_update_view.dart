@@ -8,8 +8,9 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 class ForceUpdateView extends StatelessWidget {
   const ForceUpdateView({super.key});
 
-  static const _appStoreUrl = 'https://apps.apple.com/app/korido/id000000000';
-  static const _playStoreUrl = 'https://play.google.com/store/apps/details?id=com.joonapay.korido';
+  static const _appStoreUrl = 'https://apps.apple.com/search?term=Korido';
+  static const _playStoreUrl =
+      'https://play.google.com/store/apps/details?id=com.joonapay.korido';
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +23,7 @@ class ForceUpdateView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              Icon(
-                Icons.system_update,
-                size: 80,
-                color: context.colors.gold,
-              ),
+              Icon(Icons.system_update, size: 80, color: context.colors.gold),
               const SizedBox(height: AppSpacing.xxl),
               AppText(
                 'Mise à jour requise',
