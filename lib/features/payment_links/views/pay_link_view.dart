@@ -10,6 +10,8 @@ import 'package:usdc_wallet/l10n/app_localizations.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/components/composed/pin_confirmation_sheet.dart';
+import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/state/wallet_state_machine.dart';
 import 'package:usdc_wallet/features/wallet/providers/wallet_provider.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
@@ -145,6 +147,11 @@ class _PayLinkViewState extends ConsumerState<PayLinkView> {
       );
 
       if (mounted) {
+        ref.invalidate(paymentLinksProvider);
+        ref.invalidate(walletBalanceProvider);
+        await ref.read(walletStateMachineProvider.notifier).refresh();
+        if (!mounted) return;
+
         // Show success and navigate to receipt
         context.go(
           '/send/result',

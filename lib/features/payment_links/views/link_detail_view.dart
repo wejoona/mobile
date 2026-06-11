@@ -9,6 +9,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/payment_links/models/index.dart';
 import 'package:usdc_wallet/features/payment_links/providers/payment_links_provider.dart';
 import 'package:usdc_wallet/features/payment_links/widgets/share_link_sheet.dart';
+import 'package:usdc_wallet/utils/currency_utils.dart';
 import 'package:usdc_wallet/design/tokens/theme_colors.dart';
 
 class LinkDetailView extends ConsumerStatefulWidget {
@@ -106,14 +107,14 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
                 child: Container(
                   padding: EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: context.colors.textPrimary,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: QrImageView(
                     data: resolvedLink.url,
                     version: QrVersions.auto,
                     size: 200.0,
-                    backgroundColor: context.colors.textPrimary,
+                    backgroundColor: Colors.white,
                   ),
                 ),
               ),
@@ -123,7 +124,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
             // Amount Card
             _buildInfoCard(
               l10n.paymentLinks_amount,
-              'CFA ${resolvedLink.amount.toStringAsFixed(0)}',
+              formatCurrency(resolvedLink.amount, resolvedLink.currency),
               Icons.payments,
               context.colors.gold,
             ),
@@ -366,10 +367,20 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
 
   Future<void> _handleRefresh(String id) async {
     setState(() => _isRefreshing = true);
-    await ref.read(paymentLinkActionsProvider).refreshLink(id);
-    if (mounted) {
-      setState(() => _isRefreshing = false);
+    try {
+      await ref.read(paymentLinkActionsProvider).refreshLink(id);
+      ref.invalidate(paymentLinkByIdProvider(id));
+      ref.invalidate(paymentLinksProvider);
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
     }
+  }
+
+  void _invalidateLinkState(String id) {
+    ref.invalidate(paymentLinkByIdProvider(id));
+    ref.invalidate(paymentLinksProvider);
   }
 
   Future<void> _handleCancel(String id) async {
@@ -412,6 +423,7 @@ class _LinkDetailViewState extends ConsumerState<LinkDetailView> {
       }
       if (mounted) {
         if (success) {
+          _invalidateLinkState(id);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: AppText(l10n.paymentLinks_linkCancelled),

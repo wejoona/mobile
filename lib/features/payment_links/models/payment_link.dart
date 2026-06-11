@@ -45,7 +45,7 @@ class PaymentLink {
     return PaymentLink(
       id: json['id'] as String,
       shortCode: shortCode,
-      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      amount: _readAmount(json, ['amountDecimal', 'amount']),
       currency: json['currency'] as String? ?? 'USDC',
       recipientName:
           json['recipientName'] as String? ??
@@ -137,4 +137,16 @@ class PaymentLink {
   bool get isExpired => status == PaymentLinkStatus.expired;
   bool get isCancelled => status == PaymentLinkStatus.cancelled;
   bool get isActive => isPending || isViewed;
+}
+
+double _readAmount(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
 }

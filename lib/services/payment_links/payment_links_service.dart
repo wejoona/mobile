@@ -120,8 +120,20 @@ class PaymentResponse {
   factory PaymentResponse.fromJson(Map<String, dynamic> json) {
     return PaymentResponse(
       transactionId: json['transactionId'] as String,
-      amount: (json['amount'] as num).toDouble(),
+      amount: _readAmount(json, ['amountDecimal', 'amount']),
       status: json['status'] as String,
     );
   }
+}
+
+double _readAmount(Map<String, dynamic> json, List<String> keys) {
+  for (final key in keys) {
+    final value = json[key];
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      final parsed = double.tryParse(value);
+      if (parsed != null) return parsed;
+    }
+  }
+  return 0;
 }
