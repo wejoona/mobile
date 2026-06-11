@@ -156,7 +156,11 @@ class ProfileHeader extends StatelessWidget {
 
   String? _getAvatarUrl(User user) {
     if (user.avatarBase64 != null && user.avatarBase64!.isNotEmpty) {
-      return 'data:image/jpeg;base64,${user.avatarBase64}';
+      final avatarBase64 = user.avatarBase64!;
+      if (avatarBase64.startsWith('data:image/')) {
+        return avatarBase64;
+      }
+      return 'data:image/jpeg;base64,$avatarBase64';
     }
     return user.avatarUrl;
   }
