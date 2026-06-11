@@ -3,19 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:usdc_wallet/config/countries.dart';
 import 'package:usdc_wallet/core/l10n/app_strings.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
 import 'package:usdc_wallet/design/components/composed/index.dart';
 import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/design/tokens/index.dart';
+import 'package:usdc_wallet/features/auth/providers/auth_provider.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/features/wallet/providers/withdraw_provider.dart'
     as withdraw_api;
 import 'package:usdc_wallet/l10n/app_localizations.dart';
+import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_service.dart';
 import 'package:usdc_wallet/services/index.dart';
 import 'package:usdc_wallet/state/index.dart';
+import 'package:usdc_wallet/utils/context_extensions.dart';
 
 /// Withdrawal method type
 enum WithdrawMethod { mobileMoney, bankTransfer, crypto }
@@ -112,12 +114,14 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
   bool _canSubmit() {
     if (_selectedMethod == null) return false;
+    if (_requiresAvailabilitySubscription()) return true;
     if (_amountController.text.isEmpty) return false;
     if (_amountError != null) return false;
 
     switch (_selectedMethod!) {
       case WithdrawMethod.mobileMoney:
-        final country = ref.read(selectedCountryProvider);
+        final country = _effectiveCountry(ref);
+        if (country.code != 'CI') return true;
         final localDigits = _localPhoneDigits(country);
         return country.code == 'CI' && country.isValidLength(localDigits);
       case WithdrawMethod.bankTransfer:
@@ -132,24 +136,20 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (_isSubmitting) return;
 
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final selectedCountry = ref.read(selectedCountryProvider);
+    final selectedCountry = _effectiveCountry(ref, watch: false);
     if (_selectedMethod != WithdrawMethod.mobileMoney) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.withdraw_comingSoon),
-          backgroundColor: context.colors.error,
-        ),
+      await _subscribeToWithdrawalAvailability(
+        featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
+        requestedFeature: _selectedMethod!.name,
+        country: selectedCountry,
       );
       return;
     }
     if (selectedCountry.code != 'CI') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            "Mobile money withdrawals are currently available for Côte d'Ivoire accounts.",
-          ),
-          backgroundColor: context.colors.error,
-        ),
+      await _subscribeToWithdrawalAvailability(
+        featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
+        requestedFeature: 'mobile_money',
+        country: selectedCountry,
       );
       return;
     }
@@ -247,7 +247,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
             backgroundColor: context.colors.success,
           ),
         );
-        context.pop();
+        Navigator.of(context).pop();
       } else {
         // Error is handled by listener
         if (mounted) {
@@ -309,7 +309,62 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     if (localDigits.startsWith('01')) {
       return withdraw_api.WithdrawMethod.moovMoney;
     }
+    if (localDigits.startsWith('27')) {
+      return withdraw_api.WithdrawMethod.wave;
+    }
     return null;
+  }
+
+  bool _requiresAvailabilitySubscription() {
+    final method = _selectedMethod;
+    if (method == null) return false;
+    if (method != WithdrawMethod.mobileMoney) return true;
+    return _effectiveCountry(ref).code != 'CI';
+  }
+
+  Future<void> _subscribeToWithdrawalAvailability({
+    required String featureKey,
+    required String requestedFeature,
+    required CountryConfig country,
+  }) async {
+    setState(() => _isSubmitting = true);
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+    try {
+      await ref
+          .read(featureSubscriptionServiceProvider)
+          .subscribe(
+            FeatureSubscriptionRequest(
+              featureKey: featureKey,
+              source: 'withdrawal_screen',
+              phone: user?.phone ?? authState.phone,
+              email: user?.email,
+              featureName: 'Korido withdrawals',
+              requestedFeature: requestedFeature,
+              countryCode: country.code,
+              locale: user?.preferredLocale,
+              metadata: {
+                'surface': 'withdrawal_screen',
+                'method': _selectedMethod?.name,
+                'countryCode': country.code,
+                'currency': country.primaryCurrency,
+              },
+            ),
+          );
+      if (!mounted) return;
+      context.showSnack(
+        AppLocalizations.of(context)!.deposit_notifySuccess,
+        tone: AppSnackTone.success,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      context.showSnack(
+        AppLocalizations.of(context)!.common_errorFormat(e.toString()),
+        tone: AppSnackTone.error,
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -333,7 +388,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: SingleChildScrollView(
@@ -408,7 +463,9 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
             // Submit Button
             AppButton(
-              label: l10n.navigation_withdraw,
+              label: _requiresAvailabilitySubscription()
+                  ? l10n.deposit_notifyWhenAvailable
+                  : l10n.navigation_withdraw,
               onPressed: _canSubmit() && !_isSubmitting ? _submit : null,
               variant: AppButtonVariant.primary,
               isFullWidth: true,
@@ -562,7 +619,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
   }
 
   Widget _buildMobileMoneyFields(ThemeColors colors, AppLocalizations l10n) {
-    final selectedCountry = ref.watch(selectedCountryProvider);
+    final selectedCountry = _effectiveCountry(ref);
     final isMobileMoneyAvailable = selectedCountry.code == 'CI';
 
     return AppCard(
@@ -685,6 +742,23 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       ),
     );
   }
+}
+
+CountryConfig _effectiveCountry(WidgetRef ref, {bool watch = true}) {
+  final selectedCountry = watch
+      ? ref.watch(selectedCountryProvider)
+      : ref.read(selectedCountryProvider);
+  final countryCodeProvider = userStateMachineProvider.select(
+    (state) => state.countryCode,
+  );
+  final userCountryCode = watch
+      ? ref.watch(countryCodeProvider)
+      : ref.read(countryCodeProvider);
+  return SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+}
+
+String _withdrawalFeatureKey(CountryConfig country, WithdrawMethod method) {
+  return 'withdrawal_${country.code.toLowerCase()}_${method.name}';
 }
 
 class _MethodCard extends StatelessWidget {
