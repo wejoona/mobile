@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sms_autofill/sms_autofill.dart';
@@ -23,6 +24,7 @@ class OtpView extends ConsumerStatefulWidget {
 }
 
 class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
+  final FocusNode _keyboardFocusNode = FocusNode(debugLabel: 'otp-keyboard');
   String _otp = '';
   bool _hasError = false;
   bool _isListeningForSms = false;
@@ -37,12 +39,18 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     super.initState();
     _startListeningForSms();
     _startResendTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _keyboardFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
   void dispose() {
     cancel();
     _resendTimer?.cancel();
+    _keyboardFocusNode.dispose();
     super.dispose();
   }
 
@@ -187,10 +195,15 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
                         const Spacer(flex: 1),
 
                         // PIN Pad — no biometric on OTP screen
-                        PinPad(
-                          onDigitPressed: (digit) => _onDigitPressed(digit),
-                          onDeletePressed: _onDeletePressed,
-                          showBiometric: false,
+                        KeyboardListener(
+                          focusNode: _keyboardFocusNode,
+                          autofocus: true,
+                          onKeyEvent: _handleKeyEvent,
+                          child: PinPad(
+                            onDigitPressed: (digit) => _onDigitPressed(digit),
+                            onDeletePressed: _onDeletePressed,
+                            showBiometric: false,
+                          ),
                         ),
 
                         const SizedBox(height: AppSpacing.xxl),
@@ -306,6 +319,31 @@ class _OtpViewState extends ConsumerState<OtpView> with CodeAutoFill {
     setState(() {
       _otp = _otp.substring(0, _otp.length - 1);
     });
+  }
+
+  void _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent || ref.read(authProvider).isLoading) {
+      return;
+    }
+
+    final character = event.character;
+    if (character != null && RegExp(r'^\d$').hasMatch(character)) {
+      _onDigitPressed(int.parse(character));
+      return;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.backspace ||
+        event.logicalKey == LogicalKeyboardKey.delete) {
+      _onDeletePressed();
+      return;
+    }
+
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+      if (_otp.length == 6) {
+        unawaited(_verifyOtp());
+      }
+    }
   }
 
   Future<void> _verifyOtp() async {
