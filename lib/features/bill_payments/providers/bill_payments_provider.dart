@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/features/wallet/providers/balance_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/app_review/app_review_service.dart';
+import 'package:usdc_wallet/services/bill_payments/bill_payments_service.dart';
+import 'package:usdc_wallet/state/wallet_state_machine.dart';
 
 // ============================================================================
 // PROVIDERS
@@ -284,6 +286,8 @@ class BillPaymentNotifier extends Notifier<BillPaymentState> {
 
       // Invalidate history cache
       ref.invalidate(billPaymentHistoryProvider);
+      ref.invalidate(walletBalanceProvider);
+      await ref.read(walletStateMachineProvider.notifier).refresh();
 
       // Track successful transaction for app review prompt
       final appReviewService = ref.read(appReviewServiceProvider);
