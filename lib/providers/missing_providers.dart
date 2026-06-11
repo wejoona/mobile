@@ -21,6 +21,7 @@ import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/features/transactions/providers/transactions_provider.dart';
 import 'package:usdc_wallet/services/sdk/usdc_wallet_sdk.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// Filtered+paginated transactions — wired to GET /wallet/transactions.
 final filteredPaginatedTransactionsProvider =
@@ -127,7 +128,12 @@ final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   ref,
 ) async {
   final selectedCountry = ref.watch(selectedCountryProvider);
-  if (selectedCountry.primaryCurrency == 'USD') {
+  final userCountryCode = ref.watch(
+    userStateMachineProvider.select((state) => state.countryCode),
+  );
+  final effectiveCountry =
+      SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+  if (effectiveCountry.primaryCurrency == 'USD') {
     return ExchangeRate(
       fromCurrency: 'USD',
       toCurrency: 'USD',
@@ -139,7 +145,7 @@ final exchangeRateProvider = FutureProvider.autoDispose<ExchangeRate>((
   final depositService = ref.watch(depositServiceProvider);
   try {
     return await depositService.getExchangeRate(
-      from: selectedCountry.primaryCurrency,
+      from: effectiveCountry.primaryCurrency,
       to: 'USD',
     );
   } catch (_) {
@@ -212,18 +218,23 @@ final depositProvidersAvailabilityProvider =
     FutureProvider<DepositProvidersAvailability>((ref) async {
       final depositService = ref.watch(depositServiceProvider);
       final selectedCountry = ref.watch(selectedCountryProvider);
+      final userCountryCode = ref.watch(
+        userStateMachineProvider.select((state) => state.countryCode),
+      );
+      final effectiveCountry =
+          SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
       final payload = await depositService.getProvidersAvailability(
-        countryCode: selectedCountry.code,
-        currency: selectedCountry.primaryCurrency,
+        countryCode: effectiveCountry.code,
+        currency: effectiveCountry.primaryCurrency,
       );
       return DepositProvidersAvailability(
         providers: payload.providers
             .where((json) => json['available'] as bool? ?? true)
-            .where((json) => _matchesSelectedCountry(json, selectedCountry))
+            .where((json) => _matchesSelectedCountry(json, effectiveCountry))
             .map(_providerDataFromJson)
             .where((provider) => provider.id.isNotEmpty)
             .toList(),
-        country: payload.country ?? selectedCountry.code,
+        country: payload.country ?? effectiveCountry.code,
         currency: payload.currency,
         status: payload.status,
         reason: payload.reason,

@@ -10,6 +10,7 @@ import 'package:usdc_wallet/design/components/primitives/index.dart';
 import 'package:usdc_wallet/features/deposit/providers/deposit_provider.dart';
 import 'package:usdc_wallet/features/deposit/models/exchange_rate.dart';
 import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/currency_utils.dart';
 
 /// Deposit Amount Screen
@@ -37,7 +38,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final country = ref.watch(selectedCountryProvider);
+    final country = _effectiveCountry(ref);
     final exchangeRateAsync = ref.watch(exchangeRateProvider);
 
     if (!_currencyInitialized) {
@@ -396,7 +397,7 @@ class _DepositAmountScreenState extends ConsumerState<DepositAmountScreen> {
 
   String? _validationErrorFor(ExchangeRate rate) {
     final amount = double.tryParse(_amountController.text) ?? 0;
-    final country = ref.read(selectedCountryProvider);
+    final country = _effectiveCountry(ref);
     final limits = _limits(country, rate);
 
     if (_amountController.text.isEmpty) {
@@ -513,11 +514,19 @@ class _CurrencyTab extends StatelessWidget {
         child: AppText(
           label,
           variant: AppTextVariant.labelMedium,
-          color: isSelected ? const Color(0xFF19130A) : colors.textSecondary,
+          color: isSelected ? colors.onGold : colors.textSecondary,
         ),
       ),
     );
   }
+}
+
+CountryConfig _effectiveCountry(WidgetRef ref) {
+  final selectedCountry = ref.watch(selectedCountryProvider);
+  final userCountryCode = ref.watch(
+    userStateMachineProvider.select((state) => state.countryCode),
+  );
+  return SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
 }
 
 class _QuickAmountButton extends StatelessWidget {

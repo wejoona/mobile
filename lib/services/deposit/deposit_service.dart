@@ -97,12 +97,14 @@ class DepositService {
     Map<String, dynamic> data,
   ) async {
     final provider = data['provider'] ?? data['providerCode'];
+    final channelId = provider ?? data['channelId'];
+    if (channelId == null || channelId.toString().trim().isEmpty) {
+      throw ArgumentError('Deposit channel is required');
+    }
     final normalized = {
       'amount': data['amount'],
       'sourceCurrency': data['currency'] ?? data['sourceCurrency'] ?? 'XOF',
-      'channelId': normalizeDepositChannelId(
-        (provider ?? data['channelId'] ?? 'orange_money_ci').toString(),
-      ),
+      'channelId': normalizeDepositChannelId(channelId.toString()),
     };
     final response = await _dio.post(
       '/wallet/deposit',
