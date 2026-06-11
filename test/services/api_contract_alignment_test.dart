@@ -164,6 +164,39 @@ void main() {
       expect(result.instructions, 'Withdrawal submitted');
     });
 
+    test('wallet crypto withdraw uses guarded backend route', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'transactionId': 'txn_withdraw_1',
+          'amount': 25,
+          'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+          'network': 'polygon',
+          'fee': 0.5,
+          'status': 'pending',
+        });
+      final service = WalletService(dio);
+
+      final response = await service.withdraw(
+        amount: 25,
+        destinationAddress: '0x1234567890abcdef1234567890abcdef12345678',
+        network: 'polygon',
+        pinToken: 'pin_token_123',
+        idempotencyKey: 'idem-withdraw-123',
+      );
+
+      final request = dio.requestHistory.single;
+      expect(request.method, 'POST');
+      expect(request.path, '/wallet/withdraw');
+      expect(request.data, {
+        'amount': 25.0,
+        'destinationAddress': '0x1234567890abcdef1234567890abcdef12345678',
+        'network': 'polygon',
+      });
+      expect(request.headers['X-Pin-Token'], 'pin_token_123');
+      expect(request.headers['X-Idempotency-Key'], 'idem-withdraw-123');
+      expect(response.transactionId, 'txn_withdraw_1');
+    });
+
     test('refresh response accepts root and envelope token payloads', () {
       final root = RefreshResponse.fromJson({
         'accessToken': 'access-root',

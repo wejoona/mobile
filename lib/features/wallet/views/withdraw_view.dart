@@ -137,7 +137,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
     final amount = double.tryParse(_amountController.text) ?? 0;
     final selectedCountry = _effectiveCountry(ref, watch: false);
-    if (_selectedMethod != WithdrawMethod.mobileMoney) {
+    if (_selectedMethod == WithdrawMethod.bankTransfer) {
       await _subscribeToWithdrawalAvailability(
         featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
         requestedFeature: _selectedMethod!.name,
@@ -145,7 +145,8 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       );
       return;
     }
-    if (selectedCountry.code != 'CI') {
+    if (_selectedMethod == WithdrawMethod.mobileMoney &&
+        selectedCountry.code != 'CI') {
       await _subscribeToWithdrawalAvailability(
         featureKey: _withdrawalFeatureKey(selectedCountry, _selectedMethod!),
         requestedFeature: 'mobile_money',
@@ -154,9 +155,14 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
       return;
     }
 
-    final localDigits = _localPhoneDigits(selectedCountry);
-    final mobileMoneyMethod = _methodForCiMobileNumber(localDigits);
-    if (mobileMoneyMethod == null) {
+    final localDigits = _selectedMethod == WithdrawMethod.mobileMoney
+        ? _localPhoneDigits(selectedCountry)
+        : '';
+    final mobileMoneyMethod = _selectedMethod == WithdrawMethod.mobileMoney
+        ? _methodForCiMobileNumber(localDigits)
+        : null;
+    if (_selectedMethod == WithdrawMethod.mobileMoney &&
+        mobileMoneyMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -224,13 +230,18 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
 
       setState(() => _isSubmitting = true);
 
-      // Call withdrawal service
-      final success = await _submitMobileMoneyWithdrawal(
-        amount: amount,
-        destination: destination,
-        method: mobileMoneyMethod,
-        pinToken: pinToken!,
-      );
+      final success = _selectedMethod == WithdrawMethod.crypto
+          ? await _submitCryptoWithdrawal(
+              amount: amount,
+              destinationAddress: destination,
+              pinToken: pinToken!,
+            )
+          : await _submitMobileMoneyWithdrawal(
+              amount: amount,
+              destination: destination,
+              method: mobileMoneyMethod!,
+              pinToken: pinToken!,
+            );
 
       if (!mounted) return;
 
@@ -250,7 +261,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
         Navigator.of(context).pop();
       } else {
         // Error is handled by listener
-        if (mounted) {
+        if (mounted && _selectedMethod != WithdrawMethod.crypto) {
           final error = ref.read(withdraw_api.withdrawProvider).error;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -292,6 +303,36 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
     return ref.read(withdraw_api.withdrawProvider).result != null;
   }
 
+  Future<bool> _submitCryptoWithdrawal({
+    required double amount,
+    required String destinationAddress,
+    required String pinToken,
+  }) async {
+    try {
+      final response = await ref
+          .read(walletServiceProvider)
+          .withdraw(
+            amount: amount,
+            destinationAddress: destinationAddress,
+            network: 'polygon',
+            pinToken: pinToken,
+            idempotencyKey: generateIdempotencyKey(),
+          );
+      return response.transactionId.isNotEmpty;
+    } catch (e) {
+      ref.read(withdraw_api.withdrawProvider.notifier).reset();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
   String _localPhoneDigits(CountryConfig country) {
     final digitsOnly = _phoneController.text.replaceAll(RegExp(r'\D'), '');
     return digitsOnly.startsWith(country.prefix)
@@ -318,6 +359,7 @@ class _WithdrawViewState extends ConsumerState<WithdrawView> {
   bool _requiresAvailabilitySubscription() {
     final method = _selectedMethod;
     if (method == null) return false;
+    if (method == WithdrawMethod.crypto) return false;
     if (method != WithdrawMethod.mobileMoney) return true;
     return _effectiveCountry(ref).code != 'CI';
   }
