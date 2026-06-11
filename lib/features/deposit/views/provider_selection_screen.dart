@@ -48,7 +48,7 @@ class ProviderSelectionScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Amount Summary Card
-              if ((depositState.amountXOF ?? 0) > 0) ...[
+              if (_hasSourceAmount(depositState)) ...[
                 AppCard(
                   variant: AppCardVariant.flat,
                   child: Row(
@@ -554,6 +554,14 @@ String _formatSourceAmount(DepositState depositState) {
     return '\$${(depositState.amountUSD ?? 0).toStringAsFixed(2)}';
   }
   return formatXof(depositState.amountXOF ?? 0);
+}
+
+bool _hasSourceAmount(DepositState depositState) {
+  final currency = depositState.sourceCurrency ?? 'XOF';
+  if (currency == 'USD') {
+    return (depositState.amountUSD ?? 0) > 0;
+  }
+  return (depositState.amountXOF ?? 0) > 0;
 }
 
 String _humanizeCapabilityReason(String reason) {
