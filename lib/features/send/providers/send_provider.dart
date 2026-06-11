@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:usdc_wallet/config/countries.dart';
+import 'package:usdc_wallet/features/auth/providers/countries_provider.dart';
 import 'package:usdc_wallet/services/api/api_client.dart';
 import 'package:usdc_wallet/services/contacts/contacts_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
@@ -12,6 +14,7 @@ import 'package:usdc_wallet/features/offline/providers/offline_provider.dart';
 import 'package:usdc_wallet/features/send/models/transfer_request.dart';
 import 'package:usdc_wallet/core/haptics/haptic_service.dart';
 import 'package:usdc_wallet/core/utils/idempotency.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 
 /// Send Money State
 class SendMoneyState {
@@ -131,7 +134,10 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
     try {
       final dio = ref.read(dioProvider);
       final contactsService = ref.read(contactsServiceProvider);
-      final phoneHash = contactsService.hashPhone(phoneNumber);
+      final phoneHash = contactsService.hashPhone(
+        phoneNumber,
+        defaultCountryPrefix: _defaultCountryPrefix(),
+      );
 
       final response = await dio.post(
         '/contacts/sync',
@@ -347,6 +353,14 @@ class SendMoneyNotifier extends Notifier<SendMoneyState> {
   /// Clear error
   void clearError() {
     state = state.clearError();
+  }
+
+  String _defaultCountryPrefix() {
+    final userCountryCode = ref.read(userStateMachineProvider).countryCode;
+    final selectedCountry = ref.read(selectedCountryProvider);
+    final country =
+        SupportedCountries.findByCode(userCountryCode) ?? selectedCountry;
+    return country.prefix;
   }
 }
 

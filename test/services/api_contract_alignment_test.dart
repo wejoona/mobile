@@ -38,9 +38,20 @@ import 'package:usdc_wallet/services/payment_links/payment_links_service.dart';
 import 'package:usdc_wallet/services/preferences/notification_preferences_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
+import 'package:usdc_wallet/state/app_state.dart';
+import 'package:usdc_wallet/state/user_state_machine.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
 
 import '../helpers/test_utils.dart';
+
+class _CountryUserStateMachine extends UserStateMachine {
+  _CountryUserStateMachine(this.countryCode);
+
+  final String countryCode;
+
+  @override
+  UserState build() => UserState(countryCode: countryCode);
+}
 
 void main() {
   group('API contract alignment', () {
@@ -1480,6 +1491,46 @@ void main() {
         expect(recipient?.isKoridoUser, isTrue);
         expect(recipient?.userId, 'user_123');
         expect(recipient?.name, 'Awa Korido');
+      },
+    );
+
+    test(
+      'send recipient validation uses the user market phone prefix',
+      () async {
+        final contactsService = ContactsService(MockSecureStorage());
+        final phoneHash = contactsService.hashPhone(
+          '(415) 555-0101',
+          defaultCountryPrefix: '1',
+        );
+        final dio = MockDio()
+          ..queueResponse({
+            'matches': [
+              {
+                'phoneHash': phoneHash,
+                'userId': 'user_us',
+                'displayName': 'Awa US',
+              },
+            ],
+          });
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            contactsServiceProvider.overrideWithValue(contactsService),
+            userStateMachineProvider.overrideWith(
+              () => _CountryUserStateMachine('US'),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(sendMoneyProvider.notifier)
+            .setRecipient('(415) 555-0101');
+
+        final body = dio.requestHistory.single.data as Map<String, dynamic>;
+        expect(body['phoneHashes'], [phoneHash]);
+        expect(container.read(sendMoneyProvider).recipient?.isKoridoUser, true);
+        expect(container.read(sendMoneyProvider).recipient?.userId, 'user_us');
       },
     );
 
