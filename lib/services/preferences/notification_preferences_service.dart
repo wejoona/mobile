@@ -59,30 +59,26 @@ class NotificationPreferencesApiService {
   }) async {
     try {
       final data = <String, dynamic>{};
-      final channels = <String, dynamic>{};
-      final categories = <String, dynamic>{};
 
-      if (pushEnabled != null) channels['push'] = pushEnabled;
+      if (pushEnabled != null) data['pushEnabled'] = pushEnabled;
       if (pushTransactions != null) {
-        categories['transaction'] = pushTransactions;
+        data['pushTransactions'] = pushTransactions;
       }
-      if (pushSecurity != null) categories['security'] = pushSecurity;
-      if (pushMarketing != null) categories['marketing'] = pushMarketing;
-      if (emailEnabled != null) channels['email'] = emailEnabled;
+      if (pushSecurity != null) data['pushSecurity'] = pushSecurity;
+      if (pushMarketing != null) data['pushMarketing'] = pushMarketing;
+      if (emailEnabled != null) data['emailEnabled'] = emailEnabled;
       if (emailTransactions != null) {
-        categories['transaction'] = emailTransactions;
+        data['emailTransactions'] = emailTransactions;
       }
       if (emailMonthlyStatement != null) {
-        categories['system'] = emailMonthlyStatement;
+        data['emailMonthlyStatement'] = emailMonthlyStatement;
       }
-      if (emailMarketing != null) categories['marketing'] = emailMarketing;
-      if (smsEnabled != null) channels['sms'] = smsEnabled;
+      if (emailMarketing != null) data['emailMarketing'] = emailMarketing;
+      if (smsEnabled != null) data['smsEnabled'] = smsEnabled;
       if (smsTransactions != null) {
-        categories['transaction'] = smsTransactions;
+        data['smsTransactions'] = smsTransactions;
       }
-      if (smsSecurity != null) categories['security'] = smsSecurity;
-      if (channels.isNotEmpty) data['channels'] = channels;
-      if (categories.isNotEmpty) data['categories'] = categories;
+      if (smsSecurity != null) data['smsSecurity'] = smsSecurity;
       if (largeTransactionThreshold != null) {
         data['largeTransactionThreshold'] = largeTransactionThreshold;
       }

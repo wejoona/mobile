@@ -469,57 +469,79 @@ void main() {
       },
     );
 
+    test('notification preferences full save sends exact backend DTO keys', () {
+      final preferences = UserNotificationPreferences.defaults().copyWith(
+        pushEnabled: false,
+        pushTransactions: false,
+        pushMarketing: true,
+        emailMarketing: true,
+        smsTransactions: true,
+        lowBalanceThreshold: 25,
+      );
+
+      expect(preferences.toUpdateJson(), {
+        'pushEnabled': false,
+        'pushTransactions': false,
+        'pushSecurity': true,
+        'pushMarketing': true,
+        'emailEnabled': true,
+        'emailTransactions': true,
+        'emailMonthlyStatement': true,
+        'emailMarketing': true,
+        'smsEnabled': true,
+        'smsTransactions': true,
+        'smsSecurity': true,
+        'largeTransactionThreshold': 1000.0,
+        'lowBalanceThreshold': 25.0,
+      });
+    });
+
     test(
-      'notification preferences full save sends nested backend DTO keys',
-      () {
-        final preferences = UserNotificationPreferences.defaults().copyWith(
-          pushEnabled: false,
-          pushMarketing: true,
-          emailMarketing: true,
+      'notification preference single updates preserve channel-specific intent',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'pushTransactions': false,
+              'emailTransactions': true,
+              'smsTransactions': true,
+            },
+          });
+        final service = NotificationPreferencesApiService(dio);
+
+        await service.updateSinglePreference(pushTransactions: false);
+
+        expect(dio.requestHistory.single.method, 'PUT');
+        expect(dio.requestHistory.single.path, '/notifications/preferences');
+        expect(dio.requestHistory.single.data, {'pushTransactions': false});
+      },
+    );
+
+    test(
+      'notification preference threshold updates reach backend DTO',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'data': {
+              'largeTransactionThreshold': 750,
+              'lowBalanceThreshold': 25,
+            },
+          });
+        final service = NotificationPreferencesApiService(dio);
+
+        await service.updateSinglePreference(
+          largeTransactionThreshold: 750,
           lowBalanceThreshold: 25,
         );
 
-        expect(preferences.toUpdateJson(), {
-          'channels': {
-            'push': false,
-            'email': true,
-            'sms': true,
-            'inApp': true,
-          },
-          'categories': {
-            'transaction': true,
-            'security': true,
-            'marketing': true,
-            'system': true,
-          },
-          'largeTransactionThreshold': 1000.0,
+        expect(dio.requestHistory.single.method, 'PUT');
+        expect(dio.requestHistory.single.path, '/notifications/preferences');
+        expect(dio.requestHistory.single.data, {
+          'largeTransactionThreshold': 750.0,
           'lowBalanceThreshold': 25.0,
         });
       },
     );
-
-    test('notification preference threshold updates reach backend DTO', () async {
-      final dio = MockDio()
-        ..queueResponse({
-          'data': {
-            'largeTransactionThreshold': 750,
-            'lowBalanceThreshold': 25,
-          },
-        });
-      final service = NotificationPreferencesApiService(dio);
-
-      await service.updateSinglePreference(
-        largeTransactionThreshold: 750,
-        lowBalanceThreshold: 25,
-      );
-
-      expect(dio.requestHistory.single.method, 'PUT');
-      expect(dio.requestHistory.single.path, '/notifications/preferences');
-      expect(dio.requestHistory.single.data, {
-        'largeTransactionThreshold': 750.0,
-        'lowBalanceThreshold': 25.0,
-      });
-    });
 
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
