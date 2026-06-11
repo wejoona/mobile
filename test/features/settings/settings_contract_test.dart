@@ -5,24 +5,24 @@ import 'package:usdc_wallet/features/settings/repositories/sessions_repository.d
 import '../../helpers/test_utils.dart';
 
 void main() {
-  test('SessionsRepository parses bare device array', () async {
+  test('SessionsRepository parses bare session array', () async {
     final dio = MockDio();
     dio.queueResponse([
       {
-        'id': 'device-1',
+        'id': 'session-1',
         'deviceId': 'device-1',
-        'lastIpAddress': '197.155.45.10',
-        'platform': 'ios',
-        'model': 'iPhone',
+        'ipAddress': '197.155.45.10',
+        'userAgent': 'Korido/1.0 (iOS; iPhone; 26.2)',
         'isActive': true,
-        'lastLoginAt': DateTime.utc(2026, 6, 2).toIso8601String(),
+        'lastActivityAt': DateTime.utc(2026, 6, 2).toIso8601String(),
+        'expiresAt': DateTime.utc(2026, 7, 2).toIso8601String(),
       },
     ]);
     final repository = SessionsRepository(dio);
 
     final sessions = await repository.getSessions();
 
-    expect(dio.requestHistory.single.path, '/devices');
+    expect(dio.requestHistory.single.path, '/sessions');
     expect(sessions, hasLength(1));
     expect(sessions.single.deviceDescription, 'iPhone');
   });
