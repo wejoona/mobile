@@ -9,6 +9,8 @@ import 'package:usdc_wallet/state/fsm/fsm_provider.dart';
 
 /// Wallet State Machine - manages wallet balance globally
 class WalletStateMachine extends Notifier<WalletState> {
+  Future<void>? _refreshInFlight;
+
   @override
   WalletState build() {
     // Don't auto-fetch on build - wallet fetch is triggered by FSM after auth
@@ -232,8 +234,21 @@ class WalletStateMachine extends Notifier<WalletState> {
 
   /// Refresh wallet balance (shows refreshing indicator)
   Future<void> refresh() async {
-    if (state.status == WalletStatus.refreshing) return;
+    final activeRefresh = _refreshInFlight;
+    if (activeRefresh != null) return activeRefresh;
 
+    final refreshFuture = _refresh();
+    _refreshInFlight = refreshFuture;
+    try {
+      await refreshFuture;
+    } finally {
+      if (identical(_refreshInFlight, refreshFuture)) {
+        _refreshInFlight = null;
+      }
+    }
+  }
+
+  Future<void> _refresh() async {
     final previousState = state;
     state = state.copyWith(status: WalletStatus.refreshing);
 

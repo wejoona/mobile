@@ -144,5 +144,44 @@ void main() {
       expect(state.walletId, 'wallet-refresh');
       expect(state.usdcBalance, 25);
     });
+
+    test(
+      'concurrent manual refreshes share the in-flight wallet request',
+      () async {
+        final dio = MockDio()
+          ..queueResponse({
+            'walletId': 'wallet-refresh-once',
+            'walletAddress': '0xabc',
+            'blockchain': 'polygon',
+            'balances': [
+              {'currency': 'USDC', 'available': 31, 'pending': 0, 'total': 31},
+            ],
+          });
+
+        final container = ProviderContainer(
+          overrides: [
+            dioProvider.overrideWithValue(dio),
+            appFsmProvider.overrideWith(_NoopAppFsmNotifier.new),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final firstRefresh = container
+            .read(walletStateMachineProvider.notifier)
+            .refresh();
+        final secondRefresh = container
+            .read(walletStateMachineProvider.notifier)
+            .refresh();
+
+        await Future.wait([firstRefresh, secondRefresh]);
+
+        expect(dio.requestHistory.map((request) => request.path), ['/wallet']);
+
+        final state = container.read(walletStateMachineProvider);
+        expect(state.status, WalletStatus.loaded);
+        expect(state.walletId, 'wallet-refresh-once');
+        expect(state.usdcBalance, 31);
+      },
+    );
   });
 }
