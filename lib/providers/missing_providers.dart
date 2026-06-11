@@ -27,8 +27,11 @@ final filteredPaginatedTransactionsProvider =
       FilteredPaginatedTransactionsNotifier,
       FilteredPaginatedTransactionsState
     >((ref) {
+      ref.watch(transactionFilterProvider);
       return FilteredPaginatedTransactionsNotifier(ref);
     });
+
+const _transactionsPageSize = 20;
 
 class FilteredPaginatedTransactionsNotifier
     extends StateNotifier<FilteredPaginatedTransactionsState> {
@@ -48,7 +51,7 @@ class FilteredPaginatedTransactionsNotifier
       final params = <String, dynamic>{
         ...filter.toQueryParams(),
         'offset': 0,
-        'limit': 20,
+        'limit': _transactionsPageSize,
       };
       final response = await dio.get(
         '/wallet/transactions',
@@ -83,8 +86,8 @@ class FilteredPaginatedTransactionsNotifier
       final dio = _ref.read(dioProvider);
       final params = <String, dynamic>{
         ...filter.toQueryParams(),
-        'offset': (nextPage - 1) * 20,
-        'limit': 20,
+        'offset': (nextPage - 1) * _transactionsPageSize,
+        'limit': _transactionsPageSize,
       };
       final response = await dio.get(
         '/wallet/transactions',
