@@ -83,6 +83,12 @@ class NotificationPreferencesApiService {
       if (smsSecurity != null) categories['security'] = smsSecurity;
       if (channels.isNotEmpty) data['channels'] = channels;
       if (categories.isNotEmpty) data['categories'] = categories;
+      if (largeTransactionThreshold != null) {
+        data['largeTransactionThreshold'] = largeTransactionThreshold;
+      }
+      if (lowBalanceThreshold != null) {
+        data['lowBalanceThreshold'] = lowBalanceThreshold;
+      }
 
       final response = await _dio.put('/notifications/preferences', data: data);
       return UserNotificationPreferences.fromJson(

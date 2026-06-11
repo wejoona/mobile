@@ -172,6 +172,8 @@ class UserNotificationPreferences {
         'marketing': pushMarketing || emailMarketing,
         'system': emailMonthlyStatement,
       },
+      'largeTransactionThreshold': largeTransactionThreshold,
+      'lowBalanceThreshold': lowBalanceThreshold,
     };
   }
 

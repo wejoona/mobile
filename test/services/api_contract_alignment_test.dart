@@ -34,6 +34,7 @@ import 'package:usdc_wallet/services/feature_subscriptions/feature_subscription_
 import 'package:usdc_wallet/services/auth/auth_service.dart';
 import 'package:usdc_wallet/services/notifications/notifications_service.dart';
 import 'package:usdc_wallet/services/payment_links/payment_links_service.dart';
+import 'package:usdc_wallet/services/preferences/notification_preferences_service.dart';
 import 'package:usdc_wallet/services/transfers/transfers_service.dart';
 import 'package:usdc_wallet/services/wallet/wallet_service.dart';
 import 'package:usdc_wallet/utils/phone_number_normalizer.dart';
@@ -442,9 +443,34 @@ void main() {
             'marketing': true,
             'system': true,
           },
+          'largeTransactionThreshold': 1000.0,
+          'lowBalanceThreshold': 25.0,
         });
       },
     );
+
+    test('notification preference threshold updates reach backend DTO', () async {
+      final dio = MockDio()
+        ..queueResponse({
+          'data': {
+            'largeTransactionThreshold': 750,
+            'lowBalanceThreshold': 25,
+          },
+        });
+      final service = NotificationPreferencesApiService(dio);
+
+      await service.updateSinglePreference(
+        largeTransactionThreshold: 750,
+        lowBalanceThreshold: 25,
+      );
+
+      expect(dio.requestHistory.single.method, 'PUT');
+      expect(dio.requestHistory.single.path, '/notifications/preferences');
+      expect(dio.requestHistory.single.data, {
+        'largeTransactionThreshold': 750.0,
+        'lowBalanceThreshold': 25.0,
+      });
+    });
 
     test('feature subscriptions include feature and source context', () async {
       final dio = MockDio()
