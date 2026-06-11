@@ -52,6 +52,9 @@ class SessionsNotifier extends Notifier<SessionsState> {
         currentSessionId: currentSession?.id,
       );
     } on ApiException catch (e) {
+      if (await _clearLocalSessionIfUnauthorized(e)) {
+        return;
+      }
       state = state.copyWith(isLoading: false, error: _friendlyError(e));
     } on Object {
       state = state.copyWith(
@@ -71,6 +74,9 @@ class SessionsNotifier extends Notifier<SessionsState> {
       await loadSessions();
       return true;
     } on ApiException catch (e) {
+      if (await _clearLocalSessionIfUnauthorized(e)) {
+        return false;
+      }
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -91,6 +97,9 @@ class SessionsNotifier extends Notifier<SessionsState> {
       state = state.copyWith(sessions: []);
       return true;
     } on ApiException catch (e) {
+      if (await _clearLocalSessionIfUnauthorized(e)) {
+        return false;
+      }
       state = state.copyWith(error: _friendlyError(e));
       return false;
     } on Object {
@@ -109,6 +118,18 @@ class SessionsNotifier extends Notifier<SessionsState> {
       return 'You do not have permission to manage sessions right now.';
     }
     return error.message;
+  }
+
+  Future<bool> _clearLocalSessionIfUnauthorized(ApiException error) async {
+    if (error.statusCode != 401) {
+      return false;
+    }
+
+    await ref.read(authProvider.notifier).clearLocalSession();
+    state = const SessionsState(
+      error: 'Your session has expired. Please sign in again.',
+    );
+    return true;
   }
 
   Session? _resolveCurrentSession(List<Session> sessions) {
