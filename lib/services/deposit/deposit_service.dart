@@ -29,7 +29,7 @@ class DepositService {
       '/wallet/deposit/channels',
       queryParameters: {
         if (countryCode != null && countryCode.isNotEmpty)
-          'countryCode': countryCode,
+          'country': countryCode,
         if (currency != null && currency.isNotEmpty) 'currency': currency,
       },
     );

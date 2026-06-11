@@ -160,7 +160,7 @@ void main() {
         final request = dio.requestHistory.single;
         expect(request.path, '/wallet/deposit/channels');
         expect(request.queryParameters, {
-          'countryCode': 'US',
+          'country': 'US',
           'currency': 'USD',
         });
       },

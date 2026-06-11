@@ -7,7 +7,7 @@ import '../../helpers/test_utils.dart';
 void main() {
   group('Feature subscription contract', () {
     test('serializes feature waitlist subscription with feature context', () {
-      final request = FeatureSubscriptionRequest(
+      const request = FeatureSubscriptionRequest(
         featureKey: 'virtual_card',
         source: 'cards_screen',
         metadata: {'locale': 'en', 'region': 'US'},
@@ -36,7 +36,7 @@ void main() {
       final service = FeatureSubscriptionsService(dio);
 
       final response = await service.subscribe(
-        FeatureSubscriptionRequest(
+        const FeatureSubscriptionRequest(
           featureKey: 'virtual_card',
           source: 'cards_screen',
           metadata: {'surface': 'cards'},
@@ -51,6 +51,7 @@ void main() {
       expect(dio.requestHistory.single.data, {
         'featureKey': 'virtual_card',
         'source': 'cards_screen',
+        'status': 'subscribed',
         'metadata': {'surface': 'cards'},
       });
     });
@@ -73,7 +74,7 @@ void main() {
       final service = FeatureSubscriptionsService(dio);
 
       final response = await service.subscribe(
-        FeatureSubscriptionRequest(
+        const FeatureSubscriptionRequest(
           featureKey: 'virtual_card',
           source: 'cards_screen',
           metadata: {'surface': 'cards'},
